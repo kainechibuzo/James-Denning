@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
+    <!-- Mobile viewport — prevents double-tap zoom -->
+    <meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- Theme colour shown in Android task switcher -->
+    <meta name="theme-color" content="#1A4FA0" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Full-screen on Android/iOS when added to home screen -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Apex SchoolOS" />
+
+    <!-- Apple touch icons (Safari "Add to Home Screen") -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png" />
+
+    <title>Apex SchoolOS</title>
+
+    <!-- Paystack inline SDK — loads on web; on Android the WebView fetches it
+         over the internet (INTERNET permission is auto-added by Capacitor).
+         For offline-first builds this can be bundled separately later. -->
+    <script src="https://js.paystack.co/v1/inline.js" defer></script>
+
+    <style>
+      /* ── Global typography ──────────────────────────────────────────────
+         One authoritative font stack. Previously nothing set a global font,
+         so any element (and every native form control) fell back to the
+         browser default serif — Times New Roman. A crisp system stack renders
+         natively on every OS with zero network latency (important for a PWA on
+         slow school connections) and no FOUT. */
+      :root {
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+          "Apple Color Emoji", "Segoe UI Emoji";
+      }
+      html, body, #root {
+        height: 100%;
+        overflow: hidden;   /* Capacitor manages scrolling inside pages */
+      }
+      html {
+        font-family: var(--font-sans);
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      /* Form controls do NOT inherit font-family by default — force it, or
+         selects/options/textareas leak the serif fallback. */
+      button, input, select, textarea, optgroup {
+        font-family: inherit;
+        font-size: 100%;
+      }
+      #root {
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* ── Keyboard focus ring ────────────────────────────────────────────
+         Only shows for keyboard users (:focus-visible), never on mouse click,
+         so it adds accessibility without visual noise for pointer users. */
+      *:focus { outline: none; }
+      *:focus-visible {
+        outline: 2px solid #1A4FA0;
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      /* ── Custom scrollbars ──────────────────────────────────────────────
+         Thin, unobtrusive, themed — replaces the chunky default OS bars. */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(100,116,139,.35) transparent;
+      }
+      *::-webkit-scrollbar { width: 10px; height: 10px; }
+      *::-webkit-scrollbar-track { background: transparent; }
+      *::-webkit-scrollbar-thumb {
+        background: rgba(100,116,139,.32);
+        border-radius: 8px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      *::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,.5); background-clip: content-box; }
+
+      /* ── Skeleton shimmer (content-shaped loaders) ──────────────────────── */
+      @keyframes skeletonShimmer {
+        0%   { background-position: -420px 0; }
+        100% { background-position:  420px 0; }
+      }
+
+      /* ── Respect reduced-motion preference ──────────────────────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.jsx"></script>
+  </body>
+</html>

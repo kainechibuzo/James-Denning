@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="24" fill="#E8560A"/>
+  <circle cx="24" cy="24" r="19" fill="#1A4FA0"/>
+  <circle cx="24" cy="24" r="23" stroke="#1A8C3C" stroke-width="2" fill="none"/>
+  <text x="24" y="29" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" font-family="Georgia,serif">RGS</text>
+</svg>
