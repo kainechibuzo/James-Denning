@@ -1,5 +1,5 @@
 /**
- * RGS Portal — App Icon & Splash Screen Generator  (v3 — JPEG icon, true alpha composite)
+ * JAMES-DENNING — App Icon & Splash Screen Generator  (v3 — JPEG icon, true alpha composite)
  * Run: node scripts/generate-assets.js
  *
  * Root cause fixed in v3:
@@ -151,7 +151,7 @@ async function generateSplash() {
     font-size="${SCHOOL_FONT}"
     font-weight="bold"
     fill="white"
-    letter-spacing="6">Renaissance Garden Schools</text>
+    letter-spacing="6">JAMES-DENNING</text>
 
   <text
     x="${SIZE / 2}" y="${text2Y}"
@@ -181,7 +181,7 @@ async function generateSplash() {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 (async () => {
   console.log("═══════════════════════════════════════════════");
-  console.log("  RGS Portal — Asset Generator  v3");
+  console.log("  JAMES-DENNING — Asset Generator  v3");
   console.log(`  Navy: rgb(${NAVY.r},${NAVY.g},${NAVY.b})  #1A4FA0`);
   console.log("═══════════════════════════════════════════════");
 

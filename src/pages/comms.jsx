@@ -682,7 +682,7 @@ ${_mailSN}`},
                 {label:"Report Card Ready",sub:"Your Child's Report Card is Now Available \u2013 {term}",body:
 `Dear Parent/Guardian of {student_name},
 
-We are pleased to inform you that the report card for {student_name} ({class_name}) for the {term} of the {session} academic session is now available on the Apex SchoolOS.
+We are pleased to inform you that the report card for {student_name} ({class_name}) for the {term} of the {session} academic session is now available on the JAMES-DENNING.
 
 To access it, please log in to the portal at your convenience. We encourage you to review the results with your child and celebrate their achievements while identifying areas for improvement together.
 

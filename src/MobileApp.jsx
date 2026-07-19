@@ -1,5 +1,5 @@
 /**
- * RGS Portal — Dedicated Mobile App
+ * JAMES-DENNING — Dedicated Mobile App
  * Standalone React app for Android/iOS via Capacitor.
  * All screens, real Supabase data, matches the Claude design prototype.
  */
@@ -446,7 +446,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
         </div>
         <div style={{color:"rgba(255,255,255,.95)",fontSize:19,fontWeight:800,
           letterSpacing:-.4,textAlign:"center",lineHeight:1.3,padding:"0 24px"}}>
-          {school?.name||"Renaissance Garden Schools"}
+          {school?.name||"JAMES-DENNING"}
         </div>
         {/* School switcher link — shown when multiple schools exist */}
         {schools.length>1&&(
@@ -1697,13 +1697,13 @@ function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
             <div style={{flex:1,fontSize:14,fontWeight:600,color:t.txt}}>Help & Support</div>
             <ChevronRight size={16} color={t.mut}/>
           </MRow>
-          <MRow t={t} last onClick={()=>notify?.("RGS School Portal v32.89 · Apex SchoolOS")}>
+          <MRow t={t} last onClick={()=>notify?.("JAMES-DENNING v1.0 · JAMES-DENNING")}>
             <div style={{width:36,height:36,borderRadius:10,background:t.bg,
               border:`1px solid ${t.brd}`,display:"flex",alignItems:"center",
               justifyContent:"center",color:t.mut,flexShrink:0}}>
               <Info size={17}/>
             </div>
-            <div style={{flex:1,fontSize:14,fontWeight:600,color:t.txt}}>About RGS Portal</div>
+            <div style={{flex:1,fontSize:14,fontWeight:600,color:t.txt}}>About JAMES-DENNING</div>
             <ChevronRight size={16} color={t.mut}/>
           </MRow>
         </MCard>
@@ -1715,8 +1715,8 @@ function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
               <Info size={16} color="#1A4FA0"/>
             </div>
             <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:700,color:t.txt}}>RGS School Portal</div>
-              <div style={{fontSize:11,color:t.sft}}>v32.89 · Apex SchoolOS</div>
+              <div style={{fontSize:12,fontWeight:700,color:t.txt}}>JAMES-DENNING</div>
+              <div style={{fontSize:11,color:t.sft}}>v32.89 · JAMES-DENNING</div>
             </div>
           </div>
         </MCard>
@@ -2801,7 +2801,7 @@ function MailComposeScreen({t, ctx}){
         html:`<div style="font-family:sans-serif;max-width:600px;margin:auto">
           <p>${body.trim().replace(/\n/g,"<br/>")}</p>
           <hr/><p style="color:#888;font-size:12px">
-          Sent from RGS School Portal · ${user?.name||"Admin"}</p>
+          Sent from JAMES-DENNING · ${user?.name||"Admin"}</p>
         </div>`,
       });
       notify?.("Email sent!");
@@ -2833,7 +2833,7 @@ function MailComposeScreen({t, ctx}){
       </div>
       <MPrimaryBtn t={t} label="Send Email" onClick={send} loading={sending}/>
       <div style={{marginTop:10,fontSize:12,color:t.sft,textAlign:"center"}}>
-        Sent from RGS Portal on behalf of {user?.name||"Admin"}
+        Sent from JAMES-DENNING on behalf of {user?.name||"Admin"}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 {
-  "appId": "com.rgsportal.app",
-  "appName": "RGS Portal",
+  "appId": "com.jamesdenning.app",
+  "appName": "JAMES-DENNING",
   "webDir": "dist",
   "server": {
     "url": "https://portal.renaissancegardenschools.com",

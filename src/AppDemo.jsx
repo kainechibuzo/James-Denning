@@ -127,7 +127,7 @@ function DarkToggle(){
 class ErrorBoundary extends Component {
   constructor(props){ super(props); this.state={hasError:false,error:null,info:null}; }
   static getDerivedStateFromError(error){ return {hasError:true,error}; }
-  componentDidCatch(error,info){ console.error("Apex SchoolOS Error:",error,info); this.setState({info}); }
+  componentDidCatch(error,info){ console.error("JAMES-DENNING Error:",error,info); this.setState({info}); }
   render(){
     if(this.state.hasError){
       return(
@@ -1135,7 +1135,7 @@ function PDFViewer({html, title, onClose}){
       const file = new File([blob], `${safeName}.html`, {type:"text/html"});
 
       if(navigator.share && navigator.canShare?.({files:[file]})){
-        await navigator.share({files:[file], title, text:`${title} — Apex SchoolOS`});
+        await navigator.share({files:[file], title, text:`${title} — JAMES-DENNING`});
         showBanner("✅ Shared! Open the file in Chrome → tap ⋮ → Print → Save as PDF", true);
       } else if(navigator.share){
         // File sharing not supported — share as blob URL
@@ -1678,7 +1678,7 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
 // ─── ONBOARDING TOUR ──────────────────────────────────────────────────────────
 const TOUR_STEPS_CONFIG = [
   // ── Shared (all roles) ──
-  {id:"welcome",       title:"Welcome to Apex SchoolOS 👋",
+  {id:"welcome",       title:"Welcome to JAMES-DENNING 👋",
     content:"This quick tour walks you through the key features available to you. Use the arrows to navigate, or press Skip to explore on your own.",
     target:null, page:null, placement:"center", roles:null, perms:null},
   {id:"nav-sidebar",   title:"Navigation Sidebar",
@@ -2232,7 +2232,7 @@ function AppInner(){
           const storedPw=sa.admin_password;
           const storedEmail=sa.admin_email||"";
           if(id.toLowerCase()==="admin"||id===storedEmail){
-            if(!storedPw) return {error:"Admin password not configured. Contact your Apex SchoolOS administrator."};
+            if(!storedPw) return {error:"Admin password not configured. Contact your JAMES-DENNING administrator."};
             if(pw===storedPw){
               return {user:{id:"admin",role:"admin",name:sa.admin_name||"Administrator",
                 email:storedEmail,is_admin:true,school_id:schoolId}};
@@ -3028,7 +3028,7 @@ function SchoolSignupModal({onClose,onSuccess}){
           display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
             <div style={{fontSize:18,fontWeight:900,color:C.text}}>Register Your School</div>
-            <div style={{fontSize:12,color:C.muted,marginTop:2}}>Join Apex SchoolOS — School Management Platform</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:2}}>Join JAMES-DENNING — School Management Platform</div>
           </div>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:C.muted}}>
             <X size={20}/>
@@ -3440,7 +3440,7 @@ function PlatformDashboardPage({admin,onLogout}){
         display:"flex",alignItems:"center",justifyContent:"space-between",height:60,
         boxShadow:"0 2px 12px rgba(0,0,0,.18)"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <img src="/apex-logo.PNG" alt="Apex SchoolOS"
+          <img src="/apex-logo.PNG" alt="JAMES-DENNING"
             style={{height:36,width:"auto",filter:"drop-shadow(0 2px 8px rgba(0,180,255,.4))"}}/>
           <div style={{color:"rgba(255,255,255,.5)",fontSize:10}}>Super-Admin Console</div>
         </div>

@@ -1,5 +1,5 @@
 /**
- * RGS Portal — Service Worker
+ * JAMES-DENNING — Service Worker
  *
  * Strategy:
  *  - App shell (HTML): network-first, fallback to cache, fallback to offline page

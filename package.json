@@ -1,7 +1,7 @@
 {
   "name": "rgs-school-portal",
   "version": "1.0.0",
-  "description": "Renaissance Garden Schools — Full School Management Portal",
+  "description": "JAMES-DENNING — Business Management Portal",
   "private": true,
   "scripts": {
     "dev": "vite",

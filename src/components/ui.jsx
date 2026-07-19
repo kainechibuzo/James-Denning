@@ -44,7 +44,7 @@ import { isNative }       from "../utils/platform.js";
 export class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError:false, error:null, info:null }; }
   static getDerivedStateFromError(error) { return { hasError:true, error }; }
-  componentDidCatch(error, info) { console.error("Apex SchoolOS Error:", error, info); this.setState({ info }); }
+  componentDidCatch(error, info) { console.error("JAMES-DENNING Error:", error, info); this.setState({ info }); }
   render() {
     if (this.state.hasError) {
       return (
@@ -559,7 +559,7 @@ export function PDFViewer({ html, title, onClose }) {
       // Use window.File to avoid Lucide File icon shadowing
       const file = new window.File([blob], `${safeName}.html`, { type:"text/html" });
       if (navigator.share && navigator.canShare?.({ files:[file] })) {
-        await navigator.share({ files:[file], title, text:`${title} — Apex SchoolOS` });
+        await navigator.share({ files:[file], title, text:`${title} — JAMES-DENNING` });
         showBanner("✅ Shared! Open the file in Chrome → tap ⋮ → Print → Save as PDF", true);
       } else if (navigator.share) {
         const url = URL.createObjectURL(blob);
