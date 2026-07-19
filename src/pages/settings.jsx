@@ -351,7 +351,7 @@ export function SettingsPage({ctx,inPanel}){
             </div>
           </div>
 
-          <SettingRow label="School Name" desc="Full official name"><SettingInput settings={settings} onSet={set} k="school_name" placeholder="Your School"/></SettingRow>
+          <SettingRow label="Business Name" desc="Full official name"><SettingInput settings={settings} onSet={set} k="school_name" placeholder="Your Business"/></SettingRow>
           <SettingRow label="School Address" desc="Physical address on official documents"><SettingInput settings={settings} onSet={set} k="school_address" placeholder="No. 1 Renaissance Avenue, Abuja"/></SettingRow>
           <SettingRow label="Phone Number" desc="Main contact number"><SettingInput settings={settings} onSet={set} k="school_phone" placeholder="+234 800 000 0000"/></SettingRow>
           <SettingRow label="School Motto" desc="Appears on transcripts"><SettingInput settings={settings} onSet={set} k="school_motto" placeholder="Excellence in Education"/></SettingRow>

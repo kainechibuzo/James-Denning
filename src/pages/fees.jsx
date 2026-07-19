@@ -4317,7 +4317,7 @@ tr.row-unpaid td{background:#fee2e2!important;}
   <div class="cover-inner">
     ${logoHtml}
     <div class="school-name">${schoolName}</div>
-    <div class="school-sub">School Management Portal</div>
+    <div class="school-sub">Business Management Portal</div>
     <div class="report-badge">${title}</div>
     <div class="cover-meta">
       <span>📅 Period: ${filterLabel}</span>

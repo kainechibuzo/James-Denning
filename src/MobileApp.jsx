@@ -384,7 +384,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
           </div>
           <div style={{color:"rgba(255,255,255,.95)",fontSize:19,fontWeight:800,
             letterSpacing:-.4,textAlign:"center",lineHeight:1.3}}>
-            Select Your School
+            Select Your Business
           </div>
           <div style={{color:"rgba(255,255,255,.55)",fontSize:13}}>Tap your school to continue</div>
         </div>
@@ -3189,8 +3189,8 @@ function AdminSettings({t, ctx}){
   },[]);
   if(loading) return <MSpinner t={t}/>;
   const info=[
-    {l:"School Name",v:school?.name||"—"},{l:"Admin Email",v:school?.admin_email||"—"},
-    {l:"Student ID Prefix",v:school?.student_id_prefix||"—"},
+    {l:"Business Name",v:school?.name||"—"},{l:"Admin Email",v:school?.admin_email||"—"},
+    {l:"Member ID Prefix",v:school?.student_id_prefix||"—"},
     {l:"Staff ID Prefix",v:school?.staff_id_prefix||"—"},
     {l:"Country",v:school?.country||"Nigeria"},{l:"Currency",v:school?.currency||"NGN"},
   ];

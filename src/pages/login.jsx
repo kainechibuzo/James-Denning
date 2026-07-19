@@ -131,15 +131,15 @@ export function SchoolManagerModal({school, onClose, onSaved}){
                   <input type="file" accept="image/*" style={{display:"none"}} onChange={handleLogoFile}/>
                 </label>
               </div>
-              {inp("School Name","name",{placeholder:"e.g. Your School"})}
+              {inp("Business Name","name",{placeholder:"e.g. Your Business Name"})}
               {inp("Address","address",{placeholder:"e.g. 12 School Road, Lagos"})}
               {inp("Phone","phone",{placeholder:"e.g. +2348000000000"})}
-              {inp("Student ID Prefix","student_id_prefix",{placeholder:"e.g. RGS, HLDS",hint:"Used for new student IDs e.g. RGS/001"})}
+              {inp("Member ID Prefix","student_id_prefix",{placeholder:"e.g. JD, ACM",hint:"Used for new member IDs e.g. JD/001"})}
               <hr style={{border:"none",borderTop:`1px solid ${C.border}`,margin:"16px 0"}}/>
               <div style={{fontSize:12,fontWeight:700,color:C.muted,textTransform:"uppercase",
                 letterSpacing:.7,marginBottom:10}}>Admin Login</div>
-              {inp("Admin Email","admin_email",{type:"email",placeholder:"admin@school.edu.ng"})}
-              {inp("Admin Name","admin_name",{placeholder:"e.g. School Administrator"})}
+              {inp("Admin Email","admin_email",{type:"email",placeholder:"admin@yourbusiness.com"})}
+              {inp("Admin Name","admin_name",{placeholder:"e.g. Business Administrator"})}
               {inp("New Admin Password","admin_password",{type:"password",placeholder:"Leave blank to keep current"})}
               <hr style={{border:"none",borderTop:`1px solid ${C.border}`,margin:"16px 0"}}/>
               <div style={{fontSize:12,fontWeight:700,color:C.muted,textTransform:"uppercase",
@@ -280,7 +280,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           </div>
           <div style={{color:"rgba(255,255,255,.5)",fontSize:12,marginTop:8,
             textTransform:"uppercase",letterSpacing:2,fontWeight:600}}>
-            School Management Portal
+            Business Management Portal
           </div>
           <div style={{marginTop:40,display:"flex",flexDirection:"column",gap:16,maxWidth:280}}>
             {[

@@ -2864,13 +2864,13 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
           <div style={{width:8,height:8,borderRadius:"50%",background:"#4ade80",
             boxShadow:"0 0 8px #4ade80"}}/>
           <span style={{color:"rgba(255,255,255,.75)",fontSize:12,fontWeight:600,letterSpacing:.5}}>
-            School Management Portal
+            Business Management Portal
           </span>
         </div>
         <div style={{color:"rgba(255,255,255,.9)",fontSize:28,fontWeight:900,letterSpacing:"-.02em",
-          lineHeight:1.2}}>Select Your School</div>
+          lineHeight:1.2}}>Select Your Business</div>
         <div style={{color:"rgba(255,255,255,.45)",fontSize:13,marginTop:6}}>
-          Choose your institution to continue
+          Choose your business to continue
         </div>
       </div>
 
@@ -2881,7 +2881,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
             <div style={{width:16,height:16,border:"2px solid rgba(255,255,255,.3)",
               borderTop:"2px solid rgba(255,255,255,.8)",borderRadius:"50%",
               animation:"spin .7s linear infinite"}}/>
-            Loading schools…
+            Loading businesses…
           </div>
         : <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:440,position:"relative",zIndex:1}}>
             {schools.map(s=>(
@@ -2925,7 +2925,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
               </button>
             ))}
 
-            {/* Register new school */}
+            {/* Register new business */}
             <button onClick={()=>setShowSignup(true)}
               style={{background:"rgba(232,86,10,.12)",border:"1.5px dashed rgba(232,86,10,.45)",
                 borderRadius:18,padding:"14px 20px",cursor:"pointer",textAlign:"center",
@@ -2934,7 +2934,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
                 transition:"all .15s",marginTop:4}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(232,86,10,.22)";e.currentTarget.style.borderColor="rgba(232,86,10,.7)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(232,86,10,.12)";e.currentTarget.style.borderColor="rgba(232,86,10,.45)";}}>
-              <Plus size={15}/> Register New School
+              <Plus size={15}/> Register New Business
             </button>
           </div>
       }
@@ -3027,8 +3027,8 @@ function SchoolSignupModal({onClose,onSuccess}){
         <div style={{padding:"24px 24px 0",borderBottom:`1px solid ${C.border}`,paddingBottom:16,
           display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
-            <div style={{fontSize:18,fontWeight:900,color:C.text}}>Register Your School</div>
-            <div style={{fontSize:12,color:C.muted,marginTop:2}}>Join JAMES-DENNING — School Management Platform</div>
+            <div style={{fontSize:18,fontWeight:900,color:C.text}}>Register Your Business</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:2}}>Join JAMES-DENNING — Business Management Platform</div>
           </div>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:C.muted}}>
             <X size={20}/>
@@ -3038,16 +3038,16 @@ function SchoolSignupModal({onClose,onSuccess}){
           {err&&<div style={{background:"#fef2f2",border:"1.5px solid #fca5a5",color:"#b91c1c",
             padding:"10px 14px",borderRadius:8,fontSize:12,marginBottom:16,fontWeight:600}}>{err}</div>}
           <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",
-            letterSpacing:.7,marginBottom:10}}>School Details</div>
-          {inp("School Name","name",{req:true,placeholder:"e.g. Greenfield Academy"})}
+            letterSpacing:.7,marginBottom:10}}>Business Details</div>
+          {inp("Business Name","name",{req:true,placeholder:"e.g. Acme Inc"})}
           {inp("Address","address",{placeholder:"e.g. 12 School Road, Lagos"})}
           {inp("State","state",{placeholder:"e.g. Lagos"})}
           {inp("Phone","contact_phone",{placeholder:"e.g. +2348000000000"})}
-          {inp("Student ID Prefix","student_id_prefix",{placeholder:"e.g. GFA (auto-generated if blank)"})}
+          {inp("Member ID Prefix","student_id_prefix",{placeholder:"e.g. ACM (auto-generated if blank)"})}
           <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",
             letterSpacing:.7,margin:"16px 0 10px"}}>Admin Account</div>
-          {inp("Admin Full Name","admin_name",{placeholder:"e.g. School Administrator"})}
-          {inp("Admin Email","admin_email",{req:true,type:"email",placeholder:"admin@school.edu.ng"})}
+          {inp("Admin Full Name","admin_name",{placeholder:"e.g. Business Administrator"})}
+          {inp("Admin Email","admin_email",{req:true,type:"email",placeholder:"admin@yourbusiness.com"})}
           {inp("Password","admin_password",{req:true,type:"password",placeholder:"Set a strong password"})}
           <button onClick={submit} disabled={saving}
             style={{width:"100%",background:saving?"#CBD5E1":"linear-gradient(135deg,#E8560A,#FF7A35)",
