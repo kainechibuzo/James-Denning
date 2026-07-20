@@ -13,4 +13,4 @@ INSERT INTO role_permissions (role, page_id, allowed, updated_at) VALUES
   ('teacher', 'manage-attendance', true,  NOW()),
   ('teacher', 'send-emails',       false, NOW()),
   ('teacher', 'view-email-logs',   false, NOW())
-ON CONFLICT (role, page_id) DO NOTHING;
+ON CONFLICT DO NOTHING;

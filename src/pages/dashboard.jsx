@@ -138,7 +138,7 @@ export function DashboardPage({ctx}){
           });
           const sections=Object.values(sectionMap).sort((a,b)=>a.name.localeCompare(b.name));
           setTermChecklist({term:activeTermObj.name,year:activeSess.name,sections});
-          // ── Class status grid (Results / EA / MA / Published) ──
+          // ── Group status grid (Results / EA / MA / Published) ──
           {
             const approvalMap={};
             (approvalsData||[]).forEach(a=>{approvalMap[a.class_id]=a;});
@@ -316,10 +316,10 @@ export function DashboardPage({ctx}){
             <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",
               border:"1px solid rgba(255,255,255,.2)",borderRadius:10,padding:"5px 12px",
               fontSize:11,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:.6}}>
-              {role==="admin"?"Administrator":role==="teacher"?"Teacher":role==="manager"?"Manager":role==="bursar"?"Bursar":"Student"}
+              {role==="admin"?"Administrator":role==="teacher"?"Staff":role==="manager"?"Manager":role==="bursar"?"Bursar":"Member"}
             </div>
             {user.staff_id&&<div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>Staff ID: {user.staff_id}</div>}
-            {user.student_id&&<div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>Student ID: {user.student_id}</div>}
+            {user.student_id&&<div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>Member ID: {user.student_id}</div>}
           </div>
         </div>
       </div>
@@ -327,9 +327,9 @@ export function DashboardPage({ctx}){
       {role==="admin"&&(
         <>
           <div className="stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:13,marginBottom:20}}>
-            <StatCard label="Students"      value={stats.students}  icon={<Users size={18} color={C.blue}/>} color={C.blue}/>
-            <StatCard label="Teachers"      value={stats.teachers}  icon={<BookUser size={18} color={C.green}/>} color={C.green}/>
-            <StatCard label="Classes"       value={stats.classes}   icon={<School size={18} color={C.orange}/>} color={C.orange}/>
+            <StatCard label="Members"      value={stats.students}  icon={<Users size={18} color={C.blue}/>} color={C.blue}/>
+            <StatCard label="Staff"      value={stats.teachers}  icon={<BookUser size={18} color={C.green}/>} color={C.green}/>
+            <StatCard label="Groups"       value={stats.classes}   icon={<School size={18} color={C.orange}/>} color={C.orange}/>
             <StatCard label="EA Approved"   value={stats.results}   icon={<CheckCircle size={18} color={C.purple}/>} color={C.purple}/>
           </div>
           {/* Fee analytics bar */}
@@ -391,10 +391,10 @@ export function DashboardPage({ctx}){
               <span style={{fontSize:28}}>⏳</span>
               <div style={{flex:1}}>
                 <div style={{fontWeight:900,fontSize:15}}>
-                  {pendingApprovals} Student Request{pendingApprovals>1?"s":""} Awaiting Approval
+                  {pendingApprovals} Member Request{pendingApprovals>1?"s":""} Awaiting Approval
                 </div>
                 <div style={{fontSize:12,opacity:.85,marginTop:2}}>
-                  Teacher-submitted student additions are pending your review — click to review now
+                  Staff-submitted student additions are pending your review — click to review now
                 </div>
               </div>
               <span style={{fontSize:20,opacity:.7}}>›</span>
@@ -549,7 +549,7 @@ export function DashboardPage({ctx}){
               </Card>
             );
           })()}
-          {/* ── Class status grid (Results / EA / MA / Published) ── */}
+          {/* ── Group status grid (Results / EA / MA / Published) ── */}
           {classStatusGrid&&(()=>{
             const allCls=classStatusGrid.sections.flatMap(s=>s.classes);
             const fullyDone=allCls.filter(r=>r.hasResults&&r.ea&&r.ma&&r.published).length;
@@ -573,7 +573,7 @@ export function DashboardPage({ctx}){
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <ClipboardCheck size={17} color={borderColor}/>
                     <span style={{fontWeight:800,color:borderColor,fontSize:14}}>
-                      Class Report Status — {classStatusGrid.term} · {classStatusGrid.year}
+                      Group Report Status — {classStatusGrid.term} · {classStatusGrid.year}
                     </span>
                   </div>
                   <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
@@ -606,7 +606,7 @@ export function DashboardPage({ctx}){
                       {l.label}
                     </span>
                   ))}
-                  <span style={{fontSize:10,color:C.muted,marginLeft:4,alignSelf:"center"}}>← status per class</span>
+                  <span style={{fontSize:10,color:C.muted,marginLeft:4,alignSelf:"center"}}>← status per group</span>
                 </div>
                 {/* Sections + classes */}
                 <div style={{display:"flex",flexDirection:"column",gap:14,maxHeight:480,overflowY:"auto"}}>
@@ -727,7 +727,7 @@ export function DashboardPage({ctx}){
                           </span>
                           <span style={{fontSize:11,color:C.muted,fontWeight:600}}>{secDone}/{secTotal} · {secPct}%</span>
                         </div>
-                        {/* Class rows */}
+                        {/* Group rows */}
                         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:6}}>
                           {visible.map(r=>{
                             const state=r.complete?"done":r.partial?"partial":"pending";
@@ -815,7 +815,7 @@ export function DashboardPage({ctx}){
   );
 }
 
-// ─── STUDENT DASHBOARD ───────────────────────────────────────────────────────
+// ─── MEMBER DASHBOARD ───────────────────────────────────────────────────────
 export function StudentDashboard({ctx,announcements}){
   const {user,setPage}=ctx;
   const [stuRecord,setStuRecord]=useState(null);
@@ -827,19 +827,19 @@ export function StudentDashboard({ctx,announcements}){
   const sectionName=stuRecord?.classes?.sections?.name||"";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      {/* Class + ID banner */}
+      {/* Group + ID banner */}
       <div style={{background:`linear-gradient(135deg,${C.orange}ee,${C.orangeDark||"#b84500"}cc)`,
         borderRadius:14,padding:"18px 22px",color:"#fff",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
         <div><GraduationCap size={38} color={C.muted}/></div>
         <div style={{flex:1}}>
           <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,opacity:.8,marginBottom:3}}>
-            Your Class
+            Your Group
           </div>
           <div style={{fontSize:22,fontWeight:900,letterSpacing:"-.01em"}}>
             {className}{sectionName?` · ${sectionName}`:""}
           </div>
           <div style={{fontSize:12,opacity:.85,marginTop:4}}>
-            Student ID: <span style={{fontWeight:800,letterSpacing:.5}}>{user.student_id||"—"}</span>
+            Member ID: <span style={{fontWeight:800,letterSpacing:.5}}>{user.student_id||"—"}</span>
           </div>
         </div>
       </div>
@@ -874,7 +874,7 @@ export function StudentDashboard({ctx,announcements}){
   );
 }
 
-// ─── TEACHER DASHBOARD WIDGET ────────────────────────────────────────────────
+// ─── STAFF DASHBOARD WIDGET ────────────────────────────────────────────────
 // ─── MY PROFILE PAGE (teacher quick-action "My Profile") ─────────────────────
 export function MyProfilePage({ctx}){
   const {user,notify,setPage,bumpRefresh}=ctx;
@@ -912,7 +912,7 @@ export function MyProfilePage({ctx}){
           </div>
           <div>
             <div style={{fontWeight:800,color:C.blue,fontSize:14}}>{name||"—"}</div>
-            <Badge color={C.green}>TEACHER</Badge>
+            <Badge color={C.green}>STAFF</Badge>
             {user.staff_id&&<div style={{fontSize:11,color:C.muted,marginTop:3}}>Staff ID: {user.staff_id}</div>}
           </div>
         </div>
@@ -969,10 +969,10 @@ export function TeacherDashboard({ctx,announcements}){
       {/* Quick actions */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:13}}>
         {[
-          {l:"My Classes",    i:"my-classes",p:"my-classes",    c:C.blue},
+          {l:"My Groups",    i:"my-classes",p:"my-classes",    c:C.blue},
           {l:"Upload Results",i:"upload-results",p:"results-teach", c:C.green},
           {l:"Attendance",i:"attendance",p:"attendance", c:C.purple},
-          {l:"Add Students",  i:"add-students",p:"add-students",  c:C.orange},
+          {l:"Add Members",  i:"add-students",p:"add-students",  c:C.orange},
           {l:"My Profile",    i:"user",p:"my-profile",    c:C.purple},
         ].map(a=>(
           <Card key={a.l} style={{textAlign:"center",padding:"20px 12px",cursor:"pointer"}} onClick={()=>setPage(a.p)}>
@@ -985,9 +985,9 @@ export function TeacherDashboard({ctx,announcements}){
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-        {/* Form Classes */}
+        {/* Form Groups */}
         <Card>
-          <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:10}}>My Form Class{formClasses.length!==1?"es":""}</div>
+          <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:10}}>My Form Group{formClasses.length!==1?"es":""}</div>
           {loading&&<Spinner/>}
           {!loading&&formClasses.length===0&&(
             <div style={{color:C.light,fontSize:12,textAlign:"center",padding:"14px 0"}}>
@@ -1059,7 +1059,7 @@ export function TeacherDashboard({ctx,announcements}){
             key:`upload-${cid}`,
             icon:"upload-results",
             color:C.green,
-            label:`Upload results — ${cls?.name||"Class"}`,
+            label:`Upload results — ${cls?.name||"Group"}`,
             sub:"Upload your subject scores for this class",
             page:"results-teach",
             priority:"normal",

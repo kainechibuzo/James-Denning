@@ -55,7 +55,7 @@ export const gradeCol = (g, C) =>
   g === "C" ? C.orange :
   g === "F" ? C.red   : C.muted;
 
-// ── Student name formatting ────────────────────────────────────────────────
+// ── Member name formatting ────────────────────────────────────────────────
 /** Mutable settings — updated by setNameSettings() from school settings. */
 export let _nameSettings = { order: "FML", casing: "title" };
 export const setNameSettings = (s = {}) => {

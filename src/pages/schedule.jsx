@@ -110,8 +110,8 @@ export function AttendancePage({ctx}){
   return(
     <div>
       <div style={{marginBottom:18}}>
-        <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="attendance" size={20}/>Student Attendance</h2>
-        <p style={{color:C.muted,fontSize:12}}>Record and track daily student attendance per class.</p>
+        <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="attendance" size={20}/>Member Attendance</h2>
+        <p style={{color:C.muted,fontSize:12}}>Record and track daily member attendance per group.</p>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {[{id:"daily",label:"Daily Entry"},{id:"summary",label:"Summary"}].map(m=>(
@@ -129,7 +129,7 @@ export function AttendancePage({ctx}){
             options={[{value:"",label:"Select\u2026"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
           <Sel label="Term" value={selTerm} onChange={setSelTerm} disabled={!selSession}
             options={[{value:"",label:"Select\u2026"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
-          <Sel label="Class" value={selClass} onChange={setSelClass}
+          <Sel label="Group" value={selClass} onChange={setSelClass}
             options={[{value:"",label:"Select\u2026"},...classes.map(c=>({value:String(c.id),label:c.name}))]}/>
           {viewMode==="daily"&&(
             <div>
@@ -145,7 +145,7 @@ export function AttendancePage({ctx}){
       {viewMode==="daily"&&(!selClass?(
         <Card style={{textAlign:"center",padding:44}}>
           <div style={{marginBottom:8}}><ClipboardList size={40} color={C.muted}/></div>
-          <div style={{fontWeight:700,color:C.blue}}>Select a class to take attendance</div>
+          <div style={{fontWeight:700,color:C.blue}}>Select a group to take attendance</div>
         </Card>
       ):loading?<Spinner/>:(
         <Card>
@@ -166,7 +166,7 @@ export function AttendancePage({ctx}){
             </div>
           </div>
           {students.length===0?(
-            <div style={{textAlign:"center",padding:32,color:C.muted}}>No students in this class.</div>
+            <div style={{textAlign:"center",padding:32,color:C.muted}}>No members in this group.</div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {students.map((s,i)=>{
@@ -203,7 +203,7 @@ export function AttendancePage({ctx}){
       {viewMode==="summary"&&(!selClass||!selTerm||!selSession?(
         <Card style={{textAlign:"center",padding:44}}>
           <div style={{marginBottom:8}}><BarChart3 size={40} color={C.muted}/></div>
-          <div style={{fontWeight:700,color:C.blue}}>Select session, term and class to view summary</div>
+          <div style={{fontWeight:700,color:C.blue}}>Select session, term and group to view summary</div>
         </Card>
       ):loading?<Spinner/>:(
         <Card>
@@ -217,8 +217,8 @@ export function AttendancePage({ctx}){
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                 <thead>
                   <tr style={{background:C.blue}}>
-                    {["Student","Present","Absent","Late","Excused","Total Days","Attendance %"].map(h=>(
-                      <th key={h} style={{padding:"9px 13px",color:"#fff",textAlign:h==="Student"?"left":"center",fontWeight:700,fontSize:11}}>{h}</th>
+                    {["Member","Present","Absent","Late","Excused","Total Days","Attendance %"].map(h=>(
+                      <th key={h} style={{padding:"9px 13px",color:"#fff",textAlign:h==="Member"?"left":"center",fontWeight:700,fontSize:11}}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -957,7 +957,7 @@ export function TimetablePage({ctx}){
           {isAdmin&&(
             <>
               <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
-                {[{v:"admin",l:"Class Grid"},{v:"mine",l:"My Schedule"}].map(x=>(
+                {[{v:"admin",l:"Group Grid"},{v:"mine",l:"My Schedule"}].map(x=>(
                   <button key={x.v} onClick={()=>setView(x.v)}
                     style={{padding:"6px 14px",border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
                       background:view===x.v?C.blue:"transparent",color:view===x.v?"#fff":C.muted}}>
@@ -1009,7 +1009,7 @@ export function TimetablePage({ctx}){
                   borderRadius:8,fontSize:12,
                   background:selClass?C.bluePale:C.white,
                   color:selClass?C.blue:C.text,fontWeight:selClass?700:400}}>
-                <option value="">Select Class</option>
+                <option value="">Select Group</option>
                 {classes.map(c=><option key={c.id} value={String(c.id)}>{c.name}</option>)}
               </select>
             </div>
@@ -1253,7 +1253,7 @@ export function TimetablePage({ctx}){
                 {autoTeacherNote.found?(
                   <><span style={{fontSize:14}}>✓</span> Auto-matched: <strong>{autoTeacherNote.name}</strong></>
                 ):(
-                  <><span style={{fontSize:14}}>⚠</span> No teacher assigned to <strong>{autoTeacherNote.subjName}</strong> in {selectedClassName}. Assign one in Teachers → Subject Assignments.</>
+                  <><span style={{fontSize:14}}>⚠</span> No staff assigned to <strong>{autoTeacherNote.subjName}</strong> in {selectedClassName}. Assign one in Teachers → Subject Assignments.</>
                 )}
               </div>
             )}
@@ -1270,7 +1270,7 @@ export function TimetablePage({ctx}){
                 {teachers.map(t=><option key={t.id} value={t.id}>{t.full_name}</option>)}
               </select>
               {!slotForm.subject_id&&(
-                <div style={{fontSize:10,color:C.muted,marginTop:4}}>Select a subject first to assign a teacher.</div>
+                <div style={{fontSize:10,color:C.muted,marginTop:4}}>Select a subject first to assign a staff.</div>
               )}
             </div>
             <div style={{display:"flex",gap:8,justifyContent:"flex-end",paddingTop:4}}>

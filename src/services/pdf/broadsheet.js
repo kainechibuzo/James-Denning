@@ -67,7 +67,7 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
   const genDate=new Date().toLocaleDateString('en-NG',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
   return`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-<title>${cls?.name||'Class'} Broadsheet</title>
+<title>${cls?.name||'Group'} Broadsheet</title>
 <style>
   *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;}
   @page{size:A3 landscape;margin:8mm 10mm;}
@@ -81,8 +81,8 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
 <div style="padding:10px 14px;">
   <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:3px double #1A4FA0;">
     <div style="font-size:9px;color:#64748B;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">${schoolName||'School Management Portal'}</div>
-    <div style="font-size:22px;font-weight:900;color:#0d2d6e;letter-spacing:.03em;">CLASS BROADSHEET</div>
-    <div style="font-size:15px;font-weight:700;color:#1A4FA0;margin-top:3px;">${cls?.name||'Class'}</div>
+    <div style="font-size:22px;font-weight:900;color:#0d2d6e;letter-spacing:.03em;">GROUP BROADSHEET</div>
+    <div style="font-size:15px;font-weight:700;color:#1A4FA0;margin-top:3px;">${cls?.name||'Group'}</div>
     <div style="font-size:11px;color:#64748B;margin-top:2px;">${term?.name||''} &bull; ${session?.name||''}</div>
   </div>
   <div style="overflow-x:auto;">
@@ -90,7 +90,7 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
     <thead>
       <tr>
         <th rowspan="2" style="background:#0d2d6e;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:10px;width:26px;">#</th>
-        <th rowspan="2" style="background:#0d2d6e;color:#fff;padding:6px 6px;border:1px solid #c4d4ee;font-size:10px;min-width:100px;text-align:left;">Student Name</th>
+        <th rowspan="2" style="background:#0d2d6e;color:#fff;padding:6px 6px;border:1px solid #c4d4ee;font-size:10px;min-width:100px;text-align:left;">Member Name</th>
         <th rowspan="2" style="background:#0d2d6e;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:9px;white-space:nowrap;">Adm. No.</th>
         ${subHdr}
         <th rowspan="2" style="background:#0d2d6e;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:10px;white-space:nowrap;">Grand<br>Total</th>
@@ -103,7 +103,7 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
     <tbody>${bodyRows}</tbody>
     <tfoot>
       <tr style="background:#EFF6FF;">
-        <td colspan="3" style="padding:6px 8px;font-weight:800;font-size:10px;border:1px solid #e2e8f0;color:#0d2d6e;white-space:nowrap;">CLASS AVERAGE</td>
+        <td colspan="3" style="padding:6px 8px;font-weight:800;font-size:10px;border:1px solid #e2e8f0;color:#0d2d6e;white-space:nowrap;">GROUP AVERAGE</td>
         ${avgCells}
         <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:10px;font-weight:800;background:#dbeafe;color:#1A4FA0;">${classGrandAvg}</td>
         <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:10px;font-weight:800;background:#dbeafe;color:#1A4FA0;">${classAvgAvg}</td>

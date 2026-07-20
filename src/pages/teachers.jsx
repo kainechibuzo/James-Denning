@@ -52,7 +52,7 @@ export function TeachersPage({ctx}){
     const {error}=await db.upsertTeacher(payload,editId);
     if(error){console.error("[upsertTeacher]",error);notify(error.message||error.details||"Failed to save teacher","error");}
     else{
-      notify(editId?"Teacher updated ✓":"Teacher added ✓");
+      notify(editId?"Staff updated ✓":"Staff added ✓");
       if(!editId){
         setLastRegisteredTeachers({count:1,entries:[{
           to:payload.email||null,
@@ -85,7 +85,7 @@ export function TeachersPage({ctx}){
     const warnings=await db.checkDeleteTeacher(id);
     let message=`Delete teacher ${name}?`;
     if(warnings.length) message+=` They are ${warnings.join(" and ")}.`;
-    const ok=await confirm({title:"Delete Teacher?",message,confirmLabel:"Delete",danger:true,
+    const ok=await confirm({title:"Delete Staff?",message,confirmLabel:"Delete",danger:true,
       typeToConfirm:warnings.length?name:null});
     if(!ok)return;
     try{
@@ -107,7 +107,7 @@ export function TeachersPage({ctx}){
     ];
     const ws=XLSX.utils.aoa_to_sheet(wsData);
     ws["!cols"]=[{wch:24},{wch:30},{wch:16},{wch:24}];
-    XLSX.utils.book_append_sheet(wb,ws,"Teacher Data");
+    XLSX.utils.book_append_sheet(wb,ws,"Staff Data");
     XLSX.writeFile(wb,"RGS_Teacher_Upload_Template.xlsx");
   };
 
@@ -194,12 +194,12 @@ export function TeachersPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="teachers" size={20}/>Teachers</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="teachers" size={20}/>Staff</h2>
           <div style={{color:C.muted,fontSize:12}}>{teachers.length} staff members{selectedSection?` · ${selectedSection.name}`:""}</div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <Btn onClick={()=>{setBulkParsed([]);setBulkErrors([]);setBulkModal(true);}} color={C.green} outline>Bulk Upload</Btn>
-          <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Teacher</Btn>
+          <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Staff</Btn>
         </div>
       </div>
       {/* ── Post-registration banner ── */}
@@ -220,7 +220,7 @@ export function TeachersPage({ctx}){
           <EmptyState icon={<AppIcon name="teachers" size={28} color={C.muted}/>}
             title="No teachers yet"
             message={selectedSection?`No staff in ${selectedSection.name}. Add your first teacher or clear the section filter.`:"Add your first teacher to get started."}
-            action={<Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Teacher</Btn>}/>
+            action={<Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Staff</Btn>}/>
         ):(
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
@@ -254,7 +254,7 @@ export function TeachersPage({ctx}){
       </Card>
 
       {modal&&(
-        <Modal title={editId?"Edit Teacher":"New Teacher"} onClose={()=>setModal(false)}>
+        <Modal title={editId?"Edit Staff":"New Staff"} onClose={()=>setModal(false)}>
           <Inp label="Full Name *" value={form.full_name} onChange={v=>f({full_name:v})}/>
           <Inp label="Email * (used as login username)" type="email" value={form.email||""} onChange={v=>f({email:v,staff_id:v})}/>
           <div style={{marginBottom:13,padding:"8px 12px",background:C.bluePale,border:`1px solid ${C.blueLight}`,borderRadius:8,fontSize:12,color:C.blue}}>
@@ -278,7 +278,7 @@ export function TeachersPage({ctx}){
 
       {/* ── TEACHER BULK UPLOAD MODAL ── */}
       {bulkModal&&(
-        <Modal title="Bulk Teacher Upload" onClose={()=>setBulkModal(false)} width={640}>
+        <Modal title="Bulk Staff Upload" onClose={()=>setBulkModal(false)} width={640}>
           {typeof window!=="undefined"&&!window.XLSX&&(()=>{
             const s=document.createElement("script");
             s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
@@ -286,14 +286,14 @@ export function TeachersPage({ctx}){
           })()}
           <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:10,padding:"13px 16px",marginBottom:16,fontSize:12,color:C.blue,lineHeight:1.8}}>
             <div style={{fontWeight:800,marginBottom:4}}>Instructions</div>
-            <div>1. Download the <strong>Excel template</strong> and fill in teacher details</div>
+            <div>1. Download the <strong>Excel template</strong> and fill in staff details</div>
             <div>2. <strong>Full Name</strong> and <strong>Email</strong> are required (★ columns)</div>
-            <div>3. Email becomes the teacher's <strong>Staff ID and login username</strong></div>
-            <div>4. Default password = Email — teachers should change after first login</div>
+            <div>3. Email becomes the staff's <strong>Staff ID and login username</strong></div>
+            <div>4. Default password = Email — staff should change after first login</div>
             <div>5. Save as .xlsx and upload below</div>
           </div>
           <div style={{background:C.amberPale,border:`1px solid ${C.amber}44`,borderRadius:8,padding:"9px 13px",marginBottom:14,fontSize:12,color:C.amber}}>
-            Teachers log in using their email address as both username and password. Ask them to change their password after first login.
+            Staff log in using their email address as both username and password. Ask them to change their password after first login.
           </div>
           <div style={{display:"flex",gap:10,marginBottom:16}}>
             <Btn onClick={downloadTeacherTemplate} color={C.blue}>Download Excel Template (.xlsx)</Btn>
@@ -338,7 +338,7 @@ export function TeachersPage({ctx}){
           )}
           <div style={{display:"flex",gap:10,marginTop:4}}>
             <Btn onClick={saveTeacherBulk} color={C.orange} disabled={bulkSaving||!bulkParsed.length} style={{flex:1}}>
-              {bulkSaving?"Uploading…":`Upload ${bulkParsed.length} Teacher${bulkParsed.length!==1?"s":""}`}
+              {bulkSaving?"Uploading…":`Upload ${bulkParsed.length} Staff${bulkParsed.length!==1?"s":""}`}
             </Btn>
             <Btn onClick={()=>setBulkModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
           </div>
@@ -354,7 +354,7 @@ export function TeachersPage({ctx}){
   );
 }
 
-// ─── TEACHER SUBJECT ASSIGN MODAL ────────────────────────────────────────────
+// ─── STAFF SUBJECT ASSIGN MODAL ────────────────────────────────────────────
 
 function TeacherSubjectAssignModal({teacher,onClose,notify}){
   const [tab,setTab]=useState("bulk");
@@ -465,7 +465,7 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
           {tab==="bulk"&&(
             <>
               {!sectionSubjects.length&&!sectionClasses.length?(
-                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No subjects or classes configured for this section.</div>
+                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No subjects or groups configured for this section.</div>
               ):(
                 <>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>

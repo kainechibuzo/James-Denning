@@ -459,7 +459,7 @@ export function MailComposePage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="mail" size={20}/>Send Email</h2>
-        <p style={{color:C.muted,fontSize:12}}>Send emails to students, teachers, classes or the entire school.</p>
+        <p style={{color:C.muted,fontSize:12}}>Send emails to members, staff, groups or the entire school.</p>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {[{id:"compose",label:"Compose"},{id:"templates",label:"Templates"}].map(t=>(
@@ -652,7 +652,7 @@ export function MailComposePage({ctx}){
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <Card style={{background:C.bluePale,border:`1px solid ${C.blue}22`}}>
               <div style={{fontWeight:800,color:C.blue,marginBottom:10,fontSize:13}}>Placeholders</div>
-              {[["{student_name}","Student's full name"],["{class_name}","Class name"],
+              {[["{student_name}","Student's full name"],["{class_name}","Group name"],
                 ["{term}","Current term"],["{session}","Academic session"]].map(([k,v])=>(
                 <div key={k} style={{marginBottom:7}}>
                   <code style={{fontSize:11,background:`${C.blue}18`,color:C.blue,padding:"2px 6px",borderRadius:4}}>{k}</code>

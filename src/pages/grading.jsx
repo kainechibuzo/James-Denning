@@ -74,7 +74,7 @@ export function GradingPage({ctx}){
   };
   const delGrade=async(id)=>{
     const __ok=await confirm({title:"Delete Grade Band?",
-        message:"Remove this grade band? Students whose scores fall in this range will no longer have a grade.",
+        message:"Remove this grade band? Members whose scores fall in this range will no longer have a grade.",
         confirmLabel:"Delete",danger:true});
     if(!__ok)return;
     await db.deleteGrade(id);notify("Deleted","warn");

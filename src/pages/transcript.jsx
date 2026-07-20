@@ -426,7 +426,7 @@ export function TranscriptPage({ctx}){
       const emailHtml=buildEmailHtml(`Academic Transcript — ${yearLabel}`,[
         `Dear Parent/Guardian,`,``,
         `Please find attached the academic transcript for:`,``,
-        `${studentName} · Student ID: ${selStu.id}`,
+        `${studentName} · Member ID: ${selStu.id}`,
         `Academic Year(s): ${yearLabel}`,``,
         `If you have any questions, please contact the school administration office.`,
       ].join("\n"),schoolName);
@@ -491,7 +491,7 @@ export function TranscriptPage({ctx}){
   };
 
   const saveManual=async()=>{
-    if(!mForm.student_name.trim()){alert("Student name is required.");return;}
+    if(!mForm.student_name.trim()){alert("Member name is required.");return;}
     if(!subjects.some(s=>s.name.trim())){alert("Add at least one subject.");return;}
     if(transcriptType==="multi_period"&&!classPeriods.some(p=>p.class_name.trim()||p.academic_year.trim())){
       alert("Add at least one class period.");return;
@@ -611,20 +611,20 @@ export function TranscriptPage({ctx}){
             <Card style={{marginBottom:14}}>
               <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
 
-                {/* Class filter (optional) */}
+                {/* Group filter (optional) */}
                 <div style={{flex:"1 1 160px",minWidth:0}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Filter by Class</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Filter by Group</div>
                   <select value={selClass} onChange={e=>{setSelClass(e.target.value);setSelStu(null);setSearch("");setSearchOpen(false);setSelSessions([]);setPortalResults([]);setPortalResultsMap({});setScoreOverrides({});setEditMode(false);setDraftId(null);setDraftNote("");}}
                     style={{width:"100%",padding:"9px 10px",border:`1.5px solid ${selClass?C.blue:C.border}`,
                       borderRadius:8,fontSize:13,outline:"none",background:C.white,color:selClass?C.text:C.muted}}>
-                    <option value="">— All Classes —</option>
+                    <option value="">— All Groups —</option>
                     {classes.map(c=><option key={c.id} value={String(c.id)}>{c.name}</option>)}
                   </select>
                 </div>
 
-                {/* Student search — always visible */}
+                {/* Member search — always visible */}
                 <div style={{flex:"2 1 240px",minWidth:0}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Student</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Member</div>
                   {!selStu?(
                     <div style={{position:"relative"}}>
                       <Search size={14} color={C.muted} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
@@ -752,9 +752,9 @@ export function TranscriptPage({ctx}){
                 <Card>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
                     <div style={{fontWeight:800,color:C.blue,fontSize:14}}>
-                      {classes.find(c=>String(c.id)===String(selClass))?.name||"Class"} · <span style={{color:C.muted,fontWeight:600}}>{filtered.length} student{filtered.length!==1?"s":""}</span>
+                      {classes.find(c=>String(c.id)===String(selClass))?.name||"Group"} · <span style={{color:C.muted,fontWeight:600}}>{filtered.length} student{filtered.length!==1?"s":""}</span>
                     </div>
-                    <div style={{fontSize:12,color:C.muted}}>Select a student to build their transcript</div>
+                    <div style={{fontSize:12,color:C.muted}}>Select a member to build their transcript</div>
                   </div>
                   {filtered.length===0?(
                     <div style={{textAlign:"center",padding:32,color:C.muted,fontSize:13}}>No students in this class{search.trim()?" match your search":""}.</div>
@@ -782,8 +782,8 @@ export function TranscriptPage({ctx}){
               ):(
                 <Card style={{textAlign:"center",padding:48}}>
                   <div style={{marginBottom:10}}><Search size={44} color={C.muted}/></div>
-                  <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Find a Student</div>
-                  <div style={{color:C.muted,fontSize:13}}>Search by name or admission ID above, or select a class to see its students</div>
+                  <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Find a Member</div>
+                  <div style={{color:C.muted,fontSize:13}}>Search by name or admission ID above, or select a group to see its members</div>
                 </Card>
               )
             ):loadingPortal?<Spinner/>:(
@@ -1033,7 +1033,7 @@ export function TranscriptPage({ctx}){
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                 <thead>
                   <tr style={{background:C.blue,color:"#fff"}}>
-                    <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Student</th>
+                    <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Member</th>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Session(s)</th>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Generated By</th>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Date</th>
@@ -1077,7 +1077,7 @@ export function TranscriptPage({ctx}){
             <Card style={{textAlign:"center",padding:48}}>
               <div style={{marginBottom:10}}><FileText size={44} color={C.muted}/></div>
               <div style={{fontWeight:800,color:C.blue,fontSize:16}}>No Manual Transcripts Yet</div>
-              <div style={{color:C.muted,fontSize:13,marginTop:4}}>Create one for students with historical records not in the portal.</div>
+              <div style={{color:C.muted,fontSize:13,marginTop:4}}>Create one for members with historical records not in the portal.</div>
               <Btn onClick={()=>openManualModal("new")} color={C.orange} style={{marginTop:16}}>Create First Transcript</Btn>
             </Card>
           ):(
@@ -1113,7 +1113,7 @@ export function TranscriptPage({ctx}){
 
               {/* Transcript type toggle */}
               <div style={{display:"flex",gap:4,marginBottom:16,background:C.offWhite,borderRadius:9,padding:4,width:"fit-content"}}>
-                {[{id:"multi_period",label:"Multi-Period (Class Progress)"},{id:"legacy",label:"Single Year / Custom Structure"}].map(t=>(
+                {[{id:"multi_period",label:"Multi-Period (Group Progress)"},{id:"legacy",label:"Single Year / Custom Structure"}].map(t=>(
                   <button key={t.id} onClick={()=>switchType(t.id)}
                     style={{padding:"7px 16px",borderRadius:6,border:"none",cursor:"pointer",fontWeight:700,fontSize:12,
                       background:transcriptType===t.id?C.blue:"transparent",
@@ -1125,13 +1125,13 @@ export function TranscriptPage({ctx}){
 
               {/* Student info */}
               <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:10,marginBottom:10}}>
-                <Inp label="Student Full Name *" value={mForm.student_name} onChange={v=>mf({student_name:v})} placeholder="e.g. John Doe Okafor"/>
-                <Inp label="Student ID / Admission No." value={mForm.student_number} onChange={v=>mf({student_number:v})} placeholder="e.g. RGS/001"/>
+                <Inp label="Member Full Name *" value={mForm.student_name} onChange={v=>mf({student_name:v})} placeholder="e.g. John Doe Okafor"/>
+                <Inp label="Member ID / Admission No." value={mForm.student_number} onChange={v=>mf({student_number:v})} placeholder="e.g. RGS/001"/>
                 <Sel label="Gender" value={mForm.gender} onChange={v=>mf({gender:v})} options={[{value:"",label:"—"},{value:"Male",label:"Male"},{value:"Female",label:"Female"}]}/>
                 <Inp label="Date of Birth" value={mForm.dob} onChange={v=>mf({dob:v})} placeholder="e.g. 01 Jan 2010"/>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr"+(transcriptType==="legacy"?" 1fr":""),gap:10,marginBottom:16}}>
-                <Inp label="Current Class" value={mForm.class_name} onChange={v=>mf({class_name:v})} placeholder="e.g. SS3"/>
+                <Inp label="Current Group" value={mForm.class_name} onChange={v=>mf({class_name:v})} placeholder="e.g. SS3"/>
                 <Inp label="Section / Dept." value={mForm.section_name} onChange={v=>mf({section_name:v})} placeholder="e.g. Senior Secondary"/>
                 {transcriptType==="legacy"&&<Inp label="Academic Year *" value={mForm.academic_year} onChange={v=>mf({academic_year:v})} placeholder="e.g. 2021/2022"/>}
               </div>
@@ -1141,7 +1141,7 @@ export function TranscriptPage({ctx}){
                 <div style={{marginBottom:16,background:C.offWhite,borderRadius:10,padding:12,border:`1px solid ${C.border}`}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                     <div style={{fontWeight:800,color:C.blue,fontSize:13}}>Class Periods
-                      <span style={{fontWeight:400,color:C.muted,fontSize:11,marginLeft:6}}>— one column group per class/year</span>
+                      <span style={{fontWeight:400,color:C.muted,fontSize:11,marginLeft:6}}>— one column group per group/year</span>
                     </div>
                     <Btn xs onClick={addClassPeriod} color={C.orange} outline>+ Add Period</Btn>
                   </div>
@@ -1152,7 +1152,7 @@ export function TranscriptPage({ctx}){
                         <div style={{fontWeight:800,fontSize:12,textAlign:"center",
                           width:24,height:24,borderRadius:"50%",background:C.bluePale,color:C.blue,
                           display:"flex",alignItems:"center",justifyContent:"center"}}>{i+1}</div>
-                        <input placeholder="Class (e.g. SS1, JSS3)" value={cp.class_name}
+                        <input placeholder="Group (e.g. SS1, JSS3)" value={cp.class_name}
                           onChange={e=>updateClassPeriod(i,{class_name:e.target.value})}
                           style={{padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none",width:"100%"}}/>
                         <input placeholder="Academic Year (e.g. 2021/2022)" value={cp.academic_year}

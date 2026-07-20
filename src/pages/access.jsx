@@ -66,9 +66,9 @@ export function TeacherAccessRequestPage({ctx}){
       // Tier A alert \u2014 access request submitted
       const cls=classes?.find(c=>String(c.id)===String(selClass));
       db.sendAdminAlert({
-        subject:`[Alert] Access Request \u2014 ${user?.full_name||user?.name||"Teacher"}`,
+        subject:`[Alert] Access Request \u2014 ${user?.full_name||user?.name||"Staff"}`,
         html:buildAlertEmail("Subject Access Request Submitted",
-          [`Teacher: ${user?.full_name||user?.name||"Teacher"}`,
+          [`Teacher: ${user?.full_name||user?.name||"Staff"}`,
            `Class: ${cls?.name||selClass}`,
            `Subjects requested: ${selectedSubjects.size}`,
            `Time: ${new Date().toLocaleString("en-NG")}`],
@@ -103,11 +103,11 @@ export function TeacherAccessRequestPage({ctx}){
         <Card>
           <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:14}}>New Request</h3>
           <div style={{marginBottom:10}}>
-            <label style={{fontSize:12,color:C.muted,fontWeight:600,display:"block",marginBottom:4}}>Class</label>
+            <label style={{fontSize:12,color:C.muted,fontWeight:600,display:"block",marginBottom:4}}>Group</label>
             <select value={selClass} onChange={e=>setSelClass(e.target.value)}
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:"inherit",
                 color:C.text,borderRadius:8,fontSize:13}}>
-              <option value="">\u2014 Select class \u2014</option>
+              <option value="">\u2014 Select group \u2014</option>
               {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -137,7 +137,7 @@ export function TeacherAccessRequestPage({ctx}){
             </div>
           )}
           {selClass&&subjects.length===0&&(
-            <p style={{color:C.muted,fontSize:12,marginBottom:12}}>No subjects found for this class.</p>
+            <p style={{color:C.muted,fontSize:12,marginBottom:12}}>No subjects found for this group.</p>
           )}
 
           <Btn onClick={submit} color={C.orange} disabled={submitting||!selClass||selectedSubjects.size===0}
@@ -156,7 +156,7 @@ export function TeacherAccessRequestPage({ctx}){
                 {myGrants.map(g=>(
                   <div key={g.id} style={{background:C.bluePale,borderRadius:8,padding:"8px 12px",fontSize:13}}>
                     <div style={{fontWeight:700,color:C.blue}}>{g.section_subjects?.name||"\u2014"}</div>
-                    <div style={{color:C.muted,fontSize:11}}>Class: {g.classes?.name||"\u2014"}</div>
+                    <div style={{color:C.muted,fontSize:11}}>Group: {g.classes?.name||"\u2014"}</div>
                     <div style={{color:C.muted,fontSize:11}}>
                       Granted {new Date(g.granted_at).toLocaleDateString()}
                     </div>
@@ -178,7 +178,7 @@ export function TeacherAccessRequestPage({ctx}){
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                 <thead>
                   <tr style={{background:C.offWhite,borderBottom:`2px solid ${C.border}`}}>
-                    {["Date","Class","Subjects","Status","Note"].map(h=>(
+                    {["Date","Group","Subjects","Status","Note"].map(h=>(
                       <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:800,
                         color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>{h}</th>
                     ))}
@@ -320,13 +320,13 @@ export function AccessRequestsAdminPage({ctx}){
                       <div style={{flex:1}}>
                         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                           <strong style={{fontSize:14,color:C.text}}>
-                            {req.teachers?.full_name||"Unknown Teacher"}
+                            {req.teachers?.full_name||"Unknown Staff"}
                           </strong>
                           <Badge color={C.muted} style={{fontSize:11}}>{req.teachers?.staff_id||"\u2014"}</Badge>
                           {statusBadge(req.status)}
                         </div>
                         <div style={{fontSize:13,color:C.muted,marginBottom:4}}>
-                          <strong style={{color:C.text}}>Class:</strong> {req.classes?.name||"\u2014"}
+                          <strong style={{color:C.text}}>Group:</strong> {req.classes?.name||"\u2014"}
                           {req.classes?.sections&&<span> \u00b7 {req.classes.sections.code}</span>}
                         </div>
                         <div style={{fontSize:13,marginBottom:4}}>
@@ -368,7 +368,7 @@ export function AccessRequestsAdminPage({ctx}){
 
       <div style={{background:C.bluePale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.blue}}>
         <strong>Note:</strong> Approved requests permanently assign the subjects to the teacher in the Assignments page.
-        To remove access, go to <strong>Assignments \u2192 Subject Teachers</strong> and remove the assignment.
+        To remove access, go to <strong>Assignments \u2192 Subject Staff</strong> and remove the assignment.
       </div>
 
       {noteModal&&(

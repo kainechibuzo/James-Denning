@@ -47,11 +47,11 @@ export function ClassesPage({ctx}){
   useEffect(load,[selectedSection]);
 
   const save=async()=>{
-    if(!form.name){notify("Class name required","error");return;}
+    if(!form.name){notify("Group name required","error");return;}
     const payload={...form,section_id:form.section_id?+form.section_id:null};
     const {error}=await db.upsertClass(payload,editId);
     if(error)notify(error.message,"error");
-    else{notify(editId?"Class updated ✓":"Class added ✓");setModal(false);load();}
+    else{notify(editId?"Group updated ✓":"Group added ✓");setModal(false);load();}
   };
   const del=async(id,name,e)=>{
     e.stopPropagation();
@@ -76,7 +76,7 @@ export function ClassesPage({ctx}){
       return;
     }
     // ── Safe to proceed ──────────────────────────────────────────────────────
-    const __ok=await confirm({title:"Delete Class?",
+    const __ok=await confirm({title:"Delete Group?",
       message:`Delete "${name}"? Subject assignments and teacher assignments for this class will also be removed. This cannot be undone.`,
       confirmLabel:"Delete",danger:true,typeToConfirm:"DELETE"});
     if(!__ok)return;
@@ -142,7 +142,7 @@ export function ClassesPage({ctx}){
 
         {/* Stats row */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:13,marginBottom:20}}>
-          <StatCard label="Students Enrolled" value={detailStudents.length} icon={<Users size={18} color={C.blue}/>} color={C.blue}/>
+          <StatCard label="Members Enrolled" value={detailStudents.length} icon={<Users size={18} color={C.blue}/>} color={C.blue}/>
           <StatCard label="Subjects Assigned" value={detailSubjects.length} icon={<BookOpen size={18} color={C.purple}/>} color={C.purple}/>
           <StatCard label="Result Entries" value={totalResults} icon={<FileText size={18} color={C.orange}/>} color={C.orange}/>
           <StatCard label="Avg Score" value={avgScore!=null?avgScore.toFixed(1)+"%" :"—"} icon={<BarChart3 size={18} color={C.green}/>} color={C.green}/>
@@ -162,7 +162,7 @@ export function ClassesPage({ctx}){
             <Card>
               <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Students ({detailStudents.length})</div>
               {detailStudents.length===0
-                ?<div style={{color:C.light,fontSize:13,textAlign:"center",padding:20}}>No students enrolled</div>
+                ?<div style={{color:C.light,fontSize:13,textAlign:"center",padding:20}}>No members enrolled</div>
                 :<div style={{maxHeight:380,overflowY:"auto"}}>
                   {detailStudents.map((s,i)=>{
                     const hasResults=detailResults.some(r=>r.student_id===s.id);
@@ -216,10 +216,10 @@ export function ClassesPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="classes" size={20}/>Classes</h2>
-          <p style={{color:C.muted,fontSize:12}}>Click a class card to view full details</p>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="classes" size={20}/>Groups</h2>
+          <p style={{color:C.muted,fontSize:12}}>Click a group card to view full details</p>
         </div>
-        <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Class</Btn>
+        <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Group</Btn>
       </div>
       {loading?<Spinner/>:(
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))",gap:13}}>
@@ -252,15 +252,15 @@ export function ClassesPage({ctx}){
               </Card>
             );
           })}
-          {!classes.length&&<div style={{color:C.light,padding:32,textAlign:"center"}}>No classes found</div>}
+          {!classes.length&&<div style={{color:C.light,padding:32,textAlign:"center"}}>No groups found</div>}
         </div>
       )}
 
       {modal&&(
-        <Modal title={editId?"Edit Class":"New Class"} onClose={()=>setModal(false)}>
+        <Modal title={editId?"Edit Group":"New Group"} onClose={()=>setModal(false)}>
           <Sel label="Section *" value={form.section_id||""} onChange={v=>f({section_id:v,level:""})}
             options={[{value:"",label:"— Select Section —"},...sections.map(s=>({value:s.id,label:s.name}))]}/>
-          <Inp label="Class Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS 1A"/>
+          <Inp label="Group Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS 1A"/>
           <Sel label="Level *" value={form.level||""} onChange={v=>f({level:v})}
             options={[
               {value:"",label:getLevels().length?"— Select Level —":"— Select section first —"},
@@ -414,22 +414,22 @@ export function AssignmentsPage({ctx}){
   };
 
   const tabs=[
-    {id:"class-subjects",label:"Subjects per Class"},
-    {id:"form-teachers", label:"Form Teachers"},
-    {id:"subject-teachers",label:"Subject Teachers"},
+    {id:"class-subjects",label:"Subjects per Group"},
+    {id:"form-teachers", label:"Form Staff"},
+    {id:"subject-teachers",label:"Subject Staff"},
   ];
 
   return(
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="assignments" size={20}/>Assignments</h2>
-        <p style={{color:C.muted,fontSize:12}}>Map subjects to classes, assign form teachers, and assign subject teachers</p>
+        <p style={{color:C.muted,fontSize:12}}>Map subjects to groups, assign form staff, and assign subject staff</p>
       </div>
 
       <div style={{marginBottom:16,padding:"10px 14px",background:C.bluePale,border:`1px solid ${C.blueLight}`,borderRadius:8,fontSize:12,color:C.blue,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:16}}>💡</span>
         <span>
-          <strong>Tip:</strong> To assign multiple subjects to a teacher across many classes at once, go to the <strong>Teachers</strong> page and click the <strong>book icon</strong> on any teacher row — it opens a Bulk Assign &amp; Matrix tool that's much faster than doing it one by one here.
+          <strong>Tip:</strong> To assign multiple subjects to a staff across many groups at once, go to the <strong>Staff</strong> page and click the <strong>book icon</strong> on any teacher row — it opens a Bulk Assign &amp; Matrix tool that's much faster than doing it one by one here.
         </span>
       </div>
 
@@ -449,15 +449,15 @@ export function AssignmentsPage({ctx}){
 
       {loading?<Spinner/>:(<>
 
-        {/* ── TAB 1: Class → Subjects ─────────────────────────────────── */}
+        {/* ── TAB 1: Group → Subjects ─────────────────────────────────── */}
         {tab==="class-subjects"&&(
           <div style={{display:"grid",gridTemplateColumns:"320px 1fr",gap:16,alignItems:"start"}}>
             <Card>
-              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Select a Class</h3>
+              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Select a Group</h3>
               <select value={selClass} onChange={e=>setSelClass(e.target.value)}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,
                   borderRadius:8,fontSize:13,marginBottom:12,background:C.white,color:C.text}}>
-                <option value="">— Pick a class —</option>
+                <option value="">— Pick a group —</option>
                 {classes.map(c=><option key={c.id} value={c.id}>{c.name} ({c.sections?.code||""})</option>)}
               </select>
               {selClass&&(
@@ -471,7 +471,7 @@ export function AssignmentsPage({ctx}){
               <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>
                 {selClass?`Subjects for ${classLabel(selClass)}`:"Select a class to assign subjects"}
               </h3>
-              {!selClass&&<p style={{color:C.light,fontSize:12}}>Pick a class on the left first.</p>}
+              {!selClass&&<p style={{color:C.light,fontSize:12}}>Pick a group on the left first.</p>}
               {selClass&&csLoading&&<Spinner/>}
               {selClass&&!csLoading&&(()=>{
                 const cl=classes.find(c=>c.id===+selClass);
@@ -552,7 +552,7 @@ export function AssignmentsPage({ctx}){
           </div>
         )}
 
-        {/* ── TAB 2: Form Teachers (multiple per class supported) ──────── */}
+        {/* ── TAB 2: Form Staff (multiple per class supported) ──────── */}
         {tab==="form-teachers"&&(()=>{
           // Group form teachers by class for display
           const ftByClass={};
@@ -567,17 +567,17 @@ export function AssignmentsPage({ctx}){
           return(
           <div style={{display:"grid",gridTemplateColumns:"360px 1fr",gap:16,alignItems:"start"}}>
             <Card>
-              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:14}}>Add Form Teacher</h3>
-              <p style={{color:C.muted,fontSize:12,marginBottom:10}}>A class can have multiple form teachers.</p>
+              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:14}}>Add Form Staff</h3>
+              <p style={{color:C.muted,fontSize:12,marginBottom:10}}>A group can have multiple form staff.</p>
               <select value={ftClass} onChange={e=>{setFtClass(e.target.value);setFtTeacher("");}}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:"inherit",color:C.text,
                   borderRadius:8,fontSize:13,marginBottom:10}}>
-                <option value="">— Select Class —</option>
+                <option value="">— Select Group —</option>
                 {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               {ftClass&&alreadyFT.size>0&&(
                 <div style={{background:C.bluePale,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:12}}>
-                  <span style={{color:C.muted}}>Current form teachers: </span>
+                  <span style={{color:C.muted}}>Current form staff: </span>
                   {formTeachers.filter(ft=>ft.class_id===+ftClass).map(ft=>(
                     <span key={ft.id} style={{display:"inline-flex",alignItems:"center",gap:4,
                       background:"#fff",border:`1px solid ${C.border}`,borderRadius:6,
@@ -594,21 +594,21 @@ export function AssignmentsPage({ctx}){
                 disabled={!ftClass}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:"inherit",color:C.text,
                   borderRadius:8,fontSize:13,marginBottom:12,opacity:ftClass?1:.5}}>
-                <option value="">— Select teacher to add —</option>
+                <option value="">— Select staff to add —</option>
                 {availableTeachers.map(t=><option key={t.id} value={t.id}>{t.full_name} ({t.staff_id||"—"})</option>)}
               </select>
               <Btn onClick={addFormTeacherToClass} color={C.orange}
                 disabled={!ftClass||!ftTeacher||ftSaving} style={{width:"100%"}}>
-                {ftSaving?"Saving…":"Add Form Teacher"}
+                {ftSaving?"Saving…":"Add Form Staff"}
               </Btn>
             </Card>
 
             <Card>
-              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>All Form Teacher Assignments</h3>
-              {formTeachers.length===0&&<p style={{color:C.light,fontSize:12}}>No form teachers assigned yet.</p>}
+              <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>All Form Staff Assignments</h3>
+              {formTeachers.length===0&&<p style={{color:C.light,fontSize:12}}>No form staff assigned yet.</p>}
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                  {formTeachers.length>0&&<Th cols={["Class","Section","Form Teacher","Staff ID",""]}/>}
+                  {formTeachers.length>0&&<Th cols={["Group","Section","Form Staff","Staff ID",""]}/>}
                   <tbody>
                     {formTeachers.map((ft,i)=>(
                       <TRow key={ft.id} i={i} cells={[
@@ -630,7 +630,7 @@ export function AssignmentsPage({ctx}){
           );
         })()}
 
-        {/* ── TAB 3: Subject Teachers ─────────────────────────────────── */}
+        {/* ── TAB 3: Subject Staff ─────────────────────────────────── */}
         {tab==="subject-teachers"&&(()=>{
           // ── Inline assignment panel state (handled via stTeacher/stClass) ──
           const existing=teacherSubjects.filter(ts=>ts.teacher_id===+stTeacher&&ts.class_id===+stClass).map(ts=>ts.subject_id);
@@ -689,28 +689,28 @@ export function AssignmentsPage({ctx}){
 
               {/* ── Left: Assignment Panel ──────────────────────────────── */}
               <Card>
-                <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:6}}>Assign Subject Teacher</h3>
+                <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:6}}>Assign Subject Staff</h3>
                 <p style={{fontSize:12,color:C.muted,marginBottom:12}}>
                   Select a teacher + class, then tick which subjects they teach.
                 </p>
 
-                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:4}}>Teacher</label>
+                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:4}}>Staff</label>
                 <select value={stTeacher} onChange={e=>{setStTeacher(e.target.value);setStClass("");}}
                   style={{width:"100%",padding:"9px 12px",border:`2px solid ${stTeacher?C.blue:C.border}`,
                     background:"inherit",color:C.text,borderRadius:8,fontSize:13,marginBottom:10}}>
-                  <option value="">— Select Teacher —</option>
+                  <option value="">— Select Staff —</option>
                   {teachers.map(t=>{
                     const tSubjCount=teacherSubjects.filter(ts=>ts.teacher_id===t.id).length;
                     return<option key={t.id} value={t.id}>{t.full_name} ({t.staff_id||"—"}){tSubjCount>0?` · ${tSubjCount} subj`:""}</option>;
                   })}
                 </select>
 
-                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:4}}>Class</label>
+                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:4}}>Group</label>
                 <select value={stClass} onChange={e=>setStClass(e.target.value)} disabled={!stTeacher}
                   style={{width:"100%",padding:"9px 12px",border:`2px solid ${stClass?C.blue:C.border}`,
                     background:"inherit",color:C.text,borderRadius:8,fontSize:13,marginBottom:12,
                     opacity:stTeacher?1:.5}}>
-                  <option value="">— Select Class —</option>
+                  <option value="">— Select Group —</option>
                   {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
 
@@ -728,7 +728,7 @@ export function AssignmentsPage({ctx}){
                     </div>
                     {stSubjectOptions.length===0?(
                       <div style={{padding:"12px",background:C.orangePale,borderRadius:8,fontSize:12,color:C.orange}}>
-                        No subjects assigned to this class yet — add subjects in the "Subjects per Class" tab first.
+                        No subjects assigned to this class yet — add subjects in the "Subjects per Group" tab first.
                       </div>
                     ):(
                       <div style={{display:"flex",flexDirection:"column",gap:5,maxHeight:300,overflowY:"auto",
@@ -799,7 +799,7 @@ export function AssignmentsPage({ctx}){
                       <div key={gi} style={{border:`2px solid ${isSelected?C.blue:C.border}`,
                         borderRadius:10,overflow:"hidden",transition:"border-color .15s",
                         boxShadow:isSelected?`0 0 0 3px ${C.blue}22`:"none"}}>
-                        {/* Teacher header */}
+                        {/* Staff header */}
                         <div style={{background:isSelected?C.blue:C.bluePale,padding:"10px 14px",
                           display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}
                           onClick={()=>{setStTeacher(String(g.teacher?.id||""));setStClass("");}}>
@@ -819,7 +819,7 @@ export function AssignmentsPage({ctx}){
                           </div>
                           {isSelected&&<Badge color="rgba(255,255,255,.25)" style={{color:"#fff",fontSize:10}}>Editing</Badge>}
                         </div>
-                        {/* Class-subject rows */}
+                        {/* Group-subject rows */}
                         {Object.values(g.classes).map((cc,ci)=>(
                           <div key={ci} style={{padding:"8px 14px",
                             borderTop:`1px solid ${isSelected?C.blue+"33":C.border}`,
@@ -998,7 +998,7 @@ export function SectionsPage({ctx}){
       )}
       {levelsModal&&(
         <Modal title={`Levels — ${levelsModal.name}`} onClose={()=>setLevelsModal(null)} width={480}>
-          <p style={{color:C.muted,fontSize:12,marginBottom:14}}>Add, remove, or reorder the levels for this section. These appear as options when creating classes.</p>
+          <p style={{color:C.muted,fontSize:12,marginBottom:14}}>Add, remove, or reorder the levels for this section. These appear as options when creating groups.</p>
           <div style={{display:"flex",gap:8,marginBottom:14}}>
             <input value={newLevel} onChange={e=>setNewLevel(e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&addLevel()}

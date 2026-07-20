@@ -231,7 +231,7 @@ export function AcademicSummaryPage({ ctx }) {
   const selTerm_    = filteredTerms.find(t=>String(t.id)===selTerm);
   const scopeLabel  = scope==="school" ? "School-Wide"
     : scope==="section" ? (sections.find(s=>String(s.id)===selSection)?.name||"Section")
-    : (classes.find(c=>String(c.id)===selClass)?.name||"Class");
+    : (classes.find(c=>String(c.id)===selClass)?.name||"Group");
 
   const toggleExpand = id => setExpandedStudents(p => ({...p,[id]:!p[id]}));
 
@@ -293,7 +293,7 @@ export function AcademicSummaryPage({ ctx }) {
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
                 textTransform:"uppercase",letterSpacing:.5}}>Scope</label>
               <div style={{display:"flex",border:`2px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
-                {[["school","🏫 School"],["section","📂 Section"],["class","📋 Class"]].map(([v,l])=>(
+                {[["school","🏫 School"],["section","📂 Section"],["class","📋 Group"]].map(([v,l])=>(
                   <button key={v} onClick={()=>{setScope(v);setRawData(null);}}
                     style={{flex:1,padding:"7px 6px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
                       background:scope===v?C.blue:"transparent",
@@ -322,11 +322,11 @@ export function AcademicSummaryPage({ ctx }) {
             {scope==="class"&&(
               <div style={{flex:"1 1 130px"}}>
                 <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
-                  textTransform:"uppercase",letterSpacing:.5}}>Class</label>
+                  textTransform:"uppercase",letterSpacing:.5}}>Group</label>
                 <select value={selClass} onChange={e=>{setSelClass(e.target.value);setRawData(null);}}
                   style={{width:"100%",padding:"8px 10px",border:`2px solid ${C.border}`,borderRadius:8,
                     fontSize:13,background:C.white,outline:"none",cursor:"pointer"}}>
-                  <option value="">Select class</option>
+                  <option value="">Select group</option>
                   {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
@@ -372,7 +372,7 @@ export function AcademicSummaryPage({ ctx }) {
                   icon:<TrendingUp size={17}/>, color:computed.passRate>=60?C.green:computed.passRate>=40?"#d97706":C.red },
                 { label:"Top Score", value:`${computed.highest}%`, sub:computed.topStudents[0]?.name||"",
                   icon:<Award size={17}/>, color:"#f59e0b" },
-                { label:"Students", value:computed.totalStudents, sub:`${computed.classStats.length} class${computed.classStats.length!==1?"es":""}`,
+                { label:"Members", value:computed.totalStudents, sub:`${computed.classStats.length} class${computed.classStats.length!==1?"es":""}`,
                   icon:<Users size={17}/>, color:C.blue },
                 { label:"Subjects", value:computed.subjectStats.length, sub:`${rawData.length.toLocaleString()} total scores`,
                   icon:<BookOpen size={17}/>, color:"#7c3aed" },
@@ -396,7 +396,7 @@ export function AcademicSummaryPage({ ctx }) {
               {[
                 ["top",      "🏆 Top Performers"],
                 ["bottom",   "📈 Needs Improvement"],
-                ["classes",  "🏫 Class Rankings"],
+                ["classes",  "🏫 Group Rankings"],
                 ["subjects", "📚 Subject Rankings"],
                 ["grades",   "🎯 Grade Distribution"],
               ].map(([v,l])=>(
@@ -540,7 +540,7 @@ export function AcademicSummaryPage({ ctx }) {
               <Card>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
                   <TrendingDown size={16} color={C.red}/>
-                  <div style={{fontWeight:900,color:C.blue,fontSize:14}}>Students Needing Support</div>
+                  <div style={{fontWeight:900,color:C.blue,fontSize:14}}>Members Needing Support</div>
                   <span style={{fontSize:12,color:C.muted,marginLeft:4}}>
                     Bottom {computed.bottomStudents.length} · ranked lowest average first
                   </span>
@@ -749,7 +749,7 @@ export function AcademicSummaryPage({ ctx }) {
                   <div style={{marginTop:8,paddingTop:12,borderTop:`1px solid ${C.border}`,
                     display:"flex",justifyContent:"space-between",fontSize:12,color:C.muted}}>
                     <span>Total scores: <strong style={{color:C.text}}>{computed.totalScores.toLocaleString()}</strong></span>
-                    <span>Students: <strong style={{color:C.text}}>{computed.totalStudents}</strong></span>
+                    <span>Members: <strong style={{color:C.text}}>{computed.totalStudents}</strong></span>
                   </div>
                 </Card>
 

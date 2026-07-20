@@ -20,4 +20,4 @@ UPDATE students
 INSERT INTO role_permissions (role, page_id, allowed, updated_at)
 VALUES
   ('teacher', 'add-students', true, NOW())
-ON CONFLICT (role, page_id) DO NOTHING;
+ON CONFLICT DO NOTHING;

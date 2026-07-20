@@ -106,7 +106,7 @@ export function FeesPage({ctx}){
         <Card>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Section","Class","Fee Type","Session","Term","Amount","Actions"]}/>
+              <Th cols={["Section","Group","Fee Type","Session","Term","Amount","Actions"]}/>
               <tbody>
                 {fees.map((r,i)=>(
                   <TRow key={r.id} i={i} cells={[
@@ -136,8 +136,8 @@ export function FeesPage({ctx}){
             options={[{value:"",label:"All Terms"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
           <Sel label="Section (blank = all)" value={form.section_id||""} onChange={v=>f({section_id:v,class_id:""})}
             options={[{value:"",label:"All Sections"},...sections.map(s=>({value:s.id,label:s.name}))]}/>
-          <Sel label="Class (blank = all)" value={form.class_id||""} onChange={v=>f({class_id:v})}
-            options={[{value:"",label:"All Classes"},...classes.filter(c=>!form.section_id||c.section_id===+form.section_id).map(c=>({value:c.id,label:c.name}))]}/>
+          <Sel label="Group (blank = all)" value={form.class_id||""} onChange={v=>f({class_id:v})}
+            options={[{value:"",label:"All Groups"},...classes.filter(c=>!form.section_id||c.section_id===+form.section_id).map(c=>({value:c.id,label:c.name}))]}/>
           <Sel label="Fee Type" value={form.fee_type} onChange={v=>f({fee_type:v})} options={feeTypes}/>
           <Inp label="Amount (₦) *" type="number" value={form.amount} onChange={v=>f({amount:v})} placeholder="120000"/>
           <div style={{display:"flex",gap:10,marginTop:6}}>
@@ -180,7 +180,7 @@ export function PaymentsPage({ctx}){
   const totalCollected=payments.filter(p=>p.status==="success"||p.payment_status==="success").reduce((a,b)=>a+(b.amount||0),0);
 
   const savePayment=async()=>{
-    if(!form.student_id||!form.session_id||!form.amount){notify("Student, session, and amount required","error");return;}
+    if(!form.student_id||!form.session_id||!form.amount){notify("Member, session, and amount required","error");return;}
     const {error}=await db.upsertPayment({
       ...form,
       session_id:+form.session_id,
@@ -208,13 +208,13 @@ export function PaymentsPage({ctx}){
         <StatCard label="Total Collected" value={fmt(totalCollected)} icon={<DollarSign size={18} color={C.green}/>} color={C.green}/>
         <StatCard label="Successful"      value={payments.filter(p=>p.status==="success"||p.payment_status==="success").length} icon={<CircleCheck size={18} color={C.blue}/>} color={C.blue}/>
         <StatCard label="Pending"         value={payments.filter(p=>p.status==="pending"||p.payment_status==="pending").length} icon={<Clock size={18} color={C.amber}/>} color={C.amber}/>
-        <StatCard label="Total Students"  value={[...new Set(payments.map(p=>p.student_id))].length} icon={<Users size={18} color={C.purple}/>} color={C.purple}/>
+        <StatCard label="Total Members"  value={[...new Set(payments.map(p=>p.student_id))].length} icon={<Users size={18} color={C.purple}/>} color={C.purple}/>
       </div>
       {loading?<Spinner/>:(
         <Card>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Student","Amount","Fee Type","Method","Status","Date"]}/>
+              <Th cols={["Member","Amount","Fee Type","Method","Status","Date"]}/>
               <tbody>
                 {payments.map((p,i)=>{
                   const status=p.status||p.payment_status;
@@ -238,8 +238,8 @@ export function PaymentsPage({ctx}){
       )}
       {modal&&(
         <Modal title="Record Payment" onClose={()=>setModal(false)}>
-          <Sel label="Student *" value={form.student_id||""} onChange={v=>f({student_id:v})}
-            options={[{value:"",label:"— Select Student —"},...students.map(s=>({value:s.id,label:`${fullName(s)} (${s.id})`}))]}/>
+          <Sel label="Member *" value={form.student_id||""} onChange={v=>f({student_id:v})}
+            options={[{value:"",label:"— Select Member —"},...students.map(s=>({value:s.id,label:`${fullName(s)} (${s.id})`}))]}/>
           <Sel label="Session *" value={form.session_id||""} onChange={v=>f({session_id:v,term_id:"",fee_structure_id:""})}
             options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
           <Sel label="Term" value={form.term_id||""} onChange={v=>f({term_id:v})}
@@ -362,7 +362,7 @@ export function MyPaymentsPage({ctx}){
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const TERMS = ["1st Term","2nd Term","3rd Term"];
-const STUDENT_TYPES = [{value:"all",label:"All Students"},{value:"new",label:"New Students"},{value:"old",label:"Old Students"}];
+const STUDENT_TYPES = [{value:"all",label:"All Members"},{value:"new",label:"New Members"},{value:"old",label:"Old Members"}];
 
 // ─── FEE ITEMS PAGE (Admin) ───────────────────────────────────────────────────
 export function FeeItemsPage({ctx}){
@@ -435,7 +435,7 @@ export function FeeItemsPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-items" size={20}/>Fee Items</h2>
-          <p style={{color:C.muted,fontSize:12}}>Define the line items that make up student bills</p>
+          <p style={{color:C.muted,fontSize:12}}>Define the line items that make up member bills</p>
         </div>
         <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Item</Btn>
       </div>
@@ -687,7 +687,7 @@ export function FeeTemplatesPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-templates" size={20}/>Fee Templates</h2>
-          <p style={{color:C.muted,fontSize:12}}>Build fee bill templates per class, term and student type</p>
+          <p style={{color:C.muted,fontSize:12}}>Build fee bill templates per group, term and member type</p>
         </div>
         <Btn onClick={openNew} color={C.orange}>New Template</Btn>
       </div>
@@ -867,18 +867,18 @@ export function FeeTemplatesPage({ctx}){
       {modal&&(
         <Modal title={editId?"Edit Template":"New Fee Template"} onClose={()=>setModal(false)} width={620}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS3 Old Students - 2nd Term"/>
+            <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS3 Old Members - 2nd Term"/>
             <Sel label="Academic Year *" value={form.academic_year} onChange={v=>f({academic_year:v})}
               options={[{value:"",label:"— Select Year —"},...sessions.map(s=>({value:s.name,label:s.name+(s.is_active?" (Active)":"")}))]}/>
 
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10}}>
             <Sel label="Term *" value={form.term} onChange={v=>f({term:v})} options={TERMS}/>
-            <Inp label="Class Level" value={form.class_level} onChange={v=>f({class_level:v})} placeholder="JSS3 (optional)"/>
-            <Sel label="Student Type" value={form.student_type} onChange={v=>f({student_type:v})}
+            <Inp label="Group Level" value={form.class_level} onChange={v=>f({class_level:v})} placeholder="JSS3 (optional)"/>
+            <Sel label="Member Type" value={form.student_type} onChange={v=>f({student_type:v})}
               options={STUDENT_TYPES.map(s=>({value:s.value,label:s.label}))}/>
             <Sel label="Template Type *" value={form.template_type} onChange={v=>f({template_type:v})}
-              options={[{value:"standard",label:"Returning Students"},{value:"new_student",label:"New Enrolees"}]}/>
+              options={[{value:"standard",label:"Returning Members"},{value:"new_student",label:"New Enrolees"}]}/>
           </div>
           {form.template_type==="new_student"&&(
             <div style={{padding:"8px 12px",background:C.greenPale,border:`1px solid ${C.green}40`,borderRadius:8,fontSize:12,color:C.green,marginTop:2}}>
@@ -1074,7 +1074,7 @@ export function FeeGeneratePage({ctx}){
   // Step 2: actual bill creation (called after carry-forward decision or directly if no owing)
   const runGenerate=async(owingMap,doCarryForward)=>{
     const ok=await confirm({title:"Generate Bills?",
-      message:`This will generate ${targetStudents.length} bill(s) for ${template.name}. Students who already have a bill for this term/year will be skipped.`,
+      message:`This will generate ${targetStudents.length} bill(s) for ${template.name}. Members who already have a bill for this term/year will be skipped.`,
       confirmLabel:"Generate"});
     if(!ok)return;
 
@@ -1216,7 +1216,7 @@ export function FeeGeneratePage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-generate" size={20}/>Generate Bills</h2>
-        <p style={{color:C.muted,fontSize:12}}>Bulk-generate fee bills for students based on a template</p>
+        <p style={{color:C.muted,fontSize:12}}>Bulk-generate fee bills for members based on a template</p>
       </div>
 
       {loading?<Spinner/>:(
@@ -1293,7 +1293,7 @@ export function FeeGeneratePage({ctx}){
 
             <Card>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                <div style={{fontWeight:800,color:C.blue,fontSize:14}}>2. Select Classes</div>
+                <div style={{fontWeight:800,color:C.blue,fontSize:14}}>2. Select Groups</div>
                 <div style={{display:"flex",gap:6}}>
                   {selectedClasses.size>0&&<span style={{fontSize:12,color:C.orange,fontWeight:700}}>{selectedClasses.size} selected</span>}
                   <Btn xs onClick={()=>setSelectedClasses(new Set(classes.map(c=>c.id)))} color={C.blue} outline>All</Btn>
@@ -1324,7 +1324,7 @@ export function FeeGeneratePage({ctx}){
                   );
                 })}
                 {classes.filter(c=>!classSearch||c.name.toLowerCase().includes(classSearch.toLowerCase())).length===0&&(
-                  <div style={{padding:"14px 12px",fontSize:13,color:C.muted,textAlign:"center"}}>No classes match</div>
+                  <div style={{padding:"14px 12px",fontSize:13,color:C.muted,textAlign:"center"}}>No groups match</div>
                 )}
               </div>
               {targetStudents.length>0&&(
@@ -1340,7 +1340,7 @@ export function FeeGeneratePage({ctx}){
                     <strong>{newEnrolleesInClass.length} new enrolee{newEnrolleesInClass.length!==1?"s":""}</strong> in selection.<br/>
                     {template?.template_type==="new_student"
                       ? <span style={{color:C.green}}>✓ Using a New Enrolee template — admission fees will be included.</span>
-                      : <span style={{color:C.amber}}>⚠ You are using a <strong>Returning Students</strong> template. Switch to a <strong>New Enrolee</strong> template to include admission fees.</span>
+                      : <span style={{color:C.amber}}>⚠ You are using a <strong>Returning Members</strong> template. Switch to a <strong>New Enrolee</strong> template to include admission fees.</span>
                     }
                   </div>
                 </div>
@@ -1372,11 +1372,11 @@ export function FeeGeneratePage({ctx}){
                   <strong style={{fontSize:13,color:C.text}}>{template?.term||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{color:C.muted,fontSize:13}}>Classes Selected</span>
+                  <span style={{color:C.muted,fontSize:13}}>Groups Selected</span>
                   <strong style={{fontSize:13,color:C.blue}}>{selectedClasses.size}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{color:C.muted,fontSize:13}}>Students to Bill</span>
+                  <span style={{color:C.muted,fontSize:13}}>Members to Bill</span>
                   <strong style={{fontSize:13,color:C.blue}}>{targetStudents.length}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
@@ -1439,11 +1439,11 @@ export function FeeGeneratePage({ctx}){
             <Card>
               <div style={{fontWeight:700,color:C.muted,fontSize:12,marginBottom:10}}>How bill generation works</div>
               <ul style={{fontSize:12,color:C.muted,lineHeight:1.8,paddingLeft:16,margin:0}}>
-                <li>Each student gets one bill per term per academic year</li>
-                <li>Students with an existing bill for this term are skipped</li>
-                <li>Optional items are included by default (students can opt out)</li>
+                <li>Each member gets one bill per term per academic year</li>
+                <li>Members with an existing bill for this term are skipped</li>
+                <li>Optional items are included by default (members can opt out)</li>
                 <li>Bill amounts are snapshotted — template changes won't affect existing bills</li>
-                <li>If any students owe from a previous term, you will be prompted before bills are created</li>
+                <li>If any members owe from a previous term, you will be prompted before bills are created</li>
               </ul>
             </Card>
           </div>
@@ -2713,7 +2713,7 @@ export function FeeTrackerPage({ctx}){
         subject:`[Alert] Fee Refund — ${fmt(refundAmt)}`,
         html:buildAlertEmail("Fee Refund Issued",
           [`Amount: ${fmt(refundAmt)}`,`Reason: ${refundForm.reason.trim()}`,
-           `Bill ID: ${fresh.id}`,`Student ID: ${fresh.student_id}`,
+           `Bill ID: ${fresh.id}`,`Member ID: ${fresh.student_id}`,
            `Processed by: ${ctx?.user?.full_name||ctx?.user?.name||"Admin"}`,
            `Time: ${new Date().toLocaleString("en-NG")}`],
           "warn"),
@@ -2960,14 +2960,14 @@ export function FeeTrackerPage({ctx}){
     const classData=st?.class_id?classMap[st.class_id]:null;
     const html=buildEmailHtml(`Fee Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
-      `${name} \u00b7 Student ID: ${bill.student_id} \u00b7 Class: ${classData?.name||"\u2014"}`,``,
+      `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
       `Dear Parent/Guardian,`,``,
       `This is a friendly reminder that your ward\u2019s school`,
       `fees for ${bill.term} ${bill.academic_year} are currently outstanding.`,``,
       `ACCOUNT SUMMARY`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-      `Student:    ${name} (${bill.student_id})`,
-      `Class:      ${classData?.name||"\u2014"}`,
+      `Member:    ${name} (${bill.student_id})`,
+      `Group:      ${classData?.name||"\u2014"}`,
       `Total Bill: \u20a6${(+bill.total_amount).toLocaleString()}`,
       `Paid:       \u20a6${(+bill.amount_paid).toLocaleString()}`,
       `Balance:    \u20a6${(+bill.balance).toLocaleString()}`,
@@ -3011,13 +3011,13 @@ export function FeeTrackerPage({ctx}){
     }catch(e){console.warn("[sendReceipt] PDF generation failed, sending without attachment:",e);}
     const html=buildEmailHtml(`Fee Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
-      `${name} \u00b7 Student ID: ${bill.student_id} \u00b7 Class: ${classData?.name||"\u2014"}`,``,
+      `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
       `Dear Parent/Guardian,`,``,
       `A fee payment has been received for your ward.`,``,
       `PAYMENT DETAILS`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-      `Student:     ${name} (${bill.student_id})`,
-      `Class:       ${classData?.name||"\u2014"}`,
+      `Member:     ${name} (${bill.student_id})`,
+      `Group:       ${classData?.name||"\u2014"}`,
       `Term:        ${bill.term} ${bill.academic_year}`,
       `Amount Paid: \u20a6${(+amount).toLocaleString()}`,
       `Method:      ${method}`,
@@ -3051,13 +3051,13 @@ export function FeeTrackerPage({ctx}){
     }catch(e){console.warn("[sendInvoiceEmail] PDF generation failed, sending without attachment:",e);}
     const html=buildEmailHtml(`Fee Invoice \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
-      `${name} \u00b7 Student ID: ${bill.student_id} \u00b7 Class: ${classData?.name||"\u2014"}`,``,
+      `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
       `Dear Parent/Guardian,`,``,
       `Please find below the fee invoice for ${bill.term} ${bill.academic_year}.`,``,
       `INVOICE DETAILS`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-      `Student: ${name} (${bill.student_id})`,
-      `Class:   ${classData?.name||"\u2014"}`,
+      `Member: ${name} (${bill.student_id})`,
+      `Group:   ${classData?.name||"\u2014"}`,
       `Term:    ${bill.term} ${bill.academic_year}`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
       ...(items.length>0?items.map(item=>`${item.fee_item_name||"Fee item"}: \u20a6${(+item.amount).toLocaleString()}`):[]),
@@ -4113,7 +4113,7 @@ export function FeeStatsPage({ctx}){
   // Recent payments
   const recentPayments=[...filteredPayments].sort((a,b)=>new Date(b.created_at||b.payment_date)-new Date(a.created_at||a.payment_date));
 
-  // ── Class collection leaderboard ───────────────────────────────────────────
+  // ── Group collection leaderboard ───────────────────────────────────────────
   const classLeaderboard=useMemo(()=>{
     const map={};
     filteredBills.forEach(b=>{
@@ -4285,7 +4285,7 @@ tr.row-unpaid td{background:#fee2e2!important;}
   padding:${isLandscape?"9px 6px":"12px 8px"};text-align:center;}
 .stat-val{font-size:${isLandscape?"12pt":"15pt"};font-weight:900;line-height:1.1;}
 .stat-lbl{font-size:7pt;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
-/* ── Class page header (for class-per-page reports) ── */
+/* ── Group page header (for class-per-page reports) ── */
 .class-page-hdr{background:linear-gradient(90deg,#1e40af,#1A4FA0);
   border-radius:8px 8px 0 0;padding:10px 14px;margin-bottom:0;}
 .class-page-name{font-size:${isLandscape?"12pt":"13pt"};font-weight:900;color:#fff;letter-spacing:-.3px;}
@@ -4389,7 +4389,7 @@ ${body}
   };
 
   // ── Table column definitions shared across all student-list PDFs ─────────────
-  const BILL_TH=`<tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Status</th></tr>`;
+  const BILL_TH=`<tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Status</th></tr>`;
   const billTr=(b,i)=>`<tr>
     <td style="color:#94a3b8;font-size:7.5pt;width:28px">${i+1}</td>
     <td style="font-weight:700">${stuName(b.student_id)}</td>
@@ -4416,13 +4416,13 @@ ${body}
     if(reportSortBy!=="class"){
       // Flat single table
       return`<div class="section">
-        <div class="section-head">${sectionIcon} ${sectionTitle} — ${list.length} Student${list.length!==1?"s":""}</div>
+        <div class="section-head">${sectionIcon} ${sectionTitle} — ${list.length} Member${list.length!==1?"s":""}</div>
         <table><thead>${BILL_TH}</thead><tbody>
           ${list.map((b,i)=>billTr(b,i)).join("")}
         </tbody>${billTfoot(list)}</table></div>`;
     }
 
-    // Class-per-page: group by class, each group = its own section div with page break
+    // Group-per-page: group by class, each group = its own section div with page break
     const groups={};
     const order=[];
     list.forEach(b=>{
@@ -4432,7 +4432,7 @@ ${body}
     });
 
     let html=`<div class="section">
-      <div class="section-head">${sectionIcon} ${sectionTitle} — ${list.length} Student${list.length!==1?"s":""} across ${order.length} class${order.length!==1?"es":""}</div>
+      <div class="section-head">${sectionIcon} ${sectionTitle} — ${list.length} Member${list.length!==1?"s":""} across ${order.length} class${order.length!==1?"es":""}</div>
     </div>`;
 
     order.forEach((cls,gi)=>{
@@ -4471,7 +4471,7 @@ ${body}
   const dlPayments=()=>{
     const body=`<div class="section">
       <div class="section-head">✅ All Payments — ${recentPayments.length} Record${recentPayments.length!==1?"s":""}</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Amount</th><th>Method</th><th>Date</th><th>Reference</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>Group</th><th>Amount</th><th>Method</th><th>Date</th><th>Reference</th></tr></thead><tbody>
         ${recentPayments.length===0?`<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">No payments recorded yet</td></tr>`
           :recentPayments.map((p,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(p.student_id)}</td>
@@ -4489,7 +4489,7 @@ ${body}
   const dlFeeItems=()=>{
     const body=`<div class="section">
       <div class="section-head">📦 Fee Item Breakdown — ${itemBreakdown.length} Item${itemBreakdown.length!==1?"s":""}</div>
-      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Students</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Collection Rate</th><th>Total Expected</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Collection Rate</th><th>Total Expected</th></tr></thead><tbody>
         ${itemBreakdown.length===0?`<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">No items found</td></tr>`
           :itemBreakdown.map((item,i)=>{
             const paid=item.bills.filter(b=>b.status==="paid").length;
@@ -4543,7 +4543,7 @@ ${body}
     // All Payments
     parts.push(`<div class="section pb">
       <div class="section-head">✅ All Payments (${recentPayments.length})</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>Group</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead><tbody>
         ${recentPayments.length===0?`<tr><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8">No payments recorded yet</td></tr>`
           :recentPayments.map((p,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(p.student_id)}</td>
@@ -4555,7 +4555,7 @@ ${body}
     // Fee Items
     parts.push(`<div class="section pb">
       <div class="section-head">📦 Fee Item Breakdown (${itemBreakdown.length} items)</div>
-      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Students</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Rate</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Rate</th></tr></thead><tbody>
         ${itemBreakdown.map((item,i)=>{
           const paid=item.bills.filter(b=>b.status==="paid").length;
           const partial=item.bills.filter(b=>b.status==="partial").length;
@@ -4567,10 +4567,10 @@ ${body}
             <td style="font-weight:700;color:${pct>=75?"#15803d":pct>=50?"#d97706":"#dc2626"}">${pct}%</td></tr>`;
         }).join("")}
       </tbody></table></div>`);
-    // Class leaderboard
+    // Group leaderboard
     parts.push(`<div class="section pb">
-      <div class="section-head">🏆 Class Collection Leaderboard</div>
-      <table><thead><tr><th>Rank</th><th>Class</th><th>Rate</th><th>Collected</th><th>Outstanding</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Bills</th></tr></thead><tbody>
+      <div class="section-head">🏆 Group Collection Leaderboard</div>
+      <table><thead><tr><th>Rank</th><th>Group</th><th>Rate</th><th>Collected</th><th>Outstanding</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Bills</th></tr></thead><tbody>
         ${classLeaderboard.length===0?`<tr><td colspan="9" style="text-align:center;padding:16px;color:#94a3b8">No data</td></tr>`
           :classLeaderboard.map((cls,i)=>`<tr>
             <td style="font-weight:700">#${i+1}</td>
@@ -4594,9 +4594,9 @@ ${body}
       </table></div>`);
     // At-risk
     parts.push(`<div class="section pb">
-      <div class="section-head">⚠️ At-Risk Students — Partial, Silent 30+ Days (${atRisk.length})</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Term</th><th>Year</th><th>Balance</th><th>Days Since Last Payment</th></tr></thead><tbody>
-        ${atRisk.length===0?`<tr><td colspan="8" style="text-align:center;padding:16px;color:#94a3b8">No at-risk students 🎉</td></tr>`
+      <div class="section-head">⚠️ At-Risk Members — Partial, Silent 30+ Days (${atRisk.length})</div>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Balance</th><th>Days Since Last Payment</th></tr></thead><tbody>
+        ${atRisk.length===0?`<tr><td colspan="8" style="text-align:center;padding:16px;color:#94a3b8">No at-risk members 🎉</td></tr>`
           :atRisk.map((b,i)=>{
             const pays=(b.fee_payments||[]).filter(p=>!p.is_refunded);
             const lastDate=pays.length?pays.reduce((mx,p)=>{const d=new Date(p.payment_date||p.created_at);return d>mx?d:mx;},new Date(0)):null;
@@ -4612,7 +4612,7 @@ ${body}
     // Refunds
     parts.push(`<div class="section pb">
       <div class="section-head">↩ Refunds (${refundStats.count}) — Total Returned: ${fmt(refundStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
         ${refundStats.count===0?`<tr><td colspan="9" style="text-align:center;padding:16px;color:#94a3b8">No refunds in this period</td></tr>`
           :refundStats.all.map((r,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(r.student_id)}</td>
@@ -4626,7 +4626,7 @@ ${body}
     // Discounts
     parts.push(`<div class="section pb">
       <div class="section-head">🏷 Discounts Applied (${discountStats.count}) — Total Waived: ${fmt(discountStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead><tbody>
         ${discountStats.count===0?`<tr><td colspan="10" style="text-align:center;padding:16px;color:#94a3b8">No discounts in this period</td></tr>`
           :discountStats.all.map((d,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(d.student_id)}</td>
@@ -4643,8 +4643,8 @@ ${body}
 
   const dlClassLeaderboard=()=>{
     const body=`<div class="section">
-      <div class="section-head">🏆 Class Collection Leaderboard — Ranked by Collection Rate</div>
-      <table><thead><tr><th>Rank</th><th>Class</th><th>Rate</th><th>Collected</th><th>Outstanding</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Bills</th></tr></thead><tbody>
+      <div class="section-head">🏆 Group Collection Leaderboard — Ranked by Collection Rate</div>
+      <table><thead><tr><th>Rank</th><th>Group</th><th>Rate</th><th>Collected</th><th>Outstanding</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Bills</th></tr></thead><tbody>
         ${classLeaderboard.length===0?`<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">No data for this period</td></tr>`
           :classLeaderboard.map((cls,i)=>`<tr>
             <td style="font-weight:700">#${i+1}</td>
@@ -4671,9 +4671,9 @@ ${body}
 
   const dlAtRisk=()=>{
     const body=`<div class="section">
-      <div class="section-head">⚠️ At-Risk Students — ${atRisk.length} Record${atRisk.length!==1?"s":""}</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Days Silent</th></tr></thead><tbody>
-        ${atRisk.length===0?`<tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8">No at-risk students 🎉</td></tr>`
+      <div class="section-head">⚠️ At-Risk Members — ${atRisk.length} Record${atRisk.length!==1?"s":""}</div>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Days Silent</th></tr></thead><tbody>
+        ${atRisk.length===0?`<tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8">No at-risk members 🎉</td></tr>`
           :atRisk.map((b,i)=>{
             const pays=(b.fee_payments||[]).filter(p=>!p.is_refunded);
             const lastDate=pays.length?pays.reduce((mx,p)=>{const d=new Date(p.payment_date||p.created_at);return d>mx?d:mx;},new Date(0)):null;
@@ -4694,7 +4694,7 @@ ${body}
   const dlRefunds=()=>{
     const body=`<div class="section">
       <div class="section-head">↩ Refunds — ${refundStats.count} Record${refundStats.count!==1?"s":""} · Total: ${fmt(refundStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
         ${refundStats.count===0?`<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">No refunds in this period</td></tr>`
           :refundStats.all.map((r,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(r.student_id)}</td>
@@ -4724,13 +4724,13 @@ ${body}
     const body=`
       <div class="section">
         <div class="section-head">🏷 Discount Summary by Type</div>
-        <table><thead><tr><th>#</th><th>Discount Label</th><th>Students</th><th>Total Waived</th></tr></thead>
+        <table><thead><tr><th>#</th><th>Discount Label</th><th>Members</th><th>Total Waived</th></tr></thead>
         <tbody>${summaryRows||`<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">No discounts in this period</td></tr>`}</tbody>
         ${discountStats.count>0?`<tfoot><tr><td colspan="2">Total</td><td>${discountStats.count}</td><td style="font-weight:900;color:#7C3AED">${fmt(discountStats.total)}</td></tr></tfoot>`:""}</table>
       </div>
       <div class="section pb">
         <div class="section-head">🏷 All Discounts — ${discountStats.count} Record${discountStats.count!==1?"s":""}</div>
-        <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead>
+        <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead>
         <tbody>${detailRows||`<tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8">No discounts in this period</td></tr>`}</tbody>
         ${discountStats.count>0?`<tfoot><tr><td colspan="7">Total Discounted</td><td style="font-weight:900;color:#7C3AED">${fmt(discountStats.total)}</td><td colspan="2"></td></tr></tfoot>`:""}</table>
       </div>`;
@@ -4788,7 +4788,7 @@ ${body}
         ${[["Total Paid",fmt(totalPaid),"#15803d"],["Outstanding",fmt(totalOwed),totalOwed>0?"#dc2626":"#64748b"],["Refunded",fmt(totalRef),"#dc2626"],["Discounts",fmt(totalDisc),"#7C3AED"]]
           .map(([l,v,c])=>`<div class="stat-box"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-lbl">${l}</div></div>`).join("")}
       </div>`;
-    openPDF(pdfWrap(`Student Ledger — ${name}`,summaryBlock+billsHtml));
+    openPDF(pdfWrap(`Member Ledger — ${name}`,summaryBlock+billsHtml));
   };
 
   // Small download button used in each card header
@@ -4868,8 +4868,8 @@ ${body}
             <select value={reportSortBy} onChange={e=>setReportSortBy(e.target.value)}
               style={{padding:"6px 10px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:12,
                 fontWeight:700,color:C.blue,background:C.bluePale,outline:"none",cursor:"pointer"}}>
-              <option value="class">Class (A–Z)</option>
-              <option value="name">Student Name (A–Z)</option>
+              <option value="class">Group (A–Z)</option>
+              <option value="name">Member Name (A–Z)</option>
               <option value="status">Status (Paid → Unpaid)</option>
               <option value="balance">Balance (Highest first)</option>
               <option value="paid">Amount Paid (Highest first)</option>
@@ -4912,12 +4912,12 @@ ${body}
       <SectionPillTabs sections={sections} value={filterSection} onChange={v=>{setFilterSection(v);setFilterClass("");}}/>
       {viewMode==="overview"&&(
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:4,flexWrap:"wrap"}}>
-          <span style={{fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:.4}}>Class:</span>
+          <span style={{fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:.4}}>Group:</span>
           <select value={filterClass} onChange={e=>setFilterClass(e.target.value)}
             style={{padding:"5px 10px",border:`1px solid ${filterClass?C.blue:C.border}`,borderRadius:7,
               fontSize:12,outline:"none",color:filterClass?C.blue:C.text,fontWeight:filterClass?700:400,
               background:filterClass?C.bluePale:C.white,cursor:"pointer"}}>
-            <option value="">All Classes</option>
+            <option value="">All Groups</option>
             {[...classes].sort((a,b)=>a.name.localeCompare(b.name)).map(c=>(
               <option key={c.id} value={String(c.id)}>{c.name}</option>
             ))}
@@ -5035,7 +5035,7 @@ ${body}
           return true;
         });
 
-        // Summary stats for active item (billed-only, so "Students Billed" keeps its meaning)
+        // Summary stats for active item (billed-only, so "Members Billed" keeps its meaning)
         const iTotal=itemRows.length;
         const iPaid=itemRows.filter(r=>r.billStatus==="paid").length;
         const iPartial=itemRows.filter(r=>r.billStatus==="partial").length;
@@ -5047,7 +5047,7 @@ ${body}
 
         // Export CSV
         const exportCSV=()=>{
-          const headers=["Student Name","Student ID","Class","Gender","Item","Item Amount","Bill Status","Total Bill","Amount Paid","Balance","Last Payment Date","Payment Method","Reference","Term","Year"];
+          const headers=["Member Name","Member ID","Group","Gender","Item","Item Amount","Bill Status","Total Bill","Amount Paid","Balance","Last Payment Date","Payment Method","Reference","Term","Year"];
           const rows=visibleRows.map(r=>{
             const nb=r.billStatus==="not_billed";
             const money=v=>nb?"—":privacyMode?"•••":v;
@@ -5141,7 +5141,7 @@ ${body}
                       style={{padding:"7px 11px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none",width:180}}/>
                     <select value={itemClassFilter} onChange={e=>setItemClassFilter(e.target.value)}
                       style={{padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none"}}>
-                      <option value="">All Classes</option>
+                      <option value="">All Groups</option>
                       {uniqueClasses.map(c=><option key={c} value={c}>{c}</option>)}
                     </select>
                     <StatusMultiSelect
@@ -5171,7 +5171,7 @@ ${body}
                         const cRate=billed.length>0?Math.round((cPaid/billed.length)*100):0;
                         return `<div class="section${sIdx>0?' pb':''}">
                           <div class="section-head">${cls} — ${billed.length} student${billed.length!==1?"s":""} billed${notBilledCt>0?` &nbsp;|&nbsp; ${notBilledCt} not billed`:""} &nbsp;|&nbsp; ${cRate}% collected &nbsp;|&nbsp; ${fmt(cCollected)} / ${fmt(cExpected)}</div>
-                          <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Gender</th><th>Status</th><th>Item Amt</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Last Payment</th><th>Method</th></tr></thead><tbody>
+                          <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Gender</th><th>Status</th><th>Item Amt</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Last Payment</th><th>Method</th></tr></thead><tbody>
                             ${rows.map((r,i)=>`<tr class="${r.billStatus==="partial"?"row-partial":r.billStatus==="unpaid"?"row-unpaid":""}">
                               <td>${i+1}</td><td style="font-weight:700">${r.studentName}</td>
                               <td style="color:#64748b">${r.studentId}</td><td>${r.gender}</td>
@@ -5261,7 +5261,7 @@ ${body}
                       const clsRate=billedRows.length>0?Math.round((clsPaid/billedRows.length)*100):0;
                       return(
                         <Card key={cls} style={{padding:0,overflow:"hidden"}}>
-                          {/* Class header */}
+                          {/* Group header */}
                           <div style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,padding:"12px 18px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
                             <div>
                               <div style={{color:"#fff",fontWeight:900,fontSize:15}}>{cls}</div>
@@ -5307,7 +5307,7 @@ ${body}
                               </tbody>
                               <tfoot>
                                 <tr style={{background:C.bluePale,borderTop:`2px solid ${C.blue}`}}>
-                                  <td colSpan={5} style={{padding:"8px 10px",fontWeight:800,color:C.blue,fontSize:12}}>Class Total</td>
+                                  <td colSpan={5} style={{padding:"8px 10px",fontWeight:800,color:C.blue,fontSize:12}}>Group Total</td>
                                   <td style={{padding:"8px 10px",fontWeight:800,color:C.blue}}>{fmt(clsExpected)}</td>
                                   <td style={{padding:"8px 10px",color:C.muted}}>—</td>
                                   <td style={{padding:"8px 10px",fontWeight:800,color:C.green}}>{fmt(clsCollected)}</td>
@@ -5501,7 +5501,7 @@ ${body}
                           <div style={{fontWeight:700,fontSize:12,color:C.text,flex:1,paddingRight:4,lineHeight:1.3}}>{item.name}</div>
                           <Badge color={item.optional?C.amber:C.blue} style={{fontSize:9}}>{item.optional?"Opt":"Comp"}</Badge>
                         </div>
-                        <div style={{fontSize:20,fontWeight:900,color:C.blue}}>{item.bills.length} <span style={{fontSize:11,fontWeight:400,color:C.muted}}>students</span></div>
+                        <div style={{fontSize:20,fontWeight:900,color:C.blue}}>{item.bills.length} <span style={{fontSize:11,fontWeight:400,color:C.muted}}>members</span></div>
                         <div style={{height:5,background:C.border,borderRadius:99,overflow:"hidden",margin:"6px 0"}}>
                           <div style={{height:"100%",width:`${pct}%`,background:pct>=75?C.green:pct>=50?C.amber:C.red,borderRadius:99}}/>
                         </div>
@@ -5517,13 +5517,13 @@ ${body}
                 </div>
               </Card>
             )}
-            {/* ── CLASS LEADERBOARD ── */}
+            {/* ── GROUP LEADERBOARD ── */}
             {classLeaderboard.length>0&&(
               <Card style={{marginBottom:16}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,gap:8,flexWrap:"wrap"}}>
                   <div>
-                    <div style={{fontWeight:800,color:C.blue,fontSize:14}}>Class Collection Leaderboard</div>
-                    <p style={{fontSize:12,color:C.muted,marginTop:2}}>Worst payers first — click a row to filter everything to that class</p>
+                    <div style={{fontWeight:800,color:C.blue,fontSize:14}}>Group Collection Leaderboard</div>
+                    <p style={{fontSize:12,color:C.muted,marginTop:2}}>Worst payers first — click a row to filter everything to that group</p>
                   </div>
                   <DlBtn onClick={dlClassLeaderboard} label="Leaderboard PDF"/>
                 </div>
@@ -5586,11 +5586,11 @@ ${body}
             {/* ── AT RISK + REFUNDS/DISCOUNTS row ── */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
 
-              {/* At-Risk Students */}
+              {/* At-Risk Members */}
               <Card>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,gap:6,flexWrap:"wrap"}}>
                   <div>
-                    <div style={{fontWeight:800,color:C.amber,fontSize:14}}>⚠ At-Risk Students</div>
+                    <div style={{fontWeight:800,color:C.amber,fontSize:14}}>⚠ At-Risk Members</div>
                     <p style={{fontSize:11,color:C.muted,marginTop:2}}>Partial payments, gone silent for 30+ days</p>
                   </div>
                   <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
@@ -5826,7 +5826,7 @@ ${body}
       )}
       </>)}
 
-      {/* ══════════ STUDENT LEDGER MODAL ══════════ */}
+      {/* ══════════ MEMBER LEDGER MODAL ══════════ */}
       {stuLedger&&(()=>{
         const sid=stuLedger.studentId;
         const stuBills=bills.filter(b=>String(b.student_id)===String(sid))
@@ -5872,7 +5872,7 @@ ${body}
               {/* Body: tabs */}
               <div style={{flex:1,overflowY:"auto",padding:"16px 22px"}}>
                 {stuBills.length===0?(
-                  <div style={{textAlign:"center",padding:40,color:C.light}}>No bills on record for this student</div>
+                  <div style={{textAlign:"center",padding:40,color:C.light}}>No bills on record for this member</div>
                 ):stuBills.map(bill=>{
                   const billPays=(bill.fee_payments||[]).sort((a,b)=>new Date(b.payment_date||b.created_at)-new Date(a.payment_date||a.created_at));
                   const billRefunds=bill.fee_refunds||[];
@@ -5942,7 +5942,7 @@ ${body}
   );
 }
 
-// ─── MY BILL PAGE (Student) ───────────────────────────────────────────────────
+// ─── MY BILL PAGE (Member) ───────────────────────────────────────────────────
 export function MyBillPage({ctx}){
   const {user,notify}=ctx;
   const {schoolName:_schoolNameBill,schoolLogo:_billSchoolLogo}=useSection();

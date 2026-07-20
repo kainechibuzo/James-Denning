@@ -87,7 +87,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
   const schoolName=settings.school_name||"Your School";
   const schoolAddress=settings.school_address||"No. 1 Renaissance Avenue, Abuja, FCT";
   const schoolMotto=settings.school_motto||"Excellence in Learning";
-  const classTeacherTitle=settings.report_class_teacher_title||"Class Teacher";
+  const classTeacherTitle=settings.report_class_teacher_title||"Group Staff";
   const principalTitle=settings.report_principal_title||"School Principal";
   const footerText=settings.report_footer_text||"This report card is computer-generated.";
   const today=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
@@ -224,7 +224,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
       }).join("");
 
       const _summaryRow=(opt)=>`<tr style="background:${opt.bg};">
-        <td colspan="${2+_scoreColCount}" style="padding:8px;text-align:right;color:${opt.mut};font-size:9.5px;font-style:italic;">Grand Total · Average · ${opts.show_position!==false?"Class Position":"Score"}</td>
+        <td colspan="${2+_scoreColCount}" style="padding:8px;text-align:right;color:${opt.mut};font-size:9.5px;font-style:italic;">Grand Total · Average · ${opts.show_position!==false?"Group Position":"Score"}</td>
         <td style="padding:8px;text-align:center;font-weight:900;font-size:13px;color:${opt.acc};">${totalScore}</td>
         <td style="padding:8px;text-align:center;font-weight:900;font-size:12px;color:${opt.acc};">${avg.toFixed(1)}%</td>
         <td style="padding:8px;text-align:center;font-weight:700;font-size:11px;color:${opt.acc};">${opts.show_position!==false?(positionTxt+" / "+(students.length||"—")):(totalScore+"/"+maxScore)}</td>
@@ -348,9 +348,9 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
             ${logoHtml}
           </div>
-          <div style="background:${gold};padding:5px 30px;text-align:center;color:${navy};font-weight:bold;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;">Student Academic Report — ${termName} · ${sessName}</div>
+          <div style="background:${gold};padding:5px 30px;text-align:center;color:${navy};font-weight:bold;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;">Member Academic Report — ${termName} · ${sessName}</div>
           <div style="padding:10px 30px;background:${lt};border-bottom:2px solid ${gold};display:grid;grid-template-columns:repeat(4,1fr);gap:5px 14px;">
-            ${[["Student Name",stuName,2],["Admission No.",stuId],["Class",className],["Gender",stu.gender||"—"],["Date of Birth",stu.dob?fmtDate(stu.dob):"—"],["Class Position",opts.show_position!==false?(positionTxt+" of "+(students.length||"—")):"—"],["Session · Term",sessName+" · "+termName]].map(([l,v,sp])=>`<div style="grid-column:${sp?'span '+sp:'auto'};"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:${mut};font-family:system-ui,sans-serif;">${l}</div><div style="font-size:11px;font-weight:700;color:${txt};">${v}</div></div>`).join("")}
+            ${[["Member Name",stuName,2],["Admission No.",stuId],["Group",className],["Gender",stu.gender||"—"],["Date of Birth",stu.dob?fmtDate(stu.dob):"—"],["Group Position",opts.show_position!==false?(positionTxt+" of "+(students.length||"—")):"—"],["Session · Term",sessName+" · "+termName]].map(([l,v,sp])=>`<div style="grid-column:${sp?'span '+sp:'auto'};"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:${mut};font-family:system-ui,sans-serif;">${l}</div><div style="font-size:11px;font-weight:700;color:${txt};">${v}</div></div>`).join("")}
           </div>
           <div style="padding:14px 30px 10px;">
             <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${navy};border-bottom:2px solid ${navy};padding-bottom:3px;margin-bottom:8px;">Academic Performance Record</div>
@@ -363,7 +363,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 30px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Form Teacher's Comment",classTeacherComment,brd,lt,txt,navy,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Form Staff's Comment",classTeacherComment,brd,lt,txt,navy,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,navy,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 30px 10px;">${_parentAck(brd,lt,navy,sft,mut)}</div>`:""}
@@ -413,7 +413,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="background:${blue};margin:0 32px 12px;border-radius:12px;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
             <div>
-              <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;">Student</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;">Member</div>
               <div style="font-size:14px;font-weight:900;color:#fff;letter-spacing:-.3px;">${stuName}</div>
               <div style="font-size:9.5px;color:rgba(255,255,255,.55);margin-top:2px;">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -432,7 +432,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,brd,lt,txt,blue,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,brd,lt,txt,blue,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,blue,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_parentAck(brd,lt,blue,sft,mut)}</div>`:""}
@@ -481,7 +481,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           <div style="background:${lt};border-bottom:2px solid ${gold};padding:10px 32px;position:relative;z-index:1;">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
               <div>
-                <div style="font-size:8.5px;font-family:system-ui,sans-serif;text-transform:uppercase;color:${grn};letter-spacing:.8px;">Student's Full Name</div>
+                <div style="font-size:8.5px;font-family:system-ui,sans-serif;text-transform:uppercase;color:${grn};letter-spacing:.8px;">Member's Full Name</div>
                 <div style="font-size:16px;font-weight:bold;color:${grn};letter-spacing:.3px;">${stuName}</div>
                 <div style="font-size:9.5px;color:${sft};margin-top:2px;">${stuId} · ${className} · ${stu.gender||"—"} · ${sessName} · ${termName}</div>
               </div>
@@ -501,7 +501,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;z-index:1;">
-            ${opts.show_teacher_comment?_commentBox("✦ Form Teacher's Comment",classTeacherComment,brd,lt,txt,grn,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("✦ Form Staff's Comment",classTeacherComment,brd,lt,txt,grn,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("✦ Principal's Remark",principalComment,brd,lt,txt,grn,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;position:relative;z-index:1;">${_parentAck(brd,lt,grn,sft,"#94a3b8")}</div>`:""}
@@ -547,7 +547,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="background:${lt};padding:14px 32px;border-bottom:3px solid ${blue};display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
-              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:16px;font-weight:900;color:${blueDk};">${stuName}</div>
               <div style="font-size:9.5px;color:${sft};">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -566,7 +566,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,brd,lt,txt,blueDk,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,brd,lt,txt,blueDk,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,blueDk,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_parentAck(blue,lt,blueDk,sft,mut)}</div>`:""}
@@ -612,7 +612,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           <div style="height:4px;background:linear-gradient(90deg,${orange},${amber},${orange});"></div>
           <div style="padding:14px 32px 8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:flex-end;">
             <div>
-              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:16px;font-weight:900;color:${orange};">${stuName}</div>
               <div style="font-size:9.5px;color:${sft};">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -631,7 +631,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,brd,lt,txt,orange,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,brd,lt,txt,orange,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,orange,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_parentAck(amber,lt,orange,sft,mut)}</div>`:""}
@@ -675,7 +675,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="background:${lt};padding:12px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
-              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:16px;font-weight:900;color:${crim};">${stuName}</div>
               <div style="font-size:9.5px;color:${sft};">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -694,7 +694,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,gold,lt,txt,crim,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,gold,lt,txt,crim,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,gold,lt,txt,crim,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_parentAck(gold,lt,crim,sft,mut)}</div>`:""}
@@ -730,7 +730,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
               <div style="font-size:8.5px;opacity:.75;margin-top:4px;font-style:italic;">"${schoolMotto}"</div>
             </div>
             <div style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px;">
-              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:13px;font-weight:800;line-height:1.3;margin-top:2px;">${stuName}</div>
               <div style="font-size:9px;opacity:.8;margin-top:3px;">${stuId}</div>
               <div style="font-size:9px;opacity:.8;">${className}</div>
@@ -764,7 +764,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
               <div style="background:${lt};border-radius:6px;padding:10px 12px;">${_caeBars(cyan,brd)}</div>
             </div>`:""}
             ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-              ${opts.show_teacher_comment?_commentBox("Teacher's Comment",classTeacherComment,brd,lt,txt,cyanDk,teacherSigUrl):""}
+              ${opts.show_teacher_comment?_commentBox("Staff's Comment",classTeacherComment,brd,lt,txt,cyanDk,teacherSigUrl):""}
               ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,cyanDk,principalSigUrl,principalStampUrl):""}
             </div>`:""}
             ${opts.show_parent_ack?`<div style="margin-bottom:10px;">${_parentAck(cyan,lt,cyanDk,sft,mut)}</div>`:""}
@@ -798,7 +798,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </tr>`;
         }).join("");
         const summaryDark=`<tr style="background:${dark};border-top:2px solid ${gold};">
-          <td colspan="${2+_scoreColCount}" style="padding:8px;text-align:right;color:${mut};font-size:9.5px;font-style:italic;">Grand Total · Average · ${opts.show_position!==false?"Class Position":"Score"}</td>
+          <td colspan="${2+_scoreColCount}" style="padding:8px;text-align:right;color:${mut};font-size:9.5px;font-style:italic;">Grand Total · Average · ${opts.show_position!==false?"Group Position":"Score"}</td>
           <td style="padding:8px;text-align:center;font-weight:900;font-size:13px;color:${gold};">${totalScore}</td>
           <td style="padding:8px;text-align:center;font-weight:900;font-size:12px;color:${gold};">${avg.toFixed(1)}%</td>
           <td style="padding:8px;text-align:center;font-weight:700;font-size:11px;color:${gold};">${opts.show_position!==false?(positionTxt+" / "+(students.length||"—")):(totalScore+"/"+maxScore)}</td>
@@ -860,7 +860,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="background:${darkLt};margin:14px 32px;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border:1px solid ${brd};">
             <div>
-              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.5px;">Student</div>
+              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.5px;">Member</div>
               <div style="font-size:15px;font-weight:900;color:${gold};">${stuName}</div>
               <div style="font-size:9.5px;color:${sft};">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -890,7 +890,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_darkComment("Class Teacher's Comment",classTeacherComment,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_darkComment("Group Staff's Comment",classTeacherComment,teacherSigUrl):""}
             ${opts.show_principal_comment?_darkComment("Principal's Remark",principalComment,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_darkAck}</div>`:""}
@@ -943,7 +943,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="background:${lt};padding:12px 32px;border-bottom:2px solid ${grn};display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
-              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:16px;font-weight:900;color:${grnDk};">${stuName}</div>
               <div style="font-size:9.5px;color:${sft};">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -962,7 +962,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,brd,lt,txt,grnDk,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,brd,lt,txt,grnDk,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,grnDk,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;">${_parentAck(grn,lt,grnDk,sft,mut)}</div>`:""}
@@ -1013,7 +1013,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="margin:0 32px 12px;background:linear-gradient(135deg,${purp},${pink});border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;color:#fff;position:relative;z-index:1;">
             <div>
-              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Student</div>
+              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Member</div>
               <div style="font-size:15px;font-weight:900;letter-spacing:-.3px;">${stuName}</div>
               <div style="font-size:9.5px;opacity:.85;">${stuId} · ${className} · ${stu.gender||"—"}</div>
             </div>
@@ -1032,7 +1032,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;z-index:1;">
-            ${opts.show_teacher_comment?_commentBox("Class Teacher's Comment",classTeacherComment,brd,lt,txt,purpDk,teacherSigUrl):""}
+            ${opts.show_teacher_comment?_commentBox("Group Staff's Comment",classTeacherComment,brd,lt,txt,purpDk,teacherSigUrl):""}
             ${opts.show_principal_comment?_commentBox("Principal's Remark",principalComment,brd,lt,txt,purpDk,principalSigUrl,principalStampUrl):""}
           </div>`:""}
           ${opts.show_parent_ack?`<div style="padding:0 32px 10px;position:relative;z-index:1;">${_parentAck(purp,lt,purpDk,sft,mut)}</div>`:""}
@@ -1076,7 +1076,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           <div style="flex:1;text-align:center;">
             <div style="font-size:17px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${schoolName}</div>
             <div style="font-size:9px;color:#b3d4ff;font-style:italic;margin-top:2px;">${schoolAddress}</div>
-            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Student Report Card"}</div>
+            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report Card"}</div>
           </div>
           <div style="text-align:center;min-width:64px;flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 8px;">
             <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">${overallG}</div>
@@ -1093,7 +1093,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="flex:1;border-right:1px solid ${bdr};">
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Session / Term</span><b>${session?.name||""} / ${term?.name||""}</b></div>
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Class</span><b>${cls?.name||"—"}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Group</span><b>${cls?.name||"—"}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Issued</span><span>${today}</span></div>
           </div>
           <div style="flex:1;">
@@ -1140,7 +1140,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             <div style="font-weight:700;color:#E8560A;font-size:9px;">${principalTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${principalComment}</div>
           </div>`:""}
-          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Teacher: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
+          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
             <div>
               <div style="font-weight:700;color:#E8560A;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
@@ -1166,7 +1166,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
 
   }).join("");
 
-  const rcFilename=pdfName(students.length===1?fullName(students[0]):cls?.name||"CLASS","REPORT",term?.name||"",session?.name||"");
+  const rcFilename=pdfName(students.length===1?fullName(students[0]):cls?.name||"GROUP","REPORT",term?.name||"",session?.name||"");
 
   const fullHtml=`<!DOCTYPE html>
 <html lang="en">

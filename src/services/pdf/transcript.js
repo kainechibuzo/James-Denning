@@ -217,7 +217,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
       <div class="si-val" style="font-size:12.5px">${studentName}</div>
     </div>
     <div class="si-cell">
-      <div class="si-lbl">Student ID / Adm. No.</div>
+      <div class="si-lbl">Member ID / Adm. No.</div>
       <div class="si-val">${studentId||"—"}</div>
     </div>
     <div class="si-cell">
@@ -225,7 +225,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
       <div class="si-val">${gender||"—"}${dob?" · "+dob:""}</div>
     </div>
     <div class="si-cell">
-      <div class="si-lbl">Current Class / Section</div>
+      <div class="si-lbl">Current Group / Section</div>
       <div class="si-val">${className||"—"}${sectionName?" · "+sectionName:""}</div>
     </div>
   </div>
@@ -239,7 +239,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
     <div class="sc"><div class="sc-val">${subjects.length}</div><div class="sc-lbl">Subjects Taken</div></div>
     <div class="sc"><div class="sc-val">${passes}</div><div class="sc-lbl">Passed</div></div>
     <div class="sc"><div class="sc-val">${subjects.length-passes}</div><div class="sc-lbl">Failed</div></div>
-    <div class="sc"><div class="sc-val">${classPeriods.length}</div><div class="sc-lbl">Class Periods</div></div>
+    <div class="sc"><div class="sc-val">${classPeriods.length}</div><div class="sc-lbl">Group Periods</div></div>
     <div class="sc accent"><div class="sc-val">${overallAvg!=null?overallAvg.toFixed(1)+"%":"—"}</div><div class="sc-lbl">Overall Average</div></div>
     <div class="sc accent"><div class="sc-val">${overallGrade}</div><div class="sc-lbl">Overall Grade</div></div>
     <div class="sc accent"><div class="sc-val" style="font-size:12px;padding-top:3px">${overallRemark}</div><div class="sc-lbl">Remark</div></div>
@@ -247,12 +247,12 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 
   <!-- Footer -->
   <div class="footer">
-    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Class Teacher — Signature &amp; Date</div></div>
+    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Group Staff — Signature &amp; Date</div></div>
     <div class="stamp">
       <div class="stamp-c"><span style="font-size:7.5px;color:#c0cfda;font-weight:700;letter-spacing:1px;text-transform:uppercase">STAMP</span></div>
       <div>Official document of <strong style="color:#1e3a5f">${schoolName}</strong>.<br/>Any alteration renders it invalid.</div>
     </div>
-    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Principal / Head Teacher — Signature &amp; Date</div></div>
+    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Principal / Head Staff — Signature &amp; Date</div></div>
   </div>
 
 </div><!-- /page -->
@@ -372,10 +372,10 @@ export function buildTranscriptHTML({studentName,studentId,className,sectionName
   </div>
 
   <div class="info-grid">
-    <div class="info-cell"><div class="info-label">Student Name</div><div class="info-val">${studentName}</div></div>
-    <div class="info-cell"><div class="info-label">Student ID / Admission No.</div><div class="info-val">${studentId||"—"}</div></div>
+    <div class="info-cell"><div class="info-label">Member Name</div><div class="info-val">${studentName}</div></div>
+    <div class="info-cell"><div class="info-label">Member ID / Admission No.</div><div class="info-val">${studentId||"—"}</div></div>
     <div class="info-cell"><div class="info-label">Academic Year</div><div class="info-val">${academicYear}</div></div>
-    <div class="info-cell"><div class="info-label">Class</div><div class="info-val">${className||"—"}</div></div>
+    <div class="info-cell"><div class="info-label">Group</div><div class="info-val">${className||"—"}</div></div>
     <div class="info-cell"><div class="info-label">Section / Department</div><div class="info-val">${sectionName||"—"}</div></div>
     <div class="info-cell" style="border-right:none"><div class="info-label">Gender</div><div class="info-val">${gender||"—"}${dob?` · DOB: ${dob}`:""}</div></div>
   </div>
@@ -418,9 +418,9 @@ export function buildTranscriptHTML({studentName,studentId,className,sectionName
   </div>
 
   <div class="footer">
-    <div class="sig-box"><div class="sig-line">Class Teacher's Signature</div></div>
+    <div class="sig-box"><div class="sig-line">Group Staff's Signature</div></div>
     <div class="watermark">This is an official document of ${schoolName}.<br/>Any alteration renders it invalid.</div>
-    <div class="sig-box"><div class="sig-line">Head Teacher / Principal</div></div>
+    <div class="sig-box"><div class="sig-line">Head Staff / Principal</div></div>
   </div>
 </body></html>`;
 }
@@ -510,11 +510,11 @@ export function buildMultiSessionTranscriptHTML({studentName,studentId,className
   <!-- Student info -->
   <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:0;border:1px solid #d1d5db;border-radius:3px;margin-bottom:8px;overflow:hidden">
     <div style="padding:4px 8px;border-right:1px solid #d1d5db">
-      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Student Name</div>
+      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Member Name</div>
       <div style="font-weight:700;color:#111;font-size:10.5px">${studentName}</div>
     </div>
     <div style="padding:4px 8px;border-right:1px solid #d1d5db">
-      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Student ID</div>
+      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Member ID</div>
       <div style="font-weight:700;color:#111">${studentId||"—"}</div>
     </div>
     <div style="padding:4px 8px;border-right:1px solid #d1d5db;background:#f0f4f8">
@@ -522,7 +522,7 @@ export function buildMultiSessionTranscriptHTML({studentName,studentId,className
       <div style="font-weight:900;color:#0d2d6e;font-size:10px">${academicYear}</div>
     </div>
     <div style="padding:4px 8px;border-right:1px solid #d1d5db">
-      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Class</div>
+      <div style="font-size:7px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.4px">Group</div>
       <div style="font-weight:700;color:#111">${pageClassName||"—"}</div>
     </div>
     <div style="padding:4px 8px;border-right:1px solid #d1d5db">
@@ -594,7 +594,7 @@ export function buildMultiSessionTranscriptHTML({studentName,studentId,className
   <div style="border-top:1.5px solid #0d2d6e;padding-top:8px;display:flex;justify-content:space-between;align-items:flex-end">
     <div style="text-align:center;min-width:130px">
       <div style="height:22px"></div>
-      <div style="border-top:1px solid #333;padding-top:3px;font-size:8px;color:#374151">Class Teacher's Signature &amp; Date</div>
+      <div style="border-top:1px solid #333;padding-top:3px;font-size:8px;color:#374151">Group Staff's Signature &amp; Date</div>
     </div>
     <div style="text-align:center;font-size:8px;color:#9ca3af;line-height:1.5">
       <div style="width:60px;height:60px;border-radius:50%;border:1.5px dashed #d1d5db;margin:0 auto 4px;display:flex;align-items:center;justify-content:center">
@@ -604,7 +604,7 @@ export function buildMultiSessionTranscriptHTML({studentName,studentId,className
     </div>
     <div style="text-align:center;min-width:130px">
       <div style="height:22px"></div>
-      <div style="border-top:1px solid #333;padding-top:3px;font-size:8px;color:#374151">Principal / Head Teacher &amp; Date</div>
+      <div style="border-top:1px solid #333;padding-top:3px;font-size:8px;color:#374151">Principal / Head Staff &amp; Date</div>
     </div>
   </div>
 

@@ -564,7 +564,7 @@ export function SettingsPage({ctx,inPanel}){
                 Admin logins are never affected — the admin can always sign in.
               </div>
               {[
-                {key:"login_students_disabled",   label:"Disable Student Logins",  desc:"All students will be blocked from signing in.", color:C.orange},
+                {key:"login_students_disabled",   label:"Disable Member Logins",  desc:"All students will be blocked from signing in.", color:C.orange},
                 {key:"login_teachers_disabled",   label:"Disable Staff Logins",    desc:"All teachers and managers will be blocked from signing in.", color:C.blue},
               ].map(({key,label,desc,color},i,arr)=>{
                 const on=settings[key]==="true";
@@ -603,7 +603,7 @@ export function SettingsPage({ctx,inPanel}){
             </div>
           </div>
 
-          <SettingRow label="Block Report Cards for Owing Students"
+          <SettingRow label="Block Report Cards for Owing Members"
             desc="When enabled, students with any outstanding fee balance — even partial — cannot view or download their report card until the balance is cleared. Admins are never blocked.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               <SettingToggle settings={settings} onSet={set} k="block_reports_if_owing"/>
@@ -624,7 +624,7 @@ export function SettingsPage({ctx,inPanel}){
             </select>
           </SettingRow>
           <div style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`}}/>
-          <SettingRow label="Student Name Order" desc="Controls how student names appear across results, reports, bills, and student lists.">
+          <SettingRow label="Member Name Order" desc="Controls how student names appear across results, reports, bills, and student lists.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {[{v:"FML",l:"First, Middle, Last (default)"},{v:"LFM",l:"Last, First, Middle"}].map(o=>(
                 <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
@@ -637,7 +637,7 @@ export function SettingsPage({ctx,inPanel}){
               ))}
             </div>
           </SettingRow>
-          <SettingRow label="Student Name Capitalization" desc="How student names are capitalised in all portal displays.">
+          <SettingRow label="Member Name Capitalization" desc="How student names are capitalised in all portal displays.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {[{v:"title",l:"Title Case — First Letter Capitalised (default)"},{v:"upper",l:"ALL CAPS"},{v:"lower",l:"lowercase"}].map(o=>(
                 <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",

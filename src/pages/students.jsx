@@ -103,7 +103,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
 
   if(progress) return(
     <BulkProgressModal
-      title="Generating Bills for Uploaded Students"
+      title="Generating Bills for Uploaded Members"
       total={progress.total} current={progress.current}
       failed={progress.failed} isDone={progress.done}
       canClose={true} onClose={onClose}
@@ -111,7 +111,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
   );
 
   return(
-    <Modal title="Generate Bills for Uploaded Students" onClose={onClose} width={560}>
+    <Modal title="Generate Bills for Uploaded Members" onClose={onClose} width={560}>
       <div style={{fontSize:12,color:C.muted,marginBottom:14}}>
         {students.length} student{students.length!==1?"s":""} uploaded across {byClass.length} class{byClass.length!==1?"es":""}. Pick a fee template for each class or skip it.
       </div>
@@ -596,7 +596,7 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
           {classIds.length>1&&(
             <div style={{marginBottom:16}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Classes to include</div>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Groups to include</div>
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={()=>toggleAll(true)} style={{fontSize:11,fontWeight:700,color:C.blue,background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>All</button>
                   <button onClick={()=>toggleAll(false)} style={{fontSize:11,fontWeight:700,color:C.muted,background:"none",border:"none",cursor:"pointer",padding:"2px 6px"}}>None</button>
@@ -628,7 +628,7 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
           <div style={{marginBottom:16,padding:"12px 16px",background:C.bluePale,borderRadius:10,fontSize:13,color:C.blue}}>
             <strong>{withEmail.length}</strong> student{withEmail.length!==1?"s":""} with email addresses will receive their report card.
             {noEmail>0&&<div style={{marginTop:4,color:C.amber}}>{noEmail} student{noEmail!==1?"s":""} skipped — no email on file.</div>}
-            {checkedClasses.size===0&&<div style={{marginTop:4,color:C.red,fontWeight:700}}>No classes selected — nothing to send.</div>}
+            {checkedClasses.size===0&&<div style={{marginTop:4,color:C.red,fontWeight:700}}>No groups selected — nothing to send.</div>}
           </div>
           {queueErr&&(
             <div style={{marginBottom:14,padding:"10px 14px",background:C.redPale,border:`1px solid ${C.red}44`,
@@ -810,7 +810,7 @@ export function StudentsPage({ctx}){
   const getClass=id=>classes.find(c=>String(c.id)===String(id));
   const stuFullName=fullName; // alias to module-level fullName which honours name_order/name_case
 
-  // Classes that belong to the currently-selected section (for the cascading class dropdown)
+  // Groups that belong to the currently-selected section (for the cascading class dropdown)
   const classesBySection=useMemo(()=>
     selSection ? classes.filter(c=>String(c.section_id)===selSection) : classes
   ,[classes,selSection]);
@@ -905,24 +905,24 @@ export function StudentsPage({ctx}){
         const {error}=await db.upsertStudent({...payload,id:newId,admission_number:newId,password_hash:newId});
         if(error){console.error("[upsertStudent new]",error);notify(error.message||error.details||"Failed to add student","error");}
         else{
-          notify(`Student added — ID: ${newId} ✓`);
+          notify(`Member added — ID: ${newId} ✓`);
           setLastRegistered({count:1,entries:[{
             to:payload.email||null,
             subject:`Welcome to ${_spSN} Portal`,
             html:buildEmailHtml("Welcome to the Portal",[
               `This communication is regarding:`,
-              `${name} · Student ID: ${newId} · Class: ${cls?.name||"—"}`,``,
+              `${name} · Member ID: ${newId} · Group: ${cls?.name||"—"}`,``,
               `Dear Parent/Guardian,`,``,
               `Your ward has been registered on the ${_spSN} portal.`,``,
               `YOUR LOGIN DETAILS`,
               `──────────────────────────────────────`,
               `Portal:     ${window.location.origin}`,
-              `Student ID: ${newId}`,
+              `Member ID: ${newId}`,
               `Password:   ${newId}`,
-              `Class:      ${cls?.name||"—"}`,
+              `Group:      ${cls?.name||"—"}`,
               `──────────────────────────────────────`,``,
               `Please keep these details safe and confidential.`,
-              `The password is the Student ID — students may change it after logging in.`,``,
+              `The password is the Member ID — students may change it after logging in.`,``,
               `For assistance, contact the school administration.`,
             ].join("\n")),
           }]});
@@ -988,7 +988,7 @@ export function StudentsPage({ctx}){
     let confirmMsg=`This will permanently delete ${eligibleIds.length} student${eligibleIds.length!==1?"s":""} and all their associated data. This cannot be undone.`;
     if(allBlocked.size>0) confirmMsg+=`\n\n⚠️ ${allBlocked.size} student(s) are blocked by interlocks (payments or published cards) and will be SKIPPED.`;
 
-    const ok=await confirm({title:`Delete ${eligibleIds.length} Student${eligibleIds.length!==1?"s":""}?`,
+    const ok=await confirm({title:`Delete ${eligibleIds.length} Member${eligibleIds.length!==1?"s":""}?`,
       message:confirmMsg,
       icon:null,confirmLabel:"Delete All",danger:true,typeToConfirm:"DELETE"});
     if(!ok)return;
@@ -1055,18 +1055,18 @@ export function StudentsPage({ctx}){
           subject:`Welcome to ${_spSN} Portal`,
           html:buildEmailHtml("Welcome to the Portal",[
             `This communication is regarding:`,
-            `${name} · Student ID: ${newId} · Class: ${cls?.name||"—"}`,``,
+            `${name} · Member ID: ${newId} · Group: ${cls?.name||"—"}`,``,
             `Dear Parent/Guardian,`,``,
             `Your ward has been registered on the ${_spSN} portal.`,``,
             `YOUR LOGIN DETAILS`,
             `──────────────────────────────────────`,
             `Portal:     ${window.location.origin}`,
-            `Student ID: ${newId}`,
+            `Member ID: ${newId}`,
             `Password:   ${newId}`,
-            `Class:      ${cls?.name||"—"}`,
+            `Group:      ${cls?.name||"—"}`,
             `──────────────────────────────────────`,``,
             `Please keep these details safe and confidential.`,
-            `The password is the Student ID — students may change it after logging in.`,``,
+            `The password is the Member ID — students may change it after logging in.`,``,
             `For assistance, contact the school administration.`,
           ].join("\n")),
         });
@@ -1205,12 +1205,12 @@ export function StudentsPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="students" size={20}/>Students</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="students" size={20}/>Members</h2>
           <div style={{color:C.muted,fontSize:12}}>{students.length} registered{selectedSection?` · ${selectedSection.name}`:""}</div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <Btn onClick={()=>{setBulkParsed([]);setBulkFile(null);setBulkErrors([]);setBulkDupInfo([]);setBulkModal(true);}} color={C.green} outline>Bulk Upload</Btn>
-          <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Student</Btn>
+          <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Member</Btn>
         </div>
       </div>
 
@@ -1269,7 +1269,7 @@ export function StudentsPage({ctx}){
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,padding:"9px 13px",
             background:C.amberPale,border:`1px solid ${C.amber}44`,borderRadius:8,fontSize:12,color:C.amber}}>
             <AppIcon name="warning" size={14} color={C.amber}/>
-            <span style={{flex:1}}>Showing only <b>active students with no email address</b> — from the dashboard health check.</span>
+            <span style={{flex:1}}>Showing only <b>active members with no email address</b> — from the dashboard health check.</span>
             <button onClick={()=>setNoEmailOnly(false)}
               style={{background:"none",border:"none",cursor:"pointer",color:C.amber,fontWeight:700,fontSize:12,textDecoration:"underline"}}>
               Show all students
@@ -1286,8 +1286,8 @@ export function StudentsPage({ctx}){
               <option value="name_desc">Name Z→A</option>
               <option value="id_asc">ID Ascending</option>
               <option value="id_desc">ID Descending</option>
-              <option value="class_asc">Class A→Z</option>
-              <option value="class_desc">Class Z→A</option>
+              <option value="class_asc">Group A→Z</option>
+              <option value="class_desc">Group Z→A</option>
               <option value="year_asc">Admission Year ↑</option>
               <option value="year_desc">Admission Year ↓</option>
               <option value="gender">Gender</option>
@@ -1392,12 +1392,12 @@ export function StudentsPage({ctx}){
         <Modal title={editId?"Edit Student":"New Student"} onClose={()=>setModal(false)} width={560}>
           {!editId&&(
             <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:8,padding:"9px 13px",marginBottom:14,fontSize:12,color:C.blue}}>
-              <strong>Student ID</strong> will be auto-generated as <strong>RGS/01, RGS/02…</strong> on save
+              <strong>Member ID</strong> will be auto-generated as <strong>RGS/01, RGS/02…</strong> on save
             </div>
           )}
           {editId&&(
             <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Student ID (read-only)</label>
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Member ID (read-only)</label>
               <div style={{padding:"9px 12px",background:C.offWhite,borderRadius:8,fontSize:13,border:`2px solid ${C.border}`,color:C.blue,fontWeight:700}}>{editId}</div>
             </div>
           )}
@@ -1454,11 +1454,11 @@ export function StudentsPage({ctx}){
           <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:10,padding:"13px 16px",marginBottom:16,fontSize:12,color:C.blue,lineHeight:1.8}}>
             <div style={{fontWeight:800,marginBottom:4}}>Instructions</div>
             <div>1. Download the <strong>Excel template</strong> — it includes a guide sheet</div>
-            <div>2. Fill student data in the <strong>"Student Data"</strong> sheet starting row 5</div>
+            <div>2. Fill member data in the <strong>"Member Data"</strong> sheet starting row 5</div>
             <div>3. <strong>First Name</strong> and <strong>Last Name</strong> are required (★ columns)</div>
             <div>4. Use DOB format <strong>YYYY-MM-DD</strong>, or fill Age instead — not both</div>
-            <div>5. Class name must match portal exactly (e.g. <strong>JSS 1A</strong>)</div>
-            <div>6. Save as .xlsx and upload — Student IDs are auto-generated</div>
+            <div>5. Group name must match portal exactly (e.g. <strong>JSS 1A</strong>)</div>
+            <div>6. Save as .xlsx and upload — Member IDs are auto-generated</div>
           </div>
 
           <div style={{display:"flex",gap:10,marginBottom:16}}>
@@ -1554,7 +1554,7 @@ export function StudentsPage({ctx}){
 
           <div style={{display:"flex",gap:10,marginTop:4}}>
             <Btn onClick={saveBulk} color={C.orange} disabled={bulkSaving||!bulkParsed.length} style={{flex:1}}>
-              {bulkSaving?"Uploading…":`Upload ${bulkParsed.length} Students`}
+              {bulkSaving?"Uploading…":`Upload ${bulkParsed.length} Members`}
             </Btn>
             <Btn onClick={()=>setBulkModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
           </div>
@@ -1572,7 +1572,7 @@ export function StudentsPage({ctx}){
               <strong>New entry:</strong> {[form.first_name,form.middle_name,form.last_name].filter(Boolean).join(" ")} · {classes.find(c=>String(c.id)===String(form.class_id))?.name||"—"}
             </div>
           </div>
-          <div style={{fontSize:12,color:C.muted,marginBottom:14}}>Are you sure you want to add this student?</div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:14}}>Are you sure you want to add this member?</div>
           <div style={{display:"flex",gap:10}}>
             <Btn onClick={dupWarning.onConfirm} color={C.orange} style={{flex:1}}>Add Anyway</Btn>
             <Btn onClick={()=>setDupWarning(null)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
@@ -1632,7 +1632,7 @@ export function StudentsPage({ctx}){
 }
 
 
-// ─── TEACHER ADD STUDENTS PAGE ───────────────────────────────────────────────
+// ─── STAFF ADD MEMBERS PAGE ───────────────────────────────────────────────
 export function TeacherAddStudentsPage({ctx}){
   const {user,notify}=ctx;
   const {schoolName:_teacherAddSN}=useSection();
@@ -1698,18 +1698,18 @@ export function TeacherAddStudentsPage({ctx}){
     const {error}=await db.submitStudentRequest(payload);
     setSaving(false);
     if(error){notify(error.message,"error");return;}
-    notify("✅ Student submitted for admin approval");
+    notify("✅ Member submitted for admin approval");
     db.createNotificationForAdmins(
       `New student request from ${user.name||"a teacher"}`,
       `${form.first_name} ${form.last_name} submitted for enrolment approval`,
       "info","student_request","approvals"
     ).catch(()=>{});
     db.sendAdminAlert({
-      subject:`[Alert] New Student Request — ${form.first_name} ${form.last_name}`,
-      html:buildAlertEmail("New Student Enrolment Request",
-        [`Submitted by: ${user.name||"Teacher"}`,
-         `Student name: ${form.first_name} ${form.middle_name||""} ${form.last_name}`.replace(/\s+/g," "),
-         `Class: ${classes.find(c=>String(c.id)===String(form.class_id))?.name||"—"}`,
+      subject:`[Alert] New Member Request — ${form.first_name} ${form.last_name}`,
+      html:buildAlertEmail("New Member Enrolment Request",
+        [`Submitted by: ${user.name||"Staff"}`,
+         `Member name: ${form.first_name} ${form.middle_name||""} ${form.last_name}`.replace(/\s+/g," "),
+         `Group: ${classes.find(c=>String(c.id)===String(form.class_id))?.name||"—"}`,
          `Gender: ${form.gender||"—"}`,
          `Time: ${new Date().toLocaleString("en-NG")}`],
         "info"),
@@ -1735,7 +1735,7 @@ export function TeacherAddStudentsPage({ctx}){
       if(!XLSX){setBulkErrors(["SheetJS not loaded yet — please wait a moment."]);return;}
       const ab=await file.arrayBuffer();
       const wb=XLSX.read(ab,{type:"array",cellDates:true});
-      const sheetName=wb.SheetNames.find(n=>n.includes("Student Data"))||wb.SheetNames[0];
+      const sheetName=wb.SheetNames.find(n=>n.includes("Member Data"))||wb.SheetNames[0];
       const ws=wb.Sheets[sheetName];
       const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
       if(raw.length<3){setBulkErrors(["File appears empty or invalid."]);return;}
@@ -1796,10 +1796,10 @@ export function TeacherAddStudentsPage({ctx}){
     if(error){notify(error.message,"error");return;}
     notify(`✅ ${rows.length} student(s) submitted for admin approval`);
     db.sendAdminAlert({
-      subject:`[Alert] Bulk Student Request — ${rows.length} student${rows.length!==1?"s":""} by ${user.name||"Teacher"}`,
-      html:buildAlertEmail("Bulk Student Enrolment Request",
-        [`Submitted by: ${user.name||"Teacher"}`,
-         `Students submitted: ${rows.length}`,
+      subject:`[Alert] Bulk Member Request — ${rows.length} student${rows.length!==1?"s":""} by ${user.name||"Staff"}`,
+      html:buildAlertEmail("Bulk Member Enrolment Request",
+        [`Submitted by: ${user.name||"Staff"}`,
+         `Members submitted: ${rows.length}`,
          `Time: ${new Date().toLocaleString("en-NG")}`],
         "info"),
       eventKey:"student_request"
@@ -1815,12 +1815,12 @@ export function TeacherAddStudentsPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="add-students" size={20}/>Add Students</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="add-students" size={20}/>Add Members</h2>
           <div style={{color:C.muted,fontSize:12}}>Submissions require admin approval before going live</div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <Btn onClick={()=>{setBulkParsed([]);setBulkFile(null);setBulkErrors([]);setBulkModal(true);}} color={C.green} outline>Bulk Upload</Btn>
-          <Btn onClick={()=>{setForm(blank);setModal(true);}} color={C.orange}>Add Student</Btn>
+          <Btn onClick={()=>{setForm(blank);setModal(true);}} color={C.orange}>Add Member</Btn>
         </div>
       </div>
 
@@ -1829,8 +1829,8 @@ export function TeacherAddStudentsPage({ctx}){
         display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:C.orange}}>
         
         <div>
-          <strong>Approval Workflow:</strong> Students you add here are sent to the admin for review.
-          Once approved they will be added to the portal and assigned a Student ID automatically.
+          <strong>Approval Workflow:</strong> Members you add here are sent to the admin for review.
+          Once approved they will be added to the portal and assigned a Member ID automatically.
           You can track your submissions below.
         </div>
       </div>
@@ -1839,11 +1839,11 @@ export function TeacherAddStudentsPage({ctx}){
       <Card>
         <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:14}}>My Submissions</div>
         {loading?<Spinner/>:myRequests.length===0?(
-          <div style={{textAlign:"center",padding:32,color:C.light}}>No submissions yet — click Add Student or Bulk Upload to get started</div>
+          <div style={{textAlign:"center",padding:32,color:C.light}}>No submissions yet — click Add Member or Bulk Upload to get started</div>
         ):(
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Submitted","Name","Class","Source","Status","Admin Note"]}/>
+              <Th cols={["Submitted","Name","Group","Source","Status","Admin Note"]}/>
               <tbody>
                 {myRequests.map((r,i)=>{
                   const cls=classes.find(c=>c.id===r.class_id);
@@ -1867,7 +1867,7 @@ export function TeacherAddStudentsPage({ctx}){
 
       {/* ── MANUAL ADD MODAL ── */}
       {modal&&(
-        <Modal title="Submit Student for Approval" onClose={()=>setModal(false)} width={560}>
+        <Modal title="Submit Member for Approval" onClose={()=>setModal(false)} width={560}>
           <div style={{background:C.orangePale,border:`1px solid ${C.orange}22`,borderRadius:8,padding:"9px 13px",marginBottom:14,fontSize:12,color:C.orange}}>
             This student will be reviewed by the admin before being added to the system.
           </div>
@@ -1896,8 +1896,8 @@ export function TeacherAddStudentsPage({ctx}){
             }
           </div>
           <Inp label="Admission Year" value={form.admission_year||""} onChange={v=>ff({admission_year:v})} placeholder={String(new Date().getFullYear())}/>
-          <Sel label="Class" value={form.class_id||""} onChange={v=>ff({class_id:v})}
-            options={[{value:"",label:"— Select Class —"},...classes.map(c=>({value:c.id,label:`${c.name}${c.sections?" ("+c.sections.code+")":""}`}))]}/>
+          <Sel label="Group" value={form.class_id||""} onChange={v=>ff({class_id:v})}
+            options={[{value:"",label:"— Select Group —"},...classes.map(c=>({value:c.id,label:`${c.name}${c.sections?" ("+c.sections.code+")":""}`}))]}/>
           <div style={{display:"flex",gap:10,marginTop:6}}>
             <Btn onClick={submitManual} color={C.orange} style={{flex:1}} disabled={saving}>{saving?"Submitting…":"Submit for Approval"}</Btn>
             <Btn onClick={()=>setModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
@@ -1907,21 +1907,21 @@ export function TeacherAddStudentsPage({ctx}){
 
       {/* ── BULK UPLOAD MODAL ── */}
       {bulkModal&&(
-        <Modal title="Bulk Student Upload (Pending Approval)" onClose={()=>setBulkModal(false)} width={660}>
+        <Modal title="Bulk Member Upload (Pending Approval)" onClose={()=>setBulkModal(false)} width={660}>
           {typeof window!=="undefined"&&!window.XLSX&&(()=>{
             const s=document.createElement("script");
             s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
             document.head.appendChild(s);return null;
           })()}
           <div style={{background:C.orangePale,border:`1px solid ${C.orange}22`,borderRadius:10,padding:"12px 16px",marginBottom:16,fontSize:12,color:C.orange,lineHeight:1.8}}>
-            <div style={{fontWeight:800,marginBottom:4}}>All bulk-uploaded students will be submitted for admin approval before going live.</div>
+            <div style={{fontWeight:800,marginBottom:4}}>All bulk-uploaded members will be submitted for admin approval before going live.</div>
           </div>
           <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:10,padding:"13px 16px",marginBottom:16,fontSize:12,color:C.blue,lineHeight:1.8}}>
             <div style={{fontWeight:800,marginBottom:4}}>Instructions</div>
             <div>1. Download the Excel template — includes a guide sheet</div>
-            <div>2. Fill data in the <strong>"Student Data"</strong> sheet starting row 5</div>
+            <div>2. Fill data in the <strong>"Member Data"</strong> sheet starting row 5</div>
             <div>3. <strong>First Name</strong> and <strong>Last Name</strong> are required</div>
-            <div>4. Class name must match portal exactly (e.g. <strong>JSS 1A</strong>)</div>
+            <div>4. Group name must match portal exactly (e.g. <strong>JSS 1A</strong>)</div>
           </div>
           <div style={{display:"flex",gap:10,marginBottom:16}}>
             <Btn onClick={downloadTemplate} color={C.blue}>Download Excel Template (.xlsx)</Btn>
@@ -1937,7 +1937,7 @@ export function TeacherAddStudentsPage({ctx}){
               <div style={{overflowX:"auto",maxHeight:200,overflowY:"auto",border:`1px solid ${C.border}`,borderRadius:8}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead><tr style={{background:C.blue}}>
-                    {["#","First Name","Last","Gender","DOB/Age","Class"].map((h,i)=>(
+                    {["#","First Name","Last","Gender","DOB/Age","Group"].map((h,i)=>(
                       <th key={i} style={{padding:"6px 10px",color:"#fff",textAlign:"left",fontWeight:700}}>{h}</th>
                     ))}
                   </tr></thead>
@@ -1965,7 +1965,7 @@ export function TeacherAddStudentsPage({ctx}){
           )}
           <div style={{display:"flex",gap:10,marginTop:4}}>
             <Btn onClick={submitBulk} color={C.orange} disabled={bulkSaving||!bulkParsed.length} style={{flex:1}}>
-              {bulkSaving?`Submitting…`:`Submit ${bulkParsed.length} Students for Approval`}
+              {bulkSaving?`Submitting…`:`Submit ${bulkParsed.length} Members for Approval`}
             </Btn>
             <Btn onClick={()=>setBulkModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
           </div>
@@ -1976,7 +1976,7 @@ export function TeacherAddStudentsPage({ctx}){
 }
 
 
-// ─── ADMIN STUDENT APPROVALS PAGE ─────────────────────────────────────────────
+// ─── ADMIN MEMBER APPROVALS PAGE ─────────────────────────────────────────────
 export function StudentApprovalsPage({ctx}){
   const {user,notify,setPendingApprovals}=ctx;
   const {schoolName:_approvalSN}=useSection();
@@ -2084,15 +2084,15 @@ export function StudentApprovalsPage({ctx}){
 
     const _sendDecisionEmail=(outcome,extraRows,severity)=>{
       const rows=[
-        `Student: ${studentName}`,
-        `Class: ${cls?.name||"—"}`,
+        `Member: ${studentName}`,
+        `Group: ${cls?.name||"—"}`,
         ...extraRows,
         `Reviewed by: ${user.name||"Admin"}`,
-        `Submitted by: ${req.teacher_name||req.submitted_by||"Teacher"}`,
+        `Submitted by: ${req.teacher_name||req.submitted_by||"Staff"}`,
         `Time: ${new Date().toLocaleString("en-NG")}`,
       ];
-      const html=buildAlertEmail(`Student Enrolment Request ${outcome}`,rows,severity,_schoolName);
-      const subject=`Student Request ${outcome} — ${studentName}`;
+      const html=buildAlertEmail(`Member Enrolment Request ${outcome}`,rows,severity,_schoolName);
+      const subject=`Member Request ${outcome} — ${studentName}`;
       if(teacherEmail) sendPortalEmail({to:teacherEmail,subject,html});
       if(adminEmail&&adminEmail!==teacherEmail) sendPortalEmail({to:adminEmail,subject:`[Copy] ${subject}`,html});
     };
@@ -2101,8 +2101,8 @@ export function StudentApprovalsPage({ctx}){
     if(action==="approve"){
       const {data,error}=await db.approveAndCreateStudent(req.id,user.name||"admin");
       if(error){notify(error.message,"error");setProcessing(false);return;}
-      notify(`✅ Approved — Student ID: ${data.id}`);
-      _sendDecisionEmail("Approved",[`Student ID: ${data.id||"—"}`],"info");
+      notify(`✅ Approved — Member ID: ${data.id}`);
+      _sendDecisionEmail("Approved",[`Member ID: ${data.id||"—"}`],"info");
     } else {
       const {error}=await db.reviewStudentRequest(req.id,"rejected",note,user.name||"admin");
       if(error){notify(error.message,"error");setProcessing(false);return;}
@@ -2135,8 +2135,8 @@ export function StudentApprovalsPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="approvals" size={20}/>Student Approvals</h2>
-          <div style={{color:C.muted,fontSize:12}}>Review and approve student additions submitted by teachers</div>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="approvals" size={20}/>Member Approvals</h2>
+          <div style={{color:C.muted,fontSize:12}}>Review and approve member additions submitted by staff</div>
         </div>
         {filter==="pending"&&pending.length>0&&(
           <Btn onClick={approveAll} color={C.green} disabled={processing}>Approve All ({pending.length})</Btn>
@@ -2187,18 +2187,18 @@ export function StudentApprovalsPage({ctx}){
             <option value="">All Sections</option>
             {uniqueSections.map(s=><option key={s.id} value={String(s.id)}>{s.name}</option>)}
           </select>
-          {/* Class */}
+          {/* Group */}
           <select value={filterClass} onChange={e=>setFilterClass(e.target.value)}
             style={{padding:"8px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-            <option value="">All Classes</option>
+            <option value="">All Groups</option>
             {filteredClasses.map(c=><option key={c.id} value={String(c.id)}>{c.name}</option>)}
           </select>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10}}>
-          {/* Teacher */}
+          {/* Staff */}
           <select value={filterTeacher} onChange={e=>setFilterTeacher(e.target.value)}
             style={{padding:"8px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-            <option value="">All Teachers</option>
+            <option value="">All Staff</option>
             {uniqueTeachers.map(t=><option key={t} value={t}>{t}</option>)}
           </select>
           {/* Source */}
@@ -2235,8 +2235,8 @@ export function StudentApprovalsPage({ctx}){
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
               <Th cols={filter==="pending"
-                ?["Submitted","Teacher","Name","Gender","DOB/Age","Class","Source","Actions"]
-                :["Date","Teacher","Name","Gender","Class","Source","Status","Note"]}/>
+                ?["Submitted","Staff","Name","Gender","DOB/Age","Group","Source","Actions"]
+                :["Date","Staff","Name","Gender","Group","Source","Status","Note"]}/>
               <tbody>
                 {requests.map((r,i)=>{
                   const cls=classes.find(c=>c.id===r.class_id)||r.classes;
@@ -2291,7 +2291,7 @@ export function StudentApprovalsPage({ctx}){
           </div>
         ):null;
         return(
-          <Modal title="Student Request — Full Details" onClose={()=>setViewModal(null)} width={480}>
+          <Modal title="Member Request — Full Details" onClose={()=>setViewModal(null)} width={480}>
             <div style={{marginBottom:8}}>
               <Row label="First Name" val={r.first_name}/>
               <Row label="Middle Name" val={r.middle_name}/>
@@ -2299,11 +2299,11 @@ export function StudentApprovalsPage({ctx}){
               <Row label="Gender" val={r.gender}/>
               <Row label="Date of Birth" val={r.dob}/>
               <Row label="Age" val={r.age?`${r.age} yrs`:null}/>
-              <Row label="Student Email" val={r.email}/>
-              <Row label="Class" val={cls?.name}/>
+              <Row label="Member Email" val={r.email}/>
+              <Row label="Group" val={cls?.name}/>
               <Row label="Admission Year" val={r.admission_year}/>
               <Row label="Submitted by" val={r.teacher_name||r.submitted_by}/>
-              <Row label="Teacher Email" val={r.teacher_email}/>
+              <Row label="Staff Email" val={r.teacher_email}/>
               <Row label="Source" val={r.source}/>
               <Row label="Status" val={r.status}/>
               <Row label="Submitted on" val={new Date(r.created_at).toLocaleString("en-NG")}/>
@@ -2323,7 +2323,7 @@ export function StudentApprovalsPage({ctx}){
 
       {/* Approve / Reject modal */}
       {noteModal&&(
-        <Modal title={noteModal.action==="approve"?"Approve Student":"Reject Request"}
+        <Modal title={noteModal.action==="approve"?"Approve Member":"Reject Request"}
           onClose={()=>setNoteModal(null)} width={440}>
           {(()=>{
             const r=noteModal.req;
@@ -2334,20 +2334,20 @@ export function StudentApprovalsPage({ctx}){
                 <div style={{background:C.offWhite,borderRadius:8,padding:"12px 14px",marginBottom:14,fontSize:13}}>
                   <div><strong>Name:</strong> {name}</div>
                   <div><strong>Gender:</strong> {r.gender}</div>
-                  <div><strong>Class:</strong> {cls?.name||"—"}</div>
+                  <div><strong>Group:</strong> {cls?.name||"—"}</div>
                   <div><strong>Submitted by:</strong> {r.teacher_name||r.submitted_by}</div>
                 </div>
                 {noteModal.action==="approve"?(
                   <>
                     <div style={{background:C.greenPale||"#f0fdf4",border:`1px solid ${C.green}40`,borderRadius:8,
                       padding:"10px 14px",marginBottom:!r.email?10:14,fontSize:12,color:C.green}}>
-                      A Student ID will be auto-generated and the student will be added to the system.
+                      A Member ID will be auto-generated and the student will be added to the system.
                     </div>
                     {!r.email&&(
                       <div style={{background:"#fff8ed",border:`1.5px solid ${C.orange}`,borderRadius:8,
                         padding:"10px 14px",marginBottom:14,fontSize:12,color:C.orange,fontWeight:600,display:"flex",gap:8,alignItems:"flex-start"}}>
                         <span style={{fontSize:15}}>⚠️</span>
-                        <span>This student has no email address — they won't receive report cards, fee reminders, or login links by email.</span>
+                        <span>This member has no email address — they won't receive report cards, fee reminders, or login links by email.</span>
                       </div>
                     )}
                   </>

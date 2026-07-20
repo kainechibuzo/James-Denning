@@ -140,7 +140,7 @@ INSERT INTO role_permissions (role, page_id, allowed, updated_at) VALUES
   ('teacher', 'action-educator-approval', true,  NOW()),
   ('teacher', 'action-view-all-reports',  false, NOW()),
   ('teacher', 'action-manage-signatures', false, NOW())
-ON CONFLICT (role, page_id) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 -- ── GRANT PERMISSIONS ────────────────────────────────────────
 GRANT SELECT, INSERT, UPDATE, DELETE ON result_approvals TO authenticated;

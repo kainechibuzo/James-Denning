@@ -416,7 +416,7 @@ export function TRow({ cells, i, onClick }) {
 }
 
 // ── Class Multi-Select Dropdown ────────────────────────────────────────────────
-export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, placeholder = "All Classes" }) {
+export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, placeholder = "All Groups" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {

@@ -13,7 +13,7 @@ import { PERM_ROLE_DEFAULTS, PERM_GROUPS, RBAC_ROLES } from "../AppDemo.jsx";
 export function SaveTemplateForm({roles,onSave}){
   const[name,setName]=useState("");const[role,setRole]=useState("teacher");
   return(<div style={{display:"flex",flexDirection:"column",gap:8}}>
-    <input value={name} onChange={e=>setName(e.target.value)} placeholder="Template name (e.g. Default Teacher)"
+    <input value={name} onChange={e=>setName(e.target.value)} placeholder="Template name (e.g. Default Staff)"
       style={{padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,outline:"none",background:C.white,color:C.text}}/>
     <select value={role} onChange={e=>setRole(e.target.value)}
       style={{padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12}}>
@@ -267,7 +267,7 @@ export function PermissionsPage({ctx}){
             <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:12,marginTop:10,overflow:"hidden"}}>
               <div style={{padding:"11px 16px",background:C.orangePale,borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:8}}>
                 <AlertTriangle size={15} color={C.orange}/>
-                <span style={{fontWeight:800,fontSize:13,color:C.orange}}>Behaviour Restrictions (Teacher)</span>
+                <span style={{fontWeight:800,fontSize:13,color:C.orange}}>Behaviour Restrictions (Staff)</span>
               </div>
               {/* Master: Report Cards restrict switch */}
               {(()=>{
@@ -283,7 +283,7 @@ export function PermissionsPage({ctx}){
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,padding:"11px 16px",borderBottom:`1px solid ${C.border}`}}>
                       <div style={{flex:1}}>
-                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>Report Cards — Restrict Teacher Actions</div>
+                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>Report Cards — Restrict Staff Actions</div>
                         <div style={{fontSize:10,color:C.muted,marginTop:2}}>Hides all admin actions (Publish, Approve, Customise, Clear, Email Section). Share is always available. Use sub-permissions below to individually re-enable Print, Download, Email, or Export.</div>
                       </div>
                       <PT on={masterOn} onChange={async()=>{
@@ -322,20 +322,20 @@ export function PermissionsPage({ctx}){
                 const masterKey="teacher_my_classes_restrict";
                 const masterOn=portalSettings[masterKey]==="true";
                 const subPerms=[
-                  {key:"teacher_my_classes_allow_subject_access", label:"Allow Subject-Teacher Classes", help:"Show classes where the teacher teaches a subject (in addition to their form classes)."},
-                  {key:"teacher_my_classes_allow_edit_students",  label:"Allow Edit Student Details",    help:"Show the Edit button on students in the teacher's form classes. Subject-teacher classes remain view-only."},
+                  {key:"teacher_my_classes_allow_subject_access", label:"Allow Subject-Staff Groups", help:"Show classes where the teacher teaches a subject (in addition to their form classes)."},
+                  {key:"teacher_my_classes_allow_edit_students",  label:"Allow Edit Member Details",    help:"Show the Edit button on students in the teacher's form classes. Subject-teacher classes remain view-only."},
                 ];
                 return(
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,padding:"11px 16px",borderTop:`1px solid ${C.border}`}}>
                       <div style={{flex:1}}>
-                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>My Classes — Restrict Access</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>When ON, the My Classes page is locked down to form classes and view-only. Use the sub-permissions below to re-enable subject-teacher access and edit actions individually. OFF (default) gives full access.</div>
+                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>My Groups — Restrict Access</div>
+                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>When ON, the My Groups page is locked down to form groups and view-only. Use the sub-permissions below to re-enable subject-staff access and edit actions individually. OFF (default) gives full access.</div>
                       </div>
                       <PT on={masterOn} onChange={async()=>{
                         const v=(!masterOn).toString();await db.setSetting(masterKey,v);
                         setPortalSettings(p=>({...p,[masterKey]:v}));
-                        notify("My Classes restriction "+(!masterOn?"ON":"OFF")+" ✓");
+                        notify("My Groups restriction "+(!masterOn?"ON":"OFF")+" ✓");
                       }} disabled={saving}/>
                     </div>
                     {masterOn&&(
@@ -368,8 +368,8 @@ export function PermissionsPage({ctx}){
               })()}
               {/* Other behaviour restrictions */}
               {[
-                {key:"teacher_subject_class_report_cards",label:"Report Cards — Restrict to Form Class Only",desc:"When ON, teachers only see report cards for their form class. When OFF (default), teachers also see classes where they are a subject teacher."},
-                {key:"teacher_add_student_own_class_only",label:"Add Students — Own Class Only",desc:"Teachers can only submit student requests for their assigned classes."},
+                {key:"teacher_subject_class_report_cards",label:"Report Cards — Restrict to Form Group Only",desc:"When ON, teachers only see report cards for their form class. When OFF (default), teachers also see classes where they are a subject teacher."},
+                {key:"teacher_add_student_own_class_only",label:"Add Members — Own Group Only",desc:"Staff can only submit student requests for their assigned classes."},
               ].map(({key,label,desc},i)=>{
                 const on=portalSettings[key]==="true";
                 return(
@@ -398,8 +398,8 @@ export function PermissionsPage({ctx}){
             <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
               <select value={selUserType} onChange={e=>{setSelUserType(e.target.value);setSelUserId("");setUserPerms([]);}}
                 style={{padding:"8px 12px",border:"1px solid "+C.border,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-                <option value="teacher">Teacher / Staff</option>
-                <option value="student">Student</option>
+                <option value="teacher">Staff / Staff</option>
+                <option value="student">Member</option>
               </select>
               <select value={selUserId} onChange={e=>setSelUserId(e.target.value)}
                 style={{flex:1,minWidth:200,padding:"8px 12px",border:"1px solid "+C.border,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
@@ -528,9 +528,9 @@ export function PermissionsPage({ctx}){
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
               {[
                 {id:"admin",label:"Administrator",color:C.orange,items:["Full unrestricted access","Configure all settings","Manage all permissions","Cannot be locked out"]},
-                {id:"teacher",label:"Teacher",color:"#1A8C3C",items:["Upload & manage results","View class report cards","Take attendance","Post announcements","Limited to assigned classes"]},
+                {id:"teacher",label:"Staff",color:"#1A8C3C",items:["Upload & manage results","View class report cards","Take attendance","Post announcements","Limited to assigned classes"]},
                 {id:"manager",label:"Manager",color:"#7C3AED",items:["Full financial access","Record & track payments","Generate fee bills","Create fee templates","View student list (read-only)"]},
-                {id:"student",label:"Student",color:"#1A4FA0",items:["View own report cards","View own fees/payments","Access transcript","Read announcements"]},
+                {id:"student",label:"Member",color:"#1A4FA0",items:["View own report cards","View own fees/payments","Access transcript","Read announcements"]},
               ].map(r=>(
                 <div key={r.id} style={{border:"1.5px solid "+r.color+"30",borderRadius:10,padding:"12px 14px",background:r.color+"06"}}>
                   <div style={{fontWeight:800,fontSize:13,color:r.color,marginBottom:8}}>{r.label}</div>

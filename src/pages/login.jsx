@@ -204,7 +204,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
   const [resetMsg,setResetMsg]=useState("");
 
   const submitReset=async()=>{
-    if(!resetId.trim()){setResetMsg("Enter your Staff ID or Student ID.");return;}
+    if(!resetId.trim()){setResetMsg("Enter your Staff ID or Member ID.");return;}
     setResetSending(true);setResetMsg("");
     // Look up user and send temp password
     const schoolId=selectedSchool?.id;
@@ -227,7 +227,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
       await db._resetPassword(table,target.id,tmpPw,schoolId);
       // Send email via edge function
       const schoolName=ctx?.schoolName||"Your School";
-      const role=teacher?"Staff":"Student";
+      const role=teacher?"Staff":"Member";
       await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,{
         method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`},
         body:JSON.stringify({
@@ -385,7 +385,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
                   <AppIcon name="user" size={16} color={focusId?C.blue:C.muted}/>
                 </span>
                 <input value={id} onChange={e=>setId(e.target.value)} onKeyDown={onKey}
-                  placeholder="Staff ID · Student ID · admin · PAR/…"
+                  placeholder="Staff ID · Member ID · admin · PAR/…"
                   onFocus={e=>{setFocusId(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
                   onBlur={e=>{setFocusId(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
                   style={{display:"block",width:"100%",padding:"12px 14px 12px 40px",

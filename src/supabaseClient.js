@@ -2,21 +2,42 @@ import { createClient } from '@supabase/supabase-js'
 
 
 
-const _envUrl = import.meta.env.VITE_SUPABASE_URL
+import { createClient } from '@supabase/supabase-js'
 
-const _envKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-const SUPABASE_URL = (_envUrl && !_envUrl.includes('your-project-ref')) ? _envUrl : 'https://mcdcwdfdpqzrzsixmrcg.supabase.co'
-
-const SUPABASE_ANON_KEY = (_envKey && !_envKey.includes('your_anon_key')) ? _envKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZGN3ZGZkcHF6cnpzaXhtcmNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDA4MTcsImV4cCI6MjA4ODc3NjgxN30.u9hB-oEwjFVMKPvnZHIlPdfWEt5EvJQ98VJ2va4BTdQ'
-
-const _srvKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZGN3ZGZkcHF6cnpzaXhtcmNnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzIwMDgxNywiZXhwIjoyMDg4Nzc2ODE3fQ.f5tFCMAsQL4V1gq01vXqn_F5b9HkIxxp41gLTk18kD4'
-
-
+if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
+  throw new Error(
+    "Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. Set them in your .env " +
+    "(or Vercel project env vars) — there is no fallback. This app used to " +
+    "silently fall back to another project's live credentials, which is a " +
+    "real security problem; it now fails loudly instead."
+  )
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-export const supabaseSrv = createClient(SUPABASE_URL, _srvKey, {auth:{autoRefreshToken:false,persistSession:false,storageKey:'sb-srv-no-persist'}})
+// ⚠️ supabaseSrv (service-role client) MUST NEVER be used from frontend code
+// — the service role bypasses RLS entirely, and anything VITE_-prefixed gets
+// bundled into the browser JS, meaning the key would be readable by anyone
+// who opens dev tools. This export is a deliberate landmine left in place
+// on purpose: if you ever add VITE_SUPABASE_SERVICE_ROLE_KEY to your env,
+// this throws immediately instead of silently shipping the key to the
+// browser. The hundreds of existing supabaseSrv.from(...) calls throughout
+// this codebase are a known migration debt — they need to move to
+// supabase.from(...) (respecting the real RLS policies now in place) or to
+// server-side Edge Functions (see supabase/functions/manage-account) over
+// time. Not fixed in this pass; flagging clearly instead of hiding it.
+if(import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY){
+  throw new Error(
+    "VITE_SUPABASE_SERVICE_ROLE_KEY is set. Never expose the service role " +
+    "key to the browser — remove it from your env. Server-side operations " +
+    "belong in Edge Functions (see supabase/functions/manage-account), " +
+    "which get SUPABASE_SERVICE_ROLE_KEY auto-injected securely."
+  )
+}
+export const supabaseSrv = supabase // TEMPORARY alias so existing calls don't crash outright; see warning above.
 
 
 
@@ -3966,7 +3987,7 @@ export const db = {
 
       if(e){err(`Classes fetch failed: ${e.message}`);hadError=true;}
 
-      else if((srcClasses||[]).length===0){ok('Classes: none in source, skipped.');}
+      else if((srcClasses||[]).length===0){ok('Groups: none in source, skipped.');}
 
       else{
 
@@ -5118,53 +5139,34 @@ export const db = {
   // School self-signup — creates school + school_settings skeleton
 
   async createSchoolSignup(schoolData){
-
     // schoolData: {name, admin_email, admin_name, admin_password, student_id_prefix, address, phone, contact_phone, state}
+    // Real account creation now happens server-side in the manage-account
+    // edge function — creates a real Supabase Auth user for the admin (with
+    // real password hashing) plus the school row, atomically, instead of
+    // writing schoolData.admin_password directly into the database.
+    const {data,error} = await supabase.functions.invoke('manage-account', {
+      body: {
+        action: 'register_school',
+        schoolName: schoolData.name,
+        adminEmail: schoolData.admin_email,
+        adminName: schoolData.admin_name,
+        adminPassword: schoolData.admin_password,
+        studentIdPrefix: (schoolData.student_id_prefix||schoolData.name.slice(0,3)).toUpperCase(),
+        address: schoolData.address||'',
+        phone: schoolData.phone||schoolData.contact_phone||'',
+        state: schoolData.state||'',
+      }
+    })
+    if(error) return {data:null, error}
+    if(data?.error) return {data:null, error:{message:data.error}}
 
-    const{data:school,error}=await supabaseSrv.from('schools')
-
-      .insert({
-
-        name:schoolData.name,
-
-        admin_email:schoolData.admin_email,
-
-        admin_name:schoolData.admin_name,
-
-        admin_password:schoolData.admin_password,
-
-        student_id_prefix:(schoolData.student_id_prefix||schoolData.name.slice(0,3)).toUpperCase(),
-
-        address:schoolData.address||'',
-
-        phone:schoolData.phone||schoolData.contact_phone||'',
-
-        contact_phone:schoolData.contact_phone||'',
-
-        state:schoolData.state||'',
-
-        status:'active',
-
-        setup_done:false,
-
-      }).select().single()
-
-    if(error)return{data:null,error}
-
-    // Seed minimal settings for the new school
-
+    const school = data.school
     const seedSettings=[
-
       {school_id:school.id,key:'school_name',value:schoolData.name},
-
       {school_id:school.id,key:'admin_email',value:schoolData.admin_email},
-
     ]
-
-    await supabaseSrv.from('school_settings').insert(seedSettings)
-
+    await supabase.from('school_settings').insert(seedSettings)
     return{data:school,error:null}
-
   },
 
 

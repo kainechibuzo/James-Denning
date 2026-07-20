@@ -224,7 +224,7 @@ const getRemark = (n,schema) => {
 };
 const gradeCol  = g => g==="A"?C.green:g==="B"?C.blue:g==="C"?C.orange:g==="F"?C.red:C.muted;
 const fmt       = n => "₦"+Number(n||0).toLocaleString();
-// ── Student name formatting (controlled by school_settings name_order / name_case) ──
+// ── Member name formatting (controlled by school_settings name_order / name_case) ──
 let _nameSettings = {order:'FML', casing:'title'};
 const setNameSettings = (s={}) => { _nameSettings = {..._nameSettings, ...s}; };
 const _applyNameCase = (str, casing) => {
@@ -1030,7 +1030,7 @@ function TRow({cells,i}){
 
 // ── Multi-class checkbox dropdown ─────────────────────────────────────────────
 // selClasses: Set of string class IDs. onToggle(id): toggles one. onClear(): clears all.
-function ClassMultiSelect({classes,selClasses,onToggle,onClear,placeholder="All Classes"}){
+function ClassMultiSelect({classes,selClasses,onToggle,onClear,placeholder="All Groups"}){
   const [open,setOpen]=useState(false);
   const ref=useRef(null);
   useEffect(()=>{
@@ -1070,7 +1070,7 @@ function ClassMultiSelect({classes,selClasses,onToggle,onClear,placeholder="All 
               border:`2px solid ${count===0?C.orange:C.border}`,color:"#fff",flexShrink:0}}>
               {count===0?"✓":""}
             </span>
-            All Classes
+            All Groups
           </div>
           {classes.map(c=>{
             const sid=String(c.id);
@@ -1567,7 +1567,7 @@ function ProfileModal({user,onClose,notify,onUpdated}){
             {user.role.toUpperCase()}
           </Badge>
           {user.staff_id&&<div style={{fontSize:11,color:C.muted,marginTop:3}}>Staff ID: {user.staff_id}</div>}
-          {user.student_id&&<div style={{fontSize:11,color:C.muted,marginTop:3}}>Student ID: {user.student_id}</div>}
+          {user.student_id&&<div style={{fontSize:11,color:C.muted,marginTop:3}}>Member ID: {user.student_id}</div>}
         </div>
       </div>
       <Inp label="Display Name" value={name} onChange={setName} placeholder="Your full name"/>
@@ -1692,7 +1692,7 @@ const TOUR_STEPS_CONFIG = [
     content:"View and manage all staff accounts — teachers and managers. You can change roles, reset passwords, and see last-login dates here.",
     target:"[data-tour='nav-members']", page:"members", placement:"right",
     roles:["admin","manager"], perms:null},
-  {id:"nav-students",  title:"Students",
+  {id:"nav-students",  title:"Members",
     content:"Full student directory with filtering, bulk operations, and onboarding email tools.",
     target:"[data-tour='nav-students']", page:"students", placement:"right",
     roles:["admin"], perms:null},
@@ -1724,8 +1724,8 @@ const TOUR_STEPS_CONFIG = [
     content:"Configure school info, academic sessions, grading schemes, RBAC permissions, and portal behaviour.",
     target:"[data-tour='settings-btn']", page:"dashboard", placement:"bottom",
     roles:["admin"], perms:null},
-  // ── Teacher ──
-  {id:"nav-my-classes", title:"My Classes",
+  // ── Staff ──
+  {id:"nav-my-classes", title:"My Groups",
     content:"See all classes assigned to you and the students in each class.",
     target:"[data-tour='nav-my-classes']", page:"my-classes", placement:"right",
     roles:["teacher"], perms:null},
@@ -1733,7 +1733,7 @@ const TOUR_STEPS_CONFIG = [
     content:"Download the XLS template for your class, fill in scores, then upload to submit results for approval.",
     target:"[data-tour='nav-results-teach']", page:"results-teach", placement:"right",
     roles:["teacher"], perms:null},
-  // ── Student ──
+  // ── Member ──
   {id:"nav-my-results", title:"My Report Card",
     content:"View your published report card and download a PDF copy.",
     target:"[data-tour='nav-my-results']", page:"my-results", placement:"right",
@@ -2162,89 +2162,95 @@ function AppInner(){
   };
 
   // ── Auth login (moved inside component to fix scope issue) ──────────────────
+  // Must exactly match the synthetic-email slug logic in the manage-account
+  // edge function (supabase/functions/manage-account/index.ts) — same
+  // kind/localId/schoolId in, same email out, or logins will silently fail.
+  const syntheticEmail = (kind, localId, schoolId) => {
+    const clean = String(localId).toLowerCase().replace(/[^a-z0-9]/g,"");
+    return `${kind}-${clean}--${schoolId}@login.internal`;
+  };
+
   const authLogin = async(identifier, password, schoolId=null)=>{
     const id = identifier.trim();
     const pw = password.trim();
     if(!id||!pw) return {error:"Enter your ID and password."};
+    if(!schoolId) return {error:"Please select a school before logging in."};
 
     try {
-      const access = schoolId ? await db.getLoginAccessSettings(schoolId) : {};
+      const access = await db.getLoginAccessSettings(schoolId);
       const _accessMsg = (role)=>{
         const custom = (access.login_disabled_message||"").trim();
         const defaults = {
           teacher:"Staff logins are currently disabled. Please contact the school office.",
-          student:"Student logins are currently disabled. Please contact the school office.",
+          student:"Member logins are currently disabled. Please contact the school office.",
         };
         return custom || defaults[role] || "Logins are currently disabled. Please contact the school office.";
       };
 
-      // 1. Try teacher first
-      const {data:teacher,error:tErr} = await db.loginFindTeacher(id, schoolId);
-      if(tErr) throw tErr;
-      if(teacher){
-        if(access.login_teachers_disabled==="true") return {error:_accessMsg("teacher")};
-        const expectedPw = teacher.password_hash||teacher.staff_id;
-        if(pw===expectedPw){
-          db.recordLogin('teacher',teacher.id);
-          const tRole=teacher.role||'teacher';
-          const tok=genSessionToken();
-          try{await db.setSessionToken('teacher',teacher.id,tok);}catch{}
-          return {user:{id:String(teacher.id),role:tRole,name:teacher.display_name||teacher.full_name,
-            staff_id:teacher.staff_id,teacher_db_id:teacher.id,email:teacher.email,school_id:schoolId,
-            _sessionToken:tok,_userType:'teacher'}};
-        }
-        return {error:"Wrong password. Your default password is your Staff ID."};
-      }
-
-      // 2. Try student
-      const {data:student,error:sErr} = await db.loginFindStudent(id, schoolId);
-      if(sErr) throw sErr;
-      if(student){
-        if(access.login_students_disabled==="true") return {error:_accessMsg("student")};
-        const st=student.status||"active";
-        if(st!=="active"){
-          const msgs={
-            inactive:"Your account is currently inactive. Please contact the school office.",
-            suspended:"Your account has been suspended. Please contact the school administration.",
-            graduated:"This account belongs to a graduated student and is no longer active.",
-            withdrawn:"This account has been withdrawn and is no longer active.",
-            left:"This account is no longer active. Please contact the school office.",
-          };
-          return{error:msgs[st]||"Your account is not active. Please contact the school office."};
-        }
-        const expectedPw = student.password_hash||student.id;
-        if(pw===expectedPw){
-          db.recordLogin('student',student.id);
-          const tok=genSessionToken();
-          try{await db.setSessionToken('student',student.id,tok);}catch{}
-          return {user:{id:student.id,role:"student",name:student.display_name||fullName(student),
-            student_id:student.id,class_id:student.class_id,email:student.email,school_id:schoolId,
-            _sessionToken:tok,_userType:'student'}};
-        }
-        return {error:"Wrong password. Your default password is your Student ID."};
-      }
-
-      // 3. Admin
-      if(schoolId){
+      // Admin logs in with the literal word "admin" as their ID; everyone
+      // else (staff/student) logs in with their real ID, mapped to the
+      // deterministic synthetic email used when their account was created.
+      let authEmail;
+      let expectedRole;
+      if(id.toLowerCase()==="admin"){
         const {data:sa,error:saErr}=await db.loginGetSchoolAdmin(schoolId);
         if(saErr) throw saErr;
-        if(sa){
-          const storedPw=sa.admin_password;
-          const storedEmail=sa.admin_email||"";
-          if(id.toLowerCase()==="admin"||id===storedEmail){
-            if(!storedPw) return {error:"Admin password not configured. Contact your JAMES-DENNING administrator."};
-            if(pw===storedPw){
-              return {user:{id:"admin",role:"admin",name:sa.admin_name||"Administrator",
-                email:storedEmail,is_admin:true,school_id:schoolId}};
-            }
-            return {error:"Wrong admin password."};
-          }
-        }
+        if(!sa) return {error:"ID not recognised. Staff: Staff ID · Members: Member ID · Admin: type 'admin'"};
+        authEmail = sa.admin_email;
+        expectedRole = "admin";
       } else {
-        return {error:"Please select a school before logging in."};
+        // Try as staff ID first, then as a student/member ID — both are
+        // just deterministic email guesses, no data is fetched yet.
+        const {data:teacher} = await db.loginFindTeacher(id, schoolId);
+        if(teacher){
+          if(access.login_teachers_disabled==="true") return {error:_accessMsg("teacher")};
+          authEmail = syntheticEmail("staff", id, schoolId);
+          expectedRole = "teacher";
+        } else {
+          const {data:student} = await db.loginFindStudent(id, schoolId);
+          if(!student) return {error:"ID not recognised. Staff: Staff ID · Members: Member ID · Admin: type 'admin'"};
+          const st = student.status||"active";
+          if(st!=="active"){
+            const msgs={
+              inactive:"Your account is currently inactive. Please contact the school office.",
+              suspended:"Your account has been suspended. Please contact the school administration.",
+              graduated:"This account belongs to a graduated student and is no longer active.",
+              withdrawn:"This account has been withdrawn and is no longer active.",
+              left:"This account is no longer active. Please contact the school office.",
+            };
+            return{error:msgs[st]||"Your account is not active. Please contact the school office."};
+          }
+          if(access.login_students_disabled==="true") return {error:_accessMsg("student")};
+          authEmail = syntheticEmail("student", id, schoolId);
+          expectedRole = "student";
+        }
       }
 
-      return {error:"ID not recognised. Teachers: Staff ID · Students: Student ID · Admin: type 'admin'"};
+      // The actual auth check — real Supabase Auth, real password hashing,
+      // real session. Nothing about the password is compared in JS anymore.
+      const {data:authData, error:authErr} = await supabase.auth.signInWithPassword({email:authEmail, password:pw});
+      if(authErr) return {error: expectedRole==="admin" ? "Wrong admin password." : "Wrong password."};
+
+      const {data:profile} = await supabase.from('profiles').select('*').eq('id',authData.user.id).single();
+
+      if(expectedRole==="teacher"){
+        const {data:teacher} = await db.loginFindTeacher(id, schoolId);
+        db.recordLogin('teacher',teacher.id);
+        return {user:{id:String(teacher.id),role:teacher.role||'teacher',name:teacher.display_name||teacher.full_name,
+          staff_id:teacher.staff_id,teacher_db_id:teacher.id,email:teacher.email,school_id:schoolId,
+          _authUserId:authData.user.id,_userType:'teacher'}};
+      }
+      if(expectedRole==="student"){
+        const {data:student} = await db.loginFindStudent(id, schoolId);
+        db.recordLogin('student',student.id);
+        return {user:{id:student.id,role:"student",name:student.display_name||fullName(student),
+          student_id:student.id,class_id:student.class_id,email:student.email,school_id:schoolId,
+          _authUserId:authData.user.id,_userType:'student'}};
+      }
+      // admin
+      const {data:sa} = await db.loginGetSchoolAdmin(schoolId);
+      return {user:{id:"admin",role:"admin",name:sa?.admin_name||profile?.full_name||"Administrator",
+        email:authEmail,is_admin:true,school_id:schoolId,_authUserId:authData.user.id}};
 
     } catch(err) {
       const msg = err?.message||String(err);
@@ -2267,15 +2273,15 @@ function AppInner(){
 
   // ── Compact grouped NAV ──
   // Admin: grouped by category with dividers
-  // Teacher/Student: only permitted pages
+  // Staff/Member: only permitted pages
   const ALL_NAV = [
     {id:"dashboard",       label:"Dashboard",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
     // ── Admin groups ──
     {id:"g-academic",      group:"Academic",      roles:["admin","bursar"]},
     {id:"members",         label:"Members",           icon:"members", roles:["admin","manager","bursar"],    gid:"g-academic"},
-    {id:"students",        label:"Students",          icon:"students", roles:["admin"],    gid:"g-academic"},
-    {id:"teachers",        label:"Teachers",          icon:"teachers", roles:["admin"],    gid:"g-academic"},
-    {id:"classes",         label:"Classes",           icon:"classes", roles:["admin"],    gid:"g-academic"},
+    {id:"students",        label:"Members",          icon:"students", roles:["admin"],    gid:"g-academic"},
+    {id:"teachers",        label:"Staff",          icon:"teachers", roles:["admin"],    gid:"g-academic"},
+    {id:"classes",         label:"Groups",           icon:"classes", roles:["admin"],    gid:"g-academic"},
     {id:"subjects",        label:"Subjects",          icon:"subjects", roles:["admin"],    gid:"g-academic"},
     {id:"sections",        label:"Sections",          icon:"sections", roles:["admin"],    gid:"g-academic"},
     {id:"calendar",        label:"Academic Calendar", icon:"calendar",    roles:["admin","teacher"], gid:"g-academic"},
@@ -2305,14 +2311,14 @@ function AppInner(){
     {id:"notifications",   label:"Notifications",      icon:"bell",       roles:["admin"],    gid:"g-admin"},
     {id:"permissions",     label:"Permissions",        icon:"shield",     roles:["admin"],    gid:"g-admin"},
     {id:"g-approvals",     group:"Approvals",      roles:["admin"]},
-    {id:"approvals",       label:"Student Approvals", icon:"approvals", roles:["admin"],    gid:"g-approvals"},
+    {id:"approvals",       label:"Member Approvals", icon:"approvals", roles:["admin"],    gid:"g-approvals"},
     {id:"access-requests", label:"Access Requests",   icon:"approvals", roles:["admin"],    gid:"g-approvals"},
-    // ── Teacher-only (flat) ──
-    {id:"my-classes",      label:"My Classes",        icon:"my-classes", roles:["teacher"]},
+    // ── Staff-only (flat) ──
+    {id:"my-classes",      label:"My Groups",        icon:"my-classes", roles:["teacher"]},
     {id:"results-teach",   label:"Upload Results",    icon:"upload-results", roles:["teacher"]},
-    {id:"add-students",    label:"Add Students",      icon:"add-students", roles:["teacher"]},
+    {id:"add-students",    label:"Add Members",      icon:"add-students", roles:["teacher"]},
     {id:"request-access",  label:"Request Access",    icon:"approvals",  roles:["teacher"]},
-    // ── Student-only ──
+    // ── Member-only ──
     {id:"my-results",      label:"My Report Card",    icon:"my-results", roles:["student"]},
     {id:"my-payments",     label:"My Payments",       icon:"my-payments", roles:["student"]},
     {id:"my-bill",         label:"My Bill",           icon:"receipt", roles:["student"]},
@@ -3082,7 +3088,7 @@ function CopySettingsModal({schools, onClose}){
   const ITEM_LABELS=[
     {k:"sections",        label:"Sections"},
     {k:"section_subjects",label:"Section Subjects"},
-    {k:"classes",         label:"Classes"},
+    {k:"classes",         label:"Groups"},
     {k:"sessions",        label:"Sessions"},
     {k:"terms",           label:"Terms (requires Sessions)"},
     {k:"grading",         label:"Grading Schema"},
@@ -3502,7 +3508,7 @@ function PlatformDashboardPage({admin,onLogout}){
             <div style={{...statVal,color:C.blue}}>{setupCount}</div>
           </div>
           <div style={cardStyle}>
-            <div style={statLabel}>Total Students</div>
+            <div style={statLabel}>Total Members</div>
             <div style={statVal}>{totalStudents.toLocaleString()}</div>
           </div>
         </div>
@@ -3533,7 +3539,7 @@ function PlatformDashboardPage({admin,onLogout}){
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                     <thead>
                       <tr style={{background:C.offWhite}}>
-                        {["School","Admin","Students","Plan","Status","Setup","Created","Actions"].map(h=>(
+                        {["School","Admin","Members","Plan","Status","Setup","Created","Actions"].map(h=>(
                           <th key={h} style={{padding:"10px 14px",textAlign:"left",fontWeight:700,
                             color:C.muted,fontSize:11,textTransform:"uppercase",letterSpacing:.6,
                             borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
@@ -3727,7 +3733,7 @@ function PlatformDashboardPage({admin,onLogout}){
                   {label:"Active Schools",value:activeCount},
                   {label:"Suspended",value:schools.length-activeCount},
                   {label:"Setup Complete",value:setupCount},
-                  {label:"Total Students",value:totalStudents.toLocaleString()},
+                  {label:"Total Members",value:totalStudents.toLocaleString()},
                   {label:"Free Plan",value:schools.filter(s=>!s.plan||s.plan==="free").length},
                   {label:"Starter Plan",value:schools.filter(s=>s.plan==="starter").length},
                   {label:"Pro Plan",value:schools.filter(s=>s.plan==="pro").length},
@@ -3784,9 +3790,9 @@ function PlatformDashboardPage({admin,onLogout}){
 export const PERM_GROUPS=[
   {id:"academic",label:"Academic",color:"#1A4FA0",perms:[
     {id:"page:report-cards",        label:"Report Cards",               desc:"Access the Report Cards page"},
-    {id:"page:my-results",          label:"My Report Card (Student)",   desc:"Student's own report card view"},
+    {id:"page:my-results",          label:"My Report Card (Member)",   desc:"Member's own report card view"},
     {id:"page:results-admin",       label:"Results Entry (Admin view)", desc:"Admin results entry page"},
-    {id:"page:results-teach",       label:"Results Upload (Teacher)",   desc:"Teacher results upload"},
+    {id:"page:results-teach",       label:"Results Upload (Staff)",   desc:"Staff results upload"},
     {id:"page:transcript",          label:"Transcript",                 desc:"View academic transcript"},
     {id:"page:grading",             label:"Grading & CAE",              desc:"Manage grade schema & CAE traits"},
     {id:"page:report-card-settings",label:"Report Card Settings",       desc:"Configure report card templates"},
@@ -3802,27 +3808,27 @@ export const PERM_GROUPS=[
     {id:"action:approve_ma",               label:"Manager Approval (MA)",       desc:"Can lock results with MA"},
     {id:"action:download_reports",         label:"Download Report Cards",       desc:"Can download/print PDF reports"},
   ]},
-  {id:"student_mgmt",label:"Student Management",color:"#1A8C3C",perms:[
+  {id:"student_mgmt",label:"Member Management",color:"#1A8C3C",perms:[
     {id:"page:members",             label:"Members Page",               desc:"View all members list"},
-    {id:"page:students",            label:"Students Page",              desc:"Access students management"},
-    {id:"page:add-students",        label:"Add Students",               desc:"Submit new student requests"},
-    {id:"page:approvals",           label:"Student Approvals",          desc:"Approve new student requests"},
+    {id:"page:students",            label:"Members Page",              desc:"Access students management"},
+    {id:"page:add-students",        label:"Add Members",               desc:"Submit new student requests"},
+    {id:"page:approvals",           label:"Member Approvals",          desc:"Approve new student requests"},
     {id:"page:access-requests",     label:"Access Requests (Admin)",    desc:"Review and approve teacher access requests"},
-    {id:"page:request-access",      label:"Request Access (Teacher)",   desc:"Teachers submit access requests to admin"},
+    {id:"page:request-access",      label:"Request Access (Staff)",   desc:"Staff submit access requests to admin"},
     {id:"page:bulk-promote",        label:"Promotions",                 desc:"End-of-session promotion & rollover"},
-    {id:"action:edit_students",     label:"Edit Student Profiles",      desc:"Modify student name, class, etc."},
-    {id:"action:delete_students",   label:"Delete Students",            desc:"Permanently remove students"},
-    {id:"action:manage_status",     label:"Manage Student Status",      desc:"Activate/suspend/graduate"},
+    {id:"action:edit_students",     label:"Edit Member Profiles",      desc:"Modify student name, class, etc."},
+    {id:"action:delete_students",   label:"Delete Members",            desc:"Permanently remove students"},
+    {id:"action:manage_status",     label:"Manage Member Status",      desc:"Activate/suspend/graduate"},
   ]},
   {id:"staff_mgmt",label:"Staff Management",color:"#E8560A",perms:[
-    {id:"page:teachers",            label:"Teachers Page",              desc:"View/manage teacher list"},
-    {id:"page:classes",             label:"Classes",                    desc:"Manage classes"},
+    {id:"page:teachers",            label:"Staff Page",              desc:"View/manage teacher list"},
+    {id:"page:classes",             label:"Groups",                    desc:"Manage classes"},
     {id:"page:subjects",            label:"Subjects",                   desc:"Manage subjects"},
     {id:"page:sections",            label:"Sections",                   desc:"Manage sections/departments"},
-    {id:"page:my-classes",          label:"My Classes (Teacher)",       desc:"Teacher's own class view"},
+    {id:"page:my-classes",          label:"My Groups (Staff)",       desc:"Staff's own class view"},
     {id:"action:edit_staff",        label:"Edit Staff Profiles",        desc:"Modify teacher details"},
     {id:"action:delete_staff",      label:"Delete Staff",               desc:"Remove staff from system"},
-    {id:"action:assign_classes",    label:"Assign Classes",             desc:"Assign teachers to classes"},
+    {id:"action:assign_classes",    label:"Assign Groups",             desc:"Assign teachers to classes"},
   ]},
   {id:"financial",label:"Financial",color:"#7C3AED",perms:[
     {id:"page:fee-tracker",         label:"Payment Tracker",            desc:"View/record fee payments"},
@@ -3830,8 +3836,8 @@ export const PERM_GROUPS=[
     {id:"page:fee-templates",       label:"Fee Templates",              desc:"Create fee bundles"},
     {id:"page:fee-generate",        label:"Generate Bills",             desc:"Generate fee bills for students"},
     {id:"page:fee-stats",           label:"Fee Statistics",             desc:"Revenue charts and reports"},
-    {id:"page:my-payments",         label:"My Payments (Student)",      desc:"Student's own payment records"},
-    {id:"page:my-bill",             label:"My Bill (Student)",          desc:"Student's fee bill"},
+    {id:"page:my-payments",         label:"My Payments (Member)",      desc:"Member's own payment records"},
+    {id:"page:my-bill",             label:"My Bill (Member)",          desc:"Member's fee bill"},
     {id:"action:record_payments",   label:"Record Payments",            desc:"Mark bills as paid"},
     {id:"action:edit_fees",         label:"Edit Fee Records",           desc:"Modify fee amounts"},
     {id:"action:generate_invoices", label:"Generate Invoices",          desc:"Print/export invoices"},
@@ -3863,15 +3869,15 @@ export const PERM_ROLE_DEFAULTS={
   bursar:["page:dashboard","page:fee-tracker","page:fee-items","page:fee-templates","page:fee-generate","page:fee-stats","page:members","page:students","page:announce","action:record_payments","action:edit_fees","action:generate_invoices"],
 };
 export const RBAC_ROLES=[
-  {id:"teacher", label:"Teacher",  color:"#1A8C3C",desc:"Teaching staff — upload results, manage their class report cards"},
+  {id:"teacher", label:"Staff",  color:"#1A8C3C",desc:"Teaching staff — upload results, manage their class report cards"},
   {id:"manager", label:"Manager",  color:"#7C3AED",desc:"Finance officer — full access to fees, billing and payments"},
   {id:"bursar",  label:"Bursar",   color:"#B45309",desc:"Dedicated finance role — fees, billing and payment management only"},
-  {id:"student", label:"Student",  color:"#1A4FA0",desc:"Enrolled students — view own records, results and bills"},
+  {id:"student", label:"Member",  color:"#1A4FA0",desc:"Enrolled students — view own records, results and bills"},
 ];
 function SaveTemplateForm({roles,onSave}){
   const[name,setName]=useState("");const[role,setRole]=useState("teacher");
   return(<div style={{display:"flex",flexDirection:"column",gap:8}}>
-    <input value={name} onChange={e=>setName(e.target.value)} placeholder="Template name (e.g. Default Teacher)"
+    <input value={name} onChange={e=>setName(e.target.value)} placeholder="Template name (e.g. Default Staff)"
       style={{padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,outline:"none",background:C.white,color:C.text}}/>
     <select value={role} onChange={e=>setRole(e.target.value)}
       style={{padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12}}>
@@ -3919,7 +3925,7 @@ function ApplyTemplateBtn({roles,templateName,onApply}){
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const TERMS = ["1st Term","2nd Term","3rd Term"];
-const STUDENT_TYPES = [{value:"all",label:"All Students"},{value:"new",label:"New Students"},{value:"old",label:"Old Students"}];
+const STUDENT_TYPES = [{value:"all",label:"All Members"},{value:"new",label:"New Members"},{value:"old",label:"Old Members"}];
 
 // ─── FEE ITEMS PAGE (Admin) ───────────────────────────────────────────────────
 
@@ -4138,7 +4144,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
       <div class="si-val" style="font-size:12.5px">${studentName}</div>
     </div>
     <div class="si-cell">
-      <div class="si-lbl">Student ID / Adm. No.</div>
+      <div class="si-lbl">Member ID / Adm. No.</div>
       <div class="si-val">${studentId||"—"}</div>
     </div>
     <div class="si-cell">
@@ -4146,7 +4152,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
       <div class="si-val">${gender||"—"}${dob?" · "+dob:""}</div>
     </div>
     <div class="si-cell">
-      <div class="si-lbl">Current Class / Section</div>
+      <div class="si-lbl">Current Group / Section</div>
       <div class="si-val">${className||"—"}${sectionName?" · "+sectionName:""}</div>
     </div>
   </div>
@@ -4160,7 +4166,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
     <div class="sc"><div class="sc-val">${subjects.length}</div><div class="sc-lbl">Subjects Taken</div></div>
     <div class="sc"><div class="sc-val">${passes}</div><div class="sc-lbl">Passed</div></div>
     <div class="sc"><div class="sc-val">${subjects.length-passes}</div><div class="sc-lbl">Failed</div></div>
-    <div class="sc"><div class="sc-val">${classPeriods.length}</div><div class="sc-lbl">Class Periods</div></div>
+    <div class="sc"><div class="sc-val">${classPeriods.length}</div><div class="sc-lbl">Group Periods</div></div>
     <div class="sc accent"><div class="sc-val">${overallAvg!=null?overallAvg.toFixed(1)+"%":"—"}</div><div class="sc-lbl">Overall Average</div></div>
     <div class="sc accent"><div class="sc-val">${overallGrade}</div><div class="sc-lbl">Overall Grade</div></div>
     <div class="sc accent"><div class="sc-val" style="font-size:12px;padding-top:3px">${overallRemark}</div><div class="sc-lbl">Remark</div></div>
@@ -4168,12 +4174,12 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 
   <!-- Footer -->
   <div class="footer">
-    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Class Teacher — Signature &amp; Date</div></div>
+    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Group Staff — Signature &amp; Date</div></div>
     <div class="stamp">
       <div class="stamp-c"><span style="font-size:7.5px;color:#c0cfda;font-weight:700;letter-spacing:1px;text-transform:uppercase">STAMP</span></div>
       <div>Official document of <strong style="color:#1e3a5f">${schoolName}</strong>.<br/>Any alteration renders it invalid.</div>
     </div>
-    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Principal / Head Teacher — Signature &amp; Date</div></div>
+    <div class="sig"><div class="sig-sp"></div><div class="sig-ln">Principal / Head Staff — Signature &amp; Date</div></div>
   </div>
 
 </div><!-- /page -->
@@ -4293,10 +4299,10 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   </div>
 
   <div class="info-grid">
-    <div class="info-cell"><div class="info-label">Student Name</div><div class="info-val">${studentName}</div></div>
-    <div class="info-cell"><div class="info-label">Student ID / Admission No.</div><div class="info-val">${studentId||"—"}</div></div>
+    <div class="info-cell"><div class="info-label">Member Name</div><div class="info-val">${studentName}</div></div>
+    <div class="info-cell"><div class="info-label">Member ID / Admission No.</div><div class="info-val">${studentId||"—"}</div></div>
     <div class="info-cell"><div class="info-label">Academic Year</div><div class="info-val">${academicYear}</div></div>
-    <div class="info-cell"><div class="info-label">Class</div><div class="info-val">${className||"—"}</div></div>
+    <div class="info-cell"><div class="info-label">Group</div><div class="info-val">${className||"—"}</div></div>
     <div class="info-cell"><div class="info-label">Section / Department</div><div class="info-val">${sectionName||"—"}</div></div>
     <div class="info-cell" style="border-right:none"><div class="info-label">Gender</div><div class="info-val">${gender||"—"}${dob?` · DOB: ${dob}`:""}</div></div>
   </div>
@@ -4339,9 +4345,9 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   </div>
 
   <div class="footer">
-    <div class="sig-box"><div class="sig-line">Class Teacher's Signature</div></div>
+    <div class="sig-box"><div class="sig-line">Group Staff's Signature</div></div>
     <div class="watermark">This is an official document of ${schoolName}.<br/>Any alteration renders it invalid.</div>
-    <div class="sig-box"><div class="sig-line">Head Teacher / Principal</div></div>
+    <div class="sig-box"><div class="sig-line">Head Staff / Principal</div></div>
   </div>
 </body></html>`;
 }
@@ -4416,7 +4422,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
   const schoolName=settings.school_name||"Your School";
   const schoolAddress=settings.school_address||"No. 1 Renaissance Avenue, Abuja, FCT";
   const schoolMotto=settings.school_motto||"Excellence in Learning";
-  const classTeacherTitle=settings.report_class_teacher_title||"Class Teacher";
+  const classTeacherTitle=settings.report_class_teacher_title||"Group Staff";
   const principalTitle=settings.report_principal_title||"School Principal";
   const footerText=settings.report_footer_text||"This report card is computer-generated.";
   const today=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
@@ -4495,7 +4501,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
           <div style="flex:1;text-align:center;">
             <div style="font-size:17px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${schoolName}</div>
             <div style="font-size:9px;color:#b3d4ff;font-style:italic;margin-top:2px;">${schoolAddress}</div>
-            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Student Report Card"}</div>
+            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report Card"}</div>
           </div>
           <div style="text-align:center;min-width:64px;flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 8px;">
             <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">${overallG}</div>
@@ -4512,7 +4518,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
           <div style="flex:1;border-right:1px solid ${bdr};">
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Session / Term</span><b>${session?.name||""} / ${term?.name||""}</b></div>
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Class</span><b>${cls?.name||"—"}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Group</span><b>${cls?.name||"—"}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Issued</span><span>${today}</span></div>
           </div>
           <div style="flex:1;">
@@ -4558,7 +4564,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
             <div style="font-weight:700;color:#E8560A;font-size:9px;">${principalTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${principalComment}</div>
           </div>`:""}
-          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Teacher: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
+          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
             <div>
               <div style="font-weight:700;color:#E8560A;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
@@ -4584,7 +4590,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
 
   }).join("");
 
-  const rcFilename=pdfName(students.length===1?`${students[0].first_name||""} ${students[0].last_name||""}`.trim():cls?.name||"CLASS","REPORT",term?.name||"",session?.name||"");
+  const rcFilename=pdfName(students.length===1?`${students[0].first_name||""} ${students[0].last_name||""}`.trim():cls?.name||"GROUP","REPORT",term?.name||"",session?.name||"");
 
   const fullHtml=`<!DOCTYPE html>
 <html lang="en">

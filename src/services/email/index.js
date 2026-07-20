@@ -37,19 +37,19 @@ export function buildStudentEmail({ studentName, studentId, className, schoolNam
     <div class="tagline">School Portal</div>
   </div>
   <div class="body">
-    <div style="font-size:11px;color:#64748b;background:#f8fafc;padding:6px 12px;border-radius:6px;margin-bottom:16px;border-left:3px solid #1A4FA0">This communication is regarding: <strong>${studentName}</strong> · Student ID: <strong>${studentId}</strong> · Class: <strong>${className || "—"}</strong></div>
+    <div style="font-size:11px;color:#64748b;background:#f8fafc;padding:6px 12px;border-radius:6px;margin-bottom:16px;border-left:3px solid #1A4FA0">This communication is regarding: <strong>${studentName}</strong> · Member ID: <strong>${studentId}</strong> · Group: <strong>${className || "—"}</strong></div>
     <div class="greeting">Dear <strong>${studentName}</strong>,<br/><br/>
     Welcome to ${schoolName}! Your student portal account has been created. Here are your login details:</div>
     <div class="details-box">
-      <div class="detail-row"><span class="label">Student Name</span><span class="value">${studentName}</span></div>
-      <div class="detail-row"><span class="label">Student ID</span><span class="value id">${studentId}</span></div>
-      <div class="detail-row"><span class="label">Class</span><span class="value">${className || "—"}</span></div>
+      <div class="detail-row"><span class="label">Member Name</span><span class="value">${studentName}</span></div>
+      <div class="detail-row"><span class="label">Member ID</span><span class="value id">${studentId}</span></div>
+      <div class="detail-row"><span class="label">Group</span><span class="value">${className || "—"}</span></div>
       <div class="detail-row"><span class="label">Password</span><span class="value">${studentId}</span></div>
     </div>
     <div class="login-box">
       <div style="font-size:13px;color:#374151;margin-bottom:8px">Login at:</div>
       <a class="login-url" href="${window.location.origin}">${window.location.host}</a>
-      <div class="note">Use your Student ID as both your username and password.<br/>Please keep your login details safe and confidential.</div>
+      <div class="note">Use your Member ID as both your username and password.<br/>Please keep your login details safe and confidential.</div>
     </div>
     <p style="font-size:13px;color:#64748b;line-height:1.6">If you have any questions, please contact the school administration office.</p>
   </div>
@@ -71,7 +71,7 @@ export function buildTeacherEmail({ teacherName, teacherEmail, schoolName = "Sch
       <div class="detail-row"><span class="label">Full Name</span><span class="value">${teacherName}</span></div>
       <div class="detail-row"><span class="label">Login Email</span><span class="value">${teacherEmail}</span></div>
       <div class="detail-row"><span class="label">Password</span><span class="value">${teacherEmail}</span></div>
-      <div class="detail-row"><span class="label">Role</span><span class="value">Teacher</span></div>
+      <div class="detail-row"><span class="label">Role</span><span class="value">Staff</span></div>
     </div>
     <div class="login-box">
       <div style="font-size:13px;color:#374151;margin-bottom:8px">Login at:</div>

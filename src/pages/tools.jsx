@@ -45,7 +45,7 @@ export function RecycleBinPage({ctx}){
   };
   const daysLeft=(exp)=>Math.max(0,Math.ceil((new Date(exp)-Date.now())/(864e5)));
   const typeColor={student:C.blue,teacher:C.green,class:C.orange,section:'#8b5cf6',subject:'#0891b2'};
-  const typeLabel={student:'Student',teacher:'Teacher',class:'Class',section:'Section',subject:'Subject'};
+  const typeLabel={student:'Member',teacher:'Staff',class:'Group',section:'Section',subject:'Subject'};
 
   const restore=async(item)=>{
     const name=displayName(item);
@@ -247,12 +247,12 @@ export function DataExportPage({ctx}){
   const exportStudents=()=>run("students",async()=>{
     const{data}=await db.getStudents();
     const rows=(data||[]).map(s=>({
-      "Student ID":s.id,"First Name":s.first_name,"Middle Name":s.middle_name||"","Last Name":s.last_name,
-      "Class":s.classes?.name||"","Section":s.classes?.sections?.name||"",
+      "Member ID":s.id,"First Name":s.first_name,"Middle Name":s.middle_name||"","Last Name":s.last_name,
+      "Group":s.classes?.name||"","Section":s.classes?.sections?.name||"",
       "Gender":s.gender||"","DOB":s.dob||"","Email":s.email||"","Phone":s.phone||"",
       "Status":s.status||"","Admission Year":s.admission_year||"","Last Login":s.last_login?new Date(s.last_login).toLocaleDateString():"Never",
     }));
-    downloadXlsx(rows,"Students");notify(`${rows.length} students exported ✓`);
+    downloadXlsx(rows,"Members");notify(`${rows.length} students exported ✓`);
   });
 
   const exportTeachers=()=>run("teachers",async()=>{
@@ -262,14 +262,14 @@ export function DataExportPage({ctx}){
       "Email":t.email||"","Phone":t.phone||"","Section":t.sections?.name||"",
       "Last Login":t.last_login?new Date(t.last_login).toLocaleDateString():"Never",
     }));
-    downloadXlsx(rows,"Teachers");notify(`${rows.length} staff exported ✓`);
+    downloadXlsx(rows,"Staff");notify(`${rows.length} staff exported ✓`);
   });
 
   const exportResults=()=>run("results",async()=>{
     if(!selSession||!selTerm){notify("Select a session and term first","error");return;}
     const{data}=await db.getResults({term_id:+selTerm,session_id:+selSession,class_id:selClass?+selClass:undefined});
     const rows=(data||[]).map(r=>({
-      "Student ID":r.student_id,"Class":r.class_id,"Subject":r.section_subjects?.name||r.subject_id,
+      "Member ID":r.student_id,"Group":r.class_id,"Subject":r.section_subjects?.name||r.subject_id,
       "CA Score":r.ca_score??""," Exam Score":r.exam_score??""," Total":r.total_score??"",
     }));
     downloadXlsx(rows,"Results");notify(`${rows.length} result rows exported ✓`);
@@ -278,7 +278,7 @@ export function DataExportPage({ctx}){
   const exportFees=()=>run("fees",async()=>{
     const{data}=await db.getFeeBills({});
     const rows=(data||[]).map(b=>({
-      "Bill ID":b.id,"Student ID":b.student_id,"Class":b.class_id,
+      "Bill ID":b.id,"Member ID":b.student_id,"Group":b.class_id,
       "Total Amount":b.total_amount,"Amount Paid":b.amount_paid,"Balance":b.balance,
       "Status":b.status,"Term":b.term,"Academic Year":b.academic_year,"Due Date":b.due_date||"",
     }));
@@ -289,7 +289,7 @@ export function DataExportPage({ctx}){
     if(!selSession||!selTerm){notify("Select a session and term first","error");return;}
     const{data}=await db.getAttendanceSummary(selClass?+selClass:null,+selTerm,+selSession);
     const rows=(data||[]).map(r=>({
-      "Student ID":r.student_id,"Present":r.present||0,"Absent":r.absent||0,"Late":r.late||0,"Total Days":r.total||0,
+      "Member ID":r.student_id,"Present":r.present||0,"Absent":r.absent||0,"Late":r.late||0,"Total Days":r.total||0,
     }));
     downloadXlsx(rows,"Attendance");notify(`Attendance exported ✓`);
   });
@@ -336,7 +336,7 @@ export function DataExportPage({ctx}){
       </select>
       <select value={selClass} onChange={e=>setSelClass(e.target.value)}
         style={{padding:"6px 10px",border:`1.5px solid ${C.border}`,borderRadius:7,fontSize:11,background:C.white,color:C.text}}>
-        <option value="">All Classes</option>
+        <option value="">All Groups</option>
         {classes.map(c=><option key={c.id} value={String(c.id)}>{c.name}</option>)}
       </select>
     </div>
@@ -350,9 +350,9 @@ export function DataExportPage({ctx}){
       </div>
       <p style={{margin:"0 0 24px",fontSize:12,color:C.muted}}>Download school data as Excel spreadsheets for reporting, government returns, or archiving.</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-        <ExportCard icon={Users} title="Students" desc="Full student list with class, status, and contact info." btnLabel="Export Students (.xlsx)" onExport={exportStudents} loadKey="students"/>
+        <ExportCard icon={Users} title="Members" desc="Full student list with class, status, and contact info." btnLabel="Export Members (.xlsx)" onExport={exportStudents} loadKey="students"/>
         <ExportCard icon={UserCheck} title="Staff" desc="All teachers and managers with roles and contact info." btnLabel="Export Staff (.xlsx)" onExport={exportTeachers} loadKey="teachers"/>
-        <ExportCard icon={BarChart3} title="Results" desc="Student scores by subject, class, term, and session." btnLabel="Export Results (.xlsx)" onExport={exportResults} loadKey="results"
+        <ExportCard icon={BarChart3} title="Results" desc="Member scores by subject, class, term, and session." btnLabel="Export Results (.xlsx)" onExport={exportResults} loadKey="results"
           extra={FilterRow}/>
         <ExportCard icon={Receipt} title="Fee Bills" desc="All generated bills with payment status and balances." btnLabel="Export Fee Bills (.xlsx)" onExport={exportFees} loadKey="fees"/>
         <ExportCard icon={CalendarCheck} title="Attendance" desc="Attendance summary per student (present / absent / late)." btnLabel="Export Attendance (.xlsx)" onExport={exportAttendance} loadKey="attendance"
@@ -404,7 +404,7 @@ export function ActivityPage({ctx}){
 
       {/* Tab */}
       <div style={{display:"flex",gap:6,marginBottom:16}}>
-        {[{v:"teachers",l:"Staff"},{v:"students",l:"Students"}].map(x=>(
+        {[{v:"teachers",l:"Staff"},{v:"students",l:"Members"}].map(x=>(
           <button key={x.v} onClick={()=>{setTab(x.v);setSearch("");}}
             style={{padding:"7px 18px",borderRadius:8,border:`2px solid ${tab===x.v?C.blue:C.border}`,
               background:tab===x.v?C.blue:"transparent",color:tab===x.v?"#fff":C.muted,
@@ -440,7 +440,7 @@ export function ActivityPage({ctx}){
             <div style={{display:"grid",gridTemplateColumns:"1fr 120px 150px 120px",
               padding:"8px 16px",background:C.offWhite,borderBottom:`1px solid ${C.border}`,
               fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>
-              <span>Name</span><span>{tab==="teachers"?"Role":"Class"}</span><span>Last Login</span><span>Status</span>
+              <span>Name</span><span>{tab==="teachers"?"Role":"Group"}</span><span>Last Login</span><span>Status</span>
             </div>
           )}
           {filtered.length===0?(
@@ -638,7 +638,7 @@ export function BroadsheetPage({ctx}){
     <div style={{padding:24,maxWidth:1400,margin:"0 auto"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
         <Table size={22} color={C.blue}/>
-        <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Class Broadsheet</h2>
+        <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Group Broadsheet</h2>
       </div>
       <p style={{margin:"0 0 18px",fontSize:12,color:C.muted}}>
         Comprehensive class performance table — all students, all subjects, positions and grades. Export as PDF (A3 landscape) or Excel.
@@ -657,7 +657,7 @@ export function BroadsheetPage({ctx}){
         </select>
         <select value={selClass} onChange={e=>setSelClass(e.target.value)}
           style={{padding:"8px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text,minWidth:140}}>
-          <option value="">Class…</option>
+          <option value="">Group…</option>
           {classes.map(c=><option key={c.id} value={String(c.id)}>{c.name}</option>)}
         </select>
         <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
@@ -683,7 +683,7 @@ export function BroadsheetPage({ctx}){
       {bsData&&rows.length===0&&(
         <div style={{textAlign:"center",padding:50,color:C.muted,fontSize:13}}>
           <Table size={36} color={C.border} style={{marginBottom:10}}/>
-          <div>No active students or results found for this selection.</div>
+          <div>No active members or results found for this selection.</div>
         </div>
       )}
 
@@ -693,7 +693,7 @@ export function BroadsheetPage({ctx}){
             borderBottom:`1px solid ${C.border}`,flexWrap:"wrap",alignItems:"center"}}>
             <div style={{fontWeight:800,fontSize:13,color:C.text}}>{cls_sel?.name}</div>
             <div style={{fontSize:11,color:C.muted}}>{rows.length} students &bull; {bsData.subjects.length} subjects</div>
-            <div style={{fontSize:11,color:C.muted}}>Class avg: <strong style={{color:C.blue}}>{(rows.reduce((s,r)=>s+r.average,0)/rows.length).toFixed(1)}</strong></div>
+            <div style={{fontSize:11,color:C.muted}}>Group avg: <strong style={{color:C.blue}}>{(rows.reduce((s,r)=>s+r.average,0)/rows.length).toFixed(1)}</strong></div>
             <div style={{fontSize:11,color:C.muted}}>Highest: <strong style={{color:C.green}}>{Math.max(...rows.map(r=>r.grandTotal)).toFixed(1)}</strong></div>
             <div style={{fontSize:11,color:C.muted}}>Lowest: <strong style={{color:C.red}}>{Math.min(...rows.map(r=>r.grandTotal)).toFixed(1)}</strong></div>
             <div style={{fontSize:11,color:C.muted}}>
@@ -707,7 +707,7 @@ export function BroadsheetPage({ctx}){
               <thead>
                 <tr>
                   <TH w={28} bg="#0d2d6e" rowSpan={mode==='detailed'?2:1}>#</TH>
-                  <TH w={150} bg="#0d2d6e" rowSpan={mode==='detailed'?2:1} style={{textAlign:"left"}}>Student Name</TH>
+                  <TH w={150} bg="#0d2d6e" rowSpan={mode==='detailed'?2:1} style={{textAlign:"left"}}>Member Name</TH>
                   <TH w={72} bg="#0d2d6e" rowSpan={mode==='detailed'?2:1}>Adm. No.</TH>
                   {bsData.subjects.map(sub=>(
                     <TH key={sub.id} bg="#1A4FA0" colSpan={mode==='detailed'?3:1}>{sub.name}</TH>
@@ -768,7 +768,7 @@ export function BroadsheetPage({ctx}){
               </tbody>
               <tfoot>
                 <tr style={{background:C.bluePale}}>
-                  <TD colSpan={3} align="left" bold color={C.blue} style={{background:C.bluePale,fontSize:10,letterSpacing:.3}}>CLASS AVERAGE</TD>
+                  <TD colSpan={3} align="left" bold color={C.blue} style={{background:C.bluePale,fontSize:10,letterSpacing:.3}}>GROUP AVERAGE</TD>
                   {bsData.subjects.map(sub=>{
                     const scores=rows.map(r=>r.subjectScores.find(ss=>ss.subjectId===sub.id)?.total).filter(v=>v!=null);
                     const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'—';
@@ -1213,7 +1213,7 @@ export function BulkPromotionPage({ctx}){
     const rows=list.slice()
       .sort((a,b)=>classNm(a.from_class_id).localeCompare(classNm(b.from_class_id))||(stuName[String(a.student_id)]||"").localeCompare(stuName[String(b.student_id)]||""))
       .map(d=>{const b=bal(d.student_id);return `<tr><td style="border:1px solid #cbd5e1;padding:5px 9px">${stuName[String(d.student_id)]||d.student_id}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${d.student_id}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${classNm(d.from_class_id)}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${d.decision==="promote"?"→ "+classNm(d.to_class_id):d.decision==="graduate"?"Graduated":"Repeats"}</td><td style="border:1px solid #cbd5e1;padding:5px 9px;text-align:right;${b>0?"color:#b91c1c;font-weight:700":"color:#94a3b8"}">${b>0?fmt(b):"—"}</td></tr>`;}).join("");
-    const html=`<html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:Arial,sans-serif;padding:24px;color:#111"><h2 style="margin:0 0 4px">${title}</h2><div style="color:#64748b;font-size:12px;margin-bottom:14px">${sessions.find(s=>String(s.id)===String(selectedSession))?.name||""} · ${list.length} student(s)${owed>0?` · outstanding: <b style="color:#b91c1c">${fmt(owed)}</b>`:""}</div><table style="border-collapse:collapse;font-size:13px;width:100%"><thead><tr style="background:#0d2d6e;color:#fff"><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Student</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">ID</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">From Class</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Outcome</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:right">Balance</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+    const html=`<html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:Arial,sans-serif;padding:24px;color:#111"><h2 style="margin:0 0 4px">${title}</h2><div style="color:#64748b;font-size:12px;margin-bottom:14px">${sessions.find(s=>String(s.id)===String(selectedSession))?.name||""} · ${list.length} student(s)${owed>0?` · outstanding: <b style="color:#b91c1c">${fmt(owed)}</b>`:""}</div><table style="border-collapse:collapse;font-size:13px;width:100%"><thead><tr style="background:#0d2d6e;color:#fff"><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Member</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">ID</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">From Group</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Outcome</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:right">Balance</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
     ctx.showPDF ? ctx.showPDF(html,title) : (()=>{const w=window.open("","_blank");w.document.write(html);w.document.close();})();
   };
 
@@ -1243,8 +1243,8 @@ export function BulkPromotionPage({ctx}){
       {loading?<Spinner/>:tab==="map"?(
         /* ══ PROGRESSION MAP ══ */
         <Card>
-          <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:4}}>Class Progression Map</div>
-          <div style={{color:C.muted,fontSize:12,marginBottom:16}}>Set where each class's students move at promotion. Leave a class as <b>Graduate</b> if it's the final class (its students leave the school). Set once — reused every year.</div>
+          <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:4}}>Group Progression Map</div>
+          <div style={{color:C.muted,fontSize:12,marginBottom:16}}>Set where each group's members move at promotion. Leave a group as <b>Graduate</b> if it's the final group (its members leave the school). Set once — reused every year.</div>
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
             {classes.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>(
               <div key={c.id} style={{display:"grid",gridTemplateColumns:"1fr auto 1.2fr",gap:10,alignItems:"center",
@@ -1262,7 +1262,7 @@ export function BulkPromotionPage({ctx}){
                 </select>
               </div>
             ))}
-            {!classes.length&&<div style={{color:C.muted,fontSize:13,padding:12}}>No classes found.</div>}
+            {!classes.length&&<div style={{color:C.muted,fontSize:13,padding:12}}>No groups found.</div>}
           </div>
         </Card>
       ):(
@@ -1290,7 +1290,7 @@ export function BulkPromotionPage({ctx}){
               <div style={{marginTop:14}}>
                 {terminalWithStudents.length>0&&(
                   <div style={{background:C.amberPale,border:`1px solid ${C.amber}44`,borderRadius:8,padding:"10px 13px",fontSize:12,color:C.amber,marginBottom:12}}>
-                    <b>Heads up:</b> these classes have no destination in the map, so their active students will default to <b>Graduate</b>: {terminalWithStudents.map(c=>c.name).join(", ")}. If that's wrong, set their destination on the <b>Progression Map</b> tab first.
+                    <b>Heads up:</b> these groups have no destination in the map, so their active members will default to <b>Graduate</b>: {terminalWithStudents.map(c=>c.name).join(", ")}. If that's wrong, set their destination on the <b>Progression Map</b> tab first.
                   </div>
                 )}
                 <Btn onClick={arm} color={C.orange} disabled={busy}
@@ -1404,7 +1404,7 @@ export function BulkPromotionPage({ctx}){
             );
           })}
           {activeRun&&!grouped.length&&(
-            <Card><div style={{color:C.muted,fontSize:13,padding:12,textAlign:"center"}}>No active students were snapshotted for this session.</div></Card>
+            <Card><div style={{color:C.muted,fontSize:13,padding:12,textAlign:"center"}}>No active members were snapshotted for this session.</div></Card>
           )}
         </>
       )}

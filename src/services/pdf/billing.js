@@ -331,7 +331,7 @@ export function buildPDF({
         <div class="lbl" style="color:#1d4ed8">${isPaid ? "Scan to Verify" : "Scan to Pay"}</div>
         <div style="font-size:11.5px;font-weight:700;color:#1e3a8a">United Bank of Africa</div>
         <div style="font-size:11.5px;color:#1e3a8a">Acct 1021639196</div>
-        <div style="font-size:10px;color:#3b82f6;margin-top:2px">Use Student ID as reference</div>
+        <div style="font-size:10px;color:#3b82f6;margin-top:2px">Use Member ID as reference</div>
       </div>
     </div>
     <div class="ftr-note">

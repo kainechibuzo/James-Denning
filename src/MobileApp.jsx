@@ -239,7 +239,7 @@ function MAppHeader({t, user, role, onBack, backLabel, onToggleDark, pendingNoti
   const ini=((parts[0]?.[0]||"")+(parts[1]?.[0]||"")).toUpperCase();
   const h=new Date().getHours();
   const greeting=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
-  const roleLbl={admin:"Administrator",teacher:"Staff Portal",manager:"Finance Officer",student:"Student Portal"}[role]||role;
+  const roleLbl={admin:"Administrator",teacher:"Staff Portal",manager:"Finance Officer",student:"Member Portal"}[role]||role;
   return(
     <div style={{background:t.hdr,padding:"52px 16px 14px",display:"flex",
       alignItems:"center",justifyContent:"space-between",flexShrink:0,gap:8}}>
@@ -296,7 +296,7 @@ function MAppHeader({t, user, role, onBack, backLabel, onToggleDark, pendingNoti
 const TABS={
   admin:[
     {id:"dashboard",   label:"Home",       Icon:LayoutDashboard},
-    {id:"students",    label:"Students",   Icon:UsersRound},
+    {id:"students",    label:"Members",   Icon:UsersRound},
     {id:"fee-tracker", label:"Fees",       Icon:Wallet},
     {id:"results",     label:"Results",    Icon:FileText},
     {id:"more",        label:"More",       Icon:Menu},
@@ -476,7 +476,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
         {/* ID field */}
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,color:t.sft,marginBottom:5,
-            textTransform:"uppercase",letterSpacing:.5}}>Staff / Student ID</div>
+            textTransform:"uppercase",letterSpacing:.5}}>Staff / Member ID</div>
           <input value={id} onChange={e=>setId(e.target.value)}
             placeholder="e.g. TCH/0023 or RGS/0847"
             onKeyDown={e=>e.key==="Enter"&&document.getElementById("mpw")?.focus()}
@@ -541,7 +541,7 @@ function AdminDashboard({t, ctx}){
       setStats({students,teachers,eaApproved,feesCollected});
       // Recent activity from payments
       const recent=payments.slice(0,4).map(p=>({
-        name:p.student_name||p.student_id||"Student",
+        name:p.student_name||p.student_id||"Member",
         action:`Fee payment — ${fmt(+p.amount||0)}`,
         time:"recently",
         color:"#15803D",
@@ -552,7 +552,7 @@ function AdminDashboard({t, ctx}){
   },[]);
 
   const quickActions=[
-    {l:"Add Student",   Icon:Plus,         screen:"students"},
+    {l:"Add Member",   Icon:Plus,         screen:"students"},
     {l:"Generate Bill", Icon:ReceiptText,  screen:"fee-generate"},
     {l:"Send Email",    Icon:Mail,         screen:"mail-compose"},
     {l:"Export",        Icon:Download,     screen:"export"},
@@ -563,9 +563,9 @@ function AdminDashboard({t, ctx}){
       {loading?<MSpinner t={t}/>:<>
         {/* Stats */}
         <div style={{display:"flex",gap:9,marginBottom:9}}>
-          <MStatCard t={t} label="Students" value={stats.students.toLocaleString()}
+          <MStatCard t={t} label="Members" value={stats.students.toLocaleString()}
             sub="Active" color="blue" icon={<UsersRound size={18}/>}/>
-          <MStatCard t={t} label="Teachers" value={stats.teachers}
+          <MStatCard t={t} label="Staff" value={stats.teachers}
             sub="On staff" color="purple" icon={<UserCheck size={18}/>}/>
         </div>
         <div style={{display:"flex",gap:9,marginBottom:18}}>
@@ -719,7 +719,7 @@ function AddStudentSheet({t, ctx, open, onClose, onDone}){
         first_name:firstName.trim(),last_name:lastName.trim(),
         class_id:classId,status:"active",
       });
-      ctx.notify?.("Student added!");
+      ctx.notify?.("Member added!");
       setFirstName("");setLastName("");
       onDone?.();
     }catch(e){ctx.notify?.("Failed to add student","error");}
@@ -727,12 +727,12 @@ function AddStudentSheet({t, ctx, open, onClose, onDone}){
   };
 
   return(
-    <MBottomSheet t={t} open={open} onClose={onClose} title="Add New Student">
+    <MBottomSheet t={t} open={open} onClose={onClose} title="Add New Member">
       <MInputField t={t} label="First Name" value={firstName} onChange={setFirstName} placeholder="First name"/>
       <MInputField t={t} label="Last Name" value={lastName} onChange={setLastName} placeholder="Last name"/>
-      <MSelectField t={t} label="Class" value={classId} onChange={setClassId}
+      <MSelectField t={t} label="Group" value={classId} onChange={setClassId}
         options={classes.map(c=>({v:String(c.id),l:c.name}))}/>
-      <MPrimaryBtn t={t} label="Add Student" onClick={save} loading={saving}/>
+      <MPrimaryBtn t={t} label="Add Member" onClick={save} loading={saving}/>
     </MBottomSheet>
   );
 }
@@ -810,7 +810,7 @@ function AdminFees({t, ctx}){
       <MCard t={t} style={{marginBottom:14}}>
         {bills.length===0?<MEmpty t={t} message="No bills found"/>:
           bills.map((b,i)=>{
-            const name=b.student_name||b.student_id||"Student";
+            const name=b.student_name||b.student_id||"Member";
             const sc=b.status==="paid"?"green":b.status==="partial"?"amber":"red";
             const lbl=b.status==="paid"?"Paid":b.status==="partial"?"Partial":"Unpaid";
             return(
@@ -969,12 +969,12 @@ function AdminMore({t, ctx}){
     {id:"mail-compose", l:"Email",         sub:"Compose & send",     Icon:Mail,         col:"#1A4FA0"},
     {id:"report-cards", l:"Report Cards",  sub:"Publish cards",      Icon:FileText,     col:"#15803D"},
     {id:"grading",      l:"Grading",       sub:"Grade schema",       Icon:Award,        col:"#D97706"},
-    {id:"timetable",    l:"Timetable",     sub:"Class schedule",     Icon:CalendarDays, col:"#7C3AED"},
+    {id:"timetable",    l:"Timetable",     sub:"Group schedule",     Icon:CalendarDays, col:"#7C3AED"},
     {id:"audit-log",    l:"Audit Log",     sub:"All actions",        Icon:History,      col:"#1A4FA0"},
     {id:"export",       l:"Data Export",   sub:"Download XLS",       Icon:Download,     col:"#15803D"},
     {id:"recycle-bin",  l:"Recycle Bin",   sub:"Deleted items",      Icon:Trash2,       col:"#DC2626"},
     {id:"activity",     l:"Activity",      sub:"Login history",      Icon:Activity,     col:"#D97706"},
-    {id:"approvals",    l:"Approvals",     sub:"Student requests",   Icon:CheckCircle2, col:"#15803D"},
+    {id:"approvals",    l:"Approvals",     sub:"Member requests",   Icon:CheckCircle2, col:"#15803D"},
     {id:"fee-stats",    l:"Fee Stats",     sub:"Financial analysis", Icon:BarChart2,    col:"#E8560A"},
     {id:"profile",      l:"My Profile",    sub:"Account & settings", Icon:UserCircle,   col:"#64748B"},
   ];
@@ -1039,7 +1039,7 @@ function TeacherDashboard({t, ctx}){
   if(loading) return <MSpinner t={t}/>;
   return(
     <div style={{padding:"14px 14px 0",background:t.bg}}>
-      <MSHdr t={t} title="Today's Classes"/>
+      <MSHdr t={t} title="Today's Groups"/>
       <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:18}}>
         {slots.length===0
           ?<div style={{background:t.card,borderRadius:14,padding:"16px",
@@ -1060,7 +1060,7 @@ function TeacherDashboard({t, ctx}){
                 </div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:14,fontWeight:700,color:t.txt}}>
-                    {c.class_name||"Class"} — {c.subject_name||"Subject"}</div>
+                    {c.class_name||"Group"} — {c.subject_name||"Subject"}</div>
                   <div style={{fontSize:12,color:t.sft}}>{c.start_time} – {c.end_time}</div>
                 </div>
                 {!done&&<ChevronRight size={16} color={t.mut}/>}
@@ -1270,7 +1270,7 @@ function TeacherResults({t, ctx}){
         }
       </MCard>
       <MBottomSheet t={t} open={!!eaSheet} onClose={()=>{setEaSheet(null);setNotes("");}}
-        title={`Submit EA — ${eaSheet?.class_name||"Class"}`}>
+        title={`Submit EA — ${eaSheet?.class_name||"Group"}`}>
         <div style={{fontSize:13,color:t.sft,marginBottom:14}}>
           Confirm that results for this class are ready for management approval.
         </div>
@@ -1538,7 +1538,7 @@ function StudentBill({t, ctx}){
   );
 }
 
-// ─── STUDENT: MY RESULTS ─────────────────────────────────────────────────────
+// ─── MEMBER: MY RESULTS ─────────────────────────────────────────────────────
 function StudentResults({t, ctx}){
   const {user}=ctx;
   const [results,setResults]=useState([]);
@@ -1616,8 +1616,8 @@ function StudentResults({t, ctx}){
 function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
   const parts=(user?.name||"?").split(" ");
   const ini=((parts[0]?.[0]||"")+(parts[1]?.[0]||"")).toUpperCase();
-  const roleLbl={admin:"Administrator",teacher:"Class Teacher",
-    manager:"Finance Officer",student:"Student"}[role]||role;
+  const roleLbl={admin:"Administrator",teacher:"Group Staff",
+    manager:"Finance Officer",student:"Member"}[role]||role;
   const notify=ctx?.notify;
 
   const [pwSheet,setPwSheet]=useState(false);
@@ -1869,7 +1869,7 @@ export function MobileApp(){
       if(!id||!pw){setLoginError("Enter your ID and password.");setLoginLoading(false);return;}
       // Determine schoolId: from saved school or from db context
       const schoolId=school?.id||db._schoolId||null;
-      // 1. Teacher/Manager
+      // 1. Staff/Manager
       const{data:teacher}=await db.loginFindTeacher(id,schoolId);
       if(teacher){
         const expected=teacher.password_hash||teacher.staff_id;
@@ -1887,7 +1887,7 @@ export function MobileApp(){
         setLoginLoading(false);
         return;
       }
-      // 2. Student
+      // 2. Member
       const{data:student}=await db.loginFindStudent(id,schoolId);
       if(student){
         const st=student.status||"active";
@@ -2197,47 +2197,47 @@ function AdminExport({t, ctx}){
       if(type==="students"){
         const{data}=await db.getStudents();
         const rows=(data||[]).map(s=>({
-          "Student ID":s.student_id||s.id,
+          "Member ID":s.student_id||s.id,
           "First Name":s.first_name,"Last Name":s.last_name,
-          "Class":s.class_name,"Status":s.status,"Email":s.email||"",
+          "Group":s.class_name,"Status":s.status,"Email":s.email||"",
         }));
-        downloadCSV("rgs_students.csv",rows,["Student ID","First Name","Last Name","Class","Status","Email"]);
-        notify?.("Students exported!");
+        downloadCSV("rgs_students.csv",rows,["Member ID","First Name","Last Name","Group","Status","Email"]);
+        notify?.("Members exported!");
       } else if(type==="staff"){
         const{data}=await db.getTeachers();
         const rows=(data||[]).map(s=>({
           "Staff ID":s.staff_id,"Name":s.full_name,"Role":s.role,
-          "Class":s.class_name||"","Email":s.email||"",
+          "Group":s.class_name||"","Email":s.email||"",
           "Last Login":s.last_login?new Date(s.last_login).toLocaleDateString("en-NG"):"Never",
         }));
-        downloadCSV("rgs_staff.csv",rows,["Staff ID","Name","Role","Class","Email","Last Login"]);
+        downloadCSV("rgs_staff.csv",rows,["Staff ID","Name","Role","Group","Email","Last Login"]);
         notify?.("Staff exported!");
       } else if(type==="results"){
         const{data}=await db.getResultApprovals();
         const rows=(data||[]).map(r=>({
-          "Class":r.class_name||r.class_id,"Term":r.term_name||r.term_id,
+          "Group":r.class_name||r.class_id,"Term":r.term_name||r.term_id,
           "Session":r.session_name||r.session_id,
           "EA Status":r.ea_status||"none","MA Status":r.ma_status||"none",
         }));
-        downloadCSV("rgs_results.csv",rows,["Class","Term","Session","EA Status","MA Status"]);
+        downloadCSV("rgs_results.csv",rows,["Group","Term","Session","EA Status","MA Status"]);
         notify?.("Results exported!");
       } else if(type==="fees"){
         const{data}=await db.getFeeBills();
         const rows=(data||[]).map(b=>({
-          "Student":b.student_name||b.student_id,"Class":b.class_name||"",
+          "Member":b.student_name||b.student_id,"Group":b.class_name||"",
           "Term":b.term_name||"","Total":b.total_amount||0,
           "Paid":b.amount_paid||0,"Balance":(+b.total_amount||0)-(+b.amount_paid||0),
           "Status":b.status||"unpaid",
         }));
-        downloadCSV("rgs_fees.csv",rows,["Student","Class","Term","Total","Paid","Balance","Status"]);
+        downloadCSV("rgs_fees.csv",rows,["Member","Group","Term","Total","Paid","Balance","Status"]);
         notify?.("Fee bills exported!");
       } else if(type==="attendance"){
         const{data}=await db.getAttendance?.()??{data:[]};
         const rows=(data||[]).map(a=>({
-          "Student ID":a.student_id,"Date":a.date,"Present":a.present?"Yes":"No",
-          "Class":a.class_name||"",
+          "Member ID":a.student_id,"Date":a.date,"Present":a.present?"Yes":"No",
+          "Group":a.class_name||"",
         }));
-        downloadCSV("rgs_attendance.csv",rows,["Student ID","Date","Present","Class"]);
+        downloadCSV("rgs_attendance.csv",rows,["Member ID","Date","Present","Group"]);
         notify?.("Attendance exported!");
       }
     }catch(e){notify?.("Export failed","error");}
@@ -2245,8 +2245,8 @@ function AdminExport({t, ctx}){
   };
 
   const exports=[
-    {id:"students",   l:"Students",        sub:"Active students with class info",   Icon:UsersRound,    col:"blue"},
-    {id:"staff",      l:"Staff / Teachers",sub:"All staff with roles & last login", Icon:UserCheck,     col:"purple"},
+    {id:"students",   l:"Members",        sub:"Active students with class info",   Icon:UsersRound,    col:"blue"},
+    {id:"staff",      l:"Staff / Staff",sub:"All staff with roles & last login", Icon:UserCheck,     col:"purple"},
     {id:"results",    l:"Term Results",    sub:"Approval status by class & term",   Icon:BarChart3,     col:"green"},
     {id:"fees",       l:"Fee Bills",       sub:"All bills with payment status",     Icon:ReceiptText,   col:"orange"},
     {id:"attendance", l:"Attendance",      sub:"Daily attendance by class",         Icon:ClipboardCheck,col:"amber"},
@@ -2308,7 +2308,7 @@ function StudentDetailScreen({t, ctx}){
       const payload={status};
       if(classId) payload.class_id=classId;
       await db.upsertStudent(payload,student.id);
-      notify?.("Student updated!");
+      notify?.("Member updated!");
       setScreen("students");
     }catch(e){notify?.("Failed to save","error");}
     setSaving(false);
@@ -2325,7 +2325,7 @@ function StudentDetailScreen({t, ctx}){
     setPwSaving(false);
   };
 
-  const name=fullName(student)||student.display_name||"Student";
+  const name=fullName(student)||student.display_name||"Member";
   const statusColor=status==="active"?"green":status==="suspended"?"amber":"red";
 
   return(
@@ -2347,7 +2347,7 @@ function StudentDetailScreen({t, ctx}){
       <div style={{padding:"16px 14px"}}>
         {/* Edit section */}
         <div style={{fontSize:11,fontWeight:700,color:t.sft,textTransform:"uppercase",
-          letterSpacing:.5,marginBottom:10}}>Edit Student</div>
+          letterSpacing:.5,marginBottom:10}}>Edit Member</div>
         <div style={{background:t.card,borderRadius:14,padding:"14px 14px 6px",
           border:`1px solid ${t.brd}`,marginBottom:14}}>
           <MSelectField t={t} label="Status" value={status} onChange={setStatus}
@@ -2358,7 +2358,7 @@ function StudentDetailScreen({t, ctx}){
               {v:"graduated",l:"Graduated"},
               {v:"inactive",l:"Inactive"},
             ]}/>
-          <MSelectField t={t} label="Class Assignment" value={classId} onChange={setClassId}
+          <MSelectField t={t} label="Group Assignment" value={classId} onChange={setClassId}
             options={[{v:"",l:"Keep current class"},...classes.map(c=>({v:String(c.id),l:c.name}))]}/>
           <MPrimaryBtn t={t} label="Save Changes" onClick={saveChanges} loading={saving}/>
         </div>
@@ -2372,7 +2372,7 @@ function StudentDetailScreen({t, ctx}){
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:600,color:t.txt}}>Reset Password</div>
-              <div style={{fontSize:12,color:t.sft}}>Change this student's login password</div>
+              <div style={{fontSize:12,color:t.sft}}>Change this member's login password</div>
             </div>
             <ChevronRight size={16} color={t.mut}/>
           </MRow>
@@ -2410,7 +2410,7 @@ function StudentDetailScreen({t, ctx}){
         )}
       </div>
 
-      <MBottomSheet t={t} open={pwSheet} onClose={()=>{setPwSheet(false);setNewPw("");}} title="Reset Student Password">
+      <MBottomSheet t={t} open={pwSheet} onClose={()=>{setPwSheet(false);setNewPw("");}} title="Reset Member Password">
         <div style={{fontSize:13,color:t.sft,marginBottom:14}}>
           Set a new password for <strong style={{color:t.txt}}>{name}</strong>.
           They can change it again from their profile.
@@ -2455,7 +2455,7 @@ function MemberDetailScreen({t, ctx}){
   };
 
   const name=member.full_name||member.display_name||"Staff";
-  const roleLbl={teacher:"Teacher",manager:"Finance Officer",admin:"Administrator"}[member.role]||member.role;
+  const roleLbl={teacher:"Staff",manager:"Finance Officer",admin:"Administrator"}[member.role]||member.role;
 
   return(
     <div style={{background:t.bg,minHeight:"100%",paddingBottom:32}}>
@@ -2479,7 +2479,7 @@ function MemberDetailScreen({t, ctx}){
           border:`1px solid ${t.brd}`,marginBottom:14}}>
           <MSelectField t={t} label="Role" value={role} onChange={setRole}
             options={[
-              {v:"teacher",l:"Teacher"},
+              {v:"teacher",l:"Staff"},
               {v:"manager",l:"Finance Officer (Manager)"},
               {v:"admin",l:"Administrator"},
             ]}/>
@@ -2503,7 +2503,7 @@ function MemberDetailScreen({t, ctx}){
         {/* Info */}
         <MCard t={t}>
           {[
-            {l:"Assigned Class",v:member.class_name||"—"},
+            {l:"Assigned Group",v:member.class_name||"—"},
             {l:"Last Login",v:member.last_login?new Date(member.last_login).toLocaleDateString("en-NG"):"Never"},
             {l:"Account Status",v:member.status||"active"},
             {l:"Join Date",v:member.created_at?new Date(member.created_at).toLocaleDateString("en-NG"):"—"},
@@ -2546,7 +2546,7 @@ function BillDetailScreen({t, ctx}){
   const items=bill.fee_bill_items||[];
   const payments=bill.fee_payments||[];
   const statusColor=bill.status==="paid"?"green":bill.status==="partial"?"amber":"red";
-  const name=bill.student_name||bill.student_id||"Student";
+  const name=bill.student_name||bill.student_id||"Member";
 
   const recordPayment=async()=>{
     const amt=parseFloat(amount);
@@ -2770,8 +2770,8 @@ function AnnouncementsScreen({t, ctx}){
         <MSelectField t={t} label="Audience" value={audience} onChange={setAudience}
           options={[
             {v:"all",l:"Everyone"},
-            {v:"students",l:"Students only"},
-            {v:"teachers",l:"Teachers only"},
+            {v:"students",l:"Members only"},
+            {v:"teachers",l:"Staff only"},
             {v:"parents",l:"Parents only"},
           ]}/>
         <MPrimaryBtn t={t} label="Post Announcement" onClick={create} loading={saving}/>
@@ -2893,10 +2893,10 @@ function ApprovalsScreen({t, ctx}){
               <div key={r.id||i} style={{background:t.card,borderRadius:14,padding:"13px 14px",
                 border:`1px solid ${t.brd}`,marginBottom:9}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                  <MAvatar name={r.student_name||"Student"} size={36} color={t.pri}/>
+                  <MAvatar name={r.student_name||"Member"} size={36} color={t.pri}/>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:700,color:t.txt}}>
-                      {r.student_name||r.student_id||"Student"}</div>
+                      {r.student_name||r.student_id||"Member"}</div>
                     <div style={{fontSize:12,color:t.sft}}>
                       {r.request_type||r.type||"General Request"}</div>
                   </div>
@@ -3019,7 +3019,7 @@ function FeeStatsScreen({t, ctx}){
 
       {/* Class breakdown */}
       {classBreakdown.length>0&&<>
-        <MSHdr t={t} title="By Class"/>
+        <MSHdr t={t} title="By Group"/>
         <MCard t={t}>
           {classBreakdown.map((cls,i)=>{
             const pct=cls.total>0?Math.round((cls.collected/cls.total)*100):0;
@@ -3143,7 +3143,7 @@ function AdminAuditLog({t, ctx}){
     db.getFeePayments().then(({data})=>{
       setLogs((data||[]).slice(0,30).map(p=>({
         id:p.id,action:"Fee Payment",
-        detail:`${p.student_name||p.student_id||"Student"} — ${fmt(+p.amount||0)} (${p.method||"cash"})`,
+        detail:`${p.student_name||p.student_id||"Member"} — ${fmt(+p.amount||0)} (${p.method||"cash"})`,
         timestamp:p.created_at||p.payment_date,
       })));
       setLoading(false);
@@ -3261,7 +3261,7 @@ function AdminFeeGenerate({t, ctx}){
     <div style={{padding:"14px 14px 24px",background:t.bg}}>
       <div style={{background:t.card,borderRadius:14,padding:"14px 14px 6px",
         border:`1px solid ${t.brd}`,marginBottom:14}}>
-        <MSelectField t={t} label="Class" value={classId} onChange={setClassId}
+        <MSelectField t={t} label="Group" value={classId} onChange={setClassId}
           options={classes.map(c=>({v:String(c.id),l:c.name}))}/>
         <MSelectField t={t} label="Term" value={termId} onChange={setTermId}
           options={terms.map(tm=>({v:String(tm.id),l:tm.name}))}/>

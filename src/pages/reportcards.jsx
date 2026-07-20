@@ -128,7 +128,7 @@ export function ReportCardsPage({ctx}){
         });
       }
       // Load classes — after settings so we can read teacher_subject_class_report_cards flag.
-      // The setting is "Restrict to Form Class Only": ON ("true") → form only; OFF/default → union of form+subject.
+      // The setting is "Restrict to Form Group Only": ON ("true") → form only; OFF/default → union of form+subject.
       // subjectClassAccess = true means subject-teacher classes are ALSO allowed (the OFF/default behaviour).
       const subjectClassAccess=m.teacher_subject_class_report_cards!=="true";
       if(role==="teacher" && user.teacher_db_id){
@@ -384,7 +384,7 @@ export function ReportCardsPage({ctx}){
       const trm=terms?.find(t=>String(t.id)===String(selTerm));
       const ses=sessions?.find(s=>String(s.id)===String(selSession));
       db.sendAdminAlert({
-        subject:`[Alert] Report Cards Published — ${cls?.name||"Class"}`,
+        subject:`[Alert] Report Cards Published — ${cls?.name||"Group"}`,
         html:buildAlertEmail("Report Cards Published",
           [`Class: ${cls?.name||selClass}`,`Term: ${trm?.name||selTerm}`,`Session: ${ses?.name||selSession}`,
            `Published by: ${user?.full_name||user?.name||"Admin"}`,
@@ -624,7 +624,7 @@ export function ReportCardsPage({ctx}){
     const term=terms.find(t=>t.id===+selTerm);
     const session=sessions.find(s=>s.id===+selSession);
     if(!term||!session){notify("Term or session not found","error");return;}
-    const secName=selectedSection?.name||cls?.sections?.name||"CLASS";
+    const secName=selectedSection?.name||cls?.sections?.name||"GROUP";
     const folderPath=`${pdfName(secName)}/${pdfName(cls?.name||"")}`;
     const resolvedOpts=_resolveOpts(publishInfo);
     const tSig=publishInfo?.teacher_signature_id
@@ -641,7 +641,7 @@ export function ReportCardsPage({ctx}){
       await _runZipBatch(zip,folderPath,sortedStudents,cls,term,session,
         gradingSchema,caeTraits,caeRatings,publishInfo,effectiveSettings,tSig,pSig,resolvedOpts,ref);
       const zipBlob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
-      shareOrDownload(pdfName(cls?.name||"CLASS","REPORTS",term.name,session.name)+".zip",zipBlob,"application/zip");
+      shareOrDownload(pdfName(cls?.name||"GROUP","REPORTS",term.name,session.name)+".zip",zipBlob,"application/zip");
       notify(ref.skipped>0
         ?`✅ ZIP downloaded — ${ref.done-ref.skipped} reports (${ref.skipped} skipped)`
         :`✅ ZIP downloaded — ${ref.done} report${ref.done!==1?"s":""}`,
@@ -908,7 +908,7 @@ export function ReportCardsPage({ctx}){
             {role==="admin"&&selClass&&students.length>0&&(
               <Btn onClick={downloadClassZip} color={C.blue} outline disabled={zipGenerating||generating}
                 title={`Download all report cards for this class as a ZIP file`}>
-                {zipGenerating?"Building ZIP…":"⬇ Class ZIP"}
+                {zipGenerating?"Building ZIP…":"⬇ Group ZIP"}
               </Btn>
             )}
             {/* ⬇ Section ZIP — when term + session selected (uses all classes in sidebar section) */}
@@ -997,8 +997,8 @@ export function ReportCardsPage({ctx}){
           <Sel label="Term" value={selTerm} onChange={setSelTerm}
             options={[{value:"",label:"— Select Term —"},...terms.map(t=>({value:String(t.id),label:t.name}))]}/>
           <div>
-            <Sel label="Class" value={selClass} onChange={v=>{setSelClass(v);setSelStudent(null);setResults([]);setStuSearch("");}}
-              options={[{value:"",label:"— Select Class —"},
+            <Sel label="Group" value={selClass} onChange={v=>{setSelClass(v);setSelStudent(null);setResults([]);setStuSearch("");}}
+              options={[{value:"",label:"— Select Group —"},
                 // Teachers: show every class already pre-filtered to their allowed set; do NOT further restrict by
                 // selectedSection (teachers have no section selector UI, and the localStorage value can be stale).
                 // Admins: keep the section-selector scoping only when one is actively chosen.
@@ -1089,7 +1089,7 @@ export function ReportCardsPage({ctx}){
                 const q=stuSearch.toLowerCase();
                 return!q||[s.first_name,s.last_name,s.name,String(s.id)].some(v=>(v||"").toLowerCase().includes(q));
               });
-              if(students.length===0) return <div style={{textAlign:"center",padding:24,color:C.light,fontSize:12}}>No students in this class</div>;
+              if(students.length===0) return <div style={{textAlign:"center",padding:24,color:C.light,fontSize:12}}>No members in this group</div>;
               if(filtered.length===0) return <div style={{textAlign:"center",padding:12,color:C.muted,fontSize:12}}>No match for "{stuSearch}"</div>;
               return filtered.map(s=>(
                 <div key={s.id} onClick={()=>setSelStudent(s)}
@@ -1110,8 +1110,8 @@ export function ReportCardsPage({ctx}){
             {!selStudent?(
               <Card style={{textAlign:"center",padding:52}}>
                 <div style={{marginBottom:10}}><ClipboardList size={44} color={C.muted}/></div>
-                <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select a student</div>
-                <div style={{color:C.muted,fontSize:13,marginTop:6}}>Click a student to preview their report card</div>
+                <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select a member</div>
+                <div style={{color:C.muted,fontSize:13,marginTop:6}}>Click a member to preview their report card</div>
               </Card>
             ):(
               <Card>
@@ -1206,7 +1206,7 @@ export function ReportCardsPage({ctx}){
 
                 {/* Results table */}
                 {results.length===0?(
-                  <div style={{textAlign:"center",padding:32,color:C.light}}>No results uploaded for this student yet.</div>
+                  <div style={{textAlign:"center",padding:32,color:C.light}}>No results uploaded for this member yet.</div>
                 ):(
                   <div style={{overflowX:"auto",marginBottom:16}}>
                     <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
@@ -1291,7 +1291,7 @@ export function ReportCardsPage({ctx}){
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:8}}>
                     <div style={{padding:"12px 14px",background:C.bluePale,borderRadius:8,border:`1px solid ${C.blue}22`}}>
                       <div style={{fontSize:10,fontWeight:700,color:C.blue,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>
-                        {settings.report_class_teacher_title||"Class Teacher's Comment"}
+                        {settings.report_class_teacher_title||"Group Staff's Comment"}
                       </div>
                       <div style={{fontSize:12,color:C.text,fontStyle:"italic"}}>{classTeacherComment||"—"}</div>
                     </div>
@@ -1310,7 +1310,7 @@ export function ReportCardsPage({ctx}){
       ):(
         <Card style={{textAlign:"center",padding:52}}>
           <div style={{marginBottom:10}}><ClipboardList size={44} color={C.muted}/></div>
-          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session, Term and Class</div>
+          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session, Term and Group</div>
           <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose filters above to view and generate report cards</div>
         </Card>
       )}
@@ -1418,7 +1418,7 @@ export function ReportCardsPage({ctx}){
           {/* Comments */}
           <div style={{marginBottom:12}}>
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
-              {settings.report_class_teacher_title||"Class Teacher's Comment"}
+              {settings.report_class_teacher_title||"Group Staff's Comment"}
             </label>
             <textarea value={classTeacherComment} onChange={e=>setClassTeacherComment(e.target.value)}
               rows={2} placeholder="e.g. A hardworking set of students. Keep it up!"
@@ -1446,7 +1446,7 @@ export function ReportCardsPage({ctx}){
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 <div>
-                  <label style={{display:"block",fontSize:11,fontWeight:600,color:C.muted,marginBottom:5}}>Class Teacher Signature</label>
+                  <label style={{display:"block",fontSize:11,fontWeight:600,color:C.muted,marginBottom:5}}>Group Staff Signature</label>
                   <select value={teacherSigId} onChange={e=>setTeacherSigId(e.target.value)}
                     style={{width:"100%",padding:"9px 10px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text,outline:"none"}}>
                     <option value="">— None —</option>
@@ -1492,9 +1492,9 @@ export function ReportCardsPage({ctx}){
             <div style={{fontWeight:700,color:C.blue,marginBottom:8}}>Report will include:</div>
             {Object.entries({
               "Character & Affective Evaluation":pubOptions.show_cae,
-              "Class Teacher's Comment":pubOptions.show_teacher_comment,
+              "Group Staff's Comment":pubOptions.show_teacher_comment,
               "Principal's Comment":pubOptions.show_principal_comment,
-              "Student Position":pubOptions.show_position,
+              "Member Position":pubOptions.show_position,
               "Next Term Date":pubOptions.show_next_term,
             }).map(([label,on])=>(
               <div key={label} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
@@ -1571,7 +1571,7 @@ export function ResultApprovalsPage({ctx}){
     } else {
       // Update local students list so completeness re-renders immediately
       setStudents(prev=>prev.map(s=>String(s.id)===String(studentId)?{...s,status:newStatus}:s));
-      notify(`Student status updated to "${newStatus}"`,"success");
+      notify(`Member status updated to "${newStatus}"`,"success");
     }
     setChangingStatus(p=>{const n={...p};delete n[studentId];return n;});
   };
@@ -1758,7 +1758,7 @@ export function ResultApprovalsPage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="result-approvals" size={20}/>Result Approvals</h2>
-        <p style={{color:C.muted,fontSize:12}}>Manage EA/MA approvals and track result upload progress across all classes.</p>
+        <p style={{color:C.muted,fontSize:12}}>Manage EA/MA approvals and track result upload progress across all groups.</p>
       </div>
 
       {/* Tab toggle */}
@@ -1832,7 +1832,7 @@ export function ResultApprovalsPage({ctx}){
                 ))}
               </div>
 
-              {/* Classes grouped by section */}
+              {/* Groups grouped by section */}
               {Object.entries(progressBySection).map(([secName,rows])=>(
                 <div key={secName} style={{marginBottom:20}}>
                   <div style={{fontWeight:800,fontSize:12,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:8,paddingLeft:2}}>{secName}</div>
@@ -1846,13 +1846,13 @@ export function ResultApprovalsPage({ctx}){
                       const isOpen=expandedProgress===cls.id;
                       return(
                         <div key={cls.id} style={{background:C.white,border:`1.5px solid ${isOpen?statusColor:C.border}`,borderRadius:12,overflow:"hidden",transition:"border-color .2s"}}>
-                          {/* Class header row */}
+                          {/* Group header row */}
                           <button onClick={()=>setExpandedProgress(isOpen?null:cls.id)}
                             style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:"13px 16px",
                               background:"transparent",border:"none",cursor:"pointer",textAlign:"left"}}>
                             {/* Status dot */}
                             <div style={{width:10,height:10,borderRadius:"50%",background:statusColor,flexShrink:0}}/>
-                            {/* Class name */}
+                            {/* Group name */}
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{fontWeight:800,fontSize:14,color:C.text}}>{cls.name}</div>
                               <div style={{fontSize:11,color:C.muted,marginTop:1}}>
@@ -1918,7 +1918,7 @@ export function ResultApprovalsPage({ctx}){
                                 );
                               })}
                               {p.subjects.length===0&&(
-                                <div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No subjects assigned to this class.</div>
+                                <div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No subjects assigned to this group.</div>
                               )}
                             </div>
                           )}
@@ -1930,7 +1930,7 @@ export function ResultApprovalsPage({ctx}){
               ))}
               {Object.keys(progressBySection).length===0&&(
                 <Card style={{textAlign:"center",padding:40}}>
-                  <div style={{color:C.muted,fontSize:13}}>No classes found. Make sure classes have subjects assigned and students enrolled.</div>
+                  <div style={{color:C.muted,fontSize:13}}>No groups found. Make sure groups have subjects assigned and members enrolled.</div>
                 </Card>
               )}
             </div>
@@ -1951,7 +1951,7 @@ export function ResultApprovalsPage({ctx}){
             return(
               <Card key={cls.id} style={{border:`2px solid ${maOk?C.green:eaOk?C.purple:C.border}`}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                  {/* Class info */}
+                  {/* Group info */}
                   <div style={{flex:1,minWidth:120}}>
                     <div style={{fontWeight:800,fontSize:14,color:C.blue}}>{cls.name}</div>
                     <div style={{fontSize:11,color:C.muted}}>{stuInClass.length} students</div>
@@ -2057,7 +2057,7 @@ export function ResultApprovalsPage({ctx}){
           {visibleClasses.length===0&&(
             <Card style={{textAlign:"center",padding:40}}>
               <div style={{marginBottom:10}}><Lock size={40} color={C.muted}/></div>
-              <div style={{fontWeight:800,color:C.blue}}>No Classes Found</div>
+              <div style={{fontWeight:800,color:C.blue}}>No Groups Found</div>
             </Card>
           )}
         </div>
@@ -2215,7 +2215,7 @@ export function ReportCardSettingsPage({ctx}){
 
   const TOGGLES=[
     {key:"show_cae",         label:"Affective Domain / CAE",    desc:"Character & Affective Evaluation table"},
-    {key:"show_teacher_comment",label:"Class Teacher's Comment", desc:"Teacher's remarks and signature"},
+    {key:"show_teacher_comment",label:"Class Teacher's Comment", desc:"Staff's remarks and signature"},
     {key:"show_principal_comment",label:"Principal's Comment",   desc:"Principal's remarks and signature"},
     {key:"show_position",    label:"Student Position",           desc:"Show rank/position in class"},
     {key:"show_next_term",   label:"Resumption Date",            desc:"Next term closing & resumption dates"},
@@ -2357,7 +2357,7 @@ export function ReportCardSettingsPage({ctx}){
                     <div style={{fontSize:15,fontWeight:800,color:C.blue}}>
                       Preview · T{previewId} {REPORT_TEMPLATE_CATALOG.find(t=>t.id===previewId)?.name||""}
                     </div>
-                    <div style={{fontSize:11,color:C.muted,marginTop:2}}>Sample data — actual reports use student data</div>
+                    <div style={{fontSize:11,color:C.muted,marginTop:2}}>Sample data — actual reports use member data</div>
                   </div>
                   <div style={{display:"flex",gap:8}}>
                     <Btn onClick={()=>{setTemplateId(previewId);setPreviewId(null);notify(`Selected T${previewId}`,"success");}}
@@ -2425,7 +2425,7 @@ export function ReportCardSettingsPage({ctx}){
           </p>
           <div style={{marginBottom:12}}>
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
-              Default Class Teacher Comment
+              Default Group Staff Comment
             </label>
             <textarea value={form.default_teacher_comment} onChange={e=>f({default_teacher_comment:e.target.value})}
               rows={2} placeholder="e.g. A diligent student who demonstrates excellent commitment…"
@@ -2451,7 +2451,7 @@ export function ReportCardSettingsPage({ctx}){
           <p style={{color:C.muted,fontSize:12,marginTop:0,marginBottom:14}}>Heading text shown above each comment block on the printed report card.</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Class Teacher Label</label>
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Group Staff Label</label>
               <input value={rcSet.report_class_teacher_title} onChange={e=>rs("report_class_teacher_title",e.target.value)}
                 placeholder="Class Teacher's Comment"
                 style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:C.white,color:C.text}}
@@ -2684,7 +2684,7 @@ export function ReportTemplatesPage({ctx}){
   };
 
   const SECTION_LABELS={
-    show_cae:"CAE",show_teacher_comment:"Teacher Comment",
+    show_cae:"CAE",show_teacher_comment:"Staff Comment",
     show_principal_comment:"Principal Comment",show_parent_ack:"Parent Ack",
     show_position:"Position",show_next_term:"Next Term Date",
   };
@@ -2735,7 +2735,7 @@ export function ReportTemplatesPage({ctx}){
                 {/* Signatures */}
                 {(tmpl.teacher_sig||tmpl.principal_sig)&&(
                   <div style={{fontSize:11,color:C.muted,marginBottom:10}}>
-                    {tmpl.teacher_sig&&<div>Teacher sig: <b>{tmpl.teacher_sig.name}</b></div>}
+                    {tmpl.teacher_sig&&<div>Staff sig: <b>{tmpl.teacher_sig.name}</b></div>}
                     {tmpl.principal_sig&&<div>Principal sig: <b>{tmpl.principal_sig.name}</b></div>}
                   </div>
                 )}
@@ -2765,7 +2765,7 @@ export function ReportTemplatesPage({ctx}){
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               {[
                 {key:"show_cae",label:"Character & Affective Evaluation"},
-                {key:"show_teacher_comment",label:"Class Teacher's Comment"},
+                {key:"show_teacher_comment",label:"Group Staff's Comment"},
                 {key:"show_principal_comment",label:"Principal's Comment"},
                 {key:"show_position",label:"Student Position"},
                 {key:"show_next_term",label:"Next Term Date"},
@@ -2786,7 +2786,7 @@ export function ReportTemplatesPage({ctx}){
           {/* Default comments */}
           <div style={{marginBottom:12}}>
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
-              Default Teacher Comment
+              Default Staff Comment
             </label>
             <textarea value={form.default_teacher_comment} onChange={e=>f({default_teacher_comment:e.target.value})}
               rows={2} placeholder="Leave blank if you want to fill in each term"

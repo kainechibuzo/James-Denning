@@ -259,7 +259,7 @@ export function MembersPage({ctx}){
 
   // ── Bulk export CSV ──
   const exportCSV=()=>{
-    const hdrs=["Type","Name","ID","Email","Phone","Status","Class/Group","Date Added","Last Login"];
+    const hdrs=["Type","Name","ID","Email","Phone","Status","Group/Group","Date Added","Last Login"];
     const rows=filtered.map(m=>[m._type,m.fullName,m._id,m.email,m.phone,m.status,m.group,
       m.dateAdded?new Date(m.dateAdded).toLocaleDateString("en-NG"):"",
       m.lastLogin?new Date(m.lastLogin).toLocaleString("en-NG",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Never"]);
@@ -299,7 +299,7 @@ export function MembersPage({ctx}){
         }]});
         setShowOnboarding(true); // auto-open modal so it's never missed on single registration
       }
-      notify(`Student added — ID: ${newId} ✓`);
+      notify(`Member added — ID: ${newId} ✓`);
       // Check if any fee templates exist for this student's class level + active term
       if(cls){
         const {data:sessions}=await db.getSessions();
@@ -557,7 +557,7 @@ export function MembersPage({ctx}){
     const headers=["First Name *","Middle Name","Last Name *","Gender","Date of Birth","Class","Email","Phone","New Intake (Yes/No)"];
     const ws=XLSX.utils.aoa_to_sheet([
       [(db._schoolName||"School")+" — Student Upload Template","","","","","","","",""],
-      ["Fill in student details starting from Row 4. Do NOT modify the header row (Row 3). Fields marked * are required. See the 'Class & Section List' sheet for exact class names.","","","","","","","",""],
+      ["Fill in student details starting from Row 4. Do NOT modify the header row (Row 3). Fields marked * are required. See the 'Group & Section List' sheet for exact class names.","","","","","","","",""],
       headers,
       [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
     ]);
@@ -579,22 +579,22 @@ export function MembersPage({ctx}){
       ["COLUMN","GUIDE"],
       ["First Name *","Required. Student's first name."],
       ["Middle Name","Optional. Leave blank if none."],
-      ["Last Name *","Required. Student's surname / family name."],
+      ["Last Name *","Required. Member's surname / family name."],
       ["Gender","Male or Female. Defaults to Male if left blank."],
       ["Date of Birth","Format: YYYY-MM-DD (e.g. 2015-03-14). Optional."],
-      ["Class","Must match a class name EXACTLY as shown on the 'Class & Section List' sheet. Copy-paste to avoid typos. Optional — can be assigned later."],
+      ["Class","Must match a class name EXACTLY as shown on the 'Group & Section List' sheet. Copy-paste to avoid typos. Optional — can be assigned later."],
       ["Email","Student or parent email. Optional."],
       ["Phone","Phone number (parent/guardian). Optional."],
       ["New Intake (Yes/No)","Enter Yes for first-time enrolees (admission fees apply) or No for returning students. Defaults to No if blank. This controls which fee template is applied when generating bills."],
       ["",""],
       ["IMPORTANT NOTES",""],
-      ["1.","Do NOT rename or reorder the columns on the 'Student Data' sheet."],
+      ["1.","Do NOT rename or reorder the columns on the 'Member Data' sheet."],
       ["2.","Delete the two example rows (rows 4-5) before uploading your real data."],
       ["3.","Each student will be auto-assigned an ID (e.g. RGS/01) and a default password."],
       ["4.","You can upload up to 200 students at a time."],
       ["5.","Duplicate entries may be created — double-check your data before uploading."],
       ["6.","Accepted file formats for re-upload: .xlsx, .xls, or .csv"],
-      ["7.","Check the 'Class & Section List' sheet for the exact class names to use."],
+      ["7.","Check the 'Group & Section List' sheet for the exact class names to use."],
     ];
     const instr=XLSX.utils.aoa_to_sheet(instrRows);
     instr["!merges"]=[{s:{r:0,c:0},e:{r:0,c:1}}];
@@ -613,7 +613,7 @@ export function MembersPage({ctx}){
     }
     XLSX.utils.book_append_sheet(wb,instr,"Instructions");
 
-    // ── Class & Section Reference sheet ──
+    // ── Group & Section Reference sheet ──
     const refRows=[
       ["CLASS & SECTION LIST — Copy these names exactly","",""],
       ["","",""],
@@ -625,7 +625,7 @@ export function MembersPage({ctx}){
       refRows.push([classNames[i]||"","",sectionNames[i]||""]);
     }
     refRows.push(["","",""]);
-    refRows.push(["Copy-paste class names into the 'Class' column on the Student Data sheet to avoid spelling errors.","",""]);
+    refRows.push(["Copy-paste class names into the 'Group' column on the Student Data sheet to avoid spelling errors.","",""]);
     const ref=XLSX.utils.aoa_to_sheet(refRows);
     ref["!merges"]=[{s:{r:0,c:0},e:{r:0,c:2}}];
     ref["!cols"]=[{wch:32},{wch:6},{wch:32}];
@@ -635,7 +635,7 @@ export function MembersPage({ctx}){
     const clsH=XLSX.utils.encode_cell({r:3,c:0}),secH=XLSX.utils.encode_cell({r:3,c:2});
     if(ref[clsH])ref[clsH].s=refHeaderStyle;
     if(ref[secH])ref[secH].s=refHeaderStyle;
-    // Class & section cells
+    // Group & section cells
     for(let i=0;i<maxLen;i++){
       const r=4+i;
       const ac=XLSX.utils.encode_cell({r,c:0}),as=XLSX.utils.encode_cell({r,c:2});
@@ -931,7 +931,7 @@ export function MembersPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="members" size={20}/>Members</h2>
-          <p style={{fontSize:12,color:C.muted}}>Manage all students and educators in one place</p>
+          <p style={{fontSize:12,color:C.muted}}>Manage all members and educators in one place</p>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <Btn onClick={load} color={C.blue} outline xs>Load Records</Btn>
@@ -950,9 +950,9 @@ export function MembersPage({ctx}){
             <option value="bulk-delete">Delete Selected</option>
             <option value="csv">Export CSV (all filtered)</option>
           </select>
-          <Btn onClick={()=>{setBulkParsed([]);setBulkErrors([]);setBulkFile(null);setBulkStuModal(true);}} color={C.green} outline>Bulk Students</Btn>
+          <Btn onClick={()=>{setBulkParsed([]);setBulkErrors([]);setBulkFile(null);setBulkStuModal(true);}} color={C.green} outline>Bulk Members</Btn>
           <Btn onClick={()=>{setBulkParsed([]);setBulkErrors([]);setBulkFile(null);setBulkTeaModal(true);}} color={C.green} outline>Bulk Educators</Btn>
-          <Btn onClick={()=>{setEditTarget(null);setStuForm(blankStu());setAddModal("student");}} color={C.orange}>Add Student</Btn>
+          <Btn onClick={()=>{setEditTarget(null);setStuForm(blankStu());setAddModal("student");}} color={C.orange}>Add Member</Btn>
           <Btn onClick={()=>{setEditTarget(null);setTeaForm(blankTea());setAddModal("educator");}} color={C.blue}>Add Educator</Btn>
         </div>
       </div>
@@ -1029,7 +1029,7 @@ export function MembersPage({ctx}){
           <option value="name">Sort: Name</option>
           <option value="lastLogin">Sort: Last Login</option>
           <option value="status">Sort: Status</option>
-          <option value="group">Sort: Class / Section</option>
+          <option value="group">Sort: Group / Section</option>
           <option value="type">Sort: Type</option>
         </select>
         <button onClick={()=>setSortDir(d=>d==="asc"?"desc":"asc")}
@@ -1110,7 +1110,7 @@ export function MembersPage({ctx}){
                   <th style={{padding:"12px 10px",textAlign:"left",fontWeight:700,color:C.muted,fontSize:11}}>EMAIL</th>
                   <th style={{padding:"12px 10px",textAlign:"center",fontWeight:700,color:C.muted,fontSize:11}}>STATUS</th>
                   <th style={{padding:"12px 10px",textAlign:"center",fontWeight:700,color:C.muted,fontSize:11}}>TYPE</th>
-                  <th style={{padding:"12px 10px",textAlign:"left",fontWeight:700,color:C.muted,fontSize:11}}>CLASS / GROUP</th>
+                  <th style={{padding:"12px 10px",textAlign:"left",fontWeight:700,color:C.muted,fontSize:11}}>GROUP / GROUP</th>
                   <th style={{padding:"12px 10px",textAlign:"left",fontWeight:700,color:C.muted,fontSize:11,whiteSpace:"nowrap"}}>DATE ADDED</th>
                   <th style={{padding:"12px 10px",textAlign:"left",fontWeight:700,color:C.muted,fontSize:11,whiteSpace:"nowrap"}}>LAST LOGIN</th>
                   <th style={{padding:"12px 10px",textAlign:"center",fontWeight:700,color:C.muted,fontSize:11}}></th>
@@ -1261,7 +1261,7 @@ export function MembersPage({ctx}){
         </Card>
       )}
 
-      {/* ══ Student Profile Modal ══ */}
+      {/* ══ Member Profile Modal ══ */}
       {profileStudent&&(
         <StudentProfileModal
           student={profileStudent}
@@ -1487,7 +1487,7 @@ export function MembersPage({ctx}){
         </Modal>
       )}
 
-      {/* ══ Add / Edit Student Modal ══ */}
+      {/* ══ Add / Edit Member Modal ══ */}
       {addModal==="student"&&(
         <Modal title={editTarget?"Edit Student":"Add Student"} onClose={()=>{setAddModal(null);setEditTarget(null);}} width={520}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:4}}>
@@ -1555,11 +1555,11 @@ export function MembersPage({ctx}){
         </Modal>
       )}
 
-      {/* ══ Bulk Student Upload Modal ══ */}
+      {/* ══ Bulk Member Upload Modal ══ */}
       {bulkStuModal&&(
         <Modal title="Bulk Student Upload" onClose={()=>setBulkStuModal(false)} width={660}>
           <div style={{marginBottom:14,padding:"10px 14px",background:C.bluePale,border:`1px solid ${C.blue}`,borderRadius:8,fontSize:13,color:C.blue}}>
-            Download the template, fill in student data, then upload the file. Student IDs and passwords are auto-generated.
+            Download the template, fill in student data, then upload the file. Member IDs and passwords are auto-generated.
           </div>
           <div style={{marginBottom:14}}>
             <Btn onClick={downloadStuTemplate} color={C.blue} outline style={{marginRight:10}}>Download Template (.xlsx)</Btn>
@@ -1606,7 +1606,7 @@ export function MembersPage({ctx}){
               {bulkSaving&&bulkProgress.total>0&&(
                 <div style={{marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:C.text,marginBottom:5}}>
-                    <span>⏳ Uploading students…</span>
+                    <span>⏳ Uploading members…</span>
                     <span style={{fontWeight:700,color:C.blue}}>{bulkProgress.done} / {bulkProgress.total}</span>
                   </div>
                   <div style={{background:C.border,borderRadius:99,height:10,overflow:"hidden"}}>
@@ -1621,7 +1621,7 @@ export function MembersPage({ctx}){
               )}
               <div style={{display:"flex",gap:10}}>
                 <Btn onClick={saveStuBulk} color={C.green} style={{flex:2}} disabled={bulkSaving}>
-                  {bulkSaving?`Uploading ${bulkProgress.done}/${bulkProgress.total}…`:`Upload ${bulkParsed.length} Students`}
+                  {bulkSaving?`Uploading ${bulkProgress.done}/${bulkProgress.total}…`:`Upload ${bulkParsed.length} Members`}
                 </Btn>
                 <Btn onClick={()=>setBulkStuModal(false)} color={C.muted} outline style={{flex:1}} disabled={bulkSaving}>Cancel</Btn>
               </div>
@@ -1639,7 +1639,7 @@ export function MembersPage({ctx}){
       {bulkTeaModal&&(
         <Modal title="Bulk Educator Upload" onClose={()=>setBulkTeaModal(false)} width={640}>
           <div style={{marginBottom:14,padding:"10px 14px",background:C.orangePale,border:`1px solid ${C.orange}`,borderRadius:8,fontSize:13,color:C.orange}}>
-            Teachers log in using their <strong>email address</strong> as both username and password. Ask them to change their password after first login.
+            Staff log in using their <strong>email address</strong> as both username and password. Ask them to change their password after first login.
           </div>
           <div style={{marginBottom:14}}>
             <Btn onClick={downloadTeaTemplate} color={C.blue} outline style={{marginRight:10}}>Download Template (.xlsx)</Btn>
@@ -1761,7 +1761,7 @@ export function MembersPage({ctx}){
   );
 }
 
-// ─── STUDENT PROFILE MODAL ────────────────────────────────────────────────────
+// ─── MEMBER PROFILE MODAL ────────────────────────────────────────────────────
 function StudentProfileModal({student, classes, sections, onClose, notify}){
   const raw=student._raw;
   const [tab,setTab]=useState("overview");
@@ -1905,7 +1905,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
         <div style={{padding:24,maxHeight:"calc(100vh - 280px)",overflowY:"auto"}}>
           {loading?(
             <div style={{textAlign:"center",padding:48,color:C.muted}}>
-              <div style={{fontSize:13}}>Loading student data…</div>
+              <div style={{fontSize:13}}>Loading member data…</div>
             </div>
           ):(
             <>
@@ -2010,7 +2010,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                   </div>
 
                   {activeBills.length===0?(
-                    <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No bills found for this student</div>
+                    <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No bills found for this member</div>
                   ):(
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {[...activeBills].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).map(bill=>{
@@ -2382,7 +2382,7 @@ export function MyProfilePage({ctx}){
           </div>
           <div>
             <div style={{fontWeight:800,color:C.blue,fontSize:14}}>{name||"—"}</div>
-            <Badge color={C.green}>TEACHER</Badge>
+            <Badge color={C.green}>STAFF</Badge>
             {user.staff_id&&<div style={{fontSize:11,color:C.muted,marginTop:3}}>Staff ID: {user.staff_id}</div>}
           </div>
         </div>

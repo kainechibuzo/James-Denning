@@ -5,6 +5,7 @@
 
 CREATE TABLE IF NOT EXISTS attendance (
   id            SERIAL PRIMARY KEY,
+  school_id     UUID REFERENCES schools(id) ON DELETE CASCADE,
   student_id    TEXT REFERENCES students(id) ON DELETE CASCADE,
   class_id      INT  REFERENCES classes(id)  ON DELETE CASCADE,
   date          DATE NOT NULL,
@@ -16,7 +17,9 @@ CREATE TABLE IF NOT EXISTS attendance (
   notes         TEXT,
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(student_id, date)
+  -- Was UNIQUE(student_id, date) — missing school_id entirely, and didn't
+  -- match the app's upsertAttendance() onConflict:'school_id,student_id,date'.
+  UNIQUE(school_id, student_id, date)
 );
 
 ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;

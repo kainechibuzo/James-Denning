@@ -72,11 +72,20 @@ CREATE TABLE IF NOT EXISTS teachers (
 
 -- ── CLASS_TEACHERS ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS class_teachers (
-  id          SERIAL PRIMARY KEY,
-  class_id    INT REFERENCES classes(id) ON DELETE CASCADE,
-  teacher_id  INT REFERENCES teachers(id) ON DELETE CASCADE,
-  session_id  INT REFERENCES sessions(id) ON DELETE CASCADE,
-  UNIQUE(class_id, teacher_id, session_id)
+  id               SERIAL PRIMARY KEY,
+  class_id         INT REFERENCES classes(id) ON DELETE CASCADE,
+  teacher_id       INT REFERENCES teachers(id) ON DELETE CASCADE,
+  session_id       INT REFERENCES sessions(id) ON DELETE CASCADE,
+  -- Used throughout supabaseClient.js (setFormTeacher etc) AND referenced by
+  -- RLS policies in 005/006, but was never in this original CREATE TABLE.
+  is_form_teacher  BOOLEAN NOT NULL DEFAULT false,
+  -- Was UNIQUE(class_id, teacher_id, session_id) — didn't match the app's
+  -- assignTeacherToClass() onConflict:'class_id,teacher_id' (2 columns).
+  -- Note: this now means one teacher+class pairing is unique across ALL
+  -- sessions, not per-session — matches what the app's upsert actually
+  -- does (re-assigning updates the existing row rather than adding a new
+  -- one per session). Flagging in case that's not the intended behavior.
+  UNIQUE(class_id, teacher_id)
 );
 
 -- ── TEACHER_SUBJECTS ─────────────────────────────────────────
