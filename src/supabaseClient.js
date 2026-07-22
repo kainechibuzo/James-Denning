@@ -5140,7 +5140,12 @@ export const db = {
     // edge function — creates a real Supabase Auth user for the admin (with
     // real password hashing) plus the school row, atomically, instead of
     // writing schoolData.admin_password directly into the database.
-    const {data,error} = await supabase.functions.invoke('manage-account', {
+    // NOTE: deployed via Supabase dashboard "Via Editor" as display name
+    // "manage-account", but Supabase auto-assigned the actual URL slug as
+    // "clever-processor" — that's the real invocable name. If you ever
+    // redeploy/rename this function, check Settings tab for the real slug
+    // rather than assuming it matches the display name.
+    const {data,error} = await supabase.functions.invoke('clever-processor', {
       body: {
         action: 'register_school',
         schoolName: schoolData.name,
