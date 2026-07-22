@@ -57,11 +57,11 @@ export const db = {
 
   async getSchools(){
 
-    return supabaseSrv.from('schools')
-
-      .select('id,name,logo,address,phone,student_id_prefix,settings_password,admin_email,admin_name')
-
-      .order('name');
+    // Pre-auth picker (no session yet) — uses a narrow RPC that excludes
+    // admin_email/admin_name/settings_password rather than the raw table,
+    // since RLS now correctly blocks anonymous full-table reads. See
+    // supabase/migrations/999c_login_lookup_functions.sql.
+    return supabase.rpc('login_list_schools')
 
   },
 
@@ -591,19 +591,19 @@ export const db = {
 
 
 
-  // ── Login-time lookups via service role ───────────────────────────────────
-
-  // Uses supabaseSrv (bypasses RLS) and fetches only ONE row instead of all.
-
-  // Uses limit(1) instead of maybeSingle() to avoid errors on duplicate IDs.
+  // ── Login-time lookups ──────────────────────────────────────────────────
+  // These run BEFORE the person has a session, so normal RLS-protected
+  // table reads won't work (nothing is readable pre-auth). They call narrow
+  // SECURITY DEFINER SQL functions instead — each requires an exact
+  // school_id + exact ID match, so they can look up one known account but
+  // can't be used to enumerate/list anyone. See
+  // supabase/migrations/999c_login_lookup_functions.sql.
 
   async loginFindTeacher(staffId, schoolId=null){
 
-    let q=supabaseSrv.from('teachers').select('*').ilike('staff_id',staffId)
+    if(!schoolId) return {data:null,error:null};
 
-    if(schoolId) q=q.eq('school_id',schoolId)
-
-    const {data,error}=await q.limit(1)
+    const {data,error}=await supabase.rpc('login_lookup_teacher',{p_school_id:schoolId,p_staff_id:staffId});
 
     if(error)return{data:null,error}
 
@@ -613,11 +613,9 @@ export const db = {
 
   async loginFindStudent(studentId, schoolId=null){
 
-    let q=supabaseSrv.from('students').select('*').ilike('id',studentId)
+    if(!schoolId) return {data:null,error:null};
 
-    if(schoolId) q=q.eq('school_id',schoolId)
-
-    const {data,error}=await q.limit(1)
+    const {data,error}=await supabase.rpc('login_lookup_student',{p_school_id:schoolId,p_student_id:studentId});
 
     if(error)return{data:null,error}
 
@@ -627,7 +625,7 @@ export const db = {
 
   async loginGetSettings(){
 
-    return supabaseSrv.from('school_settings').select('*')
+    return supabase.from('school_settings').select('*')
 
   },
 
@@ -637,11 +635,7 @@ export const db = {
 
     if(!schoolId) return {data:null,error:null};
 
-    const {data,error}=await supabaseSrv.from('schools')
-
-      .select('admin_email,admin_password,admin_name')
-
-      .eq('id',schoolId).limit(1);
+    const {data,error}=await supabase.rpc('login_lookup_school_admin',{p_school_id:schoolId});
 
     if(error) return {data:null,error};
 
@@ -1848,11 +1842,7 @@ export const db = {
 
   async getLoginAccessSettings(schoolId){
 
-    const keys=['login_students_disabled','login_teachers_disabled','login_disabled_message']
-
-    const {data,error}=await supabaseSrv.from('school_settings')
-
-      .select('key,value').eq('school_id',schoolId).in('key',keys)
+    const {data,error}=await supabase.rpc('login_lookup_access_settings',{p_school_id:schoolId})
 
     if(error) return {}
 
