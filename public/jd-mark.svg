@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">JAMES-DENNING mark</title>
+  <desc id="desc">A monochrome JD monogram</desc>
+  <rect width="128" height="128" rx="32" fill="#111827"/>
+  <path d="M31 30h13v57H31zM44 30h20c16 0 25 8 25 22 0 9-5 16-13 19l14 27H84L69 75H44V30Zm13 26h7c8 0 12-3 12-9s-4-9-12-9h-7v18Z" fill="#fff"/>
+  <path d="M98 26h5v76h-5z" fill="#9CA3AF"/>
+</svg>

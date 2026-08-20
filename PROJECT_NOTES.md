@@ -1,4 +1,6 @@
-# RGS Portal — Project Notes
+# JAMES-DENNING — Project Notes
+
+> Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
 _Last updated: 4 May 2026 (v32.87 — Fee Stats PDF: Save as PDF button + portrait/landscape toggle)_
 
 ---
@@ -19,7 +21,7 @@ Together they replace reading any code to get up to speed.
 
 ## Project Overview
 
-**Renaissance Garden Schools** internal portal — manages students, teachers, results, fees, attendance, report cards, and communications.
+**JAMES-DENNING** business operations platform — manages people, staff, performance records, billing, attendance, reports, and communications.
 
 | | |
 |---|---|

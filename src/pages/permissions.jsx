@@ -269,7 +269,7 @@ export function PermissionsPage({ctx}){
                 <AlertTriangle size={15} color={C.orange}/>
                 <span style={{fontWeight:800,fontSize:13,color:C.orange}}>Behaviour Restrictions (Staff)</span>
               </div>
-              {/* Master: Report Cards restrict switch */}
+              {/* Master: Reports restrict switch */}
               {(()=>{
                 const masterKey="teacher_report_card_view_only";
                 const masterOn=portalSettings[masterKey]==="true";
@@ -283,7 +283,7 @@ export function PermissionsPage({ctx}){
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,padding:"11px 16px",borderBottom:`1px solid ${C.border}`}}>
                       <div style={{flex:1}}>
-                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>Report Cards — Restrict Staff Actions</div>
+                        <div style={{fontWeight:700,fontSize:12,color:C.text}}>Reports — Restrict Staff Actions</div>
                         <div style={{fontSize:10,color:C.muted,marginTop:2}}>Hides all admin actions (Publish, Approve, Customise, Clear, Email Section). Share is always available. Use sub-permissions below to individually re-enable Print, Download, Email, or Export.</div>
                       </div>
                       <PT on={masterOn} onChange={async()=>{
@@ -295,7 +295,7 @@ export function PermissionsPage({ctx}){
                     {masterOn&&(
                       <div style={{background:C.offWhite,borderBottom:`1px solid ${C.border}`}}>
                         <div style={{padding:"7px 16px 4px",fontSize:10,fontWeight:800,color:C.muted,letterSpacing:.5,textTransform:"uppercase"}}>
-                          Allowed actions for teachers in restricted mode
+                          Allowed actions for staff in restricted mode
                         </div>
                         {subPerms.map(({key,label},si)=>{
                           const on=portalSettings[key]==="true";
@@ -317,20 +317,20 @@ export function PermissionsPage({ctx}){
                   </>
                 );
               })()}
-              {/* Master: My Classes restrict switch */}
+              {/* Master: My Groups restrict switch */}
               {(()=>{
                 const masterKey="teacher_my_classes_restrict";
                 const masterOn=portalSettings[masterKey]==="true";
                 const subPerms=[
-                  {key:"teacher_my_classes_allow_subject_access", label:"Allow Subject-Staff Groups", help:"Show classes where the teacher teaches a subject (in addition to their form classes)."},
-                  {key:"teacher_my_classes_allow_edit_students",  label:"Allow Edit Member Details",    help:"Show the Edit button on students in the teacher's form classes. Subject-teacher classes remain view-only."},
+                  {key:"teacher_my_classes_allow_subject_access", label:"Allow Category-Staff Groups", help:"Show groups where the staff teaches a category (in addition to their form groups)."},
+                  {key:"teacher_my_classes_allow_edit_students",  label:"Allow Edit Member Details",    help:"Show the Edit button on members in the staff's form groups. Category-staff groups remain view-only."},
                 ];
                 return(
                   <>
                     <div style={{display:"flex",alignItems:"center",gap:12,padding:"11px 16px",borderTop:`1px solid ${C.border}`}}>
                       <div style={{flex:1}}>
                         <div style={{fontWeight:700,fontSize:12,color:C.text}}>My Groups — Restrict Access</div>
-                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>When ON, the My Groups page is locked down to form groups and view-only. Use the sub-permissions below to re-enable subject-staff access and edit actions individually. OFF (default) gives full access.</div>
+                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>When ON, the My Groups page is locked down to form groups and view-only. Use the sub-permissions below to re-enable category-staff access and edit actions individually. OFF (default) gives full access.</div>
                       </div>
                       <PT on={masterOn} onChange={async()=>{
                         const v=(!masterOn).toString();await db.setSetting(masterKey,v);
@@ -341,7 +341,7 @@ export function PermissionsPage({ctx}){
                     {masterOn&&(
                       <div style={{background:C.offWhite,borderBottom:`1px solid ${C.border}`}}>
                         <div style={{padding:"7px 16px 4px",fontSize:10,fontWeight:800,color:C.muted,letterSpacing:.5,textTransform:"uppercase"}}>
-                          Allowed operations on My Classes in restricted mode
+                          Allowed operations on My Groups in restricted mode
                         </div>
                         {subPerms.map(({key,label,help},si)=>{
                           const on=portalSettings[key]==="true";
@@ -368,8 +368,8 @@ export function PermissionsPage({ctx}){
               })()}
               {/* Other behaviour restrictions */}
               {[
-                {key:"teacher_subject_class_report_cards",label:"Report Cards — Restrict to Form Group Only",desc:"When ON, teachers only see report cards for their form class. When OFF (default), teachers also see classes where they are a subject teacher."},
-                {key:"teacher_add_student_own_class_only",label:"Add Members — Own Group Only",desc:"Staff can only submit student requests for their assigned classes."},
+                {key:"teacher_subject_class_report_cards",label:"Reports — Restrict to Form Group Only",desc:"When ON, staff only see report cards for their form group. When OFF (default), staff also see groups where they are a category staff."},
+                {key:"teacher_add_student_own_class_only",label:"Add Members — Own Group Only",desc:"Staff can only submit member requests for their assigned groups."},
               ].map(({key,label,desc},i)=>{
                 const on=portalSettings[key]==="true";
                 return(
@@ -528,9 +528,9 @@ export function PermissionsPage({ctx}){
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
               {[
                 {id:"admin",label:"Administrator",color:C.orange,items:["Full unrestricted access","Configure all settings","Manage all permissions","Cannot be locked out"]},
-                {id:"teacher",label:"Staff",color:"#1A8C3C",items:["Upload & manage results","View class report cards","Take attendance","Post announcements","Limited to assigned classes"]},
-                {id:"manager",label:"Manager",color:"#7C3AED",items:["Full financial access","Record & track payments","Generate fee bills","Create fee templates","View student list (read-only)"]},
-                {id:"student",label:"Member",color:"#1A4FA0",items:["View own report cards","View own fees/payments","Access transcript","Read announcements"]},
+                {id:"teacher",label:"Staff",color:"#1A8C3C",items:["Upload & manage results","View group report cards","Take attendance","Post announcements","Limited to assigned groups"]},
+                {id:"manager",label:"Manager",color:"#7C3AED",items:["Full financial access","Record & track payments","Generate billing bills","Create billing templates","View member list (read-only)"]},
+                {id:"student",label:"Member",color:"#1A4FA0",items:["View own report cards","View own billing/payments","Access transcript","Read announcements"]},
               ].map(r=>(
                 <div key={r.id} style={{border:"1.5px solid "+r.color+"30",borderRadius:10,padding:"12px 14px",background:r.color+"06"}}>
                   <div style={{fontWeight:800,fontSize:13,color:r.color,marginBottom:8}}>{r.label}</div>

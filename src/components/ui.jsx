@@ -39,6 +39,7 @@ import { useIsMobile }    from "../utils/hooks.js";
 import { useSection }     from "../contexts/section.jsx";
 import { useConfirm }     from "../contexts/confirm.jsx";
 import { isNative }       from "../utils/platform.js";
+import { PRODUCT }         from "../config/product.js";
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
 export class ErrorBoundary extends Component {
@@ -119,26 +120,13 @@ export function Logo({ size = 44 }) {
   const ctx  = useSection();
   const logo = ctx?.schoolLogo;
   if (logo) {
-    return <img src={logo} alt="School Logo"
-      style={{ width:size, height:size, objectFit:"contain", borderRadius:size*0.18, background:"transparent" }}/>;
+    return <img src={logo} alt="Organization logo" style={{ width:size, height:size, objectFit:"contain", borderRadius:size*0.18, background:"transparent" }}/>;
   }
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48">
-      <defs>
-        <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E8560A"/>
-          <stop offset="100%" stopColor="#FF7A35"/>
-        </linearGradient>
-        <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0d2d6e"/>
-          <stop offset="100%" stopColor="#1A4FA0"/>
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="24" fill="url(#lg1)"/>
-      <circle cx="24" cy="24" r="18" fill="url(#lg2)"/>
-      <circle cx="24" cy="24" r="23" stroke="#1A8C3C" strokeWidth="2.5" fill="none" strokeDasharray="4 2"/>
-      <text x="24" y="29" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="900"
-        fontFamily="Georgia,serif" letterSpacing="0.5">RGS</text>
+    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={PRODUCT.name}>
+      <rect width="48" height="48" rx="13" fill={C.text}/>
+      <path d="M13 13h5v22h-5zM18 13h7.5c5.5 0 8.5 2.7 8.5 7.1 0 2.7-1.4 4.8-3.9 5.9L35 35h-6.2l-5.1-7.5H18V35h-5V13h5Zm0 9.8h7c2.4 0 3.7-.9 3.7-2.7s-1.3-2.7-3.7-2.7h-7v5.4Z" fill="#fff"/>
+      <path d="M37 11.5h2v25h-2z" fill={C.light}/>
     </svg>
   );
 }
@@ -415,7 +403,7 @@ export function TRow({ cells, i, onClick }) {
   );
 }
 
-// ── Class Multi-Select Dropdown ────────────────────────────────────────────────
+// ── Group Multi-Select Dropdown ────────────────────────────────────────────────
 export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, placeholder = "All Groups" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -426,7 +414,7 @@ export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, place
   }, []);
   const count = selClasses.size;
   const label = count === 0 ? placeholder : count === 1
-    ? (classes.find(c => selClasses.has(String(c.id)))?.name || "1 class selected")
+    ? (classes.find(c => selClasses.has(String(c.id)))?.name || "1 group selected")
     : `${count} classes selected`;
   return (
     <div ref={ref} style={{ position:"relative", flex:1, minWidth:150 }}>
@@ -455,7 +443,7 @@ export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, place
               border:`2px solid ${count===0 ? C.orange : C.border}`, color:"#fff", flexShrink:0 }}>
               {count===0 ? "✓" : ""}
             </span>
-            All Classes
+            All Groups
           </div>
           {classes.map(c => {
             const sid     = String(c.id);

@@ -1,5 +1,5 @@
 /**
- * JAMES-DENNING — App Icon & Splash Screen Generator  (v3 — JPEG icon, true alpha composite)
+ * JAMES-DENNING — App Icon & Splash Screen Generator (monochrome brand)
  * Run: node scripts/generate-assets.js
  *
  * Root cause fixed in v3:
@@ -14,12 +14,12 @@
  *
  * Logo transparency:
  *   assets/logo.png has hasAlpha:true with transparent corners — it composites
- *   cleanly onto the navy canvas WITHOUT pre-flattening. The letterbox padding uses
- *   alpha:0 so the navy canvas shows through instead of a solid colour band.
+ *   cleanly onto the #111827 charcoal canvas WITHOUT pre-flattening. The letterbox padding uses
+ *   alpha:0 so the #111827 charcoal canvas shows through instead of a solid colour band.
  *
  * Outputs:
- *   assets/icon-only.png  — 1024×1024, solid navy #1A4FA0, JPEG (no alpha)
- *   assets/splash.png     — 2732×2732, solid navy #1A4FA0, PNG, channels:3 (no alpha)
+ *   assets/icon-only.png  — 1024×1024, solid #111827 charcoal #111827, JPEG (no alpha)
+ *   assets/splash.png     — 2732×2732, solid #111827 charcoal #111827, PNG, channels:3 (no alpha)
  */
 
 const sharp  = require("sharp");
@@ -32,9 +32,9 @@ const ICON_PATH   = path.join(ROOT, "assets", "icon-only.png");
 const SPLASH_PATH = path.join(ROOT, "assets", "splash.png");
 
 // Brand colours
-const NAVY        = { r: 26,  g: 79,  b: 160 };           // #1A4FA0
-const NAVY_ALPHA0 = { r: 26,  g: 79,  b: 160, alpha: 0 }; // transparent letterbox
-const ORANGE_HEX  = "#E8560A";
+const CHARCOAL        = { r: 17,  g: 24,  b: 39 };           // #111827
+const CHARCOAL_ALPHA0 = { r: 17,  g: 24,  b: 39, alpha: 0 }; // transparent letterbox
+const ACCENT_HEX  = "#9CA3AF";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -55,10 +55,10 @@ async function verify(filePath) {
   console.log(`     format:${meta.format}  ${meta.width}×${meta.height}  channels:${meta.channels}  hasAlpha:${meta.hasAlpha}`);
   console.log(`     corner pixel RGB: ${r} ${g} ${b}${alphaStr}`);
 
-  const navyOk = (r === NAVY.r && g === NAVY.g && b === NAVY.b);
-  console.log(navyOk
-    ? "     ✅ Background is solid navy #1A4FA0"
-    : `  ⚠  Corner pixel is NOT navy! Expected ${NAVY.r} ${NAVY.g} ${NAVY.b}`);
+  const charcoalOk = (r === CHARCOAL.r && g === CHARCOAL.g && b === CHARCOAL.b);
+  console.log(charcoalOk
+    ? "     ✅ Background is solid #111827 charcoal #111827"
+    : `  ⚠  Corner pixel is NOT #111827 charcoal! Expected ${CHARCOAL.r} ${CHARCOAL.g} ${CHARCOAL.b}`);
 
   console.log(meta.hasAlpha
     ? "  ⚠  File has alpha channel — capacitor-assets may show white background!"
@@ -73,16 +73,16 @@ async function generateIcon() {
   const LOGO_PX = 820;   // ≈80% of 1024
 
   // Resize logo, keeping its OWN transparency intact.
-  // Letterbox padding = transparent navy so the canvas navy shows through cleanly.
+  // Letterbox padding = transparent #111827 charcoal so the canvas #111827 charcoal shows through cleanly.
   const logoResized = await sharp(LOGO_PATH)
     .resize(LOGO_PX, LOGO_PX, {
       fit:        "contain",
-      background: NAVY_ALPHA0,   // transparent letterbox — NO flatten here
+      background: CHARCOAL_ALPHA0,   // transparent letterbox — NO flatten here
     })
     .png()                       // keep RGBA so transparency composites correctly
     .toBuffer();
 
-  // Create solid navy canvas (channels:3) → composite logo → save as JPEG.
+  // Create solid #111827 charcoal canvas (channels:3) → composite logo → save as JPEG.
   // JPEG encoding strips the alpha channel at the codec level — guaranteed no alpha.
   fs.mkdirSync(path.dirname(ICON_PATH), { recursive: true });
 
@@ -91,7 +91,7 @@ async function generateIcon() {
       width:    SIZE,
       height:   SIZE,
       channels: 3,               // RGB only
-      background: NAVY,
+      background: CHARCOAL,
     },
   })
   .composite([{
@@ -114,29 +114,29 @@ async function generateSplash() {
   const LOGO_H  = Math.round(LOGO_W * (604 / 698));
 
   // Text layout
-  const SCHOOL_FONT = 96;
-  const PORTAL_FONT = 72;
+  const TITLE_FONT = 96;
+  const SUBTITLE_FONT = 72;
   const GAP         = 36;   // gap: logo bottom → first text baseline
   const LINE_GAP    = 20;   // gap between two text lines
 
-  const totalGroupH = LOGO_H + GAP + SCHOOL_FONT + LINE_GAP + PORTAL_FONT;
+  const totalGroupH = LOGO_H + GAP + TITLE_FONT + LINE_GAP + SUBTITLE_FONT;
   const groupTop    = Math.round((SIZE - totalGroupH) / 2);
 
   const logoTop  = groupTop;
   const logoLeft = Math.round((SIZE - LOGO_W) / 2);
-  const text1Y   = logoTop + LOGO_H + GAP + SCHOOL_FONT;   // baseline: school name
-  const text2Y   = text1Y + LINE_GAP + PORTAL_FONT;        // baseline: "PORTAL"
+  const text1Y   = logoTop + LOGO_H + GAP + TITLE_FONT;   // baseline: brand name
+  const text2Y   = text1Y + LINE_GAP + SUBTITLE_FONT;        // baseline: "OPERATIONS"
 
-  // Solid navy background canvas (channels:3, no alpha)
+  // Solid #111827 charcoal background canvas (channels:3, no alpha)
   const bgBuf = await sharp({
-    create: { width: SIZE, height: SIZE, channels: 3, background: NAVY },
+    create: { width: SIZE, height: SIZE, channels: 3, background: CHARCOAL },
   }).png().toBuffer();
 
-  // Logo — keep its OWN transparency; transparent letterbox shows navy through
+  // Logo — keep its OWN transparency; transparent letterbox shows #111827 charcoal through
   const logo = await sharp(LOGO_PATH)
     .resize(LOGO_W, LOGO_H, {
       fit:        "contain",
-      background: NAVY_ALPHA0,
+      background: CHARCOAL_ALPHA0,
     })
     .png()
     .toBuffer();
@@ -148,7 +148,7 @@ async function generateSplash() {
     x="${SIZE / 2}" y="${text1Y}"
     text-anchor="middle"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="${SCHOOL_FONT}"
+    font-size="${TITLE_FONT}"
     font-weight="bold"
     fill="white"
     letter-spacing="6">JAMES-DENNING</text>
@@ -157,19 +157,19 @@ async function generateSplash() {
     x="${SIZE / 2}" y="${text2Y}"
     text-anchor="middle"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="${PORTAL_FONT}"
+    font-size="${SUBTITLE_FONT}"
     font-weight="bold"
-    fill="${ORANGE_HEX}"
-    letter-spacing="14">PORTAL</text>
+    fill="${ACCENT_HEX}"
+    letter-spacing="14">OPERATIONS</text>
 </svg>`);
 
-  // Composite: navy bg → logo → text → flatten (kills any residual alpha) → PNG
+  // Composite: #111827 charcoal bg → logo → text → flatten (kills any residual alpha) → PNG
   const splashBuf = await sharp(bgBuf)
     .composite([
       { input: logo,    top: logoTop,  left: logoLeft, blend: "over" },
       { input: svgText, top: 0,        left: 0,        blend: "over" },
     ])
-    .flatten({ background: NAVY })   // guarantee channels:3, kill any residual alpha
+    .flatten({ background: CHARCOAL })   // guarantee channels:3, kill any residual alpha
     .png()
     .toBuffer();
 
@@ -182,7 +182,7 @@ async function generateSplash() {
 (async () => {
   console.log("═══════════════════════════════════════════════");
   console.log("  JAMES-DENNING — Asset Generator  v3");
-  console.log(`  Navy: rgb(${NAVY.r},${NAVY.g},${NAVY.b})  #1A4FA0`);
+  console.log(`  #111827 Charcoal: rgb(${CHARCOAL.r},${CHARCOAL.g},${CHARCOAL.b})  #111827`);
   console.log("═══════════════════════════════════════════════");
 
   if (!fs.existsSync(LOGO_PATH)) {
@@ -197,7 +197,7 @@ async function generateSplash() {
     console.warn("  ⚠  Logo has no alpha channel — white background will be treated as opaque white pixels.");
     console.warn("     The icon MAY still show white. Consider pre-processing the logo to add transparency.");
   } else {
-    console.log("  ✅ Logo has alpha — transparent background composites cleanly onto navy.");
+    console.log("  ✅ Logo has alpha — transparent background composites cleanly onto #111827 charcoal.");
   }
 
   await generateIcon();

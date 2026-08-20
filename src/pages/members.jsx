@@ -23,7 +23,7 @@ import { EmailProgressModal } from "./comms.jsx";
 export function MembersPage({ctx}){
   const {notify,refreshKey,bumpRefresh,selectedSchool}=ctx; // intentionally NOT destructuring selectedSection — Members shows ALL
   const {schoolName:_membersSchoolName}=useSection();
-  const _sn=_membersSchoolName||"School Portal";
+  const _sn=_membersSchoolName||"Business Portal";
 
   // ── Data ──
   const [students,setStudents]=useState([]);
@@ -84,12 +84,12 @@ export function MembersPage({ctx}){
   // ── Post-bulk-upload billing prompt ──
   const [bulkBillPrompt,setBulkBillPrompt]=useState(null); // [{id,name,classId,className,classLevel,is_new_enrollee}]
 
-  // ── Student form ──
+  // ── Member form ──
   const blankStu=()=>({first_name:"",middle_name:"",last_name:"",email:"",gender:"Male",dob:"",age:"",useDob:true,class_id:"",admission_year:String(new Date().getFullYear()),status:"active"});
   const [stuForm,setStuForm]=useState(blankStu());
   const sf=p=>setStuForm(f=>({...f,...p}));
 
-  // ── Teacher form ──
+  // ── Staff form ──
   const blankTea=()=>({full_name:"",email:"",phone:"",gender:"Male",staff_id:"",date_joined:"",section_id:"",status:"active"});
   const [teaForm,setTeaForm]=useState(blankTea());
   const tf=p=>setTeaForm(f=>({...f,...p}));
@@ -137,7 +137,7 @@ export function MembersPage({ctx}){
   const stuTotal=totalStudentCount!==null?totalStudentCount:students.length;
   const TABS=[
     {id:"all",label:`All (${stuTotal+teachers.length})`,icon:"members"},
-    {id:"students",label:`Students (${stuTotal})`,icon:"students"},
+    {id:"students",label:`Members (${stuTotal})`,icon:"students"},
     {id:"educators",label:`Educators (${teachers.length})`,icon:"teachers"},
   ];
 
@@ -315,7 +315,7 @@ export function MembersPage({ctx}){
         }
       }
     } else {
-      notify(editTarget?"Student updated":"Student added");
+      notify(editTarget?"Member updated":"Member added");
     }
     setAddModal(null);setEditTarget(null);load();
   };
@@ -412,11 +412,11 @@ export function MembersPage({ctx}){
       html:buildAlertEmail("Staff Role Changed",
         [`Staff: ${m.fullName}`,`Old Role: ${m.teacherRole||"teacher"}`,`New Role: ${newRole}`,
          `Changed by: ${ctx.user?.full_name||ctx.user?.name||"Admin"}`,
-         `School: ${_sn}`,`Time: ${new Date().toLocaleString("en-NG")}`],
+         `Organization: ${_sn}`,`Time: ${new Date().toLocaleString("en-NG")}`],
         "critical",_sn),
       eventKey:"role_change"
     });
-    notify(`${m.fullName} is now a ${newRole==="manager"?"Manager":newRole==="bursar"?"Bursar":"Teacher"}`);
+    notify(`${m.fullName} is now a ${newRole==="manager"?"Manager":newRole==="bursar"?"Finance Manager":"Staff"}`);
     setRoleChangeModal(null);bumpRefresh();
   };
 
@@ -554,10 +554,10 @@ export function MembersPage({ctx}){
 
     // ── Data sheet ──
     const COLS=9;
-    const headers=["First Name *","Middle Name","Last Name *","Gender","Date of Birth","Class","Email","Phone","New Intake (Yes/No)"];
+    const headers=["First Name *","Middle Name","Last Name *","Gender","Date of Birth","Group","Email","Phone","New Intake (Yes/No)"];
     const ws=XLSX.utils.aoa_to_sheet([
-      [(db._schoolName||"School")+" — Student Upload Template","","","","","","","",""],
-      ["Fill in student details starting from Row 4. Do NOT modify the header row (Row 3). Fields marked * are required. See the 'Group & Section List' sheet for exact class names.","","","","","","","",""],
+      [(db._schoolName||"Organization")+" — Member Upload Template","","","","","","","",""],
+      ["Fill in member details starting from Row 4. Do NOT modify the header row (Row 3). Fields marked * are required. See the 'Group & Section List' sheet for exact group names.","","","","","","","",""],
       headers,
       [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
     ]);
@@ -570,31 +570,31 @@ export function MembersPage({ctx}){
     const intakeStyle={font:{bold:true,sz:11,color:{rgb:"FFFFFF"}},fill:{fgColor:{rgb:"D97706"}},alignment:{horizontal:"center",vertical:"center",wrapText:true},border:{top:{style:"thin",color:{rgb:"FFFFFF"}},bottom:{style:"thin",color:{rgb:"FFFFFF"}},left:{style:"thin",color:{rgb:"FFFFFF"}},right:{style:"thin",color:{rgb:"FFFFFF"}}}};
     for(let c=0;c<COLS;c++){const a=XLSX.utils.encode_cell({r:2,c});if(ws[a])ws[a].s=c===8?intakeStyle:reqCols.includes(c)?reqStyle:headerStyle;}
     for(let r=3;r<23;r++){for(let c=0;c<COLS;c++){const a=XLSX.utils.encode_cell({r,c});if(!ws[a])ws[a]={v:"",t:"s"};ws[a].s=dataStyle;}}
-    XLSX.utils.book_append_sheet(wb,ws,"Student Data");
+    XLSX.utils.book_append_sheet(wb,ws,"Member Data");
 
     // ── Instructions sheet ──
     const instrRows=[
       ["STUDENT UPLOAD — INSTRUCTIONS",""],
       ["",""],
       ["COLUMN","GUIDE"],
-      ["First Name *","Required. Student's first name."],
+      ["First Name *","Required. Member's first name."],
       ["Middle Name","Optional. Leave blank if none."],
       ["Last Name *","Required. Member's surname / family name."],
       ["Gender","Male or Female. Defaults to Male if left blank."],
       ["Date of Birth","Format: YYYY-MM-DD (e.g. 2015-03-14). Optional."],
-      ["Class","Must match a class name EXACTLY as shown on the 'Group & Section List' sheet. Copy-paste to avoid typos. Optional — can be assigned later."],
-      ["Email","Student or parent email. Optional."],
-      ["Phone","Phone number (parent/guardian). Optional."],
-      ["New Intake (Yes/No)","Enter Yes for first-time enrolees (admission fees apply) or No for returning students. Defaults to No if blank. This controls which fee template is applied when generating bills."],
+      ["Group","Must match a group name EXACTLY as shown on the 'Group & Section List' sheet. Copy-paste to avoid typos. Optional — can be assigned later."],
+      ["Email","Member or parent email. Optional."],
+      ["Phone","Phone number (member/contact). Optional."],
+      ["New Intake (Yes/No)","Enter Yes for first-time enrolees (admission billing apply) or No for returning members. Defaults to No if blank. This controls which billing template is applied when generating bills."],
       ["",""],
       ["IMPORTANT NOTES",""],
       ["1.","Do NOT rename or reorder the columns on the 'Member Data' sheet."],
       ["2.","Delete the two example rows (rows 4-5) before uploading your real data."],
-      ["3.","Each student will be auto-assigned an ID (e.g. RGS/01) and a default password."],
-      ["4.","You can upload up to 200 students at a time."],
+      ["3.","Each member will be auto-assigned an ID (e.g. JD/01) and a default password."],
+      ["4.","You can upload up to 200 members at a time."],
       ["5.","Duplicate entries may be created — double-check your data before uploading."],
       ["6.","Accepted file formats for re-upload: .xlsx, .xls, or .csv"],
-      ["7.","Check the 'Group & Section List' sheet for the exact class names to use."],
+      ["7.","Check the 'Group & Section List' sheet for the exact group names to use."],
     ];
     const instr=XLSX.utils.aoa_to_sheet(instrRows);
     instr["!merges"]=[{s:{r:0,c:0},e:{r:0,c:1}}];
@@ -625,7 +625,7 @@ export function MembersPage({ctx}){
       refRows.push([classNames[i]||"","",sectionNames[i]||""]);
     }
     refRows.push(["","",""]);
-    refRows.push(["Copy-paste class names into the 'Group' column on the Student Data sheet to avoid spelling errors.","",""]);
+    refRows.push(["Copy-paste group names into the 'Group' column on the Member Data sheet to avoid spelling errors.","",""]);
     const ref=XLSX.utils.aoa_to_sheet(refRows);
     ref["!merges"]=[{s:{r:0,c:0},e:{r:0,c:2}}];
     ref["!cols"]=[{wch:32},{wch:6},{wch:32}];
@@ -646,9 +646,9 @@ export function MembersPage({ctx}){
     const warnRow=4+maxLen+1;
     const warnAddr=XLSX.utils.encode_cell({r:warnRow,c:0});
     if(ref[warnAddr])ref[warnAddr].s=refWarnStyle;
-    XLSX.utils.book_append_sheet(wb,ref,"Class & Section List");
+    XLSX.utils.book_append_sheet(wb,ref,"Group & Section List");
 
-    XLSX.writeFile(wb,"RGS_Student_Upload_Template.xlsx");
+    XLSX.writeFile(wb,"JD_Member_Upload_Template.xlsx");
   };
   const parseStuBulkFile=async(file)=>{
     setBulkFile(file);setBulkParsed([]);setBulkErrors([]);
@@ -783,11 +783,11 @@ export function MembersPage({ctx}){
     const exSec1=sectionNames[0]||"Primary";
     const exSec2=sectionNames[1]||"Secondary";
 
-    // ── Data sheet (no Subject Specialisation) ──
+    // ── Data sheet (no Category Specialisation) ──
     const COLS=5;
     const headers=["Full Name *","Email *","Phone","Gender","Section"];
     const ws=XLSX.utils.aoa_to_sheet([
-      [(db._schoolName||"School")+" — Teacher/Educator Upload Template","","","",""],
+      [(db._schoolName||"Organization")+" — Staff/Educator Upload Template","","","",""],
       ["Fill in educator details starting from Row 4. Do NOT modify the header row (Row 3). Fields marked * are required. See 'Section List' sheet for exact section names.","","","",""],
       headers,
       [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
@@ -799,26 +799,26 @@ export function MembersPage({ctx}){
     const reqCols=[0,1];
     for(let c=0;c<COLS;c++){const a=XLSX.utils.encode_cell({r:2,c});if(ws[a])ws[a].s=reqCols.includes(c)?reqStyle:headerStyle;}
     for(let r=3;r<23;r++){for(let c=0;c<COLS;c++){const a=XLSX.utils.encode_cell({r,c});if(!ws[a])ws[a]={v:"",t:"s"};ws[a].s=dataStyle;}}
-    XLSX.utils.book_append_sheet(wb,ws,"Teacher Data");
+    XLSX.utils.book_append_sheet(wb,ws,"Staff Data");
 
     // ── Instructions sheet ──
     const instrRows=[
       ["TEACHER UPLOAD — INSTRUCTIONS",""],
       ["",""],
       ["COLUMN","GUIDE"],
-      ["Full Name *","Required. Teacher's full name including title (e.g. Mrs. Ada Obi)."],
-      ["Email *","Required. This becomes the teacher's login username AND default password."],
-      ["Phone","Optional. Teacher's phone number."],
+      ["Full Name *","Required. Staff's full name including title (e.g. Mrs. Ada Obi)."],
+      ["Email *","Required. This becomes the staff's login username AND default password."],
+      ["Phone","Optional. Staff's phone number."],
       ["Gender","Male or Female. Defaults to Male if left blank."],
       ["Section","Optional. Must match a section name EXACTLY as shown on the 'Section List' sheet. Copy-paste to avoid typos."],
       ["",""],
       ["IMPORTANT NOTES",""],
-      ["1.","Do NOT rename or reorder the columns on the 'Teacher Data' sheet."],
+      ["1.","Do NOT rename or reorder the columns on the 'Staff Data' sheet."],
       ["2.","Delete the two example rows (rows 4-5) before uploading your real data."],
-      ["3.","The teacher's EMAIL is used as both their Staff ID and default password."],
-      ["4.","Teachers should change their password after their first login."],
+      ["3.","The staff's EMAIL is used as both their Staff ID and default password."],
+      ["4.","Staff should change their password after their first login."],
       ["5.","You can upload up to 100 educators at a time."],
-      ["6.","If a teacher with the same email already exists, the upload may fail for that row."],
+      ["6.","If a staff with the same email already exists, the upload may fail for that row."],
       ["7.","Check the 'Section List' sheet for exact section names to use."],
     ];
     const instr=XLSX.utils.aoa_to_sheet(instrRows);
@@ -847,7 +847,7 @@ export function MembersPage({ctx}){
     ];
     sectionNames.forEach(s=>refRows.push([s]));
     refRows.push([""]);
-    refRows.push(["Copy-paste section names into the 'Section' column on the Teacher Data sheet to avoid spelling errors."]);
+    refRows.push(["Copy-paste section names into the 'Section' column on the Staff Data sheet to avoid spelling errors."]);
     const ref=XLSX.utils.aoa_to_sheet(refRows);
     ref["!cols"]=[{wch:50}];
     ref["!rows"]=[{hpt:34},{hpt:8},{hpt:8},{hpt:26}];
@@ -860,7 +860,7 @@ export function MembersPage({ctx}){
     if(ref[warnAddr])ref[warnAddr].s=refWarnStyle;
     XLSX.utils.book_append_sheet(wb,ref,"Section List");
 
-    XLSX.writeFile(wb,"RGS_Teacher_Upload_Template.xlsx");
+    XLSX.writeFile(wb,"JD_Staff_Upload_Template.xlsx");
   };
   const parseTeaBulkFile=async(file)=>{
     setBulkFile(file);setBulkParsed([]);setBulkErrors([]);
@@ -1180,7 +1180,7 @@ export function MembersPage({ctx}){
                       {/* Type badge */}
                       <td style={{padding:"12px 10px",textAlign:"center"}}>
                         <Badge color={m._type==="student"?C.blue:C.orange}>
-                          {m._type==="student"?"Student":"Educator"}
+                          {m._type==="student"?"Member":"Educator"}
                         </Badge>
                       </td>
                       <td style={{padding:"12px 10px",color:C.text,fontSize:12}}>{m.group}</td>
@@ -1212,9 +1212,9 @@ export function MembersPage({ctx}){
                           {label:"Change Status",onClick:()=>{setStatusModal(m);setNewStatus(m.status);}},
                           ...(m._type==="educator"?[
                             {label:"Edit Credentials",onClick:()=>setCredModal({m,staffId:m._id||"",newPw:"",showPw:false})},
-                            ...(m.teacherRole!=="teacher"?[{label:"Change to Teacher",onClick:()=>setRoleChangeModal({m,newRole:"teacher"})}]:[]),
+                            ...(m.teacherRole!=="teacher"?[{label:"Change to Staff",onClick:()=>setRoleChangeModal({m,newRole:"teacher"})}]:[]),
                             ...(m.teacherRole!=="manager"?[{label:"Change to Manager",onClick:()=>setRoleChangeModal({m,newRole:"manager"})}]:[]),
-                            ...(m.teacherRole!=="bursar"?[{label:"Change to Bursar",onClick:()=>setRoleChangeModal({m,newRole:"bursar"})}]:[]),
+                            ...(m.teacherRole!=="bursar"?[{label:"Change to Finance Manager",onClick:()=>setRoleChangeModal({m,newRole:"bursar"})}]:[]),
                           ]:[]),
                           {label:"Send Login Details",onClick:()=>sendLoginDetails(m),disabled:!m.email},
                           {label:"Delete",onClick:()=>deleteMember(m),danger:true},
@@ -1320,9 +1320,9 @@ export function MembersPage({ctx}){
       {roleChangeModal&&(()=>{
         const{m,newRole}=roleChangeModal;
         const roleMap={
-          manager:{label:"Manager",color:"#7C3AED",desc:"This staff member will gain access to fees, billing, and payment management. Their permissions can be customised in Settings → Permissions."},
-          bursar:{label:"Bursar",color:"#B45309",desc:"This staff member will be a dedicated finance officer with access to all fee-related pages. Their permissions can be customised in Settings → Permissions."},
-          teacher:{label:"Teacher",color:"#1A8C3C",desc:"This staff member will return to a teaching role with access to report cards, results, and attendance."},
+          manager:{label:"Manager",color:"#7C3AED",desc:"This staff member will gain access to billing, billing, and payment management. Their permissions can be customised in Settings → Permissions."},
+          bursar:{label:"Finance Manager",color:"#B45309",desc:"This staff member will be a dedicated finance officer with access to all billing-related pages. Their permissions can be customised in Settings → Permissions."},
+          teacher:{label:"Staff",color:"#1A8C3C",desc:"This staff member will return to a teaching role with access to report cards, results, and attendance."},
         };
         const info=roleMap[newRole]||roleMap.teacher;
         const curInfo=roleMap[m.teacherRole]||roleMap.teacher;
@@ -1489,7 +1489,7 @@ export function MembersPage({ctx}){
 
       {/* ══ Add / Edit Member Modal ══ */}
       {addModal==="student"&&(
-        <Modal title={editTarget?"Edit Student":"Add Student"} onClose={()=>{setAddModal(null);setEditTarget(null);}} width={520}>
+        <Modal title={editTarget?"Edit Member":"Add Member"} onClose={()=>{setAddModal(null);setEditTarget(null);}} width={520}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:4}}>
             <Inp label="First Name *" value={stuForm.first_name} onChange={v=>sf({first_name:v})}/>
             <Inp label="Middle Name" value={stuForm.middle_name} onChange={v=>sf({middle_name:v})}/>
@@ -1517,8 +1517,8 @@ export function MembersPage({ctx}){
             <Inp label="Admission Year" value={stuForm.admission_year} onChange={v=>sf({admission_year:v})}/>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-            <Sel label="Class" value={stuForm.class_id} onChange={v=>sf({class_id:v})}
-              options={[{value:"",label:"— Select Class —"},...classes.map(c=>({value:c.id,label:c.name}))]}/>
+            <Sel label="Group" value={stuForm.class_id} onChange={v=>sf({class_id:v})}
+              options={[{value:"",label:"— Select Group —"},...classes.map(c=>({value:c.id,label:c.name}))]}/>
             <Sel label="Status" value={stuForm.status} onChange={v=>sf({status:v})}
               options={STATUS_OPTIONS.map(s=>({value:s,label:statusLabel(s)}))}/>
           </div>
@@ -1557,9 +1557,9 @@ export function MembersPage({ctx}){
 
       {/* ══ Bulk Member Upload Modal ══ */}
       {bulkStuModal&&(
-        <Modal title="Bulk Student Upload" onClose={()=>setBulkStuModal(false)} width={660}>
+        <Modal title="Bulk Member Upload" onClose={()=>setBulkStuModal(false)} width={660}>
           <div style={{marginBottom:14,padding:"10px 14px",background:C.bluePale,border:`1px solid ${C.blue}`,borderRadius:8,fontSize:13,color:C.blue}}>
-            Download the template, fill in student data, then upload the file. Member IDs and passwords are auto-generated.
+            Download the template, fill in member data, then upload the file. Member IDs and passwords are auto-generated.
           </div>
           <div style={{marginBottom:14}}>
             <Btn onClick={downloadStuTemplate} color={C.blue} outline style={{marginRight:10}}>Download Template (.xlsx)</Btn>
@@ -1579,11 +1579,11 @@ export function MembersPage({ctx}){
           )}
           {bulkParsed.length>0&&(
             <>
-              <div style={{fontWeight:700,color:C.blue,marginBottom:8,fontSize:13}}>{bulkParsed.length} student(s) ready to upload:</div>
+              <div style={{fontWeight:700,color:C.blue,marginBottom:8,fontSize:13}}>{bulkParsed.length} member(s) ready to upload:</div>
               <div style={{maxHeight:240,overflowY:"auto",border:`1px solid ${C.border}`,borderRadius:8,marginBottom:14}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead><tr style={{background:C.offWhite}}>
-                    {["#","First Name","Last Name","Gender","DOB","Class","Email","Phone"].map(h=>(
+                    {["#","First Name","Last Name","Gender","DOB","Group","Email","Phone"].map(h=>(
                       <th key={h} style={{padding:"7px 10px",textAlign:"left",fontWeight:700,color:C.muted,whiteSpace:"nowrap"}}>{h}</th>
                     ))}
                   </tr></thead>
@@ -1701,7 +1701,7 @@ export function MembersPage({ctx}){
       {lastRegistered&&(
         <div style={{marginTop:14,padding:"12px 16px",background:C.greenPale,border:`1px solid ${C.green}44`,borderRadius:10,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <span style={{flex:1,fontSize:13,color:C.green,fontWeight:700}}>
-            {lastRegistered.count} student{lastRegistered.count!==1?"s":""} registered successfully.
+            {lastRegistered.count} member{lastRegistered.count!==1?"s":""} registered successfully.
           </span>
           {lastRegistered.entries?.filter(e=>e.to).length>0&&(
             <Btn onClick={()=>setShowOnboarding(true)} color={C.blue} xs>
@@ -1715,7 +1715,7 @@ export function MembersPage({ctx}){
       {lastRegisteredTeachers&&(
         <div style={{marginTop:14,padding:"12px 16px",background:C.greenPale,border:`1px solid ${C.green}44`,borderRadius:10,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <span style={{flex:1,fontSize:13,color:C.green,fontWeight:700}}>
-            {lastRegisteredTeachers.count} teacher{lastRegisteredTeachers.count!==1?"s":""} registered successfully.
+            {lastRegisteredTeachers.count} staff{lastRegisteredTeachers.count!==1?"s":""} registered successfully.
           </span>
           {lastRegisteredTeachers.entries?.filter(e=>e.to).length>0&&(
             <Btn onClick={()=>setShowTeacherOnboarding(true)} color={C.blue} xs>
@@ -1801,7 +1801,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
     });
   },[studentId]);
 
-  // Fee calculations
+  // Billing calculations
   const activeBills=bills.filter(b=>!b.carried_forward);
   const totalBilled=activeBills.reduce((a,b)=>a+(+b.total_amount||0),0);
   const totalPaid=activeBills.reduce((a,b)=>a+(+b.amount_paid||0),0);
@@ -1840,8 +1840,8 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
 
   const TABS=[
     {id:"overview",label:"Overview",icon:<User size={14}/>},
-    {id:"fees",label:`Fees (${activeBills.length})`,icon:<CreditCard size={14}/>},
-    {id:"academic",label:`Academic (${results.length})`,icon:<BookOpen size={14}/>},
+    {id:"fees",label:`Billing (${activeBills.length})`,icon:<CreditCard size={14}/>},
+    {id:"academic",label:`Performance (${results.length})`,icon:<BookOpen size={14}/>},
     {id:"activity",label:`Activity (${auditLog.length+adminLog.length})`,icon:<Activity size={14}/>},
   ];
 
@@ -1937,16 +1937,16 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                     ))}
                   </div>
 
-                  {/* School Info */}
+                  {/* Organization Info */}
                   <div>
                     <div style={{background:C.offWhite,borderRadius:12,padding:18,marginBottom:12}}>
                       <div style={{fontWeight:800,color:C.purple,fontSize:12,textTransform:"uppercase",
                         letterSpacing:.5,marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
-                        <GraduationCap size={13}/> School Information
+                        <GraduationCap size={13}/> Organization Information
                       </div>
                       {[
-                        ["Student ID",String(studentId)],
-                        ["Class",cls?.name||"—"],
+                        ["Member ID",String(studentId)],
+                        ["Group",cls?.name||"—"],
                         ["Section / Arm",sec?.name||"—"],
                         ["Level",cls?.level||"—"],
                         ["Admission Year",raw?.admission_year||"—"],
@@ -1963,11 +1963,11 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                       ))}
                     </div>
 
-                    {/* Fee snapshot */}
+                    {/* Billing snapshot */}
                     <div style={{background:C.offWhite,borderRadius:12,padding:18}}>
                       <div style={{fontWeight:800,color:C.green,fontSize:12,textTransform:"uppercase",
                         letterSpacing:.5,marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
-                        <CreditCard size={13}/> Fee Snapshot
+                        <CreditCard size={13}/> Billing Snapshot
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                         {[
@@ -2074,7 +2074,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                                   <div style={{marginTop:14}}>
                                     <div style={{fontSize:11,fontWeight:700,color:C.muted,
                                       textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>
-                                      Fee Items
+                                      Billing Items
                                     </div>
                                     {items.map(item=>(
                                       <div key={item.id} style={{display:"flex",justifyContent:"space-between",
@@ -2173,7 +2173,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                   {resultsByTerm.length===0?(
                     <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>
                       <BookOpen size={36} color={C.muted} style={{marginBottom:8,display:"block",margin:"0 auto 8px"}}/>
-                      No academic results found for this student
+                      No performance results found for this member
                     </div>
                   ):resultsByTerm.map(group=>{
                     const avg=group.rows.length?Math.round(group.rows.reduce((a,r)=>a+(+r.total_score||0),0)/group.rows.length):0;
@@ -2187,14 +2187,14 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                             {group.termName} · {group.sessName}
                           </div>
                           <div style={{display:"flex",gap:16,fontSize:12,color:C.muted}}>
-                            <span>{group.rows.length} subject{group.rows.length!==1?"s":""}</span>
+                            <span>{group.rows.length} category{group.rows.length!==1?"s":""}</span>
                             <span style={{fontWeight:700,color:avg>=50?C.green:C.red}}>Avg: {avg}%</span>
                           </div>
                         </div>
                         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                           <thead>
                             <tr style={{background:C.offWhite}}>
-                              {["Subject","CA Score","Exam Score","Total","Grade","Remark"].map(h=>(
+                              {["Category","CA Score","Exam Score","Total","Grade","Remark"].map(h=>(
                                 <th key={h} style={{padding:"8px 12px",textAlign:"left",fontWeight:700,
                                   color:C.muted,fontSize:11,borderBottom:`1px solid ${C.border}`}}>{h}</th>
                               ))}
@@ -2246,7 +2246,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                 const adminActionColor=a=>a==="status_change"?C.purple:a==="profile_edit"?C.blue:a==="class_change"?C.amber:C.muted;
                 const adminActionLabel=a=>({
                   status_change:"Status Changed",profile_edit:"Profile Edited",
-                  class_change:"Class Changed",approval:"Student Approved",
+                  class_change:"Group Changed",approval:"Member Approved",
                   bulk_status_change:"Bulk Status Change",
                 }[a]||a?.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())||"Action");
 
@@ -2255,7 +2255,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                     {merged.length===0?(
                       <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>
                         <Activity size={36} color={C.muted} style={{display:"block",margin:"0 auto 8px"}}/>
-                        No activity recorded for this student
+                        No activity recorded for this member
                       </div>
                     ):(
                       <div style={{display:"flex",flexDirection:"column",gap:6}}>
@@ -2278,12 +2278,12 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
                                     <span style={{fontSize:10,padding:"1px 7px",borderRadius:99,
                                       background:isFee?`${C.green}18`:`${C.purple}18`,
                                       color:isFee?C.green:C.purple,fontWeight:700,textTransform:"uppercase",letterSpacing:.3}}>
-                                      {isFee?"Fees":"Admin"}
+                                      {isFee?"Billing":"Admin"}
                                     </span>
                                   </div>
                                   {isFee&&entry.amount>0&&<span style={{fontWeight:700,fontSize:13}}>{fmt(entry.amount)}</span>}
                                 </div>
-                                {/* Fee-specific details */}
+                                {/* Billing-specific details */}
                                 {isFee&&entry.details&&(
                                   <div style={{fontSize:11,color:C.muted,marginTop:2}}>
                                     {entry.action==="bill_generated"&&`${entry.details.term} ${entry.details.year} — Template: ${entry.details.template}`}

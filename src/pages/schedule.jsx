@@ -1,5 +1,5 @@
 /**
- * Schedule pages: Attendance, Academic Calendar, Timetable.
+ * Schedule pages: Attendance, Calendar, Timetable.
  */
 import React, { useState, useEffect, useMemo } from "react";
 import {
@@ -89,8 +89,8 @@ export function AttendancePage({ctx}){
   const setAll=status=>{const m={};students.forEach(s=>{m[s.id]=status;});setAttendance(m);};
 
   const save=async()=>{
-    if(!selClass||!selDate||!selTerm||!selSession){notify("Select class, date, term and session","error");return;}
-    if(!students.length){notify("No students in this class","error");return;}
+    if(!selClass||!selDate||!selTerm||!selSession){notify("Select group, date, period and cycle","error");return;}
+    if(!students.length){notify("No members in this group","error");return;}
     setSaving(true);
     const records=students.map(s=>({
       student_id:s.id,class_id:+selClass,date:selDate,
@@ -125,9 +125,9 @@ export function AttendancePage({ctx}){
       </div>
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
-          <Sel label="Session" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
+          <Sel label="Cycle" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
             options={[{value:"",label:"Select\u2026"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm} disabled={!selSession}
+          <Sel label="Period" value={selTerm} onChange={setSelTerm} disabled={!selSession}
             options={[{value:"",label:"Select\u2026"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
           <Sel label="Group" value={selClass} onChange={setSelClass}
             options={[{value:"",label:"Select\u2026"},...classes.map(c=>({value:String(c.id),label:c.name}))]}/>
@@ -152,7 +152,7 @@ export function AttendancePage({ctx}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
             <div>
               <span style={{fontWeight:800,color:C.blue,fontSize:14}}>{classes.find(c=>c.id===+selClass)?.name} \u2014 {selDate}</span>
-              <span style={{fontSize:12,color:C.muted,marginLeft:8}}>{students.length} students</span>
+              <span style={{fontSize:12,color:C.muted,marginLeft:8}}>{students.length} members</span>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
               <span style={{fontSize:12,color:C.muted}}>Mark all:</span>
@@ -203,7 +203,7 @@ export function AttendancePage({ctx}){
       {viewMode==="summary"&&(!selClass||!selTerm||!selSession?(
         <Card style={{textAlign:"center",padding:44}}>
           <div style={{marginBottom:8}}><BarChart3 size={40} color={C.muted}/></div>
-          <div style={{fontWeight:700,color:C.blue}}>Select session, term and group to view summary</div>
+          <div style={{fontWeight:700,color:C.blue}}>Select cycle, period and group to view summary</div>
         </Card>
       ):loading?<Spinner/>:(
         <Card>
@@ -257,11 +257,11 @@ export function AttendancePage({ctx}){
 // ─── ACADEMIC CALENDAR PAGE ─────────────────────────────────────────────────────────────────────────────
 const CAL_TYPES=[
   {id:"resumption", label:"Resumption",    color:"#10B981"},
-  {id:"mid_term",   label:"Mid-Term",      color:"#F59E0B"},
+  {id:"mid_term",   label:"Mid-Period",      color:"#F59E0B"},
   {id:"exam",       label:"Exams",         color:"#6366F1"},
   {id:"vacation",   label:"Vacation",      color:"#EF4444"},
   {id:"holiday",    label:"Public Holiday",color:"#EC4899"},
-  {id:"event",      label:"School Event",  color:"#0891B2"},
+  {id:"event",      label:"Organization Event",  color:"#0891B2"},
   {id:"other",      label:"Other",         color:"#94A3B8"},
 ];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -387,22 +387,22 @@ export function AcademicCalendarPage({ctx}){
         <div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
             <CalendarDays size={22} color={C.blue}/>
-            <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Academic Calendar</h2>
+            <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Calendar</h2>
             <span style={{background:C.bluePale,color:C.blue,borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:700,border:`1px solid ${C.blue}30`}}>
               {events.length} event{events.length!==1?"s":""}
             </span>
           </div>
-          <p style={{margin:0,fontSize:12,color:C.muted}}>Term dates, exams, holidays, and school events at a glance.</p>
+          <p style={{margin:0,fontSize:12,color:C.muted}}>Period dates, exams, holidays, and organization events at a glance.</p>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           <select value={selSession} onChange={e=>{setSelSession(e.target.value);setSelTerm("");}}
             style={{padding:"7px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-            <option value="">All Sessions</option>
+            <option value="">All Cycles</option>
             {sessions.map(s=><option key={s.id} value={String(s.id)}>{s.name}{s.is_active?" (active)":""}</option>)}
           </select>
           <select value={selTerm} onChange={e=>setSelTerm(e.target.value)} disabled={!selSession}
             style={{padding:"7px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-            <option value="">All Terms</option>
+            <option value="">All Periods</option>
             {terms.map(t=><option key={t.id} value={String(t.id)}>{t.name}{t.is_active?" (active)":""}</option>)}
           </select>
           <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
@@ -577,8 +577,8 @@ export function AcademicCalendarPage({ctx}){
               )}
               {(sess||term)&&(
                 <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-                  {sess&&<span style={{fontSize:11,color:C.muted,background:C.offWhite,padding:"3px 10px",borderRadius:6,border:`1px solid ${C.border}`}}>Session: {sess.name}</span>}
-                  {term&&<span style={{fontSize:11,color:C.muted,background:C.offWhite,padding:"3px 10px",borderRadius:6,border:`1px solid ${C.border}`}}>Term: {term.name}</span>}
+                  {sess&&<span style={{fontSize:11,color:C.muted,background:C.offWhite,padding:"3px 10px",borderRadius:6,border:`1px solid ${C.border}`}}>Cycle: {sess.name}</span>}
+                  {term&&<span style={{fontSize:11,color:C.muted,background:C.offWhite,padding:"3px 10px",borderRadius:6,border:`1px solid ${C.border}`}}>Period: {term.name}</span>}
                 </div>
               )}
               <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
@@ -597,7 +597,7 @@ export function AcademicCalendarPage({ctx}){
             <div>
               <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Event Title *</label>
               <input value={form.title||""} onChange={e=>setForm(p=>({...p,title:e.target.value}))}
-                placeholder="e.g. Third Term Resumption" autoFocus
+                placeholder="e.g. Third Period Resumption" autoFocus
                 style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,
                   fontSize:13,boxSizing:"border-box",background:C.white,color:C.text}}/>
             </div>
@@ -640,7 +640,7 @@ export function AcademicCalendarPage({ctx}){
             )}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               <div>
-                <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Session</label>
+                <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Cycle</label>
                 <select value={form.session_id||""} onChange={e=>setForm(p=>({...p,session_id:e.target.value}))}
                   style={{width:"100%",padding:"9px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:13,background:C.white,color:C.text}}>
                   <option value="">{"\u2014 None \u2014"}</option>
@@ -648,7 +648,7 @@ export function AcademicCalendarPage({ctx}){
                 </select>
               </div>
               <div>
-                <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Term</label>
+                <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Period</label>
                 <select value={form.term_id||""} onChange={e=>setForm(p=>({...p,term_id:e.target.value}))}
                   style={{width:"100%",padding:"9px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:13,background:C.white,color:C.text}}>
                   <option value="">{"\u2014 None \u2014"}</option>
@@ -812,7 +812,7 @@ export function TimetablePage({ctx}){
     const m={};slots.forEach(s=>{const key=`${s.day_of_week}_${s.period_id}`;m[key]=s;});return m;
   },[slots]);
 
-  // Subject colour palette for visual coding
+  // Category colour palette for visual coding
   const subjColors=useMemo(()=>{
     const palette=["#6366F1","#0891B2","#10B981","#F59E0B","#EF4444","#EC4899","#8B5CF6","#F97316","#14B8A6","#84CC16"];
     const m={};subjects.forEach((s,i)=>{m[String(s.subject_id||s.section_subjects?.id)]=palette[i%palette.length];});
@@ -826,7 +826,7 @@ export function TimetablePage({ctx}){
       const name=teachers.find(t=>String(t.id)===tid)?.full_name||"Unknown";
       return{teacher_id:tid,note:{found:true,name}};
     }
-    const subjName=subjects.find(s=>String(s.subject_id||s.section_subjects?.id)===String(subjectId))?.section_subjects?.name||"this subject";
+    const subjName=subjects.find(s=>String(s.subject_id||s.section_subjects?.id)===String(subjectId))?.section_subjects?.name||"this category";
     return{teacher_id:"",note:{found:false,subjName}};
   };
 
@@ -863,8 +863,8 @@ export function TimetablePage({ctx}){
       const{data:clash}=await db.checkTeacherClash(
         tid, slotModal.period.id, slotModal.day, +selTerm, +selSession, +selClass);
       if(clash&&clash.length>0){
-        const clashClass=clash[0].classes?.name||"another class";
-        const teacherName=teachers.find(t=>String(t.id)===String(tid))?.full_name||"This teacher";
+        const clashClass=clash[0].classes?.name||"another group";
+        const teacherName=teachers.find(t=>String(t.id)===String(tid))?.full_name||"This staff";
         const day=WEEK_DAYS.find(x=>x.d===slotModal.day)?.l||"";
         notify(
           `⚠ Clash — ${teacherName} is already assigned to ${clashClass} on ${day} during ${slotModal.period.name}. Fix the other slot first or choose a different teacher.`,
@@ -950,7 +950,7 @@ export function TimetablePage({ctx}){
             )}
           </div>
           <p style={{margin:0,fontSize:12,color:C.muted}}>
-            {isAdmin?"Manage class schedules and periods.":"Your weekly teaching schedule."}
+            {isAdmin?"Manage group schedules and periods.":"Your weekly teaching schedule."}
           </p>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
@@ -983,25 +983,25 @@ export function TimetablePage({ctx}){
       <Card style={{marginBottom:16,padding:"12px 16px"}}>
         <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"flex-end"}}>
           <div style={{flex:"1 1 140px"}}>
-            <label style={{fontSize:10,fontWeight:700,color:C.muted,display:"block",marginBottom:3,textTransform:"uppercase",letterSpacing:.5}}>Session</label>
+            <label style={{fontSize:10,fontWeight:700,color:C.muted,display:"block",marginBottom:3,textTransform:"uppercase",letterSpacing:.5}}>Cycle</label>
             <select value={selSession} onChange={e=>{setSelSession(e.target.value);setSelTerm("");}}
               style={{width:"100%",padding:"8px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-              <option value="">Select Session</option>
+              <option value="">Select Cycle</option>
               {sessions.map(s=><option key={s.id} value={String(s.id)}>{s.name}{s.is_active?" ✓":""}</option>)}
             </select>
           </div>
           <div style={{flex:"1 1 130px"}}>
-            <label style={{fontSize:10,fontWeight:700,color:C.muted,display:"block",marginBottom:3,textTransform:"uppercase",letterSpacing:.5}}>Term</label>
+            <label style={{fontSize:10,fontWeight:700,color:C.muted,display:"block",marginBottom:3,textTransform:"uppercase",letterSpacing:.5}}>Period</label>
             <select value={selTerm} onChange={e=>setSelTerm(e.target.value)} disabled={!selSession}
               style={{width:"100%",padding:"8px 10px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-              <option value="">Select Term</option>
+              <option value="">Select Period</option>
               {terms.map(t=><option key={t.id} value={String(t.id)}>{t.name}{t.is_active?" ✓":""}</option>)}
             </select>
           </div>
           {view==="admin"&&(
             <div style={{flex:"1 1 140px"}}>
               <label style={{fontSize:10,fontWeight:700,color:C.muted,display:"block",marginBottom:3,textTransform:"uppercase",letterSpacing:.5}}>
-                Class {periods.length>0&&!selClass&&<span style={{color:C.orange}}>← required</span>}
+                Group {periods.length>0&&!selClass&&<span style={{color:C.orange}}>← required</span>}
               </label>
               <select value={selClass} onChange={e=>setSelClass(e.target.value)}
                 style={{width:"100%",padding:"8px 10px",
@@ -1041,7 +1041,7 @@ export function TimetablePage({ctx}){
         <div>
           {(!selTerm||!selSession)?(
             <div style={{textAlign:"center",padding:40,border:`2px dashed ${C.border}`,borderRadius:12,color:C.muted}}>
-              Select a session and term above to view your schedule.
+              Select a cycle and period above to view your schedule.
             </div>
           ):(
             <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
@@ -1058,7 +1058,7 @@ export function TimetablePage({ctx}){
                     </div>
                     {mySlotsByDay[d].length===0?(
                       <div style={{padding:20,textAlign:"center",color:C.light,fontSize:11,fontStyle:"italic"}}>
-                        No classes
+                        No groups
                       </div>
                     ):mySlotsByDay[d].map(s=>(
                       <div key={s.id} style={{padding:"9px 10px",borderBottom:`1px solid ${C.border}`,
@@ -1081,7 +1081,7 @@ export function TimetablePage({ctx}){
           )}
           {selTerm&&selSession&&slots.length===0&&(
             <div style={{textAlign:"center",padding:24,color:C.muted,fontSize:13,marginTop:8}}>
-              No classes assigned to you this term.
+              No groups assigned to you this period.
             </div>
           )}
         </div>
@@ -1091,18 +1091,18 @@ export function TimetablePage({ctx}){
           border:`2px dashed ${periods.length>0&&!selClass?C.orange:C.border}`,color:C.muted}}>
           <CalendarCheck size={40} color={periods.length>0&&!selClass?C.orange:C.border} style={{marginBottom:12}}/>
           <div style={{fontWeight:800,fontSize:14,color:C.text,marginBottom:6}}>
-            {!selSession?"Select a session to get started":!selTerm?"Now select a term":"Now select a class"}
+            {!selSession?"Select a cycle to get started":!selTerm?"Now select a period":"Now select a group"}
           </div>
           <div style={{fontSize:12}}>
             {periods.length>0&&!selClass&&selSession&&selTerm?(
               <span style={{color:C.orange,fontWeight:700}}>
-                ↑ {periods.length} period{periods.length!==1?"s":""} ready — pick a class to assign subjects
+                ↑ {periods.length} period{periods.length!==1?"s":""} ready — pick a group to assign categories
               </span>
             ):""}
           </div>
         </div>
       ):(
-        // ── Admin: Class Grid ──
+        // ── Admin: Group Grid ──
         <div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,flexWrap:"wrap",gap:8}}>
             <div style={{fontSize:12,color:C.muted,fontWeight:600}}>
@@ -1111,7 +1111,7 @@ export function TimetablePage({ctx}){
             </div>
             {subjects.length>0&&(
               <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
-                <span style={{fontSize:10,color:C.muted,fontWeight:600}}>Subjects:</span>
+                <span style={{fontSize:10,color:C.muted,fontWeight:600}}>Categories:</span>
                 {subjects.slice(0,7).map(s=>{
                   const sid=String(s.subject_id||s.section_subjects?.id);
                   const col=subjColors[sid]||C.blue;
@@ -1228,7 +1228,7 @@ export function TimetablePage({ctx}){
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <div>
-              <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Subject *</label>
+              <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>Category *</label>
               <select value={slotForm.subject_id}
                 onChange={e=>{
                   const sid=e.target.value;
@@ -1241,7 +1241,7 @@ export function TimetablePage({ctx}){
                 <option value="">{"— Clear this slot —"}</option>
                 {subjects.map(s=><option key={s.subject_id||s.section_subjects?.id} value={String(s.subject_id||s.section_subjects?.id)}>{s.section_subjects?.name||"?"}</option>)}
               </select>
-              {subjects.length===0&&<div style={{fontSize:11,color:C.orange,marginTop:4,fontWeight:600}}>No subjects assigned to {selectedClassName} yet.</div>}
+              {subjects.length===0&&<div style={{fontSize:11,color:C.orange,marginTop:4,fontWeight:600}}>No categories assigned to {selectedClassName} yet.</div>}
             </div>
             {/* Auto-match notice */}
             {autoTeacherNote&&(
@@ -1253,13 +1253,13 @@ export function TimetablePage({ctx}){
                 {autoTeacherNote.found?(
                   <><span style={{fontSize:14}}>✓</span> Auto-matched: <strong>{autoTeacherNote.name}</strong></>
                 ):(
-                  <><span style={{fontSize:14}}>⚠</span> No staff assigned to <strong>{autoTeacherNote.subjName}</strong> in {selectedClassName}. Assign one in Teachers → Subject Assignments.</>
+                  <><span style={{fontSize:14}}>⚠</span> No staff assigned to <strong>{autoTeacherNote.subjName}</strong> in {selectedClassName}. Assign one in Staff → Category Assignments.</>
                 )}
               </div>
             )}
             <div>
               <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>
-                Teacher <span style={{fontWeight:400,fontSize:10}}>(optional — override auto-match)</span>
+                Staff <span style={{fontWeight:400,fontSize:10}}>(optional — override auto-match)</span>
               </label>
               <select value={slotForm.teacher_id} onChange={e=>{setSlotForm(p=>({...p,teacher_id:e.target.value}));setAutoTeacherNote(null);}}
                 disabled={!slotForm.subject_id}
@@ -1270,7 +1270,7 @@ export function TimetablePage({ctx}){
                 {teachers.map(t=><option key={t.id} value={t.id}>{t.full_name}</option>)}
               </select>
               {!slotForm.subject_id&&(
-                <div style={{fontSize:10,color:C.muted,marginTop:4}}>Select a subject first to assign a staff.</div>
+                <div style={{fontSize:10,color:C.muted,marginTop:4}}>Select a category first to assign a staff.</div>
               )}
             </div>
             <div style={{display:"flex",gap:8,justifyContent:"flex-end",paddingTop:4}}>

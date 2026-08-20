@@ -150,7 +150,7 @@ serve(async (req) => {
     // ── Provider selection: ZeptoMail takes priority if key is configured ──
     const zetpKey  = Deno.env.get("ZEPTO_API_KEY");
     const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || from || "noreply@renaissancegardenschools.com";
-    const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "Renaissance Garden Schools";
+    const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
 
     const awsKey    = Deno.env.get("AWS_ACCESS_KEY_ID");
     const awsSecret = Deno.env.get("AWS_SECRET_ACCESS_KEY");

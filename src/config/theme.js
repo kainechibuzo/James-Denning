@@ -1,61 +1,58 @@
 /**
- * Theme — brand colours and shadow tokens.
+ * JAMES-DENNING design tokens.
  *
- * `C` is a mutable reference that flips between LIGHT and DARK at runtime
- * when the user toggles dark mode.  AppDemo.jsx sets it via `C = dark ? DARK : LIGHT`
- * inside <DarkProvider>.  Every module that needs colours imports this file
- * and references `C` — they always see the current theme.
- *
- * Do NOT freeze or deepClone LIGHT/DARK — the live reference swap must work.
+ * The product uses a restrained monochrome palette. Semantic colours remain
+ * available for statuses and warnings, while primary navigation and actions
+ * use charcoal instead of the former school blue/orange combination.
  */
 
+const semantic = {
+  green: "#166534", greenPale: "#F0FDF4", greenLight: "#BBF7D0",
+  red: "#991B1B", redPale: "#FEF2F2", redLight: "#FECACA",
+  amber: "#92400E", amberPale: "#FFFBEB",
+  purple: "#4B5563", purplePale: "#F3F4F6",
+  teal: "#374151", tealPale: "#F3F4F6",
+};
+
 export const LIGHT = {
-  orange:"#E8560A", orangePale:"#FFF4EE", orangeLight:"#FED7AA",
-  blue:"#1A4FA0",   bluePale:"#EFF6FF",   blueDark:"#0d2d6e", blueLight:"#BFDBFE",
-  green:"#15803D",  greenPale:"#F0FDF4",  greenLight:"#BBF7D0",
-  red:"#DC2626",    redPale:"#FEF2F2",    redLight:"#FECACA",
-  purple:"#7C3AED", purplePale:"#F5F3FF",
-  amber:"#D97706",  amberPale:"#FFFBEB",
-  teal:"#0F766E",   tealPale:"#F0FDFA",
-  white:"#FFFFFF",  offWhite:"#F8FAFC",
-  border:"#E2E8F0", borderLight:"#F1F5F9",
-  text:"#0F172A",   textSoft:"#334155",   muted:"#64748B", light:"#94A3B8",
-  shadow:"0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)",
-  shadowMd:"0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04)",
-  shadowLg:"0 20px 40px rgba(0,0,0,.10),0 8px 16px rgba(0,0,0,.06)",
-  shadowXl:"0 32px 64px rgba(0,0,0,.14),0 16px 32px rgba(0,0,0,.08)",
+  // Primary brand is charcoal/black. Legacy token names remain so every
+  // existing feature keeps working without a visual rewrite in each page.
+  orange: "#111827", orangeDark: "#030712", orangePale: "#F3F4F6", orangeLight: "#D1D5DB",
+  blue: "#111827", bluePale: "#F3F4F6", blueDark: "#030712", blueLight: "#D1D5DB",
+  white: "#FFFFFF", offWhite: "#F7F7F5", card: "#FFFFFF", filter: "#F9FAFB",
+  border: "#E5E7EB", borderLight: "#F3F4F6",
+  text: "#111827", textSoft: "#374151", muted: "#6B7280", light: "#9CA3AF",
+  ...semantic,
+  shadow: "0 1px 2px rgba(17,24,39,.05), 0 1px 3px rgba(17,24,39,.04)",
+  shadowMd: "0 8px 24px rgba(17,24,39,.08), 0 2px 6px rgba(17,24,39,.05)",
+  shadowLg: "0 20px 45px rgba(17,24,39,.12), 0 8px 18px rgba(17,24,39,.06)",
+  shadowXl: "0 32px 64px rgba(17,24,39,.16), 0 16px 32px rgba(17,24,39,.08)",
 };
 
-// All-black theme (JAMES-DENNING default). Surfaces are near-black rather
-// than pure #000 so cards/panels still read as distinct layers; true black
-// is reserved for the page background. Accent colours stay saturated so
-// they still pop against black.
 export const DARK = {
-  orange:"#FB923C", orangePale:"#1C0D00", orangeLight:"#7C2D12",
-  blue:"#60A5FA",   bluePale:"#0A0E14",   blueDark:"#000000",   blueLight:"#111827",
-  green:"#4ADE80",  greenPale:"#051006",  greenLight:"#0F2415",
-  red:"#F87171",    redPale:"#140505",    redLight:"#2D0A0A",
-  purple:"#A78BFA", purplePale:"#0F0A1A",
-  amber:"#FCD34D",  amberPale:"#120D00",
-  teal:"#2DD4BF",   tealPale:"#00100E",
-  white:"#0A0A0A",  offWhite:"#000000",
-  border:"#1F1F1F", borderLight:"#141414",
-  text:"#F5F5F5",   textSoft:"#C7C7C7",   muted:"#8A8A8A", light:"#666666",
-  shadow:"0 1px 3px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.4)",
-  shadowMd:"0 4px 12px rgba(0,0,0,.65),0 2px 4px rgba(0,0,0,.4)",
-  shadowLg:"0 20px 40px rgba(0,0,0,.7),0 8px 16px rgba(0,0,0,.5)",
-  shadowXl:"0 32px 64px rgba(0,0,0,.8),0 16px 32px rgba(0,0,0,.6)",
+  orange: "#F3F4F6", orangeDark: "#FFFFFF", orangePale: "#1F2937", orangeLight: "#4B5563",
+  blue: "#F3F4F6", bluePale: "#1F2937", blueDark: "#000000", blueLight: "#4B5563",
+  white: "#111111", offWhite: "#000000", card: "#111111", filter: "#171717",
+  border: "#2A2A2A", borderLight: "#1F1F1F",
+  text: "#F9FAFB", textSoft: "#D1D5DB", muted: "#9CA3AF", light: "#6B7280",
+  green: "#86EFAC", greenPale: "#052E16", greenLight: "#166534",
+  red: "#FCA5A5", redPale: "#450A0A", redLight: "#7F1D1D",
+  amber: "#FCD34D", amberPale: "#451A03",
+  purple: "#D1D5DB", purplePale: "#1F2937",
+  teal: "#9CA3AF", tealPale: "#1F2937",
+  shadow: "0 1px 3px rgba(0,0,0,.65), 0 1px 2px rgba(0,0,0,.4)",
+  shadowMd: "0 8px 24px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.4)",
+  shadowLg: "0 20px 45px rgba(0,0,0,.75), 0 8px 18px rgba(0,0,0,.45)",
+  shadowXl: "0 32px 64px rgba(0,0,0,.85), 0 16px 32px rgba(0,0,0,.6)",
 };
 
-/** Live theme reference — set by DarkProvider at runtime. Always import `C`.
- *  Defaults to DARK (all-black) since that's now the product's default theme. */
-export let C = DARK;
+/** Live palette reference. */
+export let C = LIGHT;
 export const setTheme = (dark) => { C = dark ? DARK : LIGHT; };
 
-// ── Plan badge colours (used by platform admin UI) ─────────────────────────
 export const PLAN_COLORS = {
-  free:       { bg:"#f1f5f9", color:"#64748b" },
-  starter:    { bg:"#dbeafe", color:"#1d4ed8" },
-  pro:        { bg:"#d1fae5", color:"#065f46" },
-  enterprise: { bg:"#fce7f3", color:"#9d174d" },
+  free:       { bg: "#F3F4F6", color: "#4B5563" },
+  starter:    { bg: "#E5E7EB", color: "#1F2937" },
+  pro:        { bg: "#D1D5DB", color: "#111827" },
+  enterprise: { bg: "#111827", color: "#FFFFFF" },
 };

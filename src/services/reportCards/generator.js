@@ -1,5 +1,5 @@
 /**
- * Report Card PDF Generator
+ * Report PDF Generator
  *
  * Builds the full HTML string for T1-T11 report card templates and opens
  * a print window (or in-app viewer on mobile).
@@ -46,7 +46,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
   // ── Template dispatch (Phase 1, v32.44) ─────────────────────────────────────
   // Resolve selected template_id in priority order:
   //   1. publishInfo.template_id  (per-class override)
-  //   2. settings.report_card_template_id  (school-wide default from Report Card Settings page)
+  //   2. settings.report_card_template_id  (organization-wide default from Report Settings page)
   //   3. 11  (Classic — current renderer)
   // Phase 2-4 will switch to dedicated renderers for T1–T10. For now all
   // templates render through the classic renderer below; we just log the
@@ -67,7 +67,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
   const gCol=g=>{
     const u=(g||"").toUpperCase();
     if(u==="A"||u==="A+"||u==="A1")return"#15803D";
-    if(u==="B"||u==="B+"||u==="B2"||u==="B3")return"#1A4FA0";
+    if(u==="B"||u==="B+"||u==="B2"||u==="B3")return"#111827";
     if(u==="C"||u==="C+"||u==="C4"||u==="C5"||u==="C6")return"#D97706";
     if(u==="D"||u==="D7")return"#EA580C";
     if(u==="E"||u==="E8")return"#DC2626";
@@ -76,7 +76,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
     const n=+u;
     if(!isNaN(n)){
       if(n>=70)return"#15803D";
-      if(n>=60)return"#1A4FA0";
+      if(n>=60)return"#111827";
       if(n>=50)return"#D97706";
       if(n>=40)return"#EA580C";
       return"#991B1B";
@@ -84,11 +84,11 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
     return"#475569";// fallback: visible dark slate
   };
 
-  const schoolName=settings.school_name||"Your School";
-  const schoolAddress=settings.school_address||"No. 1 Renaissance Avenue, Abuja, FCT";
+  const schoolName=settings.school_name||"Your Organization";
+  const schoolAddress=settings.school_address||"No. 1 Business Avenue, Abuja, FCT";
   const schoolMotto=settings.school_motto||"Excellence in Learning";
   const classTeacherTitle=settings.report_class_teacher_title||"Group Staff";
-  const principalTitle=settings.report_principal_title||"School Principal";
+  const principalTitle=settings.report_principal_title||"Organization Principal";
   const footerText=settings.report_footer_text||"This report card is computer-generated.";
   const today=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
   const fmtDate=v=>{ try{ return v?new Date(v).toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"}):"—"; }catch{return"—";} };
@@ -103,8 +103,8 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
 
   const logoHtml=logoSrc
     ?`<img src="${logoSrc}" style="width:44px;height:44px;object-fit:contain;border-radius:4px;" alt="logo"/>`
-    :`<div style="width:44px;height:44px;border-radius:50%;background:#E8560A;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #fff;">
-        <div style="width:34px;height:34px;border-radius:50%;background:#1A4FA0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;font-family:Georgia,serif;">RGS</div>
+    :`<div style="width:44px;height:44px;border-radius:50%;background:#111827;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #fff;">
+        <div style="width:34px;height:34px;border-radius:50%;background:#111827;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;font-family:Georgia,serif;">JD</div>
       </div>`;
 
   // ── Pre-compute class positions ─────────────────────────────────────────────
@@ -290,7 +290,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const ntb=ntbStr!=="—"?ntbStr:termOpeningDate;
         return `<div style="background:${bg};border:1px solid ${brd};border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:10px;white-space:nowrap;">
           <div style="font-size:18px;">📅</div>
-          <div><div style="font-size:8.5px;color:#475569;text-transform:uppercase;letter-spacing:.5px;">Next Term Begins</div>
+          <div><div style="font-size:8.5px;color:#475569;text-transform:uppercase;letter-spacing:.5px;">Next Period Begins</div>
           <div style="font-size:12px;font-weight:800;color:${txt};">${ntb}</div></div>
         </div>`;
       };
@@ -330,7 +330,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:7px 8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.85);background:${navy};`;
         const tableHdr=`<tr style="background:${navy};">
           <th style="${headThSty}text-align:center;">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -348,12 +348,12 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
             ${logoHtml}
           </div>
-          <div style="background:${gold};padding:5px 30px;text-align:center;color:${navy};font-weight:bold;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;">Member Academic Report — ${termName} · ${sessName}</div>
+          <div style="background:${gold};padding:5px 30px;text-align:center;color:${navy};font-weight:bold;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;">Member Performance Report — ${termName} · ${sessName}</div>
           <div style="padding:10px 30px;background:${lt};border-bottom:2px solid ${gold};display:grid;grid-template-columns:repeat(4,1fr);gap:5px 14px;">
-            ${[["Member Name",stuName,2],["Admission No.",stuId],["Group",className],["Gender",stu.gender||"—"],["Date of Birth",stu.dob?fmtDate(stu.dob):"—"],["Group Position",opts.show_position!==false?(positionTxt+" of "+(students.length||"—")):"—"],["Session · Term",sessName+" · "+termName]].map(([l,v,sp])=>`<div style="grid-column:${sp?'span '+sp:'auto'};"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:${mut};font-family:system-ui,sans-serif;">${l}</div><div style="font-size:11px;font-weight:700;color:${txt};">${v}</div></div>`).join("")}
+            ${[["Member Name",stuName,2],["Admission No.",stuId],["Group",className],["Gender",stu.gender||"—"],["Date of Birth",stu.dob?fmtDate(stu.dob):"—"],["Group Position",opts.show_position!==false?(positionTxt+" of "+(students.length||"—")):"—"],["Cycle · Period",sessName+" · "+termName]].map(([l,v,sp])=>`<div style="grid-column:${sp?'span '+sp:'auto'};"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:${mut};font-family:system-ui,sans-serif;">${l}</div><div style="font-size:11px;font-weight:700;color:${txt};">${v}</div></div>`).join("")}
           </div>
           <div style="padding:14px 30px 10px;">
-            <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${navy};border-bottom:2px solid ${navy};padding-bottom:3px;margin-bottom:8px;">Academic Performance Record</div>
+            <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${navy};border-bottom:2px solid ${navy};padding-bottom:3px;margin-bottom:8px;">Performance Record</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 30px 10px;">
@@ -381,11 +381,11 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
 
       // ─── T2 Modern Minimal ─────────────────────────────────────────────
       if(_tplId===2){
-        const blue="#1A4FA0", orange="#E8560A", lt="#f8fafc", brd="#e2e8f0", txt="#0f172a", sft="#475569", mut="#94a3b8";
+        const blue="#111827", orange="#111827", lt="#f8fafc", brd="#e2e8f0", txt="#0f172a", sft="#475569", mut="#94a3b8";
         const headThSty=`padding:7px 8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.85);background:${blue};`;
         const tableHdr=`<tr style="background:${blue};">
           <th style="${headThSty}text-align:center;">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -422,7 +422,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:0 32px 10px;">
-            <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${blue};border-bottom:2px solid ${blue};padding-bottom:3px;margin-bottom:8px;">Academic Results</div>
+            <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${blue};border-bottom:2px solid ${blue};padding-bottom:3px;margin-bottom:8px;">Performance Results</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
@@ -450,7 +450,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:7px 8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:${gold};font-style:italic;background:${grn};`;
         const tableHdr=`<tr style="background:${grn};">
           <th style="${headThSty}text-align:center;">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -459,7 +459,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const rows=_rowsT1T3({brd,txt:"#052e16",sft:"#065f46",mut:"#94a3b8",zebra:"#fff"});
         const summary=_summaryRow({bg:grn,acc:gold,mut:"rgba(255,255,255,.6)"});
         return `<div class="report-card" style="font-family:'Georgia',serif;color:${txt};background:#fff;position:relative;overflow:hidden;">
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:200px;font-weight:bold;color:rgba(6,78,59,.04);font-family:Georgia,serif;user-select:none;z-index:0;white-space:nowrap;pointer-events:none;">RGS</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:200px;font-weight:bold;color:rgba(6,78,59,.04);font-family:Georgia,serif;user-select:none;z-index:0;white-space:nowrap;pointer-events:none;">JD</div>
           <div style="background:linear-gradient(135deg,${grn},#065f46);padding:20px 32px 16px;position:relative;z-index:1;">
             <div style="border:1px solid ${gold}80;border-radius:9px;padding:11px 16px;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
@@ -473,7 +473,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
               </div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:9px;">
                 <div style="flex:1;height:.5px;background:${gold};"></div>
-                <div style="color:rgba(255,255,255,.5);font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;">✦ Academic Report of Excellence ✦</div>
+                <div style="color:rgba(255,255,255,.5);font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;">✦ Performance Report of Excellence ✦</div>
                 <div style="flex:1;height:.5px;background:${gold};"></div>
               </div>
             </div>
@@ -519,11 +519,11 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
 
       // ─── T4 Bold Blue ──────────────────────────────────────────────────
       if(_tplId===4){
-        const blue="#1d4ed8", blueDk="#1e3a8a", lt="#eff6ff", brd="#bfdbfe", txt="#0f172a", sft="#475569", mut="#94a3b8";
+        const blue="#1d4ed8", blueDk="#1e3a8a", lt="#F3F4F6", brd="#D1D5DB", txt="#0f172a", sft="#475569", mut="#94a3b8";
         const headThSty=`padding:8px;text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#fff;background:${blue};`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -541,7 +541,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
               </div>
             </div>
             <div style="text-align:right;background:${blueDk};padding:6px 14px;border-radius:6px;">
-              <div style="font-size:9px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Report Card</div>
+              <div style="font-size:9px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Report</div>
               <div style="font-size:13px;font-weight:800;">${termName} · ${sessName}</div>
             </div>
           </div>
@@ -556,13 +556,13 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:12px 32px 8px;">
-            <div style="font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:${blue};margin-bottom:6px;">▌Academic Results</div>
+            <div style="font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:${blue};margin-bottom:6px;">▌Performance Results</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;border:2px solid ${blue};"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
             <div style="background:${lt};border-left:4px solid ${blue};padding:10px 14px;border-radius:0 6px 6px 0;">
               <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:${blueDk};margin-bottom:7px;">Character &amp; Affective Evaluation</div>
-              ${_caeBars(blue,"#dbeafe")}
+              ${_caeBars(blue,"#E5E7EB")}
             </div>
           </div>`:""}
           ${opts.show_teacher_comment||opts.show_principal_comment?`<div style="padding:0 32px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -586,7 +586,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:7px 8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:${orange};`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -621,7 +621,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:0 32px 10px;">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${orange};border-bottom:2px solid ${amber};padding-bottom:3px;margin-bottom:7px;">☀ Academic Results</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:${orange};border-bottom:2px solid ${amber};padding-bottom:3px;margin-bottom:7px;">☀ Performance Results</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
@@ -649,7 +649,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${gold};background:${crimDk};font-family:Georgia,serif;`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -684,7 +684,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:12px 32px 8px;">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${crim};border-bottom:2px solid ${gold};padding-bottom:3px;margin-bottom:7px;">✦ Academic Results ✦</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${crim};border-bottom:2px solid ${gold};padding-bottom:3px;margin-bottom:7px;">✦ Performance Results ✦</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
@@ -714,7 +714,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:7px 8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:${cyan};`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total</th>
           <th style="${headThSty}">Grade</th>
@@ -741,18 +741,18 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
               ${[...(opts.show_position!==false?[["Position",positionTxt+"/"+(_classSize||students.length||"—")]]:[]),["Average",avg.toFixed(1)+"%"],["Total",String(totalScore)+"/"+maxScore]].map(([l,v])=>`<div style="margin-bottom:8px;"><div style="font-size:8px;opacity:.6;text-transform:uppercase;letter-spacing:.5px;">${l}</div><div style="font-size:14px;font-weight:900;">${v}</div></div>`).join("")}
             </div>
             <div style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px;">
-              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Term</div>
+              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Period</div>
               <div style="font-size:11px;font-weight:700;">${termName}</div>
               <div style="font-size:9px;opacity:.8;">${sessName}</div>
             </div>
             ${opts.show_next_term?`<div style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px;">
-              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Next Term</div>
+              <div style="font-size:8.5px;opacity:.7;text-transform:uppercase;letter-spacing:.6px;">Next Period</div>
               <div style="font-size:10px;font-weight:700;margin-top:3px;">${ntbStr!=="—"?ntbStr:termOpeningDate}</div>
             </div>`:""}
           </aside>
           <main style="padding:18px 24px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:2px solid ${cyan};padding-bottom:8px;">
-              <div style="font-size:18px;font-weight:900;color:${cyanDk};letter-spacing:-.3px;">Academic Report</div>
+              <div style="font-size:18px;font-weight:900;color:${cyanDk};letter-spacing:-.3px;">Performance Report</div>
               <div style="font-size:9px;color:${mut};">${schoolAddress}</div>
             </div>
             <div style="margin-bottom:10px;">
@@ -805,7 +805,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         </tr>`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -818,7 +818,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         </div>`;
         const _darkNextTerm=opts.show_next_term?`<div style="background:${darkLt};border:1px solid ${brd};border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:10px;white-space:nowrap;">
           <div style="font-size:18px;">📅</div>
-          <div><div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.5px;">Next Term Begins</div>
+          <div><div style="font-size:8.5px;color:${mut};text-transform:uppercase;letter-spacing:.5px;">Next Period Begins</div>
           <div style="font-size:12px;font-weight:800;color:${gold};">${ntbStr!=="—"?ntbStr:termOpeningDate}</div></div>
         </div>`:"";
         const _darkComment=(label,text,sigUrl,stampUrl)=>{
@@ -869,7 +869,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:0 32px 10px;">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${gold};margin-bottom:7px;">▎Academic Results</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${gold};margin-bottom:7px;">▎Performance Results</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid ${brd};"><thead>${tableHdr}</thead><tbody>${_rowsDark}${summaryDark}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
@@ -910,7 +910,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:${grn};`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -952,7 +952,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:12px 32px 8px;">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${grn};border-bottom:2px solid ${grn};padding-bottom:3px;margin-bottom:7px;">★ Academic Results ★</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${grn};border-bottom:2px solid ${grn};padding-bottom:3px;margin-bottom:7px;">★ Performance Results ★</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;">
@@ -982,7 +982,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         const headThSty=`padding:8px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#fff;background:${purpDk};`;
         const tableHdr=`<tr>
           <th style="${headThSty}">S/N</th>
-          <th style="${headThSty}text-align:left;">Subject</th>
+          <th style="${headThSty}text-align:left;">Category</th>
           ${_scoreHdrModern(headThSty)}
           <th style="${headThSty}">Total (${perSubjMax})</th>
           <th style="${headThSty}">Grade</th>
@@ -1005,7 +1005,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
             <div style="text-align:right;">
               <div style="display:inline-block;background:linear-gradient(135deg,${purp},${pink});color:#fff;padding:6px 14px;border-radius:0 12px 0 12px;">
-                <div style="font-size:9px;opacity:.85;text-transform:uppercase;letter-spacing:1px;">Report Card</div>
+                <div style="font-size:9px;opacity:.85;text-transform:uppercase;letter-spacing:1px;">Report</div>
                 <div style="font-size:13px;font-weight:800;">${termName}</div>
               </div>
               <div style="font-size:9px;color:${mut};margin-top:3px;">${sessName}</div>
@@ -1022,7 +1022,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
             </div>
           </div>
           <div style="padding:0 32px 10px;position:relative;z-index:1;">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${purp};margin-bottom:6px;">◆ Academic Results</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:${purp};margin-bottom:6px;">◆ Performance Results</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;"><thead>${tableHdr}</thead><tbody>${rows}${summary}</tbody></table>
           </div>
           ${opts.show_cae&&caeTraits.length?`<div style="padding:0 32px 10px;position:relative;z-index:1;">
@@ -1057,26 +1057,26 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
       const subjSty=`padding:${sp6};border:1px solid ${bdr};font-weight:600;font-size:8px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.3;`;
       const rows=results.map((r,i)=>{const g=getGrade(r.total_score,gradingSchema);const rem=getRemark(r.total_score,gradingSchema);const rc=gCol(g);const cs=_parseCS(r);const scoreTds=_hasCC?_cc.map(c=>`<td style="${scSty}">${cs[c.component_name]!=null?cs[c.component_name]:"—"}</td>`).join(""):`<td style="${scSty}">${r.ca_score!=null?r.ca_score:"—"}</td><td style="${scSty}">${r.exam_score!=null?r.exam_score:"—"}</td>`;return`<tr style="background:${i%2===0?"#fff":"#f1f6fc"};"><td style="${subjSty}">${r.section_subjects?.name||"—"}</td>${scoreTds}<td style="padding:3px 4px;border:1px solid ${bdr};text-align:center;font-weight:800;font-size:9px;">${r.total_score??"—"}</td><td style="padding:3px 4px;border:1px solid ${bdr};text-align:center;font-weight:700;font-size:9px;color:${rc};">${g}</td><td style="padding:3px 5px;border:1px solid ${bdr};font-size:8px;color:${rc};font-weight:600;">${rem}</td></tr>`;}).join("");
       const perSubjMax=caMax+exMax;const maxScore=results.length*perSubjMax;
-      const hSty=`text-align:center;padding:3px 2px;font-size:6.5px;font-weight:700;color:#fff;background:#1A4FA0;border:1px solid ${bdr};text-transform:uppercase;vertical-align:bottom;line-height:1.25;word-wrap:break-word;overflow-wrap:break-word;`;
+      const hSty=`text-align:center;padding:3px 2px;font-size:6.5px;font-weight:700;color:#fff;background:#111827;border:1px solid ${bdr};text-transform:uppercase;vertical-align:bottom;line-height:1.25;word-wrap:break-word;overflow-wrap:break-word;`;
       const _brk=(s)=>s.replace(/\s+/g,"<br>");
       const vScoreHdr=_hasCC?_cc.map(c=>`<th style="${hSty}">${_brk(c.component_name)}<br><span style="font-size:6px;opacity:.85;">(${c.value_or_formula})</span></th>`).join(""):`<th style="${hSty}">CA<br><span style="font-size:6px;opacity:.85;">(${caMax})</span></th><th style="${hSty}">EXAM<br><span style="font-size:6px;opacity:.85;">(${exMax})</span></th>`;
       const scoreColCount=_hasCC?_cc.length:2;
-      // Use percentage widths so the Subject column (auto remainder) can never
+      // Use percentage widths so the Category column (auto remainder) can never
       // collapse to 0 when the table parent is narrower than expected (e.g.
       // when print CSS forces width:100% and the popup window is narrow). The
-      // score columns proportionally shrink instead of starving Subject.
+      // score columns proportionally shrink instead of starving Category.
       const _scorePct = scoreColCount<=2 ? 11 : scoreColCount===3 ? 9 : 8;
       const _subjPct  = 100 - (_scorePct*scoreColCount + 9 + 7 + 13); // total/grade/remark
       const colgroup=`<colgroup><col style="width:${_subjPct}%;"/>${`<col style="width:${_scorePct}%;"/>`.repeat(scoreColCount)}<col style="width:9%;"/><col style="width:7%;"/><col style="width:13%;"/></colgroup>`;
-      const watermark=logoSrc?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;"><img src="${logoSrc}" style="width:220px;height:220px;object-fit:contain;"/></div>`:`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;font-size:110px;font-weight:900;color:#1A4FA0;font-family:Georgia,serif;">RGS</div>`;
+      const watermark=logoSrc?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;"><img src="${logoSrc}" style="width:220px;height:220px;object-fit:contain;"/></div>`:`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;font-size:110px;font-weight:900;color:#111827;font-family:Georgia,serif;">JD</div>`;
       return `<div class="report-card" style="font-family:${rcFontFamily};color:#1a202c;background:#fff;overflow:hidden;">
-        <div style="height:5px;background:linear-gradient(90deg,#1A4FA0 30%,#1A8C3C 50%,#E8560A 70%);"></div>
-        <div style="background:linear-gradient(135deg,#0d2d6e,#1A4FA0);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="height:5px;background:linear-gradient(90deg,#111827 30%,#1A8C3C 50%,#111827 70%);"></div>
+        <div style="background:linear-gradient(135deg,#030712,#111827);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;">
           ${logoHtml}
           <div style="flex:1;text-align:center;">
             <div style="font-size:17px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${schoolName}</div>
             <div style="font-size:9px;color:#b3d4ff;font-style:italic;margin-top:2px;">${schoolAddress}</div>
-            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report Card"}</div>
+            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report"}</div>
           </div>
           <div style="text-align:center;min-width:64px;flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 8px;">
             <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">${overallG}</div>
@@ -1087,37 +1087,37 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
         <div style="background:#1A8C3C;color:#fff;padding:3px 16px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.5px;">${session?.name||""} ${(term?.name||"").toUpperCase()} FINAL REPORT</div>
         <div style="margin:${sm} 10px;border:1px solid ${bdr};font-size:8.5px;display:flex;background:#fafcff;">
           <div style="flex:1;border-right:1px solid ${bdr};">
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Id</span><b style="color:#1A4FA0;">${stu.student_id||stu.id||"—"}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Id</span><b style="color:#111827;">${stu.student_id||stu.id||"—"}</b></div>
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Full Name</span><b style="font-size:9.5px;">${stuName}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Sex</span><span>${stu.gender||"—"}</span></div>
           </div>
           <div style="flex:1;border-right:1px solid ${bdr};">
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Session / Term</span><b>${session?.name||""} / ${term?.name||""}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Cycle / Period</span><b>${session?.name||""} / ${term?.name||""}</b></div>
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Group</span><b>${cls?.name||"—"}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Issued</span><span>${today}</span></div>
           </div>
           <div style="flex:1;">
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Average</span><b style="font-size:11px;color:${gc};">${avg.toFixed(1)}</b></div>
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Grade</span><b style="color:${gc};font-size:11px;">${overallG}</b></div>
-            ${opts.show_position!==false?`<div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Position</span><b style="color:#1A4FA0;">${_positionMap[stu.id]||"—"} / ${students.length||"—"}</b></div>`
+            ${opts.show_position!==false?`<div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Position</span><b style="color:#111827;">${_positionMap[stu.id]||"—"} / ${students.length||"—"}</b></div>`
             :`<div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Remark</span><b style="color:${gc};">${overallR}</b></div>`}
           </div>
         </div>
         <div style="display:flex;gap:6px;margin:0 10px;">
           <div style="flex:1;min-width:0;position:relative;">
-            <div style="background:#1A4FA0;color:#fff;text-align:center;padding:3px;font-weight:700;font-size:9px;letter-spacing:.5px;border:1px solid ${bdr};border-bottom:none;">Cognitive Domain</div>
+            <div style="background:#111827;color:#fff;text-align:center;padding:3px;font-weight:700;font-size:9px;letter-spacing:.5px;border:1px solid ${bdr};border-bottom:none;">Cognitive Domain</div>
             <div style="position:relative;">
               ${watermark}
               <table style="width:100%;border-collapse:collapse;table-layout:fixed;position:relative;z-index:1;">
                 ${colgroup}
-                <thead><tr><th style="padding:2px 5px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;vertical-align:bottom;">Subject</th>${vScoreHdr}<th style="${hSty}">TOTAL<br><span style="font-size:6px;opacity:.85;">(${perSubjMax})</span></th><th style="padding:2px 2px;border:1px solid ${bdr};text-align:center;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;width:28px;vertical-align:bottom;">Grade</th><th style="padding:2px 4px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;vertical-align:bottom;">Remark</th></tr></thead>
+                <thead><tr><th style="padding:2px 5px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#111827;font-weight:700;vertical-align:bottom;">Category</th>${vScoreHdr}<th style="${hSty}">TOTAL<br><span style="font-size:6px;opacity:.85;">(${perSubjMax})</span></th><th style="padding:2px 2px;border:1px solid ${bdr};text-align:center;font-size:8px;color:#fff;background:#111827;font-weight:700;width:28px;vertical-align:bottom;">Grade</th><th style="padding:2px 4px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#111827;font-weight:700;vertical-align:bottom;">Remark</th></tr></thead>
                 <tbody>${rows}</tbody>
               </table>
             </div>
           </div>
           <div style="width:105px;flex-shrink:0;border:1px solid ${bdr};text-align:center;display:flex;flex-direction:column;justify-content:center;padding:10px 5px;background:linear-gradient(180deg,#f0f6ff,#fff);">
             <div style="font-size:8px;color:#7a8ba3;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Total Score</div>
-            <div style="font-size:20px;font-weight:900;color:#1A4FA0;margin-top:3px;">${totalScore}<span style="font-size:11px;color:#94a3b8;"> / ${maxScore}</span></div>
+            <div style="font-size:20px;font-weight:900;color:#111827;margin-top:3px;">${totalScore}<span style="font-size:11px;color:#94a3b8;"> / ${maxScore}</span></div>
             <div style="border-top:2px solid #1A8C3C;margin:8px 12px;"></div>
             <div style="font-size:15px;font-weight:900;color:${gc};">${avg.toFixed(1)}%</div>
             <div style="font-size:11px;font-weight:800;color:${gc};margin-top:2px;">${overallG}</div>
@@ -1125,42 +1125,42 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
         </div>
         <div style="margin:${sm} 10px;border:1px solid ${bdr};background:#fafcff;">
-          <div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#1A4FA0;letter-spacing:.5px;">Cognitive Grade Keys</div>
+          <div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#111827;letter-spacing:.5px;">Cognitive Grade Keys</div>
           <div style="padding:3px 8px;font-size:8px;color:#475569;">${gradeKey}</div>
         </div>
         ${opts.show_cae&&caeTraits.length?`<div style="margin:0 10px ${sm};border:1px solid ${bdr};"><div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#1A8C3C;letter-spacing:.5px;">Affective Domain</div><div style="display:flex;flex-wrap:wrap;">${caeTraits.map(trait=>{const caeR=caeResults.find(c=>c.trait_id===trait.id);const rating=caeR?caeRatings.find(r=>r.id===caeR.rating_id):null;return`<div style="width:50%;padding:2px 8px;font-size:8px;display:flex;justify-content:space-between;border-bottom:1px solid #e8edf3;"><span style="font-weight:600;">${trait.category}</span><span style="font-weight:700;color:${rating?"#1A8C3C":"#94a3b8"};">${rating?(rating.symbol||"")+" "+rating.label:"—"}</span></div>`;}).join("")}</div><div style="padding:2px 8px;font-size:7.5px;color:#64748b;border-top:1px solid #e2e8f0;"><b>Scale:</b> ${ratingLegend}</div></div>`:""}
         <div style="margin:${sm} 10px;border-top:1px solid ${bdr};padding-top:${sm};font-size:8px;">
           ${opts.show_teacher_comment&&classTeacherComment?`
           <div style="margin-bottom:${sm};">
-            <div style="font-weight:700;color:#1A4FA0;font-size:9px;">${classTeacherTitle}</div>
+            <div style="font-weight:700;color:#111827;font-size:9px;">${classTeacherTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${classTeacherComment}</div>
           </div>`:""}
           ${opts.show_principal_comment&&principalComment?`
           <div style="margin-bottom:${sm};">
-            <div style="font-weight:700;color:#E8560A;font-size:9px;">${principalTitle}</div>
+            <div style="font-weight:700;color:#111827;font-size:9px;">${principalTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${principalComment}</div>
           </div>`:""}
-          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
+          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#111827;">${settings._formTeacherName}</b></div>`:''}
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
             <div>
-              <div style="font-weight:700;color:#E8560A;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
+              <div style="font-weight:700;color:#111827;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
               <div style="position:relative;display:inline-block;min-width:160px;height:72px;margin-bottom:2px;">
                 ${principalSigUrl
                   ?`<img src="${principalSigUrl}" style="height:40px;max-width:150px;object-fit:contain;display:block;position:absolute;bottom:0;left:0;"/>`
-                  :`<div style="width:150px;border-bottom:1.5px solid #E8560A;position:absolute;bottom:0;left:0;"></div>`}
+                  :`<div style="width:150px;border-bottom:1.5px solid #111827;position:absolute;bottom:0;left:0;"></div>`}
                 ${principalStampUrl?`<img src="${principalStampUrl}" style="position:absolute;left:0;top:50%;transform:translateY(-50%);height:72px;width:72px;object-fit:contain;opacity:0.82;mix-blend-mode:multiply;"/>`:``}
               </div>
               <div style="font-size:7.5px;color:#94a3b8;">Signature &amp; Stamp</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:7.5px;color:#94a3b8;margin-bottom:2px;">Date of Issue</div>
-              <div style="font-size:9px;font-weight:700;color:#1A4FA0;">${today}</div>
+              <div style="font-size:9px;font-weight:700;color:#111827;">${today}</div>
             </div>
           </div>
         </div>
         ${opts.show_next_term?`<div style="margin:${sm2} 10px ${sm2};font-size:8.5px;display:flex;gap:24px;"><span><b style="color:#1A8C3C;">Closing Date:</b> ${termClosingDate}</span><span><b style="color:#1A8C3C;">Resumption Date:</b> ${ntbStr!=="—"?ntbStr:termOpeningDate}</span></div>`:""}
-        <div style="margin-top:4px;padding:4px 10px;background:linear-gradient(135deg,#0d2d6e,#1A4FA0);color:#b3d4ff;font-size:8px;text-align:center;">${footerText} · ${schoolName} · <b style="color:#fff;">${schoolMotto}</b></div>
-        <div style="height:4px;background:linear-gradient(90deg,#E8560A,#1A8C3C,#1A4FA0);"></div>
+        <div style="margin-top:4px;padding:4px 10px;background:linear-gradient(135deg,#030712,#111827);color:#b3d4ff;font-size:8px;text-align:center;">${footerText} · ${schoolName} · <b style="color:#fff;">${schoolMotto}</b></div>
+        <div style="height:4px;background:linear-gradient(90deg,#111827,#1A8C3C,#111827);"></div>
       </div>`;
     }
 
@@ -1217,7 +1217,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
       width:100%!important;max-width:100%!important;
       margin:0 auto 12px auto!important;
       box-shadow:none!important;
-      border:2px solid #1A4FA0!important;
+      border:2px solid #111827!important;
       border-radius:8px!important;
       overflow:hidden!important;
       page-break-after:always;break-after:always;
@@ -1321,7 +1321,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
       if(document.body.classList.contains('rc-modern')) return;
       // Classic T11: only shrink when content overflows. No width compensation
       // (the print CSS !important rules block it anyway and the prior attempt
-      // collapsed the Subject column when zoom got too aggressive).
+      // collapsed the Category column when zoom got too aggressive).
       var cards=document.querySelectorAll('.report-card');
       cards.forEach(function(c){
         c.style.zoom='1';c.style.width='';c.style.margin='';
@@ -1421,7 +1421,7 @@ export function openReportCardPrintWindow(students,allData,cls,term,session,
 <body${_tplId!==11?' class="rc-modern"':''} data-font-scale="${rcFontScale}">
   <div style="width:100%;margin:0;overflow:visible;background:transparent;">
     ${forStorage?'':`<div class="no-print" style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:10px;">
-      <button onclick="document.querySelectorAll('.no-print').forEach(function(e){e.style.display='none'});window.print();document.querySelectorAll('.no-print').forEach(function(e){e.style.display=''})" style="padding:10px 24px;background:#1A4FA0;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🖨️ Print / Save PDF</button>
+      <button onclick="document.querySelectorAll('.no-print').forEach(function(e){e.style.display='none'});window.print();document.querySelectorAll('.no-print').forEach(function(e){e.style.display=''})" style="padding:10px 24px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🖨️ Print / Save PDF</button>
       <button onclick="window.close()" style="padding:10px 16px;background:#fff;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">✕ Close</button>
     </div>
     <div class="no-print" style="text-align:center;padding:16px 0;color:#64748b;font-size:13px;font-family:sans-serif;">

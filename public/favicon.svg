@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <circle cx="24" cy="24" r="24" fill="#E8560A"/>
-  <circle cx="24" cy="24" r="19" fill="#1A4FA0"/>
-  <circle cx="24" cy="24" r="23" stroke="#1A8C3C" stroke-width="2" fill="none"/>
-  <text x="24" y="29" text-anchor="middle" fill="#fff" font-size="13" font-weight="900" font-family="Georgia,serif">RGS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="JAMES-DENNING">
+  <rect width="128" height="128" rx="32" fill="#111827"/>
+  <path d="M31 30h13v57H31zM44 30h20c16 0 25 8 25 22 0 9-5 16-13 19l14 27H84L69 75H44V30Zm13 26h7c8 0 12-3 12-9s-4-9-12-9h-7v18Z" fill="#fff"/>
+  <path d="M98 26h5v76h-5z" fill="#9CA3AF"/>
 </svg>

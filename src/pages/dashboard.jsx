@@ -41,7 +41,7 @@ export function DashboardPage({ctx}){
   const [classStatusHideDone,setClassStatusHideDone]=useState(false);
 
   useEffect(()=>{
-    // Dashboard always shows school-wide totals — no section filtering
+    // Dashboard always shows organization-wide totals — no section filtering
     Promise.all([
       db.countStudents(),
       db.getTeachers(),
@@ -59,7 +59,7 @@ export function DashboardPage({ctx}){
         results:ea.count,
       });
       setAnnouncements((a.data||[]).slice(0,4));
-      // Fee analytics
+      // Billing analytics
       const bs=bills.data||[];
       const money_=v=>parseFloat(v)||0;
       let totalBilled=0,totalPaid=0,paidCount=0,partialCount=0,unpaidCount=0;
@@ -94,7 +94,7 @@ export function DashboardPage({ctx}){
         db.getGradingSchema(),
         db.getReportTemplates(),
       ]);
-      // ── Term-start bill checklist ──
+      // ── Period-start bill checklist ──
       const activeSess=(sess.data||[]).find(s=>s.is_active);
       let activeTermObj=null;
       if(activeSess){
@@ -113,7 +113,7 @@ export function DashboardPage({ctx}){
             db.getAllReportPublishesForTerm(activeTermObj.id,activeSess.id),
             db.getResultClassIds(activeTermObj.id,activeSess.id),
           ]);
-          // ── Term-start bill checklist ──
+          // ── Period-start bill checklist ──
           const billedSet=new Set((billedData||[]).map(b=>b.student_id));
           const allClasses=c.data||[];
           const allStudents=stuData||[];
@@ -192,16 +192,16 @@ export function DashboardPage({ctx}){
           {
             id:"active_session",
             severity:"critical",
-            title:activeSess?"Active session is set":"No active session set",
-            detail:activeSess?`Current session: ${activeSess.name}`:"An active academic session is required for results, fees, and report cards to function.",
+            title:activeSess?"Active cycle is set":"No active cycle set",
+            detail:activeSess?`Current session: ${activeSess.name}`:"An active performance cycle is required for results, billing, and report cards to function.",
             page:"settings",
             ok:!!activeSess,
           },
           {
             id:"active_term",
             severity:"critical",
-            title:activeTermObj?"Active term is set":"No active term set",
-            detail:activeTermObj?`Current term: ${activeTermObj.name} · ${activeSess?.name||""}`:"An active term must be set within the active session. Go to Settings → Sessions & Terms.",
+            title:activeTermObj?"Active period is set":"No active period set",
+            detail:activeTermObj?`Current term: ${activeTermObj.name} · ${activeSess?.name||""}`:"An active period must be set within the active cycle. Go to Settings → Cycles & Periods.",
             page:"settings",
             ok:!!activeTermObj,
           },
@@ -217,14 +217,14 @@ export function DashboardPage({ctx}){
             id:"classes_no_form_teacher",
             severity:"warning",
             title:activeClasses.length===0
-              ?"No classes set up yet"
+              ?"No groups set up yet"
               :noFormTeacher.length===0
-                ?"All active classes have a form teacher"
-                :fmt(noFormTeacher.length,"active class has","active classes have")+" no form teacher assigned",
+                ?"All active groups have a form staff"
+                :fmt(noFormTeacher.length,"active group has","active groups have")+" no form staff assigned",
             detail:activeClasses.length===0
-              ?"Add classes and enrol students before assigning form teachers."
+              ?"Add groups and enrol members before assigning form staff."
               :noFormTeacher.length===0
-                ?"Every class with enrolled students has a form teacher."
+                ?"Every group with enrolled members has a form staff."
                 :listNames(noFormTeacher),
             page:"teachers",
             ok:activeClasses.length>0&&noFormTeacher.length===0,
@@ -233,15 +233,15 @@ export function DashboardPage({ctx}){
             id:"classes_no_subjects",
             severity:"warning",
             title:activeClasses.length===0
-              ?"No classes set up yet"
+              ?"No groups set up yet"
               :noSubjects.length===0
-                ?"All active classes have subjects assigned"
-                :fmt(noSubjects.length,"active class has","active classes have")+" no subjects assigned",
+                ?"All active groups have categories assigned"
+                :fmt(noSubjects.length,"active group has","active groups have")+" no categories assigned",
             detail:activeClasses.length===0
-              ?"Add classes and enrol students before assigning subjects."
+              ?"Add groups and enrol members before assigning categories."
               :noSubjects.length===0
-                ?"Every class with enrolled students has subjects linked."
-                :"Without subjects, teachers cannot enter results and report cards cannot be generated. "+listNames(noSubjects),
+                ?"Every group with enrolled members has categories linked."
+                :"Without categories, staff cannot enter results and report cards cannot be generated. "+listNames(noSubjects),
             page:"settings",
             ok:activeClasses.length>0&&noSubjects.length===0,
           },
@@ -252,10 +252,10 @@ export function DashboardPage({ctx}){
               ?"No report card template created"
               :hasDefaultReportTmpl?"A default report card template is set":"No default report card template set",
             detail:!hasReportTemplates
-              ?"A report card template defines the layout of student report cards."
+              ?"A report card template defines the layout of member report cards."
               :hasDefaultReportTmpl
                 ?"Report cards will use the default template."
-                :"Set a default report card template in Settings → Academic.",
+                :"Set a default report card template in Settings → Performance.",
             page:"settings",
             ok:hasDefaultReportTmpl,
           },
@@ -263,15 +263,15 @@ export function DashboardPage({ctx}){
             id:"students_no_email",
             severity:"info",
             title:allS.filter(s=>(s.status||"active")==="active").length===0
-              ?"No active students enrolled yet"
+              ?"No active members enrolled yet"
               :studentsNoEmail.length===0
-                ?"All active students have email addresses"
-                :fmt(studentsNoEmail.length,"active student has","active students have")+" no email address",
+                ?"All active members have email addresses"
+                :fmt(studentsNoEmail.length,"active member has","active members have")+" no email address",
             detail:allS.filter(s=>(s.status||"active")==="active").length===0
-              ?"Enrol students to track email coverage."
+              ?"Enrol members to track email coverage."
               :studentsNoEmail.length===0
-                ?"Every active student can receive emails for report cards and fee reminders."
-                :"These students cannot receive report cards, fee reminders, or login links by email.",
+                ?"Every active member can receive emails for report cards and billing reminders."
+                :"These members cannot receive report cards, billing reminders, or login links by email.",
             page:"students",
             param:{filter:"no_email"},
             ok:allS.filter(s=>(s.status||"active")==="active").length>0&&studentsNoEmail.length===0,
@@ -303,7 +303,7 @@ export function DashboardPage({ctx}){
               letterSpacing:1.6,marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:C.orange,
                 boxShadow:`0 0 8px ${C.orange}`}}/>
-              {sectionCtx?.schoolName||"Your School"}
+              {sectionCtx?.schoolName||"Your Organization"}
             </div>
             <div style={{fontSize:24,fontWeight:900,marginBottom:5,letterSpacing:"-.02em"}}>{getGreeting(user.name)}</div>
             <div style={{fontSize:12,color:"rgba(147,197,253,.8)",display:"flex",flexWrap:"wrap",gap:6,alignItems:"center"}}>
@@ -316,7 +316,7 @@ export function DashboardPage({ctx}){
             <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",
               border:"1px solid rgba(255,255,255,.2)",borderRadius:10,padding:"5px 12px",
               fontSize:11,fontWeight:700,color:"#fff",textTransform:"uppercase",letterSpacing:.6}}>
-              {role==="admin"?"Administrator":role==="teacher"?"Staff":role==="manager"?"Manager":role==="bursar"?"Bursar":"Member"}
+              {role==="admin"?"Administrator":role==="teacher"?"Staff":role==="manager"?"Manager":role==="bursar"?"Finance Manager":"Member"}
             </div>
             {user.staff_id&&<div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>Staff ID: {user.staff_id}</div>}
             {user.student_id&&<div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>Member ID: {user.student_id}</div>}
@@ -332,7 +332,7 @@ export function DashboardPage({ctx}){
             <StatCard label="Groups"       value={stats.classes}   icon={<School size={18} color={C.orange}/>} color={C.orange}/>
             <StatCard label="EA Approved"   value={stats.results}   icon={<CheckCircle size={18} color={C.purple}/>} color={C.purple}/>
           </div>
-          {/* Fee analytics bar */}
+          {/* Billing analytics bar */}
           {(feeStats.totalBilled>0)&&(
             <Card style={{marginBottom:16,padding:"18px 22px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
@@ -341,7 +341,7 @@ export function DashboardPage({ctx}){
                     display:"flex",alignItems:"center",justifyContent:"center"}}>
                     <AppIcon name="fee-tracker" size={15} color={C.blue}/>
                   </div>
-                  <div style={{fontWeight:800,color:C.text,fontSize:14}}>Fee Collection Overview</div>
+                  <div style={{fontWeight:800,color:C.text,fontSize:14}}>Billing Collection Overview</div>
                 </div>
                 {feeStats.totalBilled>0&&(
                   <div style={{background:C.greenPale,border:`1px solid ${C.green}30`,borderRadius:20,
@@ -394,7 +394,7 @@ export function DashboardPage({ctx}){
                   {pendingApprovals} Member Request{pendingApprovals>1?"s":""} Awaiting Approval
                 </div>
                 <div style={{fontSize:12,opacity:.85,marginTop:2}}>
-                  Staff-submitted student additions are pending your review — click to review now
+                  Staff-submitted member additions are pending your review — click to review now
                 </div>
               </div>
               <span style={{fontSize:20,opacity:.7}}>›</span>
@@ -653,14 +653,14 @@ export function DashboardPage({ctx}){
                 {!allGood&&(
                   <div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}>
                     <Btn xs color={C.blue} onClick={()=>setPage("report-cards")}>
-                      Go to Report Cards →
+                      Go to Reports →
                     </Btn>
                   </div>
                 )}
               </Card>
             );
           })()}
-          {/* ── Term-start bill checklist ── */}
+          {/* ── Period-start bill checklist ── */}
           {termChecklist&&(()=>{
             const allClasses=termChecklist.sections.flatMap(s=>s.classes);
             const doneCnt=allClasses.filter(r=>r.complete).length;
@@ -677,7 +677,7 @@ export function DashboardPage({ctx}){
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <ClipboardList size={17} color={borderColor}/>
                     <span style={{fontWeight:800,color:borderColor,fontSize:14}}>
-                      Term-Start Billing — {termChecklist.term} · {termChecklist.year}
+                      Period-Start Billing — {termChecklist.term} · {termChecklist.year}
                     </span>
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
@@ -846,8 +846,8 @@ export function StudentDashboard({ctx,announcements}){
       {/* Quick links */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:13}}>
         {[
-          {l:"My Report Card",i:"my-results",p:"my-results",c:C.blue},
-          {l:"Fee Payments",  i:"my-payments",p:"my-payments",c:C.green},
+          {l:"My Report",i:"my-results",p:"my-results",c:C.blue},
+          {l:"Payments",  i:"my-payments",p:"my-payments",c:C.green},
           {l:"Transcript",    i:"transcript",p:"transcript", c:C.orange},
         ].map(a=>(
           <Card key={a.l} style={{textAlign:"center",padding:22,cursor:"pointer"}} onClick={()=>setPage(a.p)}>
@@ -860,7 +860,7 @@ export function StudentDashboard({ctx,announcements}){
       </div>
       {/* Announcements */}
       <Card>
-        <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:10}}>School Announcements</div>
+        <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:10}}>Organization Announcements</div>
         {(announcements||[]).length===0&&<div style={{color:C.light,fontSize:13,textAlign:"center",padding:14}}>No announcements</div>}
         {(announcements||[]).map(a=>(
           <div key={a.id} style={{padding:"9px 0",borderBottom:`1px solid ${C.border}`,fontSize:13}}>
@@ -991,7 +991,7 @@ export function TeacherDashboard({ctx,announcements}){
           {loading&&<Spinner/>}
           {!loading&&formClasses.length===0&&(
             <div style={{color:C.light,fontSize:12,textAlign:"center",padding:"14px 0"}}>
-              Not assigned as form teacher yet
+              Not assigned as form staff yet
             </div>
           )}
           {!loading&&formClasses.map((fc,i)=>(
@@ -1007,10 +1007,10 @@ export function TeacherDashboard({ctx,announcements}){
           ))}
         </Card>
 
-        {/* Subject Assignments */}
+        {/* Category Assignments */}
         <Card>
           <div style={{fontWeight:800,color:C.green,fontSize:13,marginBottom:10}}>
-            My Subject Assignments
+            My Category Assignments
             {assignments.length>0&&(
               <span style={{marginLeft:6,background:C.greenPale,color:C.green,
                 padding:"1px 7px",borderRadius:10,fontSize:11,fontWeight:700}}>
@@ -1021,8 +1021,8 @@ export function TeacherDashboard({ctx,announcements}){
           {loading&&<Spinner/>}
           {!loading&&classGroups.length===0&&(
             <div style={{color:C.light,fontSize:12,textAlign:"center",padding:"14px 0"}}>
-              No subject assignments yet.<br/>
-              <span style={{fontSize:11}}>Ask admin to assign subjects to you.</span>
+              No category assignments yet.<br/>
+              <span style={{fontSize:11}}>Ask admin to assign categories to you.</span>
             </div>
           )}
           {!loading&&classGroups.map((g,i)=>(
@@ -1060,7 +1060,7 @@ export function TeacherDashboard({ctx,announcements}){
             icon:"upload-results",
             color:C.green,
             label:`Upload results — ${cls?.name||"Group"}`,
-            sub:"Upload your subject scores for this class",
+            sub:"Upload your category scores for this group",
             page:"results-teach",
             priority:"normal",
           });
@@ -1073,7 +1073,7 @@ export function TeacherDashboard({ctx,announcements}){
             icon:"add-students",
             color:C.orange,
             label:`${pendingReqs} pending student request${pendingReqs!==1?"s":""}`,
-            sub:"New student enrolment requests need review",
+            sub:"New member enrolment requests need review",
             page:"add-students",
             priority:"high",
           });
@@ -1085,8 +1085,8 @@ export function TeacherDashboard({ctx,announcements}){
             key:"no-assign",
             icon:"calendar",
             color:C.muted,
-            label:"No subject assignments yet",
-            sub:"Contact your admin to be assigned subjects and classes",
+            label:"No category assignments yet",
+            sub:"Contact your admin to be assigned categories and groups",
             page:null,
             priority:"low",
           });
@@ -1236,7 +1236,7 @@ export function SectionsPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="sections" size={20}/>Sections</h2>
-          <p style={{color:C.muted,fontSize:12}}>Manage school sections and their levels</p>
+          <p style={{color:C.muted,fontSize:12}}>Manage organization sections and their levels</p>
         </div>
         <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Section</Btn>
       </div>
@@ -1309,7 +1309,7 @@ export function SectionsPage({ctx}){
       {levelsModal&&(
         <Modal title={`Levels — ${levelsModal.name}`} onClose={()=>setLevelsModal(null)} width={480}>
           <p style={{color:C.muted,fontSize:12,marginBottom:14}}>
-            Add, remove, or reorder the levels for this section. These appear as options when creating classes.
+            Add, remove, or reorder the levels for this section. These appear as options when creating groups.
           </p>
           <div style={{display:"flex",gap:8,marginBottom:14}}>
             <input value={newLevel} onChange={e=>setNewLevel(e.target.value)}
@@ -1357,15 +1357,15 @@ export function ManagerDashboard({ctx}){
         <DollarSign size={36} color="#fff" style={{opacity:.85}}/>
         <div>
           <div style={{fontWeight:900,fontSize:20}}>Finance Overview</div>
-          <div style={{fontSize:13,opacity:.8,marginTop:2}}>Manage school fees, payments and financial records</div>
+          <div style={{fontSize:13,opacity:.8,marginTop:2}}>Manage billing charges, payments and financial records</div>
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
         {[
           {label:"Payment Tracker",page:"fee-tracker",bg:"#7C3AED",desc:"Record & track payments"},
-          {label:"Fee Items",      page:"fee-items",  bg:"#6d28d9",desc:"Manage fee categories"},
-          {label:"Fee Templates",  page:"fee-templates",bg:"#5b21b6",desc:"Create fee bundles"},
-          {label:"Generate Bills", page:"fee-generate",bg:"#4c1d95",desc:"Bill students"},
+          {label:"Billing Items",      page:"fee-items",  bg:"#6d28d9",desc:"Manage billing categories"},
+          {label:"Billing Templates",  page:"fee-templates",bg:"#5b21b6",desc:"Create billing bundles"},
+          {label:"Generate Bills", page:"fee-generate",bg:"#4c1d95",desc:"Bill members"},
           {label:"Statistics",     page:"fee-stats",  bg:"#3b0764",desc:"Revenue reports"},
           {label:"Announcements",  page:"announce",   bg:"#1A4FA0",desc:"Post announcements"},
         ].map(q=>(
@@ -1387,16 +1387,16 @@ export function BursarDashboard({ctx}){
       <div style={{background:"linear-gradient(135deg,#92400e,#B45309)",color:"#fff",borderRadius:16,padding:"24px 28px",marginBottom:20,display:"flex",alignItems:"center",gap:16}}>
         <DollarSign size={36} color="#fff" style={{opacity:.85}}/>
         <div>
-          <div style={{fontWeight:900,fontSize:20}}>Bursar — Finance Overview</div>
-          <div style={{fontSize:13,opacity:.8,marginTop:2}}>Manage school fees, payments and financial records</div>
+          <div style={{fontWeight:900,fontSize:20}}>Finance Manager — Finance Overview</div>
+          <div style={{fontSize:13,opacity:.8,marginTop:2}}>Manage billing charges, payments and financial records</div>
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
         {[
           {label:"Payment Tracker",page:"fee-tracker",  bg:"#B45309",desc:"Record & track payments"},
-          {label:"Fee Items",      page:"fee-items",    bg:"#92400e",desc:"Manage fee categories"},
-          {label:"Fee Templates",  page:"fee-templates",bg:"#78350f",desc:"Create fee bundles"},
-          {label:"Generate Bills", page:"fee-generate", bg:"#6b2d09",desc:"Bill students"},
+          {label:"Billing Items",      page:"fee-items",    bg:"#92400e",desc:"Manage billing categories"},
+          {label:"Billing Templates",  page:"fee-templates",bg:"#78350f",desc:"Create billing bundles"},
+          {label:"Generate Bills", page:"fee-generate", bg:"#6b2d09",desc:"Bill members"},
           {label:"Statistics",     page:"fee-stats",    bg:"#5c2508",desc:"Revenue reports"},
           {label:"Announcements",  page:"announce",     bg:"#1A4FA0",desc:"Post announcements"},
         ].map(q=>(

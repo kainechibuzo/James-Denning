@@ -53,8 +53,8 @@ export function TeacherAccessRequestPage({ctx}){
   };
 
   const submit=async()=>{
-    if(!selClass||selectedSubjects.size===0){notify("Select a class and at least one subject","error");return;}
-    if(!selectedSchool?.id){notify("No school selected","error");return;}
+    if(!selClass||selectedSubjects.size===0){notify("Select a group and at least one category","error");return;}
+    if(!selectedSchool?.id){notify("No organization selected","error");return;}
     setSubmitting(true);
     const {error}=await db.createSubjectAccessRequest(
       selectedSchool.id, user.teacher_db_id, +selClass, [...selectedSubjects]
@@ -67,10 +67,10 @@ export function TeacherAccessRequestPage({ctx}){
       const cls=classes?.find(c=>String(c.id)===String(selClass));
       db.sendAdminAlert({
         subject:`[Alert] Access Request \u2014 ${user?.full_name||user?.name||"Staff"}`,
-        html:buildAlertEmail("Subject Access Request Submitted",
-          [`Teacher: ${user?.full_name||user?.name||"Staff"}`,
-           `Class: ${cls?.name||selClass}`,
-           `Subjects requested: ${selectedSubjects.size}`,
+        html:buildAlertEmail("Category Access Request Submitted",
+          [`Staff: ${user?.full_name||user?.name||"Staff"}`,
+           `Group: ${cls?.name||selClass}`,
+           `Categories requested: ${selectedSubjects.size}`,
            `Time: ${new Date().toLocaleString("en-NG")}`],
           "info"),
         eventKey:"access_request"
@@ -92,9 +92,9 @@ export function TeacherAccessRequestPage({ctx}){
 
   return(
     <div style={{maxWidth:860,margin:"0 auto",padding:"24px 16px"}}>
-      <h2 style={{fontWeight:900,color:C.blue,fontSize:18,marginBottom:4}}>Request Subject Access</h2>
+      <h2 style={{fontWeight:900,color:C.blue,fontSize:18,marginBottom:4}}>Request Category Access</h2>
       <p style={{color:C.muted,fontSize:13,marginBottom:20}}>
-        Request temporary access to input scores for subjects not in your regular assignment.
+        Request temporary access to input scores for categories not in your regular assignment.
         Admin will review and approve or reject your request.
       </p>
 
@@ -115,7 +115,7 @@ export function TeacherAccessRequestPage({ctx}){
           {selClass&&subjects.length>0&&(
             <div style={{marginBottom:12}}>
               <label style={{fontSize:12,color:C.muted,fontWeight:600,display:"block",marginBottom:6}}>
-                Subjects <span style={{color:C.muted,fontWeight:400}}>(select one or more)</span>
+                Categories <span style={{color:C.muted,fontWeight:400}}>(select one or more)</span>
               </label>
               <div style={{border:`1px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
                 {subjects.map((s,i)=>{
@@ -137,7 +137,7 @@ export function TeacherAccessRequestPage({ctx}){
             </div>
           )}
           {selClass&&subjects.length===0&&(
-            <p style={{color:C.muted,fontSize:12,marginBottom:12}}>No subjects found for this group.</p>
+            <p style={{color:C.muted,fontSize:12,marginBottom:12}}>No categories found for this group.</p>
           )}
 
           <Btn onClick={submit} color={C.orange} disabled={submitting||!selClass||selectedSubjects.size===0}
@@ -178,7 +178,7 @@ export function TeacherAccessRequestPage({ctx}){
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                 <thead>
                   <tr style={{background:C.offWhite,borderBottom:`2px solid ${C.border}`}}>
-                    {["Date","Group","Subjects","Status","Note"].map(h=>(
+                    {["Date","Group","Categories","Status","Note"].map(h=>(
                       <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:800,
                         color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>{h}</th>
                     ))}
@@ -191,7 +191,7 @@ export function TeacherAccessRequestPage({ctx}){
                       <tr key={r.id} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?C.white:C.offWhite}}>
                         <td style={{padding:"9px 12px",fontSize:12,color:C.muted}}>{new Date(r.requested_at).toLocaleDateString()}</td>
                         <td style={{padding:"9px 12px",fontWeight:700}}>{cls?.name||"\u2014"}</td>
-                        <td style={{padding:"9px 12px",fontSize:12}}>{r.subject_ids?.length||0} subject(s)</td>
+                        <td style={{padding:"9px 12px",fontSize:12}}>{r.subject_ids?.length||0} category(s)</td>
                         <td style={{padding:"9px 12px"}}>{statusBadge(r.status)}</td>
                         <td style={{padding:"9px 12px",color:C.muted,fontSize:12}}>{r.admin_note||"\u2014"}</td>
                       </tr>
@@ -259,7 +259,7 @@ export function AccessRequestsAdminPage({ctx}){
         if(ae&&ae.code!=="23505") assignErrors++;
       }
       if(assignErrors>0) notify(`Request approved but ${assignErrors} assignment(s) failed \u2014 check Assignments page`,"warn");
-      else notify("Request approved \u2014 subjects permanently assigned to teacher \u2713");
+      else notify("Request approved \u2014 categories permanently assigned to staff \u2713");
     } else {
       notify("Request rejected","warn");
     }
@@ -279,9 +279,9 @@ export function AccessRequestsAdminPage({ctx}){
 
   return(
     <div style={{maxWidth:960,margin:"0 auto",padding:"24px 16px"}}>
-      <h2 style={{fontWeight:900,color:C.blue,fontSize:18,marginBottom:4}}>Subject Access Requests</h2>
+      <h2 style={{fontWeight:900,color:C.blue,fontSize:18,marginBottom:4}}>Category Access Requests</h2>
       <p style={{color:C.muted,fontSize:13,marginBottom:20}}>
-        Review teacher requests for temporary access to input scores for extra subjects.
+        Review staff requests for temporary access to input scores for extra categories.
       </p>
 
       <div style={{display:"flex",gap:8,marginBottom:20}}>
@@ -312,7 +312,7 @@ export function AccessRequestsAdminPage({ctx}){
           :(
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {filtered.map(req=>{
-                const subjNames=(req.subject_ids||[]).map(id=>allSubjects[id]||`Subject #${id}`).join(", ");
+                const subjNames=(req.subject_ids||[]).map(id=>allSubjects[id]||`Category #${id}`).join(", ");
                 return(
                   <div key={req.id} style={{border:`1px solid ${C.border}`,borderRadius:10,
                     padding:"14px 16px",background:req.status==='pending'?"#fffbf5":"inherit"}}>
@@ -330,7 +330,7 @@ export function AccessRequestsAdminPage({ctx}){
                           {req.classes?.sections&&<span> \u00b7 {req.classes.sections.code}</span>}
                         </div>
                         <div style={{fontSize:13,marginBottom:4}}>
-                          <strong style={{color:C.text}}>Subjects:</strong>{" "}
+                          <strong style={{color:C.text}}>Categories:</strong>{" "}
                           <span style={{color:C.blue}}>{subjNames}</span>
                         </div>
                         <div style={{fontSize:11,color:C.muted}}>
@@ -367,8 +367,8 @@ export function AccessRequestsAdminPage({ctx}){
       </Card>
 
       <div style={{background:C.bluePale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.blue}}>
-        <strong>Note:</strong> Approved requests permanently assign the subjects to the teacher in the Assignments page.
-        To remove access, go to <strong>Assignments \u2192 Subject Staff</strong> and remove the assignment.
+        <strong>Note:</strong> Approved requests permanently assign the categories to the staff in the Assignments page.
+        To remove access, go to <strong>Assignments \u2192 Category Staff</strong> and remove the assignment.
       </div>
 
       {noteModal&&(
@@ -385,10 +385,10 @@ export function AccessRequestsAdminPage({ctx}){
           </p>
           <div style={{marginBottom:14}}>
             <label style={{fontSize:12,color:C.muted,fontWeight:600,display:"block",marginBottom:4}}>
-              Note to teacher (optional)
+              Note to staff (optional)
             </label>
             <textarea value={adminNote} onChange={e=>setAdminNote(e.target.value)}
-              rows={3} placeholder="Add a note for the teacher\u2026"
+              rows={3} placeholder="Add a note for the staff\u2026"
               style={{width:"100%",padding:"8px 10px",border:`1px solid ${C.border}`,
                 borderRadius:8,fontSize:13,color:C.text,background:"inherit",resize:"vertical",
                 boxSizing:"border-box"}}/>

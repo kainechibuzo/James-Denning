@@ -45,7 +45,7 @@ export function SchoolManagerModal({school, onClose, onSaved}){
     reader.readAsDataURL(file);
   };
   const save=async()=>{
-    if(!form.name.trim()){setSaveErr("School name is required");return;}
+    if(!form.name.trim()){setSaveErr("Organization name is required");return;}
     setSaving(true); setSaveErr("");
     const fields={
       name: form.name.trim(),
@@ -87,7 +87,7 @@ export function SchoolManagerModal({school, onClose, onSaved}){
         {/* Header */}
         <div style={{padding:"20px 24px",borderBottom:`1px solid ${C.border}`,
           display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-          <div style={{fontWeight:800,fontSize:16,color:C.text}}>School Settings</div>
+          <div style={{fontWeight:800,fontSize:16,color:C.text}}>Organization Settings</div>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
             color:C.muted,display:"flex",alignItems:"center"}}><X size={20}/></button>
         </div>
@@ -97,7 +97,7 @@ export function SchoolManagerModal({school, onClose, onSaved}){
               <div style={{textAlign:"center",marginBottom:20}}>
                 <Lock size={36} color={C.muted} style={{display:"block",margin:"0 auto 10px"}}/>
                 <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:4}}>Enter Settings Password</div>
-                <div style={{fontSize:12,color:C.muted}}>This password protects school settings</div>
+                <div style={{fontSize:12,color:C.muted}}>This password protects organization settings</div>
               </div>
               <input type="password" value={gatePass} onChange={e=>{setGatePass(e.target.value);setGateErr("");}}
                 onKeyDown={e=>e.key==="Enter"&&tryUnlock()}
@@ -116,7 +116,7 @@ export function SchoolManagerModal({school, onClose, onSaved}){
               {/* Logo */}
               <div style={{marginBottom:16,textAlign:"center"}}>
                 <div style={{marginBottom:8,fontSize:11,fontWeight:700,color:C.muted,
-                  textTransform:"uppercase",letterSpacing:.7}}>School Logo</div>
+                  textTransform:"uppercase",letterSpacing:.7}}>Organization Logo</div>
                 {logoPreview
                   ? <img src={logoPreview} alt="logo" style={{width:72,height:72,objectFit:"contain",
                       borderRadius:12,border:`1px solid ${C.border}`,background:C.offWhite,display:"block",margin:"0 auto 8px"}}/>
@@ -132,7 +132,7 @@ export function SchoolManagerModal({school, onClose, onSaved}){
                 </label>
               </div>
               {inp("Business Name","name",{placeholder:"e.g. Your Business Name"})}
-              {inp("Address","address",{placeholder:"e.g. 12 School Road, Lagos"})}
+              {inp("Address","address",{placeholder:"e.g. 12 Organization Road, Lagos"})}
               {inp("Phone","phone",{placeholder:"e.g. +2348000000000"})}
               {inp("Member ID Prefix","student_id_prefix",{placeholder:"e.g. JD, ACM",hint:"Used for new member IDs e.g. JD/001"})}
               <hr style={{border:"none",borderTop:`1px solid ${C.border}`,margin:"16px 0"}}/>
@@ -208,7 +208,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
     setResetSending(true);setResetMsg("");
     // Look up user and send temp password
     const schoolId=selectedSchool?.id;
-    if(!schoolId){setResetMsg("No school selected.");setResetSending(false);return;}
+    if(!schoolId){setResetMsg("No organization selected.");setResetSending(false);return;}
     try{
       const[{data:teacher},{data:student}]=await Promise.all([
         db.loginFindTeacher(resetId.trim(),schoolId),
@@ -216,7 +216,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
       ]);
       const target=teacher||student;
       if(!target||!target.email){
-        setResetMsg("No account found with that ID, or no email address on file. Contact your school admin.");
+        setResetMsg("No account found with that ID, or no email address on file. Contact your organization administrator.");
         setResetSending(false);return;
       }
       // Generate a random 8-char temp password
@@ -226,7 +226,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
       const table=teacher?"teachers":"students";
       await db._resetPassword(table,target.id,tmpPw,schoolId);
       // Send email via edge function
-      const schoolName=ctx?.schoolName||"Your School";
+      const schoolName=ctx?.schoolName||"Your Organization";
       const role=teacher?"Staff":"Member";
       await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,{
         method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`},
@@ -237,7 +237,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
         })
       });
       setResetMsg(`✓ A temporary password has been sent to ${target.email.replace(/(.{2}).+(@.+)/,"$1***$2")}.`);
-    }catch(e){setResetMsg("Something went wrong. Please contact your school admin.");}
+    }catch(e){setResetMsg("Something went wrong. Please contact your organization administrator.");}
     setResetSending(false);
   };
   const submit=async()=>{
@@ -246,7 +246,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
     if(e) setErr(e);
   };
   const onKey=e=>{ if(e.key==="Enter") submit(); };
-  const schoolName=ctx?.schoolName||"Your School";
+  const schoolName=ctx?.schoolName||"Your Organization";
   const [wideScreen,setWideScreen]=useState(()=>window.innerWidth>=768);
   useEffect(()=>{
     const onResize=()=>setWideScreen(window.innerWidth>=768);
@@ -284,9 +284,9 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           </div>
           <div style={{marginTop:40,display:"flex",flexDirection:"column",gap:16,maxWidth:280}}>
             {[
-              {icon:<LayoutDashboard size={16}/>,text:"Manage students, teachers & classes"},
+              {icon:<LayoutDashboard size={16}/>,text:"Manage members, staff & groups"},
               {icon:<FileText size={16}/>,text:"Results, report cards & transcripts"},
-              {icon:<DollarSign size={16}/>,text:"Fee billing, tracking & analytics"},
+              {icon:<DollarSign size={16}/>,text:"Billing billing, tracking & analytics"},
             ].map(f=>(
               <div key={f.text} style={{display:"flex",alignItems:"center",gap:12,
                 background:"rgba(255,255,255,.06)",borderRadius:12,padding:"12px 16px",
@@ -311,7 +311,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           <div style={{height:4,background:"linear-gradient(90deg,#E8560A,#FF7A35,#1A8C3C,#1A4FA0)"}}/>
 
           <div style={{padding:"32px 32px 36px"}}>
-            {/* School badge row */}
+            {/* Organization badge row */}
             {selectedSchool&&(
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20,
                 padding:"9px 12px",borderRadius:10,background:C.offWhite,
@@ -320,12 +320,12 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
                   ? <img src={selectedSchool.logo} alt="" style={{width:28,height:28,objectFit:"contain",borderRadius:6,background:"#fff"}}/>
                   : <School size={18} color={C.blue}/>}
                 <span style={{flex:1,fontSize:13,fontWeight:700,color:C.text}}>{selectedSchool.name}</span>
-                <button onClick={()=>setShowManager(true)} title="School Settings"
+                <button onClick={()=>setShowManager(true)} title="Organization Settings"
                   style={{background:"none",border:"none",cursor:"pointer",color:C.muted,
                     display:"flex",alignItems:"center",padding:4,borderRadius:6}}>
                   <Settings size={15}/>
                 </button>
-                <button onClick={onChangeSchool} title="Change school"
+                <button onClick={onChangeSchool} title="Change organization"
                   style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                     color:C.muted,fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,
                     display:"flex",alignItems:"center",gap:4}}>
@@ -394,7 +394,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
                     boxSizing:"border-box",transition:"border-color .15s,box-shadow .15s"}}/>
               </div>
               <div style={{fontSize:10.5,color:C.light,marginTop:5,lineHeight:1.6}}>
-                Teachers: Staff ID &nbsp;·&nbsp; Students: Student ID &nbsp;·&nbsp; Admin: <code style={{background:C.offWhite,padding:"1px 5px",borderRadius:4}}>admin</code>
+                Staff: Staff ID  ·  Members: Member ID  ·  Admin: <code style={{background:C.offWhite,padding:"1px 5px",borderRadius:4}}>admin</code>
               </div>
             </div>
 
@@ -480,7 +480,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
               <div style={{fontSize:16,fontWeight:900,color:C.text}}>Reset Password</div>
             </div>
             <div style={{fontSize:12,color:C.muted,marginBottom:16,lineHeight:1.6}}>
-              Enter your Staff ID or Student ID. A temporary password will be sent to your registered email address.
+              Enter your Staff ID or Member ID. A temporary password will be sent to your registered email address.
             </div>
             <input value={resetId} onChange={e=>setResetId(e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&submitReset()}

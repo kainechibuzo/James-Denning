@@ -1,5 +1,5 @@
 /**
- * Report Cards domain: ReportCardsPage, ResultApprovalsPage, SignaturesPage,
+ * Reports domain: ReportCardsPage, ResultApprovalsPage, SignaturesPage,
  * ReportCardSettingsPage, ReportTemplatesPage
  */
 import React, { useState, useEffect, useMemo, useContext } from "react";
@@ -206,7 +206,7 @@ export function ReportCardsPage({ctx}){
       const p=pub.data?.[0]||null;
       setPublishInfo(p);
       // Only load per-class content from publishInfo. Layout/visibility always
-      // comes from the global Report Card Settings page (default template),
+      // comes from the global Report Settings page (default template),
       // loaded at page init. We never let publishInfo overwrite pubOptions.
       setClassTeacherComment(p?.class_teacher_comment||"");
       setPrincipalComment(p?.principal_comment||"");
@@ -239,7 +239,7 @@ export function ReportCardsPage({ctx}){
         let allComplete=true;
         const studentSummary=stus.map(stu=>{
           const done=byStudent[stu.id]||new Set();
-          const missing=expectedSubjectIds.filter(sid=>!done.has(sid)).map(sid=>allSubjNames[sid]||`Subject ${sid}`);
+          const missing=expectedSubjectIds.filter(sid=>!done.has(sid)).map(sid=>allSubjNames[sid]||`Category ${sid}`);
           if(missing.length)allComplete=false;
           return{id:stu.id,name:fullName(stu),missing};
         });
@@ -263,7 +263,7 @@ export function ReportCardsPage({ctx}){
   },[selStudent,selTerm,selSession,selClass]);
 
   const savePublishInfo=async()=>{
-    if(!selClass||!selTerm||!selSession){notify("Select class, term and session first","error");return;}
+    if(!selClass||!selTerm||!selSession){notify("Select group, period and cycle first","error");return;}
     setPublishing(true);
     const payload={
       class_id:+selClass,term_id:+selTerm,session_id:+selSession,
@@ -322,7 +322,7 @@ export function ReportCardsPage({ctx}){
         setApprovingMA(false);return;
       }
       if(completeness&&!completeness.complete&&!completeness.noSetup){
-        notify("Results must be complete before approval. Some students have missing scores.","error");
+        notify("Results must be complete before approval. Some members have missing scores.","error");
         setApprovingMA(false);return;
       }
       await db.approveMA(+selClass,+selTerm,+selSession,user?.supabase_uid||null);
@@ -334,20 +334,20 @@ export function ReportCardsPage({ctx}){
   };
 
   const publishCards=async()=>{
-    if(!selClass||!selTerm||!selSession){notify("Select class, term and session first","error");return;}
+    if(!selClass||!selTerm||!selSession){notify("Select group, period and cycle first","error");return;}
     // Hard block: EA must be approved
     if(approval?.ea_status!=="approved"){
-      notify("Cannot publish — Educator Approval (EA) has not been given for this class.","error");
+      notify("Cannot publish — Educator Approval (EA) has not been given for this group.","error");
       return;
     }
     // Hard block: MA must be approved
     if(approval?.ma_status!=="approved"){
-      notify("Cannot publish — Manager Approval (MA) has not been given for this class. EA must be followed by MA before publishing.","error");
+      notify("Cannot publish — Manager Approval (MA) has not been given for this group. EA must be followed by MA before publishing.","error");
       return;
     }
     // Hard block: all results must be complete
     if(completeness&&!completeness.complete&&!completeness.noSetup){
-      notify("Cannot publish — some students have missing subject scores. Upload all results first.","error");
+      notify("Cannot publish — some members have missing category scores. Upload all results first.","error");
       return;
     }
     setShowPublishModal(true);
@@ -378,18 +378,18 @@ export function ReportCardsPage({ctx}){
     const {data,error}=await db.upsertReportPublish(payload);
     if(error){console.error("[doPublish v2] error:", error);notify(`${error.message}${error.details?' — '+error.details:''}${error.hint?' ('+error.hint+')':''}`, "error");}
     else{
-      setPublishInfo(data);notify("✅ Report cards published — students can now view them");setShowPublishModal(false);
+      setPublishInfo(data);notify("✅ Report cards published — members can now view them");setShowPublishModal(false);
       // Tier A alert — report published
       const cls=classes?.find(c=>String(c.id)===String(selClass));
       const trm=terms?.find(t=>String(t.id)===String(selTerm));
       const ses=sessions?.find(s=>String(s.id)===String(selSession));
       db.sendAdminAlert({
-        subject:`[Alert] Report Cards Published — ${cls?.name||"Group"}`,
-        html:buildAlertEmail("Report Cards Published",
-          [`Class: ${cls?.name||selClass}`,`Term: ${trm?.name||selTerm}`,`Session: ${ses?.name||selSession}`,
+        subject:`[Alert] Reports Published — ${cls?.name||"Group"}`,
+        html:buildAlertEmail("Reports Published",
+          [`Group: ${cls?.name||selClass}`,`Period: ${trm?.name||selTerm}`,`Cycle: ${ses?.name||selSession}`,
            `Published by: ${user?.full_name||user?.name||"Admin"}`,
            `Time: ${new Date().toLocaleString("en-NG")}`],
-          "info",sectionCtx?.schoolName||settings?.school_name||"School Portal"),
+          "info",sectionCtx?.schoolName||settings?.school_name||"Business Portal"),
         eventKey:"report_published"
       });
     }
@@ -397,8 +397,8 @@ export function ReportCardsPage({ctx}){
   };
 
   const unpublishCards=async()=>{
-    const __ok=await confirm({title:"Unpublish Report Cards?",
-      message:"This will immediately hide report cards from students and parents.",
+    const __ok=await confirm({title:"Unpublish Reports?",
+      message:"This will immediately hide report cards from members and contacts.",
       confirmLabel:"Unpublish",danger:true});
     if(!__ok)return;
     setPublishing(true);
@@ -467,7 +467,7 @@ export function ReportCardsPage({ctx}){
   };
 
   const generateAllPDFs=async()=>{
-    if(!students.length){notify("No students in this class","error");return;}
+    if(!students.length){notify("No members in this group","error");return;}
     setGenerating(true);
     notify("Loading all results…","success");
     const allData=await loadAllResults();
@@ -612,10 +612,10 @@ export function ReportCardsPage({ctx}){
   // ── Download ZIP for the currently selected class ────────────────────────────
   // Reuses all state already loaded for the class — very fast setup.
   const downloadClassZip=async()=>{
-    if(!selClass||!selTerm||!selSession){notify("Select class, term and session first","error");return;}
-    if(!students.length){notify("No active students in this class","error");return;}
+    if(!selClass||!selTerm||!selSession){notify("Select group, period and cycle first","error");return;}
+    if(!students.length){notify("No active members in this group","error");return;}
     if(!publishInfo?.is_published){
-      notify("🔒 Report cards for this class must be published before downloading the ZIP.\nPublish them first using the \"Publish Cards\" button.","error");
+      notify("🔒 Report cards for this group must be published before downloading the ZIP.\nPublish them first using the \"Publish Cards\" button.","error");
       return;
     }
     if(!window.JSZip) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
@@ -623,7 +623,7 @@ export function ReportCardsPage({ctx}){
     const cls=classes.find(c=>c.id===+selClass);
     const term=terms.find(t=>t.id===+selTerm);
     const session=sessions.find(s=>s.id===+selSession);
-    if(!term||!session){notify("Term or session not found","error");return;}
+    if(!term||!session){notify("Period or cycle not found","error");return;}
     const secName=selectedSection?.name||cls?.sections?.name||"GROUP";
     const folderPath=`${pdfName(secName)}/${pdfName(cls?.name||"")}`;
     const resolvedOpts=_resolveOpts(publishInfo);
@@ -657,13 +657,13 @@ export function ReportCardsPage({ctx}){
   // ── Download ZIP for the entire section (all classes in sidebar selection) ───
   // Loads students + form teachers once; reuses section-level grading/CAE from state.
   const downloadSectionZip=async()=>{
-    if(!selTerm||!selSession){notify("Select a term and session first","error");return;}
-    if(!classes.length){notify("No classes loaded — select a session and section first","error");return;}
+    if(!selTerm||!selSession){notify("Select a period and cycle first","error");return;}
+    if(!classes.length){notify("No groups loaded — select a cycle and section first","error");return;}
     if(!window.JSZip) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
     const zip=new window.JSZip();
     const term=terms.find(t=>t.id===+selTerm);
     const session=sessions.find(s=>s.id===+selSession);
-    if(!term||!session){notify("Term or session not found","error");return;}
+    if(!term||!session){notify("Period or cycle not found","error");return;}
     const secName=selectedSection?.name||classes[0]?.sections?.name||"SECTION";
     // Fetch all students + all form teachers in one go
     const[{data:allStudentsData},{data:allFTData}]=await Promise.all([
@@ -677,7 +677,7 @@ export function ReportCardsPage({ctx}){
     const totalStudents=allStudentsList.filter(s=>
       sortedClasses.some(c=>c.id===s.class_id)&&(s.status||"active")==="active"
     ).length;
-    if(!totalStudents){notify("No active students found in this section","error");return;}
+    if(!totalStudents){notify("No active members found in this section","error");return;}
     setZipGenerating(true);
     setZipProgress({current:0,total:totalStudents,cls:"",student:""});
     const ref={done:0,skipped:0};
@@ -737,7 +737,7 @@ export function ReportCardsPage({ctx}){
   };
 
   const emailReportCard=async(stu)=>{
-    if(!stu.email){notify("No email on file for this student","error");return;}
+    if(!stu.email){notify("No email on file for this member","error");return;}
     notify("Generating report card PDF\u2026","success");
     try{
       const cls=classes.find(c=>c.id===+selClass);
@@ -768,21 +768,21 @@ export function ReportCardsPage({ctx}){
       let emailHtml,emailPayload;
       if(emailSendMode==="attachment"){
         // Attach PDF directly — no storage link in body
-        emailHtml=buildEmailHtml(`Report Card \u2014 ${termName} ${sessionName}`,[
+        emailHtml=buildEmailHtml(`Report \u2014 ${termName} ${sessionName}`,[
           `This communication is regarding:`,
-          `${stuName} \u00b7 Student ID: ${stu.student_id||stu.id} \u00b7 Class: ${cls?.name||"\u2014"}`,``,
-          `Dear Parent/Guardian,`,``,
+          `${stuName} \u00b7 Member ID: ${stu.student_id||stu.id} \u00b7 Group: ${cls?.name||"\u2014"}`,``,
+          `Dear Member/Contact,`,``,
           `Please find attached the term report card for ${stuName} (${termName} ${sessionName}).`,``,
-          `You can also access all report cards at any time by logging into the parent portal:`,``,
+          `You can also access all report cards at any time by logging into the Business Portal:`,``,
           `  Portal  : ${portalUrl}`,
           `  Login ID: ${stu.student_id||stu.id}`,
           `  Password: (your registered portal password)`,``,
-          `If you have any questions, please contact the school office.`,
-          `For assistance, contact the school administration.`,
+          `If you have any questions, please contact the organization office.`,
+          `For assistance, contact the organization administration.`,
         ].join("\n"));
         emailPayload={
           to:stu.email,
-          subject:`Report Card \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,
+          subject:`Report \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,
           html:emailHtml,
           attachments:[{name:`ReportCard-${stuName.replace(/\s+/g,"-")}-${safeTerm}.pdf`,content:b64,mimeType:"application/pdf"}],
         };
@@ -791,24 +791,24 @@ export function ReportCardsPage({ctx}){
         const{data:signedData,error:signErr}=await supabase.storage.from("report-cards").createSignedUrl(filePath,604800);
         if(signErr)throw signErr;
         const pdfUrl=signedData.signedUrl;
-        emailHtml=buildEmailHtml(`Report Card \u2014 ${termName} ${sessionName}`,[
+        emailHtml=buildEmailHtml(`Report \u2014 ${termName} ${sessionName}`,[
           `This communication is regarding:`,
-          `${stuName} \u00b7 Student ID: ${stu.student_id||stu.id} \u00b7 Class: ${cls?.name||"\u2014"}`,``,
-          `Dear Parent/Guardian,`,``,
+          `${stuName} \u00b7 Member ID: ${stu.student_id||stu.id} \u00b7 Group: ${cls?.name||"\u2014"}`,``,
+          `Dear Member/Contact,`,``,
           `The term report card for ${stuName} (${termName} ${sessionName}) is ready.`,``,
-          `\u{1F4C4} View Report Card (link valid for 7 days):`,
+          `\u{1F4C4} View Report (link valid for 7 days):`,
           `${pdfUrl}`,``,
           `You can also access this and all future report cards at any time`,
-          `by logging into the parent portal:`,``,
+          `by logging into the Business Portal:`,``,
           `  Portal  : ${portalUrl}`,
           `  Login ID: ${stu.student_id||stu.id}`,
           `  Password: (your registered portal password)`,``,
-          `If you have any questions, please contact the school office.`,
-          `For assistance, contact the school administration.`,
+          `If you have any questions, please contact the organization office.`,
+          `For assistance, contact the organization administration.`,
         ].join("\n"));
         emailPayload={
           to:stu.email,
-          subject:`Report Card \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,
+          subject:`Report \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,
           html:emailHtml,
         };
       }
@@ -822,8 +822,8 @@ export function ReportCardsPage({ctx}){
   };
 
   const openSectionBulkEmail=async()=>{
-    if(!selTerm||!selSession){notify("Select a term and session first","error");return;}
-    if(!classes.length){notify("No classes in this section","error");return;}
+    if(!selTerm||!selSession){notify("Select a period and cycle first","error");return;}
+    if(!classes.length){notify("No groups in this section","error");return;}
     setGenerating(true);
     notify("Loading section data\u2026","success");
     try{
@@ -837,7 +837,7 @@ export function ReportCardsPage({ctx}){
         const pubRes=await db.getReportPublish({class_id:cls2.id,term_id:+selTerm,session_id:+selSession});
         publishInfoMap[cls2.id]=pubRes.data?.[0]||null;
       }
-      if(!allStudents.length){notify("No active students in this section","error");setGenerating(false);return;}
+      if(!allStudents.length){notify("No active members in this section","error");setGenerating(false);return;}
       setSectionBulkEmail({students:allStudents,publishInfoMap});
     }catch(e){
       notify("Failed to load section data: "+e.message,"error");
@@ -859,14 +859,14 @@ export function ReportCardsPage({ctx}){
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="report-cards" size={20}/>Report Cards</h2>
-          <p style={{color:C.muted,fontSize:12}}>Generate, review, approve and publish term-end report cards</p>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="report-cards" size={20}/>Reports</h2>
+          <p style={{color:C.muted,fontSize:12}}>Generate, review, approve and publish period-end report cards</p>
         </div>
         {selClass&&selTerm&&selSession&&(
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {/* Settings — admin only, opens dedicated Report Card Settings page */}
+            {/* Settings — admin only, opens dedicated Report Settings page */}
             {role==="admin"&&setPage&&(
-              <Btn onClick={()=>setPage("report-card-settings")} color={C.muted} outline title="Report Card Settings — templates, signatures, defaults">
+              <Btn onClick={()=>setPage("report-card-settings")} color={C.muted} outline title="Report Settings — templates, signatures, defaults">
                 <Settings size={14} style={{marginRight:4,verticalAlign:"-2px"}}/>Settings
               </Btn>
             )}
@@ -904,7 +904,7 @@ export function ReportCardsPage({ctx}){
                 {generating?"Loading…":"Export All PDFs"}
               </Btn>
             )}
-            {/* ⬇ Class ZIP — when a class is selected */}
+            {/* ⬇ Group ZIP — when a class is selected */}
             {role==="admin"&&selClass&&students.length>0&&(
               <Btn onClick={downloadClassZip} color={C.blue} outline disabled={zipGenerating||generating}
                 title={`Download all report cards for this class as a ZIP file`}>
@@ -992,14 +992,14 @@ export function ReportCardsPage({ctx}){
       {/* Filters row */}
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-          <Sel label="Session" value={selSession} onChange={setSelSession}
-            options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm}
-            options={[{value:"",label:"— Select Term —"},...terms.map(t=>({value:String(t.id),label:t.name}))]}/>
+          <Sel label="Cycle" value={selSession} onChange={setSelSession}
+            options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
+          <Sel label="Period" value={selTerm} onChange={setSelTerm}
+            options={[{value:"",label:"— Select Period —"},...terms.map(t=>({value:String(t.id),label:t.name}))]}/>
           <div>
             <Sel label="Group" value={selClass} onChange={v=>{setSelClass(v);setSelStudent(null);setResults([]);setStuSearch("");}}
               options={[{value:"",label:"— Select Group —"},
-                // Teachers: show every class already pre-filtered to their allowed set; do NOT further restrict by
+                // Staff: show every class already pre-filtered to their allowed set; do NOT further restrict by
                 // selectedSection (teachers have no section selector UI, and the localStorage value can be stale).
                 // Admins: keep the section-selector scoping only when one is actively chosen.
                 ...(role==="admin"&&selectedSection
@@ -1008,7 +1008,7 @@ export function ReportCardsPage({ctx}){
                 ).map(c=>({value:String(c.id),label:`${c.name}${c.sections?" ("+c.sections.code+")":""}`}))]}/>
             {role==="teacher"&&classes.length===0&&(
               <div style={{marginTop:6,fontSize:11,color:C.muted,lineHeight:1.35}}>
-                No classes assigned. Ask an admin to add you as a form teacher or subject teacher for at least one class.
+                No groups assigned. Ask an admin to add you as a form staff or category staff for at least one group.
               </div>
             )}
           </div>
@@ -1021,7 +1021,7 @@ export function ReportCardsPage({ctx}){
             <span style={{fontWeight:700,color:publishInfo.is_published?C.green:C.orange}}>
               {publishInfo.is_published?`Published ${new Date(publishInfo.published_at).toLocaleDateString("en-NG")}`:"Draft — not yet published"}
             </span>
-            {nextTermBegins&&<span style={{color:C.muted}}>Next term begins: <b>{new Date(nextTermBegins).toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"})}</b></span>}
+            {nextTermBegins&&<span style={{color:C.muted}}>Next period begins: <b>{new Date(nextTermBegins).toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"})}</b></span>}
           </div>
         )}
         {/* Approval badges */}
@@ -1045,7 +1045,7 @@ export function ReportCardsPage({ctx}){
                 background:completeness.noSetup?C.offWhite:completeness.complete?C.greenPale:C.redPale,
                 color:completeness.noSetup?C.muted:completeness.complete?C.green:C.red,
                 border:`1px solid ${completeness.noSetup?C.border:completeness.complete?C.green:C.red}40`}}>
-                {completeness.noSetup?"— No subjects assigned":completeness.complete?"Results Complete":"Incomplete Results"}
+                {completeness.noSetup?"— No categories assigned":completeness.complete?"Results Complete":"Incomplete Results"}
               </span>
             )}
           </div>
@@ -1069,17 +1069,17 @@ export function ReportCardsPage({ctx}){
       {/* Main content */}
       {loading?<Spinner/>:selClass&&selTerm&&selSession?(
         <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:16}}>
-          {/* Student list */}
+          {/* Member list */}
           <Card style={{alignSelf:"start"}}>
             <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:8}}>
-              {students.length} Student{students.length!==1?"s":""}
+              {students.length} Member{students.length!==1?"s":""}
             </div>
             {/* Search box */}
             {students.length>0&&(
               <div style={{position:"relative",marginBottom:8}}>
                 <Search size={12} style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:C.muted,pointerEvents:"none"}}/>
                 <input value={stuSearch} onChange={e=>setStuSearch(e.target.value)}
-                  placeholder="Search student…"
+                  placeholder="Search member…"
                   style={{width:"100%",boxSizing:"border-box",paddingLeft:26,paddingRight:8,paddingTop:6,paddingBottom:6,
                     borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.text,background:"#fff",outline:"none"}}/>
               </div>
@@ -1115,7 +1115,7 @@ export function ReportCardsPage({ctx}){
               </Card>
             ):(
               <Card>
-                {/* Student info bar */}
+                {/* Member info bar */}
                 <div style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
                   margin:"-22px -22px 18px",padding:"16px 22px",borderRadius:"13px 13px 0 0",color:"#fff",
                   display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -1194,7 +1194,7 @@ export function ReportCardsPage({ctx}){
                         const blob=new Blob([bytes],{type:"application/pdf"});
                         const safeTerm=(termName+"-"+sessionName).replace(/[^a-zA-Z0-9-_]/g,"-");
                         const filename=`ReportCard-${stuName.replace(/\s+/g,"-")}-${safeTerm}.pdf`;
-                        await shareFilePDF(blob,filename,`Report Card — ${stuName}`,`${stuName} · ${cls?.name||""} · ${termName} ${sessionName}`);
+                        await shareFilePDF(blob,filename,`Report — ${stuName}`,`${stuName} · ${cls?.name||""} · ${termName} ${sessionName}`);
                       }catch(e){
                         notify("Share failed: "+(e.message||e),"error");
                       }
@@ -1212,7 +1212,7 @@ export function ReportCardsPage({ctx}){
                     <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                       <thead>
                         <tr style={{background:C.blue}}>
-                          <th style={{padding:"8px 12px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11}}>Subject</th>
+                          <th style={{padding:"8px 12px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11}}>Category</th>
                           {rcCaeComps.length>=2?rcCaeComps.map(c=>(
                             <th key={c.id} style={{padding:"8px 12px",color:"#fff",textAlign:"center",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
                               {c.component_name}<br/><span style={{fontWeight:400,fontSize:9,opacity:.8}}>(max {c.value_or_formula})</span>
@@ -1310,12 +1310,12 @@ export function ReportCardsPage({ctx}){
       ):(
         <Card style={{textAlign:"center",padding:52}}>
           <div style={{marginBottom:10}}><ClipboardList size={44} color={C.muted}/></div>
-          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session, Term and Group</div>
+          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Cycle, Period and Group</div>
           <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose filters above to view and generate report cards</div>
         </Card>
       )}
 
-      {/* Bulk Report Card Email Modal */}
+      {/* Bulk Report Email Modal */}
       {sectionBulkEmail&&(
         <BulkReportEmailModal
           students={sectionBulkEmail.students}
@@ -1368,34 +1368,34 @@ export function ReportCardsPage({ctx}){
             await supabase.storage.from("report-cards").upload(filePath,blob,{upsert:true,contentType:"application/pdf"});
             const portalUrl=window.location.origin;
             if(emailSendMode==="attachment"){
-              const emailHtml=buildEmailHtml(`Report Card \u2014 ${termName} ${sessionName}`,[
-                `Dear Parent/Guardian,`,``,
+              const emailHtml=buildEmailHtml(`Report \u2014 ${termName} ${sessionName}`,[
+                `Dear Member/Contact,`,``,
                 `Please find attached the term report card for ${stuName} (${termName} ${sessionName}).`,``,
-                `You can also access all report cards at any time by logging into the parent portal:`,``,
+                `You can also access all report cards at any time by logging into the Business Portal:`,``,
                 `  Portal  : ${portalUrl}`,
                 `  Login ID: ${stu.student_id||stu.id}`,
                 `  Password: (your registered portal password)`,``,
-                `If you have any questions, please contact the school office.`,
-                `For assistance, contact the school administration.`,
+                `If you have any questions, please contact the organization office.`,
+                `For assistance, contact the organization administration.`,
               ].join("\n"));
-              return{to:stu.email,subject:`Report Card \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,html:emailHtml,
+              return{to:stu.email,subject:`Report \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,html:emailHtml,
                 attachments:[{name:`ReportCard-${stuName.replace(/\s+/g,"-")}-${safeTerm}.pdf`,content:b64,mimeType:"application/pdf"}]};
             }else{
               const{data:signedData}=await supabase.storage.from("report-cards").createSignedUrl(filePath,604800);
               const pdfUrl=signedData?.signedUrl||"";
-              const emailHtml=buildEmailHtml(`Report Card \u2014 ${termName} ${sessionName}`,[
-                `Dear Parent/Guardian,`,``,
+              const emailHtml=buildEmailHtml(`Report \u2014 ${termName} ${sessionName}`,[
+                `Dear Member/Contact,`,``,
                 `The term report card for ${stuName} (${termName} ${sessionName}) is ready.`,``,
-                `\u{1F4C4} View Report Card (link valid for 7 days):`,
+                `\u{1F4C4} View Report (link valid for 7 days):`,
                 `${pdfUrl}`,``,
-                `You can also log in to the parent portal for all future report cards:`,``,
+                `You can also log in to the Business Portal for all future report cards:`,``,
                 `  Portal  : ${portalUrl}`,
                 `  Login ID: ${stu.student_id||stu.id}`,
                 `  Password: (your registered portal password)`,``,
-                `If you have any questions, please contact the school office.`,
-                `For assistance, contact the school administration.`,
+                `If you have any questions, please contact the organization office.`,
+                `For assistance, contact the organization administration.`,
               ].join("\n"));
-              return{to:stu.email,subject:`Report Card \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,html:emailHtml};
+              return{to:stu.email,subject:`Report \u2014 ${stuName} \u2014 ${termName} ${sessionName}`,html:emailHtml};
             }
           }}
           onClose={()=>setSectionBulkEmail(null)}
@@ -1404,7 +1404,7 @@ export function ReportCardsPage({ctx}){
 
       {/* Customise / Edit Comments Modal */}
       {editComments&&(
-        <Modal title="Customise Report Card" onClose={()=>setEditComments(false)} width={620}>
+        <Modal title="Customise Report" onClose={()=>setEditComments(false)} width={620}>
           <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:12,color:C.blue}}>
             Settings apply to all report cards for <b>{cls?.name}</b> — <b>{term?.name}</b>
           </div>
@@ -1412,7 +1412,7 @@ export function ReportCardsPage({ctx}){
           {/* Layout info note */}
           <div style={{background:C.bluePale,border:`1px solid ${C.blue}33`,borderRadius:8,padding:"9px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:10,fontSize:12,color:C.blue}}>
             
-            <span>Section visibility, signatures and spacing are configured globally in <b>Report Card Settings</b>.</span>
+            <span>Section visibility, signatures and spacing are configured globally in <b>Report Settings</b>.</span>
           </div>
 
           {/* Comments */}
@@ -1421,7 +1421,7 @@ export function ReportCardsPage({ctx}){
               {settings.report_class_teacher_title||"Group Staff's Comment"}
             </label>
             <textarea value={classTeacherComment} onChange={e=>setClassTeacherComment(e.target.value)}
-              rows={2} placeholder="e.g. A hardworking set of students. Keep it up!"
+              rows={2} placeholder="e.g. A hardworking set of members. Keep it up!"
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
           <div style={{marginBottom:12}}>
@@ -1429,13 +1429,13 @@ export function ReportCardsPage({ctx}){
               {settings.report_principal_title||"Principal's Comment"}
             </label>
             <textarea value={principalComment} onChange={e=>setPrincipalComment(e.target.value)}
-              rows={2} placeholder="e.g. Excellent performance this term. Aim higher!"
+              rows={2} placeholder="e.g. Excellent performance this period. Aim higher!"
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
 
-          {/* Next Term Date */}
+          {/* Next Period Date */}
           {pubOptions.show_next_term&&(
-            <Inp label="Next Term Begins (date)" type="date" value={nextTermBegins||""} onChange={setNextTermBegins}/>
+            <Inp label="Next Period Begins (date)" type="date" value={nextTermBegins||""} onChange={setNextTermBegins}/>
           )}
 
           {/* Signatures */}
@@ -1478,13 +1478,13 @@ export function ReportCardsPage({ctx}){
 
       {/* Publish Confirmation Modal */}
       {showPublishModal&&(
-        <Modal title="Publish Report Cards" onClose={()=>setShowPublishModal(false)} width={520}>
+        <Modal title="Publish Reports" onClose={()=>setShowPublishModal(false)} width={520}>
           <div style={{textAlign:"center",marginBottom:20}}>
             <div style={{marginBottom:10}}><ClipboardList size={48} color={C.blue}/></div>
             <div style={{fontWeight:900,fontSize:16,color:C.blue,marginBottom:6}}>Ready to Publish?</div>
             <div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>
               Report cards for <b>{cls?.name}</b> — <b>{term?.name}</b> — <b>{session?.name}</b><br/>
-              will be visible to <b>{students.length} student{students.length!==1?"s":""}</b> and their parents.
+              will be visible to <b>{students.length} member{students.length!==1?"s":""}</b> and their contacts.
             </div>
           </div>
           {/* Summary of what's enabled */}
@@ -1495,7 +1495,7 @@ export function ReportCardsPage({ctx}){
               "Group Staff's Comment":pubOptions.show_teacher_comment,
               "Principal's Comment":pubOptions.show_principal_comment,
               "Member Position":pubOptions.show_position,
-              "Next Term Date":pubOptions.show_next_term,
+              "Next Period Date":pubOptions.show_next_term,
             }).map(([label,on])=>(
               <div key={label} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <span style={{color:on?C.green:C.light,fontWeight:700,fontSize:14}}>{on?"Yes":"No"}</span>
@@ -1612,7 +1612,7 @@ export function ResultApprovalsPage({ctx}){
       let missingCount=0;
       const studentSummary=stuInClass.map(s=>{
         const done=byStudent[s.id]||new Set();
-        const missing=expectedIds.filter(id=>!done.has(id)).map(id=>subjectNames[id]||`Subject ${id}`);
+        const missing=expectedIds.filter(id=>!done.has(id)).map(id=>subjectNames[id]||`Category ${id}`);
         if(missing.length)missingCount++;
         return{id:s.id,name:s.name||s.id,missing,status:s.status||"active"};
       });
@@ -1684,7 +1684,7 @@ export function ResultApprovalsPage({ctx}){
     } else {
       const cmp=completeness[cls.id];
       if(!cmp?.complete){
-        notify("Results must be complete before approval — some students have missing scores","error");
+        notify("Results must be complete before approval — some members have missing scores","error");
         setActing("");return;
       }
       await db.approveEA(cls.id,+selTerm,+selSession,user?.supabase_uid||null);
@@ -1706,7 +1706,7 @@ export function ResultApprovalsPage({ctx}){
     } else {
       const cmp=completeness[cls.id];
       if(!cmp?.complete){
-        notify("Results must be complete before approval — some students have missing scores","error");
+        notify("Results must be complete before approval — some members have missing scores","error");
         setActing("");return;
       }
       await db.approveMA(cls.id,+selTerm,+selSession,user?.supabase_uid||null);
@@ -1777,10 +1777,10 @@ export function ResultApprovalsPage({ctx}){
 
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          <Sel label="Session" value={selSession} onChange={setSelSession}
-            options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm}
-            options={[{value:"",label:"— Select Term —"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
+          <Sel label="Cycle" value={selSession} onChange={setSelSession}
+            options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
+          <Sel label="Period" value={selTerm} onChange={setSelTerm}
+            options={[{value:"",label:"— Select Period —"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
         </div>
       </Card>
 
@@ -1789,8 +1789,8 @@ export function ResultApprovalsPage({ctx}){
         !selSession||!selTerm?(
           <Card style={{textAlign:"center",padding:52}}>
             <BarChart2 size={44} color={C.muted} style={{marginBottom:12}}/>
-            <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session and Term</div>
-            <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a session and term to view upload progress</div>
+            <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Cycle and Period</div>
+            <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a cycle and period to view upload progress</div>
           </Card>
         ):progressLoading?(
           <Spinner/>
@@ -1856,8 +1856,8 @@ export function ResultApprovalsPage({ctx}){
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{fontWeight:800,fontSize:14,color:C.text}}>{cls.name}</div>
                               <div style={{fontSize:11,color:C.muted,marginTop:1}}>
-                                {p.total} student{p.total!==1?"s":""}
-                                {formTeacher?<span> · <span style={{color:C.blue}}>Form teacher: {formTeacher}</span></span>:null}
+                                {p.total} member{p.total!==1?"s":""}
+                                {formTeacher?<span> · <span style={{color:C.blue}}>Form staff: {formTeacher}</span></span>:null}
                               </div>
                             </div>
                             {/* Progress bar */}
@@ -1879,14 +1879,14 @@ export function ResultApprovalsPage({ctx}){
                             <div style={{borderTop:`1px solid ${C.border}`,background:C.offWhite}}>
                               {/* Legend */}
                               <div style={{display:"flex",gap:14,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
-                                {[["#22c55e","Complete — all students have scores"],["#f97316","Partial — some students missing"],["#ef4444","Not started — no scores at all"]].map(([col,lbl])=>(
+                                {[["#22c55e","Complete — all members have scores"],["#f97316","Partial — some members missing"],["#ef4444","Not started — no scores at all"]].map(([col,lbl])=>(
                                   <div key={lbl} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:C.muted}}>
                                     <div style={{width:8,height:8,borderRadius:2,background:col,flexShrink:0}}/>
                                     {lbl}
                                   </div>
                                 ))}
                               </div>
-                              {/* Subject rows */}
+                              {/* Category rows */}
                               {p.subjects.map((subj,i)=>{
                                 const sc={complete:"#22c55e",partial:"#f97316",missing:"#ef4444"}[subj.status];
                                 const sbg={complete:"#f0fdf4",partial:"#fff7ed",missing:"#fef2f2"}[subj.status];
@@ -1897,7 +1897,7 @@ export function ResultApprovalsPage({ctx}){
                                     borderBottom:i<p.subjects.length-1?`1px solid ${C.border}40`:"none"}}>
                                     {/* Status badge */}
                                     <div style={{width:7,height:7,borderRadius:"50%",background:sc,flexShrink:0}}/>
-                                    {/* Subject name */}
+                                    {/* Category name */}
                                     <div style={{flex:1,fontWeight:600,fontSize:13,color:C.text}}>{subj.name}</div>
                                     {/* Mini bar */}
                                     <div style={{width:120,flexShrink:0}}>
@@ -1918,7 +1918,7 @@ export function ResultApprovalsPage({ctx}){
                                 );
                               })}
                               {p.subjects.length===0&&(
-                                <div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No subjects assigned to this group.</div>
+                                <div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No categories assigned to this group.</div>
                               )}
                             </div>
                           )}
@@ -1930,7 +1930,7 @@ export function ResultApprovalsPage({ctx}){
               ))}
               {Object.keys(progressBySection).length===0&&(
                 <Card style={{textAlign:"center",padding:40}}>
-                  <div style={{color:C.muted,fontSize:13}}>No groups found. Make sure groups have subjects assigned and members enrolled.</div>
+                  <div style={{color:C.muted,fontSize:13}}>No groups found. Make sure groups have categories assigned and members enrolled.</div>
                 </Card>
               )}
             </div>
@@ -1954,7 +1954,7 @@ export function ResultApprovalsPage({ctx}){
                   {/* Group info */}
                   <div style={{flex:1,minWidth:120}}>
                     <div style={{fontWeight:800,fontSize:14,color:C.blue}}>{cls.name}</div>
-                    <div style={{fontSize:11,color:C.muted}}>{stuInClass.length} students</div>
+                    <div style={{fontSize:11,color:C.muted}}>{stuInClass.length} members</div>
                   </div>
 
                   {/* Completeness */}
@@ -2011,12 +2011,12 @@ export function ResultApprovalsPage({ctx}){
                     </div>
                     {cmp.noSetup&&(
                       <div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.muted}}>
-                        ℹ️ No subjects or students are assigned to this class yet.
+                        ℹ️ No categories or members are assigned to this group yet.
                       </div>
                     )}
                     {!cmp.noSetup&&!cmp.complete&&cmp.studentsWithMissing>0&&(
                       <div style={{background:C.redPale,borderRadius:8,padding:"10px 14px",fontSize:12}}>
-                        <div style={{fontWeight:700,color:C.red,marginBottom:8}}>Missing Results ({cmp.studentsWithMissing} student{cmp.studentsWithMissing>1?"s":""})</div>
+                        <div style={{fontWeight:700,color:C.red,marginBottom:8}}>Missing Results ({cmp.studentsWithMissing} member{cmp.studentsWithMissing>1?"s":""})</div>
                         <div style={{display:"flex",flexDirection:"column",gap:5,maxHeight:180,overflowY:"auto"}}>
                           {(cmp.studentSummary||[]).filter(s=>s.missing.length>0).map(s=>(
                             <div key={s.id} style={{background:"rgba(255,255,255,.6)",borderRadius:6,padding:"6px 10px"}}>
@@ -2046,7 +2046,7 @@ export function ResultApprovalsPage({ctx}){
                     )}
                     {!cmp.noSetup&&cmp.complete&&(
                       <div style={{background:C.greenPale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.green,fontWeight:600}}>
-                        All {cmp.total} students have results for all {cmp.expected} subjects.
+                        All {cmp.total} members have results for all {cmp.expected} categories.
                       </div>
                     )}
                   </div>
@@ -2064,8 +2064,8 @@ export function ResultApprovalsPage({ctx}){
       ):(
         <Card style={{textAlign:"center",padding:52}}>
           <div style={{marginBottom:10}}><ShieldCheck size={44} color={C.muted}/></div>
-          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session and Term</div>
-          <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a session and term to manage result approvals</div>
+          <div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Cycle and Period</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a cycle and period to manage result approvals</div>
         </Card>
       ))}
     </div>
@@ -2074,18 +2074,18 @@ export function ResultApprovalsPage({ctx}){
 
 
 // ─── REPORT CARD SETTINGS PAGE ────────────────────────────────────────────────
-// ── Report Card Template Catalog (T1–T11) ─────────────────────────────────
+// ── Report Template Catalog (T1–T11) ─────────────────────────────────
 // T11 is the current "Classic — Current" renderer. T1–T10 are new designs whose
 // renderers ship in subsequent phases (v32.45+). Storing template_id only —
 // dispatch happens inside openReportCardPrintWindow.
 const REPORT_TEMPLATE_CATALOG=[
-  {id:1, name:"Classic Navy",     accent:"#1e3a5f", desc:"Bold navy header, traditional layout with subject grid"},
+  {id:1, name:"Classic Mono",     accent:"#1e3a5f", desc:"Bold navy header, traditional layout with category grid"},
   {id:2, name:"Modern Minimal",   accent:"#0f172a", desc:"Clean type, generous whitespace, monochrome accents"},
   {id:3, name:"Emerald Prestige", accent:"#047857", desc:"Premium emerald & gold, refined serif typography"},
   {id:4, name:"Bold Blue",        accent:"#1d4ed8", desc:"Strong blue blocks, high-contrast metric tiles"},
   {id:5, name:"Sunrise",          accent:"#ea580c", desc:"Warm sunrise gradient, playful for primary years"},
   {id:6, name:"Royal Crimson",    accent:"#9f1239", desc:"Crimson & cream, classical academy feel"},
-  {id:7, name:"Split Layout",     accent:"#0891b2", desc:"Two-column split — student profile sidebar + results"},
+  {id:7, name:"Split Layout",     accent:"#0891b2", desc:"Two-column split — member profile sidebar + results"},
   {id:8, name:"Dark Premium",     accent:"#1f2937", desc:"Dark header, light body, executive look"},
   {id:9, name:"Nigerian Heritage",accent:"#166534", desc:"Green & white motif celebrating local heritage"},
   {id:10,name:"Geometric Modern", accent:"#7c3aed", desc:"Geometric shapes, contemporary editorial style"},
@@ -2215,10 +2215,10 @@ export function ReportCardSettingsPage({ctx}){
 
   const TOGGLES=[
     {key:"show_cae",         label:"Affective Domain / CAE",    desc:"Character & Affective Evaluation table"},
-    {key:"show_teacher_comment",label:"Class Teacher's Comment", desc:"Staff's remarks and signature"},
+    {key:"show_teacher_comment",label:"Group Staff's Comment", desc:"Staff's remarks and signature"},
     {key:"show_principal_comment",label:"Principal's Comment",   desc:"Principal's remarks and signature"},
-    {key:"show_position",    label:"Student Position",           desc:"Show rank/position in class"},
-    {key:"show_next_term",   label:"Resumption Date",            desc:"Next term closing & resumption dates"},
+    {key:"show_position",    label:"Member Position",           desc:"Show rank/position in group"},
+    {key:"show_next_term",   label:"Resumption Date",            desc:"Next period closing & resumption dates"},
   ];
 
   if(loading)return <Spinner/>;
@@ -2228,7 +2228,7 @@ export function ReportCardSettingsPage({ctx}){
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
         <div>
-          <h2 style={{fontSize:22,fontWeight:900,color:C.blue,margin:0,display:"flex",alignItems:"center",gap:8}}><AppIcon name="report-settings" size={20}/>Report Card Settings</h2>
+          <h2 style={{fontSize:22,fontWeight:900,color:C.blue,margin:0,display:"flex",alignItems:"center",gap:8}}><AppIcon name="report-settings" size={20}/>Report Settings</h2>
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>Configure the default layout and content of all report cards</p>
         </div>
         <Btn onClick={save} color={C.orange} disabled={saving} style={{minWidth:140}}>
@@ -2242,7 +2242,7 @@ export function ReportCardSettingsPage({ctx}){
         <Card>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4,flexWrap:"wrap",gap:8}}>
             <div>
-              <div style={{fontWeight:800,fontSize:15,color:C.blue}}>Report Card Template</div>
+              <div style={{fontWeight:800,fontSize:15,color:C.blue}}>Report Template</div>
               <p style={{color:C.muted,fontSize:12,margin:"4px 0 0"}}>
                 Choose the visual design used when generating report cards. Template 11 is the current classic design.
                 Templates 1–10 are new designs being rolled out — selecting one currently still renders the classic until its
@@ -2289,9 +2289,9 @@ export function ReportCardSettingsPage({ctx}){
         </Card>
 
         {previewId!=null&&(()=>{
-          const sStu={id:"PREVIEW-001",first_name:"Sample",last_name:"Student",gender:"Male",class_id:1,dob:"2010-05-15",position:1};
+          const sStu={id:"PREVIEW-001",first_name:"Sample",last_name:"Member",gender:"Male",class_id:1,dob:"2010-05-15",position:1};
           const sCls={id:1,name:"JSS 2A"};
-          const sTerm={id:1,name:"2nd Term"};
+          const sTerm={id:1,name:"2nd Period"};
           const sSess={id:1,name:"2025/2026"};
           const sGS=[
             {grade:"A",min_score:75,max_score:100,remark:"Excellent"},
@@ -2330,7 +2330,7 @@ export function ReportCardSettingsPage({ctx}){
             result_ca_max:40,result_exam_max:60,
             principal_signature_base64:rcSet.principal_signature_base64||"",
             principal_stamp_base64:rcSet.principal_stamp_base64||"",
-            report_class_teacher_title:rcSet.report_class_teacher_title||"Class Teacher",
+            report_class_teacher_title:rcSet.report_class_teacher_title||"Group Staff",
             report_principal_title:rcSet.report_principal_title||"Principal",
             report_card_template_id:String(previewId),
           };
@@ -2339,7 +2339,7 @@ export function ReportCardSettingsPage({ctx}){
             html=openReportCardPrintWindow(
               [sStu],{[sStu.id]:{results:sRes,caeResults:sCAEResults}},
               sCls,sTerm,sSess,sGS,sCAET,sCAER,sPub,sSet,null,
-              "A diligent student showing remarkable improvement this term. Keep it up!",
+              "A diligent member showing remarkable improvement this period. Keep it up!",
               "Excellent performance overall. Continue to strive for greater heights.",
               "2026-01-08",sPub,null,null,null,true,false
             );
@@ -2428,7 +2428,7 @@ export function ReportCardSettingsPage({ctx}){
               Default Group Staff Comment
             </label>
             <textarea value={form.default_teacher_comment} onChange={e=>f({default_teacher_comment:e.target.value})}
-              rows={2} placeholder="e.g. A diligent student who demonstrates excellent commitment…"
+              rows={2} placeholder="e.g. A diligent member who demonstrates excellent commitment…"
               style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,
                 borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
@@ -2441,7 +2441,7 @@ export function ReportCardSettingsPage({ctx}){
               style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,
                 borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
-          <Inp label="Default Next Term / Resumption Date" type="date"
+          <Inp label="Default Next Period / Resumption Date" type="date"
             value={form.default_next_term_date||""} onChange={v=>f({default_next_term_date:v})}/>
         </Card>
 
@@ -2453,32 +2453,32 @@ export function ReportCardSettingsPage({ctx}){
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Group Staff Label</label>
               <input value={rcSet.report_class_teacher_title} onChange={e=>rs("report_class_teacher_title",e.target.value)}
-                placeholder="Class Teacher's Comment"
+                placeholder="Group Staff's Comment"
                 style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:C.white,color:C.text}}
                 onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Principal Label</label>
               <input value={rcSet.report_principal_title} onChange={e=>rs("report_principal_title",e.target.value)}
-                placeholder="School Principal"
+                placeholder="Organization Principal"
                 style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:C.white,color:C.text}}
                 onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>
           </div>
         </Card>
 
-        {/* ── 6. Term Dates ── */}
+        {/* ── 6. Period Dates ── */}
         <Card>
-          <div style={{fontWeight:800,fontSize:15,color:C.blue,marginBottom:4}}>Term Dates</div>
-          <p style={{color:C.muted,fontSize:12,marginTop:0,marginBottom:14}}>Printed on every report card as the official term closing and next resumption dates.</p>
+          <div style={{fontWeight:800,fontSize:15,color:C.blue,marginBottom:4}}>Period Dates</div>
+          <p style={{color:C.muted,fontSize:12,marginTop:0,marginBottom:14}}>Printed on every report card as the official period closing and next resumption dates.</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Term Closing Date</label>
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Period Closing Date</label>
               <input type="date" value={rcSet.term_closing_date||""} onChange={e=>rs("term_closing_date",e.target.value)}
                 style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:C.white,color:C.text}}/>
             </div>
             <div>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Next Term Opening Date</label>
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Next Period Opening Date</label>
               <input type="date" value={rcSet.term_opening_date||""} onChange={e=>rs("term_opening_date",e.target.value)}
                 style={{width:"100%",boxSizing:"border-box",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:C.white,color:C.text}}/>
             </div>
@@ -2491,7 +2491,7 @@ export function ReportCardSettingsPage({ctx}){
           <p style={{color:C.muted,fontSize:12,marginTop:0,marginBottom:14}}>Font family, size, and footer text applied to all printed report cards.</p>
           <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"end",marginBottom:14}}>
             <div>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Report Card Font</label>
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:5}}>Report Font</label>
               <select value={rcSet.report_card_font_family} onChange={e=>rs("report_card_font_family",e.target.value)}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",background:"#fff",color:C.text}}>
                 <option value="'Times New Roman',Georgia,serif">Times New Roman (classic)</option>
@@ -2685,8 +2685,8 @@ export function ReportTemplatesPage({ctx}){
 
   const SECTION_LABELS={
     show_cae:"CAE",show_teacher_comment:"Staff Comment",
-    show_principal_comment:"Principal Comment",show_parent_ack:"Parent Ack",
-    show_position:"Position",show_next_term:"Next Term Date",
+    show_principal_comment:"Principal Comment",show_parent_ack:"Contact Ack",
+    show_position:"Position",show_next_term:"Next Period Date",
   };
 
   return(
@@ -2694,7 +2694,7 @@ export function ReportTemplatesPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="report-cards" size={20}/>Report Templates</h2>
-          <p style={{color:C.muted,fontSize:12}}>Save and reuse report card configurations each term</p>
+          <p style={{color:C.muted,fontSize:12}}>Save and reuse report card configurations each period</p>
         </div>
         <Btn onClick={()=>openModal()} color={C.orange}>New Template</Btn>
       </div>
@@ -2705,7 +2705,7 @@ export function ReportTemplatesPage({ctx}){
             <div style={{marginBottom:10}}><FileStack size={44} color={C.muted}/></div>
             <div style={{fontWeight:800,color:C.blue,fontSize:16}}>No Templates Yet</div>
             <div style={{color:C.muted,fontSize:13,marginTop:6,lineHeight:1.6}}>
-              Save your report card settings as a template to reuse every term.
+              Save your report card settings as a template to reuse every period.
             </div>
             <div style={{marginTop:16}}><Btn onClick={()=>openModal()} color={C.orange}>Create First Template</Btn></div>
           </Card>
@@ -2753,7 +2753,7 @@ export function ReportTemplatesPage({ctx}){
 
       {modal&&(
         <Modal title={editId?"Edit Template":"New Report Template"} onClose={()=>setModal(false)} width={580}>
-          <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. Standard Term Report"/>
+          <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. Standard Period Report"/>
           <Inp label="Description" value={form.description} onChange={v=>f({description:v})} placeholder="Optional description"/>
 
 
@@ -2767,8 +2767,8 @@ export function ReportTemplatesPage({ctx}){
                 {key:"show_cae",label:"Character & Affective Evaluation"},
                 {key:"show_teacher_comment",label:"Group Staff's Comment"},
                 {key:"show_principal_comment",label:"Principal's Comment"},
-                {key:"show_position",label:"Student Position"},
-                {key:"show_next_term",label:"Next Term Date"},
+                {key:"show_position",label:"Member Position"},
+                {key:"show_next_term",label:"Next Period Date"},
               ].map(({key,label})=>(
                 <div key={key} onClick={()=>f({[key]:!form[key]})}
                   style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:8,cursor:"pointer",
@@ -2789,7 +2789,7 @@ export function ReportTemplatesPage({ctx}){
               Default Staff Comment
             </label>
             <textarea value={form.default_teacher_comment} onChange={e=>f({default_teacher_comment:e.target.value})}
-              rows={2} placeholder="Leave blank if you want to fill in each term"
+              rows={2} placeholder="Leave blank if you want to fill in each period"
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
           <div style={{marginBottom:12}}>
@@ -2797,17 +2797,17 @@ export function ReportTemplatesPage({ctx}){
               Default Principal Comment
             </label>
             <textarea value={form.default_principal_comment} onChange={e=>f({default_principal_comment:e.target.value})}
-              rows={2} placeholder="Leave blank if you want to fill in each term"
+              rows={2} placeholder="Leave blank if you want to fill in each period"
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:C.white,color:C.text,borderRadius:8,fontSize:13,resize:"vertical",fontFamily:"inherit",outline:"none"}}/>
           </div>
 
-          <Inp label="Default Next Term Date" type="date" value={form.default_next_term_date||""} onChange={v=>f({default_next_term_date:v})}/>
+          <Inp label="Default Next Period Date" type="date" value={form.default_next_term_date||""} onChange={v=>f({default_next_term_date:v})}/>
 
           {/* Signatures */}
           {signatures.length>0&&(
             <div style={{marginBottom:12}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <Sel label="Teacher Signature" value={form.teacher_signature_id||""} onChange={v=>f({teacher_signature_id:v})}
+                <Sel label="Staff Signature" value={form.teacher_signature_id||""} onChange={v=>f({teacher_signature_id:v})}
                   options={[{value:"",label:"— None —"},...signatures.map(s=>({value:s.id,label:s.name}))]}/>
                 <Sel label="Principal Signature" value={form.principal_signature_id||""} onChange={v=>f({principal_signature_id:v})}
                   options={[{value:"",label:"— None —"},...signatures.map(s=>({value:s.id,label:s.name}))]}/>

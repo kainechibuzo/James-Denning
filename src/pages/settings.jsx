@@ -17,9 +17,10 @@ import {
 import { buildTranscriptHTML } from "../services/pdf/transcript.js";
 import { buildAlertEmail } from "../services/email/index.js";
 import { _applyNameCase } from "../utils/grades.js";
+import { PRODUCT, INDUSTRIES, MODULES, getIndustryLabel, storeWorkspaceType } from "../config/product.js";
 import { PermissionsPage } from "./permissions.jsx";
 
-const APP_VERSION = "v32.87";
+const APP_VERSION = PRODUCT.version;
 
 export function generateStampSvg(schoolName="OFFICIAL STAMP", style="blue"){
   const S=schoolName.toUpperCase().slice(0,30);
@@ -60,7 +61,7 @@ export const STAMP_TEMPLATES=[
   {id:"red",   label:"Official Red",   style:"red"},
   {id:"gold",  label:"Gold Premium",   style:"gold"},
   {id:"green", label:"Emerald",        style:"green"},
-  {id:"orange",label:"School Brand",   style:"orange"},
+  {id:"orange",label:"Organization Brand",   style:"orange"},
 ];
 
 // ─── SETTINGS HELPERS — defined OUTSIDE SettingsPage so they are stable
@@ -101,16 +102,16 @@ export function SettingToggle({k,settings,onSet}){
 // ─── SETTINGS PAGE ────────────────────────────────────────────────────────────
 export function SettingsPage({ctx,inPanel}){
   const {notify,setPage}=ctx;
-  const {refreshLogo}=useContext(SectionCtx);
+  const {refreshLogo,refreshWorkspace}=useContext(SectionCtx);
   const confirm=useConfirm();
   const [settings,setSettings]=useState({});
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
-  const [tab,setTab]=useState("school"); // school | sessions | academic | security | portal
+  const [tab,setTab]=useState("workspace"); // workspace | school | sessions | academic | security | portal
   const [showPass,setShowPass]=useState(false);
   const [newPass,setNewPass]=useState("");
   const [confirmPass,setConfirmPass]=useState("");
-  // Sessions/Terms state
+  // Cycles/Periods state
   const [sessions,setSessions]=useState([]);
   const [terms,setTerms]=useState([]);
   const [sessModal,setSessModal]=useState(false);
@@ -176,6 +177,18 @@ export function SettingsPage({ctx,inPanel}){
     else notify("Settings saved ✓");
   };
 
+  const saveWorkspace=async()=>{
+    const workspaceType=settings.workspace_type||PRODUCT.defaultIndustry;
+    const educationEnabled=settings.education_module_enabled !== "false";
+    setSaving(true);
+    const {error}=await db.setSettings([{key:"workspace_type",value:workspaceType},{key:"education_module_enabled",value:educationEnabled?"true":"false"}]);
+    setSaving(false);
+    if(error){notify(error.message,"error");return;}
+    storeWorkspaceType(workspaceType);
+    if(refreshWorkspace)refreshWorkspace(workspaceType,educationEnabled);
+    notify(`${getIndustryLabel(workspaceType)} workspace saved ✓`);
+  };
+
   const handleLogoUpload=async(file)=>{
     if(!file)return;
     if(file.size>500000){notify("Logo must be under 500KB","error");return;}
@@ -205,34 +218,34 @@ export function SettingsPage({ctx,inPanel}){
         subject:"[Alert] Admin Password Changed",
         html:buildAlertEmail("Admin Password Changed",
           [`Changed by: ${ctx?.user?.full_name||ctx?.user?.name||"Admin"}`,
-           `School: ${settings.school_name||"School Portal"}`,
+           `Organization: ${settings.school_name||"Business Portal"}`,
            `Time: ${new Date().toLocaleString("en-NG")}`,
            `Action: Admin portal login password was changed`],
-          "critical",settings.school_name||"School Portal"),
+          "critical",settings.school_name||"Business Portal"),
         eventKey:"pin_change"
       });
     }
   };
 
-  // Sessions CRUD
+  // Cycles CRUD
   const saveSession=async()=>{
-    if(!sessForm.name){notify("Session name required","error");return;}
+    if(!sessForm.name){notify("Cycle name required","error");return;}
     const {error}=await db.upsertSession(sessForm,editSessId);
     if(error)notify(error.message,"error");
-    else{notify(editSessId?"Session updated ✓":"Session added ✓");setSessModal(false);loadSessions();}
+    else{notify(editSessId?"Cycle updated ✓":"Cycle added ✓");setSessModal(false);loadSessions();}
   };
   const saveTerm=async()=>{
-    if(!termForm.name||!termForm.session_id){notify("Name and session required","error");return;}
+    if(!termForm.name||!termForm.session_id){notify("Name and cycle required","error");return;}
     const {error}=await db.upsertTerm({...termForm,session_id:+termForm.session_id},editTermId);
     if(error)notify(error.message,"error");
-    else{notify(editTermId?"Term updated ✓":"Term added ✓");setTermModal(false);loadSessions();}
+    else{notify(editTermId?"Period updated ✓":"Period added ✓");setTermModal(false);loadSessions();}
   };
   const activateSession=async(s)=>{
     const current=sessions.find(x=>x.is_active);
     if(current&&current.id!==s.id){
-      const ok=await confirm({title:"Change Active Session?",
+      const ok=await confirm({title:"Change Active Cycle?",
         message:`"${current.name}" is currently active. Switch to "${s.name}"? The previous session will be deactivated.`,
-        confirmLabel:"Switch Session"});
+        confirmLabel:"Switch Cycle"});
       if(!ok)return;
     }
     const {error}=await db.setActiveSession(s.id);
@@ -243,9 +256,9 @@ export function SettingsPage({ctx,inPanel}){
     const sessionTerms=terms.filter(x=>x.session_id===t.session_id);
     const current=sessionTerms.find(x=>x.is_active);
     if(current&&current.id!==t.id){
-      const ok=await confirm({title:"Change Active Term?",
+      const ok=await confirm({title:"Change Active Period?",
         message:`"${current.name}" is currently active. Switch to "${t.name}"?`,
-        confirmLabel:"Switch Term"});
+        confirmLabel:"Switch Period"});
       if(!ok)return;
     }
     const {error}=await db.setActiveTerm(t.id,t.session_id);
@@ -253,15 +266,15 @@ export function SettingsPage({ctx,inPanel}){
     notify(`Active term changed to "${t.name}"`);loadSessions();
   };
   const delSession=async(s)=>{
-    const __ok=await confirm({title:"Delete Session?",
+    const __ok=await confirm({title:"Delete Cycle?",
         message:`Delete "${s.name}"? All associated terms, results, and report data will be permanently removed.`,
-        confirmLabel:"Delete Session",danger:true,typeToConfirm:s.name});
+        confirmLabel:"Delete Cycle",danger:true,typeToConfirm:s.name});
     if(!__ok)return;
     await db.deleteSession(s.id);
     notify(s.name+" deleted","warn");loadSessions();
   };
   const delTerm=async(id,name)=>{
-    const __ok=await confirm({title:"Delete Term?",
+    const __ok=await confirm({title:"Delete Period?",
         message:`Delete term "${name}"? Results linked to this term will also be removed.`,
         confirmLabel:"Delete",danger:true,typeToConfirm:name});
     if(!__ok)return;
@@ -269,9 +282,10 @@ export function SettingsPage({ctx,inPanel}){
   };
 
   const tabs=[
-    {id:"school",        label:"School Info"},
-    {id:"sessions",      label:"Sessions & Terms"},
-    {id:"academic",      label:"Academic"},
+    {id:"workspace",     label:"Workspace"},
+    {id:"school",        label:"Organization Info"},
+    {id:"sessions",      label:"Cycles & Periods"},
+    {id:"academic",      label:"Performance"},
     {id:"security",      label:"Security"},
     {id:"portal",        label:"Portal"},
   ];
@@ -296,7 +310,7 @@ export function SettingsPage({ctx,inPanel}){
           <div style={{fontWeight:900,fontSize:20,color:"#fff",display:"flex",alignItems:"center",gap:10}}>
             <Settings size={20} color="#fff" style={{opacity:.85}}/>Settings
           </div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.7)",marginTop:2}}>Configure your school portal</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.7)",marginTop:2}}>Configure your business portal</div>
         </div>
       </div>
 
@@ -316,15 +330,31 @@ export function SettingsPage({ctx,inPanel}){
         ))}
       </div>
 
+      {/* ── WORKSPACE PROFILE ── */}
+      {tab==="workspace"&&(
+        <Card>
+          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Workspace Profile</div>
+          <p style={{color:C.muted,fontSize:12,lineHeight:1.6,marginBottom:18}}>Choose the language and optional modules that best fit your organization. Existing data and workflows remain compatible when you change this setting.</p>
+          <div style={{marginBottom:20}}><label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Organization type</label>
+            <select value={settings.workspace_type||PRODUCT.defaultIndustry} onChange={e=>set("workspace_type",e.target.value)} style={{width:"100%",padding:"11px 12px",border:`1.5px solid ${C.border}`,borderRadius:9,fontSize:13,background:C.white,color:C.text,outline:"none"}}>
+              {INDUSTRIES.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+            </select><div style={{fontSize:11,color:C.muted,marginTop:6}}>{INDUSTRIES.find(item=>item.value===(settings.workspace_type||PRODUCT.defaultIndustry))?.description}</div>
+          </div>
+          <div style={{border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:20,background:C.offWhite}}><div style={{display:"flex",alignItems:"flex-start",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:C.text,color:C.white,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Settings size={17}/></div><div style={{flex:1}}><div style={{fontWeight:800,fontSize:13,color:C.text}}>{MODULES.core.label}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5,marginTop:3}}>{MODULES.core.description}</div></div><Badge color={C.green}>Always on</Badge></div></div>
+          <div style={{border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:20}}><div style={{display:"flex",alignItems:"flex-start",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:C.offWhite,color:C.text,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Calendar size={17}/></div><div style={{flex:1}}><div style={{fontWeight:800,fontSize:13,color:C.text}}>{MODULES.education.label}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5,marginTop:3}}>{MODULES.education.description}</div></div><button type="button" onClick={()=>set("education_module_enabled",settings.education_module_enabled==="false"?"true":"false")} style={{width:44,height:24,borderRadius:14,border:"none",background:settings.education_module_enabled!=="false"?C.text:C.border,position:"relative",cursor:"pointer",flexShrink:0}}><span style={{position:"absolute",top:4,left:settings.education_module_enabled!=="false"?24:4,width:16,height:16,borderRadius:"50%",background:C.white,transition:"left .15s"}}/></button></div><div style={{fontSize:11,color:C.muted,marginTop:12}}>Enable this for education teams, or keep the core workspace neutral for any other business.</div></div>
+          <Btn onClick={saveWorkspace} disabled={saving}>{saving?"Saving…":"Save Workspace Profile"}</Btn>
+        </Card>
+      )}
+
       {/* ── SCHOOL INFO ── */}
       {tab==="school"&&(
         <Card>
-          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>School Information</div>
+          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Organization Information</div>
           <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Appears on reports, transcripts, and the login page.</p>
 
           {/* Logo Upload */}
           <div style={{marginBottom:20,paddingBottom:20,borderBottom:`1px solid ${C.border}`}}>
-            <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>School Logo</label>
+            <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Organization Logo</label>
             <div style={{display:"flex",alignItems:"center",gap:16}}>
               <div style={{width:80,height:80,borderRadius:12,border:`2px dashed ${C.border}`,
                 background:C.offWhite,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
@@ -352,13 +382,13 @@ export function SettingsPage({ctx,inPanel}){
           </div>
 
           <SettingRow label="Business Name" desc="Full official name"><SettingInput settings={settings} onSet={set} k="school_name" placeholder="Your Business"/></SettingRow>
-          <SettingRow label="School Address" desc="Physical address on official documents"><SettingInput settings={settings} onSet={set} k="school_address" placeholder="No. 1 Renaissance Avenue, Abuja"/></SettingRow>
+          <SettingRow label="Organization Address" desc="Physical address on official documents"><SettingInput settings={settings} onSet={set} k="school_address" placeholder="No. 1 Business Avenue, Abuja"/></SettingRow>
           <SettingRow label="Phone Number" desc="Main contact number"><SettingInput settings={settings} onSet={set} k="school_phone" placeholder="+234 800 000 0000"/></SettingRow>
-          <SettingRow label="School Motto" desc="Appears on transcripts"><SettingInput settings={settings} onSet={set} k="school_motto" placeholder="Excellence in Education"/></SettingRow>
+          <SettingRow label="Organization Motto" desc="Appears on transcripts"><SettingInput settings={settings} onSet={set} k="school_motto" placeholder="Built for Progress"/></SettingRow>
 
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}>
             <Btn onClick={()=>saveTab(["school_name","school_address","school_phone","school_motto"])} color={C.orange} disabled={saving}>
-              {saving?"Saving…":"Save School Info"}
+              {saving?"Saving…":"Save Organization Info"}
             </Btn>
           </div>
         </Card>
@@ -369,16 +399,16 @@ export function SettingsPage({ctx,inPanel}){
         <div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div>
-              <div style={{fontWeight:900,color:C.blue,fontSize:15}}>Sessions & Terms</div>
-              <div style={{color:C.muted,fontSize:12}}>Manage academic sessions and their terms</div>
+              <div style={{fontWeight:900,color:C.blue,fontSize:15}}>Cycles & Periods</div>
+              <div style={{color:C.muted,fontSize:12}}>Manage performance cycles and their periods</div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <Btn sm onClick={()=>{setTermForm({name:"",session_id:sessions[0]?.id||"",is_active:false});setEditTermId(null);setTermModal(true);}} color={C.green} outline>+ Term</Btn>
-              <Btn onClick={()=>{setSessForm({name:"",is_active:false});setEditSessId(null);setSessModal(true);}} color={C.orange}>+ Session</Btn>
+              <Btn sm onClick={()=>{setTermForm({name:"",session_id:sessions[0]?.id||"",is_active:false});setEditTermId(null);setTermModal(true);}} color={C.green} outline>+ Period</Btn>
+              <Btn onClick={()=>{setSessForm({name:"",is_active:false});setEditSessId(null);setSessModal(true);}} color={C.orange}>+ Cycle</Btn>
             </div>
           </div>
           {sesLoading?<Spinner/>:sessions.length===0
-            ?<Card style={{textAlign:"center",padding:40,color:C.light}}>No sessions yet. Add one above.</Card>
+            ?<Card style={{textAlign:"center",padding:40,color:C.light}}>No cycles yet. Add one above.</Card>
             :sessions.map(s=>{
               const sTerms=terms.filter(t=>t.session_id===s.id);
               return(
@@ -409,15 +439,15 @@ export function SettingsPage({ctx,inPanel}){
                           :<Btn xs onClick={()=>activateTerm(t)} color={C.orange} style={{marginTop:6}}>Set Active</Btn>}
                       </div>
                     ))}
-                    {!sTerms.length&&<div style={{color:C.light,fontSize:12,gridColumn:"1/-1"}}>No terms yet</div>}
+                    {!sTerms.length&&<div style={{color:C.light,fontSize:12,gridColumn:"1/-1"}}>No periods yet</div>}
                   </div>
                 </Card>
               );
             })
           }
           {sessModal&&(
-            <Modal title={editSessId?"Edit Session":"New Session"} onClose={()=>setSessModal(false)}>
-              <Inp label="Session Name *" value={sessForm.name} onChange={v=>setSessForm(p=>({...p,name:v}))} placeholder="e.g. 2025/2026"/>
+            <Modal title={editSessId?"Edit Cycle":"New Cycle"} onClose={()=>setSessModal(false)}>
+              <Inp label="Cycle Name *" value={sessForm.name} onChange={v=>setSessForm(p=>({...p,name:v}))} placeholder="e.g. 2025/2026"/>
               <div style={{display:"flex",gap:10,marginTop:6}}>
                 <Btn onClick={saveSession} color={C.orange} style={{flex:1}}>Save</Btn>
                 <Btn onClick={()=>setSessModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
@@ -425,10 +455,10 @@ export function SettingsPage({ctx,inPanel}){
             </Modal>
           )}
           {termModal&&(
-            <Modal title={editTermId?"Edit Term":"New Term"} onClose={()=>setTermModal(false)}>
-              <Sel label="Session *" value={termForm.session_id||""} onChange={v=>setTermForm(p=>({...p,session_id:v}))}
+            <Modal title={editTermId?"Edit Period":"New Period"} onClose={()=>setTermModal(false)}>
+              <Sel label="Cycle *" value={termForm.session_id||""} onChange={v=>setTermForm(p=>({...p,session_id:v}))}
                 options={sessions.map(s=>({value:s.id,label:s.name}))}/>
-              <Inp label="Term Name *" value={termForm.name} onChange={v=>setTermForm(p=>({...p,name:v}))} placeholder="e.g. 1st Term"/>
+              <Inp label="Period Name *" value={termForm.name} onChange={v=>setTermForm(p=>({...p,name:v}))} placeholder="e.g. 1st Period"/>
               <div style={{display:"flex",gap:10,marginTop:6}}>
                 <Btn onClick={saveTerm} color={C.orange} style={{flex:1}}>Save</Btn>
                 <Btn onClick={()=>setTermModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
@@ -441,7 +471,7 @@ export function SettingsPage({ctx,inPanel}){
       {/* ── ACADEMIC ── */}
       {tab==="academic"&&(
         <Card>
-          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Academic Settings</div>
+          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Performance Settings</div>
           <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Configure scoring rules (CA / Exam maximums).</p>
           <SettingRow label="CA Score Maximum" desc="Max marks for Continuous Assessment (default: 40)">
             <input type="number" value={settings.result_ca_max||40} onChange={e=>set("result_ca_max",e.target.value)}
@@ -465,11 +495,11 @@ export function SettingsPage({ctx,inPanel}){
           </div>
           <div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px",marginTop:4,display:"flex",alignItems:"center",gap:10}}>
             <span style={{fontSize:11,color:C.muted}}>Report card appearance, signatures, stamps, fonts, dates and templates are managed in</span>
-            <Btn onClick={()=>setPage("report-card-settings")} color={C.blue} outline style={{fontSize:11,padding:"4px 10px"}}>Report Card Settings</Btn>
+            <Btn onClick={()=>setPage("report-card-settings")} color={C.blue} outline style={{fontSize:11,padding:"4px 10px"}}>Report Settings</Btn>
           </div>
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}>
             <Btn onClick={()=>saveTab(["result_ca_max","result_exam_max"])} color={C.orange} disabled={saving}>
-              {saving?"Saving…":"Save Academic Settings"}
+              {saving?"Saving…":"Save Performance Settings"}
             </Btn>
           </div>
         </Card>
@@ -479,9 +509,9 @@ export function SettingsPage({ctx,inPanel}){
       {tab==="security"&&(
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <Card>
-            <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Session Security</div>
+            <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Cycle Security</div>
             <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Control automatic sign-out behaviour for all portal users.</p>
-            <SettingRow label="Inactivity Timeout" desc="Users are warned 1 minute before being signed out. Applies to all teachers, managers, and students. Admin sessions are not affected.">
+            <SettingRow label="Inactivity Timeout" desc="Users are warned 1 minute before being signed out. Applies to all staff, managers, and members. Admin cycles are not affected.">
               <select
                 value={settings.inactivity_timeout_minutes||"5"}
                 onChange={e=>set("inactivity_timeout_minutes",e.target.value)}
@@ -493,7 +523,7 @@ export function SettingsPage({ctx,inPanel}){
             </SettingRow>
             <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}>
               <Btn onClick={()=>saveTab(["inactivity_timeout_minutes"])} color={C.orange} disabled={saving}>
-                {saving?"Saving…":"Save Session Settings"}
+                {saving?"Saving…":"Save Cycle Settings"}
               </Btn>
             </div>
           </Card>
@@ -533,12 +563,12 @@ export function SettingsPage({ctx,inPanel}){
               <DangerBtn label="Clear All Results" icon={<Trash2 size={14}/>} typePhrase="DELETE RESULTS"
                 onClick={async()=>{
                   const {error}=await db.clearAllResults();
-                  if(error)notify(error.message,"error"); else notify("All results for this school deleted","warn");
+                  if(error)notify(error.message,"error"); else notify("All results for this organization deleted","warn");
                 }}/>
               <DangerBtn label="Clear All Payments" icon={<Trash2 size={14}/>} typePhrase="DELETE PAYMENTS"
                 onClick={async()=>{
                   const {error}=await db.clearAllPayments();
-                  if(error)notify(error.message,"error"); else notify("All payments for this school deleted","warn");
+                  if(error)notify(error.message,"error"); else notify("All payments for this organization deleted","warn");
                 }}/>
             </div>
           </Card>
@@ -564,8 +594,8 @@ export function SettingsPage({ctx,inPanel}){
                 Admin logins are never affected — the admin can always sign in.
               </div>
               {[
-                {key:"login_students_disabled",   label:"Disable Member Logins",  desc:"All students will be blocked from signing in.", color:C.orange},
-                {key:"login_teachers_disabled",   label:"Disable Staff Logins",    desc:"All teachers and managers will be blocked from signing in.", color:C.blue},
+                {key:"login_students_disabled",   label:"Disable Member Logins",  desc:"All members will be blocked from signing in.", color:C.orange},
+                {key:"login_teachers_disabled",   label:"Disable Staff Logins",    desc:"All staff and managers will be blocked from signing in.", color:C.blue},
               ].map(({key,label,desc,color},i,arr)=>{
                 const on=settings[key]==="true";
                 return(
@@ -595,7 +625,7 @@ export function SettingsPage({ctx,inPanel}){
                 value={settings.login_disabled_message||""}
                 onChange={e=>setSettings(p=>({...p,login_disabled_message:e.target.value}))}
                 onBlur={async e=>{await db.setSetting("login_disabled_message",e.target.value.trim());notify("Login message saved ✓");}}
-                placeholder="e.g. The portal is closed for the end-of-term period. Please check back after resumption."
+                placeholder="e.g. The portal is closed for the end-of-period period. Please check back after resumption."
                 style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,
                   fontSize:12,background:C.white,color:C.text,resize:"vertical",fontFamily:"inherit",
                   lineHeight:1.5,boxSizing:"border-box"}}
@@ -603,19 +633,19 @@ export function SettingsPage({ctx,inPanel}){
             </div>
           </div>
 
-          <SettingRow label="Block Report Cards for Owing Members"
-            desc="When enabled, students with any outstanding fee balance — even partial — cannot view or download their report card until the balance is cleared. Admins are never blocked.">
+          <SettingRow label="Block Reports for Owing Members"
+            desc="When enabled, members with any outstanding billing balance — even partial — cannot view or download their report card until the balance is cleared. Admins are never blocked.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               <SettingToggle settings={settings} onSet={set} k="block_reports_if_owing"/>
               {settings.block_reports_if_owing==="true"&&(
                 <div style={{fontSize:11,color:C.red,background:C.redPale,padding:"6px 10px",borderRadius:6,border:"1px solid #fecaca"}}>
-                  🔒 Active — Students with any unpaid balance will see a fee-owing notice instead of their report card.
+                  🔒 Active — Members with any unpaid balance will see a billing-owing notice instead of their report card.
                 </div>
               )}
             </div>
           </SettingRow>
           <div style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`}}/>
-          <SettingRow label="Rows Per Page" desc="How many students (or teachers) to show per page in list tables. Applies immediately.">
+          <SettingRow label="Rows Per Page" desc="How many members (or staff) to show per page in list tables. Applies immediately.">
             <select
               defaultValue={localStorage.getItem('rgs_rows_per_page')||'50'}
               onChange={e=>{localStorage.setItem('rgs_rows_per_page',e.target.value);notify(`Rows per page set to ${e.target.value} — refresh the page you're on to see it take effect`);}}
@@ -624,7 +654,7 @@ export function SettingsPage({ctx,inPanel}){
             </select>
           </SettingRow>
           <div style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`}}/>
-          <SettingRow label="Member Name Order" desc="Controls how student names appear across results, reports, bills, and student lists.">
+          <SettingRow label="Member Name Order" desc="Controls how member names appear across results, reports, bills, and member lists.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {[{v:"FML",l:"First, Middle, Last (default)"},{v:"LFM",l:"Last, First, Middle"}].map(o=>(
                 <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
@@ -637,7 +667,7 @@ export function SettingsPage({ctx,inPanel}){
               ))}
             </div>
           </SettingRow>
-          <SettingRow label="Member Name Capitalization" desc="How student names are capitalised in all portal displays.">
+          <SettingRow label="Member Name Capitalization" desc="How member names are capitalised in all portal displays.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {[{v:"title",l:"Title Case — First Letter Capitalised (default)"},{v:"upper",l:"ALL CAPS"},{v:"lower",l:"lowercase"}].map(o=>(
                 <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
@@ -658,7 +688,7 @@ export function SettingsPage({ctx,inPanel}){
               )}</strong>
             </div>
           )}
-          <SettingRow label="Recycle Bin Retention" desc="How long deleted items are kept in the Recycle Bin before being permanently purged. Applies to students, teachers, classes, sections, and subjects.">
+          <SettingRow label="Recycle Bin Retention" desc="How long deleted items are kept in the Recycle Bin before being permanently purged. Applies to members, staff, groups, sections, and categories.">
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {[7,14,30,60,90].map(d=>{
                 const active=(settings.recycle_bin_retention_days||"30")===String(d);
@@ -707,19 +737,19 @@ export function SettingsPage({ctx,inPanel}){
           {key:"failed_logins",    label:"Multiple Failed Logins",     severity:"critical",
            desc:`Fires when a user exceeds the threshold of failed login attempts (default: 5 within 10 min).`},
           {key:"pin_change",       label:"Admin PIN Changed",          severity:"critical",
-           desc:"Fires when the school admin password is changed."},
-          {key:"student_delete",   label:"Student Deleted",            severity:"warn",
-           desc:"Fires when a student record is permanently deleted."},
-          {key:"refund_issued",    label:"Fee Refund Issued",          severity:"warn",
+           desc:"Fires when the organization administrator password is changed."},
+          {key:"student_delete",   label:"Member Deleted",            severity:"warn",
+           desc:"Fires when a member record is permanently deleted."},
+          {key:"refund_issued",    label:"Billing Refund Issued",          severity:"warn",
            desc:"Fires when a payment refund is processed."},
           {key:"large_payment",    label:"Large Payment Recorded",     severity:"warn",
            desc:"Fires when a single payment exceeds ₦100,000."},
-          {key:"report_published", label:"Report Cards Published",     severity:"info",
-           desc:"Fires when a teacher publishes report cards for a class."},
+          {key:"report_published", label:"Reports Published",     severity:"info",
+           desc:"Fires when a staff publishes report cards for a group."},
           {key:"access_request",   label:"Access Request Submitted",   severity:"info",
-           desc:"Fires when a teacher submits an access request."},
-          {key:"student_request",  label:"Student Enrolment Request",  severity:"info",
-           desc:"Fires when a teacher submits a new student (manual or bulk) for admin approval."},
+           desc:"Fires when a staff submits an access request."},
+          {key:"student_request",  label:"Member Enrolment Request",  severity:"info",
+           desc:"Fires when a staff submits a new member (manual or bulk) for admin approval."},
         ];
 
         const SEV_COLOR={critical:"#b91c1c",warn:"#d97706",info:"#1A4FA0"};
@@ -740,11 +770,11 @@ export function SettingsPage({ctx,inPanel}){
           setTestSending(true);
           const html=buildAlertEmail(
             "Test Alert — Notifications Working",
-            ["School: "+(settings.school_name||"School Portal"),
+            ["Organization: "+(settings.school_name||"Business Portal"),
              "Time: "+new Date().toLocaleString("en-NG"),
              "Sent by: "+ctx?.user?.full_name||"Admin",
              "Status: Active notifications are working correctly"],
-            "info", settings.school_name||"School Portal"
+            "info", settings.school_name||"Business Portal"
           );
           await db.sendAdminAlert({subject:"[Test] Portal Notification Alert",html,config:nc});
           setTestSending(false);
@@ -849,12 +879,12 @@ export function SettingsPage({ctx,inPanel}){
               const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
               const DIGEST_EVENTS=[
                 {key:"logins",    label:"Login Activity",        desc:"Login successes, failures, and logouts"},
-                {key:"students",  label:"Student Changes",       desc:"Student records added, edited, or deleted"},
+                {key:"students",  label:"Member Changes",       desc:"Member records added, edited, or deleted"},
                 {key:"staff",     label:"Staff & Role Changes",  desc:"Staff records, role changes, permission changes"},
                 {key:"results",   label:"Results & Reports",     desc:"Result uploads, approvals, report card publishes"},
-                {key:"fees",      label:"Fees & Payments",       desc:"Payments recorded, refunds, large transactions"},
-                {key:"settings",  label:"Settings Changes",      desc:"School settings, passwords, config updates"},
-                {key:"access",    label:"Access Requests",       desc:"Teacher and student access requests"},
+                {key:"fees",      label:"Billing & Payments",       desc:"Payments recorded, refunds, large transactions"},
+                {key:"settings",  label:"Settings Changes",      desc:"Organization settings, passwords, config updates"},
+                {key:"access",    label:"Access Requests",       desc:"Staff and member access requests"},
               ];
 
               const saveDigest=async()=>{
@@ -1093,7 +1123,7 @@ export function NotificationsPage({ctx}){
   useEffect(()=>{
     Promise.all([db.getSettings(),db.getNotifConfig(),db.getDigestConfig()]).then(([st,nc,dc])=>{
       const m={};(st.data||[]).forEach(r=>{m[r.key]=r.value;});
-      setSchoolName(m.school_name||"School Portal");
+      setSchoolName(m.school_name||"Business Portal");
       setNotifConfig(nc.data||{admin_email:"",events:{},failed_login_threshold:5});
       setDigestConfig(dc.data||DEFAULT_DIGEST);
       setLoading(false);
@@ -1113,19 +1143,19 @@ export function NotificationsPage({ctx}){
     {key:"failed_logins",    label:"Multiple Failed Logins",     severity:"critical",
      desc:`Fires when a user exceeds the threshold of failed login attempts (default: 5 within 10 min).`},
     {key:"pin_change",       label:"Admin PIN Changed",          severity:"critical",
-     desc:"Fires when the school admin password is changed."},
-    {key:"student_delete",   label:"Student Deleted",            severity:"warn",
-     desc:"Fires when a student record is permanently deleted."},
-    {key:"refund_issued",    label:"Fee Refund Issued",          severity:"warn",
+     desc:"Fires when the organization administrator password is changed."},
+    {key:"student_delete",   label:"Member Deleted",            severity:"warn",
+     desc:"Fires when a member record is permanently deleted."},
+    {key:"refund_issued",    label:"Billing Refund Issued",          severity:"warn",
      desc:"Fires when a payment refund is processed."},
     {key:"large_payment",    label:"Large Payment Recorded",     severity:"warn",
      desc:"Fires when a single payment exceeds ₦100,000."},
-    {key:"report_published", label:"Report Cards Published",     severity:"info",
-     desc:"Fires when a teacher publishes report cards for a class."},
+    {key:"report_published", label:"Reports Published",     severity:"info",
+     desc:"Fires when a staff publishes report cards for a group."},
     {key:"access_request",   label:"Access Request Submitted",   severity:"info",
-     desc:"Fires when a teacher submits an access request."},
-    {key:"student_request",  label:"Student Enrolment Request",  severity:"info",
-     desc:"Fires when a teacher submits a new student (manual or bulk) for admin approval."},
+     desc:"Fires when a staff submits an access request."},
+    {key:"student_request",  label:"Member Enrolment Request",  severity:"info",
+     desc:"Fires when a staff submits a new member (manual or bulk) for admin approval."},
   ];
 
   const SEV_COLOR={critical:"#b91c1c",warn:"#d97706",info:"#1A4FA0"};
@@ -1144,7 +1174,7 @@ export function NotificationsPage({ctx}){
     setTestSending(true);
     const html=buildAlertEmail(
       "Test Alert — Notifications Working",
-      ["School: "+schoolName,"Time: "+new Date().toLocaleString("en-NG"),
+      ["Organization: "+schoolName,"Time: "+new Date().toLocaleString("en-NG"),
        "Sent by: "+(ctx?.user?.full_name||"Admin"),"Status: Active notifications are working correctly"],
       "info",schoolName
     );
@@ -1156,12 +1186,12 @@ export function NotificationsPage({ctx}){
   const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const DIGEST_EVENTS=[
     {key:"logins",    label:"Login Activity",        desc:"Login successes, failures, and logouts"},
-    {key:"students",  label:"Student Changes",        desc:"Student records added, edited, or deleted"},
+    {key:"students",  label:"Member Changes",        desc:"Member records added, edited, or deleted"},
     {key:"staff",     label:"Staff & Role Changes",   desc:"Staff records, role changes, permission changes"},
     {key:"results",   label:"Results & Reports",      desc:"Result uploads, approvals, report card publishes"},
-    {key:"fees",      label:"Fees & Payments",        desc:"Payments recorded, refunds, large transactions"},
-    {key:"settings",  label:"Settings Changes",       desc:"School settings, passwords, config updates"},
-    {key:"access",    label:"Access Requests",        desc:"Teacher and student access requests"},
+    {key:"fees",      label:"Billing & Payments",        desc:"Payments recorded, refunds, large transactions"},
+    {key:"settings",  label:"Settings Changes",       desc:"Organization settings, passwords, config updates"},
+    {key:"access",    label:"Access Requests",        desc:"Staff and member access requests"},
   ];
 
   return(

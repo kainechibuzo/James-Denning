@@ -1,5 +1,5 @@
 /**
- * Fees domain: FeesPage, PaymentsPage, MyPaymentsPage, FeeItemsPage,
+ * Billing domain: FeesPage, PaymentsPage, MyPaymentsPage, FeeItemsPage,
  * FeeTemplatesPage, FeeGeneratePage, PayItemModal, BillDetailModal,
  * FeeTrackerPage, FeeStatsPage, MyBillPage
  */
@@ -46,7 +46,7 @@ export function FeesPage({ctx}){
   const blank={class_id:"",section_id:"",session_id:"",term_id:"",fee_type:"Tuition",amount:""};
   const [form,setForm]=useState(blank);
   const f=v=>setForm(p=>({...p,...v}));
-  const feeTypes=["Tuition","Development Fee","ICT Fee","Exam Fee","Sports Fee","PTA Levy","Books"];
+  const feeTypes=["Tuition","Development Billing","ICT Billing","Exam Billing","Sports Billing","PTA Levy","Books"];
 
   const load=()=>{
     setLoading(true);
@@ -68,7 +68,7 @@ export function FeesPage({ctx}){
   useEffect(load,[selectedSection]);
 
   const save=async()=>{
-    if(!form.amount||!form.session_id){notify("Amount and session required","error");return;}
+    if(!form.amount||!form.session_id){notify("Amount and cycle required","error");return;}
     const payload={
       ...form,
       class_id:form.class_id?+form.class_id:null,
@@ -79,11 +79,11 @@ export function FeesPage({ctx}){
     };
     const {error}=await db.upsertFee(payload,editId);
     if(error)notify(error.message,"error");
-    else{notify(editId?"Fee updated ✓":"Fee added ✓");setModal(false);load();}
+    else{notify(editId?"Billing updated ✓":"Billing added ✓");setModal(false);load();}
   };
   const del=async(id)=>{
-    const __ok=await confirm({title:"Delete Fee?",
-        message:"Remove this fee structure? Existing payment records will not be deleted but this fee will no longer appear.",
+    const __ok=await confirm({title:"Delete Billing?",
+        message:"Remove this billing structure? Existing payment records will not be deleted but this billing will no longer appear.",
         confirmLabel:"Delete",danger:true});
     if(!__ok)return;
     const {error}=await db.deleteFee(id);
@@ -97,16 +97,16 @@ export function FeesPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-items" size={20}/>Fee Structures</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-items" size={20}/>Billing Structures</h2>
           {selectedSection&&<p style={{color:C.muted,fontSize:12}}>Viewing: {selectedSection.name}</p>}
         </div>
-        <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Fee</Btn>
+        <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Billing</Btn>
       </div>
       {loading?<Spinner/>:(
         <Card>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Section","Group","Fee Type","Session","Term","Amount","Actions"]}/>
+              <Th cols={["Section","Group","Billing Type","Cycle","Period","Amount","Actions"]}/>
               <tbody>
                 {fees.map((r,i)=>(
                   <TRow key={r.id} i={i} cells={[
@@ -122,23 +122,23 @@ export function FeesPage({ctx}){
                     </div>
                   ]}/>
                 ))}
-                {!fees.length&&<tr><td colSpan={7} style={{textAlign:"center",padding:32,color:C.light}}>No fee structures yet</td></tr>}
+                {!fees.length&&<tr><td colSpan={7} style={{textAlign:"center",padding:32,color:C.light}}>No billing structures yet</td></tr>}
               </tbody>
             </table>
           </div>
         </Card>
       )}
       {modal&&(
-        <Modal title={editId?"Edit Fee":"Add Fee Structure"} onClose={()=>setModal(false)}>
-          <Sel label="Session *" value={form.session_id||""} onChange={v=>f({session_id:v,term_id:""})}
-            options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
-          <Sel label="Term" value={form.term_id||""} onChange={v=>f({term_id:v})}
-            options={[{value:"",label:"All Terms"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
+        <Modal title={editId?"Edit Billing":"Add Billing Structure"} onClose={()=>setModal(false)}>
+          <Sel label="Cycle *" value={form.session_id||""} onChange={v=>f({session_id:v,term_id:""})}
+            options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
+          <Sel label="Period" value={form.term_id||""} onChange={v=>f({term_id:v})}
+            options={[{value:"",label:"All Periods"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
           <Sel label="Section (blank = all)" value={form.section_id||""} onChange={v=>f({section_id:v,class_id:""})}
             options={[{value:"",label:"All Sections"},...sections.map(s=>({value:s.id,label:s.name}))]}/>
           <Sel label="Group (blank = all)" value={form.class_id||""} onChange={v=>f({class_id:v})}
             options={[{value:"",label:"All Groups"},...classes.filter(c=>!form.section_id||c.section_id===+form.section_id).map(c=>({value:c.id,label:c.name}))]}/>
-          <Sel label="Fee Type" value={form.fee_type} onChange={v=>f({fee_type:v})} options={feeTypes}/>
+          <Sel label="Billing Type" value={form.fee_type} onChange={v=>f({fee_type:v})} options={feeTypes}/>
           <Inp label="Amount (₦) *" type="number" value={form.amount} onChange={v=>f({amount:v})} placeholder="120000"/>
           <div style={{display:"flex",gap:10,marginTop:6}}>
             <Btn onClick={save} color={C.orange} style={{flex:1}}>Save</Btn>
@@ -180,7 +180,7 @@ export function PaymentsPage({ctx}){
   const totalCollected=payments.filter(p=>p.status==="success"||p.payment_status==="success").reduce((a,b)=>a+(b.amount||0),0);
 
   const savePayment=async()=>{
-    if(!form.student_id||!form.session_id||!form.amount){notify("Member, session, and amount required","error");return;}
+    if(!form.student_id||!form.session_id||!form.amount){notify("Member, cycle, and amount required","error");return;}
     const {error}=await db.upsertPayment({
       ...form,
       session_id:+form.session_id,
@@ -214,7 +214,7 @@ export function PaymentsPage({ctx}){
         <Card>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Member","Amount","Fee Type","Method","Status","Date"]}/>
+              <Th cols={["Member","Amount","Billing Type","Method","Status","Date"]}/>
               <tbody>
                 {payments.map((p,i)=>{
                   const status=p.status||p.payment_status;
@@ -240,11 +240,11 @@ export function PaymentsPage({ctx}){
         <Modal title="Record Payment" onClose={()=>setModal(false)}>
           <Sel label="Member *" value={form.student_id||""} onChange={v=>f({student_id:v})}
             options={[{value:"",label:"— Select Member —"},...students.map(s=>({value:s.id,label:`${fullName(s)} (${s.id})`}))]}/>
-          <Sel label="Session *" value={form.session_id||""} onChange={v=>f({session_id:v,term_id:"",fee_structure_id:""})}
-            options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
-          <Sel label="Term" value={form.term_id||""} onChange={v=>f({term_id:v})}
-            options={[{value:"",label:"All Terms"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
-          <Sel label="Fee Structure" value={form.fee_structure_id||""} onChange={v=>{
+          <Sel label="Cycle *" value={form.session_id||""} onChange={v=>f({session_id:v,term_id:"",fee_structure_id:""})}
+            options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
+          <Sel label="Period" value={form.term_id||""} onChange={v=>f({term_id:v})}
+            options={[{value:"",label:"All Periods"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
+          <Sel label="Billing Structure" value={form.fee_structure_id||""} onChange={v=>{
             const fee=fees.find(f=>f.id===+v);
             f({fee_structure_id:v,amount:fee?fee.amount:form.amount});
           }} options={[{value:"",label:"— Custom amount —"},...fees.map(fe=>({value:fe.id,label:`${fe.fee_type} — ${fmt(fe.amount)}`}))]}/>
@@ -263,7 +263,7 @@ export function PaymentsPage({ctx}){
   );
 }
 
-// ─── MY PAYMENTS (Student) ────────────────────────────────────────────────────
+// ─── MY PAYMENTS (Member) ────────────────────────────────────────────────────
 export function MyPaymentsPage({ctx}){
   const {user}=ctx;
   const [entries,setEntries]=useState([]);
@@ -323,7 +323,7 @@ export function MyPaymentsPage({ctx}){
             ?<div style={{textAlign:"center",padding:24,color:C.light}}>No payment records yet</div>
             :<div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                <Th cols={["Date & Time","Term","Amount","Method","Authorized By"]}/>
+                <Th cols={["Date & Time","Period","Amount","Method","Authorized By"]}/>
                 <tbody>
                   {entries.map((e,i)=>{
                     const isRefund=e._type==="refund";
@@ -357,11 +357,11 @@ export function MyPaymentsPage({ctx}){
 // ─ buildPDF moved to services/pdf/billing.js
 // ─ ActionsMenu, SectionPillTabs → components/ui.jsx
 // ═══════════════════════════════════════════════════════════════════════════════
-// FEES MODULE — Admin + Student Pages
+// FEES MODULE — Admin + Member Pages
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const TERMS = ["1st Term","2nd Term","3rd Term"];
+const TERMS = ["1st Period","2nd Period","3rd Period"];
 const STUDENT_TYPES = [{value:"all",label:"All Members"},{value:"new",label:"New Members"},{value:"old",label:"Old Members"}];
 
 // ─── FEE ITEMS PAGE (Admin) ───────────────────────────────────────────────────
@@ -420,7 +420,7 @@ export function FeeItemsPage({ctx}){
       notify(`🔒 Interlock — Cannot delete "${name}"\nReason: Used in ${usage.templateCount} template(s): ${tNames}.\nFix: Remove this item from those templates first, then delete.`,"error");
       return;
     }
-    const ok=await confirm({title:"Delete Fee Item?",message:`Delete "${name}" permanently? This cannot be undone.`,confirmLabel:"Delete",danger:true});
+    const ok=await confirm({title:"Delete Billing Item?",message:`Delete "${name}" permanently? This cannot be undone.`,confirmLabel:"Delete",danger:true});
     if(!ok)return;
     const {error}=await db.deleteFeeItem(id);
     if(error)notify(error.message,"error");
@@ -434,7 +434,7 @@ export function FeeItemsPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-items" size={20}/>Fee Items</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-items" size={20}/>Billing Items</h2>
           <p style={{color:C.muted,fontSize:12}}>Define the line items that make up member bills</p>
         </div>
         <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Item</Btn>
@@ -451,7 +451,7 @@ export function FeeItemsPage({ctx}){
         <Card>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <Th cols={["Item Name","Description","Type","This Term","Status","Actions"]}/>
+              <Th cols={["Item Name","Description","Type","This Period","Status","Actions"]}/>
               <tbody>
                 {items.map((item,i)=>(
                   <TRow key={item.id} i={i} cells={[
@@ -463,7 +463,7 @@ export function FeeItemsPage({ctx}){
                       {item.is_compulsory?"Compulsory":"Optional"}
                     </Badge>,
                     itemBillCounts[item.id]>0
-                      ? <Badge color={C.blue} title="Bills containing this item in the current term">
+                      ? <Badge color={C.blue} title="Bills containing this item in the current period">
                           {itemBillCounts[item.id]} bill{itemBillCounts[item.id]!==1?"s":""}
                         </Badge>
                       : <span style={{fontSize:12,color:C.light}}>—</span>,
@@ -478,7 +478,7 @@ export function FeeItemsPage({ctx}){
                     ]}/>
                   ]}/>
                 ))}
-                {!items.length&&<tr><td colSpan={5} style={{textAlign:"center",padding:32,color:C.light}}>No fee items yet — click Add Item to get started</td></tr>}
+                {!items.length&&<tr><td colSpan={5} style={{textAlign:"center",padding:32,color:C.light}}>No billing items yet — click Add Item to get started</td></tr>}
               </tbody>
             </table>
           </div>
@@ -486,8 +486,8 @@ export function FeeItemsPage({ctx}){
       )}
 
       {modal&&(
-        <Modal title={editId?"Edit Fee Item":"New Fee Item"} onClose={()=>setModal(false)}>
-          <Inp label="Item Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. School Fee, Transport, WAEC Fee"/>
+        <Modal title={editId?"Edit Billing Item":"New Billing Item"} onClose={()=>setModal(false)}>
+          <Inp label="Item Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. Organization Billing, Transport, WAEC Billing"/>
           <Inp label="Description" value={form.description} onChange={v=>f({description:v})} placeholder="Brief description (optional)"/>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
             <div style={{background:C.offWhite,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.border}`}}>
@@ -590,9 +590,9 @@ export function FeeTemplatesPage({ctx}){
   };
 
   const save=async()=>{
-    if(!form.name||!form.academic_year||!form.term){notify("Name, year and term required","error");return;}
+    if(!form.name||!form.academic_year||!form.term){notify("Name, year and period required","error");return;}
     const included=tItems.filter(i=>i.included&&i.amount!==""&&+i.amount>0);
-    if(!included.length){notify("Add at least one fee item with an amount","error");return;}
+    if(!included.length){notify("Add at least one billing item with an amount","error");return;}
     // save template
     const {data:tmpl,error}=await db.upsertFeeTemplate(form,editId);
     if(error){notify(error.message,"error");return;}
@@ -619,7 +619,7 @@ export function FeeTemplatesPage({ctx}){
 
   const copyToTerm=async(t)=>{
     if(!copyTargetSession||!copyTargetTerm){
-      notify("Select a target session and term in the copy bar first","error");return;
+      notify("Select a target cycle and period in the copy bar first","error");return;
     }
     const ok=await confirm({title:"Copy Template?",
       message:`Copy "${t.name}" into ${copyTargetSessName} · ${copyTargetTermName}?`,
@@ -646,7 +646,7 @@ export function FeeTemplatesPage({ctx}){
 
   const bulkCopyToTerm=async(visibleTemplates)=>{
     if(!copyTargetSession||!copyTargetTerm){
-      notify("Select a target session and term in the copy bar first","error");return;
+      notify("Select a target cycle and period in the copy bar first","error");return;
     }
     const toBeCopied=visibleTemplates.filter(t=>copySelection.has(t.id));
     if(!toBeCopied.length){notify("Select at least one template","error");return;}
@@ -686,13 +686,13 @@ export function FeeTemplatesPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-templates" size={20}/>Fee Templates</h2>
-          <p style={{color:C.muted,fontSize:12}}>Build fee bill templates per group, term and member type</p>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-templates" size={20}/>Billing Templates</h2>
+          <p style={{color:C.muted,fontSize:12}}>Build billing bill templates per group, period and member type</p>
         </div>
         <Btn onClick={openNew} color={C.orange}>New Template</Btn>
       </div>
 
-      {/* Session / Term filter bar */}
+      {/* Cycle / Period filter bar */}
       {!loading&&(
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:14,
           padding:"10px 14px",background:C.offWhite,borderRadius:10,border:`1px solid ${C.border}`}}>
@@ -704,12 +704,12 @@ export function FeeTemplatesPage({ctx}){
           </select>
           <select value={filterTerm} onChange={e=>{setFilterTerm(e.target.value);setCopySelection(new Set());}}
             style={{padding:"6px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:13,background:"#fff",color:C.text}}>
-            <option value="">All Terms</option>
+            <option value="">All Periods</option>
             {TERMS.map(t=><option key={t} value={t}>{t}</option>)}
           </select>
           {(filterYear!==activeYear||filterTerm!==activeTerm_)&&(
             <Btn xs onClick={()=>{setFilterYear(activeYear);setFilterTerm(activeTerm_);setCopySelection(new Set());}} color={C.blue} outline>
-              Back to Current Term
+              Back to Current Period
             </Btn>
           )}
           {/* New / Returning type filter */}
@@ -750,7 +750,7 @@ export function FeeTemplatesPage({ctx}){
               onChange={e=>{setCopyTargetSession(e.target.value);setCopyTargetTerm("");}}
               style={{padding:"6px 10px",border:`1px solid ${copyTargetSession?C.orange:C.border}`,
                 borderRadius:7,fontSize:13,background:"#fff",color:C.text,minWidth:130}}>
-              <option value="">— Session —</option>
+              <option value="">— Cycle —</option>
               {sessions.map(s=><option key={s.id} value={s.id}>{s.name}{s.is_active?" (Active)":""}</option>)}
             </select>
             <select value={copyTargetTerm} onChange={e=>setCopyTargetTerm(e.target.value)}
@@ -758,7 +758,7 @@ export function FeeTemplatesPage({ctx}){
               style={{padding:"6px 10px",border:`1px solid ${copyTargetTerm?C.orange:C.border}`,
                 borderRadius:7,fontSize:13,background:"#fff",color:C.text,minWidth:130,
                 opacity:copyTargetSession?1:.5}}>
-              <option value="">— Term —</option>
+              <option value="">— Period —</option>
               {allTermsList.filter(t=>t.session_id===+copyTargetSession).map(t=>(
                 <option key={t.id} value={t.id}>{t.name}{t.is_active?" (Active)":""}</option>
               ))}
@@ -803,9 +803,9 @@ export function FeeTemplatesPage({ctx}){
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
                     <strong style={{fontSize:15,color:C.blue}}>{t.name}</strong>
-                    {isCurrentTerm(t)&&<Badge color={C.green}>Current Term</Badge>}
+                    {isCurrentTerm(t)&&<Badge color={C.green}>Current Period</Badge>}
                     {templateBillCounts[t.id]>0
-                      ? <Badge color={C.orange} title="Bills generated using this template this term">
+                      ? <Badge color={C.orange} title="Bills generated using this template this period">
                           {templateBillCounts[t.id]} bill{templateBillCounts[t.id]!==1?"s":""}
                         </Badge>
                       : isCurrentTerm(t)&&<Badge color={C.muted}>Not in use</Badge>}
@@ -829,7 +829,7 @@ export function FeeTemplatesPage({ctx}){
                   <Btn xs onClick={()=>setDetailModal(t)} color={C.blue} outline>View</Btn>
                   <Btn xs onClick={()=>openEdit(t)} color={C.blue} outline><Pencil size={13}/></Btn>
                   <Btn xs onClick={()=>copyToTerm(t)} color={C.orange} outline
-                    title={copyTargetSession&&copyTargetTerm?`Copy to ${copyTargetTermName}`:"Set target session & term in the copy bar above"}>
+                    title={copyTargetSession&&copyTargetTerm?`Copy to ${copyTargetTermName}`:"Set target cycle & period in the copy bar above"}>
                     <Copy size={13}/>
                   </Btn>
                   <Btn xs onClick={()=>del(t.id)} color={C.red} outline><Trash2 size={13}/></Btn>
@@ -852,7 +852,7 @@ export function FeeTemplatesPage({ctx}){
                 ):(
                   <>
                     <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>No templates yet</div>
-                    <div style={{fontSize:13,marginBottom:16}}>Create your first fee template to start generating bills</div>
+                    <div style={{fontSize:13,marginBottom:16}}>Create your first billing template to start generating bills</div>
                     <Btn onClick={openNew} color={C.orange}>Create Template</Btn>
                   </>
                 )}
@@ -865,15 +865,15 @@ export function FeeTemplatesPage({ctx}){
 
       {/* Create/Edit Modal */}
       {modal&&(
-        <Modal title={editId?"Edit Template":"New Fee Template"} onClose={()=>setModal(false)} width={620}>
+        <Modal title={editId?"Edit Template":"New Billing Template"} onClose={()=>setModal(false)} width={620}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS3 Old Members - 2nd Term"/>
-            <Sel label="Academic Year *" value={form.academic_year} onChange={v=>f({academic_year:v})}
+            <Inp label="Template Name *" value={form.name} onChange={v=>f({name:v})} placeholder="e.g. JSS3 Old Members - 2nd Period"/>
+            <Sel label="Performance Year *" value={form.academic_year} onChange={v=>f({academic_year:v})}
               options={[{value:"",label:"— Select Year —"},...sessions.map(s=>({value:s.name,label:s.name+(s.is_active?" (Active)":"")}))]}/>
 
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10}}>
-            <Sel label="Term *" value={form.term} onChange={v=>f({term:v})} options={TERMS}/>
+            <Sel label="Period *" value={form.term} onChange={v=>f({term:v})} options={TERMS}/>
             <Inp label="Group Level" value={form.class_level} onChange={v=>f({class_level:v})} placeholder="JSS3 (optional)"/>
             <Sel label="Member Type" value={form.student_type} onChange={v=>f({student_type:v})}
               options={STUDENT_TYPES.map(s=>({value:s.value,label:s.label}))}/>
@@ -882,12 +882,12 @@ export function FeeTemplatesPage({ctx}){
           </div>
           {form.template_type==="new_student"&&(
             <div style={{padding:"8px 12px",background:C.greenPale,border:`1px solid ${C.green}40`,borderRadius:8,fontSize:12,color:C.green,marginTop:2}}>
-              <strong>New Enrolee template</strong> — automatically applied to first-time students when a bill is generated for their class level and term.
+              <strong>New Enrolee template</strong> — automatically applied to first-time members when a bill is generated for their group level and period.
             </div>
           )}
 
           <div style={{marginTop:14,marginBottom:8}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.blue,marginBottom:10}}>Fee Line Items</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.blue,marginBottom:10}}>Billing Line Items</div>
             <div style={{background:C.offWhite,borderRadius:10,border:`1px solid ${C.border}`,overflow:"hidden"}}>
               <div style={{display:"grid",gridTemplateColumns:"auto 1fr 120px 90px",gap:0,padding:"8px 12px",
                 background:C.border,fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>
@@ -1042,7 +1042,7 @@ export function FeeGeneratePage({ctx}){
   // Step 1: detect owing students, prompt if found, then hand off to runGenerate
   const generate=async()=>{
     if(!template){notify("Select a template","error");return;}
-    if(!targetStudents.length){notify("No students selected","error");return;}
+    if(!targetStudents.length){notify("No members selected","error");return;}
 
     // Always check for previous-term owing balances before confirming
     const allIds=targetStudents.map(s=>s.id);
@@ -1147,7 +1147,7 @@ export function FeeGeneratePage({ctx}){
         batchItems.push(...items.map(item=>({
           bill_id:r.bill.id,
           fee_item_id:item.fee_item_id,
-          name:item.fee_items?.name||"Fee",
+          name:item.fee_items?.name||"Billing",
           amount:+item.amount,
           is_optional:item.is_optional,
           is_included:!item.is_optional, // compulsory=true, optional=false by default
@@ -1216,7 +1216,7 @@ export function FeeGeneratePage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-generate" size={20}/>Generate Bills</h2>
-        <p style={{color:C.muted,fontSize:12}}>Bulk-generate fee bills for members based on a template</p>
+        <p style={{color:C.muted,fontSize:12}}>Bulk-generate billing bills for members based on a template</p>
       </div>
 
       {loading?<Spinner/>:(
@@ -1240,7 +1240,7 @@ export function FeeGeneratePage({ctx}){
                     {/* Period selector */}
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                       <div>
-                        <label style={{fontSize:11,color:C.muted,fontWeight:600,display:"block",marginBottom:3}}>Session</label>
+                        <label style={{fontSize:11,color:C.muted,fontWeight:600,display:"block",marginBottom:3}}>Cycle</label>
                         <select value={selBillSession} onChange={e=>{setSelBillSession(e.target.value);setSelBillTerm("");setSelectedTemplate("");}}
                           style={{width:"100%",padding:"8px 10px",border:`2px solid ${C.blue}`,borderRadius:8,
                             fontSize:13,background:"inherit",color:C.text}}>
@@ -1249,7 +1249,7 @@ export function FeeGeneratePage({ctx}){
                         </select>
                       </div>
                       <div>
-                        <label style={{fontSize:11,color:C.muted,fontWeight:600,display:"block",marginBottom:3}}>Term</label>
+                        <label style={{fontSize:11,color:C.muted,fontWeight:600,display:"block",marginBottom:3}}>Period</label>
                         <select value={selBillTerm} onChange={e=>{setSelBillTerm(e.target.value);setSelectedTemplate("");}}
                           disabled={!selBillSession}
                           style={{width:"100%",padding:"8px 10px",border:`2px solid ${C.blue}`,borderRadius:8,
@@ -1268,10 +1268,10 @@ export function FeeGeneratePage({ctx}){
                       <div style={{padding:"14px 12px",background:C.orangePale,border:`1px solid ${C.orange}`,
                         borderRadius:8,fontSize:12,color:C.orange,display:"flex",gap:8,alignItems:"flex-start"}}>
                         <AlertCircle size={14} style={{flexShrink:0,marginTop:1}}/>
-                        <span>No templates found for <strong>{billingTerm} {billingYear}</strong>. Go to <strong>Fee Templates</strong> to create or copy templates for this period.</span>
+                        <span>No templates found for <strong>{billingTerm} {billingYear}</strong>. Go to <strong>Billing Templates</strong> to create or copy templates for this period.</span>
                       </div>
                     ):(
-                      <Sel label="Fee Template *" value={selectedTemplate} onChange={v=>setSelectedTemplate(v)}
+                      <Sel label="Billing Template *" value={selectedTemplate} onChange={v=>setSelectedTemplate(v)}
                         options={[{value:"",label:"— Select Template —"},...visibleTemplates.map(t=>({value:String(t.id),label:t.name}))]}/>
                     )}
                   </>
@@ -1301,7 +1301,7 @@ export function FeeGeneratePage({ctx}){
                 </div>
               </div>
               {/* Search */}
-              <input placeholder="Search classes…" value={classSearch} onChange={e=>setClassSearch(e.target.value)}
+              <input placeholder="Search groups…" value={classSearch} onChange={e=>setClassSearch(e.target.value)}
                 style={{width:"100%",padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,
                   fontSize:13,marginBottom:8,outline:"none",boxSizing:"border-box"}}/>
               {/* Scrollable checkbox list */}
@@ -1319,7 +1319,7 @@ export function FeeGeneratePage({ctx}){
                         onClick={e=>e.stopPropagation()}
                         style={{width:15,height:15,accentColor:C.orange,cursor:"pointer",flexShrink:0}}/>
                       <span style={{flex:1,fontSize:13,fontWeight:checked?600:400,color:checked?C.text:C.muted}}>{c.name}</span>
-                      <span style={{fontSize:11,color:C.muted,whiteSpace:"nowrap"}}>{stuCount} student{stuCount!==1?"s":""}</span>
+                      <span style={{fontSize:11,color:C.muted,whiteSpace:"nowrap"}}>{stuCount} member{stuCount!==1?"s":""}</span>
                     </div>
                   );
                 })}
@@ -1329,7 +1329,7 @@ export function FeeGeneratePage({ctx}){
               </div>
               {targetStudents.length>0&&(
                 <div style={{marginTop:10,padding:"8px 12px",background:C.bluePale,borderRadius:8,fontSize:13,color:C.blue}}>
-                  <strong>{targetStudents.length}</strong> student{targetStudents.length!==1?"s":""} across <strong>{selectedClasses.size}</strong> class{selectedClasses.size!==1?"es":""} will be billed
+                  <strong>{targetStudents.length}</strong> member{targetStudents.length!==1?"s":""} across <strong>{selectedClasses.size}</strong> group{selectedClasses.size!==1?"es":""} will be billed
                 </div>
               )}
               {targetStudents.length>0&&newEnrolleesInClass.length>0&&(
@@ -1339,8 +1339,8 @@ export function FeeGeneratePage({ctx}){
                   <div>
                     <strong>{newEnrolleesInClass.length} new enrolee{newEnrolleesInClass.length!==1?"s":""}</strong> in selection.<br/>
                     {template?.template_type==="new_student"
-                      ? <span style={{color:C.green}}>✓ Using a New Enrolee template — admission fees will be included.</span>
-                      : <span style={{color:C.amber}}>⚠ You are using a <strong>Returning Members</strong> template. Switch to a <strong>New Enrolee</strong> template to include admission fees.</span>
+                      ? <span style={{color:C.green}}>✓ Using a New Enrolee template — admission billing will be included.</span>
+                      : <span style={{color:C.amber}}>⚠ You are using a <strong>Returning Members</strong> template. Switch to a <strong>New Enrolee</strong> template to include admission billing.</span>
                     }
                   </div>
                 </div>
@@ -1364,11 +1364,11 @@ export function FeeGeneratePage({ctx}){
                   <strong style={{fontSize:13,color:C.text}}>{template?.name||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{color:C.muted,fontSize:13}}>Academic Year</span>
+                  <span style={{color:C.muted,fontSize:13}}>Performance Year</span>
                   <strong style={{fontSize:13,color:C.text}}>{template?.academic_year||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{color:C.muted,fontSize:13}}>Term</span>
+                  <span style={{color:C.muted,fontSize:13}}>Period</span>
                   <strong style={{fontSize:13,color:C.text}}>{template?.term||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
@@ -1439,11 +1439,11 @@ export function FeeGeneratePage({ctx}){
             <Card>
               <div style={{fontWeight:700,color:C.muted,fontSize:12,marginBottom:10}}>How bill generation works</div>
               <ul style={{fontSize:12,color:C.muted,lineHeight:1.8,paddingLeft:16,margin:0}}>
-                <li>Each member gets one bill per term per academic year</li>
-                <li>Members with an existing bill for this term are skipped</li>
+                <li>Each member gets one bill per period per performance year</li>
+                <li>Members with an existing bill for this period are skipped</li>
                 <li>Optional items are included by default (members can opt out)</li>
                 <li>Bill amounts are snapshotted — template changes won't affect existing bills</li>
-                <li>If any members owe from a previous term, you will be prompted before bills are created</li>
+                <li>If any members owe from a previous period, you will be prompted before bills are created</li>
               </ul>
             </Card>
           </div>
@@ -1457,12 +1457,12 @@ export function FeeGeneratePage({ctx}){
             borderRadius:8,marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
             <AlertCircle size={16} color={C.orange} style={{flexShrink:0,marginTop:1}}/>
             <div style={{fontSize:13,color:C.orange,lineHeight:1.6}}>
-              <strong>{cfPrompt.owingStudents.length} student{cfPrompt.owingStudents.length!==1?"s":" "} in your selection</strong> {cfPrompt.owingStudents.length!==1?"have":"has"} an unpaid balance from a previous term.
+              <strong>{cfPrompt.owingStudents.length} member{cfPrompt.owingStudents.length!==1?"s":" "} in your selection</strong> {cfPrompt.owingStudents.length!==1?"have":"has"} an unpaid balance from a previous period.
               Would you like to carry these forward as a line item on their new bill?
             </div>
           </div>
 
-          {/* Student list */}
+          {/* Member list */}
           <div style={{maxHeight:220,overflowY:"auto",border:`1px solid ${C.border}`,borderRadius:8,marginBottom:16}}>
             {cfPrompt.owingStudents.map((s,i)=>(
               <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -1520,7 +1520,7 @@ export function PayItemModal({bill,studentMap,onClose,onProceed,fmt,C}){
   const canProceed=maxPayable>0&&payNow>0&&(payMode==="full"||(+partialAmt>0&&+partialAmt<=maxPayable));
 
   return(
-    <Modal title="Pay Fee Bill" onClose={onClose} width={520}>
+    <Modal title="Pay Billing Bill" onClose={onClose} width={520}>
       {/* Bill summary */}
       <div style={{background:C.bluePale,borderRadius:8,padding:"10px 14px",marginBottom:14}}>
         <div style={{fontWeight:700,fontSize:14,color:C.blue}}>{name}</div>
@@ -2033,7 +2033,7 @@ export function BillDetailModal({bill,name,payments,compulsoryItems,optionalItem
           <input type="checkbox" checked={newItemOptional}
             onChange={e=>setNewItemOptional(e.target.checked)} disabled={addingItem}
             style={{width:14,height:14,accentColor:C.purple,cursor:"pointer"}}/>
-          Mark as optional (student can opt out before payment)
+          Mark as optional (member can opt out before payment)
         </label>
       </div>
 
@@ -2120,7 +2120,7 @@ export function BillDetailModal({bill,name,payments,compulsoryItems,optionalItem
 export function FeeTrackerPage({ctx}){
   const {notify,user,setPage}=ctx;
   const {schoolName:_schoolName,schoolLogo:_schoolLogo}=useSection();
-  const schoolName=_schoolName||"School Portal";
+  const schoolName=_schoolName||"Business Portal";
   const schoolLogo=_schoolLogo||null;
   const [tab,setTab]=useState("invoices"); // "invoices" | "receipts"
   const [bills,setBills]=useState([]);
@@ -2389,22 +2389,22 @@ export function FeeTrackerPage({ctx}){
   const bulkSendReminders=async()=>{
     const targets=filtered.filter(b=>selectedIds.has(b.id)&&b.status!=="paid");
     const withEmail=targets.filter(b=>studentMap[b.student_id]?.email);
-    if(!withEmail.length){notify("No selected unpaid bills have a student email on file","error");return;}
+    if(!withEmail.length){notify("No selected unpaid bills have a member email on file","error");return;}
     const emails=withEmail.map(bill=>{
       const st=studentMap[bill.student_id];
       const name=fullName(st);
       const classData=st?.class_id?classMap[st.class_id]:null;
       return{
         to:st.email,
-        subject:`Fee Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,
-        html:buildEmailHtml(`Fee Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,[
-          `Dear Parent/Guardian of ${name},`,``,
+        subject:`Billing Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,
+        html:buildEmailHtml(`Billing Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,[
+          `Dear Member/Contact of ${name},`,``,
           `This is a friendly reminder that your ward\u2019s school`,
           `fees for ${bill.term} ${bill.academic_year} are currently outstanding.`,``,
           `ACCOUNT SUMMARY`,
           `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-          `Student:    ${name} (${bill.student_id})`,
-          `Class:      ${classData?.name||"\u2014"}`,
+          `Member:    ${name} (${bill.student_id})`,
+          `Group:      ${classData?.name||"\u2014"}`,
           `Total Bill: \u20a6${(+bill.total_amount).toLocaleString()}`,
           `Paid:       \u20a6${(+bill.amount_paid).toLocaleString()}`,
           `Balance:    \u20a6${(+bill.balance).toLocaleString()}`,
@@ -2414,7 +2414,7 @@ export function FeeTrackerPage({ctx}){
           `Bank:           United Bank of Africa (UBA)`,
           `Account Number: 1021639196`,
           `Reference:      ${bill.student_id}`,``,
-          `You may also pay online via the parent portal:`,
+          `You may also pay online via the Business Portal:`,
           `${window.location.origin}`,``,
           `For enquiries, contact the finance office.`,
           `Thank you.`,
@@ -2428,7 +2428,7 @@ export function FeeTrackerPage({ctx}){
   const bulkSendReceipts=async()=>{
     const targets=filtered.filter(b=>selectedIds.has(b.id)&&b.amount_paid>0);
     const withEmail=targets.filter(b=>studentMap[b.student_id]?.email);
-    if(!withEmail.length){notify("No selected bills with payments have a student email on file","error");return;}
+    if(!withEmail.length){notify("No selected bills with payments have a member email on file","error");return;}
     const emails=withEmail.map(bill=>{
       const st=studentMap[bill.student_id];
       const name=fullName(st);
@@ -2441,15 +2441,15 @@ export function FeeTrackerPage({ctx}){
       const balance=+bill.balance;
       return{
         to:st.email,
-        subject:`Fee Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,
-        html:buildEmailHtml(`Fee Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,[
-          `Dear Parent/Guardian of ${name},`,``,
+        subject:`Billing Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,
+        html:buildEmailHtml(`Billing Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,[
+          `Dear Member/Contact of ${name},`,``,
           `A fee payment has been received for your ward.`,``,
           `PAYMENT DETAILS`,
           `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-          `Student:     ${name} (${bill.student_id})`,
-          `Class:       ${classData?.name||"\u2014"}`,
-          `Term:        ${bill.term} ${bill.academic_year}`,
+          `Member:     ${name} (${bill.student_id})`,
+          `Group:       ${classData?.name||"\u2014"}`,
+          `Period:        ${bill.term} ${bill.academic_year}`,
           `Amount Paid: \u20a6${(+amount).toLocaleString()}`,
           `Method:      ${method}`,
           `Date:        ${date}`,
@@ -2457,7 +2457,7 @@ export function FeeTrackerPage({ctx}){
           `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,``,
           balance===0?"Your account is fully paid. Thank you!":`Outstanding balance: \u20a6${balance.toLocaleString()}. Please settle at your earliest convenience.`,``,
           `Please retain this as your official receipt.`,
-          `For enquiries, contact the school finance office.`,
+          `For enquiries, contact the organization finance office.`,
         ].join("\n"))
       };
     });
@@ -2471,10 +2471,10 @@ export function FeeTrackerPage({ctx}){
     const name=st?fullName(st):bill.student_id;
     const classData=st?.class_id?classMap[st.class_id]:null;
     const items=(bill.fee_bill_items||[]).filter(i=>i.is_included);
-    const billNo=isReceipt?`RGS-RCPT-${String(bill.id).padStart(5,"0")}`:`RGS-BILL-${String(bill.id).padStart(5,"0")}`;
+    const billNo=isReceipt?`JD-RCPT-${String(bill.id).padStart(5,"0")}`:`JD-BILL-${String(bill.id).padStart(5,"0")}`;
     const today=new Date().toLocaleDateString("en-NG",{day:"2-digit",month:"long",year:"numeric"});
     const isPaid=bill.status==="paid";
-    const filename=pdfName(name,isReceipt?"RCPT":"INV",billNo.replace(/^RGS-(BILL|RCPT)-/,""));
+    const filename=pdfName(name,isReceipt?"RCPT":"INV",billNo.replace(/^JD-(BILL|RCPT)-/,""));
     return{html:buildPDF({bill,items,billNo,today,name,studentId:bill.student_id,className:classData?.name,isPaid,isReceipt,isNativePlatform:isNative(),filename,schoolName,schoolLogo}),filename,name};
   };
   const _isPaid=(bill)=>bill.status==="paid"||(bill.fee_payments||[]).length>0;
@@ -2489,7 +2489,7 @@ export function FeeTrackerPage({ctx}){
       const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
       const blob=new Blob([bytes],{type:"application/pdf"});
       const st=studentMap[bill.student_id];const nm=st?fullName(st):bill.student_id;
-      shareFilePDF(blob,filename,`${isReceipt?"Receipt":"Invoice"} — ${nm}`,`${nm} · Term ${bill.term} ${bill.academic_year}`);
+      shareFilePDF(blob,filename,`${isReceipt?"Receipt":"Invoice"} — ${nm}`,`${nm} · Period ${bill.term} ${bill.academic_year}`);
     }catch(e){notify("Share failed: "+(e.message||e),"error");}
   };
   // Keep aliases for any existing references
@@ -2509,7 +2509,7 @@ export function FeeTrackerPage({ctx}){
   };
   // Round to 2 decimal places to prevent floating-point drift
   // Warns loudly if a non-numeric value sneaks in — returns 0 to avoid corrupt totals
-  const money=(n)=>{const v=+n;if(isNaN(v)){console.warn("[fee] money() received non-numeric value:",n,"— defaulting to 0");return 0;}return Math.round(v*100)/100;};
+  const money=(n)=>{const v=+n;if(isNaN(v)){console.warn("[billing] money() received non-numeric value:",n,"— defaulting to 0");return 0;}return Math.round(v*100)/100;};
   // Derive consistent status from amounts
   const billStatus=(paid,total)=>paid>=total&&total>0?"paid":paid>0?"partial":"unpaid";
 
@@ -2524,7 +2524,7 @@ export function FeeTrackerPage({ctx}){
 
     // ② Confirmation dialog — show student name, amount, method before writing to DB
     const _st=payModal&&studentMap[payModal.student_id];
-    const _stuName=_st?fullName(_st):"this student";
+    const _stuName=_st?fullName(_st):"this member";
     const _method=payForm.payment_method==="bank_transfer"?"Bank Transfer":"Paystack Online";
     const _ref=payForm.bank_reference?.trim()?` (Ref: ${payForm.bank_reference.trim()})`:
       payForm.payment_method==="bank_transfer"?" No reference entered":"";
@@ -2618,7 +2618,7 @@ export function FeeTrackerPage({ctx}){
         db.sendAdminAlert({
           subject:`[Alert] Large Payment — ${fmt(payAmt)}`,
           html:buildAlertEmail("Large Payment Recorded",
-            [`Amount: ${fmt(payAmt)}`,`Student: ${_st2?fullName(_st2):fresh.student_id}`,
+            [`Amount: ${fmt(payAmt)}`,`Member: ${_st2?fullName(_st2):fresh.student_id}`,
              `Method: ${payForm.payment_method==="bank_transfer"?"Bank Transfer":"Paystack"}`,
              `Reference: ${payForm.bank_reference?.trim()||"—"}`,
              `Recorded by: ${ctx?.user?.full_name||ctx?.user?.name||"Admin"}`,
@@ -2710,8 +2710,8 @@ export function FeeTrackerPage({ctx}){
       notify("Refund processed ✓");
       // Tier A alert — refund issued
       db.sendAdminAlert({
-        subject:`[Alert] Fee Refund — ${fmt(refundAmt)}`,
-        html:buildAlertEmail("Fee Refund Issued",
+        subject:`[Alert] Billing Refund — ${fmt(refundAmt)}`,
+        html:buildAlertEmail("Billing Refund Issued",
           [`Amount: ${fmt(refundAmt)}`,`Reason: ${refundForm.reason.trim()}`,
            `Bill ID: ${fresh.id}`,`Member ID: ${fresh.student_id}`,
            `Processed by: ${ctx?.user?.full_name||ctx?.user?.name||"Admin"}`,
@@ -2788,7 +2788,7 @@ export function FeeTrackerPage({ctx}){
       }
       // Payment is refunded — also wipe the fee_payments + fee_refunds rows
       // so the student portal clears too
-      if(!window.confirm("Remove this payment audit entry and its linked payment/refund records from the student's history? This cannot be undone."))return;
+      if(!window.confirm("Remove this payment audit entry and its linked payment/refund records from the member's history? This cannot be undone."))return;
       await Promise.all([
         db.deleteRefundsByPayment(pmtId),
         db.deleteFeePayment(pmtId),
@@ -2955,13 +2955,13 @@ export function FeeTrackerPage({ctx}){
   // ── Email Reminder ─────────────────────────────────────────────────────────
   const sendReminder=async(bill)=>{
     const st=studentMap[bill.student_id];
-    if(!st?.email){notify("No email on file for this student","error");return;}
+    if(!st?.email){notify("No email on file for this member","error");return;}
     const name=fullName(st);
     const classData=st?.class_id?classMap[st.class_id]:null;
-    const html=buildEmailHtml(`Fee Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,[
+    const html=buildEmailHtml(`Billing Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
       `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
-      `Dear Parent/Guardian,`,``,
+      `Dear Member/Contact,`,``,
       `This is a friendly reminder that your ward\u2019s school`,
       `fees for ${bill.term} ${bill.academic_year} are currently outstanding.`,``,
       `ACCOUNT SUMMARY`,
@@ -2977,19 +2977,19 @@ export function FeeTrackerPage({ctx}){
       `Bank:           United Bank of Africa (UBA)`,
       `Account Number: 1021639196`,
       `Reference:      ${bill.student_id}`,``,
-      `You may also pay online via the parent portal:`,
+      `You may also pay online via the Business Portal:`,
       `${window.location.origin}`,``,
       `For enquiries, contact the finance office.`,
       `Thank you.`,
     ].join("\n"));
-    const res=await sendPortalEmail({to:st.email,subject:`Fee Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,html});
+    const res=await sendPortalEmail({to:st.email,subject:`Billing Payment Reminder \u2014 ${bill.term} ${bill.academic_year}`,html});
     if(res.ok)notify(`Reminder sent to ${st.email} \u2713`);
     else notify("Failed to send reminder","error");
   };
 
   const sendReceipt=async(bill)=>{
     const st=studentMap[bill.student_id];
-    if(!st?.email){notify("No email on file for this student","error");return;}
+    if(!st?.email){notify("No email on file for this member","error");return;}
     const name=fullName(st);
     const classData=st?.class_id?classMap[st.class_id]:null;
     const payments=bill.fee_payments||[];
@@ -2999,7 +2999,7 @@ export function FeeTrackerPage({ctx}){
     const date=lastPay?.payment_date||new Date().toISOString().split("T")[0];
     const balance=+bill.balance;
     // Build PDF attachment
-    const billNo=`RGS-RCPT-${String(bill.id).padStart(5,"0")}`;
+    const billNo=`JD-RCPT-${String(bill.id).padStart(5,"0")}`;
     const today=new Date().toLocaleDateString("en-NG",{day:"2-digit",month:"long",year:"numeric"});
     const items=(bill.fee_bill_items||[]).filter(i=>i.is_included);
     const isPaid=bill.status==="paid";
@@ -3009,16 +3009,16 @@ export function FeeTrackerPage({ctx}){
       const b64=await htmlToPdfBase64(pdfHtml);
       attachments=[{name:`Receipt-${billNo}.pdf`,content:b64,mimeType:"application/pdf"}];
     }catch(e){console.warn("[sendReceipt] PDF generation failed, sending without attachment:",e);}
-    const html=buildEmailHtml(`Fee Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,[
+    const html=buildEmailHtml(`Billing Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
       `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
-      `Dear Parent/Guardian,`,``,
+      `Dear Member/Contact,`,``,
       `A fee payment has been received for your ward.`,``,
       `PAYMENT DETAILS`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
       `Member:     ${name} (${bill.student_id})`,
       `Group:       ${classData?.name||"\u2014"}`,
-      `Term:        ${bill.term} ${bill.academic_year}`,
+      `Period:        ${bill.term} ${bill.academic_year}`,
       `Amount Paid: \u20a6${(+amount).toLocaleString()}`,
       `Method:      ${method}`,
       `Date:        ${date}`,
@@ -3026,21 +3026,21 @@ export function FeeTrackerPage({ctx}){
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,``,
       balance===0?"Your account is fully paid. Thank you!":`Outstanding balance: \u20a6${balance.toLocaleString()}. Please settle at your earliest convenience.`,``,
       `Please retain this as your official receipt.`,
-      `For enquiries, contact the school finance office.`,
+      `For enquiries, contact the organization finance office.`,
     ].join("\n"));
-    const res=await sendPortalEmail({to:st.email,subject:`Fee Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,html,attachments});
+    const res=await sendPortalEmail({to:st.email,subject:`Billing Payment Receipt \u2014 ${bill.term} ${bill.academic_year}`,html,attachments});
     if(res.ok)notify(`Receipt sent to ${st.email} \u2713`);
     else notify("Failed to send receipt","error");
   };
 
   const sendInvoiceEmail=async(bill)=>{
     const st=studentMap[bill.student_id];
-    if(!st?.email){notify("No email on file for this student","error");return;}
+    if(!st?.email){notify("No email on file for this member","error");return;}
     const name=fullName(st);
     const classData=st?.class_id?classMap[st.class_id]:null;
     const items=(bill.fee_bill_items||[]).filter(i=>i.is_included);
     // Build PDF attachment
-    const billNo=`RGS-BILL-${String(bill.id).padStart(5,"0")}`;
+    const billNo=`JD-BILL-${String(bill.id).padStart(5,"0")}`;
     const today=new Date().toLocaleDateString("en-NG",{day:"2-digit",month:"long",year:"numeric"});
     const isPaid=bill.status==="paid";
     let attachments=[];
@@ -3049,18 +3049,18 @@ export function FeeTrackerPage({ctx}){
       const b64=await htmlToPdfBase64(pdfHtml);
       attachments=[{name:`Invoice-${billNo}.pdf`,content:b64,mimeType:"application/pdf"}];
     }catch(e){console.warn("[sendInvoiceEmail] PDF generation failed, sending without attachment:",e);}
-    const html=buildEmailHtml(`Fee Invoice \u2014 ${bill.term} ${bill.academic_year}`,[
+    const html=buildEmailHtml(`Billing Invoice \u2014 ${bill.term} ${bill.academic_year}`,[
       `This communication is regarding:`,
       `${name} \u00b7 Member ID: ${bill.student_id} \u00b7 Group: ${classData?.name||"\u2014"}`,``,
-      `Dear Parent/Guardian,`,``,
+      `Dear Member/Contact,`,``,
       `Please find below the fee invoice for ${bill.term} ${bill.academic_year}.`,``,
       `INVOICE DETAILS`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
       `Member: ${name} (${bill.student_id})`,
       `Group:   ${classData?.name||"\u2014"}`,
-      `Term:    ${bill.term} ${bill.academic_year}`,
+      `Period:    ${bill.term} ${bill.academic_year}`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
-      ...(items.length>0?items.map(item=>`${item.fee_item_name||"Fee item"}: \u20a6${(+item.amount).toLocaleString()}`):[]),
+      ...(items.length>0?items.map(item=>`${item.fee_item_name||"Billing item"}: \u20a6${(+item.amount).toLocaleString()}`):[]),
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
       `Total Bill: \u20a6${(+bill.total_amount).toLocaleString()}`,
       `Paid:       \u20a6${(+bill.amount_paid).toLocaleString()}`,
@@ -3071,18 +3071,18 @@ export function FeeTrackerPage({ctx}){
       `Bank:           United Bank of Africa (UBA)`,
       `Account Number: 1021639196`,
       `Reference:      ${bill.student_id}`,``,
-      `You may also pay online via the parent portal:`,
+      `You may also pay online via the Business Portal:`,
       `${window.location.origin}`,``,
       `For enquiries, contact the finance office.`,
     ].join("\n"));
-    const res=await sendPortalEmail({to:st.email,subject:`Fee Invoice \u2014 ${bill.term} ${bill.academic_year}`,html,attachments});
+    const res=await sendPortalEmail({to:st.email,subject:`Billing Invoice \u2014 ${bill.term} ${bill.academic_year}`,html,attachments});
     if(res.ok)notify(`Invoice sent to ${st.email} \u2713`);
     else notify("Failed to send invoice","error");
   };
 
   // ── Export CSV ─────────────────────────────────────────────────────────────
   const exportCSV=()=>{
-    const rows=[["Student ID","Name","Class","Section","Term","Year","Total","Paid","Balance","Status"]];
+    const rows=[["Member ID","Name","Group","Section","Period","Year","Total","Paid","Balance","Status"]];
     filtered.forEach(b=>{
       const st=studentMap[b.student_id];
       const name=st?fullName(st):b.student_id;
@@ -3099,7 +3099,7 @@ export function FeeTrackerPage({ctx}){
     const csv=rows.map(r=>r.join(",")).join("\n");
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-    a.download=`RGS_Fees_${tab}_${Date.now()}.csv`;a.click();
+    a.download=`JD_Billing_${tab}_${Date.now()}.csv`;a.click();
   };
 
   const statusColor=s=>s==="paid"?C.green:s==="partial"?C.amber:C.red;
@@ -3122,19 +3122,19 @@ export function FeeTrackerPage({ctx}){
       <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",gap:10,alignItems:"end"}}>
         <div>
           <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Search</label>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Name or Student ID…"
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Name or Member ID…"
             style={{width:"100%",padding:"8px 12px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none",color:C.text,background:C.white}}/>
         </div>
         <Sel label="Section" value={filterSection} onChange={v=>{setFilterSection(v);setFilterClass("");}}
           options={[{value:"",label:"All Sections"},...sections.map(s=>({value:String(s.id),label:s.name}))]}/>
-        <Sel label="Class" value={filterClass} onChange={setFilterClass}
-          options={[{value:"",label:"All Classes"},...filteredClasses.map(c=>({value:String(c.id),label:c.name}))]}/>
+        <Sel label="Group" value={filterClass} onChange={setFilterClass}
+          options={[{value:"",label:"All Groups"},...filteredClasses.map(c=>({value:String(c.id),label:c.name}))]}/>
         <Sel label="Status" value={filterStatus} onChange={setFilterStatus}
           options={[{value:"",label:"All Statuses"},{value:"paid",label:"Paid"},{value:"partial",label:"Partial"},{value:"unpaid",label:"Unpaid"}]}/>
         <Sel label="Year" value={filterYear} onChange={setFilterYear}
           options={[{value:"",label:"All Years"},...years.map(y=>({value:y,label:y}))]}/>
-        <Sel label="Term" value={filterTerm} onChange={setFilterTerm}
-          options={[{value:"",label:"All Terms"},...TERMS.map(t=>({value:t,label:t}))]}/>
+        <Sel label="Period" value={filterTerm} onChange={setFilterTerm}
+          options={[{value:"",label:"All Periods"},...TERMS.map(t=>({value:t,label:t}))]}/>
       </div>
       {cfCount>0&&(
         <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10}}>
@@ -3167,7 +3167,7 @@ export function FeeTrackerPage({ctx}){
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <AlertTriangle size={16} color={C.amber}/>
               <span style={{fontWeight:800,color:C.amber,fontSize:14}}>
-                Outstanding Balances from Previous Terms — {owingCallout.length} student{owingCallout.length!==1?"s":""}
+                Outstanding Balances from Previous Periods — {owingCallout.length} member{owingCallout.length!==1?"s":""}
               </span>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -3190,7 +3190,7 @@ export function FeeTrackerPage({ctx}){
             ))}
           </div>
           <div style={{marginTop:8,fontSize:11,color:C.muted}}>
-            These bills are not carried forward yet. Use the Carry-Forward toggle in Bill Generation to include these balances in the new term's bills.
+            These bills are not carried forward yet. Use the Carry-Forward toggle in Bill Generation to include these balances in the new period's bills.
           </div>
         </Card>
       )}
@@ -3259,7 +3259,7 @@ export function FeeTrackerPage({ctx}){
                           onChange={toggleSelectAll}
                           style={{width:15,height:15,cursor:"pointer",accentColor:"#fff"}}/>
                       </th>
-                      {["Student","Class","Term / Year","Total","Paid","Balance","Status","Actions"].map((c,i)=>(
+                      {["Member","Group","Period / Year","Total","Paid","Balance","Status","Actions"].map((c,i)=>(
                         <th key={i} style={{padding:"9px 13px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{c}</th>
                       ))}
                     </tr>
@@ -3523,9 +3523,9 @@ export function FeeTrackerPage({ctx}){
                     <div>
                       <div style={{fontWeight:800,color:C.orange,fontSize:13,marginBottom:4}}>About Carried-Forward Bills</div>
                       <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>
-                        These are <strong>old bills whose outstanding balance was rolled into a new term's bill</strong>.
-                        The debt has already been included in the student's current invoice — these records are kept for audit purposes only.
-                        A carried-forward bill is automatically marked as <em>settled</em> once <strong>the new term's bill has been fully paid</strong> and has been active for at least 7 days (grace period in case the new bill is deleted or refunded).
+                        These are <strong>old bills whose outstanding balance was rolled into a new period's bill</strong>.
+                        The debt has already been included in the member's current invoice — these records are kept for audit purposes only.
+                        A carried-forward bill is automatically marked as <em>settled</em> once <strong>the new period's bill has been fully paid</strong> and has been active for at least 7 days (grace period in case the new bill is deleted or refunded).
                       </div>
                     </div>
                   </div>
@@ -3544,7 +3544,7 @@ export function FeeTrackerPage({ctx}){
                     <div style={{textAlign:"center",padding:40,color:C.light}}>
                       <History size={36} color={C.muted} style={{marginBottom:10}}/>
                       <div style={{fontWeight:700,marginBottom:6}}>No carried-forward bills</div>
-                      <div style={{fontSize:13}}>When bill balances are rolled into a new term, the old bills will appear here.</div>
+                      <div style={{fontSize:13}}>When bill balances are rolled into a new period, the old bills will appear here.</div>
                     </div>
                   </Card>
                 ):(
@@ -3553,9 +3553,9 @@ export function FeeTrackerPage({ctx}){
                       <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                         <thead>
                           <tr style={{background:C.orange}}>
-                            <SortTh col="name"    label="Student"/>
-                            <SortTh col="class"   label="Class"/>
-                            <SortTh col="term"    label="Original Term"/>
+                            <SortTh col="name"    label="Member"/>
+                            <SortTh col="class"   label="Group"/>
+                            <SortTh col="term"    label="Original Period"/>
                             <SortTh col="total"   label="Original Bill"/>
                             <SortTh col="balance" label="Carried Balance"/>
                             <SortTh col="status"  label="Status"/>
@@ -3735,10 +3735,10 @@ export function FeeTrackerPage({ctx}){
               </div>
             )}
             <Inp label="Refund Amount (₦) *" type="number" value={refundForm.amount} onChange={v=>rf({amount:v})} placeholder="Amount to refund"/>
-            <Inp label="Reason for Refund *" value={refundForm.reason} onChange={v=>rf({reason:v})} placeholder="e.g. Duplicate payment, student withdrawal…"/>
+            <Inp label="Reason for Refund *" value={refundForm.reason} onChange={v=>rf({reason:v})} placeholder="e.g. Duplicate payment, member withdrawal…"/>
             <Inp label="Refund Date" type="date" value={refundForm.refund_date} onChange={v=>rf({refund_date:v})}/>
             <div style={{background:C.orangePale,borderRadius:8,padding:"10px 12px",fontSize:12,color:C.amber,marginBottom:10}}>
-              This will reduce the student's recorded payment amount and update their bill status accordingly.
+              This will reduce the member's recorded payment amount and update their bill status accordingly.
             </div>
             <div style={{display:"flex",gap:10}}>
               <Btn onClick={processRefund} color={C.red} style={{flex:1}} disabled={saving}>{saving?"Processing...":"Process Refund"}</Btn>
@@ -4164,7 +4164,7 @@ export function FeeStatsPage({ctx}){
     }).sort((a,b)=>(+b.balance)-(+a.balance));
   },[filteredBills]);
 
-  // ── Fee Item Breakdown ─────────────────────────────────────────────────────
+  // ── Billing Item Breakdown ─────────────────────────────────────────────────────
   const itemBreakdown=useMemo(()=>{
     const map={};
     filteredBills.forEach(bill=>{
@@ -4186,7 +4186,7 @@ export function FeeStatsPage({ctx}){
   const closePanel=()=>{setPanel(null);setPanelSearch("");};
 
   // ── PDF Generation Engine ─────────────────────────────────────────────────
-  const schoolName=_sectionName||dbSchoolName||"School Portal";
+  const schoolName=_sectionName||dbSchoolName||"Business Portal";
   const schoolLogo=_sectionLogo||dbSchoolLogo||"";
   const filterLabel=[filterYear,filterTerm].filter(Boolean).join(" · ")||"All Periods";
 
@@ -4203,7 +4203,7 @@ export function FeeStatsPage({ctx}){
     if(reportSortBy==="paid")    return s.sort((a,b)=>(+b.amount_paid||0)-(+a.amount_paid||0));
     return s;
   };
-  const sortLabel={class:"Class",name:"Name (A–Z)",status:"Status",balance:"Balance ↓",paid:"Amount Paid ↓"}[reportSortBy]||"Class";
+  const sortLabel={class:"Group",name:"Name (A–Z)",status:"Status",balance:"Balance ↓",paid:"Amount Paid ↓"}[reportSortBy]||"Group";
 
   // Privacy Mode masking — every report funnels through pdfWrap, so masking the ₦-prefixed
   // figures here (the exact, distinctive output of fmt()) covers all 14+ report generators
@@ -4332,12 +4332,12 @@ ${body}
 </div>
 <div class="footer">
   <div>${confidentialMsg}</div>
-  <div style="margin-top:3px;color:#cbd5e1;">${schoolName} &nbsp;·&nbsp; Fee Report &nbsp;·&nbsp; ${new Date().getFullYear()} &nbsp;·&nbsp; Page <span class="page-num"></span></div>
+  <div style="margin-top:3px;color:#cbd5e1;">${schoolName} &nbsp;·&nbsp; Billing Report &nbsp;·&nbsp; ${new Date().getFullYear()} &nbsp;·&nbsp; Page <span class="page-num"></span></div>
 </div>
 </body></html>`;
   };
 
-  const openPDF=(html,title="Fee Statistics")=>{
+  const openPDF=(html,title="Billing Analytics")=>{
     openHtmlDoc(html,{title,showPDF:ctx.showPDF});
   };
 
@@ -4359,7 +4359,7 @@ ${body}
       </div>
     </div>`;
 
-  const dlSummary=()=>openPDF(pdfWrap("Fee Overview Summary",summaryStatsBody()));
+  const dlSummary=()=>openPDF(pdfWrap("Billing Overview Summary",summaryStatsBody()));
 
   const dlDailyInflow=()=>{
     const rows=dailyInflow.filter(d=>d.total>0);
@@ -4389,7 +4389,7 @@ ${body}
   };
 
   // ── Table column definitions shared across all student-list PDFs ─────────────
-  const BILL_TH=`<tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Status</th></tr>`;
+  const BILL_TH=`<tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Period</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Status</th></tr>`;
   const billTr=(b,i)=>`<tr>
     <td style="color:#94a3b8;font-size:7.5pt;width:28px">${i+1}</td>
     <td style="font-weight:700">${stuName(b.student_id)}</td>
@@ -4488,8 +4488,8 @@ ${body}
 
   const dlFeeItems=()=>{
     const body=`<div class="section">
-      <div class="section-head">📦 Fee Item Breakdown — ${itemBreakdown.length} Item${itemBreakdown.length!==1?"s":""}</div>
-      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Collection Rate</th><th>Total Expected</th></tr></thead><tbody>
+      <div class="section-head">📦 Billing Item Breakdown — ${itemBreakdown.length} Item${itemBreakdown.length!==1?"s":""}</div>
+      <table><thead><tr><th>#</th><th>Billing Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Collection Rate</th><th>Total Expected</th></tr></thead><tbody>
         ${itemBreakdown.length===0?`<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">No items found</td></tr>`
           :itemBreakdown.map((item,i)=>{
             const paid=item.bills.filter(b=>b.status==="paid").length;
@@ -4507,7 +4507,7 @@ ${body}
               <td>${fmt(item.totalBilled)}</td></tr>`;
           }).join("")}
       </tbody></table></div>`;
-    openPDF(pdfWrap("Fee Item Breakdown Report",body));
+    openPDF(pdfWrap("Billing Item Breakdown Report",body));
   };
 
   const dlPanel=(pnl,bills)=>{
@@ -4552,10 +4552,10 @@ ${body}
             <td>${p.payment_method==="paystack"?"Paystack":"Bank Transfer"}</td>
             <td>${p.payment_date?new Date(p.payment_date).toLocaleDateString("en-NG"):"—"}</td></tr>`).join("")}
       </tbody>${recentPayments.length>0?`<tfoot><tr><td colspan="3">Total Collected</td><td style="font-weight:900;color:#15803d">${fmt(recentPayments.reduce((a,p)=>a+(+p.amount||0),0))}</td><td colspan="2"></td></tr></tfoot>`:""}</table></div>`);
-    // Fee Items
+    // Billing Items
     parts.push(`<div class="section pb">
-      <div class="section-head">📦 Fee Item Breakdown (${itemBreakdown.length} items)</div>
-      <table><thead><tr><th>#</th><th>Fee Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Rate</th></tr></thead><tbody>
+      <div class="section-head">📦 Billing Item Breakdown (${itemBreakdown.length} items)</div>
+      <table><thead><tr><th>#</th><th>Billing Item</th><th>Type</th><th>Members</th><th>Paid</th><th>Partial</th><th>Unpaid</th><th>Rate</th></tr></thead><tbody>
         ${itemBreakdown.map((item,i)=>{
           const paid=item.bills.filter(b=>b.status==="paid").length;
           const partial=item.bills.filter(b=>b.status==="partial").length;
@@ -4583,7 +4583,7 @@ ${body}
             <td class="badge-unpaid">${cls.unpaid}</td>
             <td>${cls.count}</td></tr>`).join("")}
       </tbody>
-      <tfoot><tr><td colspan="2" style="font-weight:800">School Total</td>
+      <tfoot><tr><td colspan="2" style="font-weight:800">Organization Total</td>
         <td style="font-weight:800;color:${collectionRate>=75?"#15803d":collectionRate>=50?"#d97706":"#dc2626"}">${collectionRate}%</td>
         <td style="font-weight:800;color:#15803d">${fmt(totalCollected)}</td>
         <td style="font-weight:800;color:#dc2626">${fmt(totalOutstanding)}</td>
@@ -4595,7 +4595,7 @@ ${body}
     // At-risk
     parts.push(`<div class="section pb">
       <div class="section-head">⚠️ At-Risk Members — Partial, Silent 30+ Days (${atRisk.length})</div>
-      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Balance</th><th>Days Since Last Payment</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Period</th><th>Year</th><th>Balance</th><th>Days Since Last Payment</th></tr></thead><tbody>
         ${atRisk.length===0?`<tr><td colspan="8" style="text-align:center;padding:16px;color:#94a3b8">No at-risk members 🎉</td></tr>`
           :atRisk.map((b,i)=>{
             const pays=(b.fee_payments||[]).filter(p=>!p.is_refunded);
@@ -4612,7 +4612,7 @@ ${body}
     // Refunds
     parts.push(`<div class="section pb">
       <div class="section-head">↩ Refunds (${refundStats.count}) — Total Returned: ${fmt(refundStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Period</th><th>Year</th></tr></thead><tbody>
         ${refundStats.count===0?`<tr><td colspan="9" style="text-align:center;padding:16px;color:#94a3b8">No refunds in this period</td></tr>`
           :refundStats.all.map((r,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(r.student_id)}</td>
@@ -4626,7 +4626,7 @@ ${body}
     // Discounts
     parts.push(`<div class="section pb">
       <div class="section-head">🏷 Discounts Applied (${discountStats.count}) — Total Waived: ${fmt(discountStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Period</th><th>Year</th></tr></thead><tbody>
         ${discountStats.count===0?`<tr><td colspan="10" style="text-align:center;padding:16px;color:#94a3b8">No discounts in this period</td></tr>`
           :discountStats.all.map((d,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(d.student_id)}</td>
@@ -4638,7 +4638,7 @@ ${body}
             <td>${d.term||"—"}</td><td>${d.year||"—"}</td></tr>`).join("")}
       </tbody>
       ${discountStats.count>0?`<tfoot><tr><td colspan="7">Total Discounted</td><td style="font-weight:900;color:#7C3AED">${fmt(discountStats.total)}</td><td colspan="2"></td></tr></tfoot>`:""}</table></div>`);
-    openPDF(pdfWrap("Complete Fee Statistics Report",parts.join("")));
+    openPDF(pdfWrap("Complete Billing Analytics Report",parts.join("")));
   };
 
   const dlClassLeaderboard=()=>{
@@ -4657,7 +4657,7 @@ ${body}
             <td class="badge-unpaid">${cls.unpaid}</td>
             <td>${cls.count}</td></tr>`).join("")}
       </tbody>
-      <tfoot><tr><td colspan="2" style="font-weight:800">School Total</td>
+      <tfoot><tr><td colspan="2" style="font-weight:800">Organization Total</td>
         <td style="font-weight:800;color:${collectionRate>=75?"#15803d":collectionRate>=50?"#d97706":"#dc2626"}">${collectionRate}%</td>
         <td style="font-weight:800;color:#15803d">${fmt(totalCollected)}</td>
         <td style="font-weight:800;color:#dc2626">${fmt(totalOutstanding)}</td>
@@ -4666,13 +4666,13 @@ ${body}
         <td style="font-weight:800;color:#dc2626">${unpaidBills.length}</td>
         <td style="font-weight:800">${filteredBills.length}</td></tr></tfoot>
       </table></div>`;
-    openPDF(pdfWrap("Class Collection Leaderboard",body));
+    openPDF(pdfWrap("Group Collection Leaderboard",body));
   };
 
   const dlAtRisk=()=>{
     const body=`<div class="section">
       <div class="section-head">⚠️ At-Risk Members — ${atRisk.length} Record${atRisk.length!==1?"s":""}</div>
-      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Term</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Days Silent</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Period</th><th>Year</th><th>Total Bill</th><th>Paid</th><th>Balance</th><th>Days Silent</th></tr></thead><tbody>
         ${atRisk.length===0?`<tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8">No at-risk members 🎉</td></tr>`
           :atRisk.map((b,i)=>{
             const pays=(b.fee_payments||[]).filter(p=>!p.is_refunded);
@@ -4688,13 +4688,13 @@ ${body}
           }).join("")}
       </tbody>
       ${atRisk.length>0?`<tfoot><tr><td colspan="8">Total Outstanding (at-risk)</td><td style="font-weight:900;color:#d97706">${fmt(atRisk.reduce((a,b)=>a+(+b.balance||0),0))}</td><td></td></tr></tfoot>`:""}</table></div>`;
-    openPDF(pdfWrap("At-Risk Students Report",body));
+    openPDF(pdfWrap("At-Risk Members Report",body));
   };
 
   const dlRefunds=()=>{
     const body=`<div class="section">
       <div class="section-head">↩ Refunds — ${refundStats.count} Record${refundStats.count!==1?"s":""} · Total: ${fmt(refundStats.total)}</div>
-      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Term</th><th>Year</th></tr></thead><tbody>
+      <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Amount</th><th>Reason</th><th>Date</th><th>Period</th><th>Year</th></tr></thead><tbody>
         ${refundStats.count===0?`<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8">No refunds in this period</td></tr>`
           :refundStats.all.map((r,i)=>`<tr>
             <td>${i+1}</td><td style="font-weight:700">${stuName(r.student_id)}</td>
@@ -4730,7 +4730,7 @@ ${body}
       </div>
       <div class="section pb">
         <div class="section-head">🏷 All Discounts — ${discountStats.count} Record${discountStats.count!==1?"s":""}</div>
-        <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Term</th><th>Year</th></tr></thead>
+        <table><thead><tr><th>#</th><th>Member</th><th>ID</th><th>Group</th><th>Label</th><th>Type</th><th>Value</th><th>Amount Waived</th><th>Period</th><th>Year</th></tr></thead>
         <tbody>${detailRows||`<tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8">No discounts in this period</td></tr>`}</tbody>
         ${discountStats.count>0?`<tfoot><tr><td colspan="7">Total Discounted</td><td style="font-weight:900;color:#7C3AED">${fmt(discountStats.total)}</td><td colspan="2"></td></tr></tfoot>`:""}</table>
       </div>`;
@@ -4843,9 +4843,9 @@ ${body}
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:10}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-stats" size={20}/>Fee Statistics</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="fee-stats" size={20}/>Billing Analytics</h2>
           <p style={{color:C.muted,fontSize:12}}>
-            {viewMode==="overview"?"Financial overview — click any widget for details":"Full breakdown of payments grouped by fee item and class"}
+            {viewMode==="overview"?"Financial overview — click any widget for details":"Full breakdown of payments grouped by billing item and group"}
           </p>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
@@ -4861,7 +4861,7 @@ ${body}
           <Sel label="" value={filterYear} onChange={setFilterYear}
             options={[{value:"",label:"All Years"},...years.map(y=>({value:y,label:y}))]}/>
           <Sel label="" value={filterTerm} onChange={setFilterTerm}
-            options={[{value:"",label:"All Terms"},...TERMS.map(t=>({value:t,label:t}))]}/>
+            options={[{value:"",label:"All Periods"},...TERMS.map(t=>({value:t,label:t}))]}/>
           {/* Sort order picker */}
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <span style={{fontSize:11,color:C.muted,fontWeight:600,whiteSpace:"nowrap"}}>Sort PDF by:</span>
@@ -4977,7 +4977,7 @@ ${body}
           }];
         });
 
-        // Students who were never billed for this item at all — previously invisible.
+        // Members who were never billed for this item at all — previously invisible.
         // Universe = active students matching the same section/class filters as filteredBills,
         // minus anyone who already has a row (i.e. was billed) for this item.
         const billedStudentIds=new Set(itemRows.map(r=>String(r.studentId)));
@@ -5047,7 +5047,7 @@ ${body}
 
         // Export CSV
         const exportCSV=()=>{
-          const headers=["Member Name","Member ID","Group","Gender","Item","Item Amount","Bill Status","Total Bill","Amount Paid","Balance","Last Payment Date","Payment Method","Reference","Term","Year"];
+          const headers=["Member Name","Member ID","Group","Gender","Item","Item Amount","Bill Status","Total Bill","Amount Paid","Balance","Last Payment Date","Payment Method","Reference","Period","Year"];
           const rows=visibleRows.map(r=>{
             const nb=r.billStatus==="not_billed";
             const money=v=>nb?"—":privacyMode?"•••":v;
@@ -5080,7 +5080,7 @@ ${body}
               {/* Left: item selector */}
               <Card style={{position:"sticky",top:80,padding:14}}>
                 <div style={{fontWeight:800,color:C.blue,fontSize:12,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>
-                  Select Fee Item
+                  Select Billing Item
                 </div>
                 {/* Dropdown */}
                 <select value={activeItem} onChange={e=>{setSelItem(e.target.value);setItemClassFilter("");setItemStatusFilter(new Set());setItemSearch("");}}
@@ -5095,7 +5095,7 @@ ${body}
                 <div style={{fontSize:11,color:C.muted,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:.4}}>All Items</div>
                 <div style={{maxHeight:"calc(100vh - 320px)",overflowY:"auto"}}>
                   {allItems.length===0?(
-                    <div style={{color:C.light,fontSize:12,padding:"10px 0"}}>No fee items found for this period.</div>
+                    <div style={{color:C.light,fontSize:12,padding:"10px 0"}}>No billing items found for this period.</div>
                   ):allItems.map(name=>{
                     const cnt=filteredBills.filter(b=>(b.fee_bill_items||[]).some(i=>i.is_included!==false&&i.name===name)).length;
                     const active=activeItem===name;
@@ -5118,7 +5118,7 @@ ${body}
                 {/* Stats bar */}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:10,marginBottom:14}}>
                   {[
-                    {label:"Students Billed",val:iTotal,color:C.blue},
+                    {label:"Members Billed",val:iTotal,color:C.blue},
                     {label:"Fully Paid",val:iPaid,color:C.green},
                     {label:"Partial",val:iPartial,color:C.amber},
                     {label:"Unpaid",val:iUnpaid,color:C.red},
@@ -5137,7 +5137,7 @@ ${body}
                 {/* Filters + Export */}
                 <Card style={{marginBottom:14,padding:"12px 16px"}}>
                   <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-                    <input value={itemSearch} onChange={e=>setItemSearch(e.target.value)} placeholder="Search student…"
+                    <input value={itemSearch} onChange={e=>setItemSearch(e.target.value)} placeholder="Search member…"
                       style={{padding:"7px 11px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none",width:180}}/>
                     <select value={itemClassFilter} onChange={e=>setItemClassFilter(e.target.value)}
                       style={{padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none"}}>
@@ -5212,7 +5212,7 @@ ${body}
                     <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:900}}>
                       <thead>
                         <tr style={{background:C.blue,color:"#fff"}}>
-                          {["#","Student","ID","Gender","Status","Item Amount","Total Bill","Paid","Balance","Last Payment","Method","Reference"].map((h,i)=>(
+                          {["#","Member","ID","Gender","Status","Item Amount","Total Bill","Paid","Balance","Last Payment","Method","Reference"].map((h,i)=>(
                             <th key={i} style={{padding:"9px 10px",textAlign:"left",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
                           ))}
                         </tr>
@@ -5281,7 +5281,7 @@ ${body}
                             <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                               <thead>
                                 <tr style={{background:C.offWhite}}>
-                                  {["#","Student","ID","Gender","Status","Item Amt","Total Bill","Paid","Balance","Last Payment","Method"].map((h,i)=>(
+                                  {["#","Member","ID","Gender","Status","Item Amt","Total Bill","Paid","Balance","Last Payment","Method"].map((h,i)=>(
                                     <th key={i} style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11,color:C.muted,borderBottom:`2px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
                                   ))}
                                 </tr>
@@ -5390,7 +5390,7 @@ ${body}
                     <div key={method} onClick={()=>openPanel(label,color,
                       [...new Set(filteredPayments.filter(p=>p.payment_method===method).map(p=>p.bill_id))]
                         .map(id=>bills.find(b=>b.id===id)).filter(Boolean))}
-                      style={{cursor:"pointer"}} title="Click to see students">
+                      style={{cursor:"pointer"}} title="Click to see members">
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
                         <span style={{fontSize:13,color:C.muted}}>{label}</span>
                         <strong style={{fontSize:13}}>{Math.round((total/grandPayTotal)*100)}%</strong>
@@ -5428,7 +5428,7 @@ ${body}
                   <div style={{textAlign:"center",padding:24,color:C.light}}>No outstanding balances!</div>
                 ):(
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                    <Th cols={["Student","Balance"]}/>
+                    <Th cols={["Member","Balance"]}/>
                     <tbody>
                       {defaulters.slice(0,5).map((bill,i)=>(
                         <TRow key={bill.id} i={i} cells={[
@@ -5456,7 +5456,7 @@ ${body}
                   <div style={{textAlign:"center",padding:24,color:C.light}}>No payments recorded yet</div>
                 ):(
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                    <Th cols={["Student","Amount","Date"]}/>
+                    <Th cols={["Member","Amount","Date"]}/>
                     <tbody>
                       {recentPayments.slice(0,5).map((p,i)=>(
                         <TRow key={p.id} i={i} cells={[
@@ -5472,13 +5472,13 @@ ${body}
               </Card>
             </div>
 
-            {/* ── Fee Item Breakdown summary → launch full view ── */}
+            {/* ── Billing Item Breakdown summary → launch full view ── */}
             {itemBreakdown.length>0&&(
               <Card>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,gap:8,flexWrap:"wrap"}}>
                   <div>
-                    <div style={{fontWeight:800,color:C.blue,fontSize:14}}>Payment by Fee Item</div>
-                    <p style={{fontSize:12,color:C.muted,marginTop:2}}>{itemBreakdown.length} fee item{itemBreakdown.length!==1?"s":""} detected — click any item or open full analysis</p>
+                    <div style={{fontWeight:800,color:C.blue,fontSize:14}}>Payment by Billing Item</div>
+                    <p style={{fontSize:12,color:C.muted,marginTop:2}}>{itemBreakdown.length} billing item{itemBreakdown.length!==1?"s":""} detected — click any item or open full analysis</p>
                   </div>
                   <div style={{display:"flex",gap:6,alignItems:"center"}}>
                     <DlBtn onClick={dlFeeItems} label="Items PDF"/>
@@ -5531,7 +5531,7 @@ ${body}
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                     <thead>
                       <tr style={{background:C.offWhite}}>
-                        {["Rank","Class","Collection Rate","Collected","Outstanding","Paid","Partial","Unpaid","Bills"].map((h,i)=>(
+                        {["Rank","Group","Collection Rate","Collected","Outstanding","Paid","Partial","Unpaid","Bills"].map((h,i)=>(
                           <th key={i} style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11,color:C.muted,borderBottom:`2px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
                         ))}
                       </tr>
@@ -5596,7 +5596,7 @@ ${body}
                   <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
                     <DlBtn onClick={dlAtRisk} label="At-Risk PDF"/>
                     {atRisk.length>5&&(
-                      <button onClick={()=>openPanel("At-Risk Students",C.amber,atRisk)}
+                      <button onClick={()=>openPanel("At-Risk Members",C.amber,atRisk)}
                         style={{fontSize:11,color:C.blue,background:"none",border:"none",cursor:"pointer"}}>
                         View all {atRisk.length} →
                       </button>
@@ -5605,11 +5605,11 @@ ${body}
                 </div>
                 {atRisk.length===0?(
                   <div style={{textAlign:"center",padding:24,color:C.light,fontSize:13}}>
-                    No at-risk students 🎉
+                    No at-risk members 🎉
                   </div>
                 ):(
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                    <Th cols={["Student","Balance","Last Payment"]}/>
+                    <Th cols={["Member","Balance","Last Payment"]}/>
                     <tbody>
                       {atRisk.slice(0,6).map((bill,i)=>{
                         const pays=(bill.fee_payments||[]).filter(p=>!p.is_refunded);
@@ -5694,7 +5694,7 @@ ${body}
                           padding:"7px 10px",background:C.purplePale,borderRadius:7}}>
                           <div>
                             <div style={{fontWeight:600,fontSize:12,color:C.text}}>{d.label}</div>
-                            <div style={{fontSize:10,color:C.muted}}>{d.count} student{d.count!==1?"s":""}</div>
+                            <div style={{fontSize:10,color:C.muted}}>{d.count} member{d.count!==1?"s":""}</div>
                           </div>
                           <strong style={{color:C.purple}}>{fmt(d.total)}</strong>
                         </div>
@@ -5737,7 +5737,7 @@ ${body}
                   </div>
                 </div>
                 <input value={panelSearch} onChange={e=>setPanelSearch(e.target.value)}
-                  placeholder="Search students…"
+                  placeholder="Search members…"
                   style={{width:"100%",padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,marginBottom:10,outline:"none"}}/>
                 <div style={{fontSize:11,color:C.muted,marginBottom:8}}>{panelBills.length} record{panelBills.length!==1?"s":""}</div>
                 <div style={{maxHeight:520,overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
@@ -5784,7 +5784,7 @@ ${body}
                   {itemPanel.bills.filter(b=>b.status==="unpaid").length} unpaid
                 </div>
                 <input value={panelSearch} onChange={e=>setPanelSearch(e.target.value)}
-                  placeholder="Search students…"
+                  placeholder="Search members…"
                   style={{width:"100%",padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,marginBottom:10,outline:"none"}}/>
                 <div style={{display:"flex",gap:6,marginBottom:10}}>
                   {[["All",null],["Paid","paid"],["Partial","partial"],["Unpaid","unpaid"]].map(([lbl,val])=>{
@@ -5946,7 +5946,7 @@ ${body}
 export function MyBillPage({ctx}){
   const {user,notify}=ctx;
   const {schoolName:_schoolNameBill,schoolLogo:_billSchoolLogo}=useSection();
-  const _billSchoolName=_schoolNameBill||"School Portal";
+  const _billSchoolName=_schoolNameBill||"Business Portal";
   const isMobile=useIsMobile();
   const [bills,setBills]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -5967,7 +5967,7 @@ export function MyBillPage({ctx}){
 
   const toggleItem=async(item)=>{
     if(!item.is_optional){notify("Compulsory items cannot be removed","error");return;}
-    if(+activeBill.amount_paid>0){notify("Optional items cannot be changed after a payment has been recorded. Contact the school admin.","error");return;}
+    if(+activeBill.amount_paid>0){notify("Optional items cannot be changed after a payment has been recorded. Contact the organization administrator.","error");return;}
     const newIncluded=!item.is_included;
     await db.updateFeeBillItem(item.id,{is_included:newIncluded});
     // Recalculate from DB (items − discounts − paid) — single source of truth
@@ -5991,7 +5991,7 @@ export function MyBillPage({ctx}){
     if(!chosenAmt||chosenAmt<=0){notify("Enter a valid amount","error");return;}
     if(chosenAmt>balance+0.01){notify(`Amount cannot exceed balance of ${fmt(balance)}`,"error");return;}
     const key=import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    if(!key||key.includes("xxxx")){notify("Paystack is not configured. Contact the school admin.","error");return;}
+    if(!key||key.includes("xxxx")){notify("Paystack is not configured. Contact the organization administrator.","error");return;}
     const st=user;
     const handler=window.PaystackPop?.setup({
       key,
@@ -6018,7 +6018,7 @@ export function MyBillPage({ctx}){
             });
             const result=await res.json();
             if(!res.ok||result.error){
-              notify(`Payment verification failed: ${result.error}. Please contact the school office with your reference: ${response.reference}`,"error");
+              notify(`Payment verification failed: ${result.error}. Please contact the organization office with your reference: ${response.reference}`,"error");
             }else{
               notify("Payment successful and verified ✓");
               db.getFeeBills({student_id:user.student_id}).then(({data})=>{
@@ -6026,7 +6026,7 @@ export function MyBillPage({ctx}){
               });
             }
           }catch(e){
-            notify(`Network error during verification. Save your reference: ${response.reference} and contact the school office.`,"error");
+            notify(`Network error during verification. Save your reference: ${response.reference} and contact the organization office.`,"error");
           }finally{setPaying(false);}
         })();
       },
@@ -6039,7 +6039,7 @@ export function MyBillPage({ctx}){
     const bill=activeBill;
     const items=(bill.fee_bill_items||[]).filter(i=>i.is_included);
     const isReceipt=type==="receipt";
-    const billNo=`${isReceipt?"RGS-RCPT":"RGS-BILL"}-${String(bill.id).padStart(5,"0")}`;
+    const billNo=`${isReceipt?"JD-RCPT":"JD-BILL"}-${String(bill.id).padStart(5,"0")}`;
     const today=new Date().toLocaleDateString("en-NG",{day:"2-digit",month:"long",year:"numeric"});
     const isPaid=bill.status==="paid";
     const html=buildPDF({bill,items,billNo,today,name:user.name||user.student_id,studentId:user.student_id,className:null,isPaid,isReceipt,isNativePlatform:isNative(),schoolName:_billSchoolName,schoolLogo:_billSchoolLogo||null});
@@ -6053,7 +6053,7 @@ export function MyBillPage({ctx}){
   return(
     <div>
       <div style={{marginBottom:18}}>
-        <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="receipt" size={20}/>My Fee Bill</h2>
+        <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="receipt" size={20}/>My Billing Bill</h2>
         <p style={{color:C.muted,fontSize:12}}>{user.name}</p>
       </div>
 
@@ -6062,7 +6062,7 @@ export function MyBillPage({ctx}){
           <div style={{textAlign:"center",padding:48,color:C.light}}>
             <div style={{marginBottom:12}}><ReceiptText size={40} color={C.muted}/></div>
             <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>No bills yet</div>
-            <div style={{fontSize:13}}>Your fee bill will appear here once generated by the school</div>
+            <div style={{fontSize:13}}>Your billing bill will appear here once generated by the organization</div>
           </div>
         </Card>
       ):(
@@ -6152,7 +6152,7 @@ export function MyBillPage({ctx}){
                     {_billSchoolName}
                   </div>
                   <div style={{fontSize:12,opacity:.8,marginTop:3}}>
-                    {activeBill.term} {activeBill.academic_year} · Fee Bill
+                    {activeBill.term} {activeBill.academic_year} · Billing Bill
                   </div>
                   <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
                     <Badge color="#fff" style={{color:C.blue,fontSize:11}}>{user.name||user.student_id}</Badge>

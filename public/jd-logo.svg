@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" role="img" aria-labelledby="title desc">
+  <title id="title">JAMES-DENNING</title>
+  <desc id="desc">JAMES-DENNING business operations platform</desc>
+  <rect width="900" height="240" rx="34" fill="#FFFFFF"/>
+  <rect x="36" y="36" width="168" height="168" rx="42" fill="#111827"/>
+  <path d="M77 76h18v88H77zM95 76h31c25 0 39 12 39 34 0 14-7 25-20 30l22 42h-26l-23-33H95v33H77V76Zm18 40h11c12 0 18-4 18-13s-6-13-18-13h-11v26Z" fill="#fff"/>
+  <path d="M170 70h7v100h-7z" fill="#9CA3AF"/>
+  <text x="246" y="111" fill="#111827" font-size="62" font-weight="800" font-family="Arial, Helvetica, sans-serif" letter-spacing="2">JAMES-DENNING</text>
+  <text x="250" y="163" fill="#6B7280" font-size="24" font-weight="700" font-family="Arial, Helvetica, sans-serif" letter-spacing="7">OPERATIONS PLATFORM</text>
+</svg>

@@ -162,7 +162,7 @@ export function TranscriptPage({ctx}){
     setSelStu(s);setSelSessions([]);setPortalResults([]);setPortalResultsMap({});setScoreOverrides({});setEditMode(false);setDraftId(null);setDraftNote("");
   };
 
-  // Which Term-Total fields are still null across the currently loaded subjects/sessions.
+  // Which Period-Total fields are still null across the currently loaded subjects/sessions.
   const computeMissingFields=()=>{
     const missing=[];
     const TERMS=[["t1_total","T1"],["t2_total","T2"],["t3_total","T3"]];
@@ -189,7 +189,7 @@ export function TranscriptPage({ctx}){
     const pairs=await Promise.all(
       sess.map(sid=>db.getResults({student_id:stu.id,session_id:sid})
         .then(({data,error})=>{
-          if(error)notify(`Session ${sid} load error: ${error.message}`,"error");
+          if(error)notify(`Cycle ${sid} load error: ${error.message}`,"error");
           return[sid,data||[]];
         })
       )
@@ -201,7 +201,7 @@ export function TranscriptPage({ctx}){
   };
 
   const saveDraft=async()=>{
-    if(!selStu){notify("Select a student first","error");return;}
+    if(!selStu){notify("Select a member first","error");return;}
     setSavingDraft(true);
     const byName=user?.name||user?.email||"";
     const {data:saved,error}=await db.saveTranscriptDraft(draftId||null,{
@@ -373,7 +373,7 @@ export function TranscriptPage({ctx}){
     if(selSessions.length>1){
       const pdfSessions=selSessions.map(sid=>{
         const sessName=sessions.find(s=>String(s.id)===sid)?.name||sid;
-        // Class the student was actually in that session — taken from that session's
+        // Group the student was actually in that session — taken from that session's
         // result rows, not the current class, so promotions across years show correctly.
         const sessResults=portalResultsMap[sid]||[];
         const sessClassName=sessResults[0]?.classes?.name||"";
@@ -417,21 +417,21 @@ export function TranscriptPage({ctx}){
 
   const emailTranscript=async()=>{
     if(!portalSubjectRows.length){notify("Load results first","error");return;}
-    if(!selStu?.email){notify("No email on file for this student","error");return;}
+    if(!selStu?.email){notify("No email on file for this member","error");return;}
     setSendingEmail(true);
     try{
       const{html,studentName,yearLabel}=buildPortalTranscriptHTML();
       const b64=await htmlToPdfBase64(html,{scale:3,usePt:false});
-      const schoolName=settings?.school_name||"School Portal";
-      const emailHtml=buildEmailHtml(`Academic Transcript — ${yearLabel}`,[
-        `Dear Parent/Guardian,`,``,
+      const schoolName=settings?.school_name||"Business Portal";
+      const emailHtml=buildEmailHtml(`Performance History — ${yearLabel}`,[
+        `Dear Member/Contact,`,``,
         `Please find attached the academic transcript for:`,``,
         `${studentName} · Member ID: ${selStu.id}`,
-        `Academic Year(s): ${yearLabel}`,``,
-        `If you have any questions, please contact the school administration office.`,
+        `Performance Year(s): ${yearLabel}`,``,
+        `If you have any questions, please contact the organization administration office.`,
       ].join("\n"),schoolName);
       const res=await sendPortalEmail({
-        to:selStu.email,subject:`Academic Transcript — ${studentName} — ${yearLabel}`,html:emailHtml,
+        to:selStu.email,subject:`Performance History — ${studentName} — ${yearLabel}`,html:emailHtml,
         attachments:[{name:`Transcript-${studentName.replace(/\s+/g,"-")}.pdf`,content:b64,mimeType:"application/pdf"}],
       });
       if(res.ok){notify(`Transcript emailed to ${selStu.email} ✓`,"success");logTranscriptGenerated();}
@@ -492,11 +492,11 @@ export function TranscriptPage({ctx}){
 
   const saveManual=async()=>{
     if(!mForm.student_name.trim()){alert("Member name is required.");return;}
-    if(!subjects.some(s=>s.name.trim())){alert("Add at least one subject.");return;}
+    if(!subjects.some(s=>s.name.trim())){alert("Add at least one category.");return;}
     if(transcriptType==="multi_period"&&!classPeriods.some(p=>p.class_name.trim()||p.academic_year.trim())){
-      alert("Add at least one class period.");return;
+      alert("Add at least one group period.");return;
     }
-    if(transcriptType==="legacy"&&!mForm.academic_year.trim()){alert("Academic year is required.");return;}
+    if(transcriptType==="legacy"&&!mForm.academic_year.trim()){alert("Performance year is required.");return;}
     setSaving(true);
     const toNum=v=>(v===""||v==null)?null:+v;
     let validSubjects,payload;
@@ -666,10 +666,10 @@ export function TranscriptPage({ctx}){
                   )}
                 </div>
 
-                {/* Academic year(s) + Load (appears after student chosen) */}
+                {/* Performance year(s) + Load (appears after student chosen) */}
                 {selStu&&(
                   <div style={{flex:"2 1 260px",minWidth:0}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Academic Year(s) — select one or more</div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,marginBottom:6}}>Performance Year(s) — select one or more</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
                       {sessions.map(s=>{
                         const active=selSessions.includes(String(s.id));
@@ -752,12 +752,12 @@ export function TranscriptPage({ctx}){
                 <Card>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
                     <div style={{fontWeight:800,color:C.blue,fontSize:14}}>
-                      {classes.find(c=>String(c.id)===String(selClass))?.name||"Group"} · <span style={{color:C.muted,fontWeight:600}}>{filtered.length} student{filtered.length!==1?"s":""}</span>
+                      {classes.find(c=>String(c.id)===String(selClass))?.name||"Group"} · <span style={{color:C.muted,fontWeight:600}}>{filtered.length} member{filtered.length!==1?"s":""}</span>
                     </div>
                     <div style={{fontSize:12,color:C.muted}}>Select a member to build their transcript</div>
                   </div>
                   {filtered.length===0?(
-                    <div style={{textAlign:"center",padding:32,color:C.muted,fontSize:13}}>No students in this class{search.trim()?" match your search":""}.</div>
+                    <div style={{textAlign:"center",padding:32,color:C.muted,fontSize:13}}>No members in this group{search.trim()?" match your search":""}.</div>
                   ):(
                     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
                       {filtered.map(s=>(
@@ -802,7 +802,7 @@ export function TranscriptPage({ctx}){
                         </Btn>
                         {portalSubjectRows.length>0&&(
                           <>
-                            <Btn onClick={emailTranscript} color={C.green} outline disabled={sendingEmail||!selStu?.email} title={selStu?.email?"Email transcript PDF to "+selStu.email:"No email on file for this student"}>
+                            <Btn onClick={emailTranscript} color={C.green} outline disabled={sendingEmail||!selStu?.email} title={selStu?.email?"Email transcript PDF to "+selStu.email:"No email on file for this member"}>
                               <Mail size={12} style={{marginRight:4}}/>{sendingEmail?"Sending…":"Email Transcript"}
                             </Btn>
                             <Btn onClick={genPortalPDF} color={C.orange}>Generate Transcript PDF</Btn>
@@ -828,7 +828,7 @@ export function TranscriptPage({ctx}){
                         Results — {selSessions.length===1
                           ?sessions.find(s=>String(s.id)===selSessions[0])?.name||""
                           :`${selSessions.length} sessions`}
-                        <Badge color={C.green} style={{marginLeft:8}}>{portalSubjectRows.length} subjects</Badge>
+                        <Badge color={C.green} style={{marginLeft:8}}>{portalSubjectRows.length} categories</Badge>
                         {Object.keys(scoreOverrides).length>0&&(
                           <Badge color={C.orange} style={{marginLeft:6}}>{Object.keys(scoreOverrides).length} edited</Badge>
                         )}
@@ -847,10 +847,10 @@ export function TranscriptPage({ctx}){
                         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:700}}>
                           <thead>
                             <tr style={{background:C.blue,color:"#fff"}}>
-                              <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}} rowSpan={2}>Subject</th>
-                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>First Term</th>
-                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>Second Term</th>
-                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>Third Term</th>
+                              <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}} rowSpan={2}>Category</th>
+                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>First Period</th>
+                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>Second Period</th>
+                              <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} colSpan={3}>Third Period</th>
                               <th style={{padding:"8px",textAlign:"center",fontSize:10,borderLeft:`1px solid rgba(255,255,255,.2)`}} rowSpan={2}>Avg</th>
                               <th style={{padding:"8px",textAlign:"center",fontSize:10}} rowSpan={2}>Grade</th>
                             </tr>
@@ -925,7 +925,7 @@ export function TranscriptPage({ctx}){
                         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:selSessions.length*220+160}}>
                           <thead>
                             <tr style={{background:C.blue,color:"#fff"}}>
-                              <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}} rowSpan={2}>Subject</th>
+                              <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}} rowSpan={2}>Category</th>
                               {selSessions.map((sid,si)=>(
                                 <th key={sid} colSpan={5} style={{padding:"7px 8px",textAlign:"center",fontSize:10,fontWeight:700,
                                   borderLeft:`2px solid rgba(255,255,255,.3)`}}>
@@ -1001,14 +1001,14 @@ export function TranscriptPage({ctx}){
                     <div style={{marginBottom:8}}><Inbox size={36} color={C.muted}/></div>
                     <div style={{fontWeight:700,color:C.blue,fontSize:14}}>No Results Found</div>
                     <div style={{color:C.muted,fontSize:12,marginTop:4}}>
-                      No portal records for <strong>{selStu.id}</strong> in the selected session(s).
+                      No portal records for <strong>{selStu.id}</strong> in the selected cycle(s).
                     </div>
                     <div style={{marginTop:12,color:C.muted,fontSize:12}}>For historical data, use the <strong>Manual Transcripts</strong> tab.</div>
                   </Card>
                 ):selStu&&!selSessions.length?(
                   <Card style={{textAlign:"center",padding:40,color:C.light}}>
                     <div style={{marginBottom:8}}><Calendar size={32} color={C.muted}/></div>
-                    <div>Select one or more academic years above, then click "Load Results"</div>
+                    <div>Select one or more performance years above, then click "Load Results"</div>
                   </Card>
                 ):null}
               </>
@@ -1034,7 +1034,7 @@ export function TranscriptPage({ctx}){
                 <thead>
                   <tr style={{background:C.blue,color:"#fff"}}>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Member</th>
-                    <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Session(s)</th>
+                    <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Cycle(s)</th>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Generated By</th>
                     <th style={{padding:"8px 10px",textAlign:"left",fontWeight:700,fontSize:11}}>Date</th>
                   </tr>
@@ -1090,7 +1090,7 @@ export function TranscriptPage({ctx}){
                       <div style={{fontSize:11,color:C.muted}}>{rec.student_number||rec.student_id||"No ID"} · {rec.class_name||"—"}</div>
                       <div style={{marginTop:4}}><Badge color={C.orange}>{rec.academic_year}</Badge></div>
                     </div>
-                    <Badge color={C.green}>{(rec.manual_transcript_subjects||[]).length} subjects</Badge>
+                    <Badge color={C.green}>{(rec.manual_transcript_subjects||[]).length} categories</Badge>
                   </div>
                   {rec.notes&&<div style={{fontSize:11,color:C.muted,marginBottom:10,fontStyle:"italic"}}>{rec.notes}</div>}
                   <div style={{fontSize:10,color:C.light,marginBottom:10}}>
@@ -1123,7 +1123,7 @@ export function TranscriptPage({ctx}){
                 ))}
               </div>
 
-              {/* Student info */}
+              {/* Member info */}
               <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:10,marginBottom:10}}>
                 <Inp label="Member Full Name *" value={mForm.student_name} onChange={v=>mf({student_name:v})} placeholder="e.g. John Doe Okafor"/>
                 <Inp label="Member ID / Admission No." value={mForm.student_number} onChange={v=>mf({student_number:v})} placeholder="e.g. RGS/001"/>
@@ -1133,14 +1133,14 @@ export function TranscriptPage({ctx}){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr"+(transcriptType==="legacy"?" 1fr":""),gap:10,marginBottom:16}}>
                 <Inp label="Current Group" value={mForm.class_name} onChange={v=>mf({class_name:v})} placeholder="e.g. SS3"/>
                 <Inp label="Section / Dept." value={mForm.section_name} onChange={v=>mf({section_name:v})} placeholder="e.g. Senior Secondary"/>
-                {transcriptType==="legacy"&&<Inp label="Academic Year *" value={mForm.academic_year} onChange={v=>mf({academic_year:v})} placeholder="e.g. 2021/2022"/>}
+                {transcriptType==="legacy"&&<Inp label="Performance Year *" value={mForm.academic_year} onChange={v=>mf({academic_year:v})} placeholder="e.g. 2021/2022"/>}
               </div>
 
-              {/* ── MULTI-PERIOD: Class Periods section ── */}
+              {/* ── MULTI-PERIOD: Group Periods section ── */}
               {transcriptType==="multi_period"&&(
                 <div style={{marginBottom:16,background:C.offWhite,borderRadius:10,padding:12,border:`1px solid ${C.border}`}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                    <div style={{fontWeight:800,color:C.blue,fontSize:13}}>Class Periods
+                    <div style={{fontWeight:800,color:C.blue,fontSize:13}}>Group Periods
                       <span style={{fontWeight:400,color:C.muted,fontSize:11,marginLeft:6}}>— one column group per group/year</span>
                     </div>
                     <Btn xs onClick={addClassPeriod} color={C.orange} outline>+ Add Period</Btn>
@@ -1155,7 +1155,7 @@ export function TranscriptPage({ctx}){
                         <input placeholder="Group (e.g. SS1, JSS3)" value={cp.class_name}
                           onChange={e=>updateClassPeriod(i,{class_name:e.target.value})}
                           style={{padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none",width:"100%"}}/>
-                        <input placeholder="Academic Year (e.g. 2021/2022)" value={cp.academic_year}
+                        <input placeholder="Performance Year (e.g. 2021/2022)" value={cp.academic_year}
                           onChange={e=>updateClassPeriod(i,{academic_year:e.target.value})}
                           style={{padding:"7px 10px",border:`1px solid ${C.border}`,borderRadius:7,fontSize:12,outline:"none",width:"100%"}}/>
                         <button onClick={()=>removeClassPeriod(i)} disabled={classPeriods.length===1}
@@ -1177,7 +1177,7 @@ export function TranscriptPage({ctx}){
                     <select value={mForm.structure_id||""} onChange={e=>onStructureChange(e.target.value)}
                       style={{flex:1,padding:"8px 10px",border:`2px solid ${mForm.structure_id?C.blue:C.border}`,
                         borderRadius:8,fontSize:12,outline:"none",background:C.white,color:C.text}}>
-                      <option value="">— Legacy (T1 CA / Exam / Total × 3 Terms) —</option>
+                      <option value="">— Legacy (T1 CA / Exam / Total × 3 Periods) —</option>
                       {caeStructures.map(s=><option key={s.id} value={s.id}>{s.name}{s.maximum_score?` (max ${s.maximum_score})`:""}</option>)}
                     </select>
                     {mForm.structure_id&&<div style={{fontSize:11,color:C.green,fontWeight:700,display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}><CheckCircle2 size={13}/>{structComps.length} cols</div>}
@@ -1185,8 +1185,8 @@ export function TranscriptPage({ctx}){
                 </div>
               )}
 
-              {/* Subject Scores table */}
-              <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:8}}>Subject Scores</div>
+              {/* Category Scores table */}
+              <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:8}}>Category Scores</div>
               {loadingComps?<div style={{padding:"20px 0",textAlign:"center"}}><Spinner/></div>:(
               <div style={{overflowX:"auto",marginBottom:12}}>
                 {transcriptType==="multi_period"?(
@@ -1225,7 +1225,7 @@ export function TranscriptPage({ctx}){
                             </tr>
                             <tr style={{background:"#1e3a8a",color:"#93c5fd"}}>
                               {chunk.periods.map((_,ci)=>(
-                                ["1st Term","2nd Term","3rd Term","Avg","Grade"].map((h,hi)=>(
+                                ["1st Period","2nd Period","3rd Period","Avg","Grade"].map((h,hi)=>(
                                   <th key={ci+"-"+hi} style={{padding:"5px 4px",textAlign:"center",fontSize:10,fontWeight:600,
                                     minWidth:hi<3?62:50,borderLeft:hi===0?`1px solid rgba(255,255,255,.15)`:"none"}}>{h}</th>
                                 ))
@@ -1236,7 +1236,7 @@ export function TranscriptPage({ctx}){
                             {subjects.map((s,si)=>(
                               <tr key={si} style={{background:si%2===0?C.white:C.offWhite,borderBottom:`1px solid ${C.border}`}}>
                                 <td style={{padding:"4px 6px"}}>
-                                  <input value={s.name} onChange={e=>updateSubj(si,{name:e.target.value})} placeholder={`Subject ${si+1}`}
+                                  <input value={s.name} onChange={e=>updateSubj(si,{name:e.target.value})} placeholder={`Category ${si+1}`}
                                     style={{width:"100%",padding:"5px 8px",border:`1px solid ${C.border}`,borderRadius:5,fontSize:12,outline:"none"}}/>
                                 </td>
                                 {chunk.periods.map((_,ci)=>{
@@ -1283,7 +1283,7 @@ export function TranscriptPage({ctx}){
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:600}}>
                     <thead>
                       <tr style={{background:C.blue,color:"#fff"}}>
-                        <th style={{padding:"7px 10px",textAlign:"left",minWidth:140}}>Subject</th>
+                        <th style={{padding:"7px 10px",textAlign:"left",minWidth:140}}>Category</th>
                         {displayCols.map((h,i)=>(
                           <th key={i} style={{padding:"7px 6px",textAlign:"center",fontSize:10,minWidth:55,
                             borderLeft:(!mForm.structure_id&&i%3===0)?`1px solid rgba(255,255,255,.25)`:"none"}}>{h}</th>
@@ -1295,7 +1295,7 @@ export function TranscriptPage({ctx}){
                       {subjects.map((s,i)=>(
                         <tr key={i} style={{background:i%2===0?C.white:C.offWhite,borderBottom:`1px solid ${C.border}`}}>
                           <td style={{padding:"4px 6px"}}>
-                            <input value={s.name} onChange={e=>updateSubj(i,{name:e.target.value})} placeholder={`Subject ${i+1}`}
+                            <input value={s.name} onChange={e=>updateSubj(i,{name:e.target.value})} placeholder={`Category ${i+1}`}
                               style={{width:"100%",padding:"5px 8px",border:`1px solid ${C.border}`,borderRadius:5,fontSize:12,outline:"none"}}/>
                           </td>
                           {displayCols.map((col,ci)=>(
@@ -1315,7 +1315,7 @@ export function TranscriptPage({ctx}){
                 )}
               </div>
               )}
-              <Btn xs onClick={addSubj} color={C.blue} outline style={{marginBottom:14}}>+ Add Subject Row</Btn>
+              <Btn xs onClick={addSubj} color={C.blue} outline style={{marginBottom:14}}>+ Add Category Row</Btn>
 
               <Inp label="Notes (optional)" value={mForm.notes} onChange={v=>mf({notes:v})} placeholder="Any additional remarks…"/>
 

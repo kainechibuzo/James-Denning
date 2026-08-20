@@ -1,12 +1,12 @@
 /**
  * Analytics domain: AcademicSummaryPage
  *
- * School-wide, section-wide, or per-class academic performance breakdown.
+ * Organization-wide, section-wide, or per-class academic performance breakdown.
  * Aggregates portal_results data client-side into:
  *   - Top performers leaderboard (podium + ranked list)
  *   - Needs-improvement list with per-subject breakdown
- *   - Class rankings with visual bars + pass rates
- *   - Subject rankings with highest/lowest/pass-rate
+ *   - Group rankings with visual bars + pass rates
+ *   - Category rankings with highest/lowest/pass-rate
  *   - Grade distribution chart
  */
 import React, { useState, useEffect, useMemo } from "react";
@@ -104,13 +104,13 @@ export function AcademicSummaryPage({ ctx }) {
 
   // ── Load data ──────────────────────────────────────────────────────────────
   const load = async () => {
-    if (!selSession || !selTerm) { notify("Select session and term first", "error"); return; }
+    if (!selSession || !selTerm) { notify("Select cycle and period first", "error"); return; }
     setLoading(true);
     setRawData(null);
     let classIds = null;
     if (scope === "section" && selSection) {
       classIds = sectionClasses.map(c => c.id);
-      if (!classIds.length) { notify("No classes in this section", "error"); setLoading(false); return; }
+      if (!classIds.length) { notify("No groups in this section", "error"); setLoading(false); return; }
     } else if (scope === "class" && selClass) {
       classIds = [+selClass];
     }
@@ -229,7 +229,7 @@ export function AcademicSummaryPage({ ctx }) {
   // ── Label helpers ──────────────────────────────────────────────────────────
   const selSession_ = sessions.find(s=>String(s.id)===selSession);
   const selTerm_    = filteredTerms.find(t=>String(t.id)===selTerm);
-  const scopeLabel  = scope==="school" ? "School-Wide"
+  const scopeLabel  = scope==="school" ? "Organization-Wide"
     : scope==="section" ? (sections.find(s=>String(s.id)===selSection)?.name||"Section")
     : (classes.find(c=>String(c.id)===selClass)?.name||"Group");
 
@@ -243,11 +243,11 @@ export function AcademicSummaryPage({ ctx }) {
       <div style={{background:`linear-gradient(135deg,${C.blue},#0c1f52)`,padding:"22px 24px 18px",marginBottom:24}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
           <BarChart2 size={22} color="#fff"/>
-          <span style={{fontSize:21,fontWeight:900,color:"#fff",letterSpacing:-.3}}>Academic Summary</span>
+          <span style={{fontSize:21,fontWeight:900,color:"#fff",letterSpacing:-.3}}>Performance Summary</span>
           {computed && (
             <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:999,
               background:"rgba(255,255,255,.18)",color:"#fff",marginLeft:4}}>
-              {computed.totalStudents} students · {rawData.length.toLocaleString()} records
+              {computed.totalStudents} members · {rawData.length.toLocaleString()} records
             </span>
           )}
         </div>
@@ -264,10 +264,10 @@ export function AcademicSummaryPage({ ctx }) {
         <Card style={{marginBottom:20}}>
           <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
 
-            {/* Session */}
+            {/* Cycle */}
             <div style={{flex:"1 1 130px",minWidth:120}}>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
-                textTransform:"uppercase",letterSpacing:.5}}>Session</label>
+                textTransform:"uppercase",letterSpacing:.5}}>Cycle</label>
               <select value={selSession} onChange={e=>{setSelSession(e.target.value);setSelTerm("");setRawData(null);}}
                 style={{width:"100%",padding:"8px 10px",border:`2px solid ${C.border}`,borderRadius:8,
                   fontSize:13,background:C.white,outline:"none",cursor:"pointer"}}>
@@ -276,10 +276,10 @@ export function AcademicSummaryPage({ ctx }) {
               </select>
             </div>
 
-            {/* Term */}
+            {/* Period */}
             <div style={{flex:"1 1 130px",minWidth:120}}>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
-                textTransform:"uppercase",letterSpacing:.5}}>Term</label>
+                textTransform:"uppercase",letterSpacing:.5}}>Period</label>
               <select value={selTerm} onChange={e=>{setSelTerm(e.target.value);setRawData(null);}}
                 style={{width:"100%",padding:"8px 10px",border:`2px solid ${C.border}`,borderRadius:8,
                   fontSize:13,background:C.white,outline:"none",cursor:"pointer"}}>
@@ -293,7 +293,7 @@ export function AcademicSummaryPage({ ctx }) {
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
                 textTransform:"uppercase",letterSpacing:.5}}>Scope</label>
               <div style={{display:"flex",border:`2px solid ${C.border}`,borderRadius:8,overflow:"hidden"}}>
-                {[["school","🏫 School"],["section","📂 Section"],["class","📋 Group"]].map(([v,l])=>(
+                {[["school","🏫 Organization"],["section","📂 Section"],["class","📋 Group"]].map(([v,l])=>(
                   <button key={v} onClick={()=>{setScope(v);setRawData(null);}}
                     style={{flex:1,padding:"7px 6px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
                       background:scope===v?C.blue:"transparent",
@@ -318,7 +318,7 @@ export function AcademicSummaryPage({ ctx }) {
               </div>
             )}
 
-            {/* Class picker */}
+            {/* Group picker */}
             {scope==="class"&&(
               <div style={{flex:"1 1 130px"}}>
                 <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,
@@ -345,7 +345,7 @@ export function AcademicSummaryPage({ ctx }) {
           <div style={{textAlign:"center",padding:"70px 20px",color:C.muted}}>
             <BarChart2 size={52} color={C.light} style={{marginBottom:14}}/>
             <div style={{fontSize:16,fontWeight:800,color:C.blue,marginBottom:6}}>No Data Loaded</div>
-            <div style={{fontSize:13}}>Select a session and term above, then click <strong>Load Data</strong>.</div>
+            <div style={{fontSize:13}}>Select a cycle and period above, then click <strong>Load Data</strong>.</div>
           </div>
         )}
 
@@ -374,7 +374,7 @@ export function AcademicSummaryPage({ ctx }) {
                   icon:<Award size={17}/>, color:"#f59e0b" },
                 { label:"Members", value:computed.totalStudents, sub:`${computed.classStats.length} class${computed.classStats.length!==1?"es":""}`,
                   icon:<Users size={17}/>, color:C.blue },
-                { label:"Subjects", value:computed.subjectStats.length, sub:`${rawData.length.toLocaleString()} total scores`,
+                { label:"Categories", value:computed.subjectStats.length, sub:`${rawData.length.toLocaleString()} total scores`,
                   icon:<BookOpen size={17}/>, color:"#7c3aed" },
                 { label:"Lowest Score", value:`${computed.lowest}%`, sub:scoreGrade(computed.lowest)+" Grade",
                   icon:<TrendingDown size={17}/>, color:scoreColor(computed.lowest) },
@@ -397,7 +397,7 @@ export function AcademicSummaryPage({ ctx }) {
                 ["top",      "🏆 Top Performers"],
                 ["bottom",   "📈 Needs Improvement"],
                 ["classes",  "🏫 Group Rankings"],
-                ["subjects", "📚 Subject Rankings"],
+                ["subjects", "📚 Category Rankings"],
                 ["grades",   "🎯 Grade Distribution"],
               ].map(([v,l])=>(
                 <button key={v} onClick={()=>setView(v)}
@@ -492,7 +492,7 @@ export function AcademicSummaryPage({ ctx }) {
                           <div style={{fontWeight:700,fontSize:13,color:C.text,
                             overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name}</div>
                           <div style={{fontSize:11,color:C.muted}}>
-                            {s.class_name}{s.section_name?` · ${s.section_name}`:""} · {s.subjectCount} subjects
+                            {s.class_name}{s.section_name?` · ${s.section_name}`:""} · {s.subjectCount} categories
                           </div>
                         </div>
                         <ScoreBar score={s.avg}/>
@@ -512,7 +512,7 @@ export function AcademicSummaryPage({ ctx }) {
                         <div style={{padding:"12px 16px 12px 56px",background:C.offWhite,
                           borderBottom:`1px solid ${C.border}`,borderLeft:`3px solid ${scoreColor(s.avg)}`}}>
                           <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>
-                            Subject Breakdown
+                            Category Breakdown
                           </div>
                           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:6}}>
                             {[...s.subjects].sort((a,b)=>b.score-a.score).map(sub=>(
@@ -559,7 +559,7 @@ export function AcademicSummaryPage({ ctx }) {
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontWeight:700,fontSize:13,color:C.text}}>{s.name}</div>
                         <div style={{fontSize:11,color:C.muted}}>
-                          {s.class_name}{s.section_name?` · ${s.section_name}`:""} · {s.passing}/{s.subjectCount} subjects passing
+                          {s.class_name}{s.section_name?` · ${s.section_name}`:""} · {s.passing}/{s.subjectCount} categories passing
                         </div>
                       </div>
                       <ScoreBar score={s.avg}/>
@@ -579,7 +579,7 @@ export function AcademicSummaryPage({ ctx }) {
                       <div style={{padding:"12px 16px 12px 56px",background:"#fef2f2",
                         borderBottom:`1px solid ${C.border}`,borderLeft:`3px solid ${C.red}`}}>
                         <div style={{fontSize:11,fontWeight:700,color:C.red,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>
-                          All Subjects — Sorted Weakest First
+                          All Categories — Sorted Weakest First
                         </div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:6}}>
                           {[...s.subjects].sort((a,b)=>a.score-b.score).map(sub=>(
@@ -605,7 +605,7 @@ export function AcademicSummaryPage({ ctx }) {
             {view==="classes" && (
               <Card>
                 <div style={{fontWeight:900,color:C.blue,fontSize:14,marginBottom:16}}>
-                  Class Performance Rankings
+                  Group Performance Rankings
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {computed.classStats.map((cls, i) => {
@@ -626,7 +626,7 @@ export function AcademicSummaryPage({ ctx }) {
                             <div style={{fontWeight:900,fontSize:15,color:C.text}}>{cls.name}</div>
                             <div style={{fontSize:11,color:C.muted,display:"flex",gap:12,marginTop:2}}>
                               {cls.section_name&&<span>{cls.section_name}</span>}
-                              <span>{cls.studentCount} students</span>
+                              <span>{cls.studentCount} members</span>
                               <span>Hi: {cls.highest}  Lo: {cls.lowest}</span>
                             </div>
                           </div>
@@ -666,13 +666,13 @@ export function AcademicSummaryPage({ ctx }) {
             {view==="subjects" && (
               <Card>
                 <div style={{fontWeight:900,color:C.blue,fontSize:14,marginBottom:16}}>
-                  Subject Performance Rankings
+                  Category Performance Rankings
                 </div>
                 {/* Header row */}
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"0 0 8px",
                   borderBottom:`2px solid ${C.border}`,marginBottom:4}}>
                   <div style={{width:30,flexShrink:0}}/>
-                  <div style={{flex:"0 0 150px",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Subject</div>
+                  <div style={{flex:"0 0 150px",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Category</div>
                   <div style={{flex:1,fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Average</div>
                   <div style={{width:50,fontSize:11,fontWeight:700,color:C.muted,textAlign:"right",flexShrink:0}}>Avg</div>
                   <div style={{width:70,fontSize:11,fontWeight:700,color:C.muted,textAlign:"right",flexShrink:0}}>Pass%</div>
@@ -789,11 +789,11 @@ export function AcademicSummaryPage({ ctx }) {
                       </div>
                     ))}
                     <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",fontSize:12}}>
-                      <span style={{color:C.muted}}>Best Subject</span>
+                      <span style={{color:C.muted}}>Best Category</span>
                       <span style={{fontWeight:700,color:C.green}}>{computed.subjectStats[0]?.name} ({computed.subjectStats[0]?.avg}%)</span>
                     </div>
                     <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",fontSize:12}}>
-                      <span style={{color:C.muted}}>Weakest Subject</span>
+                      <span style={{color:C.muted}}>Weakest Category</span>
                       <span style={{fontWeight:700,color:C.red}}>
                         {computed.subjectStats[computed.subjectStats.length-1]?.name} ({computed.subjectStats[computed.subjectStats.length-1]?.avg}%)
                       </span>

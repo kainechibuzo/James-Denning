@@ -1,5 +1,5 @@
 /**
- * Students domain: StudentsPage, TeacherAddStudentsPage, StudentApprovalsPage,
+ * Members domain: StudentsPage, TeacherAddStudentsPage, StudentApprovalsPage,
  * BulkUploadBillingModal, AutoBillModal, BulkProgressModal,
  * OnboardingEmailModal, BulkReportEmailModal, checkStudentDuplicate
  */
@@ -82,7 +82,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
         batchBillIds.push(r.bill.id);
         batchItems.push(...r.items.map(item=>({
           bill_id:r.bill.id,fee_item_id:item.fee_item_id,
-          name:item.fee_items?.name||"Fee",amount:+item.amount,
+          name:item.fee_items?.name||"Billing",amount:+item.amount,
           is_optional:item.is_optional,is_included:true,
         })));
         auditEntries.push({bill_id:r.bill.id,student_id:r.student.id,
@@ -113,7 +113,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
   return(
     <Modal title="Generate Bills for Uploaded Members" onClose={onClose} width={560}>
       <div style={{fontSize:12,color:C.muted,marginBottom:14}}>
-        {students.length} student{students.length!==1?"s":""} uploaded across {byClass.length} class{byClass.length!==1?"es":""}. Pick a fee template for each class or skip it.
+        {students.length} member{students.length!==1?"s":""} uploaded across {byClass.length} group{byClass.length!==1?"es":""}. Pick a billing template for each group or skip it.
       </div>
       {loading?<Spinner/>:(
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16,maxHeight:380,overflowY:"auto"}}>
@@ -128,7 +128,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
                   <div>
                     <span style={{fontWeight:700,fontSize:13,color:C.text}}>{g.className}</span>
                     <span style={{fontSize:11,color:C.muted,marginLeft:8}}>
-                      {g.students.length} student{g.students.length!==1?"s":""}
+                      {g.students.length} member{g.students.length!==1?"s":""}
                       {newCount>0&&<span style={{color:C.green,marginLeft:6}}>· {newCount} new intake</span>}
                       {retCount>0&&<span style={{color:C.muted,marginLeft:6}}>· {retCount} returning</span>}
                     </span>
@@ -138,7 +138,7 @@ export function BulkUploadBillingModal({students,onClose,notify}){
                   onChange={v=>sel(g.classId,v)}
                   options={[
                     {value:"",label:"— Select template —"},
-                    {value:"skip",label:"Skip this class"},
+                    {value:"skip",label:"Skip this group"},
                     ...classTemplates.map(t=>({
                       value:String(t.id),
                       label:`${t.name} (${t.template_type==="new_student"?"New Enrolee":"Returning"}) — ${fmt((t.fee_template_items||[]).reduce((a,b)=>a+(+b.amount||0),0))}`
@@ -197,7 +197,7 @@ export function AutoBillModal({studentId,studentName,templates,onClose,onDone,no
     if(bErr||!bill){notify("Bill generation failed: "+(bErr?.message||"no data"),"error");setSaving(false);return;}
     const{error:iErr}=await db.insertFeeBillItems(items.map(i=>({
       bill_id:bill.id,fee_item_id:i.fee_item_id,
-      name:i.fee_items?.name||"Fee",amount:+i.amount,
+      name:i.fee_items?.name||"Billing",amount:+i.amount,
       is_optional:i.is_optional,is_included:true,
     })));
     if(iErr){await db.deleteFeeBill(bill.id);notify("Bill items failed: "+iErr.message,"error");setSaving(false);return;}
@@ -232,7 +232,7 @@ export function AutoBillModal({studentId,studentName,templates,onClose,onDone,no
               border:`2px solid ${isNewIntake===false?C.blue:C.border}`,
               background:isNewIntake===false?C.bluePale:C.white,
               color:isNewIntake===false?C.blue:C.muted,transition:"all .15s"}}>
-            No — Returning Student
+            No — Returning Member
           </button>
         </div>
       </div>
@@ -241,7 +241,7 @@ export function AutoBillModal({studentId,studentName,templates,onClose,onDone,no
       {isNewIntake!==null&&(
       <>
       <div style={{fontSize:12,color:C.muted,marginBottom:8}}>
-        Select the fee template to apply:
+        Select the billing template to apply:
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
         {templates.map(t=>{
@@ -501,7 +501,7 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
   const [poll,setPoll]=useState({sent:0,failed:0,pending:0,total:0}); // server-side progress
   const pollRef=useRef(null);
 
-  // Class selection — all ticked by default
+  // Group selection — all ticked by default
   const classIds=[...new Set(students.map(s=>s.class_id).filter(Boolean))];
   const classMap={};classes.forEach(c=>{classMap[c.id]=c;});
   const [checkedClasses,setCheckedClasses]=useState(()=>new Set(classIds));
@@ -589,10 +589,10 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
   const pollPct=poll.total>0?Math.round(((poll.sent+poll.failed)/poll.total)*100):0;
 
   return(
-    <Modal title="Email Report Cards — Bulk Send" onClose={phase==="idle"||phase==="queued"||phase==="done"?onClose:null} width={520}>
+    <Modal title="Email Reports — Bulk Send" onClose={phase==="idle"||phase==="queued"||phase==="done"?onClose:null} width={520}>
       {phase==="idle"&&(
         <>
-          {/* Class selection checkboxes */}
+          {/* Group selection checkboxes */}
           {classIds.length>1&&(
             <div style={{marginBottom:16}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -616,8 +616,8 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
                       <input type="checkbox" checked={checked} onChange={()=>toggleClass(id)}
                         style={{accentColor:C.blue,width:14,height:14,cursor:"pointer"}}/>
                       <div style={{flex:1}}>
-                        <span style={{fontWeight:700,fontSize:13,color:checked?C.blue:C.text}}>{cls?.name||`Class ${id}`}</span>
-                        <span style={{fontSize:11,color:C.muted,marginLeft:8}}>{clsStudents.length} student{clsStudents.length!==1?"s":""}{clsWithEmail<clsStudents.length?` · ${clsStudents.length-clsWithEmail} no email`:""}</span>
+                        <span style={{fontWeight:700,fontSize:13,color:checked?C.blue:C.text}}>{cls?.name||`Group ${id}`}</span>
+                        <span style={{fontSize:11,color:C.muted,marginLeft:8}}>{clsStudents.length} member{clsStudents.length!==1?"s":""}{clsWithEmail<clsStudents.length?` · ${clsStudents.length-clsWithEmail} no email`:""}</span>
                       </div>
                     </label>
                   );
@@ -626,8 +626,8 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
             </div>
           )}
           <div style={{marginBottom:16,padding:"12px 16px",background:C.bluePale,borderRadius:10,fontSize:13,color:C.blue}}>
-            <strong>{withEmail.length}</strong> student{withEmail.length!==1?"s":""} with email addresses will receive their report card.
-            {noEmail>0&&<div style={{marginTop:4,color:C.amber}}>{noEmail} student{noEmail!==1?"s":""} skipped — no email on file.</div>}
+            <strong>{withEmail.length}</strong> member{withEmail.length!==1?"s":""} with email addresses will receive their report card.
+            {noEmail>0&&<div style={{marginTop:4,color:C.amber}}>{noEmail} member{noEmail!==1?"s":""} skipped — no email on file.</div>}
             {checkedClasses.size===0&&<div style={{marginTop:4,color:C.red,fontWeight:700}}>No groups selected — nothing to send.</div>}
           </div>
           {queueErr&&(
@@ -749,7 +749,7 @@ export function BulkReportEmailModal({students,classes=[],loadStudentData,buildE
 export function StudentsPage({ctx}){
   const {notify,selectedSection,bumpRefresh,pageParam,setPageParam}=ctx;
   const {schoolName:_stuPageSchoolName}=useSection();
-  const _spSN=_stuPageSchoolName||"School Portal";
+  const _spSN=_stuPageSchoolName||"Business Portal";
   const [students,setStudents]=useState([]);
   const [classes,setClasses]=useState([]);   // ALL classes (unfiltered) — needed for form dropdowns + section filter
   const [sections,setSections]=useState([]); // all active sections
@@ -864,7 +864,7 @@ export function StudentsPage({ctx}){
     if(!form.first_name||!form.last_name){notify("First and Last name required","error");return;}
     if(!form.email){
       const go=await confirm({title:"No Email Address",
-        message:"This student has no email address. They won't receive report cards, fee reminders, or login links by email. Continue anyway?",
+        message:"This member has no email address. They won't receive report cards, billing reminders, or login links by email. Continue anyway?",
         confirmLabel:"Add Without Email"});
       if(!go)return;
     }
@@ -897,13 +897,13 @@ export function StudentsPage({ctx}){
     try{
       if(editId){
         const {error}=await db.upsertStudent(payload,editId);
-        if(error){console.error("[upsertStudent edit]",error);notify(error.message||error.details||"Failed to update student","error");}
-        else{notify("Student updated ✓");setModal(false);load();}
+        if(error){console.error("[upsertStudent edit]",error);notify(error.message||error.details||"Failed to update member","error");}
+        else{notify("Member updated ✓");setModal(false);load();}
       }else{
         const newId=await db.nextStudentId(db._studentIdPrefix||"RGS");
         const cls=classes.find(c=>String(c.id)===String(form.class_id));
         const {error}=await db.upsertStudent({...payload,id:newId,admission_number:newId,password_hash:newId});
-        if(error){console.error("[upsertStudent new]",error);notify(error.message||error.details||"Failed to add student","error");}
+        if(error){console.error("[upsertStudent new]",error);notify(error.message||error.details||"Failed to add member","error");}
         else{
           notify(`Member added — ID: ${newId} ✓`);
           setLastRegistered({count:1,entries:[{
@@ -912,7 +912,7 @@ export function StudentsPage({ctx}){
             html:buildEmailHtml("Welcome to the Portal",[
               `This communication is regarding:`,
               `${name} · Member ID: ${newId} · Group: ${cls?.name||"—"}`,``,
-              `Dear Parent/Guardian,`,``,
+              `Dear Member/Contact,`,``,
               `Your ward has been registered on the ${_spSN} portal.`,``,
               `YOUR LOGIN DETAILS`,
               `──────────────────────────────────────`,
@@ -923,13 +923,13 @@ export function StudentsPage({ctx}){
               `──────────────────────────────────────`,``,
               `Please keep these details safe and confidential.`,
               `The password is the Member ID — students may change it after logging in.`,``,
-              `For assistance, contact the school administration.`,
+              `For assistance, contact the organization administration.`,
             ].join("\n")),
           }]});
           setModal(false);load();
         }
       }
-    }catch(e){console.error("[save student]",e);notify("Error: "+e.message,"error");}
+    }catch(e){console.error("[save member]",e);notify("Error: "+e.message,"error");}
   };
   const confirm=useConfirm();
   const del=async(id,name)=>{
@@ -946,7 +946,7 @@ export function StudentsPage({ctx}){
     }
     let message=`Delete student ${name} (${id})?`;
     if(warnings.length) message+=` They have ${warnings.join(", ")} which will also be removed.`;
-    const ok=await confirm({title:"Delete Student?",message,confirmLabel:"Delete",danger:true,
+    const ok=await confirm({title:"Delete Member?",message,confirmLabel:"Delete",danger:true,
       typeToConfirm:warnings.length?id:null});
     if(!ok)return;
     try{
@@ -1056,7 +1056,7 @@ export function StudentsPage({ctx}){
           html:buildEmailHtml("Welcome to the Portal",[
             `This communication is regarding:`,
             `${name} · Member ID: ${newId} · Group: ${cls?.name||"—"}`,``,
-            `Dear Parent/Guardian,`,``,
+            `Dear Member/Contact,`,``,
             `Your ward has been registered on the ${_spSN} portal.`,``,
             `YOUR LOGIN DETAILS`,
             `──────────────────────────────────────`,
@@ -1067,7 +1067,7 @@ export function StudentsPage({ctx}){
             `──────────────────────────────────────`,``,
             `Please keep these details safe and confidential.`,
             `The password is the Member ID — students may change it after logging in.`,``,
-            `For assistance, contact the school administration.`,
+            `For assistance, contact the organization administration.`,
           ].join("\n")),
         });
       }
@@ -1081,13 +1081,13 @@ export function StudentsPage({ctx}){
     if(!XLSX){notify("Template loading — please wait a moment and try again","warn");return;}
     const wb=XLSX.utils.book_new();
     const wsData=[
-      ["First Name ★","Middle Name","Last Name ★","Gender","Date of Birth (YYYY-MM-DD)","Class","Email","Phone"],
+      ["First Name ★","Middle Name","Last Name ★","Gender","Date of Birth (YYYY-MM-DD)","Group","Email","Phone"],
       ["Amaka","Chioma","Okafor","Female","2015-03-14","JSS 1A","amaka@example.com","08012345678"],
     ];
     const ws=XLSX.utils.aoa_to_sheet(wsData);
     ws["!cols"]=[{wch:18},{wch:16},{wch:18},{wch:10},{wch:26},{wch:14},{wch:24},{wch:14}];
-    XLSX.utils.book_append_sheet(wb,ws,"Student Data");
-    XLSX.writeFile(wb,"RGS_Student_Upload_Template.xlsx");
+    XLSX.utils.book_append_sheet(wb,ws,"Member Data");
+    XLSX.writeFile(wb,"JD_Member_Upload_Template.xlsx");
   };
 
   const parseBulkFile=async(file)=>{
@@ -1100,7 +1100,7 @@ export function StudentsPage({ctx}){
       if(!XLSX){setBulkErrors(["SheetJS not loaded yet — please wait a moment and try again."]);return;}
       const ab=await file.arrayBuffer();
       const wb=XLSX.read(ab,{type:"array",cellDates:true});
-      const sheetName=wb.SheetNames.find(n=>n.includes("Student Data"))||wb.SheetNames[0];
+      const sheetName=wb.SheetNames.find(n=>n.includes("Member Data"))||wb.SheetNames[0];
       const ws=wb.Sheets[sheetName];
       // Get raw data starting from row 3 (header), row 4 (hints), data from row 5
       const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
@@ -1148,7 +1148,7 @@ export function StudentsPage({ctx}){
           admission_year:get("admission_year"),_line:i+1
         });
       }
-      if(rows.length===0){setBulkErrors(["No valid student rows found. Check the file format."]);return;}
+      if(rows.length===0){setBulkErrors(["No valid member rows found. Check the file format."]);return;}
       // Annotate each row with duplicate status (check against existing students + earlier rows in same upload)
       const dupInfo=rows.map((row,idx)=>{
         const cls=classes.find(c=>c.name.toLowerCase()===row.class_name?.toLowerCase());
@@ -1218,7 +1218,7 @@ export function StudentsPage({ctx}){
       {lastRegistered&&(
         <div style={{marginBottom:16,padding:"12px 16px",background:C.greenPale,border:`1px solid ${C.green}44`,borderRadius:10,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <span style={{flex:1,fontSize:13,color:C.green,fontWeight:700}}>
-            {lastRegistered.count} student{lastRegistered.count!==1?"s":""} registered successfully.
+            {lastRegistered.count} member{lastRegistered.count!==1?"s":""} registered successfully.
           </span>
           <Btn onClick={()=>setShowOnboarding(true)} color={C.blue} outline style={{fontSize:12}}>
             Send Onboarding Emails
@@ -1231,7 +1231,7 @@ export function StudentsPage({ctx}){
       {/* ── Bulk delete bar ── */}
       {selectedIds.size>0&&(
         <div style={{marginBottom:12,padding:"10px 14px",background:C.redPale,border:`1px solid ${C.red}33`,borderRadius:8,display:"flex",alignItems:"center",gap:12}}>
-          <span style={{fontSize:13,fontWeight:700,color:C.red}}>{selectedIds.size} student{selectedIds.size!==1?"s":""} selected</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.red}}>{selectedIds.size} member{selectedIds.size!==1?"s":""} selected</span>
           <Btn onClick={bulkDelete} color={C.red} style={{fontSize:12}}>Delete Selected</Btn>
           <Btn onClick={()=>setSelectedIds(new Set())} color={C.muted} outline style={{fontSize:12}}>Clear</Btn>
         </div>
@@ -1240,7 +1240,7 @@ export function StudentsPage({ctx}){
         {/* ── Filter toolbar ── */}
         <div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
           <input value={search} onChange={e=>setSearch(e.target.value)}
-            placeholder="Search name or student ID…"
+            placeholder="Search name or member ID…"
             style={{flex:2,minWidth:180,padding:"9px 13px",border:`2px solid ${C.border}`,borderRadius:8,
               fontSize:13,background:C.offWhite,outline:"none"}}/>
           <select value={selSection} onChange={e=>setSelSection(e.target.value)}
@@ -1272,7 +1272,7 @@ export function StudentsPage({ctx}){
             <span style={{flex:1}}>Showing only <b>active members with no email address</b> — from the dashboard health check.</span>
             <button onClick={()=>setNoEmailOnly(false)}
               style={{background:"none",border:"none",cursor:"pointer",color:C.amber,fontWeight:700,fontSize:12,textDecoration:"underline"}}>
-              Show all students
+              Show all members
             </button>
           </div>
         )}
@@ -1294,7 +1294,7 @@ export function StudentsPage({ctx}){
             </select>
           </div>
           <span style={{fontSize:11,color:C.muted,whiteSpace:"nowrap",marginLeft:"auto"}}>
-            {filtered.length} student{filtered.length!==1?"s":""} matched
+            {filtered.length} member{filtered.length!==1?"s":""} matched
             {filtered.length>pageSize?` · showing ${safePage*pageSize+1}–${Math.min((safePage+1)*pageSize,filtered.length)}`:""}
           </span>
         </div>
@@ -1311,7 +1311,7 @@ export function StudentsPage({ctx}){
                     }}
                     style={{accentColor:"#fff",cursor:"pointer"}}/>
                 </th>
-                {["#","Student ID","First Name","Middle Name","Last Name","Gender","DOB/Age","Class","Email","Actions"].map((h,i)=>(
+                {["#","Member ID","First Name","Middle Name","Last Name","Gender","DOB/Age","Group","Email","Actions"].map((h,i)=>(
                   <th key={i} style={{padding:"8px 10px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:12,whiteSpace:"nowrap"}}>{h}</th>
                 ))}
               </tr></thead>
@@ -1350,7 +1350,7 @@ export function StudentsPage({ctx}){
                     ]}/>
                   );
                 })}
-                {!filtered.length&&<tr><td colSpan={11}><EmptyState icon={<AppIcon name="students" size={28} color={C.muted}/>} title="No students found" message="Try adjusting the search or filters, or add a new student."/></td></tr>}
+                {!filtered.length&&<tr><td colSpan={11}><EmptyState icon={<AppIcon name="students" size={28} color={C.muted}/>} title="No members found" message="Try adjusting the search or filters, or add a new member."/></td></tr>}
               </tbody>
               )}
             </table>
@@ -1389,10 +1389,10 @@ export function StudentsPage({ctx}){
 
       {/* ── ADD/EDIT MODAL ── */}
       {modal&&(
-        <Modal title={editId?"Edit Student":"New Student"} onClose={()=>setModal(false)} width={560}>
+        <Modal title={editId?"Edit Member":"New Member"} onClose={()=>setModal(false)} width={560}>
           {!editId&&(
             <div style={{background:C.bluePale,border:`1px solid ${C.blue}22`,borderRadius:8,padding:"9px 13px",marginBottom:14,fontSize:12,color:C.blue}}>
-              <strong>Member ID</strong> will be auto-generated as <strong>RGS/01, RGS/02…</strong> on save
+              <strong>Member ID</strong> will be auto-generated as <strong>JD/01, JD/02…</strong> on save
             </div>
           )}
           {editId&&(
@@ -1432,8 +1432,8 @@ export function StudentsPage({ctx}){
           </div>
 
           <Inp label="Admission Year" value={form.admission_year||""} onChange={v=>f({admission_year:v})} placeholder={String(new Date().getFullYear())}/>
-          <Sel label="Class" value={form.class_id||""} onChange={v=>f({class_id:v})}
-            options={[{value:"",label:"— Select Class —"},...classes.map(c=>({value:c.id,label:`${c.name}${c.sections?" ("+c.sections.code+")":""}`}))]}/>
+          <Sel label="Group" value={form.class_id||""} onChange={v=>f({class_id:v})}
+            options={[{value:"",label:"— Select Group —"},...classes.map(c=>({value:c.id,label:`${c.name}${c.sections?" ("+c.sections.code+")":""}`}))]}/>
           <div style={{display:"flex",gap:10,marginTop:6}}>
             <Btn onClick={save} color={C.orange} style={{flex:1}}>Save</Btn>
             <Btn onClick={()=>setModal(false)} color={C.muted} outline style={{flex:1}}>Cancel</Btn>
@@ -1443,7 +1443,7 @@ export function StudentsPage({ctx}){
 
       {/* ── BULK UPLOAD MODAL ── */}
       {bulkModal&&(
-        <Modal title="Bulk Student Upload" onClose={()=>setBulkModal(false)} width={660}>
+        <Modal title="Bulk Member Upload" onClose={()=>setBulkModal(false)} width={660}>
           {/* Load SheetJS for xlsx parsing */}
           {typeof window!=="undefined"&&!window.XLSX&&(()=>{
             const s=document.createElement("script");
@@ -1498,7 +1498,7 @@ export function StudentsPage({ctx}){
                 <div style={{overflowX:"auto",maxHeight:220,overflowY:"auto",border:`1px solid ${C.border}`,borderRadius:8}}>
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                     <thead><tr style={{background:C.blue}}>
-                      {["#","Status","First Name","Last","Gender","DOB/Age","Email","Class"].map((h,i)=>(
+                      {["#","Status","First Name","Last","Gender","DOB/Age","Email","Group"].map((h,i)=>(
                         <th key={i} style={{padding:"6px 10px",color:"#fff",textAlign:"left",fontWeight:700,whiteSpace:"nowrap"}}>{h}</th>
                       ))}
                     </tr></thead>
@@ -1528,7 +1528,7 @@ export function StudentsPage({ctx}){
                   <div style={{marginTop:12,padding:"12px 14px",background:C.offWhite,border:`1px solid ${C.border}`,borderRadius:10}}>
                     <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>How to handle duplicates?</div>
                     {[
-                      {v:"new_only",label:"Add new students only (skip all duplicates)",desc:"Recommended — safest option"},
+                      {v:"new_only",label:"Add new members only (skip all duplicates)",desc:"Recommended — safest option"},
                       {v:"all",label:"Add new + possible duplicates (skip confirmed exact duplicates)",desc:"Adds possible name-matches — exact matches always blocked"},
                       {v:"review",label:"Let me review each duplicate manually"},
                     ].map(o=>(
@@ -1562,9 +1562,9 @@ export function StudentsPage({ctx}){
       )}
       {/* ── Duplicate warning modal (single registration) ── */}
       {dupWarning&&(
-        <Modal title={dupWarning.type==="exact"?"Exact Duplicate Student":"Possible Duplicate Student"} onClose={()=>setDupWarning(null)} width={480}>
+        <Modal title={dupWarning.type==="exact"?"Exact Duplicate Member":"Possible Duplicate Member"} onClose={()=>setDupWarning(null)} width={480}>
           <div style={{fontSize:13,color:C.text,lineHeight:1.8,marginBottom:14}}>
-            A student with similar details already exists:
+            A member with similar details already exists:
             <div style={{margin:"10px 0",padding:"10px 14px",background:C.redPale,border:`1px solid ${C.red}22`,borderRadius:8}}>
               <strong>Existing:</strong> {stuFullName(dupWarning.match)} · {classes.find(c=>String(c.id)===String(dupWarning.match.class_id))?.name||"—"} · ID: {dupWarning.match.id}
             </div>
@@ -1622,7 +1622,7 @@ export function StudentsPage({ctx}){
 
       {/* ── Bulk delete progress ── */}
       {showBulkDel&&(
-        <BulkProgressModal title="Deleting Students…" total={bulkDelProg.total}
+        <BulkProgressModal title="Deleting Members…" total={bulkDelProg.total}
           current={bulkDelProg.current} currentLabel={bulkDelProg.currentLabel}
           failed={bulkDelProg.failed} isDone={bulkDelProg.isDone} canClose={bulkDelProg.isDone}
           onClose={()=>setShowBulkDel(false)}/>
@@ -1636,7 +1636,7 @@ export function StudentsPage({ctx}){
 export function TeacherAddStudentsPage({ctx}){
   const {user,notify}=ctx;
   const {schoolName:_teacherAddSN}=useSection();
-  const _taSN=_teacherAddSN||"School Portal";
+  const _taSN=_teacherAddSN||"Business Portal";
   const [classes,setClasses]=useState([]);
   const [tab,setTab]=useState("manual"); // "manual" | "bulk"
   const [modal,setModal]=useState(false);
@@ -1680,7 +1680,7 @@ export function TeacherAddStudentsPage({ctx}){
     if(!form.first_name||!form.last_name){notify("First and Last name required","error");return;}
     if(!form.email){
       const go=await confirm({title:"No Email Address",
-        message:"This student has no email address. They won't receive report cards, fee reminders, or login links by email. Continue anyway?",
+        message:"This member has no email address. They won't receive report cards, billing reminders, or login links by email. Continue anyway?",
         confirmLabel:"Submit Without Email"});
       if(!go)return;
     }
@@ -1700,7 +1700,7 @@ export function TeacherAddStudentsPage({ctx}){
     if(error){notify(error.message,"error");return;}
     notify("✅ Member submitted for admin approval");
     db.createNotificationForAdmins(
-      `New student request from ${user.name||"a teacher"}`,
+      `New student request from ${user.name||"a staff"}`,
       `${form.first_name} ${form.last_name} submitted for enrolment approval`,
       "info","student_request","approvals"
     ).catch(()=>{});
@@ -1725,7 +1725,7 @@ export function TeacherAddStudentsPage({ctx}){
     for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
     const blob=new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download="RGS_Student_Upload_Template.xlsx";a.click();URL.revokeObjectURL(a.href);
+    a.download="JD_Member_Upload_Template.xlsx";a.click();URL.revokeObjectURL(a.href);
   };
 
   const parseBulkFile=async(file)=>{
@@ -1770,7 +1770,7 @@ export function TeacherAddStudentsPage({ctx}){
           email:get("email"),class_name:get("class_name"),
           admission_year:get("admission_year"),_line:i+1});
       }
-      if(rows.length===0){setBulkErrors(["No valid student rows found."]);return;}
+      if(rows.length===0){setBulkErrors(["No valid member rows found."]);return;}
       setBulkParsed(rows);
     }catch(err){setBulkErrors(["Failed to parse file: "+err.message]);}
   };
@@ -1869,7 +1869,7 @@ export function TeacherAddStudentsPage({ctx}){
       {modal&&(
         <Modal title="Submit Member for Approval" onClose={()=>setModal(false)} width={560}>
           <div style={{background:C.orangePale,border:`1px solid ${C.orange}22`,borderRadius:8,padding:"9px 13px",marginBottom:14,fontSize:12,color:C.orange}}>
-            This student will be reviewed by the admin before being added to the system.
+            This member will be reviewed by the admin before being added to the system.
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
             <Inp label="First Name *" value={form.first_name} onChange={v=>ff({first_name:v})} placeholder="Adaeze"/>
@@ -1980,7 +1980,7 @@ export function TeacherAddStudentsPage({ctx}){
 export function StudentApprovalsPage({ctx}){
   const {user,notify,setPendingApprovals}=ctx;
   const {schoolName:_approvalSN}=useSection();
-  const _schoolName=_approvalSN||"School Portal";
+  const _schoolName=_approvalSN||"Business Portal";
   const [pendingList,setPendingList]=useState([]);
   const [approvedList,setApprovedList]=useState([]);
   const [rejectedList,setRejectedList]=useState([]);
@@ -2178,7 +2178,7 @@ export function StudentApprovalsPage({ctx}){
           {/* Search */}
           <div style={{position:"relative",gridColumn:"1 / 3"}}>
             <Search size={13} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:C.muted,pointerEvents:"none"}}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by student name…"
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by member name…"
               style={{width:"100%",padding:"8px 10px 8px 32px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text,boxSizing:"border-box"}}/>
           </div>
           {/* Section */}
@@ -2341,13 +2341,13 @@ export function StudentApprovalsPage({ctx}){
                   <>
                     <div style={{background:C.greenPale||"#f0fdf4",border:`1px solid ${C.green}40`,borderRadius:8,
                       padding:"10px 14px",marginBottom:!r.email?10:14,fontSize:12,color:C.green}}>
-                      A Member ID will be auto-generated and the student will be added to the system.
+                      A Member ID will be auto-generated and the member will be added to the system.
                     </div>
                     {!r.email&&(
                       <div style={{background:"#fff8ed",border:`1.5px solid ${C.orange}`,borderRadius:8,
                         padding:"10px 14px",marginBottom:14,fontSize:12,color:C.orange,fontWeight:600,display:"flex",gap:8,alignItems:"flex-start"}}>
                         <span style={{fontSize:15}}>⚠️</span>
-                        <span>This member has no email address — they won't receive report cards, fee reminders, or login links by email.</span>
+                        <span>This member has no email address — they won't receive report cards, billing reminders, or login links by email.</span>
                       </div>
                     )}
                   </>

@@ -1,5 +1,24 @@
-# CLAUDE.md — RGS Portal Project Context
-_Last updated: 16 Jul 2026._
+# CLAUDE.md — JAMES-DENNING Project Context
+_Last updated: 20 Aug 2026._
+
+## Rebrand / Workspace Model (20 Aug 2026)
+
+The product is now branded **JAMES-DENNING — Business Operations Platform**. The default UI is
+business-neutral and uses a restrained monochrome design system. Existing database tables,
+columns, route IDs, role values, local-storage keys, and tenant data retain their legacy school-
+compatible names so current education tenants continue to work without a migration.
+
+- Product identity and copy lives in `src/config/product.js`.
+- Theme tokens live in `src/config/theme.js`; legacy token names (`C.blue`, `C.orange`, etc.)
+  remain as compatibility aliases for the existing page components.
+- Admin → Settings → Workspace stores `workspace_type` and `education_module_enabled` in the
+  existing `school_settings` table. Business is the default; Education restores the academic
+  navigation labels through the optional module.
+- Brand assets are `public/jd-mark.svg`, `public/jd-logo.svg`, and the regenerated PWA/Capacitor
+  icons. The old Apex/RGS logo asset is no longer referenced.
+- `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
+  must pass before a change is considered complete.
+
 
 **PITFALL — preview automation & PDF/print buttons:** clicking any button that opens the
 in-portal PDF viewer (`ctx.showPDF` / `openHtmlDoc`, e.g. the fees.jsx "PDF" buttons) reliably
@@ -77,10 +96,14 @@ This keeps the next session fully informed without needing to re-read code.
 
 ## Project Summary
 
-**Renaissance Garden Schools (RGS)** — internal school management portal, now running as a multi-tenant SaaS.
-Built as a single-page React app. Page components live in `src/pages/` (one file per domain). `src/AppDemo.jsx` (~5.3k lines) is the main shell only — router, context providers, platform admin, and shared UI. `src/supabaseClient.js` (~900 lines) holds all DB methods. **Do not add page logic to `AppDemo.jsx`** — new features go in the relevant `src/pages/` file.
+**JAMES-DENNING** — a multi-tenant business operations platform for organizations of every kind.
+Built as a single-page React app. Page components live in `src/pages/` (one file per domain).
+`src/AppDemo.jsx` is the main shell — router, context providers, platform admin, RBAC, and shared
+UI. `src/supabaseClient.js` holds all DB methods. **Do not add page logic to `AppDemo.jsx`** —
+new features go in the relevant `src/pages/` file. Existing education workflows remain available
+through the optional Education workspace module.
 
-**Live URL:** https://portal.renaissancegardenschools.com
+**Current deployment URL:** https://portal.renaissancegardenschools.com (legacy host retained during rebrand)
 **GitHub:** https://github.com/Ossytrikz/RGS-PORTAL (private, `master` branch auto-deploys to Vercel)
 
 ---
@@ -102,6 +125,7 @@ Built as a single-page React app. Page components live in `src/pages/` (one file
 - `npm run dev` — local dev
 - `npm run build` (base `./`) → Capacitor / Android
 - `npm run build:web` (base `/`) → Vercel production
+- `npm run build:mobile` → dedicated mobile entry (`mobile.html`, `dist-mobile/`)
 
 ---
 
@@ -130,7 +154,8 @@ supabase/
   2. Export it from that file
   3. Import it in `AppDemo.jsx` and add a route in the `<main>` switch and a nav entry in `ALL_NAV`
   If no existing pages/ file fits, create a new one following the same import pattern as the others.
-- **Inline styles only** — no CSS modules, no Tailwind. Colours from the `C` constant object (e.g. `C.blue`, `C.orange`, `C.muted`, `C.border`, `C.offWhite`).
+- **Inline styles only** — no CSS modules, no Tailwind. Colours come from `src/config/theme.js`; legacy token names such as `C.blue` and `C.orange` remain available as monochrome compatibility aliases.
+- **Business-neutral presentation** — use the terminology and identity helpers in `src/config/product.js` for new copy. Do not rename legacy database keys or route IDs. The optional Education module is controlled by `workspace_type` and `education_module_enabled` in `school_settings`.
 - **`db.*` for all DB calls** — never call `supabase.from(...)` or `supabaseSrv.from(...)` directly in components or pages/ files. Always use the exported `db` object from `supabaseClient.js`. If the method you need doesn't exist, add it to `supabaseClient.js` (use `supabaseSrv` + filter by `this._schoolId`). The anon `supabase` client has zero RLS access — direct calls will silently return empty or fail.
 - **`supabaseSrv`** (service role) is used inside `supabaseClient.js` for ALL operations — every method must use `supabaseSrv` + filter by `this._schoolId`. Never import `supabaseSrv` into `AppDemo.jsx`; instead add a method to `db`.
 - **Icons:** Use `<AppIcon name="...\" size={n}/>` for sidebar/nav icons. Use Lucide components directly (`<Settings size={16}/>`) everywhere else.

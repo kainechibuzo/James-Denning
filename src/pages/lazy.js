@@ -28,15 +28,15 @@ export const BursarDashboard     = lz(() => import('./dashboard.jsx'),   'Bursar
 // ── Members ───────────────────────────────────────────────────────────────────
 export const MembersPage         = lz(() => import('./members.jsx'),     'MembersPage');
 
-// ── Students ──────────────────────────────────────────────────────────────────
+// ── Members ──────────────────────────────────────────────────────────────────
 export const StudentsPage            = lz(() => import('./students.jsx'), 'StudentsPage');
 export const TeacherAddStudentsPage  = lz(() => import('./students.jsx'), 'TeacherAddStudentsPage');
 export const StudentApprovalsPage    = lz(() => import('./students.jsx'), 'StudentApprovalsPage');
 
-// ── Teachers ──────────────────────────────────────────────────────────────────
+// ── Staff ──────────────────────────────────────────────────────────────────
 export const TeachersPage        = lz(() => import('./teachers.jsx'),    'TeachersPage');
 
-// ── Classes ───────────────────────────────────────────────────────────────────
+// ── Groups ───────────────────────────────────────────────────────────────────
 export const ClassesPage         = lz(() => import('./classes.jsx'),     'ClassesPage');
 export const AssignmentsPage     = lz(() => import('./classes.jsx'),     'AssignmentsPage');
 
@@ -59,7 +59,7 @@ export const PermissionsPage     = lz(() => import('./permissions.jsx'), 'Permis
 export const SaveTemplateForm    = lz(() => import('./permissions.jsx'), 'SaveTemplateForm');
 export const ApplyTemplateBtn    = lz(() => import('./permissions.jsx'), 'ApplyTemplateBtn');
 
-// ── Fees ──────────────────────────────────────────────────────────────────────
+// ── Billing ──────────────────────────────────────────────────────────────────────
 export const FeesPage            = lz(() => import('./fees.jsx'),        'FeesPage');
 export const PaymentsPage        = lz(() => import('./fees.jsx'),        'PaymentsPage');
 export const MyPaymentsPage      = lz(() => import('./fees.jsx'),        'MyPaymentsPage');
@@ -76,7 +76,7 @@ export const TranscriptPage      = lz(() => import('./transcript.jsx'),  'Transc
 // ── Settings ──────────────────────────────────────────────────────────────────
 export const SettingsPage        = lz(() => import('./settings.jsx'),    'SettingsPage');
 
-// ── Report Cards ──────────────────────────────────────────────────────────────
+// ── Reports ──────────────────────────────────────────────────────────────
 export const ReportCardsPage         = lz(() => import('./reportcards.jsx'), 'ReportCardsPage');
 export const ResultApprovalsPage     = lz(() => import('./reportcards.jsx'), 'ResultApprovalsPage');
 export const ReportCardSettingsPage  = lz(() => import('./reportcards.jsx'), 'ReportCardSettingsPage');

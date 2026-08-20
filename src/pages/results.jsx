@@ -89,7 +89,7 @@ export function ResultsAdminPage({ctx}){
   const upd=(sid,field,val)=>{setScores(p=>({...p,[sid]:{...p[sid],[field]:val}}));setSaved(false);};
 
   const save=async()=>{
-    if(!selStu||!selClass||!selTerm||!selSession){notify("Select class, student, session, and term","error");return;}
+    if(!selStu||!selClass||!selTerm||!selSession){notify("Select group, member, cycle, and period","error");return;}
     setSaving(true);
     const records=subjects.map(s=>{
       const r=scores[s.id]||{};
@@ -119,17 +119,17 @@ export function ResultsAdminPage({ctx}){
       </div>
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14}}>
-          <Sel label="Session" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
-            options={[{value:"",label:"Select session…"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm} disabled={!selSession}
-            options={[{value:"",label:"Select term…"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
+          <Sel label="Cycle" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
+            options={[{value:"",label:"Select cycle…"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
+          <Sel label="Period" value={selTerm} onChange={setSelTerm} disabled={!selSession}
+            options={[{value:"",label:"Select period…"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
           <Sel label="Group" value={selClass} onChange={v=>{setSelClass(v);setSelStu("");setScores({});setStuSearch("");}}
-            options={[{value:"",label:"Select class…"},...classes.map(c=>({value:c.id,label:c.name}))]}/>
+            options={[{value:"",label:"Select group…"},...classes.map(c=>({value:c.id,label:c.name}))]}/>
           <div>
             <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4}}>Member</div>
             <div style={{position:"relative",marginBottom:4}}>
               <Search size={12} style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:C.muted,pointerEvents:"none"}}/>
-              <input value={stuSearch} onChange={e=>setStuSearch(e.target.value)} placeholder="Search student…" disabled={!selClass}
+              <input value={stuSearch} onChange={e=>setStuSearch(e.target.value)} placeholder="Search member…" disabled={!selClass}
                 style={{width:"100%",boxSizing:"border-box",paddingLeft:26,paddingRight:8,paddingTop:6,paddingBottom:6,
                   borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.text,background:!selClass?C.offWhite:"#fff",
                   outline:"none"}}/>
@@ -161,7 +161,7 @@ export function ResultsAdminPage({ctx}){
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
               {(()=>{const caM=+(settings.result_ca_max||40);const exM=+(settings.result_exam_max||60);return(
-              <Th cols={["#","Subject",`CA (max ${caM})`,`Exam (max ${exM})`,`Total (${caM+exM})`,"Grade","Remark"]}/>
+              <Th cols={["#","Category",`CA (max ${caM})`,`Exam (max ${exM})`,`Total (${caM+exM})`,"Grade","Remark"]}/>
               );})()}
               <tbody>
                 {(()=>{const caM=+(settings.result_ca_max||40);const exM=+(settings.result_exam_max||60);return subjects.map((subj,i)=>{
@@ -192,7 +192,7 @@ export function ResultsAdminPage({ctx}){
         <Card style={{textAlign:"center",padding:48}}>
           <div style={{marginBottom:10}}><FileText size={44} color={C.muted}/></div>
           <div style={{fontWeight:800,color:C.blue,fontSize:16,marginBottom:5}}>Select Filters Above</div>
-          <div style={{color:C.muted,fontSize:13}}>Choose session, term, group and member to enter results</div>
+          <div style={{color:C.muted,fontSize:13}}>Choose cycle, period, group and member to enter results</div>
         </Card>
       )}
     </div>
@@ -234,12 +234,12 @@ export function ResultsTeachPage({ctx}){
   const [studentScores,setStudentScores]=useState({}); // {subjId:{compName:val}}
   const [stuSearch,setStuSearch]=useState("");
 
-  // Subject completion matrix
+  // Category completion matrix
   const [subjDone,setSubjDone]=useState({}); // {subjectId: countOfStudentsWithResults}
 
   // Section clear
   const [selClearSection,setSelClearSection]=useState("");
-  // Subject clear
+  // Category clear
   const [selClearSubjClass,setSelClearSubjClass]=useState("");
   const [selClearSubjId,setSelClearSubjId]=useState("");
   const [clearSubjOptions,setClearSubjOptions]=useState([]);
@@ -347,7 +347,7 @@ export function ResultsTeachPage({ctx}){
       ]);
       const expectedSubjectIds=(subRes.data||[]).map(cs=>cs.section_subject_id);
       if(!expectedSubjectIds.length){
-        notify("No subjects assigned to this class. Cannot approve.","error");
+        notify("No categories assigned to this group. Cannot approve.","error");
         setApprovingEA(false);return;
       }
       const resultRows=cmpRes.data||[];
@@ -363,7 +363,7 @@ export function ResultsTeachPage({ctx}){
         return expectedSubjectIds.some(sid=>!done.has(sid));
       });
       if(incomplete){
-        notify("Results must be complete before approval. Some students have missing scores.","error");
+        notify("Results must be complete before approval. Some members have missing scores.","error");
         setApprovingEA(false);return;
       }
       await db.approveEA(+selClass,+selTerm,+selSession,ctx.user?.supabase_uid||null);
@@ -371,7 +371,7 @@ export function ResultsTeachPage({ctx}){
     } else {
       setApprovingEA(true);
       await db.revokeEA(+selClass,+selTerm,+selSession);
-      notify("EA revoked — teachers can edit again","warn");
+      notify("EA revoked — staff can edit again","warn");
     }
     const {data}=await db.getResultApproval(+selClass,+selTerm,+selSession);
     setApproval(data||null);
@@ -380,7 +380,7 @@ export function ResultsTeachPage({ctx}){
 
   // ── Download PDF (by-student mode) ──────────────────────────────────────
   const downloadTeacherPDF=async()=>{
-    if(!selStudent||!selClass||!selTerm||!selSession){notify("Select session, term, class and student first","error");return;}
+    if(!selStudent||!selClass||!selTerm||!selSession){notify("Select cycle, period, group and member first","error");return;}
     const stu=students.find(s=>s.id===selStudent);
     if(!stu){notify("Member not found","error");return;}
     setDownloadingPDF(true);
@@ -483,7 +483,7 @@ export function ResultsTeachPage({ctx}){
 
   // ── Download result template (class or section) ───────────────────────────
   const downloadResultTemplate=async(scope='class')=>{
-    if(!selClass||!selTerm||!selSession){notify("Select session, term and class first","error");return;}
+    if(!selClass||!selTerm||!selSession){notify("Select cycle, period and group first","error");return;}
     const cls=classes.find(c=>c.id===+selClass);
     const term=terms.find(t=>t.id===+selTerm);
     const session=sessions.find(s=>s.id===+selSession);
@@ -497,7 +497,7 @@ export function ResultsTeachPage({ctx}){
     const inputSty={fill:{fgColor:{rgb:"FFFBEB"}},alignment:{horizontal:"center"}};
 
     const buildSheet=(wsData,compCount,sheetType)=>{
-      // sheetType: 'subject' (no Subject col) | 'class' (has Subject col at index 2)
+      // sheetType: 'subject' (no Category col) | 'class' (has Category col at index 2)
       const NCOLS=wsData[2].length;
       const ws=XLSX.utils.aoa_to_sheet(wsData);
       ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:NCOLS-1}}];
@@ -507,7 +507,7 @@ export function ResultsTeachPage({ctx}){
         const m=XLSX.utils.encode_cell({r:1,c:col}); if(ws[m])ws[m].s=metaSty;
         const h=XLSX.utils.encode_cell({r:2,c:col}); if(ws[h])ws[h].s=hdrSty;
       }
-      const fixedCount=sheetType==='subject'?2:3; // ID+Name | ID+Name+Subject
+      const fixedCount=sheetType==='subject'?2:3; // ID+Name | ID+Name+Category
       for(let r=3;r<wsData.length;r++){
         for(let col=0;col<NCOLS;col++){
           const a=XLSX.utils.encode_cell({r,c:col});
@@ -558,11 +558,11 @@ export function ResultsTeachPage({ctx}){
         .filter(s=>(s.status||"active")==="active")
         .sort((a,b)=>([a.last_name,a.first_name].join(" ")).localeCompare([b.last_name,b.first_name].join(" ")));
       const classSubjects=(subjRes.data||[]).map(cs=>cs.section_subjects).filter(Boolean);
-      if(!classSubjects.length){notify("No subjects assigned to this class","error");return;}
+      if(!classSubjects.length){notify("No categories assigned to this group","error");return;}
       for(const subj of classSubjects){
         const NCOLS=2+compHdrs.length+1; // ID, Name, comps, Total
-        const titleRow=[`${db._schoolName||"School"} — ${cls.name} Result Template`,...Array(NCOLS-1).fill("")];
-        const metaRow=[`Class: ${cls.name}`,`Session: ${session?.name}`,`Term: ${term?.name}`,`Subject: ${subj.name}`,...Array(Math.max(0,NCOLS-4)).fill("")];
+        const titleRow=[`${db._schoolName||"Organization"} — ${cls.name} Result Template`,...Array(NCOLS-1).fill("")];
+        const metaRow=[`Group: ${cls.name}`,`Cycle: ${session?.name}`,`Period: ${term?.name}`,`Category: ${subj.name}`,...Array(Math.max(0,NCOLS-4)).fill("")];
         const hdrRow=["Member ID","Member Name",...compHdrs,"Total"];
         const dataRows=classStudents.map(stu=>{
           const nm=fullName(stu);
@@ -585,10 +585,10 @@ export function ResultsTeachPage({ctx}){
           .sort((a,b)=>([a.last_name,a.first_name].join(" ")).localeCompare([b.last_name,b.first_name].join(" ")));
         const classSubjects=(cSubjRes.data||[]).map(cs=>cs.section_subjects).filter(Boolean);
         if(!classSubjects.length){notify(`No subjects assigned to ${c.name} — skipped in template`,"warn");continue;}
-        const NCOLS=3+compHdrs.length+1; // ID, Name, Subject, comps, Total
-        const titleRow=[`${db._schoolName||"School"} — ${c.name} Result Template`,...Array(NCOLS-1).fill("")];
-        const metaRow=[`Class: ${c.name}`,`Session: ${session?.name}`,`Term: ${term?.name}`,...Array(NCOLS-3).fill("")];
-        const hdrRow=["Member ID","Member Name","Subject",...compHdrs,"Total"];
+        const NCOLS=3+compHdrs.length+1; // ID, Name, Category, comps, Total
+        const titleRow=[`${db._schoolName||"Organization"} — ${c.name} Result Template`,...Array(NCOLS-1).fill("")];
+        const metaRow=[`Group: ${c.name}`,`Cycle: ${session?.name}`,`Period: ${term?.name}`,...Array(NCOLS-3).fill("")];
+        const hdrRow=["Member ID","Member Name","Category",...compHdrs,"Total"];
         const dataRows=[];
         for(const stu of classStudents){
           const nm=fullName(stu);
@@ -619,17 +619,17 @@ export function ResultsTeachPage({ctx}){
         const ws=wb.Sheets[sheetName];
         const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
         if(raw.length<4){errors.push(`Sheet "${sheetName}": too few rows, skipped`);continue;}
-        // Row 1 meta: ["Group: PRIMARY 1", "Session: ...", "Term: ...", optional "Subject: ..."]
+        // Row 1 meta: ["Group: PRIMARY 1", "Cycle: ...", "Period: ...", optional "Category: ..."]
         const className=String(raw[1][0]||"").replace(/^class:\s*/i,"").trim();
         const matchedCls=classes.find(c=>c.name.toLowerCase()===className.toLowerCase())
           ||classes.find(c=>c.name.toLowerCase()===sheetName.toLowerCase());
         if(!matchedCls){errors.push(`Sheet "${sheetName}": class "${className||sheetName}" not found — skipped`);continue;}
-        // Detect format: class template has "Subject: ..." at meta col 3; section template does not
+        // Detect format: class template has "Category: ..." at meta col 3; section template does not
         const metaCol3=String(raw[1][3]||"").trim();
         const isPerSubjectFmt=/^subject:\s*/i.test(metaCol3);
         // Row 2 headers — extract component names (strip "(max X)")
         const hdrRow=raw[2].map(h=>String(h||""));
-        // Score cols: start at 2 for per-subject (ID, Name, [scores]) or 3 for per-class (ID, Name, Subject, [scores])
+        // Score cols: start at 2 for per-subject (ID, Name, [scores]) or 3 for per-class (ID, Name, Category, [scores])
         const scoreColStart=isPerSubjectFmt?2:3;
         const compCols=[];
         for(let i=scoreColStart;i<hdrRow.length-1;i++){
@@ -640,7 +640,7 @@ export function ResultsTeachPage({ctx}){
         // Data rows from index 3
         const rows=[];
         if(isPerSubjectFmt){
-          // Class template — each sheet = one subject, each row = one student
+          // Group template — each sheet = one subject, each row = one student
           const subjectName=metaCol3.replace(/^subject:\s*/i,"").trim();
           if(!subjectName){errors.push(`Sheet "${sheetName}": no subject in meta row — skipped`);continue;}
           for(let i=3;i<raw.length;i++){
@@ -680,7 +680,7 @@ export function ResultsTeachPage({ctx}){
 
   // ── Save bulk results to DB ───────────────────────────────────────────────
   const saveBulkResults=async()=>{
-    if(!selTerm||!selSession){notify("Select session and term first","error");return;}
+    if(!selTerm||!selSession){notify("Select cycle and period first","error");return;}
     if(isLocked){notify("Results are fully locked (MA approved). Cannot edit.","error");return;}
     if(isTeacherLocked&&ctx.role==="teacher"){notify("Results are locked pending Manager Approval. Contact admin.","error");return;}
     setBulkResSaving(true);
@@ -699,7 +699,7 @@ export function ResultsTeachPage({ctx}){
       const sheetSubjects=(subjRes.data||[]).map(cs=>cs.section_subjects).filter(Boolean);
       if(!sheetSubjects.length){
         const skipped=sheet.rows.length;
-        errors.push(`Class "${sheet.className}": no subjects assigned to this class — ${skipped} row(s) blocked`);
+        errors.push(`Group "${sheet.className}": no subjects assigned to this class — ${skipped} row(s) blocked`);
         totalFailed+=skipped;
         continue;
       }
@@ -758,7 +758,7 @@ export function ResultsTeachPage({ctx}){
         const filteredNulls=records.filter(r=>r.subject_id!=null&&!Number.isNaN(+r.subject_id));
         if(filteredNulls.length<beforeNull){
           const dropped=beforeNull-filteredNulls.length;
-          warnings.push(`Class "${sheet.className}": ${dropped} row(s) skipped — unresolved subject (ghost class-subject or unmatched template column)`);
+          warnings.push(`Group "${sheet.className}": ${dropped} row(s) skipped — unresolved subject (ghost class-subject or unmatched template column)`);
           totalFailed+=dropped;
         }
         records.length=0;records.push(...filteredNulls);
@@ -771,11 +771,11 @@ export function ResultsTeachPage({ctx}){
         const deduped=Object.values(seen);
         const dupeCount=records.length-deduped.length;
         if(dupeCount>0){
-          warnings.push(`Class "${sheet.className}": ${dupeCount} duplicate row(s) — merged (last value kept)`);
+          warnings.push(`Group "${sheet.className}": ${dupeCount} duplicate row(s) — merged (last value kept)`);
           totalMerged+=dupeCount;
         }
         const{error}=await db.upsertResult(deduped);
-        if(error){errors.push(`Class "${sheet.className}": ${error.message}`);totalFailed+=deduped.length;}
+        if(error){errors.push(`Group "${sheet.className}": ${error.message}`);totalFailed+=deduped.length;}
         else totalDone+=deduped.length;
       }
       setBulkResProgress(p=>({...p,done:totalDone,failed:totalFailed}));
@@ -909,14 +909,14 @@ export function ResultsTeachPage({ctx}){
   // ── Clear all results for the currently selected section ──────────────────
   const clearSectionResults=async()=>{
     if(!selClearSection){notify("Choose a section to clear","error");return;}
-    if(!selTerm||!selSession){notify("Select session and term first","error");return;}
+    if(!selTerm||!selSession){notify("Select cycle and period first","error");return;}
     const uniqueSections=[];
     const seen=new Set();
     for(const c of classes){if(c.sections&&!seen.has(c.sections.id)){seen.add(c.sections.id);uniqueSections.push(c.sections);}}
     const sec=uniqueSections.find(s=>String(s.id)===String(selClearSection));
     if(!sec){notify("Section not found","error");return;}
-    const termName=terms.find(t=>t.id===+selTerm)?.name||"selected term";
-    const sesName=sessions.find(s=>s.id===+selSession)?.name||"selected session";
+    const termName=terms.find(t=>t.id===+selTerm)?.name||"selected period";
+    const sesName=sessions.find(s=>s.id===+selSession)?.name||"selected cycle";
     const ok=await confirm({
       title:"Clear Section Results?",
       message:`Permanently delete ALL results for every class in "${sec.name}" for ${termName}, ${sesName}. This cannot be undone.`,
@@ -941,17 +941,17 @@ export function ResultsTeachPage({ctx}){
 
   // ── Clear results for one subject in one class ────────────────────────────
   const clearSubjectResults=async()=>{
-    if(!selClearSubjClass||!selClearSubjId){notify("Choose a class and subject to clear","error");return;}
-    if(!selTerm||!selSession){notify("Select session and term first","error");return;}
+    if(!selClearSubjClass||!selClearSubjId){notify("Choose a group and category to clear","error");return;}
+    if(!selTerm||!selSession){notify("Select cycle and period first","error");return;}
     const cls=classes.find(c=>String(c.id)===String(selClearSubjClass));
     const subj=clearSubjOptions.find(s=>String(s.id)===String(selClearSubjId));
-    if(!cls||!subj){notify("Group or subject not found","error");return;}
-    const termName=terms.find(t=>t.id===+selTerm)?.name||"selected term";
-    const sesName=sessions.find(s=>s.id===+selSession)?.name||"selected session";
+    if(!cls||!subj){notify("Group or category not found","error");return;}
+    const termName=terms.find(t=>t.id===+selTerm)?.name||"selected period";
+    const sesName=sessions.find(s=>s.id===+selSession)?.name||"selected cycle";
     const ok=await confirm({
-      title:"Clear Subject Results?",
+      title:"Clear Category Results?",
       message:`Permanently delete all results for "${subj.name}" in "${cls.name}" for ${termName}, ${sesName}.\n\nThis will lift any subject-assignment interlock. Cannot be undone.`,
-      confirmLabel:"Clear Subject",danger:true,typeToConfirm:"DELETE"
+      confirmLabel:"Clear Category",danger:true,typeToConfirm:"DELETE"
     });
     if(!ok)return;
     const{error}=await db.clearSubjectResults(+selClearSubjClass,+selClearSubjId,+selTerm,+selSession);
@@ -968,8 +968,8 @@ export function ResultsTeachPage({ctx}){
     <Card style={{marginBottom:16}}>
       <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:14,flexWrap:"wrap"}}>
         <span style={{fontWeight:700,color:C.blue,fontSize:13}}>Input mode:</span>
-        {[{id:"by-subject",label:"By Subject",desc:"All students · one subject"},
-          {id:"by-student",label:"By Member",desc:"All subjects · one student"}].map(m=>(
+        {[{id:"by-subject",label:"By Category",desc:"All members · one category"},
+          {id:"by-student",label:"By Member",desc:"All categories · one member"}].map(m=>(
           <button key={m.id} onClick={()=>setInputMode(m.id)}
             style={{padding:"7px 16px",borderRadius:8,border:`2px solid ${inputMode===m.id?C.blue:C.border}`,
               background:inputMode===m.id?C.blue:"transparent",color:inputMode===m.id?"#fff":C.muted,
@@ -980,14 +980,14 @@ export function ResultsTeachPage({ctx}){
         ))}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14}}>
-        <Sel label="Session" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
+        <Sel label="Cycle" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
           options={[{value:"",label:"Select…"},...sessions.map(s=>({value:s.id,label:s.name}))]}/>
-        <Sel label="Term" value={selTerm} onChange={setSelTerm} disabled={!selSession}
+        <Sel label="Period" value={selTerm} onChange={setSelTerm} disabled={!selSession}
           options={[{value:"",label:"Select…"},...filterTerms.map(t=>({value:t.id,label:t.name}))]}/>
         <Sel label="Group" value={selClass} onChange={v=>{setSelClass(v);setSelSubj("");setSelStudent("");setStuSearch("");}}
           options={[{value:"",label:"Select…"},...classes.map(c=>({value:c.id,label:c.name}))]}/>
         {inputMode==="by-subject"&&(
-          <Sel label="Subject" value={selSubj} onChange={setSelSubj} disabled={!selClass}
+          <Sel label="Category" value={selSubj} onChange={setSelSubj} disabled={!selClass}
             options={[{value:"",label:"Select…"},...subjects.map(s=>({value:s.id,label:s.name}))]}/>
         )}
         {inputMode==="by-student"&&(
@@ -995,7 +995,7 @@ export function ResultsTeachPage({ctx}){
             <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4}}>Member</div>
             <div style={{position:"relative",marginBottom:4}}>
               <Search size={12} style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:C.muted,pointerEvents:"none"}}/>
-              <input value={stuSearch} onChange={e=>setStuSearch(e.target.value)} placeholder="Search student…" disabled={!selClass}
+              <input value={stuSearch} onChange={e=>setStuSearch(e.target.value)} placeholder="Search member…" disabled={!selClass}
                 style={{width:"100%",boxSizing:"border-box",paddingLeft:26,paddingRight:8,paddingTop:6,paddingBottom:6,
                   borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.text,background:!selClass?C.offWhite:"#fff",
                   outline:"none"}}/>
@@ -1043,7 +1043,7 @@ export function ResultsTeachPage({ctx}){
           {ctx.role==="admin"&&!isEAApproved&&!isMAApproved&&(
             <Btn onClick={async()=>{
               const ok=await confirm({title:"Clear All Results?",
-                message:"Permanently delete ALL results for this class, term and session. Cannot be undone.",
+                message:"Permanently delete ALL results for this group, period and cycle. Cannot be undone.",
                 confirmLabel:"Clear Results",danger:true,typeToConfirm:"DELETE"});
               if(!ok)return;
               const{error}=await db.clearClassResults(+selClass,+selTerm,+selSession);
@@ -1076,7 +1076,7 @@ export function ResultsTeachPage({ctx}){
       {ctx.role==="admin"&&selTerm&&selSession&&(
         <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`,
           display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-          <span style={{fontSize:12,color:C.muted,fontWeight:700,whiteSpace:"nowrap"}}>Clear by subject:</span>
+          <span style={{fontSize:12,color:C.muted,fontWeight:700,whiteSpace:"nowrap"}}>Clear by category:</span>
           <select value={selClearSubjClass} onChange={e=>{setSelClearSubjClass(e.target.value);setSelClearSubjId("");}}
             style={{flex:1,minWidth:160,padding:"6px 10px",borderRadius:8,border:`1px solid ${C.border}`,
               fontSize:12,color:C.text,background:"#fff",cursor:"pointer"}}>
@@ -1088,11 +1088,11 @@ export function ResultsTeachPage({ctx}){
             style={{flex:1,minWidth:160,padding:"6px 10px",borderRadius:8,border:`1px solid ${C.border}`,
               fontSize:12,color:C.text,background:"#fff",cursor:"pointer",
               opacity:(!selClearSubjClass||!clearSubjOptions.length)?0.5:1}}>
-            <option value="">Select subject…</option>
+            <option value="">Select category…</option>
             {clearSubjOptions.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <Btn onClick={clearSubjectResults} color={C.red} outline disabled={!selClearSubjClass||!selClearSubjId}>
-            Clear Subject Results
+            Clear Category Results
           </Btn>
         </div>
       )}
@@ -1105,10 +1105,10 @@ export function ResultsTeachPage({ctx}){
       <h2 style={{fontSize:20,fontWeight:900,color:C.blue,marginBottom:18,display:"flex",alignItems:"center",gap:8}}><AppIcon name="upload-results" size={20}/>Upload Results</h2>
       <Card style={{textAlign:"center",padding:44}}>
         <div style={{marginBottom:10}}><FileText size={40} color={C.muted}/></div>
-        <div style={{fontWeight:800,color:C.blue,fontSize:15}}>No Subject Assignments</div>
+        <div style={{fontWeight:800,color:C.blue,fontSize:15}}>No Category Assignments</div>
         <div style={{color:C.muted,fontSize:13,marginTop:6,lineHeight:1.6}}>
-          You haven't been assigned as subject teacher for any class yet.<br/>
-          Ask the admin to assign you on the <b>Assignments → Subject Staff</b> page.
+          You haven't been assigned as category staff for any group yet.<br/>
+          Ask the admin to assign you on the <b>Assignments → Category Staff</b> page.
         </div>
       </Card>
     </div>
@@ -1133,7 +1133,7 @@ export function ResultsTeachPage({ctx}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,gap:10,flexWrap:"wrap"}}>
             <div>
               <span style={{fontWeight:700,color:C.blue,fontSize:13}}>
-                {students.length} students — {subjects.find(s=>s.id===+selSubj)?.name}
+                {students.length} members — {subjects.find(s=>s.id===+selSubj)?.name}
               </span>
               {hasCae&&<div style={{marginTop:4,display:"flex",gap:6,flexWrap:"wrap"}}>{caeChips}</div>}
             </div>
@@ -1243,7 +1243,7 @@ export function ResultsTeachPage({ctx}){
                 </Btn>
               )}
               <Btn onClick={saveByStudent} color={C.green} disabled={saving}>
-                {saving?"Saving…":"Save All Subjects"}
+                {saving?"Saving…":"Save All Categories"}
               </Btn>
             </div>
           </div>
@@ -1251,7 +1251,7 @@ export function ResultsTeachPage({ctx}){
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
               <thead>
                 <tr style={{background:C.blue}}>
-                  <th style={{padding:"9px 13px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11}}>Subject</th>
+                  <th style={{padding:"9px 13px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11}}>Category</th>
                   {hasCae?inputComps.map(c=>(
                     <th key={c.id} style={{padding:"9px 13px",color:"#fff",textAlign:"center",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
                       {c.component_name}<br/><span style={{fontWeight:400,fontSize:9,opacity:.8}}>(max {c.value_or_formula})</span>
@@ -1331,7 +1331,7 @@ export function ResultsTeachPage({ctx}){
           <div style={{marginTop:12,padding:"9px 14px",background:C.offWhite,borderRadius:8,
             display:"flex",gap:16,flexWrap:"wrap",fontSize:12}}>
             <span style={{color:C.muted}}>
-              <strong style={{color:C.blue}}>{Object.keys(studentScores).length}</strong> / {subjects.length} subjects entered
+              <strong style={{color:C.blue}}>{Object.keys(studentScores).length}</strong> / {subjects.length} categories entered
             </span>
             {caeStructure&&<span style={{color:C.muted}}>Max score: <strong>{caeStructure.maximum_score}</strong></span>}
           </div>
@@ -1339,7 +1339,7 @@ export function ResultsTeachPage({ctx}){
       )}
       {stu&&subjects.length===0&&(
         <Card style={{textAlign:"center",padding:32,color:C.muted}}>
-          No subjects assigned to this class yet.
+          No categories assigned to this group yet.
         </Card>
       )}
     </>
@@ -1359,8 +1359,8 @@ export function ResultsTeachPage({ctx}){
             <>
               <Btn onClick={()=>downloadResultTemplate('class')} color={C.blue} outline
                 disabled={!selClass||!selTerm||!selSession}
-                title={!selClass||!selTerm||!selSession?"Select session, term and class first":""}>
-                Class Template
+                title={!selClass||!selTerm||!selSession?"Select cycle, period and group first":""}>
+                Group Template
               </Btn>
               <Btn onClick={()=>downloadResultTemplate('section')} color={C.blue} outline
                 disabled={!selClass||!selTerm||!selSession}>
@@ -1373,12 +1373,12 @@ export function ResultsTeachPage({ctx}){
           </Btn>
         </div>
       </div>
-      {/* ── Subject Completion Matrix ── */}
+      {/* ── Category Completion Matrix ── */}
       {selClass&&selTerm&&selSession&&subjects.length>0&&(
         <div style={{marginBottom:16,padding:"12px 16px",background:C.white,border:`1px solid ${C.border}`,
           borderRadius:10,display:"flex",flexWrap:"wrap",gap:8,alignItems:"center"}}>
           <span style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginRight:4,whiteSpace:"nowrap"}}>
-            Subject Coverage:
+            Category Coverage:
           </span>
           {subjects.map(s=>{
             const count=subjDone[s.id]||0;
@@ -1404,9 +1404,9 @@ export function ResultsTeachPage({ctx}){
         <Modal title="Bulk Upload Results" onClose={()=>setBulkResModal(false)} width={720}>
           {/* Instructions */}
           <div style={{fontSize:12,color:C.blue,marginBottom:14,padding:"10px 14px",background:C.bluePale,borderRadius:8,border:`1px solid ${C.blue}22`,lineHeight:1.6}}>
-            <b>How to use:</b> {canAccess("action:download_result_template")?<>Click <b>Group Template</b> or <b>Section Template</b> above to download an Excel file pre-filled with your members and subjects.</>:<>Ask your admin to download the Group Template for your group.</>} Fill in scores in the <span style={{background:C.amberPale,padding:"1px 5px",borderRadius:3}}>yellow cells</span>, then upload the file here.
+            <b>How to use:</b> {canAccess("action:download_result_template")?<>Click <b>Group Template</b> or <b>Section Template</b> above to download an Excel file pre-filled with your members and categories.</>:<>Ask your admin to download the Group Template for your group.</>} Fill in scores in the <span style={{background:C.amberPale,padding:"1px 5px",borderRadius:3}}>yellow cells</span>, then upload the file here.
           </div>
-          {/* Session/Term reminder */}
+          {/* Cycle/Period reminder */}
           {selTerm&&selSession&&(
             <div style={{fontSize:11,color:C.muted,marginBottom:14,padding:"7px 12px",background:C.offWhite,borderRadius:6,border:`1px solid ${C.border}`}}>
               Importing into: <b style={{color:C.text}}>{sessions.find(s=>s.id===+selSession)?.name}</b> · <b style={{color:C.text}}>{terms.find(t=>t.id===+selTerm)?.name}</b> — make sure your template was downloaded for the same period.
@@ -1441,13 +1441,13 @@ export function ResultsTeachPage({ctx}){
           {bulkResParsed.length>0&&(
             <>
               <div style={{fontWeight:700,fontSize:13,color:C.blue,marginBottom:8}}>
-                Preview — {bulkResParsed.reduce((a,s)=>a+s.rows.length,0)} record(s) across {bulkResParsed.length} class(es)
+                Preview — {bulkResParsed.reduce((a,s)=>a+s.rows.length,0)} record(s) across {bulkResParsed.length} group(es)
               </div>
               <div style={{maxHeight:280,overflowY:"auto",border:`1px solid ${C.border}`,borderRadius:8,marginBottom:14}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead>
                     <tr style={{background:C.blue,position:"sticky",top:0}}>
-                      {["Group","Member ID","Subject","Scores"].map(h=>(
+                      {["Group","Member ID","Category","Scores"].map(h=>(
                         <th key={h} style={{padding:"7px 10px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11}}>{h}</th>
                       ))}
                     </tr>
@@ -1499,7 +1499,7 @@ export function ResultsTeachPage({ctx}){
   );
 }
 
-// ─── MY RESULTS (Student) ─────────────────────────────────────────────────────
+// ─── MY RESULTS (Member) ─────────────────────────────────────────────────────
 export function MyResultsPage({ctx}){
   const {user,notify,canAccess,setPage}=ctx;
   if(!canAccess("page:my-results"))return(
@@ -1555,7 +1555,7 @@ export function MyResultsPage({ctx}){
       const aTer=ts.find(t=>t.is_active&&t.session_id===aSes?.id)||ts.filter(t=>t.session_id===aSes?.id)[0];
       if(aSes)setSelSession(String(aSes.id));
       if(aTer)setSelTerm(String(aTer.id));
-    }).catch(err=>console.error('[MyResults] sessions/terms load failed:',err));
+    }).catch(err=>console.error('[MyResults] cycles/periods load failed:',err));
   },[]);
 
   useEffect(()=>{
@@ -1648,21 +1648,21 @@ export function MyResultsPage({ctx}){
 
   const filterTerms=terms.filter(t=>t.session_id===+selSession);
 
-  // Fee-owing block screen — shown when admin has enabled the strict block setting
+  // Billing-owing block screen — shown when admin has enabled the strict block setting
   if(feesBlocked){
     return(
       <div>
         <div style={{marginBottom:18}}>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="my-results" size={20}/>My Report Card</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="my-results" size={20}/>My Report</h2>
           <p style={{color:C.muted,fontSize:12}}>{user.name}</p>
         </div>
         <Card style={{textAlign:"center",padding:"48px 32px",border:`2px solid ${C.red}`}}>
           <Lock size={44} color={C.red} style={{marginBottom:16}}/>
-          <div style={{fontWeight:900,fontSize:18,color:C.red,marginBottom:8}}>Report Card Access Restricted</div>
+          <div style={{fontWeight:900,fontSize:18,color:C.red,marginBottom:8}}>Report Access Restricted</div>
           <div style={{color:C.muted,fontSize:13,lineHeight:1.8,maxWidth:460,margin:"0 auto",marginBottom:20}}>
-            Your report card is currently <strong>unavailable</strong> because you have an outstanding fee balance of{" "}
+            Your report card is currently <strong>unavailable</strong> because you have an outstanding billing balance of{" "}
             <strong style={{color:C.red}}>{fmt(outstandingBalance)}</strong>.
-            <br/>Please visit the school finance office to clear your balance, then try again.
+            <br/>Please visit the organization finance office to clear your balance, then try again.
           </div>
           <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
             <Btn onClick={()=>setPage("my-bill")} color={C.orange}>View My Bill</Btn>
@@ -1677,20 +1677,20 @@ export function MyResultsPage({ctx}){
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
-          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="my-results" size={20}/>My Report Card</h2>
+          <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="my-results" size={20}/>My Report</h2>
           <p style={{color:C.muted,fontSize:12}}>{user.name}</p>
         </div>
         {publishInfo?.is_published&&results.length>0&&canAccess("action:download_reports")&&(
           <Btn onClick={downloadReportCard} color={C.orange} disabled={downloading}>
-            {downloading?"Generating…":"Download Report Card"}
+            {downloading?"Generating…":"Download Report"}
           </Btn>
         )}
       </div>
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          <Sel label="Session" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
+          <Sel label="Cycle" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
             options={sessions.map(s=>({value:s.id,label:s.name}))}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm} disabled={!selSession}
+          <Sel label="Period" value={selTerm} onChange={setSelTerm} disabled={!selSession}
             options={filterTerms.map(t=>({value:t.id,label:t.name}))}/>
         </div>
       </Card>
@@ -1699,14 +1699,14 @@ export function MyResultsPage({ctx}){
           <div style={{fontSize:44,marginBottom:10}}><Lock size={34} color={C.orange}/></div>
           <div style={{fontWeight:800,color:C.blue,fontSize:15}}>Results Not Yet Available</div>
           <div style={{color:C.muted,fontSize:13,marginTop:6,lineHeight:1.6}}>
-            Report cards for this term have not been published yet.<br/>
-            Please check back later or contact the school office.
+            Report cards for this period have not been published yet.<br/>
+            Please check back later or contact the organization office.
           </div>
         </Card>
       ):results.length>0?(
         <>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:13,marginBottom:16}}>
-            <StatCard label="Subjects"     value={results.length}     icon={<BookOpen size={18} color={C.blue}/>} color={C.blue}/>
+            <StatCard label="Categories"     value={results.length}     icon={<BookOpen size={18} color={C.blue}/>} color={C.blue}/>
             <StatCard label="Total Score"  value={total.toFixed(0)}   icon={<Award size={18} color={C.orange}/>} color={C.orange}/>
             <StatCard label="Average"      value={avg.toFixed(1)}     icon={<BarChart3 size={18} color={C.green}/>} color={C.green}/>
             <StatCard label="Overall Grade"value={getGrade(avg,gradingSchema)} icon={<Target size={18}/>} color={gradeCol(getGrade(avg,gradingSchema))}/>
@@ -1714,7 +1714,7 @@ export function MyResultsPage({ctx}){
           <Card>
             <div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                <Th cols={stuCaeComps.length>=2?["Subject",...stuCaeComps.map(c=>c.component_name+` (${c.value_or_formula})`),"Total","Grade","Remark"]:["Subject","CA","Exam","Total","Grade","Remark"]}/>
+                <Th cols={stuCaeComps.length>=2?["Category",...stuCaeComps.map(c=>c.component_name+` (${c.value_or_formula})`),"Total","Grade","Remark"]:["Category","CA","Exam","Total","Grade","Remark"]}/>
                 <tbody>
                   {results.map((r,i)=>{
                     const g=getGrade(r.total_score,gradingSchema); const gc=gradeCol(g);
@@ -1741,7 +1741,7 @@ export function MyResultsPage({ctx}){
         <Card style={{textAlign:"center",padding:44}}>
           <div style={{marginBottom:10}}><ClipboardList size={44} color={C.muted}/></div>
           <div style={{fontWeight:800,color:C.blue,fontSize:15}}>No Results Yet</div>
-          <div style={{color:C.muted,fontSize:13}}>No results found for the selected session/term.</div>
+          <div style={{color:C.muted,fontSize:13}}>No results found for the selected cycle/period.</div>
         </Card>
       )}
     </div>
@@ -1859,13 +1859,13 @@ export function MyClassesPage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="my-classes" size={20}/>My Assigned Groups</h2>
-        <p style={{color:C.muted,fontSize:12}}>Groups where you are a form staff or subject staff</p>
+        <p style={{color:C.muted,fontSize:12}}>Groups where you are a form staff or category staff</p>
       </div>
       {loading?<Spinner/>:classes.length===0?(
         <Card style={{textAlign:"center",padding:44}}>
           <div style={{marginBottom:10}}><School size={40} color={C.muted}/></div>
           <div style={{fontWeight:800,color:C.blue,fontSize:15}}>No Groups Assigned</div>
-          <div style={{color:C.muted,fontSize:13,marginTop:6}}>Ask the admin to assign you as a form staff or subject staff to at least one group.</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:6}}>Ask the admin to assign you as a form staff or category staff to at least one group.</div>
         </Card>
       ):(
         <>
@@ -1882,7 +1882,7 @@ export function MyClassesPage({ctx}){
                   {c.sections&&<Badge color={c.sections.color||C.blue}>{c.sections.code}</Badge>}
                   {formClassIds.has(+c.id)
                     ?<Badge color={C.green}>Form Staff</Badge>
-                    :<Badge color={C.blue}>Subject Staff</Badge>}
+                    :<Badge color={C.blue}>Category Staff</Badge>}
                 </div>
               </Card>
             ))}
@@ -1893,7 +1893,7 @@ export function MyClassesPage({ctx}){
             <Card>
               <div style={{fontWeight:900,color:C.blue,fontSize:14,marginBottom:14}}>
                 Members — {selClass.name}
-                <span style={{fontSize:12,fontWeight:400,color:C.muted,marginLeft:8}}>{students.length} student{students.length!==1?"s":""}</span>
+                <span style={{fontSize:12,fontWeight:400,color:C.muted,marginLeft:8}}>{students.length} member{students.length!==1?"s":""}</span>
               </div>
               {students.length===0?(
                 <div style={{textAlign:"center",padding:32,color:C.light,fontSize:13}}>No members in this group yet.</div>
@@ -1922,7 +1922,7 @@ export function MyClassesPage({ctx}){
                               <Btn xs onClick={()=>openEdit(s)} color={C.blue} outline>Edit</Btn>
                             ):(
                               <span style={{fontSize:10,color:C.light,fontStyle:"italic"}}>
-                                {formClassIds.has(+selClass.id)?"No edit access":"View only (subject teacher)"}
+                                {formClassIds.has(+selClass.id)?"No edit access":"View only (category staff)"}
                               </span>
                             )}
                           </td>
@@ -1950,7 +1950,7 @@ export function MyClassesPage({ctx}){
           </div>
           <div style={{marginTop:4,padding:"10px 14px",background:C.orangePale,borderRadius:8,
             fontSize:11,color:C.orange,border:`1px solid ${C.orange}40`}}>
-            You can edit name, email, DOB and phone. To change class or admission details, contact the admin.
+            You can edit name, email, DOB and phone. To change group or admission details, contact the admin.
           </div>
           <div style={{display:"flex",gap:10,marginTop:16}}>
             <Btn onClick={saveStudent} color={C.orange} disabled={saving} style={{flex:1}}>
@@ -2025,7 +2025,7 @@ export function ResultApprovalsPage({ctx}){
       let missingCount=0;
       const studentSummary=stuInClass.map(s=>{
         const done=byStudent[s.id]||new Set();
-        const missing=expectedIds.filter(id=>!done.has(id)).map(id=>subjectNames[id]||`Subject ${id}`);
+        const missing=expectedIds.filter(id=>!done.has(id)).map(id=>subjectNames[id]||`Category ${id}`);
         if(missing.length)missingCount++;
         return{id:s.id,name:s.name||s.id,missing};
       });
@@ -2057,7 +2057,7 @@ export function ResultApprovalsPage({ctx}){
     if(isApproved){await db.revokeEA(cls.id,+selTerm,+selSession);notify("EA revoked for "+cls.name,"warn");}
     else{
       const cmp=completeness[cls.id];
-      if(!cmp?.complete){notify("Results must be complete before approval — some students have missing scores","error");setActing("");return;}
+      if(!cmp?.complete){notify("Results must be complete before approval — some members have missing scores","error");setActing("");return;}
       await db.approveEA(cls.id,+selTerm,+selSession,user?.supabase_uid||null);notify(`EA approved for ${cls.name}`);
     }
     setActing("");load();
@@ -2072,7 +2072,7 @@ export function ResultApprovalsPage({ctx}){
     if(isApproved){await db.revokeMA(cls.id,+selTerm,+selSession);notify("MA revoked for "+cls.name,"warn");}
     else{
       const cmp=completeness[cls.id];
-      if(!cmp?.complete){notify("Results must be complete before approval — some students have missing scores","error");setActing("");return;}
+      if(!cmp?.complete){notify("Results must be complete before approval — some members have missing scores","error");setActing("");return;}
       await db.approveMA(cls.id,+selTerm,+selSession,user?.supabase_uid||null);notify(`MA approved for ${cls.name} — results fully locked`);
     }
     setActing("");load();
@@ -2124,13 +2124,13 @@ export function ResultApprovalsPage({ctx}){
       </div>
       <Card style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          <Sel label="Session" value={selSession} onChange={setSelSession} options={[{value:"",label:"— Select Session —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
-          <Sel label="Term" value={selTerm} onChange={setSelTerm} options={[{value:"",label:"— Select Term —"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
+          <Sel label="Cycle" value={selSession} onChange={setSelSession} options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
+          <Sel label="Period" value={selTerm} onChange={setSelTerm} options={[{value:"",label:"— Select Period —"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
         </div>
       </Card>
 
       {tab==="progress"&&(!selSession||!selTerm?(
-        <Card style={{textAlign:"center",padding:52}}><BarChart2 size={44} color={C.muted} style={{marginBottom:12}}/><div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session and Term</div><div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a session and term to view upload progress</div></Card>
+        <Card style={{textAlign:"center",padding:52}}><BarChart2 size={44} color={C.muted} style={{marginBottom:12}}/><div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Cycle and Period</div><div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a cycle and period to view upload progress</div></Card>
       ):progressLoading?<Spinner/>:(()=>{
         let totalClasses=0,doneClasses=0,partialClasses=0,notStartedClasses=0,noSetupClasses=0;
         const progressBySection={};
@@ -2172,7 +2172,7 @@ export function ResultApprovalsPage({ctx}){
                           <div style={{width:10,height:10,borderRadius:"50%",background:statusColor,flexShrink:0}}/>
                           <div style={{flex:1,minWidth:0}}>
                             <div style={{fontWeight:800,fontSize:14,color:C.text}}>{cls.name}</div>
-                            <div style={{fontSize:11,color:C.muted,marginTop:1}}>{p.total} student{p.total!==1?"s":""}{formTeacher?<span> · <span style={{color:C.blue}}>Form teacher: {formTeacher}</span></span>:null}</div>
+                            <div style={{fontSize:11,color:C.muted,marginTop:1}}>{p.total} member{p.total!==1?"s":""}{formTeacher?<span> · <span style={{color:C.blue}}>Form staff: {formTeacher}</span></span>:null}</div>
                           </div>
                           <div style={{width:140,flexShrink:0}}>
                             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,fontWeight:700,color:statusColor}}>{statusLabel}</span></div>
@@ -2200,7 +2200,7 @@ export function ResultApprovalsPage({ctx}){
                                 </div>
                               );
                             })}
-                            {p.subjects.length===0&&<div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No subjects assigned.</div>}
+                            {p.subjects.length===0&&<div style={{padding:"14px 16px",fontSize:12,color:C.muted}}>No categories assigned.</div>}
                           </div>
                         )}
                       </div>
@@ -2226,7 +2226,7 @@ export function ResultApprovalsPage({ctx}){
                 <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                   <div style={{flex:1,minWidth:120}}>
                     <div style={{fontWeight:800,fontSize:14,color:C.blue}}>{cls.name}</div>
-                    <div style={{fontSize:11,color:C.muted}}>{stuInClass.length} students</div>
+                    <div style={{fontSize:11,color:C.muted}}>{stuInClass.length} members</div>
                   </div>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontSize:11,color:C.muted,marginBottom:3}}>Results</div>
@@ -2247,10 +2247,10 @@ export function ResultApprovalsPage({ctx}){
                       <div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px"}}><div style={{fontSize:11,fontWeight:700,color:C.blue,marginBottom:4}}>EA Details</div><div style={{fontSize:12,color:C.text}}>{eaOk?`Approved by ${appr.ea_approver?.full_name||"Admin"} on ${new Date(appr.ea_approved_at).toLocaleDateString("en-NG")}`:"Not yet approved"}</div>{appr.ea_notes&&<div style={{fontSize:11,color:C.muted,marginTop:3,fontStyle:"italic"}}>{appr.ea_notes}</div>}</div>
                       <div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px"}}><div style={{fontSize:11,fontWeight:700,color:C.purple,marginBottom:4}}>MA Details</div><div style={{fontSize:12,color:C.text}}>{maOk?`Approved by ${appr.ma_approver?.full_name||"Admin"} on ${new Date(appr.ma_approved_at).toLocaleDateString("en-NG")}`:"Not yet approved"}</div>{appr.ma_notes&&<div style={{fontSize:11,color:C.muted,marginTop:3,fontStyle:"italic"}}>{appr.ma_notes}</div>}</div>
                     </div>
-                    {cmp.noSetup&&<div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.muted}}>No subjects or members assigned yet.</div>}
+                    {cmp.noSetup&&<div style={{background:C.offWhite,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.muted}}>No categories or members assigned yet.</div>}
                     {!cmp.noSetup&&!cmp.complete&&cmp.studentsWithMissing>0&&(
                       <div style={{background:C.redPale,borderRadius:8,padding:"10px 14px",fontSize:12}}>
-                        <div style={{fontWeight:700,color:C.red,marginBottom:8}}>Missing Results ({cmp.studentsWithMissing} student{cmp.studentsWithMissing>1?"s":""})</div>
+                        <div style={{fontWeight:700,color:C.red,marginBottom:8}}>Missing Results ({cmp.studentsWithMissing} member{cmp.studentsWithMissing>1?"s":""})</div>
                         <div style={{display:"flex",flexDirection:"column",gap:5,maxHeight:180,overflowY:"auto"}}>
                           {(cmp.studentSummary||[]).filter(s=>s.missing.length>0).map(s=>(
                             <div key={s.id} style={{background:"rgba(255,255,255,.6)",borderRadius:6,padding:"6px 10px"}}><div style={{fontWeight:700,fontSize:12,color:C.text,marginBottom:3}}>{s.name}</div><div style={{fontSize:11,color:C.red}}>{s.missing.join(" · ")}</div></div>
@@ -2258,7 +2258,7 @@ export function ResultApprovalsPage({ctx}){
                         </div>
                       </div>
                     )}
-                    {!cmp.noSetup&&cmp.complete&&<div style={{background:C.greenPale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.green,fontWeight:600}}>All {cmp.total} students have results for all {cmp.expected} subjects.</div>}
+                    {!cmp.noSetup&&cmp.complete&&<div style={{background:C.greenPale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.green,fontWeight:600}}>All {cmp.total} members have results for all {cmp.expected} categories.</div>}
                   </div>
                 )}
               </Card>
@@ -2267,7 +2267,7 @@ export function ResultApprovalsPage({ctx}){
           {visibleClasses.length===0&&<Card style={{textAlign:"center",padding:40}}><div style={{marginBottom:10}}><Lock size={40} color={C.muted}/></div><div style={{fontWeight:800,color:C.blue}}>No Groups Found</div></Card>}
         </div>
       ):(
-        <Card style={{textAlign:"center",padding:52}}><div style={{marginBottom:10}}><ShieldCheck size={44} color={C.muted}/></div><div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Session and Term</div><div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a session and term to manage result approvals</div></Card>
+        <Card style={{textAlign:"center",padding:52}}><div style={{marginBottom:10}}><ShieldCheck size={44} color={C.muted}/></div><div style={{fontWeight:800,color:C.blue,fontSize:16}}>Select Cycle and Period</div><div style={{color:C.muted,fontSize:13,marginTop:6}}>Choose a cycle and period to manage result approvals</div></Card>
       ))}
     </div>
   );

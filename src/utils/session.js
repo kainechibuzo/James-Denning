@@ -1,5 +1,5 @@
 /**
- * Session & school-selection persistence helpers.
+ * Cycle & school-selection persistence helpers.
  *
  * localStorage  → retains user profile across tab/browser restarts
  * sessionStorage → "alive" flag cleared when the tab/PWA/app closes,
@@ -29,7 +29,7 @@ export function clearSession() {
   try { sessionStorage.removeItem(SESSION_ALIVE); } catch {}
 }
 
-// ── School selection (multi-tenant) ───────────────────────────────────────
+// ── Organization selection (multi-tenant) ───────────────────────────────────────
 export function saveSelectedSchool(school) {
   try { localStorage.setItem(SCHOOL_KEY, JSON.stringify(school)); } catch {}
 }
