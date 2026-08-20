@@ -12,7 +12,7 @@ export const useDark  = () => useContext(DarkCtx);
 export function DarkProvider({ children }) {
   // Defaults to true (all-black theme) unless the user has explicitly opted
   // into light mode before.
-  const stored = () => { try { return localStorage.getItem("jd_dark") !== "0"; } catch { return true; } };
+  const stored = () => { try { const value = localStorage.getItem("jd_dark"); return value != null ? value === "1" : localStorage.getItem("rgs_dark") === "1"; } catch { return false; } };
   const [dark, setDark] = useState(stored);
   // Keep config/theme.js C in sync on every render so service modules read the right palette
   setTheme(dark);

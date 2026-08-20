@@ -15,24 +15,24 @@ import { pdfName } from "./capture.js";
  * Build a fee invoice or receipt HTML document.
  *
  * @param {object} params
- *   bill              Fee bill object (with nested fee_payments, fee_discounts, fee_refunds)
+ *   bill              Billing bill object (with nested fee_payments, fee_discounts, fee_refunds)
  *   items             Array of fee line items { name, amount, is_optional }
  *   billNo            Invoice/receipt reference number
  *   today             Formatted date string
- *   name              Student display name
- *   studentId         Student ID
- *   className         Class name
+ *   name              Member display name
+ *   studentId         Member ID
+ *   className         Group name
  *   isPaid            Boolean (will be overridden from live balance)
  *   isReceipt         true = Receipt layout; false = Invoice layout
  *   isNativePlatform  true = hides print bar button
  *   filename          Override output filename (optional)
- *   schoolName        School display name
+ *   schoolName        Organization display name
  *   schoolLogo        Base64 logo data URI (optional)
  */
 export function buildPDF({
   bill, items, billNo, today, name, studentId, className,
   isPaid, isReceipt, isNativePlatform = false, filename = "",
-  schoolName = "School Portal", schoolLogo = null
+  schoolName = "Business Portal", schoolLogo = null
 }) {
   const discounts        = bill.fee_discounts || [];
   const refundedPmtIds   = new Set((bill.fee_refunds || []).filter(r => r.payment_id).map(r => String(r.payment_id)));
@@ -48,7 +48,7 @@ export function buildPDF({
   const liveStatus = amountPaid <= 0 ? "unpaid" : balanceAmt <= 0 ? "paid" : "partial";
   isPaid = liveStatus === "paid";
 
-  const _fn = filename || pdfName(name, isReceipt ? "RCPT" : "INV", billNo.replace(/^RGS-(BILL|RCPT)-/, ""));
+  const _fn = filename || pdfName(name, isReceipt ? "RCPT" : "INV", billNo.replace(/^JD-(BILL|RCPT)-/, ""));
 
   // ── Status theming ────────────────────────────────────────────────────────
   const scFg   = liveStatus === "paid" ? "#15803d" : liveStatus === "partial" ? "#b45309" : "#b91c1c";
@@ -59,7 +59,7 @@ export function buildPDF({
     : liveStatus === "partial"
       ? "Partial Payment · Balance Outstanding"
       : "Payment Pending";
-  const docTitle   = isPaid ? "Payment Receipt" : "Fee Invoice";
+  const docTitle   = isPaid ? "Payment Receipt" : "Billing Invoice";
   const statusIcon = isPaid ? "✓" : liveStatus === "partial" ? "◐" : "!";
   const stampText  = isPaid ? "PAID" : liveStatus === "partial" ? "PARTIAL" : "UNPAID";
   const grandLabel = balanceAmt > 0 ? "Balance Due" : "Total Paid";
@@ -67,8 +67,8 @@ export function buildPDF({
   const grandColor = balanceAmt > 0 ? scFg : "#15803d";
   const ftrNoteTitle = isPaid ? "Thank You" : "A Note for Parents";
   const ftrNote = isPaid
-    ? "We gratefully acknowledge your payment in full. This receipt confirms your child’s fees are settled for the term."
-    : "Kindly settle the outstanding balance before the due date to avoid disruption to your child’s learning.";
+    ? "We gratefully acknowledge your payment in full. This receipt confirms your account’s billing are settled for the period."
+    : "Kindly settle the outstanding balance before the due date to avoid disruption to your account’s learning.";
 
   // ── Logo ──────────────────────────────────────────────────────────────────
   const initials = schoolName.split(" ").map(w => w[0] || "").join("").slice(0, 3).toUpperCase();
@@ -128,7 +128,7 @@ export function buildPDF({
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${pdfName(name, isReceipt ? "RCPT" : "INV", billNo.replace(/^RGS-(BILL|RCPT)-/, ""))}</title>
+<title>${pdfName(name, isReceipt ? "RCPT" : "INV", billNo.replace(/^JD-(BILL|RCPT)-/, ""))}</title>
 <script>document.title=${JSON.stringify(_fn)}</script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -146,7 +146,7 @@ export function buildPDF({
   .school-name{font-size:19px;font-weight:800;color:#fff;letter-spacing:.2px}
   .school-tag{font-size:9.5px;color:rgba(255,255,255,.6);letter-spacing:2px;
               text-transform:uppercase;margin-top:2px}
-  .doc-badge{margin-top:9px;display:inline-block;background:#E8560A;border-radius:5px;
+  .doc-badge{margin-top:9px;display:inline-block;background:#111827;border-radius:5px;
              padding:4px 12px;font-size:12px;font-weight:800;color:#fff;letter-spacing:.4px}
   .hdr-right{text-align:right;padding-top:3px}
   .doc-no-lbl{font-size:9.5px;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase}
@@ -226,8 +226,8 @@ export function buildPDF({
   .ftr{padding:16px 44px 18px;display:grid;grid-template-columns:1.2fr 1fr auto;
        gap:14px;align-items:stretch;border-top:1px dashed #e2e8f0;
        margin-top:auto;flex-shrink:0}
-  .ftr-bank{background:linear-gradient(135deg,#eff6ff,#dbeafe);
-            border:1px solid #bfdbfe;border-radius:9px;padding:11px 14px;
+  .ftr-bank{background:linear-gradient(135deg,#F3F4F6,#E5E7EB);
+            border:1px solid #D1D5DB;border-radius:9px;padding:11px 14px;
             display:flex;gap:12px;align-items:center}
   .ftr-note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:11px 14px}
   .ftr-stamp{width:70px;display:flex;align-items:center;justify-content:center}
@@ -260,7 +260,7 @@ export function buildPDF({
       ${logoHtml}
       <div>
         <div class="school-name">${schoolName}</div>
-        <div class="school-tag">Excellence in Education</div>
+        <div class="school-tag">Built for Progress</div>
         <div class="doc-badge">${docTitle}</div>
       </div>
     </div>

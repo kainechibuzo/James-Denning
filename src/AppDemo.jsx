@@ -8,7 +8,8 @@ import * as XLSX from "xlsx-js-style";
 import { DarkCtx, useDark } from './contexts/dark.jsx';
 import { ConfirmProvider, useConfirm } from './contexts/confirm.jsx';
 import { SectionCtx, useSection, SectionProvider } from './contexts/section.jsx';
-import { setTheme } from './config/theme.js';
+import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
+import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
 // -- PAGE IMPORTS Phase 1 (equal components migrated from inline) ---------------
 import { TeachersPage }               from './pages/teachers.jsx';
 import { SubjectsPage, SessionsPage } from './pages/curriculum.jsx';
@@ -44,57 +45,25 @@ import { ResultApprovalsPage }                                      from './page
 import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
 
 
-// ─── VERSION ──────────────────────────────────────────────────────────────────
-const APP_VERSION = "v32.90";
-
-// ─── BRAND ────────────────────────────────────────────────────────────────────
-const LIGHT = {
-  orange:"#E8560A", orangePale:"#FFF4EE", orangeLight:"#FED7AA",
-  blue:"#1A4FA0",   bluePale:"#EFF6FF",   blueDark:"#0d2d6e", blueLight:"#BFDBFE",
-  green:"#15803D",  greenPale:"#F0FDF4",  greenLight:"#BBF7D0",
-  red:"#DC2626",    redPale:"#FEF2F2",    redLight:"#FECACA",
-  purple:"#7C3AED", purplePale:"#F5F3FF",
-  amber:"#D97706",  amberPale:"#FFFBEB",
-  teal:"#0F766E",   tealPale:"#F0FDFA",
-  white:"#FFFFFF",  offWhite:"#F8FAFC",
-  border:"#E2E8F0", borderLight:"#F1F5F9",
-  text:"#0F172A",   textSoft:"#334155",   muted:"#64748B", light:"#94A3B8",
-  shadow:"0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)",
-  shadowMd:"0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04)",
-  shadowLg:"0 20px 40px rgba(0,0,0,.10),0 8px 16px rgba(0,0,0,.06)",
-  shadowXl:"0 32px 64px rgba(0,0,0,.14),0 16px 32px rgba(0,0,0,.08)",
-};
-const DARK = {
-  orange:"#FB923C", orangePale:"#1C0D00", orangeLight:"#7C2D12",
-  blue:"#60A5FA",   bluePale:"#0C1A3A",   blueDark:"#030712",   blueLight:"#1E3A5F",
-  green:"#4ADE80",  greenPale:"#052E16",  greenLight:"#14532D",
-  red:"#F87171",    redPale:"#1F0A0A",    redLight:"#450A0A",
-  purple:"#A78BFA", purplePale:"#1E1030",
-  amber:"#FCD34D",  amberPale:"#1A1000",
-  teal:"#2DD4BF",   tealPale:"#021B18",
-  white:"#1E2D3D",  offWhite:"#141C28",
-  border:"#2E4258", borderLight:"#1E293B",
-  text:"#F1F5F9",   textSoft:"#CBD5E1",   muted:"#9FB3C8", light:"#7F96AC",
-  shadow:"0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2)",
-  shadowMd:"0 4px 12px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.2)",
-  shadowLg:"0 20px 40px rgba(0,0,0,.45),0 8px 16px rgba(0,0,0,.3)",
-  shadowXl:"0 32px 64px rgba(0,0,0,.55),0 16px 32px rgba(0,0,0,.4)",
-};
-// C is set at runtime by the DarkMode provider
+// ─── VERSION / BRAND ─────────────────────────────────────────────────────────
+const APP_VERSION = PRODUCT.version;
+const LIGHT = THEME_LIGHT;
+const DARK = THEME_DARK;
+// C is set at runtime by the DarkMode provider.
 let C = LIGHT;
 
 // ─── DARK MODE CONTEXT ─────────────────────────────────────────────────────────
 // DarkCtx/useDark -- imported from contexts/dark.jsx
 
 function DarkProvider({children}){
-  const stored = ()=>{ try{ return localStorage.getItem("rgs_dark")==="1"; }catch{ return false; } };
+  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : localStorage.getItem("rgs_dark")==="1"; }catch{ return false; } };
   const [dark,setDark] = useState(stored);
   C = dark ? DARK : LIGHT;
   setTheme(dark);
   const toggle = () => {
     setDark(d=>{
       const next=!d;
-      try{ localStorage.setItem("rgs_dark",next?"1":"0"); }catch{}
+      try{ localStorage.setItem("jd_dark",next?"1":"0"); localStorage.setItem("rgs_dark",next?"1":"0"); }catch{}
       return next;
     });
   };
@@ -132,7 +101,7 @@ class ErrorBoundary extends Component {
     if(this.state.hasError){
       return(
         <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",
-          background:"linear-gradient(135deg,#0d2d6e,#1A4FA0)",fontFamily:"'Segoe UI',system-ui,sans-serif",padding:24}}>
+          background:"linear-gradient(135deg,#030712,#111827)",fontFamily:"'Segoe UI',system-ui,sans-serif",padding:24}}>
           <div style={{background:"#fff",borderRadius:20,padding:"38px 32px",maxWidth:500,width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)",textAlign:"center"}}>
             <div style={{marginBottom:14}}><Shield size={52} color={C.blue}/></div>
@@ -157,12 +126,12 @@ class ErrorBoundary extends Component {
             )}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>this.setState({hasError:false,error:null,info:null})}
-                style={{flex:1,background:"#fff",color:"#1A4FA0",border:"2px solid #1A4FA0",
+                style={{flex:1,background:"#fff",color:"#111827",border:"2px solid #111827",
                   padding:"12px",borderRadius:10,fontWeight:700,fontSize:13,cursor:"pointer"}}>
                 ↩ Try Again
               </button>
               <button onClick={()=>window.location.reload()}
-                style={{flex:1,background:"#1A4FA0",color:"#fff",border:"none",padding:"12px",
+                style={{flex:1,background:"#111827",color:"#fff",border:"none",padding:"12px",
                   borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",
                   boxShadow:"0 4px 14px rgba(26,79,160,.4)"}}>
                 Reload Portal
@@ -266,7 +235,7 @@ async function shareOrDownload(filename, content, mimeType="text/plain"){
       }
     } catch(e){
       if(e.name==="AbortError") return; // user cancelled — not an error
-      console.warn("[RGS] share failed, falling back to download",e);
+      console.warn("[JD] share failed, falling back to download",e);
     }
   }
   // Web fallback (also used when canShare is false)
@@ -605,7 +574,7 @@ async function safe(fn) {
     if(result && typeof result === "object" && "error" in result) return result;
     return {data: result, error: null};
   } catch(err) {
-    console.warn("[RGS safe]", err?.message||err);
+    console.warn("[JD safe]", err?.message||err);
     return {data: null, error: err};
   }
 }
@@ -687,17 +656,17 @@ async function sendEmailBatchBackground(emails, schoolId, ratePerMin=10){
 const EMAIL_CARD_CSS=`<style>
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:32px 16px;margin:0}
 .card{max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}
-.header{background:linear-gradient(135deg,#0d2d6e,#1A4FA0);padding:32px;text-align:center}
+.header{background:linear-gradient(135deg,#030712,#111827);padding:32px;text-align:center}
 .school{color:#fff;font-size:20px;font-weight:900;margin-bottom:4px}
 .tagline{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:1px;text-transform:uppercase}
 .body{padding:28px 32px}
 .greeting{font-size:16px;color:#1a202c;margin-bottom:16px}
-.details-box{background:#f8fafc;border-radius:8px;padding:16px 20px;border-left:4px solid #1A4FA0;margin:20px 0}
+.details-box{background:#f8fafc;border-radius:8px;padding:16px 20px;border-left:4px solid #111827;margin:20px 0}
 .detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:14px}
 .detail-row:last-child{border-bottom:none}
-.label{color:#64748b}.value{font-weight:700;color:#1a202c}.value.id{color:#1A4FA0;font-size:15px;letter-spacing:.5px}
-.login-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:8px;padding:16px 20px;margin:20px 0;text-align:center}
-.login-url{color:#1A4FA0;font-weight:700;font-size:15px;text-decoration:none}
+.label{color:#64748b}.value{font-weight:700;color:#1a202c}.value.id{color:#111827;font-size:15px;letter-spacing:.5px}
+.login-box{background:linear-gradient(135deg,#F3F4F6,#E5E7EB);border-radius:8px;padding:16px 20px;margin:20px 0;text-align:center}
+.login-url{color:#111827;font-weight:700;font-size:15px;text-decoration:none}
 .note{font-size:12px;color:#64748b;margin-top:6px}
 .footer{background:#f8fafc;padding:16px 32px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0}
 </style>`;
@@ -747,7 +716,7 @@ function clearSession(){
   try{sessionStorage.removeItem(SESSION_ALIVE);}catch{}
 }
 
-// ─── School selection helpers (multi-tenant) ──────────────────────────────────
+// ─── Organization selection helpers (multi-tenant) ──────────────────────────────────
 const SCHOOL_KEY = "rgs_selected_school";
 function saveSelectedSchool(school){ try{localStorage.setItem(SCHOOL_KEY,JSON.stringify(school));}catch{} }
 function loadSelectedSchool(){ try{const s=localStorage.getItem(SCHOOL_KEY);return s?JSON.parse(s):null;}catch{return null;} }
@@ -755,7 +724,7 @@ function clearSelectedSchool(){ try{localStorage.removeItem(SCHOOL_KEY);}catch{}
 
 // Initialise db school context synchronously at module load — before any component
 // renders or mounts. This ensures every initial data fetch already has _schoolId set,
-// preventing cross-school data leaking on first load (race condition with useEffect).
+// preventing cross-organization data leaking on first load (race condition with useEffect).
 (()=>{ const s=loadSelectedSchool(); if(s?.id) db.setSchool(s.id,s.student_id_prefix||'SCH',s.name||''); })();
 
 // ─── DANGER BUTTON — Requires typing phrase before confirming ───────────────
@@ -787,24 +756,13 @@ function Logo({size=44}){
   const ctx = useContext(SectionCtx);
   const logo = ctx?.schoolLogo;
   if(logo){
-    return <img src={logo} alt="School Logo" style={{width:size,height:size,objectFit:"contain",borderRadius:size*0.18,background:"transparent"}}/>;
+    return <img src={logo} alt="Organization logo" style={{width:size,height:size,objectFit:"contain",borderRadius:size*0.18,background:"transparent"}}/>;
   }
   return(
-    <svg width={size} height={size} viewBox="0 0 48 48">
-      <defs>
-        <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E8560A"/>
-          <stop offset="100%" stopColor="#FF7A35"/>
-        </linearGradient>
-        <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0d2d6e"/>
-          <stop offset="100%" stopColor="#1A4FA0"/>
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="24" fill="url(#lg1)"/>
-      <circle cx="24" cy="24" r="18" fill="url(#lg2)"/>
-      <circle cx="24" cy="24" r="23" stroke="#1A8C3C" strokeWidth="2.5" fill="none" strokeDasharray="4 2"/>
-      <text x="24" y="29" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="900" fontFamily="Georgia,serif" letterSpacing="0.5">RGS</text>
+    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={PRODUCT.name}>
+      <rect width="48" height="48" rx="13" fill={C.text}/>
+      <path d="M13 13h5v22h-5zM18 13h7.5c5.5 0 8.5 2.7 8.5 7.1 0 2.7-1.4 4.8-3.9 5.9L35 35h-6.2l-5.1-7.5H18V35h-5V13h5Zm0 9.8h7c2.4 0 3.7-.9 3.7-2.7s-1.3-2.7-3.7-2.7h-7v5.4Z" fill="#fff"/>
+      <path d="M37 11.5h2v25h-2z" fill={C.light}/>
     </svg>
   );
 }
@@ -1040,8 +998,8 @@ function ClassMultiSelect({classes,selClasses,onToggle,onClear,placeholder="All 
   },[]);
   const count=selClasses.size;
   const label=count===0?placeholder:count===1?
-    (classes.find(c=>selClasses.has(String(c.id)))?.name||`1 class selected`):
-    `${count} classes selected`;
+    (classes.find(c=>selClasses.has(String(c.id)))?.name||`1 group selected`):
+    `${count} groups selected`;
   return(
     <div ref={ref} style={{position:"relative",flex:1,minWidth:150}}>
       <button onClick={()=>setOpen(o=>!o)}
@@ -1463,7 +1421,7 @@ html{-webkit-text-size-adjust:100%;}
               No Internet Connection
             </div>
             <div style={{fontSize:14,color:C.muted,lineHeight:1.7,marginBottom:24}}>
-              The portal needs an active internet connection to access your school data.
+              The portal needs an active internet connection to access your organization data.
               <br/>Your work is safe — please check your network connection.
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1654,7 +1612,7 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
         {/* Stay logged in */}
         <button onClick={onStay}
           style={{width:"100%",padding:"14px",borderRadius:12,border:"none",cursor:"pointer",
-            background:`linear-gradient(135deg,${C.orange},#FF7A35)`,color:"#fff",
+            background:`linear-gradient(135deg,${C.orange},#374151)`,color:"#fff",
             fontSize:15,fontWeight:800,letterSpacing:".2px",marginBottom:10,
             boxShadow:"0 4px 16px rgba(232,86,10,.4)",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".9"}
@@ -1689,31 +1647,31 @@ const TOUR_STEPS_CONFIG = [
     target:"[data-tour='nav-dashboard']", page:"dashboard", placement:"right", roles:null, perms:null},
   // ── Admin / Manager ──
   {id:"nav-members",   title:"Members",
-    content:"View and manage all staff accounts — teachers and managers. You can change roles, reset passwords, and see last-login dates here.",
+    content:"View and manage all staff accounts — staff and managers. You can change roles, reset passwords, and see last-login dates here.",
     target:"[data-tour='nav-members']", page:"members", placement:"right",
     roles:["admin","manager"], perms:null},
   {id:"nav-students",  title:"Members",
-    content:"Full student directory with filtering, bulk operations, and onboarding email tools.",
+    content:"Full people directory with filtering, bulk operations, and onboarding email tools.",
     target:"[data-tour='nav-students']", page:"students", placement:"right",
     roles:["admin"], perms:null},
   {id:"nav-results-admin", title:"Results",
-    content:"Upload, review and approve academic results. Use the XLS template to populate scores in bulk.",
+    content:"Upload, review and approve performance results. Use the XLS template to populate scores in bulk.",
     target:"[data-tour='nav-results-admin']", page:"results-admin", placement:"right",
     roles:["admin"], perms:null},
-  {id:"nav-report-cards", title:"Report Cards",
-    content:"Publish report cards for a class/term, generate PDFs, and email them directly to parents.",
+  {id:"nav-report-cards", title:"Reports",
+    content:"Publish reports for a group/period, generate PDFs, and email them directly to contacts.",
     target:"[data-tour='nav-report-cards']", page:"report-cards", placement:"right",
     roles:["admin","teacher"], perms:null},
-  {id:"nav-fee-tracker", title:"Fee Tracker",
-    content:"Track student payments, record manual bank deposits, and issue refunds. Integrated with Paystack for online payments.",
+  {id:"nav-fee-tracker", title:"Payment Tracker",
+    content:"Track member payments, record manual bank deposits, and issue refunds. Integrated with Paystack for online payments.",
     target:"[data-tour='nav-fee-tracker']", page:"fee-tracker", placement:"right",
     roles:["admin","manager"], perms:null},
   {id:"nav-announce",  title:"Announcements",
-    content:"Post school-wide or class-specific announcements visible to all portal users.",
+    content:"Post organization-wide or group-specific announcements visible to all portal users.",
     target:"[data-tour='nav-announce']", page:"announce", placement:"right",
     roles:["admin","teacher","manager"], perms:null},
   {id:"nav-attendance", title:"Attendance",
-    content:"Record daily attendance for your classes. Supports Present, Absent, Late, and Excused statuses.",
+    content:"Record daily attendance for your groups. Supports Present, Absent, Late, and Excused statuses.",
     target:"[data-tour='nav-attendance']", page:"attendance", placement:"right",
     roles:["admin","teacher"], perms:null},
   {id:"nav-audit-log", title:"Audit Trail",
@@ -1721,30 +1679,30 @@ const TOUR_STEPS_CONFIG = [
     target:"[data-tour='nav-audit-log']", page:"audit-log", placement:"right",
     roles:["admin"], perms:null},
   {id:"settings-btn",  title:"Settings",
-    content:"Configure school info, academic sessions, grading schemes, RBAC permissions, and portal behaviour.",
+    content:"Configure organization info, performance cycles, grading schemes, RBAC permissions, and portal behaviour.",
     target:"[data-tour='settings-btn']", page:"dashboard", placement:"bottom",
     roles:["admin"], perms:null},
   // ── Staff ──
   {id:"nav-my-classes", title:"My Groups",
-    content:"See all classes assigned to you and the students in each class.",
+    content:"See all groups assigned to you and the members in each group.",
     target:"[data-tour='nav-my-classes']", page:"my-classes", placement:"right",
     roles:["teacher"], perms:null},
   {id:"nav-results-teach", title:"Upload Results",
-    content:"Download the XLS template for your class, fill in scores, then upload to submit results for approval.",
+    content:"Download the XLS template for your group, fill in scores, then upload to submit results for approval.",
     target:"[data-tour='nav-results-teach']", page:"results-teach", placement:"right",
     roles:["teacher"], perms:null},
   // ── Member ──
-  {id:"nav-my-results", title:"My Report Card",
+  {id:"nav-my-results", title:"My Report",
     content:"View your published report card and download a PDF copy.",
     target:"[data-tour='nav-my-results']", page:"my-results", placement:"right",
     roles:["student"], perms:null},
   {id:"nav-my-bill",   title:"My Bill",
-    content:"See your outstanding fees and make payments via Paystack.",
+    content:"See your outstanding billing and make payments via Paystack.",
     target:"[data-tour='nav-my-bill']", page:"my-bill", placement:"right",
     roles:["student"], perms:null},
   // ── Finish ──
   {id:"finish",        title:"You're all set! 🎉",
-    content:"That's the tour! You can restart it anytime by clicking the ? button in the top-right header. If you need help, contact your school administrator.",
+    content:"That's the tour! You can restart it anytime by clicking the ? button in the top-right header. If you need help, contact your organization administrator.",
     target:"[data-tour='tour-trigger']", page:"dashboard", placement:"bottom",
     roles:null, perms:null},
 ];
@@ -1910,7 +1868,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{width:28,height:28,borderRadius:8,
-                background:`linear-gradient(135deg,${C.orange},#FF7A35)`,
+                background:`linear-gradient(135deg,${C.orange},#374151)`,
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <HelpCircle size={14} color="#fff"/>
               </div>
@@ -1966,7 +1924,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
               </button>
             )}
             <button onClick={()=>{ if(isLast){ onClose(); } else { setStep(s=>s+1); } }}
-              style={{background:`linear-gradient(135deg,${C.orange},#FF7A35)`,
+              style={{background:`linear-gradient(135deg,${C.orange},#374151)`,
                 border:"none", borderRadius:8, padding:"6px 16px",
                 cursor:"pointer", fontSize:12, fontWeight:800, color:"#fff",
                 display:"flex",alignItems:"center",gap:5,
@@ -2004,7 +1962,7 @@ function AppInner(){
   const [userPerms,setUserPerms]       = useState([]);
   const [pdfDoc,setPdfDoc]             = useState(null); // {html,title} — mobile in-app viewer
   const [inactivityMs,setInactivityMs] = useState(5*60*1000); // configurable via school_settings
-  const {selectedSection,refreshSchool:ctxRefreshSchool,schoolName:_sidebarSchoolName} = useSection();
+  const {selectedSection,refreshSchool:ctxRefreshSchool,schoolName:_sidebarSchoolName,workspaceType,educationModuleEnabled,terms} = useSection();
   // ← Must be declared here — before any conditional returns — to satisfy Rules of Hooks
   const isMobile = useIsMobile();
 
@@ -2102,7 +2060,7 @@ function AppInner(){
     return()=>clearInterval(t);
   },[user?._sessionToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── School context (multi-tenant) ────────────────────────────────────────
+  // ── Organization context (multi-tenant) ────────────────────────────────────────
   const [selectedSchool,setSelectedSchool]=useState(()=>loadSelectedSchool());
   const [platformAdmin,setPlatformAdmin]=useState(null);
 
@@ -2174,17 +2132,17 @@ function AppInner(){
     const id = identifier.trim();
     const pw = password.trim();
     if(!id||!pw) return {error:"Enter your ID and password."};
-    if(!schoolId) return {error:"Please select a school before logging in."};
+    if(!schoolId) return {error:"Please select an organization before logging in."};
 
     try {
       const access = await db.getLoginAccessSettings(schoolId);
       const _accessMsg = (role)=>{
         const custom = (access.login_disabled_message||"").trim();
         const defaults = {
-          teacher:"Staff logins are currently disabled. Please contact the school office.",
-          student:"Member logins are currently disabled. Please contact the school office.",
+          teacher:"Staff logins are currently disabled. Please contact the organization office.",
+          student:"Member logins are currently disabled. Please contact the organization office.",
         };
-        return custom || defaults[role] || "Logins are currently disabled. Please contact the school office.";
+        return custom || defaults[role] || "Logins are currently disabled. Please contact the organization office.";
       };
 
       // Admin logs in with the literal word "admin" as their ID; everyone
@@ -2212,13 +2170,13 @@ function AppInner(){
           const st = student.status||"active";
           if(st!=="active"){
             const msgs={
-              inactive:"Your account is currently inactive. Please contact the school office.",
-              suspended:"Your account has been suspended. Please contact the school administration.",
-              graduated:"This account belongs to a graduated student and is no longer active.",
+              inactive:"Your account is currently inactive. Please contact the organization office.",
+              suspended:"Your account has been suspended. Please contact the organization administration.",
+              graduated:"This account belongs to a graduated member and is no longer active.",
               withdrawn:"This account has been withdrawn and is no longer active.",
-              left:"This account is no longer active. Please contact the school office.",
+              left:"This account is no longer active. Please contact the organization office.",
             };
-            return{error:msgs[st]||"Your account is not active. Please contact the school office."};
+            return{error:msgs[st]||"Your account is not active. Please contact the organization office."};
           }
           if(access.login_students_disabled==="true") return {error:_accessMsg("student")};
           authEmail = syntheticEmail("student", id, schoolId);
@@ -2275,34 +2233,34 @@ function AppInner(){
   // Admin: grouped by category with dividers
   // Staff/Member: only permitted pages
   const ALL_NAV = [
-    {id:"dashboard",       label:"Dashboard",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
+    {id:"dashboard",       label:"Overview",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
     // ── Admin groups ──
-    {id:"g-academic",      group:"Academic",      roles:["admin","bursar"]},
-    {id:"members",         label:"Members",           icon:"members", roles:["admin","manager","bursar"],    gid:"g-academic"},
-    {id:"students",        label:"Members",          icon:"students", roles:["admin"],    gid:"g-academic"},
-    {id:"teachers",        label:"Staff",          icon:"teachers", roles:["admin"],    gid:"g-academic"},
+    {id:"g-academic",      group:"Operations",      roles:["admin","bursar"]},
+    {id:"members",         label:"Team",           icon:"members", roles:["admin","manager","bursar"],    gid:"g-academic"},
+    {id:"students",        label:"People",          icon:"students", roles:["admin"],    gid:"g-academic"},
+    {id:"teachers",        label:"Team",          icon:"teachers", roles:["admin"],    gid:"g-academic"},
     {id:"classes",         label:"Groups",           icon:"classes", roles:["admin"],    gid:"g-academic"},
-    {id:"subjects",        label:"Subjects",          icon:"subjects", roles:["admin"],    gid:"g-academic"},
-    {id:"sections",        label:"Sections",          icon:"sections", roles:["admin"],    gid:"g-academic"},
-    {id:"calendar",        label:"Academic Calendar", icon:"calendar",    roles:["admin","teacher"], gid:"g-academic"},
-    {id:"timetable",       label:"Timetable",         icon:"timetable",   roles:["admin","teacher"], gid:"g-academic"},
-    {id:"broadsheet",      label:"Broadsheet",        icon:"broadsheet",  roles:["admin"],           gid:"g-academic"},
-    {id:"g-results",       group:"Results",        roles:["admin"]},
+    {id:"subjects",        label:"Categories",          icon:"subjects", roles:["admin"],    gid:"g-academic"},
+    {id:"sections",        label:"Divisions",          icon:"sections", roles:["admin"],    gid:"g-academic"},
+    {id:"calendar",        label:"Calendar", icon:"calendar",    roles:["admin","teacher"], gid:"g-academic"},
+    {id:"timetable",       label:"Schedule",         icon:"timetable",   roles:["admin","teacher"], gid:"g-academic"},
+    {id:"broadsheet",      label:"Performance Matrix",        icon:"broadsheet",  roles:["admin"],           gid:"g-academic"},
+    {id:"g-results",       group:"Performance",        roles:["admin"]},
     {id:"assignments",     label:"Assignments",       icon:"assignments", roles:["admin"],    gid:"g-results"},
-    {id:"results",         label:"Results",           icon:"results", roles:["admin"],    gid:"g-results"},
-    {id:"report-cards",    label:"Report Cards",      icon:"report-cards", roles:["admin","teacher"], gid:"g-results"},
-    {id:"transcript",      label:"Transcript",        icon:"transcript", roles:["admin","student"],  gid:"g-results"},
-    {id:"academic-summary",label:"Academic Analytics",icon:"academic-summary",roles:["admin"],     gid:"g-results"},
-    {id:"report-card-settings",label:"Report Card Settings", icon:"report-settings", roles:["admin"], gid:"g-results"},
-    {id:"grading",         label:"Grading & CAE",     icon:"grading", roles:["admin"],    gid:"g-results"},
-    {id:"g-fees",          group:"Fees",           roles:["admin","bursar"]},
-    {id:"fee-items",       label:"Fee Items",         icon:"fee-items", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-templates",   label:"Templates",         icon:"fee-templates", roles:["admin","manager","bursar"],    gid:"g-fees"},
+    {id:"results",         label:"Performance Records",           icon:"results", roles:["admin"],    gid:"g-results"},
+    {id:"report-cards",    label:"Reports",      icon:"report-cards", roles:["admin","teacher"], gid:"g-results"},
+    {id:"transcript",      label:"History",        icon:"transcript", roles:["admin","student"],  gid:"g-results"},
+    {id:"academic-summary",label:"Analytics",icon:"academic-summary",roles:["admin"],     gid:"g-results"},
+    {id:"report-card-settings",label:"Report Settings", icon:"report-settings", roles:["admin"], gid:"g-results"},
+    {id:"grading",         label:"Scoring & Rubrics",     icon:"grading", roles:["admin"],    gid:"g-results"},
+    {id:"g-fees",          group:"Billing",           roles:["admin","bursar"]},
+    {id:"fee-items",       label:"Billing Items",         icon:"fee-items", roles:["admin","manager","bursar"],    gid:"g-fees"},
+    {id:"fee-templates",   label:"Billing Templates",         icon:"fee-templates", roles:["admin","manager","bursar"],    gid:"g-fees"},
     {id:"fee-generate",    label:"Generate Bills",    icon:"fee-generate", roles:["admin","manager","bursar"],    gid:"g-fees"},
     {id:"fee-tracker",     label:"Payment Tracker",   icon:"fee-tracker", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-stats",       label:"Statistics",        icon:"fee-stats", roles:["admin","manager","bursar"],    gid:"g-fees"},
+    {id:"fee-stats",       label:"Billing Analytics",        icon:"fee-stats", roles:["admin","manager","bursar"],    gid:"g-fees"},
     {id:"g-comms",         group:"Communication",  roles:["admin","teacher","bursar"]},
-    {id:"announce",        label:"Announcements",     icon:"announce", roles:["admin","teacher","manager","bursar"], gid:"g-comms"},
+    {id:"announce",        label:"Notices",     icon:"announce", roles:["admin","teacher","manager","bursar"], gid:"g-comms"},
     {id:"attendance",      label:"Attendance",        icon:"attendance", roles:["admin","teacher"], gid:"g-comms"},
     {id:"mail-compose",    label:"Send Email",        icon:"mail",  roles:["admin"],    gid:"g-comms"},
     {id:"mail-logs",       label:"Email Logs",        icon:"mail-logs", roles:["admin"],    gid:"g-comms"},
@@ -2311,15 +2269,15 @@ function AppInner(){
     {id:"notifications",   label:"Notifications",      icon:"bell",       roles:["admin"],    gid:"g-admin"},
     {id:"permissions",     label:"Permissions",        icon:"shield",     roles:["admin"],    gid:"g-admin"},
     {id:"g-approvals",     group:"Approvals",      roles:["admin"]},
-    {id:"approvals",       label:"Member Approvals", icon:"approvals", roles:["admin"],    gid:"g-approvals"},
+    {id:"approvals",       label:"People Approvals", icon:"approvals", roles:["admin"],    gid:"g-approvals"},
     {id:"access-requests", label:"Access Requests",   icon:"approvals", roles:["admin"],    gid:"g-approvals"},
     // ── Staff-only (flat) ──
     {id:"my-classes",      label:"My Groups",        icon:"my-classes", roles:["teacher"]},
-    {id:"results-teach",   label:"Upload Results",    icon:"upload-results", roles:["teacher"]},
-    {id:"add-students",    label:"Add Members",      icon:"add-students", roles:["teacher"]},
+    {id:"results-teach",   label:"Upload Records",    icon:"upload-results", roles:["teacher"]},
+    {id:"add-students",    label:"Add People",      icon:"add-students", roles:["teacher"]},
     {id:"request-access",  label:"Request Access",    icon:"approvals",  roles:["teacher"]},
     // ── Member-only ──
-    {id:"my-results",      label:"My Report Card",    icon:"my-results", roles:["student"]},
+    {id:"my-results",      label:"My Reports",    icon:"my-results", roles:["student"]},
     {id:"my-payments",     label:"My Payments",       icon:"my-payments", roles:["student"]},
     {id:"my-bill",         label:"My Bill",           icon:"receipt", roles:["student"]},
   ];
@@ -2365,13 +2323,20 @@ function AppInner(){
   const role=user.role;
 
 
-  // Deduplicate & filter
+  // Deduplicate & filter. Education tenants can opt into the original academic
+  // labels without changing the underlying routes or database schema.
+  const navSource = workspaceType==="education" && educationModuleEnabled
+    ? ALL_NAV.map(n=>{
+        const label=EDUCATION_NAV_LABELS[n.id];
+        return label ? (n.group ? {...n,group:label} : {...n,label}) : n;
+      })
+    : ALL_NAV;
   const seenIds = new Set();
-  const NAV = ALL_NAV.filter(n=>{
+  const NAV = navSource.filter(n=>{
     if(!n.roles||!n.roles.includes(role)) return false;
     if(n.group){
       // Group header: only include if at least one child item is visible
-      const hasChild=ALL_NAV.some(c=>c.gid===n.id&&c.roles&&c.roles.includes(role)&&(role==="admin"||canAccess(c.id)));
+      const hasChild=navSource.some(c=>c.gid===n.id&&c.roles&&c.roles.includes(role)&&(role==="admin"||canAccess(c.id)));
       return hasChild;
     }
     if(seenIds.has(n.id)) return false;
@@ -2381,7 +2346,7 @@ function AppInner(){
   });
 
   const showPDF = (html, title="Document") => setPdfDoc({html, title});
-  const ctx={user,role,notify,setPage,selectedSection,canAccess,pendingApprovals,setPendingApprovals,pendingAccessRequests,setPendingAccessRequests,showPDF,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam};
+  const ctx={user,role,notify,setPage,selectedSection,canAccess,pendingApprovals,setPendingApprovals,pendingAccessRequests,setPendingAccessRequests,showPDF,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam,workspaceType,educationModuleEnabled,terms};
 
   // On mobile the sidebar is always a full overlay; on desktop it collapses to icon rail
   const sideVisible = isMobile ? sideOpen : true;
@@ -2434,9 +2399,9 @@ function AppInner(){
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
               <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
-                whiteSpace:"nowrap"}}>{(_sidebarSchoolName||"School Portal").split(" ").slice(0,2).join(" ")}</div>
+                whiteSpace:"nowrap"}}>{(_sidebarSchoolName||"Business Portal").split(" ").slice(0,2).join(" ")}</div>
               <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
-                letterSpacing:1.2,marginTop:1}}>School Portal</div>
+                letterSpacing:1.2,marginTop:1}}>Business Portal</div>
             </div>
           )}
         </div>
@@ -2520,7 +2485,7 @@ function AppInner(){
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";}}>
               <div style={{width:30,height:30,borderRadius:9,
-                background:`linear-gradient(135deg,${C.orange},#FF7A35)`,
+                background:`linear-gradient(135deg,${C.orange},#374151)`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:13,fontWeight:900,flexShrink:0,color:"#fff",
                 boxShadow:"0 2px 8px rgba(232,86,10,.4)"}}>
@@ -2640,7 +2605,7 @@ function AppInner(){
           </div>
         </header>
 
-        <div style={{height:3,background:`linear-gradient(90deg,${C.orange} 0%,#FF7A35 20%,${C.green} 55%,${C.blue} 85%,${C.blueDark} 100%)`,opacity:.85}}/>
+        <div style={{height:3,background:`linear-gradient(90deg,${C.orange} 0%,#374151 20%,${C.green} 55%,${C.blue} 85%,${C.blueDark} 100%)`,opacity:.85}}/>
 
         {/* Section selector bar */}
         {role==="admin"&&["students","teachers","classes","subjects","assignments","results","results-admin","fees","transcript","sections","report-cards","grading"].includes(page)&&(
@@ -2853,7 +2818,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
       justifyContent:"center",padding:"24px 16px",position:"relative",overflow:"hidden",
       background:dark?`linear-gradient(135deg,#030712 0%,#0d1f3c 50%,#050e1a 100%)`
-        :`linear-gradient(135deg,#0b2257 0%,#1A4FA0 60%,#0d4a8a 100%)`}}>
+        :`linear-gradient(135deg,#0b2257 0%,#111827 60%,#0d4a8a 100%)`}}>
       {/* Background decorations */}
       <div style={{position:"fixed",top:-100,right:-100,width:400,height:400,borderRadius:"50%",
         background:"rgba(255,255,255,.03)",pointerEvents:"none"}}/>
@@ -2978,7 +2943,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
                   boxSizing:"border-box",textAlign:"center",letterSpacing:6}}/>
             </div>
             <button onClick={doPALogin} disabled={paLoading}
-              style={{width:"100%",background:paLoading?"rgba(255,255,255,.1)":"linear-gradient(135deg,#1A4FA0,#0c4a7a)",
+              style={{width:"100%",background:paLoading?"rgba(255,255,255,.1)":"linear-gradient(135deg,#111827,#0c4a7a)",
                 color:"#fff",border:"none",padding:"12px",borderRadius:11,fontSize:14,fontWeight:800,
                 cursor:paLoading?"not-allowed":"pointer",marginBottom:12}}>
               {paLoading?"Signing in…":"Sign In →"}
@@ -3016,7 +2981,7 @@ function SchoolSignupModal({onClose,onSuccess}){
   );
   const submit=async()=>{
     if(!form.name.trim()||!form.admin_email.trim()||!form.admin_password.trim()){
-      setErr("School name, admin email, and password are required."); return;
+      setErr("Organization name, admin email, and password are required."); return;
     }
     setSaving(true); setErr("");
     const pfx=(form.student_id_prefix||form.name.slice(0,4).replace(/\s+/g,"")).toUpperCase();
@@ -3046,7 +3011,7 @@ function SchoolSignupModal({onClose,onSuccess}){
           <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",
             letterSpacing:.7,marginBottom:10}}>Business Details</div>
           {inp("Business Name","name",{req:true,placeholder:"e.g. Acme Inc"})}
-          {inp("Address","address",{placeholder:"e.g. 12 School Road, Lagos"})}
+          {inp("Address","address",{placeholder:"e.g. 12 Organization Road, Lagos"})}
           {inp("State","state",{placeholder:"e.g. Lagos"})}
           {inp("Phone","contact_phone",{placeholder:"e.g. +2348000000000"})}
           {inp("Member ID Prefix","student_id_prefix",{placeholder:"e.g. ACM (auto-generated if blank)"})}
@@ -3056,10 +3021,10 @@ function SchoolSignupModal({onClose,onSuccess}){
           {inp("Admin Email","admin_email",{req:true,type:"email",placeholder:"admin@yourbusiness.com"})}
           {inp("Password","admin_password",{req:true,type:"password",placeholder:"Set a strong password"})}
           <button onClick={submit} disabled={saving}
-            style={{width:"100%",background:saving?"#CBD5E1":"linear-gradient(135deg,#E8560A,#FF7A35)",
+            style={{width:"100%",background:saving?"#CBD5E1":"linear-gradient(135deg,#111827,#374151)",
               color:"#fff",border:"none",padding:"13px",borderRadius:12,fontSize:14,fontWeight:800,
               cursor:saving?"not-allowed":"pointer",marginTop:8}}>
-            {saving?"Creating School…":"Create School & Continue →"}
+            {saving?"Creating Organization…":"Create Organization & Continue →"}
           </button>
         </div>
       </div>
@@ -3087,21 +3052,21 @@ function CopySettingsModal({schools, onClose}){
 
   const ITEM_LABELS=[
     {k:"sections",        label:"Sections"},
-    {k:"section_subjects",label:"Section Subjects"},
+    {k:"section_subjects",label:"Section Categories"},
     {k:"classes",         label:"Groups"},
-    {k:"sessions",        label:"Sessions"},
-    {k:"terms",           label:"Terms (requires Sessions)"},
+    {k:"sessions",        label:"Cycles"},
+    {k:"terms",           label:"Periods (requires Cycles)"},
     {k:"grading",         label:"Grading Schema"},
-    {k:"fee_items",       label:"Fee Items"},
-    {k:"fee_templates",   label:"Fee Templates & Items"},
+    {k:"fee_items",       label:"Billing Items"},
+    {k:"fee_templates",   label:"Billing Templates & Items"},
     {k:"cae_traits",      label:"CAE Traits"},
     {k:"cae_ratings",     label:"CAE Ratings"},
-    {k:"school_settings", label:"School Settings (key-value store)"},
+    {k:"school_settings", label:"Organization Settings (key-value store)"},
   ];
 
   const run=async()=>{
-    if(!srcId||!dstId){addLog("Select both source and target schools.","error");return;}
-    if(srcId===dstId){addLog("Source and target must be different schools.","error");return;}
+    if(!srcId||!dstId){addLog("Select both source and target organizations.","error");return;}
+    if(srcId===dstId){addLog("Source and target must be different organizations.","error");return;}
     setRunning(true); setLog([]); setDone(false);
     const {error:copyErr,log:copyLog}=await db.copySchoolSettings(srcId,dstId,items);
     copyLog.forEach(({msg,ok})=>addLog(msg,ok));
@@ -3123,9 +3088,9 @@ function CopySettingsModal({schools, onClose}){
         <div style={{background:`linear-gradient(135deg,${C.blueDark},${C.blue})`,borderRadius:"20px 20px 0 0",
           padding:"18px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
           <div>
-            <div style={{color:"#fff",fontWeight:900,fontSize:16}}>Copy School Settings</div>
+            <div style={{color:"#fff",fontWeight:900,fontSize:16}}>Copy Organization Settings</div>
             <div style={{color:"rgba(255,255,255,.55)",fontSize:12,marginTop:2}}>
-              Clone configuration from one school to another
+              Clone configuration from one organization to another
             </div>
           </div>
           <button onClick={onClose} style={{background:"rgba(255,255,255,.15)",border:"none",
@@ -3137,7 +3102,7 @@ function CopySettingsModal({schools, onClose}){
 
         <div style={{padding:24,overflowY:"auto",flex:1}}>
 
-          {/* School pickers */}
+          {/* Organization pickers */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,
@@ -3149,7 +3114,7 @@ function CopySettingsModal({schools, onClose}){
                 <option value="">— Select source —</option>
                 {schools.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
-              {src&&<div style={{fontSize:11,color:C.muted,marginTop:4}}>{src.student_count||0} students</div>}
+              {src&&<div style={{fontSize:11,color:C.muted,marginTop:4}}>{src.student_count||0} members</div>}
             </div>
             <div>
               <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,
@@ -3189,7 +3154,7 @@ function CopySettingsModal({schools, onClose}){
             <div style={{background:C.amberPale,border:`1px solid ${C.amber}30`,borderRadius:8,
               padding:"10px 14px",fontSize:12,color:C.amber,marginBottom:16,display:"flex",gap:8}}>
               <AlertTriangle size={14} style={{flexShrink:0,marginTop:1}}/>
-              <span>This operation <strong>adds</strong> data to the target school. It does not delete or overwrite existing records.</span>
+              <span>This operation <strong>adds</strong> data to the target organization. It does not delete or overwrite existing records.</span>
             </div>
           )}
 
@@ -3245,7 +3210,7 @@ function DeleteSchoolModal({school,onClose,onDeleted}){
   const [busy,setBusy]=useState(false);
   const [err,setErr]=useState("");
   const doDelete=async()=>{
-    if(confirm!==school.name){setErr("School name does not match.");return;}
+    if(confirm!==school.name){setErr("Organization name does not match.");return;}
     setBusy(true);
     const {error}=await db.deleteSchool(school.id);
     setBusy(false);
@@ -3264,13 +3229,13 @@ function DeleteSchoolModal({school,onClose,onDeleted}){
             <Trash2 size={20} color="#dc2626"/>
           </div>
           <div>
-            <div style={{fontWeight:800,fontSize:15,color:"#111"}}>Delete School</div>
+            <div style={{fontWeight:800,fontSize:15,color:"#111"}}>Delete Organization</div>
             <div style={{fontSize:12,color:"#6b7280"}}>This action is permanent and cannot be undone</div>
           </div>
         </div>
         <div style={{background:"rgba(220,38,38,.06)",border:"1.5px solid rgba(220,38,38,.18)",
           borderRadius:10,padding:"12px 14px",marginBottom:18,fontSize:12,color:"#7f1d1d"}}>
-          <strong>All data for "{school.name}" will be permanently deleted</strong> — students, teachers, results, fees, settings, and all records.
+          <strong>All data for "{school.name}" will be permanently deleted</strong> — members, staff, results, billing, settings, and all records.
         </div>
         <div style={{marginBottom:8,fontSize:12,color:"#374151"}}>
           Type <strong>{school.name}</strong> to confirm:
@@ -3346,7 +3311,7 @@ function ChangePinModal({onClose,onSuccess}){
           onKeyDown={e=>e.key==="Enter"&&save()}
           style={{...inputStyle,marginBottom:20}}/>
         <button onClick={save} disabled={busy}
-          style={{width:"100%",background:busy?"rgba(255,255,255,.1)":"linear-gradient(135deg,#1A4FA0,#0c4a7a)",
+          style={{width:"100%",background:busy?"rgba(255,255,255,.1)":"linear-gradient(135deg,#111827,#0c4a7a)",
             color:"#fff",border:"none",padding:"12px",borderRadius:11,fontSize:14,fontWeight:800,
             cursor:busy?"not-allowed":"pointer",marginBottom:10}}>
           {busy?"Saving…":"Save New PIN"}
@@ -3442,11 +3407,11 @@ function PlatformDashboardPage({admin,onLogout}){
   return(
     <div style={{minHeight:"100vh",background:C.offWhite}}>
       {/* Header */}
-      <div style={{background:dark?"#0d1f3c":"#1A4FA0",padding:"0 24px",
+      <div style={{background:dark?"#0d1f3c":"#111827",padding:"0 24px",
         display:"flex",alignItems:"center",justifyContent:"space-between",height:60,
         boxShadow:"0 2px 12px rgba(0,0,0,.18)"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <img src="/apex-logo.PNG" alt="JAMES-DENNING"
+          <img src="/jd-logo.svg" alt="JAMES-DENNING"
             style={{height:36,width:"auto",filter:"drop-shadow(0 2px 8px rgba(0,180,255,.4))"}}/>
           <div style={{color:"rgba(255,255,255,.5)",fontSize:10}}>Super-Admin Console</div>
         </div>
@@ -3455,7 +3420,7 @@ function PlatformDashboardPage({admin,onLogout}){
             style={{background:"rgba(255,255,255,.15)",border:"1.5px solid rgba(255,255,255,.25)",
               color:"#fff",padding:"6px 14px",borderRadius:8,fontSize:12,fontWeight:700,cursor:"pointer",
               display:"flex",alignItems:"center",gap:6}}>
-            <Plus size={13}/> Add School
+            <Plus size={13}/> Add Organization
           </button>
           <button onClick={()=>setShowCopy(true)}
             style={{background:"rgba(255,255,255,.08)",border:"1.5px solid rgba(255,255,255,.15)",
@@ -3492,7 +3457,7 @@ function PlatformDashboardPage({admin,onLogout}){
         {/* Stats row */}
         <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
           <div style={cardStyle}>
-            <div style={statLabel}>Total Schools</div>
+            <div style={statLabel}>Total Organizations</div>
             <div style={statVal}>{schools.length}</div>
           </div>
           <div style={cardStyle}>
@@ -3516,7 +3481,7 @@ function PlatformDashboardPage({admin,onLogout}){
         {/* Tab nav */}
         <div style={{display:"flex",gap:4,marginBottom:20,background:C.white,
           borderRadius:12,padding:4,border:`1px solid ${C.border}`,width:"fit-content"}}>
-          {tabBtn("schools","Schools",<School size={13}/>)}
+          {tabBtn("schools","Organizations",<School size={13}/>)}
           {tabBtn("audit","Audit Log",<History size={13}/>)}
           {tabBtn("platform","Platform Settings",<Settings2 size={13}/>)}
         </div>
@@ -3526,7 +3491,7 @@ function PlatformDashboardPage({admin,onLogout}){
           <div style={{background:C.white,borderRadius:18,border:`1px solid ${C.border}`,overflow:"hidden"}}>
             <div style={{padding:"16px 22px",borderBottom:`1px solid ${C.border}`,
               display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontSize:15,fontWeight:800,color:C.text}}>All Schools</div>
+              <div style={{fontSize:15,fontWeight:800,color:C.text}}>All Organizations</div>
               <button onClick={load} style={{background:C.offWhite,border:`1px solid ${C.border}`,
                 borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:600,color:C.muted,cursor:"pointer",
                 display:"flex",alignItems:"center",gap:5}}>
@@ -3539,7 +3504,7 @@ function PlatformDashboardPage({admin,onLogout}){
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                     <thead>
                       <tr style={{background:C.offWhite}}>
-                        {["School","Admin","Members","Plan","Status","Setup","Created","Actions"].map(h=>(
+                        {["Organization","Admin","Members","Plan","Status","Setup","Created","Actions"].map(h=>(
                           <th key={h} style={{padding:"10px 14px",textAlign:"left",fontWeight:700,
                             color:C.muted,fontSize:11,textTransform:"uppercase",letterSpacing:.6,
                             borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
@@ -3606,7 +3571,7 @@ function PlatformDashboardPage({admin,onLogout}){
                         </tr>
                       ))}
                       {schools.length===0&&(
-                        <tr><td colSpan={8} style={{padding:40,textAlign:"center",color:C.muted}}>No schools registered yet.</td></tr>
+                        <tr><td colSpan={8} style={{padding:40,textAlign:"center",color:C.muted}}>No organizations registered yet.</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -3642,7 +3607,7 @@ function PlatformDashboardPage({admin,onLogout}){
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                     <thead>
                       <tr style={{background:C.offWhite}}>
-                        {["Time","Action","Entity","School","Performed By","Notes"].map(h=>(
+                        {["Time","Action","Entity","Organization","Performed By","Notes"].map(h=>(
                           <th key={h} style={{padding:"10px 14px",textAlign:"left",fontWeight:700,
                             color:C.muted,fontSize:11,textTransform:"uppercase",letterSpacing:.6,
                             borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>{h}</th>
@@ -3714,7 +3679,7 @@ function PlatformDashboardPage({admin,onLogout}){
               </div>
               <div style={{marginBottom:12,fontSize:13,color:C.muted}}>Change your platform admin PIN at any time.</div>
               <button onClick={()=>setShowChangePin(true)}
-                style={{background:`linear-gradient(135deg,#1A4FA0,#2563eb)`,border:"none",
+                style={{background:`linear-gradient(135deg,#111827,#2563eb)`,border:"none",
                   color:"#fff",padding:"10px 20px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",
                   display:"flex",alignItems:"center",gap:7}}>
                 <KeyRound size={14}/> Change PIN
@@ -3729,8 +3694,8 @@ function PlatformDashboardPage({admin,onLogout}){
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 {[
-                  {label:"Total Schools",value:schools.length},
-                  {label:"Active Schools",value:activeCount},
+                  {label:"Total Organizations",value:schools.length},
+                  {label:"Active Organizations",value:activeCount},
                   {label:"Suspended",value:schools.length-activeCount},
                   {label:"Setup Complete",value:setupCount},
                   {label:"Total Members",value:totalStudents.toLocaleString()},
@@ -3754,14 +3719,14 @@ function PlatformDashboardPage({admin,onLogout}){
                 <AlertTriangle size={16}/> Danger Zone
               </div>
               <div style={{fontSize:12,color:C.muted,marginBottom:14}}>
-                Deleting a school is permanent and cannot be undone. All data for that school will be removed.
-                Use the Schools tab to delete individual schools.
+                Deleting a organization is permanent and cannot be undone. All data for that organization will be removed.
+                Use the Organizations tab to delete individual organizations.
               </div>
               <button onClick={()=>{setTab("schools");}}
                 style={{background:"rgba(220,38,38,.1)",border:"1px solid rgba(220,38,38,.25)",
                   color:C.red,padding:"8px 16px",borderRadius:9,fontSize:12,fontWeight:700,cursor:"pointer",
                   display:"flex",alignItems:"center",gap:6}}>
-                <Trash2 size={12}/> Go to Schools → Delete
+                <Trash2 size={12}/> Go to Organizations → Delete
               </button>
             </div>
           </div>
@@ -3769,12 +3734,12 @@ function PlatformDashboardPage({admin,onLogout}){
       </div>
 
       {manageSchool&&<SchoolManagerModal school={manageSchool} onClose={()=>setManageSchool(null)}
-        onSaved={(updated)=>{ setSchools(sc=>sc.map(s=>s.id===updated.id?{...s,...updated}:s)); setManageSchool(null); showMsg("School updated."); }}/>}
+        onSaved={(updated)=>{ setSchools(sc=>sc.map(s=>s.id===updated.id?{...s,...updated}:s)); setManageSchool(null); showMsg("Organization updated."); }}/>}
       {deleteSchool&&<DeleteSchoolModal school={deleteSchool} onClose={()=>setDeleteSchool(null)}
         onDeleted={(id)=>{ setSchools(sc=>sc.filter(s=>s.id!==id)); setDeleteSchool(null); showMsg(`${deleteSchool.name} deleted.`); }}/>}
       {showCopy&&<CopySettingsModal schools={schools} onClose={()=>setShowCopy(false)}/>}
       {showChangePin&&<ChangePinModal onClose={()=>setShowChangePin(false)} onSuccess={(msg)=>{showMsg(msg);setShowChangePin(false);}}/>}
-      {showAddSchool&&<SchoolSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"School"} created successfully.`); }}/>}
+      {showAddSchool&&<SchoolSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"Organization"} created successfully.`); }}/>}
     </div>
   );
 }
@@ -3788,58 +3753,58 @@ function PlatformDashboardPage({admin,onLogout}){
 // ─── STUDENT DASHBOARD ───────────────────────────────────────────────────────
 // ─── RBAC: PERMISSION GROUPS DEFINITION ───────────────────────────────────────────────
 export const PERM_GROUPS=[
-  {id:"academic",label:"Academic",color:"#1A4FA0",perms:[
-    {id:"page:report-cards",        label:"Report Cards",               desc:"Access the Report Cards page"},
-    {id:"page:my-results",          label:"My Report Card (Member)",   desc:"Member's own report card view"},
+  {id:"academic",label:"Performance",color:"#111827",perms:[
+    {id:"page:report-cards",        label:"Reports",               desc:"Access the Reports page"},
+    {id:"page:my-results",          label:"My Report (Member)",   desc:"Member's own report card view"},
     {id:"page:results-admin",       label:"Results Entry (Admin view)", desc:"Admin results entry page"},
     {id:"page:results-teach",       label:"Results Upload (Staff)",   desc:"Staff results upload"},
-    {id:"page:transcript",          label:"Transcript",                 desc:"View academic transcript"},
+    {id:"page:transcript",          label:"Transcript",                 desc:"View performance transcript"},
     {id:"page:grading",             label:"Grading & CAE",              desc:"Manage grade schema & CAE traits"},
-    {id:"page:report-card-settings",label:"Report Card Settings",       desc:"Configure report card templates"},
+    {id:"page:report-card-settings",label:"Report Settings",       desc:"Configure report card templates"},
     {id:"page:assignments",         label:"Assignments",                desc:"View/manage assignments"},
     {id:"page:result-approvals",    label:"Result Approvals",           desc:"Approve/lock result submissions"},
-    {id:"page:calendar",            label:"Academic Calendar",          desc:"View and manage school calendar events"},
-    {id:"page:timetable",           label:"Timetable",                  desc:"View class timetables and weekly schedules"},
-    {id:"page:broadsheet",          label:"Broadsheet",                 desc:"Generate and export class broadsheets (PDF + Excel)"},
+    {id:"page:calendar",            label:"Calendar",          desc:"View and manage organization calendar events"},
+    {id:"page:timetable",           label:"Timetable",                  desc:"View group timetables and weekly schedules"},
+    {id:"page:broadsheet",          label:"Broadsheet",                 desc:"Generate and export group broadsheets (PDF + Excel)"},
     {id:"action:edit_grades",              label:"Edit Grades",                desc:"Can enter and modify scores"},
-    {id:"action:download_result_template", label:"Download Result Templates",   desc:"Can download class/section XLS templates for result entry"},
+    {id:"action:download_result_template", label:"Download Result Templates",   desc:"Can download group/section XLS templates for result entry"},
     {id:"action:publish_results",          label:"Publish Results",             desc:"Can publish report cards"},
     {id:"action:approve_ea",               label:"Educator Approval (EA)",      desc:"Can give EA-level approval"},
     {id:"action:approve_ma",               label:"Manager Approval (MA)",       desc:"Can lock results with MA"},
-    {id:"action:download_reports",         label:"Download Report Cards",       desc:"Can download/print PDF reports"},
+    {id:"action:download_reports",         label:"Download Reports",       desc:"Can download/print PDF reports"},
   ]},
   {id:"student_mgmt",label:"Member Management",color:"#1A8C3C",perms:[
     {id:"page:members",             label:"Members Page",               desc:"View all members list"},
-    {id:"page:students",            label:"Members Page",              desc:"Access students management"},
-    {id:"page:add-students",        label:"Add Members",               desc:"Submit new student requests"},
-    {id:"page:approvals",           label:"Member Approvals",          desc:"Approve new student requests"},
-    {id:"page:access-requests",     label:"Access Requests (Admin)",    desc:"Review and approve teacher access requests"},
+    {id:"page:students",            label:"Members Page",              desc:"Access members management"},
+    {id:"page:add-students",        label:"Add Members",               desc:"Submit new member requests"},
+    {id:"page:approvals",           label:"Member Approvals",          desc:"Approve new member requests"},
+    {id:"page:access-requests",     label:"Access Requests (Admin)",    desc:"Review and approve staff access requests"},
     {id:"page:request-access",      label:"Request Access (Staff)",   desc:"Staff submit access requests to admin"},
-    {id:"page:bulk-promote",        label:"Promotions",                 desc:"End-of-session promotion & rollover"},
-    {id:"action:edit_students",     label:"Edit Member Profiles",      desc:"Modify student name, class, etc."},
-    {id:"action:delete_students",   label:"Delete Members",            desc:"Permanently remove students"},
+    {id:"page:bulk-promote",        label:"Promotions",                 desc:"End-of-cycle promotion & rollover"},
+    {id:"action:edit_students",     label:"Edit Member Profiles",      desc:"Modify member name, group, etc."},
+    {id:"action:delete_students",   label:"Delete Members",            desc:"Permanently remove members"},
     {id:"action:manage_status",     label:"Manage Member Status",      desc:"Activate/suspend/graduate"},
   ]},
-  {id:"staff_mgmt",label:"Staff Management",color:"#E8560A",perms:[
-    {id:"page:teachers",            label:"Staff Page",              desc:"View/manage teacher list"},
-    {id:"page:classes",             label:"Groups",                    desc:"Manage classes"},
-    {id:"page:subjects",            label:"Subjects",                   desc:"Manage subjects"},
+  {id:"staff_mgmt",label:"Staff Management",color:"#111827",perms:[
+    {id:"page:teachers",            label:"Staff Page",              desc:"View/manage staff list"},
+    {id:"page:classes",             label:"Groups",                    desc:"Manage groups"},
+    {id:"page:subjects",            label:"Categories",                   desc:"Manage categories"},
     {id:"page:sections",            label:"Sections",                   desc:"Manage sections/departments"},
-    {id:"page:my-classes",          label:"My Groups (Staff)",       desc:"Staff's own class view"},
-    {id:"action:edit_staff",        label:"Edit Staff Profiles",        desc:"Modify teacher details"},
+    {id:"page:my-classes",          label:"My Groups (Staff)",       desc:"Staff's own group view"},
+    {id:"action:edit_staff",        label:"Edit Staff Profiles",        desc:"Modify staff details"},
     {id:"action:delete_staff",      label:"Delete Staff",               desc:"Remove staff from system"},
-    {id:"action:assign_classes",    label:"Assign Groups",             desc:"Assign teachers to classes"},
+    {id:"action:assign_classes",    label:"Assign Groups",             desc:"Assign staff to groups"},
   ]},
   {id:"financial",label:"Financial",color:"#7C3AED",perms:[
-    {id:"page:fee-tracker",         label:"Payment Tracker",            desc:"View/record fee payments"},
-    {id:"page:fee-items",           label:"Fee Items",                  desc:"Manage fee categories"},
-    {id:"page:fee-templates",       label:"Fee Templates",              desc:"Create fee bundles"},
-    {id:"page:fee-generate",        label:"Generate Bills",             desc:"Generate fee bills for students"},
-    {id:"page:fee-stats",           label:"Fee Statistics",             desc:"Revenue charts and reports"},
+    {id:"page:fee-tracker",         label:"Payment Tracker",            desc:"View/record billing payments"},
+    {id:"page:fee-items",           label:"Billing Items",                  desc:"Manage billing categories"},
+    {id:"page:fee-templates",       label:"Billing Templates",              desc:"Create billing bundles"},
+    {id:"page:fee-generate",        label:"Generate Bills",             desc:"Generate billing bills for members"},
+    {id:"page:fee-stats",           label:"Billing Analytics",             desc:"Revenue charts and reports"},
     {id:"page:my-payments",         label:"My Payments (Member)",      desc:"Member's own payment records"},
-    {id:"page:my-bill",             label:"My Bill (Member)",          desc:"Member's fee bill"},
+    {id:"page:my-bill",             label:"My Bill (Member)",          desc:"Member's billing bill"},
     {id:"action:record_payments",   label:"Record Payments",            desc:"Mark bills as paid"},
-    {id:"action:edit_fees",         label:"Edit Fee Records",           desc:"Modify fee amounts"},
+    {id:"action:edit_fees",         label:"Edit Billing Records",           desc:"Modify billing amounts"},
     {id:"action:generate_invoices", label:"Generate Invoices",          desc:"Print/export invoices"},
   ]},
   {id:"communication",label:"Communication",color:"#0891B2",perms:[
@@ -3855,9 +3820,9 @@ export const PERM_GROUPS=[
     {id:"page:dashboard",           label:"Dashboard",                  desc:"Access main dashboard"},
     {id:"page:audit-log",           label:"Audit Trail",                desc:"View system activity log"},
     {id:"page:recycle-bin",         label:"Recycle Bin",                desc:"Restore recently deleted records"},
-    {id:"page:export",              label:"Data Export",                desc:"Export school data as Excel spreadsheets"},
+    {id:"page:export",              label:"Data Export",                desc:"Export organization data as Excel spreadsheets"},
     {id:"page:activity",            label:"Login Activity",             desc:"View user last-login analytics"},
-    {id:"action:configure_settings",label:"Configure Settings",         desc:"Change school-wide settings"},
+    {id:"action:configure_settings",label:"Configure Settings",         desc:"Change organization-wide settings"},
     {id:"action:manage_permissions",label:"Manage Permissions",         desc:"Change role & user permissions"},
     {id:"action:view_audit_log",    label:"View Audit Log",             desc:"Access permission change history"},
   ]},
@@ -3869,10 +3834,10 @@ export const PERM_ROLE_DEFAULTS={
   bursar:["page:dashboard","page:fee-tracker","page:fee-items","page:fee-templates","page:fee-generate","page:fee-stats","page:members","page:students","page:announce","action:record_payments","action:edit_fees","action:generate_invoices"],
 };
 export const RBAC_ROLES=[
-  {id:"teacher", label:"Staff",  color:"#1A8C3C",desc:"Teaching staff — upload results, manage their class report cards"},
-  {id:"manager", label:"Manager",  color:"#7C3AED",desc:"Finance officer — full access to fees, billing and payments"},
-  {id:"bursar",  label:"Bursar",   color:"#B45309",desc:"Dedicated finance role — fees, billing and payment management only"},
-  {id:"student", label:"Member",  color:"#1A4FA0",desc:"Enrolled students — view own records, results and bills"},
+  {id:"teacher", label:"Staff",  color:"#1A8C3C",desc:"Teaching staff — upload results, manage their group report cards"},
+  {id:"manager", label:"Manager",  color:"#7C3AED",desc:"Finance officer — full access to billing, billing and payments"},
+  {id:"bursar",  label:"Finance Manager",   color:"#B45309",desc:"Dedicated finance role — billing, billing and payment management only"},
+  {id:"student", label:"Member",  color:"#111827",desc:"Enrolled members — view own records, results and bills"},
 ];
 function SaveTemplateForm({roles,onSave}){
   const[name,setName]=useState("");const[role,setRole]=useState("teacher");
@@ -3884,7 +3849,7 @@ function SaveTemplateForm({roles,onSave}){
       {roles.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}
     </select>
     <button onClick={()=>{if(name.trim()){onSave(role,name.trim());setName("");}}} disabled={!name.trim()}
-      style={{padding:"8px 12px",borderRadius:8,background:"#1A4FA0",color:"#fff",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,opacity:name.trim()?1:.5}}>
+      style={{padding:"8px 12px",borderRadius:8,background:"#111827",color:"#fff",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,opacity:name.trim()?1:.5}}>
       Save Template
     </button>
   </div>);
@@ -3905,7 +3870,7 @@ function ApplyTemplateBtn({roles,templateName,onApply}){
 
 // ─── PAYMENTS PAGE (Admin) ────────────────────────────────────────────────────
 
-// ─── MY PAYMENTS (Student) ────────────────────────────────────────────────────
+// ─── MY PAYMENTS (Member) ────────────────────────────────────────────────────
 
 
 
@@ -3920,11 +3885,11 @@ function ApplyTemplateBtn({roles,templateName,onApply}){
 // Reusable "All | Nursery | Primary | Secondary …" tab bar
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FEES MODULE — Admin + Student Pages
+// FEES MODULE — Admin + Member Pages
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const TERMS = ["1st Term","2nd Term","3rd Term"];
+const TERMS = ["1st Period","2nd Period","3rd Period"];
 const STUDENT_TYPES = [{value:"all",label:"All Members"},{value:"new",label:"New Members"},{value:"old",label:"Old Members"}];
 
 // ─── FEE ITEMS PAGE (Admin) ───────────────────────────────────────────────────
@@ -3933,13 +3898,13 @@ const STUDENT_TYPES = [{value:"all",label:"All Members"},{value:"new",label:"New
 
 // ─── FEE GENERATE PAGE (Admin) ────────────────────────────────────────────────
 
-// ─── MY BILL PAGE (Student) ───────────────────────────────────────────────────
+// ─── MY BILL PAGE (Member) ───────────────────────────────────────────────────
 
 // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
 
 // ─── TRANSCRIPT PDF BUILDER ───────────────────────────────────────────────────
 function buildMultiPeriodTranscriptHTML({studentName,studentId,className,sectionName,gender,dob,academicYear,subjects,classPeriods,gradingSchema,settings,today,logoBase64}){
-  const schoolName=settings?.school_name||"Your School";
+  const schoolName=settings?.school_name||"Your Organization";
   const schoolAddr=settings?.school_address||"";
   const schoolPhone=settings?.school_phone||"";
   const logoUrl=logoBase64||settings?.portal_logo_base64||"";
@@ -3981,7 +3946,7 @@ function buildMultiPeriodTranscriptHTML({studentName,studentId,className,section
 
   const buildChunkTable=(chunk)=>{
     const cps=chunk.periods;const si=chunk.start;
-    // Row 1 — Class name: navy bg, white text, underlined, left border accent between groups
+    // Row 1 — Group name: navy bg, white text, underlined, left border accent between groups
     const classHdrs=cps.map((p,ci)=>`
       <th colspan="5" style="background:#1e3a5f;color:#fff;padding:8px 6px;text-align:center;
         font-size:11px;font-weight:700;border:1px solid #2a4a72;
@@ -3989,18 +3954,18 @@ function buildMultiPeriodTranscriptHTML({studentName,studentId,className,section
         text-decoration:underline;text-underline-offset:4px;letter-spacing:.4px">
         ${p.class_name||"—"}
       </th>`).join("");
-    // Row 2 — Academic year: slightly lighter navy, italic
+    // Row 2 — Performance year: slightly lighter navy, italic
     const yearHdrs=cps.map((p,ci)=>`
       <th colspan="5" style="background:#2c4f7c;color:#c8dff5;padding:6px;text-align:center;
         font-size:10px;font-weight:400;border:1px solid #3a5f8a;font-style:italic;
         ${ci>0?"border-left:3px solid #6b9fd4":""}">
         ${p.academic_year||"—"}
       </th>`).join("");
-    // Row 3 — Term headers: medium blue, term cols lighter; avg/grade cols darker with gold text
+    // Row 3 — Period headers: medium blue, term cols lighter; avg/grade cols darker with gold text
     const termHdrs=cps.map((_,ci)=>`
-      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px;${ci>0?"border-left:3px solid #6b9fd4":""}">1st<br/>Term</th>
-      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px">2nd<br/>Term</th>
-      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px">3rd<br/>Term</th>
+      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px;${ci>0?"border-left:3px solid #6b9fd4":""}">1st<br/>Period</th>
+      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px">2nd<br/>Period</th>
+      <th style="background:#3b6fa8;color:#e8f2fc;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #4a7dba;min-width:52px">3rd<br/>Period</th>
       <th style="background:#1e3a5f;color:#f0c040;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #2a4a72;min-width:46px">AVG</th>
       <th style="background:#1e3a5f;color:#f0c040;padding:6px 4px;text-align:center;font-size:8.5px;font-weight:700;border:1px solid #2a4a72;min-width:38px">GRD</th>`
     ).join("");
@@ -4026,7 +3991,7 @@ ${cells}
 <table style="width:100%;border-collapse:collapse;border:2px solid #1e3a5f">
 <thead>
 <tr>
-  <th rowspan="3" style="background:#1e3a5f;color:#fff;padding:8px 10px;text-align:left;min-width:140px;border:1px solid #2a4a72;font-size:9.5px;font-weight:700;vertical-align:bottom;letter-spacing:.5px;text-transform:uppercase">Subject</th>
+  <th rowspan="3" style="background:#1e3a5f;color:#fff;padding:8px 10px;text-align:left;min-width:140px;border:1px solid #2a4a72;font-size:9.5px;font-weight:700;vertical-align:bottom;letter-spacing:.5px;text-transform:uppercase">Category</th>
   ${classHdrs}
 </tr>
 <tr>${yearHdrs}</tr>
@@ -4039,7 +4004,7 @@ ${cells}
   const allTables=chunks.map((chunk,ci)=>`
 <div class="chunk" style="margin-bottom:${ci<chunks.length-1?22:0}px">
   ${ci>0?`<div style="margin:8px 0 6px;padding:5px 12px;background:#eef4fb;border-left:3px solid #3b6fa8;font-size:8.5px;color:#3b6fa8;font-weight:700;letter-spacing:.5px;text-transform:uppercase">
-    ↓ Continued — Class Periods ${chunk.start+1}–${chunk.start+chunk.periods.length}
+    ↓ Continued — Group Periods ${chunk.start+1}–${chunk.start+chunk.periods.length}
   </div>`:""}
   ${buildChunkTable(chunk)}
 </div>`).join("");
@@ -4068,7 +4033,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 .school-sub{font-size:9px;color:#6b7e8f;margin:3px 0}
 .doc-badge{display:inline-block;margin-top:6px;padding:3px 16px;border:1px solid #1e3a5f;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1e3a5f}
 .hdr-date{text-align:right;font-size:9px;color:#6b7e8f;min-width:90px;flex-shrink:0;white-space:nowrap}
-/* Student info band */
+/* Member info band */
 .student-band{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;border:1px solid #b8ccd8;margin-bottom:16px;background:#f4f8fb}
 .si-cell{padding:8px 12px;border-right:1px solid #ccdbe6}
 .si-cell:last-child{border-right:none}
@@ -4093,7 +4058,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 .stamp{text-align:center;font-size:8px;color:#9bb8d4;line-height:1.6}
 .stamp-c{width:86px;height:86px;border-radius:50%;border:1.5px dashed #b8ccd8;margin:0 auto 6px;display:flex;align-items:center;justify-content:center}
 .no-print{position:fixed;top:16px;right:16px;z-index:9999;display:flex;gap:8px;font-family:system-ui,sans-serif}
-.hint-bar{position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(30,58,95,.93);color:#bfdbfe;font-size:11.5px;padding:8px 18px;text-align:center;font-family:system-ui,sans-serif}
+.hint-bar{position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(30,58,95,.93);color:#D1D5DB;font-size:11.5px;padding:8px 18px;text-align:center;font-family:system-ui,sans-serif}
 @media print{
   @page{size:A4 landscape;margin:10mm}
   html,body{background:#fff;padding:0}
@@ -4107,7 +4072,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 
 <div class="no-print">
   <button onclick="document.querySelectorAll('.no-print,.hint-bar').forEach(function(e){e.style.display='none'});window.print();document.querySelectorAll('.no-print').forEach(function(e){e.style.display='flex'});document.querySelectorAll('.hint-bar').forEach(function(e){e.style.display='block'})"
-    style="padding:10px 24px;background:#1A4FA0;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+    style="padding:10px 24px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)">
     🖨️ Print / Save PDF
   </button>
   <button onclick="window.close()"
@@ -4132,12 +4097,12 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
     <div class="school-info">
       <div class="school-name">${schoolName}</div>
       ${schoolAddr||schoolPhone?`<div class="school-sub">${schoolAddr}${schoolPhone?" &nbsp;|&nbsp; Tel: "+schoolPhone:""}</div>`:""}
-      <div class="doc-badge">Official Academic Transcript</div>
+      <div class="doc-badge">Official Performance History</div>
     </div>
     <div class="hdr-date">Generated on<br/><strong>${today}</strong></div>
   </div>
 
-  <!-- Student info -->
+  <!-- Member info -->
   <div class="student-band">
     <div class="si-cell">
       <div class="si-lbl">Full Name</div>
@@ -4158,12 +4123,12 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
   </div>
 
   <!-- Tables -->
-  <div class="sec-hd">Academic Performance Record</div>
+  <div class="sec-hd">Performance Record</div>
   ${allTables}
 
   <!-- Summary -->
   <div class="summary">
-    <div class="sc"><div class="sc-val">${subjects.length}</div><div class="sc-lbl">Subjects Taken</div></div>
+    <div class="sc"><div class="sc-val">${subjects.length}</div><div class="sc-lbl">Categories Taken</div></div>
     <div class="sc"><div class="sc-val">${passes}</div><div class="sc-lbl">Passed</div></div>
     <div class="sc"><div class="sc-val">${subjects.length-passes}</div><div class="sc-lbl">Failed</div></div>
     <div class="sc"><div class="sc-val">${classPeriods.length}</div><div class="sc-lbl">Group Periods</div></div>
@@ -4189,8 +4154,8 @@ body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:11px;paddi
 function buildTranscriptHTML({studentName,studentId,className,sectionName,gender,dob,academicYear,subjects,gradingSchema,settings,today,columns=null,structureName=null,logoBase64}){
   // subjects: [{name, scores: {[colName]: value}}]
   // columns: string[] | null — if null uses legacy 9-col (T1 CA/Exam/Total × 3)
-  const schoolName=settings?.school_name||"Your School";
-  const schoolAddr=settings?.school_address||"No. 1 Renaissance Avenue, Abuja, FCT";
+  const schoolName=settings?.school_name||"Your Organization";
+  const schoolAddr=settings?.school_address||"No. 1 Business Avenue, Abuja, FCT";
   const schoolPhone=settings?.school_phone||"";
   const logoUrl=logoBase64||settings?.portal_logo_base64||"";
 
@@ -4245,7 +4210,7 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
     return `<tr style="background:${bg}">
       <td style="padding:6px 8px;border:1px solid #e2e8f0;font-size:10px;font-weight:600">${s.name||s.subject_name||""}</td>
       ${scoreCells}
-      <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:10px;font-weight:800;color:#0d2d6e">${ann!=null?ann.toFixed(1):"—"}</td>
+      <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:10px;font-weight:800;color:#030712">${ann!=null?ann.toFixed(1):"—"}</td>
       <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:10px;font-weight:800;color:${grade==="A"?"#15803d":grade==="B"?"#1d4ed8":grade==="F"?"#b91c1c":"#92400e"}">${grade}</td>
       <td style="padding:6px 8px;border:1px solid #e2e8f0;font-size:10px;color:#374151">${remark}</td>
     </tr>`;
@@ -4262,11 +4227,11 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:"Times New Roman",serif;background:#fff;color:#111;padding:28px 32px;font-size:11px}
   @media print{@page{size:A4 landscape;margin:12mm}body{padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-  .header{display:flex;align-items:center;gap:16px;border-bottom:3px double #0d2d6e;padding-bottom:14px;margin-bottom:14px}
+  .header{display:flex;align-items:center;gap:16px;border-bottom:3px double #030712;padding-bottom:14px;margin-bottom:14px}
   .logo{width:64px;height:64px;flex-shrink:0;object-fit:contain}
-  .logo-placeholder{width:64px;height:64px;border-radius:50%;background:#0d2d6e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:900;text-align:center;flex-shrink:0}
+  .logo-placeholder{width:64px;height:64px;border-radius:50%;background:#030712;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:900;text-align:center;flex-shrink:0}
   .school-info{flex:1;text-align:center}
-  .school-name{font-size:20px;font-weight:900;color:#0d2d6e;letter-spacing:.3px}
+  .school-name{font-size:20px;font-weight:900;color:#030712;letter-spacing:.3px}
   .school-addr{font-size:10px;color:#555;margin:2px 0}
   .doc-title{font-size:13px;font-weight:900;color:#b91c1c;text-transform:uppercase;letter-spacing:2px;margin-top:5px;border-top:1px solid #ddd;padding-top:5px}
   .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid #d1d5db;border-radius:4px;margin-bottom:14px;overflow:hidden;font-size:10.5px}
@@ -4275,15 +4240,15 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   .info-label{font-size:9px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:2px}
   .info-val{font-weight:700;color:#111}
   table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:14px}
-  thead tr{background:#0d2d6e;color:#fff}
+  thead tr{background:#030712;color:#fff}
   th{padding:7px 6px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.3px;border:1px solid #1e40af}
   th.subj-col{text-align:left}
-  .group-hdr{background:#1e3a8a;color:#bfdbfe;font-size:9px;font-weight:700;padding:4px 6px;text-align:center;letter-spacing:.5px;border:1px solid #1e40af}
+  .group-hdr{background:#1e3a8a;color:#D1D5DB;font-size:9px;font-weight:700;padding:4px 6px;text-align:center;letter-spacing:.5px;border:1px solid #1e40af}
   .summary{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
   .sum-box{border:1px solid #d1d5db;border-radius:6px;padding:8px 14px;text-align:center;min-width:100px}
-  .sum-val{font-size:18px;font-weight:900;color:#0d2d6e}
+  .sum-val{font-size:18px;font-weight:900;color:#030712}
   .sum-lbl{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-  .footer{border-top:2px solid #0d2d6e;padding-top:14px;margin-top:8px;display:flex;justify-content:space-between;align-items:flex-end}
+  .footer{border-top:2px solid #030712;padding-top:14px;margin-top:8px;display:flex;justify-content:space-between;align-items:flex-end}
   .sig-box{text-align:center;min-width:140px}
   .sig-line{border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:9px;color:#374151}
   .watermark{font-size:9px;color:#9ca3af;text-align:center;margin-top:8px;font-style:italic}
@@ -4293,7 +4258,7 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
     <div class="school-info">
       <div class="school-name">${schoolName.toUpperCase()}</div>
       <div class="school-addr">${schoolAddr}${schoolPhone?" · Tel: "+schoolPhone:""}</div>
-      <div class="doc-title">Official Academic Transcript</div>
+      <div class="doc-title">Official Performance History</div>
     </div>
     <div style="text-align:right;font-size:9px;color:#6b7280;min-width:90px">Generated:<br/><strong>${today}</strong></div>
   </div>
@@ -4301,7 +4266,7 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   <div class="info-grid">
     <div class="info-cell"><div class="info-label">Member Name</div><div class="info-val">${studentName}</div></div>
     <div class="info-cell"><div class="info-label">Member ID / Admission No.</div><div class="info-val">${studentId||"—"}</div></div>
-    <div class="info-cell"><div class="info-label">Academic Year</div><div class="info-val">${academicYear}</div></div>
+    <div class="info-cell"><div class="info-label">Performance Year</div><div class="info-val">${academicYear}</div></div>
     <div class="info-cell"><div class="info-label">Group</div><div class="info-val">${className||"—"}</div></div>
     <div class="info-cell"><div class="info-label">Section / Department</div><div class="info-val">${sectionName||"—"}</div></div>
     <div class="info-cell" style="border-right:none"><div class="info-label">Gender</div><div class="info-val">${gender||"—"}${dob?` · DOB: ${dob}`:""}</div></div>
@@ -4311,17 +4276,17 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
     <thead>
       ${isCustom
         ?`<tr>
-          <th class="subj-col" style="min-width:130px">Subject${structureName?` <span style="font-weight:400;font-size:8px;opacity:.8">(${structureName})</span>`:"" }</th>
+          <th class="subj-col" style="min-width:130px">Category${structureName?` <span style="font-weight:400;font-size:8px;opacity:.8">(${structureName})</span>`:"" }</th>
           ${columns.map(col=>`<th style="min-width:52px">${col}</th>`).join("")}
           <th style="min-width:50px">Score</th>
           <th>Grade</th>
           <th style="min-width:70px">Remark</th>
         </tr>`
         :`<tr>
-          <th class="subj-col" rowspan="2" style="min-width:130px">Subject</th>
-          <th class="group-hdr" colspan="3">First Term</th>
-          <th class="group-hdr" colspan="3">Second Term</th>
-          <th class="group-hdr" colspan="3">Third Term</th>
+          <th class="subj-col" rowspan="2" style="min-width:130px">Category</th>
+          <th class="group-hdr" colspan="3">First Period</th>
+          <th class="group-hdr" colspan="3">Second Period</th>
+          <th class="group-hdr" colspan="3">Third Period</th>
           <th rowspan="2" style="min-width:50px">Annual Avg</th>
           <th rowspan="2">Grade</th>
           <th rowspan="2" style="min-width:70px">Remark</th>
@@ -4337,9 +4302,9 @@ function buildTranscriptHTML({studentName,studentId,className,sectionName,gender
   </table>
 
   <div class="summary">
-    <div class="sum-box"><div class="sum-val">${subjects.length}</div><div class="sum-lbl">Subjects Taken</div></div>
-    <div class="sum-box"><div class="sum-val">${passes}</div><div class="sum-lbl">Subjects Passed</div></div>
-    <div class="sum-box"><div class="sum-val">${subjects.length-passes}</div><div class="sum-lbl">Subjects Failed</div></div>
+    <div class="sum-box"><div class="sum-val">${subjects.length}</div><div class="sum-lbl">Categories Taken</div></div>
+    <div class="sum-box"><div class="sum-val">${passes}</div><div class="sum-lbl">Categories Passed</div></div>
+    <div class="sum-box"><div class="sum-val">${subjects.length-passes}</div><div class="sum-lbl">Categories Failed</div></div>
     <div class="sum-box"><div class="sum-val" style="color:${overallAvg!=null&&overallAvg>=50?"#15803d":"#b91c1c"}">${overallAvg!=null?overallAvg.toFixed(1)+"%" :"—"}</div><div class="sum-lbl">Overall Average</div></div>
     <div class="sum-box"><div class="sum-val">${overallAvg!=null?gradeOf(overallAvg):"—"}</div><div class="sum-lbl">Overall Grade</div></div>
   </div>
@@ -4363,11 +4328,11 @@ function openTranscriptPDF(html, showPDF=null, studentName="", academicYear=""){
 // ─── STAMP TEMPLATE GENERATOR ────────────────────────────────────────────────
 
 const STAMP_TEMPLATES=[
-  {id:"blue",  label:"Classic Blue",   style:"blue"},
+  {id:"blue",  label:"Classic Mono",   style:"blue"},
   {id:"red",   label:"Official Red",   style:"red"},
   {id:"gold",  label:"Gold Premium",   style:"gold"},
   {id:"green", label:"Emerald",        style:"green"},
-  {id:"orange",label:"School Brand",   style:"orange"},
+  {id:"orange",label:"Organization Brand",   style:"orange"},
 ];
 
 // ─── SETTINGS HELPERS — defined OUTSIDE SettingsPage so they are stable
@@ -4382,7 +4347,7 @@ const STAMP_TEMPLATES=[
 
 // ─── RESULT APPROVALS PAGE ────────────────────────────────────────────────────
 
-// ─── SIGNATURES PAGE (removed — principal signature is set in Settings > Academic) ───
+// ─── SIGNATURES PAGE (removed — principal signature is set in Settings > Performance) ───
 
 // ─── REPORT CARD SETTINGS PAGE ────────────────────────────────────────────────
 
@@ -4402,7 +4367,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
   const gCol=g=>{
     const u=(g||"").toUpperCase();
     if(u==="A"||u==="A+"||u==="A1")return"#15803D";
-    if(u==="B"||u==="B+"||u==="B2"||u==="B3")return"#1A4FA0";
+    if(u==="B"||u==="B+"||u==="B2"||u==="B3")return"#111827";
     if(u==="C"||u==="C+"||u==="C4"||u==="C5"||u==="C6")return"#D97706";
     if(u==="D"||u==="D7")return"#EA580C";
     if(u==="E"||u==="E8")return"#DC2626";
@@ -4411,7 +4376,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
     const n=+u;
     if(!isNaN(n)){
       if(n>=70)return"#15803D";
-      if(n>=60)return"#1A4FA0";
+      if(n>=60)return"#111827";
       if(n>=50)return"#D97706";
       if(n>=40)return"#EA580C";
       return"#991B1B";
@@ -4419,11 +4384,11 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
     return"#475569";// fallback: visible dark slate
   };
 
-  const schoolName=settings.school_name||"Your School";
-  const schoolAddress=settings.school_address||"No. 1 Renaissance Avenue, Abuja, FCT";
+  const schoolName=settings.school_name||"Your Organization";
+  const schoolAddress=settings.school_address||"No. 1 Business Avenue, Abuja, FCT";
   const schoolMotto=settings.school_motto||"Excellence in Learning";
   const classTeacherTitle=settings.report_class_teacher_title||"Group Staff";
-  const principalTitle=settings.report_principal_title||"School Principal";
+  const principalTitle=settings.report_principal_title||"Organization Principal";
   const footerText=settings.report_footer_text||"This report card is computer-generated.";
   const today=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
   const fmtDate=v=>{ try{ return v?new Date(v).toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"}):"—"; }catch{return"—";} };
@@ -4438,8 +4403,8 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
 
   const logoHtml=logoSrc
     ?`<img src="${logoSrc}" style="width:44px;height:44px;object-fit:contain;border-radius:4px;" alt="logo"/>`
-    :`<div style="width:44px;height:44px;border-radius:50%;background:#E8560A;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #fff;">
-        <div style="width:34px;height:34px;border-radius:50%;background:#1A4FA0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;font-family:Georgia,serif;">RGS</div>
+    :`<div style="width:44px;height:44px;border-radius:50%;background:#111827;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #fff;">
+        <div style="width:34px;height:34px;border-radius:50%;background:#111827;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;font-family:Georgia,serif;">JD</div>
       </div>`;
 
   const cardHtml=students.map(stu=>{
@@ -4488,20 +4453,20 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
       const subjSty=`padding:${sp6};border:1px solid ${bdr};font-weight:600;font-size:8px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.3;`;
       const rows=results.map((r,i)=>{const g=getGrade(r.total_score,gradingSchema);const rem=getRemark(r.total_score,gradingSchema);const rc=gCol(g);const cs=_parseCS(r);const scoreTds=_hasCC?_cc.map(c=>`<td style="${scSty}">${cs[c.component_name]!=null?cs[c.component_name]:"—"}</td>`).join(""):`<td style="${scSty}">${r.ca_score!=null?r.ca_score:"—"}</td><td style="${scSty}">${r.exam_score!=null?r.exam_score:"—"}</td>`;return`<tr style="background:${i%2===0?"#fff":"#f1f6fc"};"><td style="${subjSty}">${r.section_subjects?.name||"—"}</td>${scoreTds}<td style="padding:3px 4px;border:1px solid ${bdr};text-align:center;font-weight:800;font-size:9px;">${r.total_score??"—"}</td><td style="padding:3px 4px;border:1px solid ${bdr};text-align:center;font-weight:700;font-size:9px;color:${rc};">${g}</td><td style="padding:3px 5px;border:1px solid ${bdr};font-size:8px;color:${rc};font-weight:600;">${rem}</td></tr>`;}).join("");
       const perSubjMax=caMax+exMax;const maxScore=results.length*perSubjMax;
-      const hSty=`text-align:center;padding:3px 2px;font-size:6.5px;font-weight:700;color:#fff;background:#1A4FA0;border:1px solid ${bdr};text-transform:uppercase;vertical-align:bottom;line-height:1.25;word-wrap:break-word;overflow-wrap:break-word;`;
+      const hSty=`text-align:center;padding:3px 2px;font-size:6.5px;font-weight:700;color:#fff;background:#111827;border:1px solid ${bdr};text-transform:uppercase;vertical-align:bottom;line-height:1.25;word-wrap:break-word;overflow-wrap:break-word;`;
       const _brk=(s)=>s.replace(/\s+/g,"<br>");
       const vScoreHdr=_hasCC?_cc.map(c=>`<th style="${hSty}">${_brk(c.component_name)}<br><span style="font-size:6px;opacity:.85;">(${c.value_or_formula})</span></th>`).join(""):`<th style="${hSty}">CA<br><span style="font-size:6px;opacity:.85;">(${caMax})</span></th><th style="${hSty}">EXAM<br><span style="font-size:6px;opacity:.85;">(${exMax})</span></th>`;
       const scoreColCount=_hasCC?_cc.length:2;
       const colgroup=`<colgroup><col style="width:auto;"/>${'<col style="width:38px;"/>'.repeat(scoreColCount)}<col style="width:36px;"/><col style="width:28px;"/><col style="width:58px;"/></colgroup>`;
-      const watermark=logoSrc?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;"><img src="${logoSrc}" style="width:220px;height:220px;object-fit:contain;"/></div>`:`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;font-size:110px;font-weight:900;color:#1A4FA0;font-family:Georgia,serif;">RGS</div>`;
+      const watermark=logoSrc?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;"><img src="${logoSrc}" style="width:220px;height:220px;object-fit:contain;"/></div>`:`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.04;pointer-events:none;z-index:0;font-size:110px;font-weight:900;color:#111827;font-family:Georgia,serif;">JD</div>`;
       return `<div class="report-card" style="font-family:${rcFontFamily};color:#1a202c;background:#fff;overflow:hidden;">
-        <div style="height:5px;background:linear-gradient(90deg,#1A4FA0 30%,#1A8C3C 50%,#E8560A 70%);"></div>
-        <div style="background:linear-gradient(135deg,#0d2d6e,#1A4FA0);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="height:5px;background:linear-gradient(90deg,#111827 30%,#1A8C3C 50%,#111827 70%);"></div>
+        <div style="background:linear-gradient(135deg,#030712,#111827);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;">
           ${logoHtml}
           <div style="flex:1;text-align:center;">
             <div style="font-size:17px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${schoolName}</div>
             <div style="font-size:9px;color:#b3d4ff;font-style:italic;margin-top:2px;">${schoolAddress}</div>
-            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report Card"}</div>
+            <div style="margin-top:5px;display:inline-block;background:rgba(232,86,10,.85);color:#fff;padding:3px 14px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${cls?.sections?.name||"Member Report"}</div>
           </div>
           <div style="text-align:center;min-width:64px;flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 8px;">
             <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">${overallG}</div>
@@ -4512,12 +4477,12 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
         <div style="background:#1A8C3C;color:#fff;padding:3px 16px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.5px;">${session?.name||""} ${(term?.name||"").toUpperCase()} FINAL REPORT</div>
         <div style="margin:${sm} 10px;border:1px solid ${bdr};font-size:8.5px;display:flex;background:#fafcff;">
           <div style="flex:1;border-right:1px solid ${bdr};">
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Id</span><b style="color:#1A4FA0;">${stu.student_id||stu.id||"—"}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Id</span><b style="color:#111827;">${stu.student_id||stu.id||"—"}</b></div>
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Full Name</span><b style="font-size:9.5px;">${stuName}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Sex</span><span>${stu.gender||"—"}</span></div>
           </div>
           <div style="flex:1;border-right:1px solid ${bdr};">
-            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Session / Term</span><b>${session?.name||""} / ${term?.name||""}</b></div>
+            <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Cycle / Period</span><b>${session?.name||""} / ${term?.name||""}</b></div>
             <div style="padding:3px 8px;border-bottom:1px solid #e8edf3;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Group</span><b>${cls?.name||"—"}</b></div>
             <div style="padding:3px 8px;display:flex;justify-content:space-between;"><span style="color:#7a8ba3;">Issued</span><span>${today}</span></div>
           </div>
@@ -4529,19 +4494,19 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
         </div>
         <div style="display:flex;gap:6px;margin:0 10px;">
           <div style="flex:1;min-width:0;position:relative;">
-            <div style="background:#1A4FA0;color:#fff;text-align:center;padding:3px;font-weight:700;font-size:9px;letter-spacing:.5px;border:1px solid ${bdr};border-bottom:none;">Cognitive Domain</div>
+            <div style="background:#111827;color:#fff;text-align:center;padding:3px;font-weight:700;font-size:9px;letter-spacing:.5px;border:1px solid ${bdr};border-bottom:none;">Cognitive Domain</div>
             <div style="position:relative;">
               ${watermark}
               <table style="width:100%;border-collapse:collapse;table-layout:fixed;position:relative;z-index:1;">
                 ${colgroup}
-                <thead><tr><th style="padding:2px 5px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;vertical-align:bottom;">Subject</th>${vScoreHdr}<th style="${hSty}">TOTAL<br><span style="font-size:6px;opacity:.85;">(${perSubjMax})</span></th><th style="padding:2px 2px;border:1px solid ${bdr};text-align:center;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;width:28px;vertical-align:bottom;">Grade</th><th style="padding:2px 4px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#1A4FA0;font-weight:700;vertical-align:bottom;">Remark</th></tr></thead>
+                <thead><tr><th style="padding:2px 5px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#111827;font-weight:700;vertical-align:bottom;">Category</th>${vScoreHdr}<th style="${hSty}">TOTAL<br><span style="font-size:6px;opacity:.85;">(${perSubjMax})</span></th><th style="padding:2px 2px;border:1px solid ${bdr};text-align:center;font-size:8px;color:#fff;background:#111827;font-weight:700;width:28px;vertical-align:bottom;">Grade</th><th style="padding:2px 4px;border:1px solid ${bdr};text-align:left;font-size:8px;color:#fff;background:#111827;font-weight:700;vertical-align:bottom;">Remark</th></tr></thead>
                 <tbody>${rows}</tbody>
               </table>
             </div>
           </div>
           <div style="width:105px;flex-shrink:0;border:1px solid ${bdr};text-align:center;display:flex;flex-direction:column;justify-content:center;padding:10px 5px;background:linear-gradient(180deg,#f0f6ff,#fff);">
             <div style="font-size:8px;color:#7a8ba3;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Total Score</div>
-            <div style="font-size:20px;font-weight:900;color:#1A4FA0;margin-top:3px;">${totalScore}<span style="font-size:11px;color:#94a3b8;"> / ${maxScore}</span></div>
+            <div style="font-size:20px;font-weight:900;color:#111827;margin-top:3px;">${totalScore}<span style="font-size:11px;color:#94a3b8;"> / ${maxScore}</span></div>
             <div style="border-top:2px solid #1A8C3C;margin:8px 12px;"></div>
             <div style="font-size:15px;font-weight:900;color:${gc};">${avg.toFixed(1)}%</div>
             <div style="font-size:11px;font-weight:800;color:${gc};margin-top:2px;">${overallG}</div>
@@ -4549,42 +4514,42 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
           </div>
         </div>
         <div style="margin:${sm} 10px;border:1px solid ${bdr};background:#fafcff;">
-          <div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#1A4FA0;letter-spacing:.5px;">Cognitive Grade Keys</div>
+          <div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#111827;letter-spacing:.5px;">Cognitive Grade Keys</div>
           <div style="padding:3px 8px;font-size:8px;color:#475569;">${gradeKey}</div>
         </div>
         ${opts.show_cae&&caeTraits.length?`<div style="margin:0 10px ${sm};border:1px solid ${bdr};"><div style="text-align:center;padding:3px;font-weight:700;font-size:8.5px;color:#fff;background:#1A8C3C;letter-spacing:.5px;">Affective Domain</div><div style="display:flex;flex-wrap:wrap;">${caeTraits.map(trait=>{const caeR=caeResults.find(c=>c.trait_id===trait.id);const rating=caeR?caeRatings.find(r=>r.id===caeR.rating_id):null;return`<div style="width:50%;padding:2px 8px;font-size:8px;display:flex;justify-content:space-between;border-bottom:1px solid #e8edf3;"><span style="font-weight:600;">${trait.category}</span><span style="font-weight:700;color:${rating?"#1A8C3C":"#94a3b8"};">${rating?(rating.symbol||"")+" "+rating.label:"—"}</span></div>`;}).join("")}</div><div style="padding:2px 8px;font-size:7.5px;color:#64748b;border-top:1px solid #e2e8f0;"><b>Scale:</b> ${ratingLegend}</div></div>`:""}
         <div style="margin:${sm} 10px;border-top:1px solid ${bdr};padding-top:${sm};font-size:8px;">
           ${opts.show_teacher_comment&&classTeacherComment?`
           <div style="margin-bottom:${sm};">
-            <div style="font-weight:700;color:#1A4FA0;font-size:9px;">${classTeacherTitle}</div>
+            <div style="font-weight:700;color:#111827;font-size:9px;">${classTeacherTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${classTeacherComment}</div>
           </div>`:""}
           ${opts.show_principal_comment&&principalComment?`
           <div style="margin-bottom:${sm};">
-            <div style="font-weight:700;color:#E8560A;font-size:9px;">${principalTitle}</div>
+            <div style="font-weight:700;color:#111827;font-size:9px;">${principalTitle}</div>
             <div style="font-style:italic;font-size:8px;color:#475569;margin-top:2px;">${principalComment}</div>
           </div>`:""}
-          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#1A4FA0;">${settings._formTeacherName}</b></div>`:''}
+          ${settings._formTeacherName?`<div style="margin-bottom:8px;font-size:8.5px;border-top:1px solid ${bdr};padding-top:6px;"><span style="color:#7a8ba3;font-weight:600;">Form Staff: </span><b style="color:#111827;">${settings._formTeacherName}</b></div>`:''}
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
             <div>
-              <div style="font-weight:700;color:#E8560A;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
+              <div style="font-weight:700;color:#111827;font-size:9px;margin-bottom:6px;">${principalTitle}</div>
               <div style="position:relative;display:inline-block;min-width:160px;height:72px;margin-bottom:2px;">
                 ${principalSigUrl
                   ?`<img src="${principalSigUrl}" style="height:40px;max-width:150px;object-fit:contain;display:block;position:absolute;bottom:0;left:0;"/>`
-                  :`<div style="width:150px;border-bottom:1.5px solid #E8560A;position:absolute;bottom:0;left:0;"></div>`}
+                  :`<div style="width:150px;border-bottom:1.5px solid #111827;position:absolute;bottom:0;left:0;"></div>`}
                 ${principalStampUrl?`<img src="${principalStampUrl}" style="position:absolute;left:0;top:50%;transform:translateY(-50%);height:72px;width:72px;object-fit:contain;opacity:0.82;mix-blend-mode:multiply;"/>`:``}
               </div>
               <div style="font-size:7.5px;color:#94a3b8;">Signature &amp; Stamp</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:7.5px;color:#94a3b8;margin-bottom:2px;">Date of Issue</div>
-              <div style="font-size:9px;font-weight:700;color:#1A4FA0;">${today}</div>
+              <div style="font-size:9px;font-weight:700;color:#111827;">${today}</div>
             </div>
           </div>
         </div>
         ${opts.show_next_term?`<div style="margin:${sm2} 10px ${sm2};font-size:8.5px;display:flex;gap:24px;"><span><b style="color:#1A8C3C;">Closing Date:</b> ${termClosingDate}</span><span><b style="color:#1A8C3C;">Resumption Date:</b> ${ntbStr!=="—"?ntbStr:termOpeningDate}</span></div>`:""}
-        <div style="margin-top:4px;padding:4px 10px;background:linear-gradient(135deg,#0d2d6e,#1A4FA0);color:#b3d4ff;font-size:8px;text-align:center;">${footerText} · ${schoolName} · <b style="color:#fff;">${schoolMotto}</b></div>
-        <div style="height:4px;background:linear-gradient(90deg,#E8560A,#1A8C3C,#1A4FA0);"></div>
+        <div style="margin-top:4px;padding:4px 10px;background:linear-gradient(135deg,#030712,#111827);color:#b3d4ff;font-size:8px;text-align:center;">${footerText} · ${schoolName} · <b style="color:#fff;">${schoolMotto}</b></div>
+        <div style="height:4px;background:linear-gradient(90deg,#111827,#1A8C3C,#111827);"></div>
       </div>`;
     }
 
@@ -4641,7 +4606,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
       width:100%!important;max-width:100%!important;
       margin:0 auto 12px auto!important;
       box-shadow:none!important;
-      border:2px solid #1A4FA0!important;
+      border:2px solid #111827!important;
       border-radius:8px!important;
       overflow:hidden!important;
       page-break-after:always;break-after:always;
@@ -4689,7 +4654,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
         width:100%!important;max-width:100%!important;
         margin:0 auto!important;
         box-shadow:none!important;
-        border:2px solid #1A4FA0!important;
+        border:2px solid #111827!important;
         border-radius:8px!important;
         overflow:hidden!important;
         page-break-after:always;break-after:always;
@@ -4734,7 +4699,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
 <body>
   <div style="width:100%;margin:0;overflow:visible;background:transparent;">
     ${forStorage?'':`<div class="no-print" style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:10px;">
-      <button onclick="document.querySelectorAll('.no-print').forEach(function(e){e.style.display='none'});window.print();document.querySelectorAll('.no-print').forEach(function(e){e.style.display=''})" style="padding:10px 24px;background:#1A4FA0;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🖨️ Print / Save PDF</button>
+      <button onclick="document.querySelectorAll('.no-print').forEach(function(e){e.style.display='none'});window.print();document.querySelectorAll('.no-print').forEach(function(e){e.style.display=''})" style="padding:10px 24px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🖨️ Print / Save PDF</button>
       <button onclick="window.close()" style="padding:10px 16px;background:#fff;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">✕ Close</button>
     </div>
     <div class="no-print" style="text-align:center;padding:16px 0;color:#64748b;font-size:13px;font-family:sans-serif;">
@@ -4860,11 +4825,11 @@ function getTimeAgo(ts){
 // ─── ACADEMIC CALENDAR PAGE ───────────────────────────────────────────────────
 const CAL_TYPES=[
   {id:"resumption", label:"Resumption",   color:"#10B981"},
-  {id:"mid_term",   label:"Mid-Term",     color:"#F59E0B"},
+  {id:"mid_term",   label:"Mid-Period",     color:"#F59E0B"},
   {id:"exam",       label:"Exams",        color:"#6366F1"},
   {id:"vacation",   label:"Vacation",     color:"#EF4444"},
   {id:"holiday",    label:"Public Holiday",color:"#EC4899"},
-  {id:"event",      label:"School Event", color:"#0891B2"},
+  {id:"event",      label:"Organization Event", color:"#0891B2"},
   {id:"other",      label:"Other",        color:"#94A3B8"},
 ];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];

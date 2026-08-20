@@ -4,6 +4,7 @@ node_modules/
 
 # Build output
 dist/
+dist-mobile/
 build/
 
 # Environment variables (never commit real secrets)

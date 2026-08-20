@@ -3,7 +3,7 @@
  * Standalone React app for Android/iOS via Capacitor.
  * All screens, real Supabase data, matches the Claude design prototype.
  */
-const APP_VERSION = "v1.0.3";
+const APP_VERSION = PRODUCT.version;
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, UsersRound, Wallet, FileText, Menu,
@@ -19,33 +19,16 @@ import {
 import { db } from "./supabaseClient.js";
 import { fmt, fullName } from "./utils/grades.js";
 import { saveSession, loadSession, clearSession, saveSelectedSchool, loadSelectedSchool } from "./utils/session.js";
+import { PRODUCT } from "./config/product.js";
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 const CLARITY = {
-  id:"clarity", dark:false,
-  bg:"#EEF2F9", card:"#FFFFFF",
-  hdr:"linear-gradient(150deg,#1A4FA0 0%,#0d2d6e 100%)",
-  pri:"#1A4FA0", acc:"#E8560A",
-  txt:"#0F172A", sft:"#475569", mut:"#94A3B8", brd:"#E2E8F0",
-  tabBg:"#FFFFFF", tabA:"#1A4FA0", tabI:"#B0C0D4",
-  tag:{
-    blue:["#EFF6FF","#1A4FA0"], green:["#F0FDF4","#15803D"],
-    orange:["#FFF4EE","#E8560A"], red:["#FEF2F2","#DC2626"],
-    purple:["#F5F3FF","#7C3AED"], amber:["#FFFBEB","#D97706"],
-  },
+  id:"clarity", dark:false, bg:"#F7F7F5", card:"#FFFFFF", hdr:"linear-gradient(150deg,#111827 0%,#030712 100%)", pri:"#111827", acc:"#111827", txt:"#111827", sft:"#6B7280", mut:"#9CA3AF", brd:"#E5E7EB", tabBg:"#FFFFFF", tabA:"#111827", tabI:"#9CA3AF",
+  tag:{blue:["#F3F4F6","#111827"],green:["#F0FDF4","#166534"],orange:["#F3F4F6","#374151"],red:["#FEF2F2","#991B1B"],purple:["#F3F4F6","#4B5563"],amber:["#FFFBEB","#92400E"]},
 };
 const MIDNIGHT = {
-  id:"midnight", dark:true,
-  bg:"#070F1C", card:"#0F1E35",
-  hdr:"linear-gradient(150deg,#0A1628 0%,#1A4FA0 100%)",
-  pri:"#60A5FA", acc:"#FB923C",
-  txt:"#E8EFF8", sft:"#7A9AC0", mut:"#3D5570", brd:"#162340",
-  tabBg:"#0F1E35", tabA:"#60A5FA", tabI:"#3D5570",
-  tag:{
-    blue:["rgba(96,165,250,.12)","#60A5FA"], green:["rgba(74,222,128,.1)","#4ADE80"],
-    orange:["rgba(251,146,60,.12)","#FB923C"], red:["rgba(248,113,113,.1)","#F87171"],
-    purple:["rgba(167,139,250,.12)","#A78BFA"], amber:["rgba(251,191,36,.1)","#FCD34D"],
-  },
+  id:"midnight", dark:true, bg:"#000000", card:"#111111", hdr:"linear-gradient(150deg,#000000 0%,#1F2937 100%)", pri:"#F3F4F6", acc:"#F3F4F6", txt:"#F9FAFB", sft:"#9CA3AF", mut:"#6B7280", brd:"#2A2A2A", tabBg:"#111111", tabA:"#F3F4F6", tabI:"#6B7280",
+  tag:{blue:["rgba(243,244,246,.12)","#F3F4F6"],green:["rgba(134,239,172,.1)","#86EFAC"],orange:["rgba(243,244,246,.12)","#D1D5DB"],red:["rgba(252,165,165,.1)","#FCA5A5"],purple:["rgba(209,213,219,.12)","#D1D5DB"],amber:["rgba(252,211,77,.1)","#FCD34D"]},
 };
 
 // ─── ATOMS ────────────────────────────────────────────────────────────────────
@@ -57,7 +40,7 @@ function MBadge({t, label, color="blue"}){
   );
 }
 
-function MAvatar({name="?", size=38, color="#1A4FA0"}){
+function MAvatar({name="?", size=38, color="#111827"}){
   const parts=(name||"?").split(" ");
   const ini=((parts[0]?.[0]||"")+(parts[1]?.[0]||"")).toUpperCase()||"?";
   return(
@@ -284,7 +267,7 @@ function MAppHeader({t, user, role, onBack, backLabel, onToggleDark, pendingNoti
           </button>
           {pendingNotifs>0&&(
             <div style={{position:"absolute",top:6,right:6,width:8,height:8,
-              borderRadius:4,background:"#E8560A",border:"1.5px solid rgba(26,79,160,.6)"}}/>
+              borderRadius:4,background:"#111827",border:"1.5px solid rgba(26,79,160,.6)"}}/>
           )}
         </div>
       </div>
@@ -297,7 +280,7 @@ const TABS={
   admin:[
     {id:"dashboard",   label:"Home",       Icon:LayoutDashboard},
     {id:"students",    label:"Members",   Icon:UsersRound},
-    {id:"fee-tracker", label:"Fees",       Icon:Wallet},
+    {id:"fee-tracker", label:"Billing",       Icon:Wallet},
     {id:"results",     label:"Results",    Icon:FileText},
     {id:"more",        label:"More",       Icon:Menu},
   ],
@@ -363,7 +346,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
   const [picking,setPicking]=useState(!school && schools.length>1);
   const submit=()=>{ if(id.trim()&&pw.trim()) onLogin(id.trim(),pw.trim()); };
 
-  // School picker view
+  // Organization picker view
   if(picking || (!school && schools.length>1)){
     return(
       <div style={{height:"100%",background:t.hdr,display:"flex",flexDirection:"column",
@@ -386,13 +369,13 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
             letterSpacing:-.4,textAlign:"center",lineHeight:1.3}}>
             Select Your Business
           </div>
-          <div style={{color:"rgba(255,255,255,.55)",fontSize:13}}>Tap your school to continue</div>
+          <div style={{color:"rgba(255,255,255,.55)",fontSize:13}}>Tap your organization to continue</div>
         </div>
-        {/* School list sheet */}
+        {/* Organization list sheet */}
         <div style={{width:"100%",background:t.card,borderRadius:"28px 28px 0 0",
           padding:"26px 24px 40px",boxShadow:"0 -12px 40px rgba(0,0,0,.18)",maxHeight:"55vh",overflowY:"auto"}}>
           <div style={{fontSize:16,fontWeight:800,color:t.txt,marginBottom:16}}>
-            Available Schools
+            Available Organizations
           </div>
           {schools.map((s,i)=>(
             <div key={s.id||i} onClick={()=>{
@@ -412,7 +395,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:15,fontWeight:700,color:t.txt,
                   overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                  {s.name||"Unnamed School"}
+                  {s.name||"Unnamed Organization"}
                 </div>
                 {s.address&&<div style={{fontSize:12,color:t.sft,marginTop:2,
                   overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
@@ -448,7 +431,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
           letterSpacing:-.4,textAlign:"center",lineHeight:1.3,padding:"0 24px"}}>
           {school?.name||"JAMES-DENNING"}
         </div>
-        {/* School switcher link — shown when multiple schools exist */}
+        {/* Organization switcher link — shown when multiple schools exist */}
         {schools.length>1&&(
           <div onClick={()=>setPicking(true)}
             style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",
@@ -456,11 +439,11 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
               border:"1px solid rgba(255,255,255,.2)"}}>
             <Settings size={12} color="rgba(255,255,255,.7)"/>
             <span style={{color:"rgba(255,255,255,.8)",fontSize:12,fontWeight:600}}>
-              Change school
+              Change organization
             </span>
           </div>
         )}
-        <div style={{color:"rgba(255,255,255,.55)",fontSize:13}}>School Portal</div>
+        <div style={{color:"rgba(255,255,255,.55)",fontSize:13}}>Business Portal</div>
       </div>
       {/* Bottom sheet */}
       <div style={{width:"100%",background:t.card,borderRadius:"28px 28px 0 0",
@@ -478,7 +461,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
           <div style={{fontSize:11,fontWeight:700,color:t.sft,marginBottom:5,
             textTransform:"uppercase",letterSpacing:.5}}>Staff / Member ID</div>
           <input value={id} onChange={e=>setId(e.target.value)}
-            placeholder="e.g. TCH/0023 or RGS/0847"
+            placeholder="e.g. TCH/0023 or JD/0847"
             onKeyDown={e=>e.key==="Enter"&&document.getElementById("mpw")?.focus()}
             style={{width:"100%",height:46,borderRadius:12,border:`1.5px solid ${t.brd}`,
               background:t.bg,padding:"0 14px",fontSize:15,color:t.txt,
@@ -542,7 +525,7 @@ function AdminDashboard({t, ctx}){
       // Recent activity from payments
       const recent=payments.slice(0,4).map(p=>({
         name:p.student_name||p.student_id||"Member",
-        action:`Fee payment — ${fmt(+p.amount||0)}`,
+        action:`Billing payment — ${fmt(+p.amount||0)}`,
         time:"recently",
         color:"#15803D",
       }));
@@ -570,9 +553,9 @@ function AdminDashboard({t, ctx}){
         </div>
         <div style={{display:"flex",gap:9,marginBottom:18}}>
           <MStatCard t={t} label="EA Approved" value={stats.eaApproved}
-            sub="This term" color="green" icon={<CheckCircle2 size={18}/>}/>
-          <MStatCard t={t} label="Fees Collected" value={`₦${(stats.feesCollected/1000000).toFixed(1)}M`}
-            sub="This term" color="orange" icon={<TrendingUp size={18}/>}/>
+            sub="This period" color="green" icon={<CheckCircle2 size={18}/>}/>
+          <MStatCard t={t} label="Billing Collected" value={`₦${(stats.feesCollected/1000000).toFixed(1)}M`}
+            sub="This period" color="orange" icon={<TrendingUp size={18}/>}/>
         </div>
         {/* Quick actions */}
         <MSHdr t={t} title="Quick Actions"/>
@@ -644,7 +627,7 @@ function AdminStudents({t, ctx}){
   return(
     <div style={{background:t.bg,minHeight:"100%",position:"relative"}}>
       <div style={{background:t.card,padding:"10px 14px",borderBottom:`1px solid ${t.brd}`}}>
-        <MSearchBar t={t} value={search} onChange={setSearch} placeholder="Search students…"/>
+        <MSearchBar t={t} value={search} onChange={setSearch} placeholder="Search members…"/>
       </div>
       <div style={{display:"flex",gap:7,padding:"10px 14px",overflowX:"auto"}}>
         {filters.map((f,i)=>(
@@ -654,7 +637,7 @@ function AdminStudents({t, ctx}){
       <div style={{padding:"0 14px 80px"}}>
         {loading?<MSpinner t={t}/>:
           <MCard t={t}>
-            {filtered.length===0?<MEmpty t={t} message="No students found"/>:
+            {filtered.length===0?<MEmpty t={t} message="No members found"/>:
               filtered.map((s,i)=>{
                 const name=fullName(s);
                 const sid=s.student_id||s.id||"—";
@@ -712,7 +695,7 @@ function AddStudentSheet({t, ctx, open, onClose, onDone}){
 
   const save=async()=>{
     if(!firstName.trim()||!lastName.trim()){ctx.notify?.("Enter first and last name","warn");return;}
-    if(!classId){ctx.notify?.("Select a class","warn");return;}
+    if(!classId){ctx.notify?.("Select a group","warn");return;}
     setSaving(true);
     try{
       await db.upsertStudent({
@@ -722,7 +705,7 @@ function AddStudentSheet({t, ctx, open, onClose, onDone}){
       ctx.notify?.("Member added!");
       setFirstName("");setLastName("");
       onDone?.();
-    }catch(e){ctx.notify?.("Failed to add student","error");}
+    }catch(e){ctx.notify?.("Failed to add member","error");}
     setSaving(false);
   };
 
@@ -805,8 +788,8 @@ function AdminFees({t, ctx}){
           );
         })}
       </div>
-      {/* Fee tracker list */}
-      <MSHdr t={t} title="Fee Tracker" action="Generate Bills" onAction={()=>setScreen("fee-generate")}/>
+      {/* Billing tracker list */}
+      <MSHdr t={t} title="Payment Tracker" action="Generate Bills" onAction={()=>setScreen("fee-generate")}/>
       <MCard t={t} style={{marginBottom:14}}>
         {bills.length===0?<MEmpty t={t} message="No bills found"/>:
           bills.map((b,i)=>{
@@ -909,7 +892,7 @@ function AdminResults({t, ctx}){
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:700,color:t.txt}}>
-                    {item.class_name||`Class ${item.class_id}`}</div>
+                    {item.class_name||`Group ${item.class_id}`}</div>
                   <div style={{display:"flex",gap:5,marginTop:3,flexWrap:"wrap"}}>
                     <MBadge t={t} label={`EA: ${item.ea_status||"none"}`} color={eaCol}/>
                     <MBadge t={t} label={`MA: ${item.ma_status||"none"}`} color={maCol}/>
@@ -934,7 +917,7 @@ function AdminResults({t, ctx}){
           })
         }
       </MCard>
-      <MSHdr t={t} title="Published Report Cards"/>
+      <MSHdr t={t} title="Published Reports"/>
       <MCard t={t} style={{marginBottom:14}}>
         {published.length===0?<MEmpty t={t} message="No published cards yet"/>:
           published.map((r,i)=>(
@@ -946,7 +929,7 @@ function AdminResults({t, ctx}){
               </div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:700,color:t.txt}}>
-                  {r.class_name||`Class ${r.class_id}`} — {r.term_name||"Term"}</div>
+                  {r.class_name||`Group ${r.class_id}`} — {r.term_name||"Period"}</div>
                 <div style={{fontSize:12,color:t.sft}}>Published</div>
               </div>
               <MBadge t={t} label="Live" color="green"/>
@@ -962,20 +945,20 @@ function AdminResults({t, ctx}){
 function AdminMore({t, ctx}){
   const {setScreen,pendingApprovals}=ctx;
   const modules=[
-    {id:"members",      l:"Members",       sub:"Staff management",   Icon:Users,        col:"#1A4FA0"},
-    {id:"announce",     l:"Announcements", sub:"Post & view notices", Icon:Bell,         col:"#E8560A"},
-    {id:"calendar",     l:"Calendar",      sub:"Academic events",    Icon:Calendar,     col:"#15803D"},
-    {id:"settings",     l:"Settings",      sub:"School config",      Icon:Settings,     col:"#7C3AED"},
-    {id:"mail-compose", l:"Email",         sub:"Compose & send",     Icon:Mail,         col:"#1A4FA0"},
-    {id:"report-cards", l:"Report Cards",  sub:"Publish cards",      Icon:FileText,     col:"#15803D"},
+    {id:"members",      l:"Members",       sub:"Staff management",   Icon:Users,        col:"#111827"},
+    {id:"announce",     l:"Announcements", sub:"Post & view notices", Icon:Bell,         col:"#111827"},
+    {id:"calendar",     l:"Calendar",      sub:"Performance events",    Icon:Calendar,     col:"#15803D"},
+    {id:"settings",     l:"Settings",      sub:"Organization config",      Icon:Settings,     col:"#7C3AED"},
+    {id:"mail-compose", l:"Email",         sub:"Compose & send",     Icon:Mail,         col:"#111827"},
+    {id:"report-cards", l:"Reports",  sub:"Publish cards",      Icon:FileText,     col:"#15803D"},
     {id:"grading",      l:"Grading",       sub:"Grade schema",       Icon:Award,        col:"#D97706"},
     {id:"timetable",    l:"Timetable",     sub:"Group schedule",     Icon:CalendarDays, col:"#7C3AED"},
-    {id:"audit-log",    l:"Audit Log",     sub:"All actions",        Icon:History,      col:"#1A4FA0"},
+    {id:"audit-log",    l:"Audit Log",     sub:"All actions",        Icon:History,      col:"#111827"},
     {id:"export",       l:"Data Export",   sub:"Download XLS",       Icon:Download,     col:"#15803D"},
     {id:"recycle-bin",  l:"Recycle Bin",   sub:"Deleted items",      Icon:Trash2,       col:"#DC2626"},
     {id:"activity",     l:"Activity",      sub:"Login history",      Icon:Activity,     col:"#D97706"},
     {id:"approvals",    l:"Approvals",     sub:"Member requests",   Icon:CheckCircle2, col:"#15803D"},
-    {id:"fee-stats",    l:"Fee Stats",     sub:"Financial analysis", Icon:BarChart2,    col:"#E8560A"},
+    {id:"fee-stats",    l:"Billing Stats",     sub:"Financial analysis", Icon:BarChart2,    col:"#111827"},
     {id:"profile",      l:"My Profile",    sub:"Account & settings", Icon:UserCircle,   col:"#64748B"},
   ];
   return(
@@ -998,7 +981,7 @@ function AdminMore({t, ctx}){
             <div style={{fontSize:12,fontWeight:800,color:t.txt,marginBottom:2,lineHeight:1.2}}>
               {m.l}
               {m.id==="approvals"&&pendingApprovals>0&&(
-                <span style={{marginLeft:4,background:"#E8560A",color:"#fff",
+                <span style={{marginLeft:4,background:"#111827",color:"#fff",
                   borderRadius:8,fontSize:9,fontWeight:900,padding:"1px 5px"}}>
                   {pendingApprovals}</span>
               )}
@@ -1029,7 +1012,7 @@ function TeacherDashboard({t, ctx}){
       const pending=(approvals.data||[]).filter(a=>a.ea_status==="pending");
       const acts=[];
       if(pending.length>0) acts.push({title:`Submit EA Approval`,sub:`${pending.length} class(es) pending`,urgent:true,screen:"results"});
-      acts.push({title:"Upload Results",sub:"Check all classes are uploaded",urgent:false,screen:"results"});
+      acts.push({title:"Upload Results",sub:"Check all groups are uploaded",urgent:false,screen:"results"});
       acts.push({title:"Mark Attendance",sub:"Today's attendance",urgent:false,screen:"attendance"});
       setActions(acts);
       setLoading(false);
@@ -1044,7 +1027,7 @@ function TeacherDashboard({t, ctx}){
         {slots.length===0
           ?<div style={{background:t.card,borderRadius:14,padding:"16px",
               border:`1px solid ${t.brd}`,textAlign:"center",color:t.sft,fontSize:14}}>
-              No classes today
+              No groups today
             </div>
           :slots.map((c,i)=>{
             const done=false;
@@ -1060,7 +1043,7 @@ function TeacherDashboard({t, ctx}){
                 </div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:14,fontWeight:700,color:t.txt}}>
-                    {c.class_name||"Group"} — {c.subject_name||"Subject"}</div>
+                    {c.class_name||"Group"} — {c.subject_name||"Category"}</div>
                   <div style={{fontSize:12,color:t.sft}}>{c.start_time} – {c.end_time}</div>
                 </div>
                 {!done&&<ChevronRight size={16} color={t.mut}/>}
@@ -1138,7 +1121,7 @@ function TeacherAttendance({t, ctx}){
 
   return(
     <div style={{background:t.bg,minHeight:"100%",display:"flex",flexDirection:"column"}}>
-      {/* Class selector */}
+      {/* Group selector */}
       <div style={{background:t.card,padding:"10px 14px",borderBottom:`1px solid ${t.brd}`,
         display:"flex",gap:7,overflowX:"auto"}}>
         {classes.map((c,i)=>(
@@ -1153,11 +1136,11 @@ function TeacherAttendance({t, ctx}){
         <div style={{fontSize:12,color:t.tag.red[1],fontWeight:700}}>✗ {students.length-marked.size} Absent</div>
         <div style={{fontSize:12,color:t.sft}}>{students.length} Total</div>
       </div>
-      {/* Student list */}
+      {/* Member list */}
       <div style={{flex:1,overflowY:"auto",padding:"10px 14px"}}>
         {loading?<MSpinner t={t}/>:
           <MCard t={t}>
-            {students.length===0?<MEmpty t={t} message="No students in this class"/>:
+            {students.length===0?<MEmpty t={t} message="No members in this group"/>:
               students.map((s,i)=>{
                 const present=marked.has(i);
                 const name=fullName(s);
@@ -1233,7 +1216,7 @@ function TeacherResults({t, ctx}){
         💡 Upload raw scores via the web portal. Use this screen to submit EA approval.
       </div>
       <MCard t={t} style={{marginBottom:14}}>
-        {approvals.length===0?<MEmpty t={t} message="No classes found"/>:
+        {approvals.length===0?<MEmpty t={t} message="No groups found"/>:
           approvals.map((c,i)=>{
             const eaStatus=c.ea_status||"none";
             const eaCol=eaStatus==="approved"?"green":eaStatus==="pending"?"amber":"blue";
@@ -1248,7 +1231,7 @@ function TeacherResults({t, ctx}){
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:14,fontWeight:700,color:t.txt}}>
-                    {c.class_name||`Class ${c.class_id}`}</div>
+                    {c.class_name||`Group ${c.class_id}`}</div>
                   <div style={{display:"flex",gap:5,marginTop:3,flexWrap:"wrap"}}>
                     <MBadge t={t} label={`EA: ${eaStatus}`} color={eaCol}/>
                     {c.ma_status&&c.ma_status!=="none"&&
@@ -1272,7 +1255,7 @@ function TeacherResults({t, ctx}){
       <MBottomSheet t={t} open={!!eaSheet} onClose={()=>{setEaSheet(null);setNotes("");}}
         title={`Submit EA — ${eaSheet?.class_name||"Group"}`}>
         <div style={{fontSize:13,color:t.sft,marginBottom:14}}>
-          Confirm that results for this class are ready for management approval.
+          Confirm that results for this group are ready for management approval.
         </div>
         <MInputField t={t} label="Notes (optional)" value={notes} onChange={setNotes}
           placeholder="Any notes for management…" textarea/>
@@ -1386,11 +1369,11 @@ function StudentDashboard({t, ctx}){
       )}
       {/* Stat cards */}
       <div style={{display:"flex",gap:9,padding:"12px 14px 0"}}>
-        <MStatCard t={t} label="Current Term" value="2nd" sub="2024/25"
+        <MStatCard t={t} label="Current Period" value="2nd" sub="2024/25"
           color="blue" icon={<CalendarDays size={18}/>}/>
         <MStatCard t={t} label="Last Average"
           value={results.length?`${Math.round(results.reduce((s,r)=>s+(+r.total_score||0),0)/results.length)}%`:"—"}
-          sub="1st Term" color="green" icon={<BarChart3 size={18}/>}/>
+          sub="1st Period" color="green" icon={<BarChart3 size={18}/>}/>
       </div>
       {/* Recent results */}
       <div style={{padding:"14px 14px 0"}}>
@@ -1406,7 +1389,7 @@ function StudentDashboard({t, ctx}){
                 <MRow key={r.id||i} t={t} last={i===results.length-1}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:13,fontWeight:700,color:t.txt,marginBottom:5}}>
-                      {r.subject_name||`Subject ${r.subject_id}`}</div>
+                      {r.subject_name||`Category ${r.subject_id}`}</div>
                     <div style={{height:4,borderRadius:2,background:t.bg,overflow:"hidden"}}>
                       <div style={{width:`${Math.min(score,100)}%`,height:"100%",
                         background:gc,borderRadius:2}}/>
@@ -1467,7 +1450,7 @@ function StudentBill({t, ctx}){
 
   return(
     <div style={{padding:"14px 14px 0",background:t.bg}}>
-      {/* Term selector */}
+      {/* Period selector */}
       <div style={{display:"flex",gap:7,marginBottom:14}}>
         {bills.length===0
           ?<div style={{color:t.sft,fontSize:14,padding:"8px 0"}}>No bills found</div>
@@ -1490,7 +1473,7 @@ function StudentBill({t, ctx}){
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:11}}>
             <div>
               <div style={{fontSize:11,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>
-                Total Fee</div>
+                Total Billing</div>
               <div style={{fontSize:22,fontWeight:900,color:t.txt}}>{fmt(total)}</div>
             </div>
             <div style={{textAlign:"right"}}>
@@ -1504,8 +1487,8 @@ function StudentBill({t, ctx}){
           </div>
           <div style={{fontSize:12,color:t.sft}}>{fmt(paid)} paid · {fmt(balance)} remaining</div>
         </div>
-        {/* Fee breakdown */}
-        <MSHdr t={t} title="Fee Breakdown"/>
+        {/* Billing breakdown */}
+        <MSHdr t={t} title="Billing Breakdown"/>
         <MCard t={t} style={{marginBottom:14}}>
           {items.length===0
             ?<MEmpty t={t} message="No items"/>
@@ -1529,7 +1512,7 @@ function StudentBill({t, ctx}){
             <div style={{background:t.tag.amber[0],borderRadius:12,padding:"11px 14px",
               marginBottom:10,border:`1px solid ${t.tag.amber[1]}40`,
               fontSize:13,color:t.tag.amber[1],fontWeight:600}}>
-              💳 To pay your balance of {fmt(balance)}, visit the school's payment portal or pay at the bursary. Contact your school admin for the payment link.
+              💳 To pay your balance of {fmt(balance)}, visit the organization's payment portal or pay at the bursary. Contact your organization administrator for the payment link.
             </div>
           </div>
         )}
@@ -1564,13 +1547,13 @@ function StudentResults({t, ctx}){
         </div>
         <div style={{width:1,height:38,background:t.brd}}/>
         <div>
-          <div style={{fontSize:11,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Subjects</div>
+          <div style={{fontSize:11,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Categories</div>
           <div style={{fontSize:26,fontWeight:900,color:t.txt}}>{results.length}</div>
         </div>
         <div style={{width:1,height:38,background:t.brd}}/>
         <div>
-          <div style={{fontSize:11,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Term</div>
-          <div style={{fontSize:14,fontWeight:800,color:t.txt}}>2nd Term</div>
+          <div style={{fontSize:11,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Period</div>
+          <div style={{fontSize:14,fontWeight:800,color:t.txt}}>2nd Period</div>
           <div style={{fontSize:11,color:t.mut}}>2024/2025</div>
         </div>
       </div>
@@ -1579,7 +1562,7 @@ function StudentResults({t, ctx}){
         <MCard t={t}>
           <div style={{display:"flex",padding:"7px 14px",borderBottom:`1px solid ${t.brd}`,
             background:t.bg}}>
-            <div style={{flex:1,fontSize:11,fontWeight:700,color:t.mut,textTransform:"uppercase"}}>Subject</div>
+            <div style={{flex:1,fontSize:11,fontWeight:700,color:t.mut,textTransform:"uppercase"}}>Category</div>
             <div style={{width:30,textAlign:"center",fontSize:11,fontWeight:700,color:t.mut}}>CA</div>
             <div style={{width:38,textAlign:"center",fontSize:11,fontWeight:700,color:t.mut}}>Exam</div>
             <div style={{width:38,textAlign:"center",fontSize:11,fontWeight:700,color:t.mut}}>Total</div>
@@ -1593,7 +1576,7 @@ function StudentResults({t, ctx}){
                 <div key={s.id||i} style={{display:"flex",alignItems:"center",
                   padding:"9px 14px",borderBottom:i<results.length-1?`1px solid ${t.brd}`:"none"}}>
                   <div style={{flex:1,fontSize:13,fontWeight:600,color:t.txt}}>
-                    {s.subject_name||`Subject ${s.subject_id}`}</div>
+                    {s.subject_name||`Category ${s.subject_id}`}</div>
                   <div style={{width:30,textAlign:"center",fontSize:12,color:t.sft}}>{s.ca_score??"—"}</div>
                   <div style={{width:38,textAlign:"center",fontSize:12,color:t.sft}}>{s.exam_score??"—"}</div>
                   <div style={{width:38,textAlign:"center",fontSize:13,fontWeight:800,color:t.txt}}>
@@ -1665,9 +1648,9 @@ function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
           {/* Dark mode toggle */}
           <MRow t={t} last={false} onClick={onToggleDark}>
             <div style={{width:36,height:36,borderRadius:10,
-              background:t.dark?t.pri+"22":"#EFF6FF",
+              background:t.dark?t.pri+"22":"#F3F4F6",
               display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              {t.dark?<Sun size={17} color={t.pri}/>:<Moon size={17} color="#1A4FA0"/>}
+              {t.dark?<Sun size={17} color={t.pri}/>:<Moon size={17} color="#111827"/>}
             </div>
             <div style={{flex:1,fontSize:14,fontWeight:600,color:t.txt}}>
               {t.dark?"Switch to Light Mode":"Switch to Dark Mode"}</div>
@@ -1688,7 +1671,7 @@ function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
             <div style={{flex:1,fontSize:14,fontWeight:600,color:t.txt}}>Change Password</div>
             <ChevronRight size={16} color={t.mut}/>
           </MRow>
-          <MRow t={t} last={false} onClick={()=>notify?.("Contact your school admin for support")}>
+          <MRow t={t} last={false} onClick={()=>notify?.("Contact your organization admin for support")}>
             <div style={{width:36,height:36,borderRadius:10,background:t.bg,
               border:`1px solid ${t.brd}`,display:"flex",alignItems:"center",
               justifyContent:"center",color:t.mut,flexShrink:0}}>
@@ -1710,9 +1693,9 @@ function MProfileScreen({t, user, role, onLogout, onToggleDark, ctx}){
         {/* App info */}
         <MCard t={t} style={{marginBottom:12}}>
           <div style={{padding:"11px 16px",display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:"#1A4FA0"+"18",
+            <div style={{width:36,height:36,borderRadius:10,background:"#111827"+"18",
               display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <Info size={16} color="#1A4FA0"/>
+              <Info size={16} color="#111827"/>
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:12,fontWeight:700,color:t.txt}}>JAMES-DENNING</div>
@@ -1788,17 +1771,13 @@ export function MobileApp(){
 
   // Back label map
   const SCREEN_LABELS={
-    members:"Members", announce:"Announcements", calendar:"Academic Calendar",
-    settings:"Settings","mail-compose":"Send Email","report-cards":"Report Cards",
-    grading:"Grading","audit-log":"Audit Trail", export:"Data Export",
-    "recycle-bin":"Recycle Bin", activity:"Login Activity", approvals:"Student Approvals",
-    "fee-stats":"Fee Statistics","fee-items":"Fee Items","fee-tracker":"Payment Tracker",
-    "fee-generate":"Generate Bills","my-profile":"My Profile","my-payments":"My Payments",
-    "my-bill":"My Bill","my-results":"My Report Card", timetable:"Timetable",
-    students:"Students","result-approvals":"Result Approvals", attendance:"Attendance",
-    results:"Results", profile:"Profile",
-    "student-detail":"Student Profile","member-detail":"Staff Profile",
-    "bill-detail":"Bill Details",
+    members:"Team", announce:"Notices", calendar:"Calendar", settings:"Settings",
+    "mail-compose":"Send Email","report-cards":"Reports", grading:"Scoring", "audit-log":"Audit Trail", export:"Data Export",
+    "recycle-bin":"Recycle Bin", activity:"Login Activity", approvals:"People Approvals", "fee-stats":"Billing Analytics",
+    "fee-items":"Billing Items","fee-tracker":"Payment Tracker", "fee-generate":"Generate Bills", "my-profile":"My Profile",
+    "my-payments":"My Payments", "my-bill":"My Bill", "my-results":"My Reports", timetable:"Schedule",
+    students:"People", "result-approvals":"Approval Queue", attendance:"Attendance", results:"Performance", profile:"Profile",
+    "student-detail":"Member Profile", "member-detail":"Staff Profile", "bill-detail":"Bill Details",
   };
 
   const navigate=(target)=>{
@@ -1898,7 +1877,7 @@ export function MobileApp(){
           setLoginError(msgs[st]||"Your account is not active.");setLoginLoading(false);return;
         }
         const expected=student.password_hash||student.id;
-        if(String(pw)!==String(expected)){setLoginError("Wrong password. Default is your Student ID.");setLoginLoading(false);return;}
+        if(String(pw)!==String(expected)){setLoginError("Wrong password. Default is your Member ID.");setLoginLoading(false);return;}
         db.recordLogin?.("student",student.id);
         const u={id:student.id,role:"student",name:student.display_name||fullName(student),
           student_id:student.id,class_id:student.class_id,email:student.email,
@@ -2082,7 +2061,7 @@ function AdminMembers({t, ctx}){
                     <div style={{fontSize:12,color:t.sft}}>{s.staff_id} · {s.class_name||"—"}</div>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3}}>
-                    <MBadge t={t} label={s.role==="manager"?"Manager":"Teacher"}
+                    <MBadge t={t} label={s.role==="manager"?"Manager":"Staff"}
                       color={s.role==="manager"?"purple":"blue"}/>
                     <div style={{fontSize:10,color:t.mut}}>
                       {s.last_login?new Date(s.last_login).toLocaleDateString("en-NG"):"Never"}
@@ -2122,7 +2101,7 @@ function AdminCalendar({t, ctx}){
   const upcoming=events.filter(e=>new Date(e.event_date||e.date||e.start_date)>=now)
     .sort((a,b)=>new Date(a.event_date||a.date)-new Date(b.event_date||b.date))
     .slice(0,5);
-  const COLORS=["#7C3AED","#DC2626","#D97706","#15803D","#1A4FA0"];
+  const COLORS=["#7C3AED","#DC2626","#D97706","#15803D","#111827"];
 
   return(
     <div style={{padding:"14px 14px 0",background:t.bg}}>
@@ -2215,22 +2194,22 @@ function AdminExport({t, ctx}){
       } else if(type==="results"){
         const{data}=await db.getResultApprovals();
         const rows=(data||[]).map(r=>({
-          "Group":r.class_name||r.class_id,"Term":r.term_name||r.term_id,
-          "Session":r.session_name||r.session_id,
+          "Group":r.class_name||r.class_id,"Period":r.term_name||r.term_id,
+          "Cycle":r.session_name||r.session_id,
           "EA Status":r.ea_status||"none","MA Status":r.ma_status||"none",
         }));
-        downloadCSV("rgs_results.csv",rows,["Group","Term","Session","EA Status","MA Status"]);
+        downloadCSV("rgs_results.csv",rows,["Group","Period","Cycle","EA Status","MA Status"]);
         notify?.("Results exported!");
       } else if(type==="fees"){
         const{data}=await db.getFeeBills();
         const rows=(data||[]).map(b=>({
           "Member":b.student_name||b.student_id,"Group":b.class_name||"",
-          "Term":b.term_name||"","Total":b.total_amount||0,
+          "Period":b.term_name||"","Total":b.total_amount||0,
           "Paid":b.amount_paid||0,"Balance":(+b.total_amount||0)-(+b.amount_paid||0),
           "Status":b.status||"unpaid",
         }));
-        downloadCSV("rgs_fees.csv",rows,["Member","Group","Term","Total","Paid","Balance","Status"]);
-        notify?.("Fee bills exported!");
+        downloadCSV("rgs_fees.csv",rows,["Member","Group","Period","Total","Paid","Balance","Status"]);
+        notify?.("Billing bills exported!");
       } else if(type==="attendance"){
         const{data}=await db.getAttendance?.()??{data:[]};
         const rows=(data||[]).map(a=>({
@@ -2245,11 +2224,11 @@ function AdminExport({t, ctx}){
   };
 
   const exports=[
-    {id:"students",   l:"Members",        sub:"Active students with class info",   Icon:UsersRound,    col:"blue"},
+    {id:"students",   l:"Members",        sub:"Active members with group info",   Icon:UsersRound,    col:"blue"},
     {id:"staff",      l:"Staff / Staff",sub:"All staff with roles & last login", Icon:UserCheck,     col:"purple"},
-    {id:"results",    l:"Term Results",    sub:"Approval status by class & term",   Icon:BarChart3,     col:"green"},
-    {id:"fees",       l:"Fee Bills",       sub:"All bills with payment status",     Icon:ReceiptText,   col:"orange"},
-    {id:"attendance", l:"Attendance",      sub:"Daily attendance by class",         Icon:ClipboardCheck,col:"amber"},
+    {id:"results",    l:"Period Results",    sub:"Approval status by group & period",   Icon:BarChart3,     col:"green"},
+    {id:"fees",       l:"Bills",       sub:"All bills with payment status",     Icon:ReceiptText,   col:"orange"},
+    {id:"attendance", l:"Attendance",      sub:"Daily attendance by group",         Icon:ClipboardCheck,col:"amber"},
   ];
   return(
     <div style={{padding:"14px 14px 0",background:t.bg}}>
@@ -2359,7 +2338,7 @@ function StudentDetailScreen({t, ctx}){
               {v:"inactive",l:"Inactive"},
             ]}/>
           <MSelectField t={t} label="Group Assignment" value={classId} onChange={setClassId}
-            options={[{v:"",l:"Keep current class"},...classes.map(c=>({v:String(c.id),l:c.name}))]}/>
+            options={[{v:"",l:"Keep current group"},...classes.map(c=>({v:String(c.id),l:c.name}))]}/>
           <MPrimaryBtn t={t} label="Save Changes" onClick={saveChanges} loading={saving}/>
         </div>
 
@@ -2382,7 +2361,7 @@ function StudentDetailScreen({t, ctx}){
               <CreditCard size={17}/>
             </div>
             <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:600,color:t.txt}}>View Fee Bills</div>
+              <div style={{fontSize:14,fontWeight:600,color:t.txt}}>View Bills</div>
               <div style={{fontSize:12,color:t.sft}}>See payment status</div>
             </div>
             <ChevronRight size={16} color={t.mut}/>
@@ -2586,7 +2565,7 @@ function BillDetailScreen({t, ctx}){
         </div>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
           <div>
-            <div style={{fontSize:10,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Total Fee</div>
+            <div style={{fontSize:10,color:t.sft,textTransform:"uppercase",letterSpacing:.3}}>Total Billing</div>
             <div style={{fontSize:20,fontWeight:900,color:t.txt}}>{fmt(total)}</div>
           </div>
           <div style={{textAlign:"right"}}>
@@ -2602,9 +2581,9 @@ function BillDetailScreen({t, ctx}){
       </div>
 
       <div style={{padding:"14px 14px"}}>
-        {/* Fee items */}
+        {/* Billing items */}
         {items.length>0&&<>
-          <MSHdr t={t} title="Fee Breakdown"/>
+          <MSHdr t={t} title="Billing Breakdown"/>
           <MCard t={t} style={{marginBottom:14}}>
             {items.map((item,i)=>(
               <div key={i} style={{padding:"10px 14px",
@@ -2764,7 +2743,7 @@ function AnnouncementsScreen({t, ctx}){
       }
       <MBottomSheet t={t} open={sheet} onClose={()=>setSheet(false)} title="New Announcement">
         <MInputField t={t} label="Title" value={title} onChange={setTitle}
-          placeholder="e.g. School Closing Notice"/>
+          placeholder="e.g. Organization Closing Notice"/>
         <MInputField t={t} label="Message" value={body} onChange={setBody}
           placeholder="Write your announcement here…" textarea/>
         <MSelectField t={t} label="Audience" value={audience} onChange={setAudience}
@@ -2772,7 +2751,7 @@ function AnnouncementsScreen({t, ctx}){
             {v:"all",l:"Everyone"},
             {v:"students",l:"Members only"},
             {v:"teachers",l:"Staff only"},
-            {v:"parents",l:"Parents only"},
+            {v:"parents",l:"Contacts only"},
           ]}/>
         <MPrimaryBtn t={t} label="Post Announcement" onClick={create} loading={saving}/>
       </MBottomSheet>
@@ -2791,7 +2770,7 @@ function MailComposeScreen({t, ctx}){
 
   const send=async()=>{
     if(!to.trim()){notify?.("Enter recipient email","warn");return;}
-    if(!subject.trim()){notify?.("Enter a subject","warn");return;}
+    if(!subject.trim()){notify?.("Enter a category","warn");return;}
     if(!body.trim()){notify?.("Write your message","warn");return;}
     setSending(true);
     try{
@@ -2826,8 +2805,8 @@ function MailComposeScreen({t, ctx}){
         border:`1px solid ${t.brd}`,marginBottom:14}}>
         <MInputField t={t} label="To (email address)" value={to} onChange={setTo}
           placeholder="recipient@school.com" type="email"/>
-        <MInputField t={t} label="Subject" value={subject} onChange={setSubject}
-          placeholder="Email subject line"/>
+        <MInputField t={t} label="Category" value={subject} onChange={setSubject}
+          placeholder="Email category line"/>
         <MInputField t={t} label="Message" value={body} onChange={setBody}
           placeholder="Write your message here…" textarea/>
       </div>
@@ -2971,7 +2950,7 @@ function FeeStatsScreen({t, ctx}){
       const unpaid=bills.filter(b=>!b.status||b.status==="unpaid").length;
       const rate=bills.length?Math.round((paid/bills.length)*100):0;
       setStats({total,collected,outstanding,paid,partial,unpaid,count:bills.length,rate});
-      // Class breakdown
+      // Group breakdown
       const byClass={};
       bills.forEach(b=>{
         const cls=b.class_name||"Unknown";
@@ -2995,7 +2974,7 @@ function FeeStatsScreen({t, ctx}){
           Total Collected</div>
         <div style={{fontSize:32,fontWeight:900,color:t.tag.green[1]}}>{fmt(stats.collected)}</div>
         <div style={{fontSize:13,color:t.sft,marginTop:4}}>
-          of {fmt(stats.total)} total fees</div>
+          of {fmt(stats.total)} total billing</div>
         <div style={{height:10,borderRadius:5,background:t.bg,overflow:"hidden",marginTop:12}}>
           <div style={{width:`${stats.rate}%`,height:"100%",borderRadius:5,
             background:`linear-gradient(90deg,${t.pri},${t.acc})`}}/>
@@ -3017,7 +2996,7 @@ function FeeStatsScreen({t, ctx}){
           sub="bills" color="red" icon={<X size={16}/>}/>
       </div>
 
-      {/* Class breakdown */}
+      {/* Group breakdown */}
       {classBreakdown.length>0&&<>
         <MSHdr t={t} title="By Group"/>
         <MCard t={t}>
@@ -3096,8 +3075,8 @@ function AdminReportCards({t, ctx}){
                   display:"flex",alignItems:"center",justifyContent:"center",
                   color:t.tag.green[1],flexShrink:0}}><FileText size={18}/></div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:14,fontWeight:700,color:t.txt}}>{a.class_name||`Class ${a.class_id}`}</div>
-                  <div style={{fontSize:12,color:t.sft}}>{a.term_name||"Term"}</div>
+                  <div style={{fontSize:14,fontWeight:700,color:t.txt}}>{a.class_name||`Group ${a.class_id}`}</div>
+                  <div style={{fontSize:12,color:t.sft}}>{a.term_name||"Period"}</div>
                 </div>
                 <div onClick={()=>!busy&&togglePublish(
                     ex||{class_id:a.class_id,term_id:a.term_id,session_id:a.session_id},!isLive)}
@@ -3114,7 +3093,7 @@ function AdminReportCards({t, ctx}){
           })}
         </MCard>
       </>}
-      <MSHdr t={t} title="Live Report Cards"/>
+      <MSHdr t={t} title="Live Reports"/>
       <MCard t={t}>
         {live.length===0?<MEmpty t={t} message="No published cards yet"/>:
           live.map((r,i)=>(
@@ -3123,8 +3102,8 @@ function AdminReportCards({t, ctx}){
                 display:"flex",alignItems:"center",justifyContent:"center",
                 color:t.tag.blue[1],flexShrink:0}}><FileText size={18}/></div>
               <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:t.txt}}>{r.class_name||`Class ${r.class_id}`}</div>
-                <div style={{fontSize:12,color:t.sft}}>{r.term_name||"Term"}</div>
+                <div style={{fontSize:14,fontWeight:700,color:t.txt}}>{r.class_name||`Group ${r.class_id}`}</div>
+                <div style={{fontSize:12,color:t.sft}}>{r.term_name||"Period"}</div>
               </div>
               <MBadge t={t} label="Live" color="green"/>
             </MRow>
@@ -3142,7 +3121,7 @@ function AdminAuditLog({t, ctx}){
   useEffect(()=>{
     db.getFeePayments().then(({data})=>{
       setLogs((data||[]).slice(0,30).map(p=>({
-        id:p.id,action:"Fee Payment",
+        id:p.id,action:"Billing Payment",
         detail:`${p.student_name||p.student_id||"Member"} — ${fmt(+p.amount||0)} (${p.method||"cash"})`,
         timestamp:p.created_at||p.payment_date,
       })));
@@ -3196,7 +3175,7 @@ function AdminSettings({t, ctx}){
   ];
   return(
     <div style={{padding:"14px 14px 24px",background:t.bg}}>
-      <MSHdr t={t} title="School Information"/>
+      <MSHdr t={t} title="Organization Information"/>
       <MCard t={t} style={{marginBottom:14}}>
         {info.map(({l,v},i)=>(
           <div key={i} style={{padding:"11px 14px",
@@ -3209,7 +3188,7 @@ function AdminSettings({t, ctx}){
       </MCard>
       <div style={{background:t.tag.blue[0],borderRadius:12,padding:"12px 14px",
         border:`1px solid ${t.tag.blue[1]}40`,fontSize:13,color:t.tag.blue[1]}}>
-        To change school settings, fee structures, and academic calendar — use the full web portal.
+        To change organization settings, billing structures, and performance calendar — use the full web portal.
       </div>
     </div>
   );
@@ -3243,7 +3222,7 @@ function AdminFeeGenerate({t, ctx}){
   },[]);
 
   const generate=async()=>{
-    if(!classId||!termId){notify?.("Select class and term","warn");return;}
+    if(!classId||!termId){notify?.("Select group and period","warn");return;}
     setGenerating(true);
     try{
       if(db.generateFeeBills){
@@ -3263,17 +3242,17 @@ function AdminFeeGenerate({t, ctx}){
         border:`1px solid ${t.brd}`,marginBottom:14}}>
         <MSelectField t={t} label="Group" value={classId} onChange={setClassId}
           options={classes.map(c=>({v:String(c.id),l:c.name}))}/>
-        <MSelectField t={t} label="Term" value={termId} onChange={setTermId}
+        <MSelectField t={t} label="Period" value={termId} onChange={setTermId}
           options={terms.map(tm=>({v:String(tm.id),l:tm.name}))}/>
         {sessions.length>0&&(
-          <MSelectField t={t} label="Session" value={sessionId} onChange={setSessionId}
+          <MSelectField t={t} label="Cycle" value={sessionId} onChange={setSessionId}
             options={sessions.map(s=>({v:String(s.id),l:s.name}))}/>
         )}
-        <MPrimaryBtn t={t} label="Generate Fee Bills" onClick={generate} loading={generating}/>
+        <MPrimaryBtn t={t} label="Generate Bills" onClick={generate} loading={generating}/>
       </div>
       <div style={{background:t.tag.amber[0],borderRadius:12,padding:"12px 14px",
         border:`1px solid ${t.tag.amber[1]}40`,fontSize:13,color:t.tag.amber[1]}}>
-        ⚠️ Creates fee bills for all students in the selected class based on configured fee items. Existing bills are not overwritten.
+        ⚠️ Creates billing bills for all members in the selected group based on configured billing items. Existing bills are not overwritten.
       </div>
     </div>
   );

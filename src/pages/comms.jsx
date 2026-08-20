@@ -95,7 +95,7 @@ export function AnnouncePage({ctx}){
       )}
       {modal&&(
         <Modal title={editId?"Edit Announcement":"New Announcement"} onClose={()=>setModal(false)}>
-          <Inp label="Title *" value={form.title} onChange={v=>f({title:v})} placeholder="e.g. School Closure Notice"/>
+          <Inp label="Title *" value={form.title} onChange={v=>f({title:v})} placeholder="e.g. Organization Closure Notice"/>
           <div style={{marginBottom:13}}>
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Body *</label>
             <textarea value={form.body} onChange={e=>f({body:e.target.value})} rows={4}
@@ -245,7 +245,7 @@ export function EmailProgressModal({emails,onClose,schoolId=""}){
 export function MailComposePage({ctx}){
   const {notify,role,canAccess,selectedSchool}=ctx;
   const {schoolName:_mailSchoolName}=useSection();
-  const _mailSN=_mailSchoolName||"School Portal";
+  const _mailSN=_mailSchoolName||"Business Portal";
   const canSend=role==="admin"||canAccess("action:send_email");
   const [teachers,setTeachers]=useState([]);
   const [students,setStudents]=useState([]);
@@ -376,7 +376,7 @@ export function MailComposePage({ctx}){
         </td>
         <td style="vertical-align:top;text-align:right;">
           <div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};line-height:1.9;">
-            Sent via School Portal<br/>
+            Sent via Business Portal<br/>
             &copy; ${year} ${esc(_mailSN)}<br/>
             All rights reserved.
           </div>
@@ -387,7 +387,7 @@ export function MailComposePage({ctx}){
   <tr><td colspan="3" style="background:#f0ede8;padding:14px 40px;">
     <div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};text-align:center;line-height:1.7;">
       This is a computer-generated email. Please do not reply directly to this message.<br/>
-      For enquiries, contact the school administration office.
+      For enquiries, contact the organization administration office.
     </div>
   </td></tr>
   <tr>
@@ -403,7 +403,7 @@ export function MailComposePage({ctx}){
 
   const send=async()=>{
     if(!canSend){notify("No permission to send emails","error");return;}
-    if(!subject.trim()||!body.trim()){notify("Subject and body are required","error");return;}
+    if(!subject.trim()||!body.trim()){notify("Category and body are required","error");return;}
     const recipients=getRecipients();
     if(!recipients.length){notify("No recipients selected","error");return;}
     setSending(true);
@@ -435,7 +435,7 @@ export function MailComposePage({ctx}){
   };
 
   const saveTmpl=async()=>{
-    if(!tmplForm.name||!tmplForm.subject||!tmplForm.body){notify("Name, subject and body required","error");return;}
+    if(!tmplForm.name||!tmplForm.subject||!tmplForm.body){notify("Name, category and body required","error");return;}
     const {error}=await db.upsertEmailTemplate(tmplForm,editTmplId);
     if(error){notify(error.message,"error");return;}
     notify(editTmplId?"Template updated \u2713":"Template saved \u2713");
@@ -451,15 +451,15 @@ export function MailComposePage({ctx}){
   const recipients=getRecipients();
   const RTYPES=[
     {id:"individual",label:"Individual"},{id:"manual",label:"Manual Email"},
-    {id:"class",label:"Class"},{id:"all-students",label:"All Students"},
-    {id:"all-teachers",label:"All Teachers"},{id:"all",label:"Everyone"}
+    {id:"class",label:"Group"},{id:"all-students",label:"All Members"},
+    {id:"all-teachers",label:"All Staff"},{id:"all",label:"Everyone"}
   ];
 
   return(
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="mail" size={20}/>Send Email</h2>
-        <p style={{color:C.muted,fontSize:12}}>Send emails to members, staff, groups or the entire school.</p>
+        <p style={{color:C.muted,fontSize:12}}>Send emails to members, staff, groups or the entire organization.</p>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {[{id:"compose",label:"Compose"},{id:"templates",label:"Templates"}].map(t=>(
@@ -491,7 +491,7 @@ export function MailComposePage({ctx}){
                 <div>
                   <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>EMAIL ADDRESS(ES)</label>
                   <input value={manualEmail} onChange={e=>setManualEmail(e.target.value)}
-                    placeholder="e.g. parent@gmail.com, another@yahoo.com"
+                    placeholder="e.g. contact@example.com, another@yahoo.com"
                     style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                       fontSize:13,color:C.text,background:C.white,boxSizing:"border-box"}}/>
                   <div style={{fontSize:11,color:C.muted,marginTop:4}}>Separate multiple addresses with commas or spaces.</div>
@@ -548,8 +548,8 @@ export function MailComposePage({ctx}){
               )}
               {recipientType==="class"&&(
                 <div>
-                  <Sel label="Class" value={selClass} onChange={v=>{setSelClass(v);setExcludedEmails([]);setRefineSearchQ("");}}
-                    options={[{value:"",label:"Select class\u2026"},...classes.map(c=>({value:String(c.id),label:c.name}))]}/>
+                  <Sel label="Group" value={selClass} onChange={v=>{setSelClass(v);setExcludedEmails([]);setRefineSearchQ("");}}
+                    options={[{value:"",label:"Select group\u2026"},...classes.map(c=>({value:String(c.id),label:c.name}))]}/>
                 </div>
               )}
 
@@ -621,7 +621,7 @@ export function MailComposePage({ctx}){
               </div>
               <div style={{marginTop:10}}>
                 <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>SUBJECT</label>
-                <input key={`subj-${msgKey}`} defaultValue={subject} onChange={e=>setSubject(e.target.value)} placeholder="Email subject\u2026"
+                <input key={`subj-${msgKey}`} defaultValue={subject} onChange={e=>setSubject(e.target.value)} placeholder="Email category\u2026"
                   style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                     fontSize:13,color:C.text,background:C.white,boxSizing:"border-box"}}/>
               </div>
@@ -652,8 +652,8 @@ export function MailComposePage({ctx}){
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <Card style={{background:C.bluePale,border:`1px solid ${C.blue}22`}}>
               <div style={{fontWeight:800,color:C.blue,marginBottom:10,fontSize:13}}>Placeholders</div>
-              {[["{student_name}","Student's full name"],["{class_name}","Group name"],
-                ["{term}","Current term"],["{session}","Academic session"]].map(([k,v])=>(
+              {[["{student_name}","Member's full name"],["{class_name}","Group name"],
+                ["{term}","Current period"],["{session}","Performance cycle"]].map(([k,v])=>(
                 <div key={k} style={{marginBottom:7}}>
                   <code style={{fontSize:11,background:`${C.blue}18`,color:C.blue,padding:"2px 6px",borderRadius:4}}>{k}</code>
                   <span style={{fontSize:11,color:C.muted,marginLeft:6}}>{v}</span>
@@ -663,73 +663,73 @@ export function MailComposePage({ctx}){
             <Card>
               <div style={{fontWeight:800,color:C.blue,marginBottom:10,fontSize:13}}>Quick Fill</div>
               {[
-                {label:"Fee Reminder",sub:"School Fee Payment Reminder \u2013 {term}",body:
-`Dear Parent/Guardian of {student_name},
+                {label:"Billing Reminder",sub:"Organization Billing Payment Reminder \u2013 {period}",body:
+`Dear Member/Contact of {student_name},
 
 We hope this message finds you well.
 
-This is a friendly reminder that the school fees for {student_name} ({class_name}) for the {term} of the {session} academic session are now due.
+This is a friendly reminder that the billing charges for {student_name} ({class_name}) for the {term} of the {session} reporting cycle are now due.
 
-Kindly ensure that payment is made at the earliest convenience to avoid any disruption to your child's academic activities. You may pay via the School Portal or visit the school's bursary during official hours.
+Kindly ensure that payment is made at the earliest convenience to avoid any disruption to your account's account activities. You may pay via the Business Portal or visit the school's bursary during official hours.
 
-Should you have any questions or require assistance, please do not hesitate to contact us at the school administration office.
+Should you have any questions or require assistance, please do not hesitate to contact us at the organization administration office.
 
-Thank you for your continued partnership in your child's education.
+Thank you for your continued partnership in your account's education.
 
 Warm regards,
-The Bursar
+The Finance Manager
 ${_mailSN}`},
-                {label:"Report Card Ready",sub:"Your Child's Report Card is Now Available \u2013 {term}",body:
-`Dear Parent/Guardian of {student_name},
+                {label:"Report Ready",sub:"Your Report is Now Available \u2013 {period}",body:
+`Dear Member/Contact of {student_name},
 
-We are pleased to inform you that the report card for {student_name} ({class_name}) for the {term} of the {session} academic session is now available on the JAMES-DENNING.
+We are pleased to inform you that the report for {student_name} ({class_name}) for the {term} of the {session} reporting cycle is now available on the JAMES-DENNING.
 
-To access it, please log in to the portal at your convenience. We encourage you to review the results with your child and celebrate their achievements while identifying areas for improvement together.
+To access it, please log in to the portal at your convenience. We encourage you to review the results with your account and celebrate their achievements while identifying areas for improvement together.
 
 If you experience any difficulty accessing the portal, kindly contact our administrative office and we will be happy to assist you.
 
-We remain committed to providing the best educational experience for your child.
+We remain committed to providing the best organization experience for your account.
 
 Warm regards,
-The Academic Office
+The Performance Office
 ${_mailSN}`},
-                {label:"School Announcement",sub:`Important Notice from ${_mailSN}`,body:
-`Dear Parent/Guardian,
+                {label:"Organization Announcement",sub:`Important Notice from ${_mailSN}`,body:
+`Dear Member/Contact,
 
-We hope this message finds you and your family in good health.
+We hope this message finds you and your team in good health.
 
 We wish to bring an important matter to your attention:
 
 [Insert announcement details here]
 
-We appreciate your understanding and continued support. If you have any questions or concerns regarding this notice, please feel free to reach out to us at the school administration office.
+We appreciate your understanding and continued support. If you have any questions or concerns regarding this notice, please feel free to reach out to us at the organization administration office.
 
-Thank you for being a valued member of the RGS family.
+Thank you for being a valued member of the JAMES-DENNING community.
 
 Warm regards,
 The Management
 ${_mailSN}`},
-                {label:"Resumption Notice",sub:"School Resumption Notice \u2013 {term} {session}",body:
-`Dear Parent/Guardian of {student_name},
+                {label:"Resumption Notice",sub:"Organization Resumption Notice \u2013 {period} {cycle}",body:
+`Dear Member/Contact of {student_name},
 
 We trust you had a restful holiday.
 
-We are pleased to announce that school resumes for the {term} of the {session} academic session. We look forward to welcoming all students back for another term of learning, growth, and excellence.
+We are pleased to announce that the next cycle begins for the {term} of the {session} reporting cycle. We look forward to welcoming all students back for another term of learning, growth, and excellence.
 
-Please ensure your child/ward is:
-\u2022 In full and neat school uniform
+Please ensure your account/ward is:
+\u2022 In full and neat required attire
 \u2022 Equipped with all required textbooks and stationery
 \u2022 Present and punctual on the resumption date
 
-For any queries, please contact the school office or reach us at the school administration office.
+For any queries, please contact the organization office or reach us at the organization administration office.
 
 We look forward to a productive and rewarding term ahead.
 
 Warm regards,
 The Management
 ${_mailSN}`},
-                {label:"Event Invitation",sub:"Invitation \u2013 Upcoming School Event",body:
-`Dear Parent/Guardian,
+                {label:"Event Invitation",sub:"Invitation \u2013 Upcoming Organization Event",body:
+`Dear Member/Contact,
 
 On behalf of the Management and Staff of ${_mailSN}, we warmly invite you to attend:
 
@@ -740,9 +740,9 @@ On behalf of the Management and Staff of ${_mailSN}, we warmly invite you to att
 
 [Brief description of the event]
 
-Your presence would mean a great deal to us and to your child. Please make every effort to attend this special occasion.
+Your presence would mean a great deal to us and to your account. Please make every effort to attend this special occasion.
 
-Kindly confirm your attendance by reaching out to the school office or emailing the school administration office.
+Kindly confirm your attendance by reaching out to the organization office or emailing the organization administration office.
 
 We look forward to seeing you!
 
@@ -784,7 +784,7 @@ ${_mailSN}`},
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                     <div style={{flex:1}}>
                       <div style={{fontWeight:800,color:C.blue,fontSize:14}}>{t.name}</div>
-                      <div style={{fontSize:12,color:C.muted,marginTop:2}}><b>Subject:</b> {t.subject}</div>
+                      <div style={{fontSize:12,color:C.muted,marginTop:2}}><b>Category:</b> {t.subject}</div>
                       {t.description&&<div style={{fontSize:12,color:C.muted,marginTop:2}}>{t.description}</div>}
                       <div style={{fontSize:11,color:C.light,marginTop:4}}>{t.body?.slice(0,120)}\u2026</div>
                     </div>
@@ -809,8 +809,8 @@ ${_mailSN}`},
       {tmplModal&&(
         <Modal title={editTmplId?"Edit Template":"New Template"} onClose={()=>{setTmplModal(false);setEditTmplId(null);}} width={560}>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {[{label:"TEMPLATE NAME",key:"name",ph:"e.g. Fee Reminder"},
-              {label:"SUBJECT",key:"subject",ph:"Email subject line"},
+            {[{label:"TEMPLATE NAME",key:"name",ph:"e.g. Billing Reminder"},
+              {label:"SUBJECT",key:"subject",ph:"Email category line"},
               {label:"DESCRIPTION (optional)",key:"description",ph:"Short description"}].map(f=>(
               <div key={f.key}>
                 <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>{f.label}</label>
@@ -822,7 +822,7 @@ ${_mailSN}`},
             <div>
               <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>BODY</label>
               <textarea value={tmplForm.body} onChange={e=>setTmplForm(p=>({...p,body:e.target.value}))}
-                placeholder="Email body\u2026 Use {student_name}, {class_name}, {term}, {session}" rows={8}
+                placeholder="Email body\u2026 Use {student_name}, {class_name}, {period}, {cycle}" rows={8}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                   fontSize:13,color:C.text,background:C.white,boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
             </div>
@@ -965,7 +965,7 @@ export function MailLogsPage({ctx}){
                 <Card key={b.batch_id} style={{padding:"14px 18px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                     <div style={{flex:1,minWidth:180}}>
-                      <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:2}}>{b.subject||"(no subject)"}</div>
+                      <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:2}}>{b.subject||"(no category)"}</div>
                       <div style={{fontSize:11,color:C.muted}}>
                         {new Date(b.created_at).toLocaleString("en-NG",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true})}
                         {" \u00b7 "}{b.total} recipient{b.total!==1?"s":""}
@@ -1008,7 +1008,7 @@ export function MailLogsPage({ctx}){
       <Card style={{marginBottom:14,padding:"12px 16px"}}>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
           <input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}
-            placeholder="Search subject or body\u2026"
+            placeholder="Search category or body\u2026"
             style={{flex:2,minWidth:180,padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none"}}/>
           <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value);setPage(0);}}
             style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"#fff",outline:"none"}}>
@@ -1061,7 +1061,7 @@ export function MailLogsPage({ctx}){
                       onChange={togglePage}
                       style={{width:15,height:15,cursor:"pointer",accentColor:"#fff"}}/>
                   </th>
-                  {["Subject","Recipients","Sent","Status",""].map((h,i)=>(
+                  {["Category","Recipients","Sent","Status",""].map((h,i)=>(
                     <th key={i} style={{padding:"9px 12px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
@@ -1085,7 +1085,7 @@ export function MailLogsPage({ctx}){
                             <span style={{fontSize:10,fontWeight:700,background:C.bluePale,color:C.blue,
                               border:`1px solid ${C.blue}33`,borderRadius:4,padding:"1px 6px",marginRight:6}}>BATCH</span>
                           ):null})()}
-                          <span style={{fontWeight:700}}>{log.subject||"(no subject)"}</span>
+                          <span style={{fontWeight:700}}>{log.subject||"(no category)"}</span>
                         </td>
                         <td style={{padding:"9px 12px",color:C.muted,whiteSpace:"nowrap"}}>
                           <span style={{color:C.text,fontWeight:600}}>{log.recipient_count||1}</span>

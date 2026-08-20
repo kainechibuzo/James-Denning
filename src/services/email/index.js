@@ -12,32 +12,32 @@ import { db } from "../../supabaseClient.js";
 export const EMAIL_CARD_CSS = `<style>
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:32px 16px;margin:0}
 .card{max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}
-.header{background:linear-gradient(135deg,#0d2d6e,#1A4FA0);padding:32px;text-align:center}
+.header{background:linear-gradient(135deg,#030712,#111827);padding:32px;text-align:center}
 .school{color:#fff;font-size:20px;font-weight:900;margin-bottom:4px}
 .tagline{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:1px;text-transform:uppercase}
 .body{padding:28px 32px}
 .greeting{font-size:16px;color:#1a202c;margin-bottom:16px}
-.details-box{background:#f8fafc;border-radius:8px;padding:16px 20px;border-left:4px solid #1A4FA0;margin:20px 0}
+.details-box{background:#f8fafc;border-radius:8px;padding:16px 20px;border-left:4px solid #111827;margin:20px 0}
 .detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:14px}
 .detail-row:last-child{border-bottom:none}
-.label{color:#64748b}.value{font-weight:700;color:#1a202c}.value.id{color:#1A4FA0;font-size:15px;letter-spacing:.5px}
-.login-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:8px;padding:16px 20px;margin:20px 0;text-align:center}
-.login-url{color:#1A4FA0;font-weight:700;font-size:15px;text-decoration:none}
+.label{color:#64748b}.value{font-weight:700;color:#1a202c}.value.id{color:#111827;font-size:15px;letter-spacing:.5px}
+.login-box{background:linear-gradient(135deg,#F3F4F6,#E5E7EB);border-radius:8px;padding:16px 20px;margin:20px 0;text-align:center}
+.login-url{color:#111827;font-weight:700;font-size:15px;text-decoration:none}
 .note{font-size:12px;color:#64748b;margin-top:6px}
 .footer{background:#f8fafc;padding:16px 32px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0}
 </style>`;
 
 // ── Welcome email HTML builders ───────────────────────────────────────────
 
-export function buildStudentEmail({ studentName, studentId, className, schoolName = "School Portal" }) {
+export function buildStudentEmail({ studentName, studentId, className, schoolName = "Business Portal" }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>${EMAIL_CARD_CSS}</head><body>
 <div class="card">
   <div class="header">
     <div class="school">${schoolName}</div>
-    <div class="tagline">School Portal</div>
+    <div class="tagline">Business Portal</div>
   </div>
   <div class="body">
-    <div style="font-size:11px;color:#64748b;background:#f8fafc;padding:6px 12px;border-radius:6px;margin-bottom:16px;border-left:3px solid #1A4FA0">This communication is regarding: <strong>${studentName}</strong> · Member ID: <strong>${studentId}</strong> · Group: <strong>${className || "—"}</strong></div>
+    <div style="font-size:11px;color:#64748b;background:#f8fafc;padding:6px 12px;border-radius:6px;margin-bottom:16px;border-left:3px solid #111827">This communication is regarding: <strong>${studentName}</strong> · Member ID: <strong>${studentId}</strong> · Group: <strong>${className || "—"}</strong></div>
     <div class="greeting">Dear <strong>${studentName}</strong>,<br/><br/>
     Welcome to ${schoolName}! Your student portal account has been created. Here are your login details:</div>
     <div class="details-box">
@@ -51,18 +51,18 @@ export function buildStudentEmail({ studentName, studentId, className, schoolNam
       <a class="login-url" href="${window.location.origin}">${window.location.host}</a>
       <div class="note">Use your Member ID as both your username and password.<br/>Please keep your login details safe and confidential.</div>
     </div>
-    <p style="font-size:13px;color:#64748b;line-height:1.6">If you have any questions, please contact the school administration office.</p>
+    <p style="font-size:13px;color:#64748b;line-height:1.6">If you have any questions, please contact the organization administration office.</p>
   </div>
   <div class="footer">${schoolName}<br/>This is an automated message. Please do not reply.</div>
 </div></body></html>`;
 }
 
-export function buildTeacherEmail({ teacherName, teacherEmail, schoolName = "School Portal" }) {
+export function buildTeacherEmail({ teacherName, teacherEmail, schoolName = "Business Portal" }) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>${EMAIL_CARD_CSS}</head><body>
 <div class="card">
   <div class="header">
     <div class="school">${schoolName}</div>
-    <div class="tagline">School Portal</div>
+    <div class="tagline">Business Portal</div>
   </div>
   <div class="body">
     <div class="greeting">Dear <strong>${teacherName}</strong>,<br/><br/>
@@ -78,7 +78,7 @@ export function buildTeacherEmail({ teacherName, teacherEmail, schoolName = "Sch
       <a class="login-url" href="${window.location.origin}">${window.location.host}</a>
       <div class="note">Use your email address as both username and password.<br/>Please change your password after your first login.</div>
     </div>
-    <p style="font-size:13px;color:#64748b;line-height:1.6">If you have any questions, please contact the school administration office.</p>
+    <p style="font-size:13px;color:#64748b;line-height:1.6">If you have any questions, please contact the organization administration office.</p>
   </div>
   <div class="footer">${schoolName}<br/>This is an automated message. Please do not reply.</div>
 </div></body></html>`;
@@ -90,7 +90,7 @@ export function buildTeacherEmail({ teacherName, teacherEmail, schoolName = "Sch
  * @param {string} bodyText  Plain text body with \n line breaks
  * @param {string} schoolName
  */
-export function buildEmailHtml(subj, bodyText, schoolName = "School Portal") {
+export function buildEmailHtml(subj, bodyText, schoolName = "Business Portal") {
   const year    = new Date().getFullYear();
   const dateStr = new Date().toLocaleDateString("en-NG", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
   const esc = (s = "") => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -116,10 +116,10 @@ export function buildEmailHtml(subj, bodyText, schoolName = "School Portal") {
 <tr><td colspan="3" style="background:#fafaf8;padding:24px 40px 20px;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr>
     <td style="vertical-align:top;"><div style="font-family:Georgia,serif;font-size:13px;font-weight:700;color:${GREEN};margin-bottom:8px;">${esc(schoolName)}</div></td>
-    <td style="vertical-align:top;text-align:right;"><div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};line-height:1.9;">Sent via School Portal<br/>&copy; ${year} ${esc(schoolName)}<br/>All rights reserved.</div></td>
+    <td style="vertical-align:top;text-align:right;"><div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};line-height:1.9;">Sent via Business Portal<br/>&copy; ${year} ${esc(schoolName)}<br/>All rights reserved.</div></td>
   </tr></table>
 </td></tr>
-<tr><td colspan="3" style="background:#f0ede8;padding:14px 40px;"><div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};text-align:center;line-height:1.7;">This is a computer-generated email. Please do not reply directly to this message.<br/>For enquiries, contact the school administration office.</div></td></tr>
+<tr><td colspan="3" style="background:#f0ede8;padding:14px 40px;"><div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};text-align:center;line-height:1.7;">This is a computer-generated email. Please do not reply directly to this message.<br/>For enquiries, contact the organization administration office.</div></td></tr>
 <tr><td style="background:${PURPLE};height:5px;font-size:0;line-height:0;width:20%;">&nbsp;</td><td style="background:${GREEN};height:5px;font-size:0;line-height:0;width:60%;">&nbsp;</td><td style="background:${ORANGE};height:5px;font-size:0;line-height:0;">&nbsp;</td></tr>
 </table></td></tr></table>
 </body></html>`;
@@ -133,8 +133,8 @@ export function buildEmailHtml(subj, bodyText, schoolName = "School Portal") {
  * @param {string} severity   "critical" | "warn" | "info"
  * @param {string} schoolName
  */
-export function buildAlertEmail(title, rows, severity = "info", schoolName = "School Portal") {
-  const COLOR = severity === "critical" ? "#b91c1c" : severity === "warn" ? "#d97706" : "#1A4FA0";
+export function buildAlertEmail(title, rows, severity = "info", schoolName = "Business Portal") {
+  const COLOR = severity === "critical" ? "#b91c1c" : severity === "warn" ? "#d97706" : "#111827";
   const ICON  = severity === "critical" ? "&#x1F534;" : severity === "warn" ? "&#x1F7E1;" : "&#x1F535;";
   const esc = (s = "") => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const dateStr = new Date().toLocaleString("en-NG", { dateStyle:"medium", timeStyle:"short" });

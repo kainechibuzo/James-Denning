@@ -545,7 +545,7 @@ export function CaeStructurePanel({notify,sections}){
                       </button>
                     </div>
                     <input value={c.component_name} onChange={e=>updateComp(c._uid,"component_name",e.target.value)}
-                      placeholder="e.g. Mid Term Test"
+                      placeholder="e.g. Mid Period Test"
                       style={{padding:"7px 9px",border:`2px solid ${C.border}`,borderRadius:7,fontSize:12,
                         fontWeight:isT?700:400,width:"100%",outline:"none"}}
                       onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.border}/>

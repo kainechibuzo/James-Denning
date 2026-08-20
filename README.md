@@ -1,9 +1,11 @@
-# Renaissance Garden Schools — Portal (v30)
+# JAMES-DENNING — Business Operations Platform
 
-Internal school management portal for Renaissance Garden Schools, Abuja.
+A multi-tenant business operations workspace for organizations of every kind.
+It manages people, teams, groups, billing, performance records, approvals, communications,
+and reporting while preserving compatibility with existing education tenants.
 Built as a single-page React application backed by Supabase.
 
-**Live URL:** https://portal.renaissancegardenschools.com
+**Current deployment URL:** https://portal.renaissancegardenschools.com (legacy host retained for compatibility while the new public domain is finalized)
 **GitHub:** https://github.com/Ossytrikz/RGS-PORTAL (private — `master` branch auto-deploys to Vercel)
 
 ---
@@ -26,13 +28,20 @@ Built as a single-page React application backed by Supabase.
 ## Project Structure
 
 ```
-rgs-v27/                          ← Working directory (internal name; project is v30)
+rgs-portal/                       ← Repository root
 ├── src/
-│   ├── AppDemo.jsx               ← ALL UI components (~19 k lines, ~100 functions)
-│   ├── supabaseClient.js         ← ALL DB methods (~900 lines, exported as `db`)
-│   ├── main.jsx                  ← React entry point, mounts <App/>
-│   ├── App.jsx                   ← Thin shell rendering <AppInnerWrapper/>
-│   ├── useInactivityTimeout.js   ← Auto-logout hook
+│   ├── AppDemo.jsx               ← Main shell, router, RBAC, shared legacy UI
+│   ├── pages/                    ← Domain pages (people, billing, performance, etc.)
+│   ├── MobileApp.jsx             ← Dedicated Capacitor/mobile workspace
+│   ├── components/               ← Shared UI primitives
+│   ├── config/product.js         ← JAMES-DENNING identity, terminology, modules
+│   ├── config/theme.js           ← Monochrome design tokens
+│   ├── contexts/                 ← Workspace, theme, and confirmation providers
+│   ├── services/                 ← Email, PDF, report, and platform services
+│   ├── supabaseClient.js         ← Database methods, exported as `db`
+│   ├── main.jsx                  ← Web React entry point
+│   ├── mobile-main.jsx           ← Mobile React entry point
+│   └── useInactivityTimeout.js   ← Auto-logout hook
 │   ├── supabaseAdmin.js          ← UNUSED legacy file — ignore
 │   └── fix_emoji*.js             ← UNUSED legacy one-off scripts — ignore
 ├── supabase/
@@ -82,8 +91,9 @@ These are set in Vercel Dashboard → Project → Settings → Environment Varia
 
 ```bash
 npm run dev           # Local dev server (http://localhost:3000)
-npm run build         # Capacitor/Android build (base: './')
+npm run build         # Capacitor/Android web bundle (base: './')
 npm run build:web     # Vercel production build (base: '/')
+npm run build:mobile  # Dedicated mobile bundle (dist-mobile/)
 npm run android       # Sync + open Android Studio
 ```
 
@@ -115,8 +125,10 @@ See `PROJECT_NOTES.md` for the full schema reference.
 
 ## Code Conventions
 
-- **Single-file architecture** — all page components, modals, hooks in `AppDemo.jsx`. Do not create new files unless explicitly asked.
-- **Inline styles only** — no CSS modules, no Tailwind. Colours from the `C` constant (`C.blue`, `C.orange`, `C.muted`, `C.border`, `C.offWhite`).
+- **Domain-page architecture** — page logic belongs in the relevant file under `src/pages/`; `AppDemo.jsx` remains the shell/router.
+- **Inline styles only** — no CSS modules, no Tailwind. Use the monochrome tokens from `src/config/theme.js` (`C.blue`, `C.orange`, `C.muted`, `C.border`, `C.offWhite`).
+- **Presentation/database split** — visible copy is business-neutral by default. Legacy school-compatible table and column names remain unchanged so existing tenants and data continue to work.
+- **Workspace profiles** — Admin → Settings → Workspace selects the organization type and enables/disables the optional Education module. Education tenants can restore academic navigation labels without a database migration.
 - **`db.*` for all DB calls** — use the exported `db` object from `supabaseClient.js`. Never call `supabase.from(...)` directly in components (a few legacy inline queries exist and are OK to leave).
 - **`supabaseSrv`** (service role) lives inside `supabaseClient.js` for RLS bypass ops. Never import it into `AppDemo.jsx`.
 - **Icons:** `<AppIcon name="..."/>` for sidebar/nav; Lucide components directly (`<Settings size={16}/>`) elsewhere. Never use emoji as icons.
@@ -150,8 +162,10 @@ Visit the portal URL in Safari → Share → Add to Home Screen.
 
 ## Edge Functions
 
-Deploy the `send-email` function:
+Deploy the account and email functions:
 ```bash
+# Registration is public; the function authenticates every non-registration action itself.
+npx supabase functions deploy manage-account --project-ref mcdcwdfdpqzrzsixmrcg --no-verify-jwt
 npx supabase functions deploy send-email --project-ref mcdcwdfdpqzrzsixmrcg
 ```
 
@@ -162,5 +176,5 @@ See `PROJECT_NOTES.md` for the full list.
 
 ## Support
 
-Built for Renaissance Garden Schools, Abuja, Nigeria.
-Internal use only — access is role-controlled via Supabase Auth + RBAC.
+Built for modern organizations of every kind.
+Internal use by default — access is role-controlled via Supabase Auth + RBAC.

@@ -1,5 +1,5 @@
 /**
- * Teachers domain: TeachersPage
+ * Staff domain: TeachersPage
  */
 import React, { useState, useEffect } from "react";
 import { BookOpen, Check, Download, Edit, Pencil, Phone, Save, Send, Trash2, Upload } from "lucide-react";
@@ -43,14 +43,14 @@ export function TeachersPage({ctx}){
 
   const save=async()=>{
     if(!form.full_name){notify("Full name required","error");return;}
-    if(!editId&&!form.email){notify("Email is required for new teachers","error");return;}
+    if(!editId&&!form.email){notify("Email is required for new staff","error");return;}
     const payload={...form,section_id:form.section_id?+form.section_id:null};
     // staff_id always equals email
     payload.staff_id=payload.email||payload.staff_id||"";
     // Default password = email for new teachers
     if(!editId){payload.password_hash=payload.email||"";}
     const {error}=await db.upsertTeacher(payload,editId);
-    if(error){console.error("[upsertTeacher]",error);notify(error.message||error.details||"Failed to save teacher","error");}
+    if(error){console.error("[upsertTeacher]",error);notify(error.message||error.details||"Failed to save staff","error");}
     else{
       notify(editId?"Staff updated ✓":"Staff added ✓");
       if(!editId){
@@ -59,7 +59,7 @@ export function TeachersPage({ctx}){
           subject:`Welcome to ${_taSN} Staff Portal`,
           html:buildEmailHtml("Welcome to the Staff Portal",[
             `This communication is regarding:`,
-            `${payload.full_name} · Staff ID: ${payload.staff_id} · Role: Teacher`,``,
+            `${payload.full_name} · Staff ID: ${payload.staff_id} · Role: Staff`,``,
             `Dear ${payload.full_name},`,``,
             `Your staff portal account has been created successfully.`,``,
             `YOUR LOGIN DETAILS`,
@@ -67,13 +67,13 @@ export function TeachersPage({ctx}){
             `Portal:   ${window.location.origin}`,
             `Username: ${payload.email}`,
             `Password: ${payload.email}`,
-            `Role:     Teacher`,
+            `Role:     Staff`,
             `──────────────────────────────────────`,``,
             `Please log in using your email address as both your`,
             `username and default password.`,``,
             `We strongly recommend changing your password after`,
             `your first login for security.`,``,
-            `For assistance, contact the school administration.`,
+            `For assistance, contact the organization administration.`,
           ].join("\n")),
         }]});
       }
@@ -102,13 +102,13 @@ export function TeachersPage({ctx}){
     if(!XLSX){notify("Template loading — please wait a moment and try again","warn");return;}
     const wb=XLSX.utils.book_new();
     const wsData=[
-      ["Full Name ★","Email ★ (used as login)","Phone","Subject Specialisation"],
+      ["Full Name ★","Email ★ (used as login)","Phone","Category Specialisation"],
       ["Adaeze Okonkwo","adaeze@rgs.edu.ng","08012345678","Mathematics"],
     ];
     const ws=XLSX.utils.aoa_to_sheet(wsData);
     ws["!cols"]=[{wch:24},{wch:30},{wch:16},{wch:24}];
     XLSX.utils.book_append_sheet(wb,ws,"Staff Data");
-    XLSX.writeFile(wb,"RGS_Teacher_Upload_Template.xlsx");
+    XLSX.writeFile(wb,"JD_Staff_Upload_Template.xlsx");
   };
 
   const parseTeacherBulkFile=async(file)=>{
@@ -143,7 +143,7 @@ export function TeachersPage({ctx}){
         if(!fn&&!em)continue;
         rows.push({full_name:fn,email:em,phone:get(row,"phone"),subject:get(row,"subject"),_line:i+1});
       }
-      if(rows.length===0){setBulkErrors(["No valid teacher rows found. Check the file format."]);return;}
+      if(rows.length===0){setBulkErrors(["No valid staff rows found. Check the file format."]);return;}
       setBulkParsed(rows);
     }catch(err){setBulkErrors(["Failed to parse file: "+err.message]);}
   };
@@ -166,7 +166,7 @@ export function TeachersPage({ctx}){
           subject:`Welcome to ${_taSN} Staff Portal`,
           html:buildEmailHtml("Welcome to the Staff Portal",[
             `This communication is regarding:`,
-            `${row.full_name} · Staff ID: ${row.email} · Role: Teacher`,``,
+            `${row.full_name} · Staff ID: ${row.email} · Role: Staff`,``,
             `Dear ${row.full_name},`,``,
             `Your staff portal account has been created successfully.`,``,
             `YOUR LOGIN DETAILS`,
@@ -174,13 +174,13 @@ export function TeachersPage({ctx}){
             `Portal:   ${window.location.origin}`,
             `Username: ${row.email}`,
             `Password: ${row.email}`,
-            `Role:     Teacher`,
+            `Role:     Staff`,
             `──────────────────────────────────────`,``,
             `Please log in using your email address as both your`,
             `username and default password.`,``,
             `We strongly recommend changing your password after`,
             `your first login for security.`,``,
-            `For assistance, contact the school administration.`,
+            `For assistance, contact the organization administration.`,
           ].join("\n")),
         });
       }
@@ -206,7 +206,7 @@ export function TeachersPage({ctx}){
       {lastRegisteredTeachers&&(
         <div style={{marginBottom:16,padding:"12px 16px",background:C.greenPale,border:`1px solid ${C.green}44`,borderRadius:10,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <span style={{flex:1,fontSize:13,color:C.green,fontWeight:700}}>
-            {lastRegisteredTeachers.count} teacher{lastRegisteredTeachers.count!==1?"s":""} registered successfully.
+            {lastRegisteredTeachers.count} staff{lastRegisteredTeachers.count!==1?"s":""} registered successfully.
           </span>
           <Btn onClick={()=>setShowTeacherOnboarding(true)} color={C.blue} outline style={{fontSize:12}}>
             Send Onboarding Emails
@@ -218,8 +218,8 @@ export function TeachersPage({ctx}){
       <Card>
         {!loading&&!teachers.length?(
           <EmptyState icon={<AppIcon name="teachers" size={28} color={C.muted}/>}
-            title="No teachers yet"
-            message={selectedSection?`No staff in ${selectedSection.name}. Add your first teacher or clear the section filter.`:"Add your first teacher to get started."}
+            title="No staff yet"
+            message={selectedSection?`No staff in ${selectedSection.name}. Add your first teacher or clear the section filter.`:"Add your first staff to get started."}
             action={<Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Staff</Btn>}/>
         ):(
           <div style={{overflowX:"auto"}}>
@@ -239,7 +239,7 @@ export function TeachersPage({ctx}){
                       sec?<Badge color={sec.color||C.blue}>{sec.code}</Badge>:<span style={{color:C.light}}>—</span>,
                       <span style={{color:C.muted}}>{t.date_joined||"—"}</span>,
                       <div style={{display:"flex",gap:5}}>
-                        <Btn xs onClick={()=>setAssignSubjectTeacher(t)} color={C.green} outline title="Assign Subjects"><BookOpen size={13}/></Btn>
+                        <Btn xs onClick={()=>setAssignSubjectTeacher(t)} color={C.green} outline title="Assign Categories"><BookOpen size={13}/></Btn>
                         <Btn xs onClick={()=>{setForm({full_name:t.full_name||"",email:t.email||"",phone:t.phone||"",gender:t.gender||"Male",staff_id:t.staff_id||"",date_joined:t.date_joined||"",section_id:t.section_id||""});setEditId(t.id);setModal(true);}} color={C.blue} outline><Pencil size={13}/></Btn>
                         <Btn xs onClick={()=>del(t.id,t.full_name)} color={C.red} outline><Trash2 size={13}/></Btn>
                       </div>
@@ -258,7 +258,7 @@ export function TeachersPage({ctx}){
           <Inp label="Full Name *" value={form.full_name} onChange={v=>f({full_name:v})}/>
           <Inp label="Email * (used as login username)" type="email" value={form.email||""} onChange={v=>f({email:v,staff_id:v})}/>
           <div style={{marginBottom:13,padding:"8px 12px",background:C.bluePale,border:`1px solid ${C.blueLight}`,borderRadius:8,fontSize:12,color:C.blue}}>
-            Teacher logs in using their email address. Staff ID is set automatically.
+            Staff logs in using their email address. Staff ID is set automatically.
           </div>
           <div style={{marginBottom:13}}>
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Staff ID (auto-set from email)</label>
@@ -310,7 +310,7 @@ export function TeachersPage({ctx}){
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead>
                     <tr style={{background:C.blue}}>
-                      {["#","Full Name","Email","Phone","Subject"].map((h,i)=>(
+                      {["#","Full Name","Email","Phone","Category"].map((h,i)=>(
                         <th key={i} style={{padding:"6px 10px",color:"#fff",textAlign:"left",fontWeight:700,whiteSpace:"nowrap"}}>{h}</th>
                       ))}
                     </tr>
@@ -440,7 +440,7 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
   );
 
   return(
-    <Modal title={`Assign Subjects — ${teacher.full_name}`} onClose={onClose} width={900}>
+    <Modal title={`Assign Categories — ${teacher.full_name}`} onClose={onClose} width={900}>
       {loading?<div style={{padding:40,textAlign:"center"}}><Spinner/></div>:(
         <>
           {/* Section switcher */}
@@ -465,15 +465,15 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
           {tab==="bulk"&&(
             <>
               {!sectionSubjects.length&&!sectionClasses.length?(
-                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No subjects or groups configured for this section.</div>
+                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No categories or groups configured for this section.</div>
               ):(
                 <>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-                    {/* Subjects column */}
+                    {/* Categories column */}
                     <div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                         <span style={{fontWeight:800,fontSize:12,color:C.blue,textTransform:"uppercase",letterSpacing:.5}}>
-                          Subjects ({sectionSubjects.length})
+                          Categories ({sectionSubjects.length})
                         </span>
                         <button onClick={()=>setBulkSelSubjects(bulkSelSubjects.size===sectionSubjects.length?new Set():new Set(sectionSubjects.map(s=>s.id)))}
                           style={{fontSize:11,color:C.blue,background:"none",border:"none",cursor:"pointer",fontWeight:700}}>
@@ -498,11 +498,11 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
                         })}
                       </div>
                     </div>
-                    {/* Classes column */}
+                    {/* Groups column */}
                     <div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                         <span style={{fontWeight:800,fontSize:12,color:C.purple,textTransform:"uppercase",letterSpacing:.5}}>
-                          Classes ({sectionClasses.length})
+                          Groups ({sectionClasses.length})
                         </span>
                         <button onClick={()=>setBulkSelClasses(bulkSelClasses.size===sectionClasses.length?new Set():new Set(sectionClasses.map(c=>c.id)))}
                           style={{fontSize:11,color:C.purple,background:"none",border:"none",cursor:"pointer",fontWeight:700}}>
@@ -531,7 +531,7 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
                     <div style={{marginTop:14,padding:"12px 16px",background:`${C.blue}08`,
                       border:`1.5px solid ${C.blue}33`,borderRadius:10,display:"flex",alignItems:"center",gap:12}}>
                       <span style={{flex:1,fontSize:13,color:C.blue}}>
-                        <strong>{bulkSelSubjects.size}</strong> subject{bulkSelSubjects.size!==1?"s":""} × <strong>{bulkSelClasses.size}</strong> class{bulkSelClasses.size!==1?"es":""} = <strong>{bulkSelSubjects.size*bulkSelClasses.size}</strong> combination{bulkSelSubjects.size*bulkSelClasses.size!==1?"s":""}
+                        <strong>{bulkSelSubjects.size}</strong> category{bulkSelSubjects.size!==1?"s":""} × <strong>{bulkSelClasses.size}</strong> group{bulkSelClasses.size!==1?"es":""} = <strong>{bulkSelSubjects.size*bulkSelClasses.size}</strong> combination{bulkSelSubjects.size*bulkSelClasses.size!==1?"s":""}
                       </span>
                       <Btn onClick={applyBulk} color={C.blue}>Apply &amp; View Matrix →</Btn>
                     </div>
@@ -545,13 +545,13 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
           {tab==="matrix"&&(
             <div style={{overflowX:"auto"}}>
               {!sectionSubjects.length?(
-                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No subjects configured for this section.</div>
+                <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No categories configured for this section.</div>
               ):(
                 <table style={{borderCollapse:"collapse",fontSize:12,minWidth:"100%"}}>
                   <thead>
                     <tr>
                       <th style={{textAlign:"left",padding:"8px 12px",background:C.offWhite,borderBottom:`2px solid ${C.border}`,fontWeight:800,color:C.muted,minWidth:190,position:"sticky",left:0,zIndex:1}}>
-                        Subject
+                        Category
                       </th>
                       {sectionClasses.map(c=>(
                         <th key={c.id} style={{padding:"8px 10px",textAlign:"center",background:C.offWhite,borderBottom:`2px solid ${C.border}`,fontWeight:800,color:C.blue,whiteSpace:"nowrap",minWidth:64}}>

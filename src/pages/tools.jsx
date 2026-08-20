@@ -45,7 +45,7 @@ export function RecycleBinPage({ctx}){
   };
   const daysLeft=(exp)=>Math.max(0,Math.ceil((new Date(exp)-Date.now())/(864e5)));
   const typeColor={student:C.blue,teacher:C.green,class:C.orange,section:'#8b5cf6',subject:'#0891b2'};
-  const typeLabel={student:'Member',teacher:'Staff',class:'Group',section:'Section',subject:'Subject'};
+  const typeLabel={student:'Member',teacher:'Staff',class:'Group',section:'Section',subject:'Category'};
 
   const restore=async(item)=>{
     const name=displayName(item);
@@ -149,7 +149,7 @@ export function RecycleBinPage({ctx}){
             {items.length===0?'Recycle bin is empty':'No items match your filter'}
           </div>
           <div style={{fontSize:12,color:C.light}}>
-            {items.length===0?'Deleted students, teachers, classes, sections, and subjects will appear here.':'Try clearing the search or filter.'}
+            {items.length===0?'Deleted members, staff, groups, sections, and categories will appear here.':'Try clearing the search or filter.'}
           </div>
         </div>
       ):(
@@ -266,10 +266,10 @@ export function DataExportPage({ctx}){
   });
 
   const exportResults=()=>run("results",async()=>{
-    if(!selSession||!selTerm){notify("Select a session and term first","error");return;}
+    if(!selSession||!selTerm){notify("Select a cycle and period first","error");return;}
     const{data}=await db.getResults({term_id:+selTerm,session_id:+selSession,class_id:selClass?+selClass:undefined});
     const rows=(data||[]).map(r=>({
-      "Member ID":r.student_id,"Group":r.class_id,"Subject":r.section_subjects?.name||r.subject_id,
+      "Member ID":r.student_id,"Group":r.class_id,"Category":r.section_subjects?.name||r.subject_id,
       "CA Score":r.ca_score??""," Exam Score":r.exam_score??""," Total":r.total_score??"",
     }));
     downloadXlsx(rows,"Results");notify(`${rows.length} result rows exported ✓`);
@@ -280,13 +280,13 @@ export function DataExportPage({ctx}){
     const rows=(data||[]).map(b=>({
       "Bill ID":b.id,"Member ID":b.student_id,"Group":b.class_id,
       "Total Amount":b.total_amount,"Amount Paid":b.amount_paid,"Balance":b.balance,
-      "Status":b.status,"Term":b.term,"Academic Year":b.academic_year,"Due Date":b.due_date||"",
+      "Status":b.status,"Period":b.term,"Performance Year":b.academic_year,"Due Date":b.due_date||"",
     }));
     downloadXlsx(rows,"FeeBills");notify(`${rows.length} bills exported ✓`);
   });
 
   const exportAttendance=()=>run("attendance",async()=>{
-    if(!selSession||!selTerm){notify("Select a session and term first","error");return;}
+    if(!selSession||!selTerm){notify("Select a cycle and period first","error");return;}
     const{data}=await db.getAttendanceSummary(selClass?+selClass:null,+selTerm,+selSession);
     const rows=(data||[]).map(r=>({
       "Member ID":r.student_id,"Present":r.present||0,"Absent":r.absent||0,"Late":r.late||0,"Total Days":r.total||0,
@@ -326,12 +326,12 @@ export function DataExportPage({ctx}){
     <div style={{display:"flex",gap:8,flexWrap:"wrap",padding:"12px 0",borderTop:`1px solid ${C.border}`,marginTop:4}}>
       <select value={selSession} onChange={e=>{setSelSession(e.target.value);setSelTerm("");}}
         style={{padding:"6px 10px",border:`1.5px solid ${C.border}`,borderRadius:7,fontSize:11,background:C.white,color:C.text}}>
-        <option value="">All Sessions</option>
+        <option value="">All Cycles</option>
         {sessions.map(s=><option key={s.id} value={String(s.id)}>{s.name}{s.is_active?" ✓":""}</option>)}
       </select>
       <select value={selTerm} onChange={e=>setSelTerm(e.target.value)}
         style={{padding:"6px 10px",border:`1.5px solid ${C.border}`,borderRadius:7,fontSize:11,background:C.white,color:C.text}}>
-        <option value="">All Terms</option>
+        <option value="">All Periods</option>
         {terms.map(t=><option key={t.id} value={String(t.id)}>{t.name}{t.is_active?" ✓":""}</option>)}
       </select>
       <select value={selClass} onChange={e=>setSelClass(e.target.value)}
@@ -348,14 +348,14 @@ export function DataExportPage({ctx}){
         <Download size={22} color={C.blue}/>
         <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Data Export</h2>
       </div>
-      <p style={{margin:"0 0 24px",fontSize:12,color:C.muted}}>Download school data as Excel spreadsheets for reporting, government returns, or archiving.</p>
+      <p style={{margin:"0 0 24px",fontSize:12,color:C.muted}}>Download organization data as Excel spreadsheets for reporting, government returns, or archiving.</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-        <ExportCard icon={Users} title="Members" desc="Full student list with class, status, and contact info." btnLabel="Export Members (.xlsx)" onExport={exportStudents} loadKey="students"/>
-        <ExportCard icon={UserCheck} title="Staff" desc="All teachers and managers with roles and contact info." btnLabel="Export Staff (.xlsx)" onExport={exportTeachers} loadKey="teachers"/>
-        <ExportCard icon={BarChart3} title="Results" desc="Member scores by subject, class, term, and session." btnLabel="Export Results (.xlsx)" onExport={exportResults} loadKey="results"
+        <ExportCard icon={Users} title="Members" desc="Full member list with group, status, and contact info." btnLabel="Export Members (.xlsx)" onExport={exportStudents} loadKey="students"/>
+        <ExportCard icon={UserCheck} title="Staff" desc="All staff and managers with roles and contact info." btnLabel="Export Staff (.xlsx)" onExport={exportTeachers} loadKey="teachers"/>
+        <ExportCard icon={BarChart3} title="Results" desc="Member scores by category, group, period, and cycle." btnLabel="Export Results (.xlsx)" onExport={exportResults} loadKey="results"
           extra={FilterRow}/>
-        <ExportCard icon={Receipt} title="Fee Bills" desc="All generated bills with payment status and balances." btnLabel="Export Fee Bills (.xlsx)" onExport={exportFees} loadKey="fees"/>
-        <ExportCard icon={CalendarCheck} title="Attendance" desc="Attendance summary per student (present / absent / late)." btnLabel="Export Attendance (.xlsx)" onExport={exportAttendance} loadKey="attendance"
+        <ExportCard icon={Receipt} title="Bills" desc="All generated bills with payment status and balances." btnLabel="Export Bills (.xlsx)" onExport={exportFees} loadKey="fees"/>
+        <ExportCard icon={CalendarCheck} title="Attendance" desc="Attendance summary per member (present / absent / late)." btnLabel="Export Attendance (.xlsx)" onExport={exportAttendance} loadKey="attendance"
           extra={FilterRow}/>
       </div>
     </div>
@@ -516,14 +516,14 @@ export function BroadsheetPage({ctx}){
   };
 
   const generate=async()=>{
-    if(!selClass||!selSession||!selTerm){notify("Select class, session and term first.","error");return;}
+    if(!selClass||!selSession||!selTerm){notify("Select group, cycle and period first.","error");return;}
     setLoading(true);setBsData(null);
     const d=await db.getBroadsheetData(+selClass,+selTerm,+selSession);
     setLoading(false);
     if(d.error){notify("Error: "+d.error.message,"error");return;}
     setBsData(d);
-    if(d.students.length===0) notify("No active students found in this class.","warn");
-    else if(d.results.length===0) notify("No results uploaded for this class/term/session yet.","warn");
+    if(d.students.length===0) notify("No active members found in this group.","warn");
+    else if(d.results.length===0) notify("No results uploaded for this group/period/cycle yet.","warn");
   };
 
   const gradeFor=useCallback((score)=>{
@@ -567,7 +567,7 @@ export function BroadsheetPage({ctx}){
     const session=sessions.find(s=>String(s.id)===selSession);
     const term=terms.find(t=>String(t.id)===selTerm);
 
-    const hdr1=['#','Student Name','Adm. No.'];
+    const hdr1=['#','Member Name','Adm. No.'];
     const hdr2=['','',''];
     subjects.forEach(s=>{
       if(mode==='detailed'){hdr1.push(s.name,'','');hdr2.push('CA','Exam','Total');}
@@ -595,13 +595,13 @@ export function BroadsheetPage({ctx}){
                 +(rows.reduce((s,r)=>s+r.average,0)/rows.length).toFixed(1),'','');
 
     const ws=XLSX.utils.aoa_to_sheet([
-      [`${cls?.name||'Class'} Broadsheet — ${term?.name||''} ${session?.name||''}`],
+      [`${cls?.name||'Group'} Broadsheet — ${term?.name||''} ${session?.name||''}`],
       hdr1,hdr2,...dataRows,avgRow,
     ]);
     ws['!cols']=[{wch:4},{wch:22},{wch:10},...subjects.flatMap(()=>mode==='detailed'?[{wch:6},{wch:7},{wch:7}]:[{wch:8}]),{wch:10},{wch:8},{wch:7},{wch:7}];
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,'Broadsheet');
-    XLSX.writeFile(wb,`Broadsheet_${(cls?.name||'Class').replace(/\s/g,'_')}_${(term?.name||'T').replace(/\s/g,'_')}.xlsx`);
+    XLSX.writeFile(wb,`Broadsheet_${(cls?.name||'Group').replace(/\s/g,'_')}_${(term?.name||'T').replace(/\s/g,'_')}.xlsx`);
     notify("Excel downloaded ✓");
   };
 
@@ -641,18 +641,18 @@ export function BroadsheetPage({ctx}){
         <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Group Broadsheet</h2>
       </div>
       <p style={{margin:"0 0 18px",fontSize:12,color:C.muted}}>
-        Comprehensive class performance table — all students, all subjects, positions and grades. Export as PDF (A3 landscape) or Excel.
+        Comprehensive group performance table — all members, all categories, positions and grades. Export as PDF (A3 landscape) or Excel.
       </p>
 
       <div style={{display:"flex",gap:8,marginBottom:18,flexWrap:"wrap",alignItems:"center"}}>
         <select value={selSession} onChange={e=>{setSelSession(e.target.value);setSelTerm("");loadTerms(e.target.value);}}
           style={{padding:"8px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-          <option value="">Session…</option>
+          <option value="">Cycle…</option>
           {sessions.map(s=><option key={s.id} value={String(s.id)}>{s.name}{s.is_active?" (active)":""}</option>)}
         </select>
         <select value={selTerm} onChange={e=>setSelTerm(e.target.value)}
           style={{padding:"8px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:12,background:C.white,color:C.text}}>
-          <option value="">Term…</option>
+          <option value="">Period…</option>
           {terms.map(t=><option key={t.id} value={String(t.id)}>{t.name}{t.is_active?" (active)":""}</option>)}
         </select>
         <select value={selClass} onChange={e=>setSelClass(e.target.value)}
@@ -692,7 +692,7 @@ export function BroadsheetPage({ctx}){
           <div style={{display:"flex",gap:20,padding:"9px 16px",background:C.offWhite,
             borderBottom:`1px solid ${C.border}`,flexWrap:"wrap",alignItems:"center"}}>
             <div style={{fontWeight:800,fontSize:13,color:C.text}}>{cls_sel?.name}</div>
-            <div style={{fontSize:11,color:C.muted}}>{rows.length} students &bull; {bsData.subjects.length} subjects</div>
+            <div style={{fontSize:11,color:C.muted}}>{rows.length} members • {bsData.subjects.length} categories</div>
             <div style={{fontSize:11,color:C.muted}}>Group avg: <strong style={{color:C.blue}}>{(rows.reduce((s,r)=>s+r.average,0)/rows.length).toFixed(1)}</strong></div>
             <div style={{fontSize:11,color:C.muted}}>Highest: <strong style={{color:C.green}}>{Math.max(...rows.map(r=>r.grandTotal)).toFixed(1)}</strong></div>
             <div style={{fontSize:11,color:C.muted}}>Lowest: <strong style={{color:C.red}}>{Math.min(...rows.map(r=>r.grandTotal)).toFixed(1)}</strong></div>
@@ -868,7 +868,7 @@ export function AuditLogPage({ctx}){
   const safePage=Math.min(page,totalPages-1);
 
   const exportCSV=()=>{
-    const rows=[["Date","Action","Type","ID","Name","Summary","Old Value","New Value","Actor","Actor Email","Actor Role","IP","Session"],...filtered.map(l=>[
+    const rows=[["Date","Action","Type","ID","Name","Summary","Old Value","New Value","Actor","Actor Email","Actor Role","IP","Cycle"],...filtered.map(l=>[
       new Date(l.performed_at).toLocaleString("en-NG"),
       l.action,l.entity_type,l.entity_id,l.entity_name||"",l.summary||l.notes||"",
       JSON.stringify(l.old_value||""),JSON.stringify(l.new_value||""),
@@ -1010,7 +1010,7 @@ export function AuditLogPage({ctx}){
                               {l.actor_type&&<div style={{color:C.muted,fontSize:11}}>Role: {l.actor_type}</div>}
                               {l.actor_id&&<div style={{color:C.muted,fontSize:11}}>ID: {l.actor_id}</div>}
                             </div>
-                            <div><strong style={{color:C.blue}}>Session</strong>
+                            <div><strong style={{color:C.blue}}>Cycle</strong>
                               <div style={{color:C.muted,fontSize:11,wordBreak:"break-all"}}>{l.session_id||"—"}</div>
                               {l.ip_address&&<div style={{color:C.muted,fontSize:11}}>IP: {l.ip_address}</div>}
                               {l.user_agent&&<div style={{color:C.muted,fontSize:10,maxHeight:60,overflow:"auto"}}>{l.user_agent}</div>}
@@ -1153,7 +1153,7 @@ export function BulkPromotionPage({ctx}){
 
   const promoTermName=useMemo(()=>{
     const t=terms.filter(t=>String(t.session_id)===String(selectedSession)).slice().sort((a,b)=>(b.term_order||0)-(a.term_order||0))[0];
-    return t?.name||"the final term";
+    return t?.name||"the final period";
   },[terms,selectedSession]);
 
   // ── Actions ──
@@ -1185,7 +1185,7 @@ export function BulkPromotionPage({ctx}){
     await refreshRun();
   };
   const commit=async()=>{
-    if(!nextSessionName.trim()){notify("Enter a name for the next session","error");return;}
+    if(!nextSessionName.trim()){notify("Enter a name for the next cycle","error");return;}
     const ok=await confirm({title:"Commit promotions?",
       message:`This moves ${promoteCount} student(s) up, keeps ${repeatCount} back, graduates ${gradCount}, and creates the draft session "${nextSessionName}". You can undo this afterwards.`,
       confirmLabel:"Commit"});
@@ -1198,13 +1198,13 @@ export function BulkPromotionPage({ctx}){
     notify(`Committed — ${data.promoted} promoted, ${data.graduated} graduated. Draft session "${nextSessionName}" created (inactive).`,"success");
   };
   const revert=async()=>{
-    if(!await confirm({title:"Undo this promotion?",message:"Restores every student's previous class and status, and removes the drafted next session if it hasn't been activated. This reverses the whole run.",confirmLabel:"Undo Promotion",danger:true}))return;
+    if(!await confirm({title:"Undo this promotion?",message:"Restores every member's previous group and status, and removes the drafted next cycle if it hasn't been activated. This reverses the whole run.",confirmLabel:"Undo Promotion",danger:true}))return;
     setBusy(true);
     const {error}=await db.revertPromotionRun(activeRun.run.id);
     setBusy(false);
     if(error){notify("Undo failed: "+error.message,"error");return;}
     await refreshRun();load();
-    notify("Promotion reverted — students restored to their previous classes.","warn");
+    notify("Promotion reverted — members restored to their previous groups.","warn");
   };
 
   const printList=(title,filterFn)=>{
@@ -1227,7 +1227,7 @@ export function BulkPromotionPage({ctx}){
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="bulk-promote" size={20}/>Promotions & Rollover</h2>
-        <p style={{color:C.muted,fontSize:12}}>End-of-session promotion. Everyone promotes by default via the map — you just mark the exceptions.</p>
+        <p style={{color:C.muted,fontSize:12}}>End-of-cycle promotion. Everyone promotes by default via the map — you just mark the exceptions.</p>
       </div>
 
       <div style={{display:"flex",gap:4,marginBottom:18,background:C.offWhite,borderRadius:10,padding:4,width:"fit-content"}}>
@@ -1244,7 +1244,7 @@ export function BulkPromotionPage({ctx}){
         /* ══ PROGRESSION MAP ══ */
         <Card>
           <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:4}}>Group Progression Map</div>
-          <div style={{color:C.muted,fontSize:12,marginBottom:16}}>Set where each group's members move at promotion. Leave a group as <b>Graduate</b> if it's the final group (its members leave the school). Set once — reused every year.</div>
+          <div style={{color:C.muted,fontSize:12,marginBottom:16}}>Set where each group's members move at promotion. Leave a group as <b>Graduate</b> if it's the final group (its members leave the organization). Set once — reused every year.</div>
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
             {classes.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>(
               <div key={c.id} style={{display:"grid",gridTemplateColumns:"1fr auto 1.2fr",gap:10,alignItems:"center",
@@ -1257,7 +1257,7 @@ export function BulkPromotionPage({ctx}){
                   onChange={e=>setPromotesTo(c.id,e.target.value)}
                   style={{padding:"7px 10px",border:`1.5px solid ${c.promotes_to_class_id?C.border:C.purple}`,borderRadius:7,
                     fontSize:13,background:C.white,color:C.text,cursor:"pointer"}}>
-                  <option value="">Graduate (leaves school)</option>
+                  <option value="">Graduate (leaves organization)</option>
                   {classes.filter(x=>x.id!==c.id).map(x=><option key={x.id} value={String(x.id)}>{x.name}</option>)}
                 </select>
               </div>
@@ -1271,16 +1271,16 @@ export function BulkPromotionPage({ctx}){
           <Card style={{marginBottom:14}}>
             <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
               <div style={{flex:"1 1 220px"}}>
-                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,display:"block",marginBottom:6}}>Session to close</label>
+                <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,display:"block",marginBottom:6}}>Cycle to close</label>
                 <select value={selectedSession} onChange={e=>setSelectedSession(e.target.value)}
                   style={{width:"100%",padding:"10px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,background:C.white,color:C.text,cursor:"pointer"}}>
-                  <option value="">Select session…</option>
+                  <option value="">Select cycle…</option>
                   {sessions.map(s=><option key={s.id} value={String(s.id)}>{s.name}{s.is_active?" (active)":""}</option>)}
                 </select>
               </div>
               {selectedSession&&!activeRun&&(
                 <div style={{fontSize:12,color:C.muted,flex:"1 1 240px"}}>
-                  Promotion term: <b style={{color:C.blue}}>{promoTermName}</b>. Arming snapshots all active students, defaulting everyone to Promote via the map.
+                  Promotion period: <b style={{color:C.blue}}>{promoTermName}</b>. Arming snapshots all active members, defaulting everyone to Promote via the map.
                 </div>
               )}
             </div>
@@ -1295,7 +1295,7 @@ export function BulkPromotionPage({ctx}){
                 )}
                 <Btn onClick={arm} color={C.orange} disabled={busy}
                   style={{width:"100%",justifyContent:"center",padding:"12px"}}>
-                  {busy?"Arming…":"Arm Promotion for this session"}
+                  {busy?"Arming…":"Arm Promotion for this cycle"}
                 </Btn>
               </div>
             )}
@@ -1320,7 +1320,7 @@ export function BulkPromotionPage({ctx}){
                 display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                 <span style={{fontSize:16}}>⚠️</span>
                 <span style={{flex:1,fontSize:12.5,color:C.red,minWidth:220}}>
-                  <b>{gradsOwing.length}</b> graduating student{gradsOwing.length!==1?"s":""} still owe{gradsOwing.length!==1?"":"s"} a total of <b>{fmt(gradsOwingTotal)}</b>. Once graduated they won't be billed again, so this debt <b>won't carry forward</b> — clear or record it before committing.
+                  <b>{gradsOwing.length}</b> graduating member{gradsOwing.length!==1?"s":""} still owe{gradsOwing.length!==1?"":"s"} a total of <b>{fmt(gradsOwingTotal)}</b>. Once graduated they won't be billed again, so this debt <b>won't carry forward</b> — clear or record it before committing.
                 </span>
                 <Btn xs outline color={C.red} onClick={()=>printList("Graduates with Outstanding Balances",d=>d.decision==="graduate"&&bal(d.student_id)>0)}>View list</Btn>
               </div>
@@ -1332,14 +1332,14 @@ export function BulkPromotionPage({ctx}){
             <Card style={{marginBottom:14,border:`1.5px solid ${C.orange}33`}}>
               <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
                 <div style={{flex:"1 1 220px"}}>
-                  <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,display:"block",marginBottom:6}}>Next session name (created as draft)</label>
+                  <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.6,display:"block",marginBottom:6}}>Next cycle name (created as draft)</label>
                   <input value={nextSessionName} onChange={e=>setNextSessionName(e.target.value)} placeholder="e.g. 2026/2027"
                     style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:8,fontSize:13,boxSizing:"border-box",color:C.text,background:C.white}}/>
                 </div>
                 <Btn onClick={commit} color={C.green} disabled={busy}>{busy?"Committing…":"Commit Promotions"}</Btn>
                 <Btn onClick={discard} color={C.muted} outline disabled={busy}>Discard</Btn>
               </div>
-              <div style={{fontSize:11,color:C.muted,marginTop:8}}>The next session is created <b>inactive</b> — you activate it separately when the new year begins.</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:8}}>The next cycle is created <b>inactive</b> — you activate it separately when the new year begins.</div>
             </Card>
           )}
           {activeRun&&committed&&(
@@ -1347,7 +1347,7 @@ export function BulkPromotionPage({ctx}){
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
                 <div style={{fontSize:13,color:C.text}}>
                   Committed by <b>{activeRun.run.committed_by||"—"}</b>
-                  {activeRun.run.to_session_id&&<span> · draft session created</span>}
+                  {activeRun.run.to_session_id&&<span> · draft cycle created</span>}
                 </div>
                 <Btn onClick={revert} color={C.red} outline disabled={busy}>{busy?"Undoing…":"Undo this Promotion"}</Btn>
               </div>
@@ -1360,7 +1360,7 @@ export function BulkPromotionPage({ctx}){
             return(
               <Card key={cid} style={{marginBottom:12}}>
                 <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:10}}>
-                  {classNm(cid)} <span style={{color:C.muted,fontWeight:600,fontSize:12}}>· {ds.length} student{ds.length!==1?"s":""} {dest?`· promotes to ${classNm(dest)}`:"· terminal (graduates)"}</span>
+                  {classNm(cid)} <span style={{color:C.muted,fontWeight:600,fontSize:12}}>· {ds.length} member{ds.length!==1?"s":""} {dest?`· promotes to ${classNm(dest)}`:"· terminal (graduates)"}</span>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:5}}>
                   {ds.slice().sort((a,b)=>(stuName[String(a.student_id)]||"").localeCompare(stuName[String(b.student_id)]||"")).map(d=>(
@@ -1369,7 +1369,7 @@ export function BulkPromotionPage({ctx}){
                         <span style={{fontWeight:600,fontSize:13}}>{stuName[String(d.student_id)]||d.student_id}</span>
                         <span style={{color:C.muted,fontSize:11,marginLeft:6}}>{d.student_id}</span>
                         {bal(d.student_id)>0&&(
-                          <span title="Outstanding fee balance"
+                          <span title="Outstanding billing balance"
                             style={{marginLeft:8,fontSize:10,fontWeight:800,color:C.red,background:`${C.red}14`,
                               border:`1px solid ${C.red}33`,padding:"1px 7px",borderRadius:99,whiteSpace:"nowrap"}}>
                             owes {fmt(bal(d.student_id))}
@@ -1404,7 +1404,7 @@ export function BulkPromotionPage({ctx}){
             );
           })}
           {activeRun&&!grouped.length&&(
-            <Card><div style={{color:C.muted,fontSize:13,padding:12,textAlign:"center"}}>No active members were snapshotted for this session.</div></Card>
+            <Card><div style={{color:C.muted,fontSize:13,padding:12,textAlign:"center"}}>No active members were snapshotted for this cycle.</div></Card>
           )}
         </>
       )}
@@ -1418,13 +1418,13 @@ export function AdminToolsPage({ctx}){
 
   const TOOLS=[
     {id:"bulk-promote",  icon:"bulk-promote",  label:"Promotions",
-     desc:"End-of-session promotion via the class map, with review, commit & undo.",
+     desc:"End-of-cycle promotion via the group map, with review, commit & undo.",
      color:"#7C3AED",bg:"#F5F3FF"},
     {id:"export",        icon:"export",        label:"Data Export",
-     desc:"Download students, staff, results, fees, and attendance as Excel files.",
+     desc:"Download members, staff, results, billing, and attendance as Excel files.",
      color:"#0369A1",bg:"#E0F2FE"},
     {id:"activity",      icon:"activity",      label:"Login Activity",
-     desc:"View login history, failed attempts, and session duration across all users.",
+     desc:"View login history, failed attempts, and cycle duration across all users.",
      color:"#0F766E",bg:"#F0FDFA"},
     {id:"audit-log",     icon:"audit-log",     label:"Audit Trail",
      desc:"Full chronological record of every admin action taken in the portal.",

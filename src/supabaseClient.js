@@ -5125,39 +5125,53 @@ export const db = {
   // School self-signup — creates school + school_settings skeleton
 
   async createSchoolSignup(schoolData){
-    // schoolData: {name, admin_email, admin_name, admin_password, student_id_prefix, address, phone, contact_phone, state}
-    // Real account creation now happens server-side in the manage-account
-    // edge function — creates a real Supabase Auth user for the admin (with
-    // real password hashing) plus the school row, atomically, instead of
-    // writing schoolData.admin_password directly into the database.
-    // NOTE: deployed via Supabase dashboard "Via Editor" as display name
-    // "manage-account", but Supabase auto-assigned the actual URL slug as
-    // "clever-processor" — that's the real invocable name. If you ever
-    // redeploy/rename this function, check Settings tab for the real slug
-    // rather than assuming it matches the display name.
-    const {data,error} = await supabase.functions.invoke('clever-processor', {
-      body: {
-        action: 'register_school',
-        schoolName: schoolData.name,
-        adminEmail: schoolData.admin_email,
-        adminName: schoolData.admin_name,
-        adminPassword: schoolData.admin_password,
-        studentIdPrefix: (schoolData.student_id_prefix||schoolData.name.slice(0,3)).toUpperCase(),
-        address: schoolData.address||'',
-        phone: schoolData.phone||schoolData.contact_phone||'',
-        state: schoolData.state||'',
-      }
-    })
-    if(error) return {data:null, error}
-    if(data?.error) return {data:null, error:{message:data.error}}
+    // Account creation happens server-side. The canonical function is
+    // `manage-account`; `clever-processor` is retained as a one-release
+    // fallback for the legacy deployment that used that generated slug.
+    const body={
+      action:'register_school',
+      schoolName:schoolData.name,
+      adminEmail:schoolData.admin_email,
+      adminName:schoolData.admin_name,
+      adminPassword:schoolData.admin_password,
+      studentIdPrefix:(schoolData.student_id_prefix||schoolData.name.slice(0,3)).toUpperCase(),
+      address:schoolData.address||'',
+      phone:schoolData.phone||schoolData.contact_phone||'',
+      state:schoolData.state||'',
+    };
 
-    const school = data.school
-    const seedSettings=[
-      {school_id:school.id,key:'school_name',value:schoolData.name},
-      {school_id:school.id,key:'admin_email',value:schoolData.admin_email},
-    ]
-    await supabase.from('school_settings').insert(seedSettings)
-    return{data:school,error:null}
+    const readFunctionError=async(error)=>{
+      const status=error?.context?.status;
+      let detail='';
+      try{
+        const response=error?.context;
+        if(response?.clone){
+          const payload=await response.clone().json();
+          detail=payload?.error||payload?.message||'';
+        }
+      }catch{/* non-JSON response */}
+      if(status===401||status===403){
+        return {message:`Registration service rejected the request (${status}). Deploy the manage-account Edge Function with public JWT verification disabled for registration.`};
+      }
+      return {message:detail||error?.message||'Registration service unavailable.'};
+    };
+
+    let lastError=null;
+    for(const functionName of ['manage-account','clever-processor']){
+      const result=await supabase.functions.invoke(functionName,{body});
+      if(!result.error){
+        if(result.data?.error) return {data:null,error:{message:result.data.error}};
+        const school=result.data?.school;
+        if(!school) return {data:null,error:{message:'Registration service returned no organization record.'}};
+        return {data:school,error:null};
+      }
+      lastError=await readFunctionError(result.error);
+      const status=result.error?.context?.status;
+      // Only try the legacy slug when the canonical function is absent.
+      if(functionName==='manage-account' && (status===404||status===405)) continue;
+      return {data:null,error:lastError};
+    }
+    return {data:null,error:lastError||{message:'Registration service unavailable.'}};
   },
 
 

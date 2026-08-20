@@ -23,7 +23,7 @@ export async function shareOrDownload(filename, content, mimeType = "text/plain"
       }
     } catch (e) {
       if (e.name === "AbortError") return; // user cancelled
-      console.warn("[RGS] share failed, falling back to download", e);
+      console.warn("[JD] share failed, falling back to download", e);
     }
   }
   const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
@@ -55,7 +55,7 @@ export async function safe(fn) {
     if (result && typeof result === "object" && "error" in result) return result;
     return { data: result, error: null };
   } catch (err) {
-    console.warn("[RGS safe]", err?.message || err);
+    console.warn("[JD safe]", err?.message || err);
     return { data: null, error: err };
   }
 }

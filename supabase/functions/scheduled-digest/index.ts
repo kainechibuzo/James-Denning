@@ -163,7 +163,7 @@ function buildDigestHtml(rows: EventRow[], windowLabel: string, schoolName: stri
     </table></div></td></tr>` : ""}
   <tr><td style="padding:20px 32px 28px">
     <div style="border-top:1px solid #e2e8f0;padding-top:16px;font-size:11px;color:#94a3b8;text-align:center">
-      Generated ${escHtml(generatedAt)} &middot; RGS Portal &middot; This is an automated digest. Do not reply.
+      Generated ${escHtml(generatedAt)} &middot; JAMES-DENNING &middot; This is an automated digest. Do not reply.
     </div>
   </td></tr>
 </table></td></tr></table></body></html>`;
@@ -296,7 +296,7 @@ serve(async (req) => {
 
     // ── School name + recipient ──
     const { data: schoolRow } = await pgGet(SUPABASE_URL, SERVICE_KEY, "schools", { select: "name", id: `eq.${school_id}` });
-    const schoolName = (schoolRow?.name as string) || "RGS Portal";
+    const schoolName = (schoolRow?.name as string) || "JAMES-DENNING";
 
     const { data: ncRow } = await pgGet(SUPABASE_URL, SERVICE_KEY, "school_settings", { select: "value", key: "eq.notif_config", school_id: `eq.${school_id}` });
     let alertEmail = ""; try { alertEmail = ncRow ? JSON.parse(ncRow.value as string).alert_email || "" : ""; } catch { /**/ }
@@ -312,7 +312,7 @@ serve(async (req) => {
     const n = events.length;
     const subject = `[${schoolName}] Activity Digest — ${cfg.frequency === "weekly" ? "Weekly" : "Daily"} (${n} event${n !== 1 ? "s" : ""})`;
 
-    const zetpKey = Deno.env.get("ZEPTO_API_KEY"); const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || "noreply@renaissancegardenschools.com"; const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "Renaissance Garden Schools";
+    const zetpKey = Deno.env.get("ZEPTO_API_KEY"); const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || "noreply@renaissancegardenschools.com"; const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
     const awsKey = Deno.env.get("AWS_ACCESS_KEY_ID"); const awsSecret = Deno.env.get("AWS_SECRET_ACCESS_KEY"); const awsRegion = Deno.env.get("AWS_REGION") || "eu-north-1"; const sesFrom = Deno.env.get("SES_FROM_EMAIL") || zetpFrom;
 
     let result: { ok: boolean; error?: string }; let provider: string;

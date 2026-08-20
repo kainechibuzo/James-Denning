@@ -78,6 +78,20 @@ serve(async (req) => {
         .upsert({ id: authUser.user.id, email: adminEmail, full_name: adminName, role: "admin", school_id: school.id });
       if (profileErr) return json({ error: profileErr.message }, 400);
 
+      // Seed the organization settings with the service-role client. The
+      // browser is still unauthenticated after registration, so attempting
+      // this insert from the frontend would be blocked by RLS and silently
+      // leave the new workspace without its identity settings.
+      const { error: settingsErr } = await supabaseAdmin
+        .from("school_settings")
+        .upsert([
+          { school_id: school.id, key: "school_name", value: schoolName },
+          { school_id: school.id, key: "admin_email", value: adminEmail },
+          { school_id: school.id, key: "workspace_type", value: "business" },
+          { school_id: school.id, key: "education_module_enabled", value: "false" },
+        ], { onConflict: "school_id,key" });
+      if (settingsErr) return json({ error: settingsErr.message }, 400);
+
       return json({ school, userId: authUser.user.id });
     }
 

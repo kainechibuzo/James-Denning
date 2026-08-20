@@ -1,5 +1,47 @@
-# RGS Portal — Project Notes
-_Last updated: 16 Jul 2026 — Row highlighting extended to the Items-tab PDF report_
+# JAMES-DENNING — Project Notes
+_Last updated: 20 Aug 2026 — Business-platform rebrand and workspace profiles_
+
+---
+
+## Rebrand and Workspace Profiles (20 Aug 2026)
+
+The product identity is now **JAMES-DENNING — Business Operations Platform**. The default
+presentation is business-neutral and uses a monochrome charcoal design system. The existing
+Supabase schema remains unchanged: legacy school-compatible table names, column names, route IDs,
+role values, and tenant data are intentionally preserved for backwards compatibility.
+
+### Product layer
+
+- `src/config/product.js` contains the product identity, industry choices, business terminology,
+  and optional Education navigation labels.
+- `src/config/theme.js` contains the monochrome light/dark tokens. Existing token names remain
+  available so the feature pages do not need a risky visual rewrite.
+- `src/contexts/section.jsx` loads `workspace_type` and `education_module_enabled` from the
+  existing `school_settings` table and exposes the active terminology to the app shell.
+- Admin → Settings → Workspace lets an organization choose General business, Professional
+  services, Retail and commerce, Nonprofit, Health and wellness, Education, or Other.
+- Business is the default. Enabling Education restores academic labels/navigation while keeping
+  the same database and all existing workflows.
+
+### Branding/assets
+
+- Default web/mobile identity: JAMES-DENNING with a monochrome JD mark.
+- Assets: `public/jd-mark.svg`, `public/jd-logo.svg`, regenerated PWA icons, and Capacitor assets.
+- The legacy Apex logo is no longer referenced.
+- `mobile.html` was added to satisfy `vite.mobile.config.js` and make the dedicated mobile build
+  reproducible.
+- The current deployment host remains `portal.renaissancegardenschools.com` until a new public
+  domain is selected; this is a deployment compatibility detail, not the product name.
+
+### Registration reliability fix
+
+The public organization-registration flow now invokes the canonical `manage-account` Edge Function
+first and falls back to the legacy `clever-processor` slug only when the canonical function is
+absent. Function errors now surface the server's actual message instead of only showing the generic
+Supabase non-2xx error. `supabase/config.toml` disables JWT verification at the function boundary
+because only the `register_school` action is public; every other account-management action still
+verifies the caller inside the function. New organizations seed their identity, workspace type, and
+Education-module settings server-side with the service-role client before the success response.
 
 ---
 
@@ -158,7 +200,7 @@ Together they replace reading any code to get up to speed.
 
 ## Project Overview
 
-**Renaissance Garden Schools** internal portal — manages students, teachers, results, fees, attendance, report cards, and communications.
+**JAMES-DENNING** business operations platform — manages people, staff, performance records, billing, attendance, reports, and communications.
 
 | | |
 |---|---|

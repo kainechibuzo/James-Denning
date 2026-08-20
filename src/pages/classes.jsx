@@ -1,5 +1,5 @@
 /**
- * Classes domain: ClassesPage, AssignmentsPage
+ * Groups domain: ClassesPage, AssignmentsPage
  */
 import React, { useState, useEffect } from "react";
 import {
@@ -72,12 +72,12 @@ export function ClassesPage({ctx}){
     }
     const publishedCount=(pubData||[]).filter(p=>p.is_published).length;
     if(publishedCount>0){
-      notify(`🔒 Interlock — Cannot delete "${name}"\nReason: Report cards are published for ${publishedCount} term(s).\nFix: Unpublish all report cards on the Report Cards page first.`,"error");
+      notify(`🔒 Interlock — Cannot delete "${name}"\nReason: Report cards are published for ${publishedCount} term(s).\nFix: Unpublish all report cards on the Reports page first.`,"error");
       return;
     }
     // ── Safe to proceed ──────────────────────────────────────────────────────
     const __ok=await confirm({title:"Delete Group?",
-      message:`Delete "${name}"? Subject assignments and teacher assignments for this class will also be removed. This cannot be undone.`,
+      message:`Delete "${name}"? Category assignments and teacher assignments for this class will also be removed. This cannot be undone.`,
       confirmLabel:"Delete",danger:true,typeToConfirm:"DELETE"});
     if(!__ok)return;
     const {error}=await db.softDelete('class',id,ctx.user?.name||'admin');
@@ -126,7 +126,7 @@ export function ClassesPage({ctx}){
         <button onClick={()=>setDetailClass(null)}
           style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",
             cursor:"pointer",color:C.blue,fontWeight:700,fontSize:13,marginBottom:16,padding:0}}>
-          ← Back to Classes
+          ← Back to Groups
         </button>
 
         {/* Header */}
@@ -143,7 +143,7 @@ export function ClassesPage({ctx}){
         {/* Stats row */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:13,marginBottom:20}}>
           <StatCard label="Members Enrolled" value={detailStudents.length} icon={<Users size={18} color={C.blue}/>} color={C.blue}/>
-          <StatCard label="Subjects Assigned" value={detailSubjects.length} icon={<BookOpen size={18} color={C.purple}/>} color={C.purple}/>
+          <StatCard label="Categories Assigned" value={detailSubjects.length} icon={<BookOpen size={18} color={C.purple}/>} color={C.purple}/>
           <StatCard label="Result Entries" value={totalResults} icon={<FileText size={18} color={C.orange}/>} color={C.orange}/>
           <StatCard label="Avg Score" value={avgScore!=null?avgScore.toFixed(1)+"%" :"—"} icon={<BarChart3 size={18} color={C.green}/>} color={C.green}/>
           <div style={{background:reportReady?C.greenPale:C.orangePale,borderRadius:14,padding:"18px 20px",
@@ -152,15 +152,15 @@ export function ClassesPage({ctx}){
             <div style={{fontSize:13,fontWeight:900,color:reportReady?C.green:C.orange,lineHeight:1,marginBottom:4}}>
               {reportReady?"Reports Ready":"Reports Pending"}
             </div>
-            <div style={{fontSize:11,color:C.muted}}>{uniqueStudentsWithResults}/{detailStudents.length} students have results</div>
+            <div style={{fontSize:11,color:C.muted}}>{uniqueStudentsWithResults}/{detailStudents.length} members have results</div>
           </div>
         </div>
 
         {detailLoading?<Spinner/>:(
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-            {/* Students list */}
+            {/* Members list */}
             <Card>
-              <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Students ({detailStudents.length})</div>
+              <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Members ({detailStudents.length})</div>
               {detailStudents.length===0
                 ?<div style={{color:C.light,fontSize:13,textAlign:"center",padding:20}}>No members enrolled</div>
                 :<div style={{maxHeight:380,overflowY:"auto"}}>
@@ -186,11 +186,11 @@ export function ClassesPage({ctx}){
               }
             </Card>
 
-            {/* Subjects list */}
+            {/* Categories list */}
             <Card>
-              <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Subjects ({detailSubjects.length})</div>
+              <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Categories ({detailSubjects.length})</div>
               {detailSubjects.length===0
-                ?<div style={{color:C.light,fontSize:13,textAlign:"center",padding:20}}>No subjects assigned — go to Assignments to add</div>
+                ?<div style={{color:C.light,fontSize:13,textAlign:"center",padding:20}}>No categories assigned — go to Assignments to add</div>
                 :<div>
                   {detailSubjects.map((s,i)=>(
                     <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -246,7 +246,7 @@ export function ClassesPage({ctx}){
                   </div>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div style={{fontSize:12,color:C.muted}}>{stuCount} students</div>
+                  <div style={{fontSize:12,color:C.muted}}>{stuCount} members</div>
                   <span style={{fontSize:11,color:C.blue,fontWeight:600}}>View details →</span>
                 </div>
               </Card>
@@ -283,7 +283,7 @@ export function ClassesPage({ctx}){
 
 
 // ─── ASSIGNMENTS PAGE ────────────────────────────────────────────────────────
-// Three-tab page: Class→Subject mapping | Form Teachers | Subject Teachers
+// Three-tab page: Group→Category mapping | Form Staff | Category Staff
 export function AssignmentsPage({ctx}){
   const {notify,selectedSection}=ctx;
   const [tab,setTab]=useState("class-subjects"); // class-subjects | form-teachers | subject-teachers
@@ -295,7 +295,7 @@ export function AssignmentsPage({ctx}){
   const [teacherSubjects,setTeacherSubjects]=useState([]); // all teacher_subjects rows
   const [loading,setLoading]=useState(true);
 
-  // Class-subject assignment state
+  // Group-subject assignment state
   const [selClass,setSelClass]=useState("");
   const [csLoading,setCsLoading]=useState(false);
   const [classSubjectRows,setClassSubjectRows]=useState([]);
@@ -305,7 +305,7 @@ export function AssignmentsPage({ctx}){
   const [ftTeacher,setFtTeacher]=useState("");
   const [ftSaving,setFtSaving]=useState(false);
 
-  // Subject teacher assignment state
+  // Category teacher assignment state
   const [stTeacher,setStTeacher]=useState("");
   const [stClass,setStClass]=useState("");
   const [stSubject,setStSubject]=useState("");
@@ -332,7 +332,7 @@ export function AssignmentsPage({ctx}){
   };
   useEffect(load,[selectedSection]);
 
-  // Load subjects for the Class-Subjects tab only (never touches stSubjectOptions)
+  // Load subjects for the Group-Categories tab only (never touches stSubjectOptions)
   const loadClassSubjects=async(classId)=>{
     if(!classId){setClassSubjectRows([]);return;}
     setCsLoading(true);
@@ -342,7 +342,7 @@ export function AssignmentsPage({ctx}){
   };
   useEffect(()=>{loadClassSubjects(selClass);},[selClass,classes]);
 
-  // When stClass changes (Subject Teachers tab), reload subject options for that class only
+  // When stClass changes (Category Staff tab), reload subject options for that class only
   useEffect(()=>{
     if(!stClass){setStSubjectOptions([]);return;}
     db.getClassSubjects(+stClass).then(({data})=>{
@@ -355,47 +355,47 @@ export function AssignmentsPage({ctx}){
       // ── Interlock: block removal if results exist for this subject in this class ──
       const{count}=await db.countResultsBySubjectClass(+selClass,sectionSubjectId);
       if(count>0){
-        const subjName=classSubjectRows.find(r=>r.section_subject_id===sectionSubjectId)?.section_subjects?.name||"this subject";
+        const subjName=classSubjectRows.find(r=>r.section_subject_id===sectionSubjectId)?.section_subjects?.name||"this category";
         notify(`🔒 Interlock — Cannot unassign "${subjName.trim()}"\nReason: ${count} result record(s) exist for this subject in this class.\nFix: Clear the results for this class on the Results page, then unassign the subject.`,"error");
         return;
       }
       const {error}=await db.removeSubjectFromClass(+selClass,sectionSubjectId);
       if(error)notify(error.message,"error");
-      else{notify("Subject removed from class","warn");loadClassSubjects(selClass);}
+      else{notify("Category removed from group","warn");loadClassSubjects(selClass);}
     } else {
       const {error}=await db.assignSubjectToClass(+selClass,sectionSubjectId);
       if(error){
         if(error.code==="23505")notify("Already assigned","warn");
         else notify(error.message,"error");
-      } else {notify("Subject assigned ✓");loadClassSubjects(selClass);}
+      } else {notify("Category assigned ✓");loadClassSubjects(selClass);}
     }
   };
 
   const addFormTeacherToClass=async()=>{
-    if(!ftClass||!ftTeacher){notify("Select a class and a teacher","error");return;}
+    if(!ftClass||!ftTeacher){notify("Select a group and a staff","error");return;}
     setFtSaving(true);
     const {error}=await db.addFormTeacher(+ftClass,+ftTeacher);
     setFtSaving(false);
     if(error){
-      if(error.code==="23505")notify("Already a form teacher for this class","warn");
+      if(error.code==="23505")notify("Already a form staff for this group","warn");
       else notify(error.message,"error");
-    } else {notify("Form teacher added ✓");setFtTeacher("");load();}
+    } else {notify("Form staff added ✓");setFtTeacher("");load();}
   };
   const removeFormTeacherFromClass=async(classId,teacherId)=>{
     const {error}=await db.removeFormTeacher(+classId,+teacherId);
     if(error)notify(error.message,"error");
-    else{notify("Form teacher removed","warn");load();}
+    else{notify("Form staff removed","warn");load();}
   };
 
   const addTeacherSubject=async()=>{
-    if(!stTeacher||!stClass||!stSubject){notify("Select teacher, class, and subject","error");return;}
+    if(!stTeacher||!stClass||!stSubject){notify("Select staff, group, and category","error");return;}
     setStSaving(true);
     const {error}=await db.assignTeacherSubject(+stTeacher,+stClass,+stSubject);
     setStSaving(false);
     if(error){
       if(error.code==="23505")notify("Already assigned","warn");
       else notify(error.message,"error");
-    } else {notify("Subject teacher assigned ✓");load();}
+    } else {notify("Category staff assigned ✓");load();}
   };
 
   const removeTeacherSubject=async(id)=>{
@@ -414,22 +414,22 @@ export function AssignmentsPage({ctx}){
   };
 
   const tabs=[
-    {id:"class-subjects",label:"Subjects per Group"},
+    {id:"class-subjects",label:"Categories per Group"},
     {id:"form-teachers", label:"Form Staff"},
-    {id:"subject-teachers",label:"Subject Staff"},
+    {id:"subject-teachers",label:"Category Staff"},
   ];
 
   return(
     <div>
       <div style={{marginBottom:18}}>
         <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="assignments" size={20}/>Assignments</h2>
-        <p style={{color:C.muted,fontSize:12}}>Map subjects to groups, assign form staff, and assign subject staff</p>
+        <p style={{color:C.muted,fontSize:12}}>Map categories to groups, assign form staff, and assign category staff</p>
       </div>
 
       <div style={{marginBottom:16,padding:"10px 14px",background:C.bluePale,border:`1px solid ${C.blueLight}`,borderRadius:8,fontSize:12,color:C.blue,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:16}}>💡</span>
         <span>
-          <strong>Tip:</strong> To assign multiple subjects to a staff across many groups at once, go to the <strong>Staff</strong> page and click the <strong>book icon</strong> on any teacher row — it opens a Bulk Assign &amp; Matrix tool that's much faster than doing it one by one here.
+          <strong>Tip:</strong> To assign multiple categories to a staff across many groups at once, go to the <strong>Staff</strong> page and click the <strong>book icon</strong> on any staff row — it opens a Bulk Assign & Matrix tool that's much faster than doing it one by one here.
         </span>
       </div>
 
@@ -449,7 +449,7 @@ export function AssignmentsPage({ctx}){
 
       {loading?<Spinner/>:(<>
 
-        {/* ── TAB 1: Group → Subjects ─────────────────────────────────── */}
+        {/* ── TAB 1: Group → Categories ─────────────────────────────────── */}
         {tab==="class-subjects"&&(
           <div style={{display:"grid",gridTemplateColumns:"320px 1fr",gap:16,alignItems:"start"}}>
             <Card>
@@ -462,14 +462,14 @@ export function AssignmentsPage({ctx}){
               </select>
               {selClass&&(
                 <div style={{fontSize:12,color:C.muted}}>
-                  {classSubjectRows.length} subject{classSubjectRows.length!==1?"s":""} assigned
+                  {classSubjectRows.length} category{classSubjectRows.length!==1?"s":""} assigned
                 </div>
               )}
             </Card>
 
             <Card>
               <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>
-                {selClass?`Subjects for ${classLabel(selClass)}`:"Select a class to assign subjects"}
+                {selClass?`Categories for ${classLabel(selClass)}`:"Select a group to assign categories"}
               </h3>
               {!selClass&&<p style={{color:C.light,fontSize:12}}>Pick a group on the left first.</p>}
               {selClass&&csLoading&&<Spinner/>}
@@ -486,7 +486,7 @@ export function AssignmentsPage({ctx}){
                     if(!classSubjectRows.some(r=>r.section_subject_id===ss.id))
                       await db.assignSubjectToClass(+selClass,ss.id);
                   }
-                  notify("All subjects assigned ✓");
+                  notify("All categories assigned ✓");
                   loadClassSubjects(selClass);
                 };
                 const deselectAll=async()=>{
@@ -500,14 +500,14 @@ export function AssignmentsPage({ctx}){
                     if(classSubjectRows.some(r=>r.section_subject_id===ss.id))
                       await db.removeSubjectFromClass(+selClass,ss.id);
                   }
-                  notify("All subjects removed","warn");
+                  notify("All categories removed","warn");
                   loadClassSubjects(selClass);
                 };
 
                 return(
                   <div>
                     {available.length===0&&(
-                      <p style={{color:C.amber,fontSize:12}}>No subjects defined for this section yet. Add them in the Subjects page.</p>
+                      <p style={{color:C.amber,fontSize:12}}>No categories defined for this section yet. Add them in the Categories page.</p>
                     )}
                     {available.length>0&&(
                       <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"center",
@@ -630,7 +630,7 @@ export function AssignmentsPage({ctx}){
           );
         })()}
 
-        {/* ── TAB 3: Subject Staff ─────────────────────────────────── */}
+        {/* ── TAB 3: Category Staff ─────────────────────────────────── */}
         {tab==="subject-teachers"&&(()=>{
           // ── Inline assignment panel state (handled via stTeacher/stClass) ──
           const existing=teacherSubjects.filter(ts=>ts.teacher_id===+stTeacher&&ts.class_id===+stClass).map(ts=>ts.subject_id);
@@ -658,12 +658,12 @@ export function AssignmentsPage({ctx}){
                 const row=teacherSubjects.find(ts=>ts.teacher_id===+stTeacher&&ts.class_id===+stClass&&ts.subject_id===s.id);
                 if(row)await db.removeTeacherSubject(row.id);
               }
-              notify("All subjects removed","warn");
+              notify("All categories removed","warn");
             } else {
               for(const s of stSubjectOptions){
                 if(!existing.includes(s.id))await db.assignTeacherSubject(+stTeacher,+stClass,s.id);
               }
-              notify("All subjects assigned ✓");
+              notify("All categories assigned ✓");
             }
             setStSaving(false);
             load();
@@ -689,9 +689,9 @@ export function AssignmentsPage({ctx}){
 
               {/* ── Left: Assignment Panel ──────────────────────────────── */}
               <Card>
-                <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:6}}>Assign Subject Staff</h3>
+                <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:6}}>Assign Category Staff</h3>
                 <p style={{fontSize:12,color:C.muted,marginBottom:12}}>
-                  Select a teacher + class, then tick which subjects they teach.
+                  Select a staff + group, then tick which categories they teach.
                 </p>
 
                 <label style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:4}}>Staff</label>
@@ -718,7 +718,7 @@ export function AssignmentsPage({ctx}){
                   <>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                       <span style={{fontSize:12,fontWeight:700,color:C.text}}>
-                        Subjects for {classes.find(c=>c.id===+stClass)?.name||"this class"}
+                        Categories for {classes.find(c=>c.id===+stClass)?.name||"this group"}
                       </span>
                       {stSubjectOptions.length>0&&(
                         <Btn xs onClick={toggleAll} color={allChecked?C.red:C.blue} outline={!allChecked} disabled={stSaving}>
@@ -728,7 +728,7 @@ export function AssignmentsPage({ctx}){
                     </div>
                     {stSubjectOptions.length===0?(
                       <div style={{padding:"12px",background:C.orangePale,borderRadius:8,fontSize:12,color:C.orange}}>
-                        No subjects assigned to this class yet — add subjects in the "Subjects per Group" tab first.
+                        No categories assigned to this group yet — add categories in the "Categories per Group" tab first.
                       </div>
                     ):(
                       <div style={{display:"flex",flexDirection:"column",gap:5,maxHeight:300,overflowY:"auto",
@@ -756,14 +756,14 @@ export function AssignmentsPage({ctx}){
                     )}
                     {existing.length>0&&(
                       <div style={{marginTop:8,fontSize:12,color:C.blue,fontWeight:700}}>
-                        ✓ {existing.length} subject{existing.length!==1?"s":""} assigned to this teacher for this class
+                        ✓ {existing.length} category{existing.length!==1?"s":""} assigned to this staff for this group
                       </div>
                     )}
                   </>
                 )}
                 {(!stTeacher||!stClass)&&(
                   <div style={{textAlign:"center",padding:"20px 0",color:C.muted,fontSize:12}}>
-                    Select a teacher and class above to manage their subject assignments
+                    Select a staff and group above to manage their category assignments
                   </div>
                 )}
               </Card>
@@ -773,7 +773,7 @@ export function AssignmentsPage({ctx}){
                 {/* Search */}
                 <div style={{marginBottom:10,position:"relative"}}>
                   <Search size={14} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:C.muted}}/>
-                  <input placeholder="Search teachers by name or staff ID…"
+                  <input placeholder="Search staff by name or staff ID…"
                     value={stSearch} onChange={e=>setStSearch(e.target.value)}
                     style={{width:"100%",padding:"9px 12px 9px 32px",border:`2px solid ${C.border}`,
                       borderRadius:8,fontSize:13,outline:"none",background:"inherit",color:C.text,
@@ -786,7 +786,7 @@ export function AssignmentsPage({ctx}){
                 {visibleGroups.length===0&&(
                   <Card>
                     <p style={{color:C.muted,fontSize:13,textAlign:"center",padding:"20px 0"}}>
-                      {stSearch?"No teachers match your search.":"No subject teacher assignments yet."}
+                      {stSearch?"No staff match your search.":"No category staff assignments yet."}
                     </p>
                   </Card>
                 )}
@@ -814,7 +814,7 @@ export function AssignmentsPage({ctx}){
                               {g.teacher?.full_name||"—"}
                             </div>
                             <div style={{fontSize:11,color:isSelected?"rgba(255,255,255,.7)":C.muted}}>
-                              {g.teacher?.staff_id||"—"} · {Object.keys(g.classes).length} class{Object.keys(g.classes).length!==1?"es":""} · {totalSubj} subject{totalSubj!==1?"s":""}
+                              {g.teacher?.staff_id||"—"} · {Object.keys(g.classes).length} group{Object.keys(g.classes).length!==1?"es":""} · {totalSubj} category{totalSubj!==1?"s":""}
                             </div>
                           </div>
                           {isSelected&&<Badge color="rgba(255,255,255,.25)" style={{color:"#fff",fontSize:10}}>Editing</Badge>}
@@ -931,7 +931,7 @@ export function SectionsPage({ctx}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div>
           <h2 style={{fontSize:20,fontWeight:900,color:C.blue,display:"flex",alignItems:"center",gap:8}}><AppIcon name="sections" size={20}/>Sections</h2>
-          <p style={{color:C.muted,fontSize:12}}>Manage school sections and their levels</p>
+          <p style={{color:C.muted,fontSize:12}}>Manage organization sections and their levels</p>
         </div>
         <Btn onClick={()=>{setForm(blank);setEditId(null);setModal(true);}} color={C.orange}>Add Section</Btn>
       </div>

@@ -1,12 +1,13 @@
 {
   "name": "rgs-school-portal",
   "version": "1.0.0",
-  "description": "JAMES-DENNING — Business Management Portal",
+  "description": "JAMES-DENNING — Business Operations Platform",
   "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:web": "vite build --mode web",
+    "build:mobile": "vite build --config vite.mobile.config.js",
     "preview": "vite preview",
     "android": "npm run build && npx cap sync android && npx cap open android",
     "android:sync": "npm run build && npx cap sync android",
