@@ -33,6 +33,16 @@ role values, and tenant data are intentionally preserved for backwards compatibi
 - The current deployment host remains `portal.renaissancegardenschools.com` until a new public
   domain is selected; this is a deployment compatibility detail, not the product name.
 
+### Registration reliability fix
+
+The public organization-registration flow now invokes the canonical `manage-account` Edge Function
+first and falls back to the legacy `clever-processor` slug only when the canonical function is
+absent. Function errors now surface the server's actual message instead of only showing the generic
+Supabase non-2xx error. `supabase/config.toml` disables JWT verification at the function boundary
+because only the `register_school` action is public; every other account-management action still
+verifies the caller inside the function. New organizations seed their identity, workspace type, and
+Education-module settings server-side with the service-role client before the success response.
+
 ---
 
 ## Recent Changes (16 Jul 2026) — Partial/unpaid row highlighting in the item-analysis PDF

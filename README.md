@@ -162,8 +162,10 @@ Visit the portal URL in Safari → Share → Add to Home Screen.
 
 ## Edge Functions
 
-Deploy the `send-email` function:
+Deploy the account and email functions:
 ```bash
+# Registration is public; the function authenticates every non-registration action itself.
+npx supabase functions deploy manage-account --project-ref mcdcwdfdpqzrzsixmrcg --no-verify-jwt
 npx supabase functions deploy send-email --project-ref mcdcwdfdpqzrzsixmrcg
 ```
 

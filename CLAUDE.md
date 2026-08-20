@@ -18,6 +18,10 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
+- Public organization registration uses `manage-account` with `verify_jwt = false` at the Edge
+  Function boundary; the function itself protects every non-registration action. The client keeps
+  a temporary fallback for the legacy deployed `clever-processor` slug and exposes the server's
+  actual registration error when a request fails.
 
 
 **PITFALL — preview automation & PDF/print buttons:** clicking any button that opens the
