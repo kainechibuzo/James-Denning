@@ -1,7 +1,7 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.95 — Phase 7: visual-prestige overhaul: ink + amber theme, premium landing, dark auth, refined sidebar)_
+_Last updated: 1 Sep 2026 (v32.96 — Phase 7: corporate black & silver palette; email-login diagnostics)_
 
 ---
 
@@ -28,8 +28,9 @@ The product is now a **business-first dashboard for all business types** by defa
 - Zero behavior change for existing tenants: education data intact, hidden until opt-in.
   Hiring Phases 1–3 unchanged.
 
-## Phase 7 — Visual-prestige overhaul (1 Sep 2026, v32.95)
-- Theme tokens (light + dark): ink `#0B0F17` / ink2 `#121826` / ink3 `#1A2233`, warm accent `#F59E0B` (+ `accentSoft #FBBF24`), `ring`, `cardGlow`, `sidebarGrad`, `heroGrad`, `gridLine`.
+## Phase 7 — Visual-prestige overhaul → corporate black & silver (1 Sep 2026, v32.95/96)
+- v32.96 (user direction): strict corporate black & silver — warm amber removed everywhere; accent = silver `#C8CFD9` / `accentSoft #E4E9EF`; new `accent2` (charcoal light / silver dark) for focus on light cards; `ring` charcoal-tinted in light palette; all amber glows/hairlines → white/silver/charcoal.
+- Theme tokens (light + dark): ink `#0B0F17` / ink2 `#121826` / ink3 `#1A2233`, silver accent `#C8CFD9` (+ `accentSoft #E4E9EF`), `ring`, `cardGlow`, `sidebarGrad`, `heroGrad`, `gridLine`.
 - Landing page redesigned: dark ink hero with amber glow + grid, white CTA, pure-CSS app mockup, stats band, feature grid, hiring-showcase section with /apply mockup, how-it-works, CTA, footer; scroll reveals + hover motion.
 - Auth: EmailAuthPage + business picker on dark glass card with brand lockup; classic LoginPage restyled ink + amber (neutral business bullet copy); SchoolSelectPage ink background.
 - App shell: sidebar `C.sidebarGrad` (ink gradient), amber active nav pill + indicator bar + glow, amber badges, amber user avatar chip, brand header amber hairline, topbar amber hairline.

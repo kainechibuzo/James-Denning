@@ -54,15 +54,22 @@ You can also run it manually from the Actions tab ("Run workflow").
 
 ---
 
-## Phase 7 status — visual-prestige overhaul shipped (v32.95)
+## Phase 7 status — corporate black & silver shipped (v32.96)
 
-The front-end wide visual pass (ink + amber theme, redesigned landing page, dark auth shell,
-refined sidebar, premium shared components) is committed on the branch. **No migrations or
-functions changed** — it's purely presentational, plus docs. It reaches production when the
-branch merges to `master` (Vercel auto-deploys). The org-signup copy now states the admin
-email is the login email; that behavior already existed server-side (manage-account creates
-the Supabase Auth user with `email_confirm: true` and stores `schools.admin_email`), so no
-server change is needed for it.
+The front-end visual pass (ink black + silver palette, redesigned landing page, dark auth shell,
+refined sidebar) is committed on the branch. **No migrations or functions changed** — purely
+presentational, plus docs. It reaches production when the branch merges to `master` (Vercel
+auto-deploys).
+
+## ⚠️ Email login is NOT live until migration 019 is applied
+
+If email login shows "isn't enabled on this database yet", the `login_lookup_by_email` function
+(migration `019_email_login.sql`) has not been applied — it is still pending like 016/017/018.
+Applying it (plus deploying the updated `manage-account` function) is what activates email
+login for real. The client now reports this state explicitly. Org-signup already sets the
+admin email as the login email (manage-account creates the Supabase Auth user with
+`email_confirm: true` and stores `schools.admin_email`); organizations created before that
+path have no Auth user, so they still use the organization + ID login.
 
 ## Step 0 — Migration 018 (Phase 5 business modules) is now pending too
 

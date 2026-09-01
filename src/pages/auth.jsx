@@ -57,7 +57,10 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
     const { data, error } = await db.loginLookupByEmail(em);
     if (error) {
       setLoading(false);
-      setErr("Email login isn't available for this site yet — use the organization + ID login below.");
+      const isMissing = /PGRST202|could not find the function|function .* does not exist/i.test(error?.message || "");
+      setErr(isMissing
+        ? "Email login isn't enabled on this database yet — the login_lookup_by_email function (migration 019) hasn't been applied. Use the organization + ID login below for now."
+        : "Email login isn't available for this site yet — use the organization + ID login below.");
       return;
     }
     if (!data || data.length === 0) {
@@ -86,7 +89,7 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
     }
     if (!authed) {
       setLoading(false);
-      setErr("Wrong email or password.");
+      setErr("Wrong email or password — or no login account exists for this email yet. If your organization was created before email login, use the organization + ID login below.");
       return;
     }
     setActiveEmail(authed.auth_email);
@@ -272,7 +275,7 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
 function AuthShell({ children }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "radial-gradient(900px 500px at 50% -10%, rgba(245,158,11,.08), transparent 60%), linear-gradient(160deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)",
+      background: "radial-gradient(900px 500px at 50% -10%, rgba(255,255,255,.06), transparent 60%), linear-gradient(160deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)",
       padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif", position: "relative", overflow: "hidden" }}>
       {/* subtle grid */}
       <div style={{ position: "absolute", inset: 0, backgroundImage:

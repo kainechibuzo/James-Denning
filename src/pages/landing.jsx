@@ -82,17 +82,17 @@ function AppMockup() {
         {/* mini sidebar */}
         <div style={{ width: 34, padding: "10px 7px", background: "rgba(255,255,255,.03)", display: "flex", flexDirection: "column", gap: 6, borderRight: "1px solid rgba(255,255,255,.06)" }}>
           {[0,1,2,3].map(i => (
-            <div key={i} style={{ height: 7, borderRadius: 4, background: i === 0 ? C.accent : "rgba(255,255,255,.12)" }}/>
+            <div key={i} style={{ height: 7, borderRadius: 4, background: i === 0 ? "#E4E9EF" : "rgba(255,255,255,.12)" }}/>
           ))}
         </div>
         {/* main panel */}
         <div style={{ flex: 1, padding: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ height: 9, width: 90, borderRadius: 5, background: "rgba(255,255,255,.7)" }}/>
-            <div style={{ height: 16, width: 52, borderRadius: 8, background: C.accent, opacity: .9 }}/>
+            <div style={{ height: 16, width: 52, borderRadius: 8, background: "#E4E9EF", opacity: .95 }}/>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 12 }}>
-            {[["Revenue", "₦2.4m", "#22C55E"], ["Customers", "148", C.accentSoft], ["Projects", "12", "#60A5FA"], ["Hires", "4", "#C084FC"]].map(([l, v, col]) => (
+            {[["Revenue", "₦2.4m", "#E4E9EF"], ["Customers", "148", "#C8CFD9"], ["Projects", "12", "#9AA4B2"], ["Hires", "4", "#6B7280"]].map(([l, v, col]) => (
               <div key={l} style={{ background: "rgba(255,255,255,.045)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: "9px 10px" }}>
                 <div style={{ fontSize: 7.5, color: "rgba(255,255,255,.4)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 4 }}>{l}</div>
                 <div style={{ fontSize: 13, fontWeight: 900, color: "#fff" }}>{v}</div>
@@ -107,7 +107,7 @@ function AppMockup() {
             <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 42 }}>
               {bars.map((h, i) => (
                 <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "4px 4px 2px 2px",
-                  background: i === bars.length - 1 ? C.accent : "rgba(255,255,255,.14)" }}/>
+                  background: i === bars.length - 1 ? "#E4E9EF" : "rgba(255,255,255,.14)" }}/>
               ))}
             </div>
             <div style={{ marginTop: 8, fontSize: 8, color: "rgba(255,255,255,.45)" }}>At 74% of quota — 37 of 50 deliverables logged</div>
@@ -116,7 +116,7 @@ function AppMockup() {
       </div>
       {/* glow */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(420px 200px at 20% 0%, rgba(245,158,11,.10), transparent 60%)" }}/>
+        background: "radial-gradient(420px 200px at 20% 0%, rgba(255,255,255,.06), transparent 60%)" }}/>
     </div>
   );
 }
@@ -133,7 +133,7 @@ function ApplyMockup() {
         <div style={{ marginTop: 8 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #E5E7EB",
             borderRadius: 20, padding: "4px 12px", fontSize: 10.5, fontWeight: 800, color: "#111827" }}>
-            <Zap size={11} color={C.accent}/> ₦400k – ₦600k / month
+            <Zap size={11} color="#6B7280"/> ₦400k – ₦600k / month
           </span>
         </div>
       </div>
@@ -206,13 +206,13 @@ export function LandingPage() {
       <section style={{ position: "relative", background: C.heroGrad, color: "#fff", overflow: "hidden" }}>
         <div className="jd-grid" style={{ position: "absolute", inset: 0 }}/>
         <div style={{ position: "absolute", width: 640, height: 640, borderRadius: "50%", left: "50%", top: -260, transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(245,158,11,.14), transparent 65%)", pointerEvents: "none" }}/>
+          background: "radial-gradient(circle, rgba(255,255,255,.07), transparent 65%)", pointerEvents: "none" }}/>
         <div style={{ position: "relative", maxWidth: 1120, margin: "0 auto", padding: "84px 22px 60px", textAlign: "center" }}>
           <Reveal>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)",
               border: "1px solid rgba(255,255,255,.12)", borderRadius: 20, padding: "7px 15px", fontSize: 12, fontWeight: 700,
               color: "rgba(255,255,255,.75)", marginBottom: 26, backdropFilter: "blur(6px)" }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.accent, animation: "jdPulse 2.2s ease-in-out infinite" }}/>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#E4E9EF", animation: "jdPulse 2.2s ease-in-out infinite" }}/>
               Log in once · manage every business you run
             </div>
           </Reveal>
@@ -220,7 +220,7 @@ export function LandingPage() {
             <h1 style={{ fontSize: "clamp(34px,6vw,64px)", fontWeight: 900, lineHeight: 1.06, letterSpacing: "-.03em",
               margin: "0 auto 22px", maxWidth: 820, color: "#fff" }}>
               One calm workspace for running{" "}
-              <span style={{ background: "linear-gradient(100deg,#FDE68A,#F59E0B 55%,#F59E0B)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>your organization</span>
+              <span style={{ background: "linear-gradient(100deg,#FFFFFF 10%,#C8CFD9 55%,#9AA4B2 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>your organization</span>
             </h1>
           </Reveal>
           <Reveal delay={180}>
@@ -267,7 +267,7 @@ export function LandingPage() {
             <Reveal key={s.label} delay={i * 70} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: "-.02em" }}>
                 {s.n}
-                <span style={{ color: C.accent }}>.</span>
+                <span style={{ color: "#C8CFD9" }}>.</span>
               </div>
               <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.45)", marginTop: 4, fontWeight: 600 }}>{s.label}</div>
             </Reveal>
@@ -279,7 +279,7 @@ export function LandingPage() {
       <section id="features" style={{ background: "#F7F7F5", padding: "84px 22px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 46 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 12 }}>Everything you need</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 12 }}>Everything you need</div>
             <h2 style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 900, letterSpacing: "-.02em", margin: "0 0 12px" }}>Built for every kind of business</h2>
             <p style={{ fontSize: 14.5, color: C.muted, maxWidth: 540, margin: "0 auto", lineHeight: 1.65 }}>
               General-purpose by default — service firms, shops, agencies, studios, and everything in between.
@@ -298,7 +298,7 @@ export function LandingPage() {
                   <div style={{ fontSize: 15.5, fontWeight: 800, marginBottom: 7 }}>{f.title}</div>
                   <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.65 }}>{f.text}</div>
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                    background: "linear-gradient(90deg,transparent,rgba(245,158,11,.5),transparent)", opacity: 0, transition: "opacity .2s" }}
+                    background: "linear-gradient(90deg,transparent,rgba(17,24,39,.16),transparent)", opacity: 0, transition: "opacity .2s" }}
                     onMouseEnter={e => e.currentTarget.style.opacity = 1} onMouseLeave={e => e.currentTarget.style.opacity = 0}/>
                 </div>
               </Reveal>
@@ -312,7 +312,7 @@ export function LandingPage() {
         <div className="jd-grid" style={{ position: "absolute", inset: 0, opacity: .6 }}/>
         <div style={{ position: "relative", maxWidth: 1120, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 56, alignItems: "center" }}>
           <Reveal>
-            <div style={{ fontSize: 12, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "#C8CFD9", textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 14 }}>
               <Briefcase size={13} style={{ verticalAlign: "-2px", marginRight: 6 }}/> The hiring differentiator
             </div>
             <h2 style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 900, letterSpacing: "-.02em", lineHeight: 1.15, margin: "0 0 16px", color: "#fff" }}>
@@ -326,7 +326,7 @@ export function LandingPage() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
               {["Private application thread with live chat", "Quota tracking you define — metric, target, period", "No page builder, no ad platform — just the page"].map(t => (
                 <li key={t} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, color: "rgba(255,255,255,.72)" }}>
-                  <CheckCircle2 size={15} color={C.accent} style={{ flexShrink: 0 }}/> {t}
+                  <CheckCircle2 size={15} color="#C8CFD9" style={{ flexShrink: 0 }}/> {t}
                 </li>
               ))}
             </ul>
@@ -335,7 +335,7 @@ export function LandingPage() {
             </a>
           </Reveal>
           <Reveal delay={140} style={{ position: "relative" }}>
-            <div style={{ position: "absolute", inset: -30, background: "radial-gradient(340px 260px at 50% 40%, rgba(245,158,11,.12), transparent 70%)", pointerEvents: "none" }}/>
+            <div style={{ position: "absolute", inset: -30, background: "radial-gradient(340px 260px at 50% 40%, rgba(255,255,255,.05), transparent 70%)", pointerEvents: "none" }}/>
             <ApplyMockup/>
           </Reveal>
         </div>
@@ -345,14 +345,14 @@ export function LandingPage() {
       <section id="how" style={{ background: "#fff", padding: "84px 22px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 46 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: C.accent, textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 12 }}>How it works</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: ".18em", marginBottom: 12 }}>How it works</div>
             <h2 style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 900, letterSpacing: "-.02em", margin: 0 }}>Up and running in three steps</h2>
           </Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 16 }}>
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 100}>
                 <div style={{ border: "1px solid #E5E7EB", borderRadius: 18, padding: 28, position: "relative", background: "#FCFCFB", height: "100%" }}>
-                  <div style={{ fontSize: 13, fontWeight: 900, color: C.accent, letterSpacing: ".06em", marginBottom: 14 }}>{s.n}</div>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: "#6B7280", letterSpacing: ".06em", marginBottom: 14 }}>{s.n}</div>
                   <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>{s.title}</div>
                   <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.65 }}>{s.text}</div>
                 </div>
@@ -368,7 +368,7 @@ export function LandingPage() {
         <div style={{ position: "relative", maxWidth: 640, margin: "0 auto" }}>
           <Reveal>
             <div style={{ width: 58, height: 58, borderRadius: 18, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.14)",
-              display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px", color: C.accent }}>
+              display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px", color: "#C8CFD9" }}>
               <Rocket size={26}/>
             </div>
             <h2 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, letterSpacing: "-.02em", margin: "0 0 12px", color: "#fff" }}>

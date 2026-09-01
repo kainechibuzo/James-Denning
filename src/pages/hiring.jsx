@@ -166,7 +166,7 @@ function OrgDetailsForm({ preset, onDone }) {
       {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourbusiness.com" })}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 7, margin: "-4px 0 12px", fontSize: 11.5,
         color: C.muted, lineHeight: 1.5 }}>
-        <Mail size={12} style={{ flexShrink: 0, marginTop: 2, color: C.accent }}/>
+        <Mail size={12} style={{ flexShrink: 0, marginTop: 2, color: "#6B7280" }}/>
         <span><b style={{ color: C.text }}>This email is your login.</b> Sign in with it and the password you set
         below — for this organization and every other one you create.</span>
       </div>
@@ -177,7 +177,7 @@ function OrgDetailsForm({ preset, onDone }) {
           color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
           justifyContent: "center", gap: 8,
-          boxShadow: "0 8px 24px -8px rgba(245,158,11,.35), inset 0 1px 0 rgba(255,255,255,.08)" }}>
+          boxShadow: "0 8px 24px -8px rgba(17,24,39,.25), inset 0 1px 0 rgba(255,255,255,.08)" }}>
         {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating Organization…</>
           : <>Create Organization & Continue <ArrowRight size={15}/></>}
       </button>

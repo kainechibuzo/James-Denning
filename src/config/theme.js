@@ -27,15 +27,15 @@ export const LIGHT = {
   shadowMd: "0 8px 24px rgba(17,24,39,.08), 0 2px 6px rgba(17,24,39,.05)",
   shadowLg: "0 20px 45px rgba(17,24,39,.12), 0 8px 18px rgba(17,24,39,.06)",
   shadowXl: "0 32px 64px rgba(17,24,39,.16), 0 16px 32px rgba(17,24,39,.08)",
-  // ── Premium tokens (Phase 7 visual pass) ─────────────────────────────────
-  // Ink = near-black charcoal used for the sidebar, hero bands, and primary
-  // surfaces. accent = restrained warm accent used sparingly.
+  // ── Premium tokens (Phase 7+ corporate pass) ────────────────────────────
+  // Ink = near-black charcoal for sidebar, hero bands and primary surfaces.
+  // accent = cool silver used sparingly for focus, active states and hairlines.
   ink: "#0B0F17", ink2: "#121826", ink3: "#1A2233",
-  accent: "#F59E0B", accentSoft: "#FBBF24",
-  ring: "0 0 0 3px rgba(245,158,11,.18)",
+  accent: "#C8CFD9", accentSoft: "#E4E9EF", accent2: "#1F2937",
+  ring: "0 0 0 3px rgba(31,41,55,.16)",
   cardGlow: "0 1px 0 rgba(255,255,255,.6) inset, 0 10px 30px -12px rgba(17,24,39,.14)",
   sidebarGrad: "linear-gradient(180deg,#0B0F17 0%,#0E1420 40%,#080B11 100%)",
-  heroGrad: "radial-gradient(1100px 520px at 50% -10%, rgba(245,158,11,.10), transparent 60%), radial-gradient(800px 420px at 85% 10%, rgba(59,130,246,.08), transparent 55%), linear-gradient(180deg,#0B0F17 0%,#0B0F17 100%)",
+  heroGrad: "radial-gradient(1100px 520px at 50% -10%, rgba(255,255,255,.07), transparent 60%), radial-gradient(800px 420px at 85% 10%, rgba(200,207,217,.09), transparent 55%), linear-gradient(180deg,#0B0F17 0%,#0B0F17 100%)",
   gridLine: "rgba(255,255,255,.05)",
 };
 
@@ -54,13 +54,13 @@ export const DARK = {
   shadowMd: "0 8px 24px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.4)",
   shadowLg: "0 20px 45px rgba(0,0,0,.75), 0 8px 18px rgba(0,0,0,.45)",
   shadowXl: "0 32px 64px rgba(0,0,0,.85), 0 16px 32px rgba(0,0,0,.6)",
-  // ── Premium tokens (Phase 7 visual pass) ─────────────────────────────────
+  // ── Premium tokens (Phase 7+ corporate pass) ────────────────────────────
   ink: "#0B0F17", ink2: "#121826", ink3: "#1A2233",
-  accent: "#F59E0B", accentSoft: "#FBBF24",
-  ring: "0 0 0 3px rgba(245,158,11,.22)",
+  accent: "#C8CFD9", accentSoft: "#E4E9EF", accent2: "#C8CFD9",
+  ring: "0 0 0 3px rgba(200,207,217,.35)",
   cardGlow: "0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -12px rgba(0,0,0,.5)",
   sidebarGrad: "linear-gradient(180deg,#0B0F17 0%,#0E1420 40%,#080B11 100%)",
-  heroGrad: "radial-gradient(1100px 520px at 50% -10%, rgba(245,158,11,.08), transparent 60%), linear-gradient(180deg,#080B11 0%,#0B0F17 100%)",
+  heroGrad: "radial-gradient(1100px 520px at 50% -10%, rgba(255,255,255,.06), transparent 60%), radial-gradient(800px 420px at 85% 10%, rgba(200,207,217,.07), transparent 55%), linear-gradient(180deg,#080B11 0%,#0B0F17 100%)",
   gridLine: "rgba(255,255,255,.05)",
 };
 

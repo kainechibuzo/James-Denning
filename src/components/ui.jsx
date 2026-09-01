@@ -197,14 +197,14 @@ export function Inp({ label, value, onChange, type = "text", placeholder = "", d
     <div style={{ marginBottom:14 }}>
       {label && (
         <label style={{ display:"block", fontSize:11, fontWeight:700,
-          color:focused ? C.accent : C.muted, textTransform:"uppercase",
+          color:focused ? C.accent2 : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}{required && <span style={{ color:C.red }}> *</span>}
         </label>
       )}
       <input type={type} value={value ?? ""} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} disabled={disabled}
-        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent; e.target.style.boxShadow=C.ring; }}
+        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent2; e.target.style.boxShadow=C.ring; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
         style={{ display:"block", width:"100%", padding:"10px 13px",
           border:`1.5px solid ${focused ? C.blue : C.border}`,
@@ -222,13 +222,13 @@ export function Sel({ label, value, onChange, options = [], disabled = false }) 
     <div style={{ marginBottom:14 }}>
       {label && (
         <label style={{ display:"block", fontSize:11, fontWeight:700,
-          color:focused ? C.accent : C.muted, textTransform:"uppercase",
+          color:focused ? C.accent2 : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}
         </label>
       )}
       <select value={value ?? ""} onChange={e => onChange(e.target.value)} disabled={disabled}
-        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent; e.target.style.boxShadow=C.ring; }}
+        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent2; e.target.style.boxShadow=C.ring; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
         style={{ display:"block", width:"100%", padding:"10px 13px",
           border:`1.5px solid ${focused ? C.blue : C.border}`,
@@ -872,7 +872,7 @@ export function ActionsMenu({ items }) {
 // ── Section Pill Tabs ──────────────────────────────────────────────────────────
 // ── Page Header ────────────────────────────────────────────────────────────────
 export function PageHeader({ icon, title, subtitle, action, gradient }) {
-  const bg = gradient || `radial-gradient(900px 300px at 90% -40%, rgba(245,158,11,.22), transparent 55%), linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
+  const bg = gradient || `radial-gradient(900px 300px at 90% -40%, rgba(255,255,255,.18), transparent 55%), linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
   return (
     <div style={{ background:bg, borderRadius:18, padding:"22px 26px", marginBottom:24,
       display:"flex", alignItems:"center", justifyContent:"space-between", gap:16,

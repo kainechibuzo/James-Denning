@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 1 Sep 2026 — Phase 7: visual-prestige overhaul, ink + amber theme (v32.95)_
+_Last updated: 1 Sep 2026 — Phase 7: corporate black & silver palette, email-login diagnostics (v32.96)_
 
 ---
 
@@ -60,10 +60,12 @@ the SQL editor for migrations so remote history stays consistent.
 ---
 
 ## Recent Changes (1 Sep 2026) — v32.95 Phase 7: Visual-Prestige Overhaul
-Premium front-end pass (no functional changes): new ink/amber theme tokens; redesigned landing page with dark
-hero, CSS app mockup, hiring showcase; dark-glass email-auth shell + business picker; ink sidebar with amber
-active states/badges; amber focus rings on shared inputs; classic login restyled; org-signup copy states the
-admin email is the login email (already true via manage-account).
+Premium front-end pass, simplified to strict corporate black & silver (no functional changes): ink theme
+tokens + silver accent (v32.96 removed the warm amber entirely; `accent2` keeps focus visible on light cards);
+redesigned landing page with dark hero, CSS app mockup, hiring showcase; dark-glass email-auth shell + business
+picker; ink sidebar with silver active states/badges; classic login restyled; org-signup copy states the admin
+email is the login email (already true via manage-account); email-login errors now distinguish migration-pending
+(PGRST202) from wrong password.
 
 ## Recent Changes (1 Sep 2026) — v32.94 Phase 6: Landing page + Email Auth + Business Picker
 

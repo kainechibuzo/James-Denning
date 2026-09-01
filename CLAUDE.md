@@ -18,15 +18,16 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
-- **Phase 7 — Visual-prestige overhaul (1 Sep 2026, v32.95)** — premium pass over the whole front-end: new
-  theme tokens (ink charcoal #0B0F17 family + restrained warm accent #F59E0B amber) in both palettes; redesigned
-  public landing page (dark ink hero with amber glow, pure-CSS app mockup, hiring showcase, how-it-works);
-  dark-glass auth shell for email login + business picker; ink-gradiented app sidebar with amber active states,
-  indicator bar and badges; StatCard/Card/Inp/PageHeader premium pass (amber focus ring, hairline gradients, glow
-  shadows); legacy classic-login page restyled to ink + amber with business-neutral bullet copy; org-signup copy
-  now states the admin email is the login email (already true in manage-account: auth.admin.createUser with
-  email_confirm:true + profiles upsert + schools.admin_email). No functional changes; email-first auth and classic
-  organization+ID login both intact.
+- **Phase 7 — Visual-prestige overhaul (1 Sep 2026, v32.95/96)** — premium pass over the whole front-end,
+  then simplified to a strict corporate **black & silver** palette per user direction (v32.96): theme tokens are
+  the ink charcoal family (#0B0F17/#121826/#1A2233) with a cool **silver** accent (#C8CFD9, #E4E9EF) — no warm
+  tones anywhere; `accent2` token (charcoal in light mode, silver in dark) keeps focus states visible on white
+  cards; redesigned public landing page (dark ink hero with white/silver glows, pure-CSS app mockup, hiring
+  showcase, how-it-works); dark-glass auth shell for email login + business picker; ink-gradient sidebar with
+  silver active states, indicator bar and badges; StatCard/Card/Inp/PageHeader premium pass; classic-login page
+  restyled to ink + silver with business-neutral bullet copy; org-signup copy states the admin email is the
+  login email (already true in manage-account). Email login diagnostics now distinguish migration-pending
+  (PGRST202) from wrong-password. No functional changes; email-first auth and classic login both intact.
 - **Phase 6 — Landing page + email auth + business picker (1 Sep 2026, v32.94)** — public
   marketing landing page served at `/` (App() pathname check, same pattern as `/apply/`; PWA
   start_url moved to `/app`); the application lives at `/app`. Email-first login:

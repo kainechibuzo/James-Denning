@@ -2449,7 +2449,7 @@ function AppInner(){
         {/* Logo / Brand */}
         <div style={{padding:"16px 12px",display:"flex",alignItems:"center",gap:10,
           borderBottom:"1px solid rgba(255,255,255,.08)",flexShrink:0,minHeight:60,position:"relative"}}>
-          <div style={{flexShrink:0,transition:"all .2s",filter:"drop-shadow(0 2px 8px rgba(245,158,11,.25))"}}><Logo size={32}/></div>
+          <div style={{flexShrink:0,transition:"all .2s",filter:"drop-shadow(0 2px 8px rgba(200,207,217,.4))"}}><Logo size={32}/></div>
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
               <div style={{color:"#fff",fontWeight:900,fontSize:12.5,lineHeight:1.2,letterSpacing:.2,
@@ -2459,7 +2459,7 @@ function AppInner(){
             </div>
           )}
           <div style={{position:"absolute",left:12,right:12,bottom:-1,height:1,
-            background:"linear-gradient(90deg,rgba(245,158,11,.55),rgba(245,158,11,.08) 40%,transparent 80%)"}}/>
+            background:"linear-gradient(90deg,rgba(200,207,217,.6),rgba(200,207,217,.12) 40%,transparent 80%)"}}/>
         </div>
 
         <nav style={{flex:1,padding:"8px 6px",overflowY:"auto",scrollbarWidth:"none"}}>
@@ -2515,14 +2515,14 @@ function AppInner(){
                 {(sideOpen||isMobile)&&n.id==="approvals"&&pendingApprovals>0&&(
                   <span style={{background:C.accent,color:"#0B0F17",borderRadius:10,fontSize:9,
                     fontWeight:900,padding:"2px 7px",flexShrink:0,
-                    boxShadow:"0 2px 10px rgba(245,158,11,.45)"}}>
+                    boxShadow:"0 2px 10px rgba(200,207,217,.4)"}}>
                     {pendingApprovals}
                   </span>
                 )}
                 {(sideOpen||isMobile)&&n.id==="access-requests"&&pendingAccessRequests>0&&(
                   <span style={{background:C.accent,color:"#0B0F17",borderRadius:10,fontSize:9,
                     fontWeight:900,padding:"2px 7px",flexShrink:0,
-                    boxShadow:"0 2px 10px rgba(245,158,11,.45)"}}>
+                    boxShadow:"0 2px 10px rgba(200,207,217,.4)"}}>
                     {pendingAccessRequests}
                   </span>
                 )}
@@ -2545,7 +2545,7 @@ function AppInner(){
                 background:`linear-gradient(135deg,${C.accent},${C.accentSoft})`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:13,fontWeight:900,flexShrink:0,color:"#0B0F17",
-                boxShadow:"0 2px 10px rgba(245,158,11,.45), inset 0 1px 0 rgba(255,255,255,.35)"}}>
+                boxShadow:"0 2px 10px rgba(200,207,217,.4), inset 0 1px 0 rgba(255,255,255,.35)"}}>
                 {(user.name||"?")[0].toUpperCase()}
               </div>
               <div style={{overflow:"hidden",flex:1}}>
@@ -2576,7 +2576,7 @@ function AppInner(){
         <header style={{background:C.white,borderBottom:`1px solid ${C.border}`,
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
-          boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04), inset 0 -2px 0 rgba(245,158,11,.16)"}}>
+          boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04), inset 0 -2px 0 rgba(17,24,39,.10)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <button onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
@@ -2880,13 +2880,13 @@ function SchoolSelectPage({onSelect,onPlatformAdmin,onEmail}){
   return(
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
       justifyContent:"center",padding:"24px 16px",position:"relative",overflow:"hidden",
-      background:dark?`radial-gradient(900px 480px at 70% -10%, rgba(245,158,11,.10), transparent 60%), linear-gradient(135deg,#080B11 0%,#0E1420 55%,#080B11 100%)`
-        :`radial-gradient(900px 480px at 70% -10%, rgba(245,158,11,.12), transparent 60%), linear-gradient(135deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)`}}>
+      background:dark?`radial-gradient(900px 480px at 70% -10%, rgba(255,255,255,.06), transparent 60%), linear-gradient(135deg,#080B11 0%,#0E1420 55%,#080B11 100%)`
+        :`radial-gradient(900px 480px at 70% -10%, rgba(255,255,255,.07), transparent 60%), linear-gradient(135deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)`}}>
       {/* Background decorations */}
       <div style={{position:"fixed",top:-120,right:-80,width:420,height:420,borderRadius:"50%",
         background:"rgba(255,255,255,.03)",pointerEvents:"none"}}/>
       <div style={{position:"fixed",bottom:-90,left:-90,width:340,height:340,borderRadius:"50%",
-        background:"rgba(245,158,11,.09)",pointerEvents:"none"}}/>
+        background:"rgba(255,255,255,.05)",pointerEvents:"none"}}/>
       <div style={{position:"fixed",top:"40%",left:"12%",width:170,height:170,borderRadius:"50%",
         background:"rgba(96,165,250,.08)",pointerEvents:"none"}}/>
 
@@ -3331,7 +3331,7 @@ function ChangePinModal({onClose,onSuccess}){
 
 // ─── PLATFORM DASHBOARD ───────────────────────────────────────────────────────
 const PLANS=["free","starter","pro","enterprise"];
-const PLAN_COLORS={free:{bg:"rgba(107,114,128,.12)",color:"#6b7280"},starter:{bg:"rgba(59,130,246,.12)",color:"#3b82f6"},pro:{bg:"rgba(139,92,246,.12)",color:"#7c3aed"},enterprise:{bg:"rgba(245,158,11,.14)",color:"#d97706"}};
+const PLAN_COLORS={free:{bg:"rgba(107,114,128,.12)",color:"#6b7280"},starter:{bg:"rgba(59,130,246,.12)",color:"#3b82f6"},pro:{bg:"rgba(139,92,246,.12)",color:"#7c3aed"},enterprise:{bg:"rgba(200,207,217,.16)",color:"#C8CFD9"}};
 function planStyle(p){const c=PLAN_COLORS[p]||PLAN_COLORS.free;return{display:"inline-block",padding:"2px 9px",borderRadius:20,fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:.7,background:c.bg,color:c.color};}
 
 function PlatformDashboardPage({admin,onLogout}){
