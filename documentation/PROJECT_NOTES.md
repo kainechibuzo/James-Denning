@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 20 Aug 2026 — Business-platform rebrand and workspace profiles_
+_Last updated: 1 Sep 2026 — Hiring Phase 1: org creation + business-type presets_
 
 ---
 
@@ -42,6 +42,66 @@ Supabase non-2xx error. `supabase/config.toml` disables JWT verification at the 
 because only the `register_school` action is public; every other account-management action still
 verifies the caller inside the function. New organizations seed their identity, workspace type, and
 Education-module settings server-side with the service-role client before the success response.
+
+---
+
+## Recent Changes (1 Sep 2026) — v32.91 Hiring Phase 1: org creation + presets
+
+The first phase of the **hiring feature area** (push-style hiring — org posts a role, the platform
+generates a shareable ad-destination landing page; Phases 2+ build postings/landing pages, chat,
+and quota tracking). Phase 1 is org creation with business-type presets only — **no hiring,
+no payment, no landing pages yet**.
+
+### Schema — migration `supabase/migrations/016_org_presets.sql` (NOT yet applied)
+
+- `org_presets` — platform-seeded preset catalog (`key`, `name`, `description`, `modules_json`,
+  `settings_seed`). Readable by anon + authenticated (registration needs it pre-auth); writes are
+  service-role only. Seeded with 2 presets: `general_business` and `dev_shop` (dev shop adds
+  `quotas` tool). Future presets are data additions, not code.
+- `schools` — two additive nullable columns: `preset_key`, `onboarding_step`. **Existing rows
+  (preset_key NULL) are untouched — zero behavior change for classic tenants.** No defaults,
+  no triggers, no policy changes on existing tables.
+- `org_submissions` — one row per registered org (org_name, contact, preset_key, status),
+  school-scoped RLS (`FORCE ROW LEVEL SECURITY` + `auth_school_id()`), same as the live 999b
+  pattern. Anon cannot insert (registration writes happen server-side in the edge function).
+- `org_tools` — per-org tool toggles seeded from the preset's `modules_json`
+  (`unique (school_id, tool_key)`), school-scoped RLS. `db.setOrgTool` upserts on
+  `onConflict:'school_id,tool_key'` (plain-column unique constraint — matches the
+  `school_settings` lesson from 001b).
+
+### Server-side registration (`manage-account` edge function)
+
+`register_school` now accepts `presetKey`; validates it against `org_presets` (400 on unknown key,
+before creating anything), stamps `schools.preset_key` + `onboarding_step='complete'`, seeds the
+preset's `settings_seed` rows into `school_settings`, inserts the `org_submissions` row, and seeds
+`org_tools` — all with the service-role client (same reasoning as the existing school_settings
+seeding: the browser is unauthenticated at that point). **The edge function must be redeployed for
+preset seeding to take effect; until then registrations fall back to classic (preset-less) orgs —
+existing behavior, no breakage.**
+
+### Frontend
+
+- **New `src/pages/hiring.jsx`** (hiring domain) exporting:
+  - `OrgPresetSelectPage` — nav route `org-create` (admin-only, under Administration). Preset
+    card grid; choosing one goes to `org-create-details` via the `ctx.pageParam` channel.
+  - `OrgCreatePage` — nav route `org-create-details`; org form bound to the chosen preset;
+    success → `clearSession()` + `clearSelectedSchool()` + reload (lands on school-select so the
+    new admin signs in to the fresh org).
+  - `OrgSignupModal` — pre-auth two-step modal (preset → details) that **replaces the old
+    `SchoolSignupModal` in AppDemo.jsx** (both call sites: SchoolSelectPage + PlatformDashboard
+    "Add School").
+  - `TOOL_LABELS` map — presentation labels for tool keys (`core`, `people`, `billing`, `comms`,
+    `performance`, `hiring`, `quotas`, `education`).
+- `src/supabaseClient.js` — new `db.*` methods: `getOrgPresets()` (global catalog — no school_id
+  column, pre-auth safe), `getOrgSubmission()`, `getOrgTools()`, `setOrgTool(key, enabled)`
+  (all `supabaseSrv` + `_schoolId`-filtered). `createSchoolSignup` now forwards `preset_key`.
+- AppDemo.jsx shell changes are the standard three: import, `ALL_NAV` entry, two render lines.
+
+### Guards honored
+
+- No page builder, no ad platform, no payroll/tax/payout logic anywhere in Phase 1.
+- Business-neutral copy; legacy DB names untouched.
+- All three builds pass (`npm run build`, `build:web`, `build:mobile`).
 
 ---
 
@@ -611,11 +671,19 @@ school_settings
 | 011 | `011_refunds.sql` | Payment refunds |
 | 012 | `012_discounts.sql` | Fee discounts |
 | 013 | `013_fee_audit_log.sql` | Fee audit trail |
+| 015 | `015_portal_results_subject_id_not_null.sql` | `portal_results.subject_id` NOT NULL |
+| 016 | `016_org_presets.sql` | **Hiring Phase 1 — org_presets, org_submissions, org_tools, schools preset columns (PENDING APPLY)** |
 
 **Ad-hoc migrations applied via Supabase MCP (not in migration files):**
 - `last_login timestamptz` added to `students` and `teachers`
 - `permission_audit_log` table created
 - `role text NOT NULL DEFAULT 'teacher'` added to `teachers`
+
+**Hiring Phase 1 tables (migration 016):**
+- `org_presets(key unique, name, description, modules_json, settings_seed)` — platform catalog, seeded (`general_business`, `dev_shop`), RLS: public read, service-role write
+- `org_submissions(school_id, preset_key, org_name, contact_name, contact_email, phone, status)` — RLS: `school_id = auth_school_id()`, FORCE RLS
+- `org_tools(school_id, tool_key, is_enabled, unique(school_id, tool_key))` — RLS: `school_id = auth_school_id()`, FORCE RLS
+- `schools.preset_key` + `schools.onboarding_step` — nullable, **NULL for all pre-existing rows (zero behavior change)**
 
 ---
 

@@ -13,7 +13,7 @@ export const PRODUCT = {
   title: "JAMES-DENNING — Business Operations Platform",
   tagline: "One calm workspace for running your organization.",
   description: "Business operations, people, billing, performance, and communication in one workspace.",
-  version: "v32.90",
+  version: "v32.91",
   defaultIndustry: "business",
   defaultModule: "core",
 };

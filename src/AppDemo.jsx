@@ -43,6 +43,7 @@ import { MyProfilePage }                                            from './page
 import { SectionsPage }                                             from './pages/classes.jsx';
 import { ResultApprovalsPage }                                      from './pages/results.jsx';
 import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
+import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal }       from './pages/hiring.jsx';
 
 
 // ─── VERSION / BRAND ─────────────────────────────────────────────────────────
@@ -2266,6 +2267,7 @@ function AppInner(){
     {id:"mail-logs",       label:"Email Logs",        icon:"mail-logs", roles:["admin"],    gid:"g-comms"},
     {id:"g-admin",         group:"Administration",  roles:["admin"]},
     {id:"admin-tools",     label:"Admin Tools",        icon:"database",   roles:["admin"],    gid:"g-admin"},
+    {id:"org-create",      label:"Register Organization", icon:"building", roles:["admin"],   gid:"g-admin"},
     {id:"notifications",   label:"Notifications",      icon:"bell",       roles:["admin"],    gid:"g-admin"},
     {id:"permissions",     label:"Permissions",        icon:"shield",     roles:["admin"],    gid:"g-admin"},
     {id:"g-approvals",     group:"Approvals",      roles:["admin"]},
@@ -2662,6 +2664,8 @@ function AppInner(){
           {page==="activity"      && (canAccess("activity")     ?<ActivityPage ctx={ctx}/>          :<AccessDenied/>)}
           {page==="audit-log"     && (canAccess("audit-log")    ?<AuditLogPage ctx={ctx}/>           :<AccessDenied/>)}
           {page==="settings"      && <SettingsPage ctx={{...ctx,notify}}/>}
+          {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
+          {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
         </main>
       </div>
 
@@ -2920,7 +2924,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
         Platform Admin Login
       </button>
 
-      {showSignup&&<SchoolSignupModal onClose={()=>setShowSignup(false)} onSuccess={onSignupSuccess}/>}
+      {showSignup&&<OrgSignupModal onClose={()=>setShowSignup(false)} onSuccess={onSignupSuccess}/>}
 
       {/* Platform admin login modal */}
       {showPALogin&&(
@@ -2960,77 +2964,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
   );
 }
 
-// ─── SCHOOL SIGNUP MODAL ──────────────────────────────────────────────────────
-function SchoolSignupModal({onClose,onSuccess}){
-  const {dark}=useDark();
-  C=dark?DARK:LIGHT;
-  const [form,setForm]=useState({name:"",admin_name:"",admin_email:"",admin_password:"",
-    student_id_prefix:"",address:"",contact_phone:"",state:""});
-  const [err,setErr]=useState("");
-  const [saving,setSaving]=useState(false);
-  const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const inp=(label,key,opts={})=>(
-    <div style={{marginBottom:12}}>
-      <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,
-        textTransform:"uppercase",letterSpacing:.7,marginBottom:5}}>{label}{opts.req&&<span style={{color:C.red}}> *</span>}</label>
-      <input type={opts.type||"text"} value={form[key]} onChange={e=>sf(key,e.target.value)}
-        placeholder={opts.placeholder||""}
-        style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:9,
-          fontSize:13,background:C.white,color:C.text,outline:"none",boxSizing:"border-box"}}/>
-    </div>
-  );
-  const submit=async()=>{
-    if(!form.name.trim()||!form.admin_email.trim()||!form.admin_password.trim()){
-      setErr("Organization name, admin email, and password are required."); return;
-    }
-    setSaving(true); setErr("");
-    const pfx=(form.student_id_prefix||form.name.slice(0,4).replace(/\s+/g,"")).toUpperCase();
-    const {data,error}=await db.createSchoolSignup({...form,student_id_prefix:pfx});
-    setSaving(false);
-    if(error){setErr(error.message||"Registration failed.");return;}
-    onSuccess(data);
-  };
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",display:"flex",
-      alignItems:"center",justifyContent:"center",zIndex:9000,padding:16}}>
-      <div style={{background:C.white,borderRadius:20,width:"100%",maxWidth:460,maxHeight:"90vh",
-        overflow:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.4)"}}>
-        <div style={{padding:"24px 24px 0",borderBottom:`1px solid ${C.border}`,paddingBottom:16,
-          display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <div style={{fontSize:18,fontWeight:900,color:C.text}}>Register Your Business</div>
-            <div style={{fontSize:12,color:C.muted,marginTop:2}}>Join JAMES-DENNING — Business Management Platform</div>
-          </div>
-          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:C.muted}}>
-            <X size={20}/>
-          </button>
-        </div>
-        <div style={{padding:24}}>
-          {err&&<div style={{background:"#fef2f2",border:"1.5px solid #fca5a5",color:"#b91c1c",
-            padding:"10px 14px",borderRadius:8,fontSize:12,marginBottom:16,fontWeight:600}}>{err}</div>}
-          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",
-            letterSpacing:.7,marginBottom:10}}>Business Details</div>
-          {inp("Business Name","name",{req:true,placeholder:"e.g. Acme Inc"})}
-          {inp("Address","address",{placeholder:"e.g. 12 Organization Road, Lagos"})}
-          {inp("State","state",{placeholder:"e.g. Lagos"})}
-          {inp("Phone","contact_phone",{placeholder:"e.g. +2348000000000"})}
-          {inp("Member ID Prefix","student_id_prefix",{placeholder:"e.g. ACM (auto-generated if blank)"})}
-          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",
-            letterSpacing:.7,margin:"16px 0 10px"}}>Admin Account</div>
-          {inp("Admin Full Name","admin_name",{placeholder:"e.g. Business Administrator"})}
-          {inp("Admin Email","admin_email",{req:true,type:"email",placeholder:"admin@yourbusiness.com"})}
-          {inp("Password","admin_password",{req:true,type:"password",placeholder:"Set a strong password"})}
-          <button onClick={submit} disabled={saving}
-            style={{width:"100%",background:saving?"#CBD5E1":"linear-gradient(135deg,#111827,#374151)",
-              color:"#fff",border:"none",padding:"13px",borderRadius:12,fontSize:14,fontWeight:800,
-              cursor:saving?"not-allowed":"pointer",marginTop:8}}>
-            {saving?"Creating Organization…":"Create Organization & Continue →"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 // ─── COPY SCHOOL SETTINGS MODAL ──────────────────────────────────────────────
 function CopySettingsModal({schools, onClose}){
@@ -3739,7 +3673,7 @@ function PlatformDashboardPage({admin,onLogout}){
         onDeleted={(id)=>{ setSchools(sc=>sc.filter(s=>s.id!==id)); setDeleteSchool(null); showMsg(`${deleteSchool.name} deleted.`); }}/>}
       {showCopy&&<CopySettingsModal schools={schools} onClose={()=>setShowCopy(false)}/>}
       {showChangePin&&<ChangePinModal onClose={()=>setShowChangePin(false)} onSuccess={(msg)=>{showMsg(msg);setShowChangePin(false);}}/>}
-      {showAddSchool&&<SchoolSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"Organization"} created successfully.`); }}/>}
+      {showAddSchool&&<OrgSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"Organization"} created successfully.`); }}/>}
     </div>
   );
 }

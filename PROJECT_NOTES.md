@@ -1,7 +1,7 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 4 May 2026 (v32.87 — Fee Stats PDF: Save as PDF button + portrait/landscape toggle)_
+_Last updated: 1 Sep 2026 (v32.91 — Hiring Phase 1: org creation + business-type presets)_
 
 ---
 
@@ -9,6 +9,19 @@ _Last updated: 4 May 2026 (v32.87 — Fee Stats PDF: Save as PDF button + portra
 
 Read **`CLAUDE.md`** first (code rules + pitfalls), then this file (full product reference).
 Together they replace reading any code to get up to speed.
+
+## Hiring Phase 1 (1 Sep 2026, v32.91)
+
+Org creation with business-type presets — the first phase of the hiring feature area. New
+`src/pages/hiring.jsx` (routes `org-create` / `org-create-details` + `OrgSignupModal` replacing
+the old `SchoolSignupModal`), new `db.*` methods (`getOrgPresets`, `getOrgSubmission`,
+`getOrgTools`, `setOrgTool`), and migration `supabase/migrations/016_org_presets.sql`
+(`org_presets` seeded catalog, `org_submissions`, `org_tools`, nullable `schools.preset_key` +
+`schools.onboarding_step`). **Zero behavior change for existing tenants (preset_key NULL)** —
+schema is purely additive. Preset seeding is server-side in `manage-account register_school`
+(redeploy the edge function for it to take effect). Migration NOT yet applied; hiring Phases 2+
+(postings + landing pages, chat, quota tracking) build on `org_tools`. See
+`documentation/PROJECT_NOTES.md` for the full write-up.
 
 ## Documentation Rule
 

@@ -83,6 +83,48 @@ export const db = {
 
 
 
+  // ── Org presets & registration (Phase 1 — hiring feature area) ──────────
+
+  async getOrgPresets(){
+
+    // Global platform catalog (no school_id column) — safe for pre-auth reads
+    // by the registration flow; RLS policy org_presets_public_read covers anon.
+    return supabaseSrv.from('org_presets').select('*').order('id')
+
+  },
+
+  async getOrgSubmission(){
+
+    let q=supabaseSrv.from('org_submissions').select('*')
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.maybeSingle()
+
+  },
+
+  async getOrgTools(){
+
+    let q=supabaseSrv.from('org_tools').select('*').order('tool_key')
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  async setOrgTool(toolKey,isEnabled){
+
+    const row={tool_key:toolKey,is_enabled:isEnabled,created_at:new Date().toISOString()}
+
+    if(this._schoolId) row.school_id=this._schoolId
+
+    return supabaseSrv.from('org_tools').upsert(row,{onConflict:'school_id,tool_key'}).select()
+
+  },
+
+
+
   async getSections(activeOnly=true){
 
     let q=supabaseSrv.from('sections').select('*').order('sort_order')
@@ -5138,6 +5180,7 @@ export const db = {
       address:schoolData.address||'',
       phone:schoolData.phone||schoolData.contact_phone||'',
       state:schoolData.state||'',
+      presetKey:schoolData.preset_key||null,
     };
 
     const readFunctionError=async(error)=>{
