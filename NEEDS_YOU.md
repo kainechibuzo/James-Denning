@@ -61,6 +61,13 @@ invoices + invoice_items. Purely additive; school-scoped RLS; applied by the sam
 workflow as 016/017 (or manually with the same commands below). After it applies, the
 business-first shell (Customers / Projects / Invoices in the nav) becomes fully functional.
 
+## Step 0b — Migration 019 (Phase 6 email login) is pending too
+
+`supabase/migrations/019_email_login.sql` — adds the `login_lookup_by_email` RPC powering
+email login + the business picker. Purely additive (one function). Same apply route as the
+others (deploy workflow on master, or the SQL-editor/CLI commands below). Until it's applied,
+email login shows a graceful fallback to the classic organization + ID login.
+
 ## Step 1 — Apply migration 016 (Hiring Phase 1, org creation presets)
 
 File: `supabase/migrations/016_org_presets.sql`

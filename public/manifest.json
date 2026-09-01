@@ -2,7 +2,7 @@
   "name": "JAMES-DENNING — Business Operations Platform",
   "short_name": "JAMES-DENNING",
   "description": "One calm workspace for running your organization.",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#111827",

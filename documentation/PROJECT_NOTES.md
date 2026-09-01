@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 1 Sep 2026 — Phase 5: general-purpose business dashboard (v32.93)_
+_Last updated: 1 Sep 2026 — Phase 6: landing page + email login + business picker (v32.94)_
 
 ---
 
@@ -56,6 +56,51 @@ mcdcwdfdpqzrzsixmrcg` → `supabase db push` (only unapplied migrations) →
 `config.toml`, e.g. `manage-account` is `false`). Requires repo secrets
 `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Once live, prefer it over
 the SQL editor for migrations so remote history stays consistent.
+
+---
+
+## Recent Changes (1 Sep 2026) — v32.94 Phase 6: Landing page + Email Auth + Business Picker
+
+### Public landing page
+
+- `src/pages/landing.jsx` (`LandingPage`) — business-neutral marketing page: sticky nav
+  (Features, How it works, Log in), hero ("One calm workspace for running your organization"),
+  8 feature cards (workspace, CRM, projects, invoices, hiring landing pages, quota tracking,
+  communication, multi-business), 3-step how-it-works, dark CTA band, footer. All CTAs point
+  to `/app`; if a session exists the button reads "Open my workspace".
+- Routing: `App()` in AppDemo.jsx renders `LandingPage` for `/` (and empty path) — same SPA
+  pathname pattern as `/apply/`; everything else (`/app`, …) renders the application.
+  `public/manifest.json` `start_url` moved to `/app` so installed PWAs skip the landing page.
+
+### Email-first auth + business picker
+
+- `src/pages/auth.jsx` (`EmailAuthPage`) — log in with **one email + password**; then see
+  **every business you can manage** and pick one:
+  1. `db.loginLookupByEmail(email)` → RPC `login_lookup_by_email` (migration
+     `019_email_login.sql`, NOT yet applied) — unions `schools.admin_email`, `teachers.email`,
+     `students.email`, returning per match: school_id, school_name, role, display_name,
+     local_id, and the **deterministic synthetic auth email** (identical logic to the client's
+     `syntheticEmail` and the manage-account edge function: admin → real admin_email;
+     teacher → `staff-<clean>--<schoolId>@login.internal`; student →
+     `student-<clean>--<schoolId>@login.internal`).
+  2. The client tries `supabase.auth.signInWithPassword` per identity (same password) until
+     one succeeds — real Supabase Auth, no client-side password handling.
+  3. Business picker: cards with org name + role badge (Admin/Staff/Member); deduped per
+     school with priority admin > teacher > student; auto-enters when there's exactly one.
+  4. Picking re-authenticates that identity if needed, runs the same checks as `authLogin`
+     (student status messages, login-disabled settings), then
+     `onLoginSuccess(user, school)` in AppDemo sets the selected school + session (no reload).
+- Classic flow intact: "Use organization + ID login" link switches `authMode` to `"classic"`
+  (SchoolSelectPage → LoginPage); "Register a new organization" switches to classic and opens
+  the OrgSignupModal. Platform Admin login still on the classic screen.
+- Graceful fallback: if migration 019 hasn't been applied, email login shows a message and
+  points to the classic login.
+
+### Migration `supabase/migrations/019_email_login.sql` (NOT yet applied)
+
+- `login_lookup_by_email(p_email text)` — SECURITY DEFINER, `language sql stable`; returns the
+  union above; `revoke all … from public; grant execute to anon, authenticated` (999c pattern).
+  No tables, no changes to existing objects.
 
 ---
 
@@ -821,6 +866,7 @@ school_settings
 | 016 | `016_org_presets.sql` | **Hiring Phase 1 — org_presets, org_submissions, org_tools, schools preset columns (PENDING APPLY)** |
 | 017 | `017_hiring_roles.sql` | **Hiring Phases 2–3 — hiring_roles, hiring_applications, hiring_messages, hires, hire_quota_entries + 4 public SECURITY DEFINER RPCs (PENDING APPLY)** |
 | 018 | `018_business_modules.sql` | **Phase 5 — customers, projects, project_tasks, invoices, invoice_items (PENDING APPLY)** |
+| 019 | `019_email_login.sql` | **Phase 6 — login_lookup_by_email RPC for email login + business picker (PENDING APPLY)** |
 
 **Ad-hoc migrations applied via Supabase MCP (not in migration files):**
 - `last_login timestamptz` added to `students` and `teachers`

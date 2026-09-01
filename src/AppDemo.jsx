@@ -45,6 +45,8 @@ import { ResultApprovalsPage }                                      from './page
 import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
 import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal, PublicHireLanding, HiringPage } from './pages/hiring.jsx';
 import { CustomersPage, ProjectsPage, InvoicesPage }                     from './pages/business.jsx';
+import { LandingPage }                                                   from './pages/landing.jsx';
+import { EmailAuthPage }                                                 from './pages/auth.jsx';
 
 
 // ─── VERSION / BRAND ─────────────────────────────────────────────────────────
@@ -1346,15 +1348,26 @@ function AppIcon({name,size=16,color,style={}}){
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App(){
-  // Public hiring landing pages live at /apply/<slug> (ad destination).
-  // They render standalone — no portal shell, no auth — and only exist in the
-  // browser if the SPA server rewrites all paths to index.html (Vercel does).
-  if (typeof window !== "undefined" && window.location.pathname.startsWith("/apply/")) {
-    return (
-      <ErrorBoundary>
-        <PublicHireLanding/>
-      </ErrorBoundary>
-    );
+  // Public routes (SPA — Vercel rewrites everything to index.html):
+  //   /apply/<slug>  → public hiring landing pages (ad destinations)
+  //   /              → public marketing landing page
+  //   everything else (e.g. /app) → the application (login + workspace)
+  if (typeof window !== "undefined") {
+    const p = window.location.pathname;
+    if (p.startsWith("/apply/")) {
+      return (
+        <ErrorBoundary>
+          <PublicHireLanding/>
+        </ErrorBoundary>
+      );
+    }
+    if (p === "/" || p === "") {
+      return (
+        <ErrorBoundary>
+          <LandingPage/>
+        </ErrorBoundary>
+      );
+    }
   }
   return(
     <ErrorBoundary>
@@ -2333,6 +2346,19 @@ function AppInner(){
   };
 
   if(platformAdmin) return <PlatformDashboardPage admin={platformAdmin} onLogout={()=>setPlatformAdmin(null)}/>;
+
+  // Email-first auth (Phase 6): log in with one email → see every business
+  // you can manage → pick one. Classic "organization + ID" flow stays under
+  // authMode === "classic" for education/student users.
+  if(!user && authMode==="email") return <EmailAuthPage
+    onLoginSuccess={(u,school)=>{
+      if(school){ setSelectedSchool(school); saveSelectedSchool(school); db.setSchool(school.id,"SCH",school.name||""); }
+      saveSession(u); setUser(u);
+    }}
+    onClassic={()=>setAuthMode("classic")}
+    onRegister={()=>{ setAuthMode("classic"); setShowSignup(true); }}
+    notify={notify}/>;
+
   if(!selectedSchool) return <SchoolSelectPage onSelect={selectSchool} onPlatformAdmin={loginAsPlatformAdmin}/>;
   if(!user) return <LoginPage login={login} loading={loginLoading} toasts={toasts} rmToast={rmToast}
     selectedSchool={selectedSchool} onChangeSchool={changeSchool} onSchoolUpdated={onSchoolUpdated}/>;
@@ -2832,6 +2858,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
   const [schools,setSchools]=useState([]);
   const [loading,setLoading]=useState(true);
   const [showSignup,setShowSignup]=useState(false);
+  const [authMode,setAuthMode]=useState("email"); // 'email' (default) | 'classic'
   const [showPALogin,setShowPALogin]=useState(false);
   const [paPin,setPaPin]=useState("");
   const [paErr,setPaErr]=useState("");

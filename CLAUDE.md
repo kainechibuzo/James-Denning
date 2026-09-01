@@ -18,6 +18,24 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
+- **Phase 6 — Landing page + email auth + business picker (1 Sep 2026, v32.94)** — public
+  marketing landing page served at `/` (App() pathname check, same pattern as `/apply/`; PWA
+  start_url moved to `/app`); the application lives at `/app`. Email-first login:
+  `EmailAuthPage` (`src/pages/auth.jsx`) — enter one email + password →
+  `login_lookup_by_email` SECURITY DEFINER RPC (migration `019_email_login.sql`, **pending
+  apply**) returns every business that email belongs to (schools.admin_email, teachers.email,
+  students.email) with the deterministic synthetic auth email per identity (admin → real
+  admin_email; teacher → `staff-<clean>--<schoolId>@login.internal`; student →
+  `student-<clean>--<schoolId>@login.internal`, matching `syntheticEmail` in AppDemo exactly);
+  client authenticates each identity via `supabase.auth.signInWithPassword` (same password),
+  then shows the business picker (dedupe per school, priority admin > teacher > student).
+  Picking a business re-authenticates that identity if needed, runs the same status/login-
+  disabled checks as `authLogin`, and enters the workspace via
+  `onLoginSuccess(user, school)` (sets selected school + session, no reload). Classic
+  "organization + ID" flow stays intact behind `authMode === "classic"` (link on the email
+  page; register link switches to classic + opens OrgSignupModal). `db.loginLookupByEmail`
+  wrapper added. If migration 019 is not applied yet, email login shows a graceful
+  "use organization + ID login" fallback.
 - **Phase 5 — General-purpose Business Dashboard (1 Sep 2026, v32.93)** — the shell is now
   business-first by default for ALL tenants. `education_module_enabled` defaults **false**;
   education UI/labels are an explicit per-tenant opt-in (Settings → Workspace Profile).

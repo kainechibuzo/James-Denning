@@ -1,7 +1,7 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.93 — Phase 5: general-purpose business dashboard — business-first default, education opt-in, Customers/Projects/Invoices modules)_
+_Last updated: 1 Sep 2026 (v32.94 — Phase 6: public landing page + email login + business picker)_
 
 ---
 
@@ -27,6 +27,25 @@ The product is now a **business-first dashboard for all business types** by defa
   routes `customers`/`projects`/`invoices` under Administration, `db.*` methods added.
 - Zero behavior change for existing tenants: education data intact, hidden until opt-in.
   Hiring Phases 1–3 unchanged.
+
+## Phase 6 — Landing page + email auth + business picker (1 Sep 2026, v32.94)
+
+- **Public landing page** at `/` (`src/pages/landing.jsx`, `LandingPage`): marketing page
+  (hero, 8 features, how-it-works, CTA band, footer) — business-neutral JAMES-DENNING. `App()`
+  in AppDemo.jsx renders it for the `/` path (same SPA pattern as `/apply/`); everything else
+  (e.g. `/app`) renders the application. PWA `start_url` moved to `/app`.
+- **Email-first login** (`src/pages/auth.jsx`, `EmailAuthPage`): one email + password →
+  `db.loginLookupByEmail` → `login_lookup_by_email` RPC (migration `019_email_login.sql`,
+  pending apply) returns every business the email belongs to (admin via schools.admin_email,
+  staff via teachers.email, member via students.email) plus each identity's deterministic
+  synthetic auth email. The client authenticates against Supabase Auth (same password) and
+  shows a **business picker** (deduped per school; admin > teacher > student). Picking a
+  business opens that workspace — same checks as `authLogin` (student status, login-disabled
+  settings), no page reload.
+- Classic "organization + ID" login remains fully available via the link on the email page
+  (`authMode === "classic"`), including Register New Business (OrgSignupModal) and Platform
+  Admin login.
+- Migration 019 is purely additive (one SECURITY DEFINER function, no tables).
 
 ## CI/CD (1 Sep 2026)
 

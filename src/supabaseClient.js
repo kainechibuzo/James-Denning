@@ -1067,7 +1067,6 @@ export const db = {
   // Fetch admin credentials for a specific school
 
   async loginGetSchoolAdmin(schoolId){
-
     if(!schoolId) return {data:null,error:null};
 
     const {data,error}=await supabase.rpc('login_lookup_school_admin',{p_school_id:schoolId});
@@ -1076,6 +1075,15 @@ export const db = {
 
     return {data:(data&&data.length>0)?data[0]:null,error:null};
 
+  },
+
+  // Email-based login (Phase 6): every business a person belongs to, from one
+  // email. Backed by login_lookup_by_email (019_email_login.sql).
+  async loginLookupByEmail(email){
+    if(!email||!email.includes("@")) return {data:[],error:null};
+    const {data,error}=await supabase.rpc('login_lookup_by_email',{p_email:email.trim()});
+    if(error) return {data:null,error};
+    return {data:data||[],error:null};
   },
 
   // Update admin credentials for a school
