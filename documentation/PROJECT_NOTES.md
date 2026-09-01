@@ -45,6 +45,20 @@ Education-module settings server-side with the service-role client before the su
 
 ---
 
+## Recent Changes (1 Sep 2026) — CI/CD: auto deploy migrations + functions
+
+**`.github/workflows/deploy.yml`** ("Supabase Deploy") — applies Supabase
+migrations and redeploys edge functions automatically. Triggers on pushes to
+`master` touching `supabase/**` (migrations, functions, config) or the workflow
+file, plus manual `workflow_dispatch`. Steps: `supabase link --project-ref
+mcdcwdfdpqzrzsixmrcg` → `supabase db push` (only unapplied migrations) →
+`supabase functions deploy` (all 5 functions; per-function `verify_jwt` from
+`config.toml`, e.g. `manage-account` is `false`). Requires repo secrets
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Once live, prefer it over
+the SQL editor for migrations so remote history stays consistent.
+
+---
+
 ## Recent Changes (1 Sep 2026) — v32.92 Hiring Phases 2–3: postings + landing pages + applications + quota
 
 The **push-model hiring loop** is now implemented end-to-end: org owner posts a role →

@@ -10,6 +10,42 @@ Branch: `arena/01a05d6d-rgs-portal-master` (commit `6d1a6a3` = Phase 1, commit `
 
 ---
 
+## NEW: GitHub Action — automatic migrations + function deploys
+
+A workflow now exists at **`.github/workflows/deploy.yml`** ("Supabase Deploy").
+Once it lands on `master`, it runs on every push that touches `supabase/**`
+(migrations, functions, config) and applies migrations + redeploys all 5 edge
+functions automatically.
+
+**To activate it you must set 2 repository secrets**
+(Settings → Secrets and variables → Actions):
+
+| Secret | Where to get it |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | https://supabase.com/dashboard/account/tokens → Generate new token |
+| `SUPABASE_DB_PASSWORD` | Your Supabase project's database password (set at project creation) |
+
+The project ref is already committed in `supabase/config.toml`, so no third
+secret is needed.
+
+**What the action does** (in order):
+1. `supabase link --project-ref mcdcwdfdpqzrzsixmrcg`
+2. `supabase db push` — applies only migrations not yet recorded remotely
+   (016, 017, …). Idempotent — no new migrations = no-op.
+3. `supabase functions deploy` — deploys ALL functions
+   (`manage-account`, `scheduled-digest`, `send-email`, `send-email-batch`,
+   `verify-payment`); per-function `verify_jwt` comes from `config.toml`
+   (manage-account already has `verify_jwt = false`).
+
+You can also run it manually from the Actions tab ("Run workflow").
+
+> ⚠️ **Once the action is live, prefer it over the SQL editor for future
+> migrations** — it keeps the remote migration history consistent. The pending
+> 016/017 can either be applied by pushing to `master` (the action runs them),
+> or manually right now using the steps below if you don't want to wait.
+
+---
+
 ## Step 1 — Apply migration 016 (Hiring Phase 1, org creation presets)
 
 File: `supabase/migrations/016_org_presets.sql`

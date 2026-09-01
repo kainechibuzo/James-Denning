@@ -1,9 +1,16 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.92 — Hiring Phases 2–3: postings, landing pages, applications, quota tracking)_
+_Last updated: 1 Sep 2026 (v32.92 — Hiring Phases 2–3: postings, landing pages, applications, quota tracking; CI/CD auto-deploy for Supabase migrations + functions)_
 
 ---
+
+## CI/CD (1 Sep 2026)
+
+`.github/workflows/deploy.yml` — "Supabase Deploy": on push to `master` touching
+`supabase/**` (or manual dispatch) it runs `supabase link` →
+`supabase db push` (migrations) → `supabase functions deploy` (all edge
+functions). Needs repo secrets `SUPABASE_ACCESS_TOKEN` + `SUPABASE_DB_PASSWORD`.
 
 ## How to Use This File
 
