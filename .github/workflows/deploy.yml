@@ -6,7 +6,7 @@
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   SUPABASE_ACCESS_TOKEN — personal access token from
 #       https://supabase.com/dashboard/account/tokens (account → access tokens)
-#   SUPABASE_DB_PASSWORD  — database password of project mcdcwdfdpqzrzsixmrcg
+#   SUPABASE_DB_PASSWORD  — database password of project thklwiybjuhrjqrrxyid
 #
 # The project ref itself is not secret (it is already committed in
 # supabase/config.toml as project_id).
@@ -31,7 +31,7 @@ permissions:
 env:
   SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
   SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-  SUPABASE_PROJECT_ID: mcdcwdfdpqzrzsixmrcg
+  SUPABASE_PROJECT_ID: thklwiybjuhrjqrrxyid
 
 jobs:
   deploy:
