@@ -6,7 +6,7 @@ is complete, committed, and all three builds pass — the feature simply stays
 dormant until these steps run.
 
 Project: **JAMES-DENNING** (Supabase project ref: `mcdcwdfdpqzrzsixmrcg`)
-Branch: `arena/01a05d6d-rgs-portal-master` (commit `6d1a6a3` = Phase 1; the Phase 2/3 commit hash is in the final report)
+Branch: `arena/01a05d6d-rgs-portal-master` (commit `6d1a6a3` = Phase 1, commit `47ae03c` = Phases 2–3)
 
 ---
 
