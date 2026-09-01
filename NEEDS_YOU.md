@@ -54,6 +54,13 @@ You can also run it manually from the Actions tab ("Run workflow").
 
 ---
 
+## Step 0 — Migration 018 (Phase 5 business modules) is now pending too
+
+`supabase/migrations/018_business_modules.sql` — customers (CRM), projects + project_tasks,
+invoices + invoice_items. Purely additive; school-scoped RLS; applied by the same deploy
+workflow as 016/017 (or manually with the same commands below). After it applies, the
+business-first shell (Customers / Projects / Invoices in the nav) becomes fully functional.
+
 ## Step 1 — Apply migration 016 (Hiring Phase 1, org creation presets)
 
 File: `supabase/migrations/016_org_presets.sql`

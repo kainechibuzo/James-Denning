@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 1 Sep 2026 — Hiring Phases 2–3: postings, ad-ready landing pages, applications, quota tracking (v32.92)_
+_Last updated: 1 Sep 2026 — Phase 5: general-purpose business dashboard (v32.93)_
 
 ---
 
@@ -56,6 +56,55 @@ mcdcwdfdpqzrzsixmrcg` → `supabase db push` (only unapplied migrations) →
 `config.toml`, e.g. `manage-account` is `false`). Requires repo secrets
 `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Once live, prefer it over
 the SQL editor for migrations so remote history stays consistent.
+
+---
+
+## Recent Changes (1 Sep 2026) — v32.93 Phase 5: General-purpose Business Dashboard
+
+The product is now a **business-first dashboard for all business types** by default.
+
+### Defaults flip
+
+- `education_module_enabled` now defaults to **false** (was true). Existing education tenants
+  keep their data — they simply see the neutral business shell until they re-enable the
+  education module in Settings → Workspace Profile (toggle now off by default, matching the
+  new default). `settings.jsx` reads `=== "true"` for the toggle; `section.jsx` defaults to
+  `false`.
+
+### Business-first navigation
+
+- Business mode (the default) hides school-specific items via the `eduOnly` set in
+  `AppDemo.jsx`: `classes`, `subjects`, `sections`, `timetable`, `broadsheet`, `assignments`,
+  `results`, `report-cards`, `transcript`, `academic-summary`, `report-card-settings`,
+  `grading`, `attendance`, `my-classes`, `results-teach`, `my-results`, `my-bill`.
+- The nav is now a general-purpose business workspace: Overview, Team, People, Billing,
+  Communication, Hiring, Administration (+ new Customers/Projects/Invoices).
+- Education mode (opt-in) restores the full academic nav via `EDUCATION_NAV_LABELS`.
+
+### New general-purpose modules — migration `supabase/migrations/018_business_modules.sql` (NOT yet applied)
+
+Purely additive; school-scoped RLS (`school_id = auth_school_id()`), same 999b pattern (not FORCE):
+
+- `customers` — CRM: name, kind (`contact`|`company`), email, phone, company, status
+  (`active`|`lead`|`inactive`), notes
+- `projects` — name, description, status (`active`|`paused`|`completed`|`archived`),
+  `customer_id` FK, start/end dates
+- `project_tasks` — project_id FK, title, description, status
+  (`todo`|`in_progress`|`done`|`blocked`), due date
+- `invoices` — number, customer_id FK, status (`draft`|`sent`|`paid`|`overdue`|`cancelled`),
+  issue/due dates, total, notes
+- `invoice_items` — invoice_id FK, description, quantity, unit_price, amount
+
+New pages in `src/pages/business.jsx` (`CustomersPage`, `ProjectsPage`, `InvoicesPage`), nav
+routes `customers`/`projects`/`invoices` under Administration, `db.*` methods:
+`getCustomers`/`upsertCustomer`/`deleteCustomer`, `getProjects`/`upsertProject`/`deleteProject`,
+`getProjectTasks`/`upsertProjectTask`/`deleteProjectTask`,
+`getInvoices`/`getInvoice`/`upsertInvoice`/`deleteInvoice`, `upsertInvoiceItem`/`deleteInvoiceItem`.
+
+### Guarantees
+
+Zero behavior change for existing tenants (education data intact, hidden until opt-in);
+hiring Phases 1–3 unchanged; all existing routes/tables stay; three builds pass.
 
 ---
 
@@ -771,6 +820,7 @@ school_settings
 | 015 | `015_portal_results_subject_id_not_null.sql` | `portal_results.subject_id` NOT NULL |
 | 016 | `016_org_presets.sql` | **Hiring Phase 1 — org_presets, org_submissions, org_tools, schools preset columns (PENDING APPLY)** |
 | 017 | `017_hiring_roles.sql` | **Hiring Phases 2–3 — hiring_roles, hiring_applications, hiring_messages, hires, hire_quota_entries + 4 public SECURITY DEFINER RPCs (PENDING APPLY)** |
+| 018 | `018_business_modules.sql` | **Phase 5 — customers, projects, project_tasks, invoices, invoice_items (PENDING APPLY)** |
 
 **Ad-hoc migrations applied via Supabase MCP (not in migration files):**
 - `last_login timestamptz` added to `students` and `teachers`
@@ -790,6 +840,13 @@ school_settings
 - `hires(school_id, application_id FK cascade, role_id FK restrict, hire_name, contact_email, status, quota_metric, quota_unit, quota_target, quota_period, quota_measure_method, quota_start/end)` — RLS same, RLS enabled (999b pattern — not FORCE)
 - `hire_quota_entries(school_id, hire_id FK cascade, value, note, recorded_by)` — RLS same, RLS enabled (999b pattern — not FORCE)
 - Public RPCs (security definer, anon + authenticated execute): `hiring_public_role(text)`, `hiring_public_submit_application(text,text,text,text,text,numeric,text)`, `hiring_get_thread(text)`, `hiring_post_message(text,text,text)`
+
+**Phase 5 business-module tables (migration 018):**
+- `customers(school_id, name, kind contact|company, email, phone, company, status active|lead|inactive, notes)` — RLS `school_id = auth_school_id()`, RLS enabled (999b pattern — not FORCE)
+- `projects(school_id, name, description, status active|paused|completed|archived, customer_id FK set null, start_date, end_date, created_by)` — RLS same
+- `project_tasks(school_id, project_id FK cascade, title, description, status todo|in_progress|done|blocked, due_date)` — RLS same
+- `invoices(school_id, number, customer_id FK set null, status draft|sent|paid|overdue|cancelled, issue_date, due_date, total, notes)` — RLS same
+- `invoice_items(school_id, invoice_id FK cascade, description, quantity, unit_price, amount)` — RLS same
 
 ---
 

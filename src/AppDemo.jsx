@@ -44,6 +44,7 @@ import { SectionsPage }                                             from './page
 import { ResultApprovalsPage }                                      from './pages/results.jsx';
 import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
 import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal, PublicHireLanding, HiringPage } from './pages/hiring.jsx';
+import { CustomersPage, ProjectsPage, InvoicesPage }                     from './pages/business.jsx';
 
 
 // ─── VERSION / BRAND ─────────────────────────────────────────────────────────
@@ -2276,6 +2277,9 @@ function AppInner(){
     {id:"mail-compose",    label:"Send Email",        icon:"mail",  roles:["admin"],    gid:"g-comms"},
     {id:"mail-logs",       label:"Email Logs",        icon:"mail-logs", roles:["admin"],    gid:"g-comms"},
     {id:"g-admin",         group:"Administration",  roles:["admin"]},
+    {id:"customers",       label:"Customers",         icon:"users",     roles:["admin"],    gid:"g-admin"},
+    {id:"projects",        label:"Projects",          icon:"check",     roles:["admin"],    gid:"g-admin"},
+    {id:"invoices",        label:"Invoices",          icon:"receipt",   roles:["admin"],    gid:"g-admin"},
     {id:"admin-tools",     label:"Admin Tools",        icon:"database",   roles:["admin"],    gid:"g-admin"},
     {id:"org-create",      label:"Register Organization", icon:"building", roles:["admin"],   gid:"g-admin"},
     {id:"hiring",          label:"Hiring",              icon:"user-check", roles:["admin"],   gid:"g-admin"},
@@ -2335,15 +2339,25 @@ function AppInner(){
 
   const role=user.role;
 
-
-  // Deduplicate & filter. Education tenants can opt into the original academic
-  // labels without changing the underlying routes or database schema.
-  const navSource = workspaceType==="education" && educationModuleEnabled
-    ? ALL_NAV.map(n=>{
-        const label=EDUCATION_NAV_LABELS[n.id];
-        return label ? (n.group ? {...n,group:label} : {...n,label}) : n;
-      })
-    : ALL_NAV;
+  // Business-first shell: in business mode (the default), school-specific
+  // items are hidden entirely — the nav is a general-purpose business
+  // workspace (Overview, Team, People, Billing, Communication, Hiring,
+  // Administration). Education mode (explicit opt-in) restores the full
+  // academic nav via EDUCATION_NAV_LABELS.
+  const eduOnly = new Set([
+    "classes","subjects","sections","timetable","broadsheet","assignments",
+    "results","report-cards","transcript","academic-summary","report-card-settings",
+    "grading","attendance","my-classes","results-teach","my-results","my-bill",
+  ]);
+  const isEdu = workspaceType==="education" && educationModuleEnabled;
+  const navSource = ALL_NAV.map(n=>{
+    if(!isEdu && (eduOnly.has(n.id) || n.gid && eduOnly.has(n.gid))) return null;
+    if(isEdu){
+      const label=EDUCATION_NAV_LABELS[n.id];
+      return label ? (n.group ? {...n,group:label} : {...n,label}) : n;
+    }
+    return n;
+  }).filter(Boolean);
   const seenIds = new Set();
   const NAV = navSource.filter(n=>{
     if(!n.roles||!n.roles.includes(role)) return false;
@@ -2678,6 +2692,9 @@ function AppInner(){
           {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
           {page==="hiring"             && (canAccess("hiring") ? <HiringPage ctx={ctx}/> : <AccessDenied/>)}
+          {page==="customers"          && (canAccess("customers") ? <CustomersPage ctx={ctx}/> : <AccessDenied/>)}
+          {page==="projects"           && (canAccess("projects") ? <ProjectsPage ctx={ctx}/> : <AccessDenied/>)}
+          {page==="invoices"           && (canAccess("invoices") ? <InvoicesPage ctx={ctx}/> : <AccessDenied/>)}
         </main>
       </div>
 

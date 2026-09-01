@@ -18,7 +18,10 @@ export function SectionProvider({ children }) {
   const [schoolLogo, setSchoolLogo] = useState(() => loadSelectedSchool()?.logo || null);
   const [schoolName, setSchoolName] = useState(() => loadSelectedSchool()?.name || "Business Portal");
   const [workspaceType, setWorkspaceType] = useState(() => getStoredWorkspaceType());
-  const [educationModuleEnabled, setEducationModuleEnabled] = useState(true);
+  // Business-first default: education UI is an explicit opt-in (per tenant).
+  // Existing education tenants keep their data; they simply see the neutral
+  // business shell until they re-enable the education module in Settings.
+  const [educationModuleEnabled, setEducationModuleEnabled] = useState(false);
 
   const applyFavicon = (logoData) => {
     if (!logoData) return;

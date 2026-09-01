@@ -1,9 +1,32 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.92 — Hiring Phases 2–3: postings, landing pages, applications, quota tracking; CI/CD auto-deploy for Supabase migrations + functions)_
+_Last updated: 1 Sep 2026 (v32.93 — Phase 5: general-purpose business dashboard — business-first default, education opt-in, Customers/Projects/Invoices modules)_
 
 ---
+
+## Phase 5 — General-purpose Business Dashboard (1 Sep 2026, v32.93)
+
+The product is now a **business-first dashboard for all business types** by default:
+
+- `education_module_enabled` defaults to **false** (was true); education UI is an explicit
+  per-tenant opt-in via Settings → Workspace Profile (toggle off by default).
+- Business-mode nav hides school-specific items (`classes`, `subjects`, `sections`,
+  `timetable`, `broadsheet`, `assignments`, `results`, `report-cards`, `transcript`,
+  `academic-summary`, `report-card-settings`, `grading`, `attendance`, `my-classes`,
+  `results-teach`, `my-results`, `my-bill`) via the `eduOnly` set in `AppDemo.jsx`. Education
+  mode restores the full academic nav via `EDUCATION_NAV_LABELS`.
+- New general-purpose modules (migration `018_business_modules.sql`, **pending apply**):
+  - `customers` — CRM (contacts & companies, status, notes)
+  - `projects` + `project_tasks` — projects with status, dates, customer link; tasks with
+    status flow (todo → in_progress → done/blocked), due dates
+  - `invoices` + `invoice_items` — business invoices with line items, status flow
+    (draft → sent → paid/overdue/cancelled)
+  - All school-scoped RLS (`school_id = auth_school_id()`), same 999b pattern (not FORCE).
+- New pages `src/pages/business.jsx` (`CustomersPage`, `ProjectsPage`, `InvoicesPage`), nav
+  routes `customers`/`projects`/`invoices` under Administration, `db.*` methods added.
+- Zero behavior change for existing tenants: education data intact, hidden until opt-in.
+  Hiring Phases 1–3 unchanged.
 
 ## CI/CD (1 Sep 2026)
 

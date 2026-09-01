@@ -363,6 +363,122 @@ export const db = {
 
   },
 
+  // ═══ BUSINESS MODULES (Phase 5) — Customers, Projects & Tasks, Invoices ═══
+  // All school-scoped via this._schoolId, same pattern as everything else.
+
+  // ── Customers (CRM) ────────────────────────────────────────────────────────
+  async getCustomers(){
+    let q=supabaseSrv.from('customers').select('*').order('name',{ascending:true})
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async upsertCustomer(data,id=null){
+    if(id){
+      let q=supabaseSrv.from('customers').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+      return q.select().single()
+    }
+    const ins={...data}
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+    return supabaseSrv.from('customers').insert(ins).select().single()
+  },
+  async deleteCustomer(id){
+    let q=supabaseSrv.from('customers').delete().eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+
+  // ── Projects & Tasks ───────────────────────────────────────────────────────
+  async getProjects(){
+    let q=supabaseSrv.from('projects')
+      .select('*,customers(id,name,company)')
+      .order('created_at',{ascending:false})
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async upsertProject(data,id=null){
+    if(id){
+      let q=supabaseSrv.from('projects').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+      return q.select().single()
+    }
+    const ins={...data}
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+    return supabaseSrv.from('projects').insert(ins).select().single()
+  },
+  async deleteProject(id){
+    let q=supabaseSrv.from('projects').delete().eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async getProjectTasks(projectId){
+    let q=supabaseSrv.from('project_tasks')
+      .select('*').eq('project_id',projectId).order('created_at',{ascending:true})
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async upsertProjectTask(data,id=null){
+    if(id){
+      let q=supabaseSrv.from('project_tasks').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+      return q.select().single()
+    }
+    const ins={...data}
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+    return supabaseSrv.from('project_tasks').insert(ins).select().single()
+  },
+  async deleteProjectTask(id){
+    let q=supabaseSrv.from('project_tasks').delete().eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+
+  // ── Invoices ───────────────────────────────────────────────────────────────
+  async getInvoices(){
+    let q=supabaseSrv.from('invoices')
+      .select('*,customers(id,name,company)')
+      .order('created_at',{ascending:false})
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async getInvoice(id){
+    let q=supabaseSrv.from('invoices')
+      .select('*,customers(id,name,company),invoice_items(*)')
+      .eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q.single()
+  },
+  async upsertInvoice(data,id=null){
+    if(id){
+      let q=supabaseSrv.from('invoices').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+      return q.select().single()
+    }
+    const ins={...data}
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+    return supabaseSrv.from('invoices').insert(ins).select().single()
+  },
+  async deleteInvoice(id){
+    let q=supabaseSrv.from('invoices').delete().eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+  async upsertInvoiceItem(data,id=null){
+    if(id){
+      let q=supabaseSrv.from('invoice_items').update(data).eq('id',id)
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+      return q.select().single()
+    }
+    const ins={...data}
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+    return supabaseSrv.from('invoice_items').insert(ins).select().single()
+  },
+  async deleteInvoiceItem(id){
+    let q=supabaseSrv.from('invoice_items').delete().eq('id',id)
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+    return q
+  },
+
   // Public landing-page RPCs (anon — narrow SECURITY DEFINER functions, no
   // table grants to anon; see 017_hiring_roles.sql)
 

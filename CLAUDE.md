@@ -18,6 +18,23 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
+- **Phase 5 — General-purpose Business Dashboard (1 Sep 2026, v32.93)** — the shell is now
+  business-first by default for ALL tenants. `education_module_enabled` defaults **false**;
+  education UI/labels are an explicit per-tenant opt-in (Settings → Workspace Profile).
+  Business-mode nav hides school-specific items (classes, subjects, sections, timetable,
+  broadsheet, assignments, results, report-cards, transcript, academic-summary,
+  report-card-settings, grading, attendance, my-classes, results-teach, my-results, my-bill)
+  via the `eduOnly` set in `AppDemo.jsx`; education mode restores the full academic nav via
+  `EDUCATION_NAV_LABELS`. New general-purpose modules (migration `018_business_modules.sql`,
+  **pending apply** — school-scoped RLS, same 999b pattern): `customers` (CRM contacts &
+  companies), `projects` + `project_tasks`, `invoices` + `invoice_items`. New pages in
+  `src/pages/business.jsx` (`CustomersPage`, `ProjectsPage`, `InvoicesPage`) wired at nav
+  routes `customers`/`projects`/`invoices` under Administration; `db.*` methods
+  (`getCustomers`/`upsertCustomer`/`deleteCustomer`, `getProjects`/`upsertProject`/`deleteProject`,
+  `getProjectTasks`/`upsertProjectTask`/`deleteProjectTask`, `getInvoices`/`getInvoice`/`upsertInvoice`/
+  `deleteInvoice`, `upsertInvoiceItem`/`deleteInvoiceItem`). Invoices reuse the neutral billing
+  concept (education fees module remains untouched for education opt-in). Zero behavior change
+  for existing tenants: education data intact, hidden until opt-in. Hiring Phases 1–3 unchanged.
 - **Hiring Phases 2–3 (1 Sep 2026, v32.92)** — postings + auto-generated landing pages,
   applications/negotiation, hires & owner-defined quota tracking. Migration
   `017_hiring_roles.sql` (**pending apply**) adds 5 school-scoped tables
