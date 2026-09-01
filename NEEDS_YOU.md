@@ -17,6 +17,14 @@ Once it lands on `master`, it runs on every push that touches `supabase/**`
 (migrations, functions, config) and applies migrations + redeploys all 5 edge
 functions automatically.
 
+> ⚠️ **Current status: committed locally (commit `8072be4`) but NOT yet on
+> GitHub.** Pushing it was blocked because the arena GitHub connection (a
+> GitHub App token) lacks the `workflows` permission that GitHub requires for
+> files under `.github/workflows/`. To activate: reconnect GitHub in Arena with
+> workflow write access and ask the agent to push it — or add the file
+> manually via the GitHub web UI (`.github/workflows/deploy.yml` on `master`,
+> content is in the repo working tree).
+
 **To activate it you must set 2 repository secrets**
 (Settings → Secrets and variables → Actions):
 
