@@ -50,9 +50,9 @@ jobs:
 
       # Applies only migrations that are not yet recorded in the remote
       # supabase_migrations.schema_migrations table (i.e. 016, 017, ...).
-      # Idempotent: a push with no new migrations is a no-op.
+      # --include-all auto-approves pending migrations without prompt.
       - name: Apply migrations
-        run: supabase db push
+        run: supabase db push --include-all
 
       # No function name = deploy ALL functions in supabase/functions
       # (manage-account, scheduled-digest, send-email, send-email-batch,
