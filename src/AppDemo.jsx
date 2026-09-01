@@ -43,7 +43,7 @@ import { MyProfilePage }                                            from './page
 import { SectionsPage }                                             from './pages/classes.jsx';
 import { ResultApprovalsPage }                                      from './pages/results.jsx';
 import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
-import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal }       from './pages/hiring.jsx';
+import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal, PublicHireLanding, HiringPage } from './pages/hiring.jsx';
 
 
 // ─── VERSION / BRAND ─────────────────────────────────────────────────────────
@@ -1345,6 +1345,16 @@ function AppIcon({name,size=16,color,style={}}){
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App(){
+  // Public hiring landing pages live at /apply/<slug> (ad destination).
+  // They render standalone — no portal shell, no auth — and only exist in the
+  // browser if the SPA server rewrites all paths to index.html (Vercel does).
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/apply/")) {
+    return (
+      <ErrorBoundary>
+        <PublicHireLanding/>
+      </ErrorBoundary>
+    );
+  }
   return(
     <ErrorBoundary>
       <DarkProvider>
@@ -2268,6 +2278,7 @@ function AppInner(){
     {id:"g-admin",         group:"Administration",  roles:["admin"]},
     {id:"admin-tools",     label:"Admin Tools",        icon:"database",   roles:["admin"],    gid:"g-admin"},
     {id:"org-create",      label:"Register Organization", icon:"building", roles:["admin"],   gid:"g-admin"},
+    {id:"hiring",          label:"Hiring",              icon:"user-check", roles:["admin"],   gid:"g-admin"},
     {id:"notifications",   label:"Notifications",      icon:"bell",       roles:["admin"],    gid:"g-admin"},
     {id:"permissions",     label:"Permissions",        icon:"shield",     roles:["admin"],    gid:"g-admin"},
     {id:"g-approvals",     group:"Approvals",      roles:["admin"]},
@@ -2666,6 +2677,7 @@ function AppInner(){
           {page==="settings"      && <SettingsPage ctx={{...ctx,notify}}/>}
           {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
+          {page==="hiring"             && (canAccess("hiring") ? <HiringPage ctx={ctx}/> : <AccessDenied/>)}
         </main>
       </div>
 

@@ -18,7 +18,21 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
-- **Hiring Phase 1 (1 Sep 2026, v32.91)** — org creation + business-type presets. New
+- **Hiring Phases 2–3 (1 Sep 2026, v32.92)** — postings + auto-generated landing pages,
+  applications/negotiation, hires & owner-defined quota tracking. Migration
+  `017_hiring_roles.sql` (**pending apply**) adds 5 school-scoped tables
+  (`hiring_roles`, `hiring_applications`, `hiring_messages`, `hires`, `hire_quota_entries`; RLS enabled + school-scoped policies per 999b, NOT FORCE — the public definer functions must bypass RLS like 999c) and
+  **4 public SECURITY DEFINER RPCs** (`hiring_public_role`, `hiring_public_submit_application`,
+  `hiring_get_thread`, `hiring_post_message`) — anon never gets table grants; the public landing
+  page at `/apply/<slug>` (rendered by `PublicHireLanding` when `App()` sees the `/apply/` path,
+  no router needed — Vite SPA + Vercel rewrite serves it) reads/writes only through those RPCs.
+  Admin UI is `HiringPage` (nav route `hiring`, under Administration; tabs Roles / Applications /
+  Hires & Quota). Quota metric + how-it's-measured are **owner-defined at hire time**; the
+  dashboard is descriptive only ("at 60% of quota") and **never calculates pay**. New-application
+  alerts reuse the existing in-app notification + `db.sendAdminAlert` email path (high-water mark
+  `hiring_alerted_upto` in `school_settings`); applicant confirmation email via `sendPortalEmail`.
+  Scope guards still apply: no page builder, no ad-buying/tracking, no payroll/payout math.
+- Hiring Phase 1 (1 Sep 2026, v32.91) — org creation + business-type presets. New
   `src/pages/hiring.jsx` (routes `org-create` → preset grid, `org-create-details` → org form;
   `OrgSignupModal` replaces the old AppDemo `SchoolSignupModal`). Tables (migration
   `016_org_presets.sql` — **pending apply**): `org_presets` (seeded catalog: `general_business`,

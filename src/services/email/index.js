@@ -126,6 +126,32 @@ export function buildEmailHtml(subj, bodyText, schoolName = "Business Portal") {
 }
 
 /**
+ * Build a business-neutral HTML email (JAMES-DENNING monochrome, no school
+ * branding). Used for public-facing mail such as hiring application
+ * confirmations — buildEmailHtml above is school-branded and must not be used
+ * for arbitrary-org recipients.
+ */
+export function buildNeutralEmailHtml(subj, bodyText, senderLabel = "Business Portal") {
+  const year = new Date().getFullYear();
+  const esc = (s = "") => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  const rows = String(bodyText || "").replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").map(l =>
+    `<tr><td style="padding:3px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.75;color:#3d3d3d;">${esc(l)||"&nbsp;"}</td></tr>`
+  ).join("");
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${esc(subj)}</title></head>
+<body style="margin:0;padding:0;background:#f7f7f5;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:28px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.09);">
+<tr><td style="background:#111827;padding:20px 40px;"><div style="font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:0.5px;">${esc(senderLabel)}</div></td></tr>
+<tr><td style="background:#111827;padding:0 40px 16px;"><div style="font-family:Arial,sans-serif;font-size:16px;font-weight:700;color:#fff;opacity:.9;">${esc(subj)}</div></td></tr>
+<tr><td style="background:#ffffff;padding:32px 40px;"><table width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
+<tr><td style="background:#fafaf8;padding:20px 40px;"><div style="font-family:Arial,sans-serif;font-size:11px;color:#777;text-align:center;line-height:1.8;">Sent via JAMES-DENNING &mdash; ${esc(senderLabel)}<br/>&copy; ${year} ${esc(senderLabel)}</div></td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+/**
  * Build a compact admin alert email HTML.
  * Used for Tier A immediate alerts (security events, critical actions).
  * @param {string} title      Short title line, e.g. "Role Changed"

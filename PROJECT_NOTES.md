@@ -1,7 +1,7 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.91 — Hiring Phase 1: org creation + business-type presets)_
+_Last updated: 1 Sep 2026 (v32.92 — Hiring Phases 2–3: postings, landing pages, applications, quota tracking)_
 
 ---
 
@@ -22,6 +22,38 @@ schema is purely additive. Preset seeding is server-side in `manage-account regi
 (redeploy the edge function for it to take effect). Migration NOT yet applied; hiring Phases 2+
 (postings + landing pages, chat, quota tracking) build on `org_tools`. See
 `documentation/PROJECT_NOTES.md` for the full write-up.
+
+## Hiring Phases 2–3 (1 Sep 2026, v32.92)
+
+Postings → auto-generated ad-ready landing pages → applications/negotiation → hires with
+owner-defined quota tracking. The differentiator is **push**: the org owner runs their own ad
+spend/targeting; JAMES-DENNING generates and hosts the mobile-first destination page.
+
+- **Public landing page** at `/apply/<slug>`: no auth, no portal chrome. `App()` in AppDemo.jsx
+  checks `window.location.pathname.startsWith("/apply/")` and renders `PublicHireLanding`
+  (imported from `src/pages/hiring.jsx`) instead of the portal shell. `?t=<token>` turns it into
+  the applicant's private thread view (15s polling). Served by the existing Vite SPA + Vercel
+  rewrite — no build-config change.
+- **Public access model**: anon has NO table grants. All public reads/writes go through 4
+  SECURITY DEFINER RPCs in `017_hiring_roles.sql` (same pattern as `999c_login_lookup_*`):
+  `hiring_public_role(p_slug)`, `hiring_public_submit_application(...)` (validates role +
+  name/email, inserts application with a `gen_random_bytes(24)` bearer token, inserts an in-app
+  notification via the existing `notifications` table), `hiring_get_thread(p_token)`,
+  `hiring_post_message(p_token, ...)`.
+- **Admin UI**: `HiringPage` (nav `hiring`, Administration group, admin role). Tabs: Roles
+  (CRUD, publish/unpublish, copy landing link, close; delete is interlocked when applications
+  exist), Applications (status flow new→reviewing→negotiating→hired/rejected/closed + negotiation
+  thread), Hires & Quota (hire creates the quota definition — metric, unit, target, period,
+  measure-method all set by the owner — progress bars, quota entry log, internal chat continuing
+  the thread, end-hire). 30s polling while modals are open.
+- **Notifications**: new applications notify the admin in-app (RPC insert) + email via
+  `db.sendAdminAlert` + `buildAlertEmail` (ZeptoMail/SES edge function — the existing path; no
+  second notification system). Applicants get a confirmation email via `sendPortalEmail` +
+  `buildEmailHtml`.
+- **Quota language is descriptive only**: "At 60% of quota — 24 of 40 tickets logged".
+  JAMES-DENNING records and displays; it never calculates or promises pay.
+- Migration `017_hiring_roles.sql` — **NOT yet applied**; it is purely additive (5 new tables,
+  new RPCs, no changes to existing tables).
 
 ## Documentation Rule
 
