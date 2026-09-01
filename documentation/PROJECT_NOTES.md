@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 20 Aug 2026 — Business-platform rebrand and workspace profiles_
+_Last updated: 1 Sep 2026 — Hiring Phases 2–3: postings, ad-ready landing pages, applications, quota tracking (v32.92)_
 
 ---
 
@@ -42,6 +42,163 @@ Supabase non-2xx error. `supabase/config.toml` disables JWT verification at the 
 because only the `register_school` action is public; every other account-management action still
 verifies the caller inside the function. New organizations seed their identity, workspace type, and
 Education-module settings server-side with the service-role client before the success response.
+
+---
+
+## Recent Changes (1 Sep 2026) — CI/CD: auto deploy migrations + functions
+
+**`.github/workflows/deploy.yml`** ("Supabase Deploy") — applies Supabase
+migrations and redeploys edge functions automatically. Triggers on pushes to
+`master` touching `supabase/**` (migrations, functions, config) or the workflow
+file, plus manual `workflow_dispatch`. Steps: `supabase link --project-ref
+mcdcwdfdpqzrzsixmrcg` → `supabase db push` (only unapplied migrations) →
+`supabase functions deploy` (all 5 functions; per-function `verify_jwt` from
+`config.toml`, e.g. `manage-account` is `false`). Requires repo secrets
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Once live, prefer it over
+the SQL editor for migrations so remote history stays consistent.
+
+---
+
+## Recent Changes (1 Sep 2026) — v32.92 Hiring Phases 2–3: postings + landing pages + applications + quota
+
+The **push-model hiring loop** is now implemented end-to-end: org owner posts a role →
+JAMES-DENNING auto-generates a mobile-first, shareable landing page at `/apply/<slug>` (the
+ad-click destination) → applicants submit qualifications + asking price → owner reviews and
+negotiates over a private thread → on hire, the owner defines the quota metric and tracking
+starts; once hired the thread becomes the internal chat.
+
+### Public landing pages (the differentiator)
+
+- `PublicHireLanding` (in `src/pages/hiring.jsx`): rendered by `App()` in `AppDemo.jsx` whenever
+  `window.location.pathname` starts with `/apply/` — no router, no portal shell, no auth. The
+  existing Vite SPA build + Vercel rewrite serve it, so there is no build-config change.
+- Role page: org name header, title, price-range chip, description, goals & expectations,
+  mobile-first apply form (name/email/phone/qualifications/asking price + note). Success state
+  shows the applicant's **private thread link** (`/apply/<slug>?t=<token>`) with a copy button,
+  and a confirmation email is sent via the existing `sendPortalEmail` path.
+- Thread view (`?t=<token>`): status badge, negotiation chat, 15s polling. The token is a
+  48-hex-char bearer token (`gen_random_bytes(24)`) — unguessable, no accounts needed.
+
+### Public access model — anon gets RPCs only, never tables
+
+Migration `supabase/migrations/017_hiring_roles.sql` (NOT yet applied; purely additive):
+
+- Tables (all `school_id`, RLS enabled + policy `school_id = auth_school_id()`, same as 999b — **not FORCE**, because the public SECURITY DEFINER RPCs need the owner-bypass the 999c functions rely on):
+  - `hiring_roles` — title, summary, description, expectations, price_min/max numeric(14,2),
+    price_note, `status` active|paused|closed, `is_published` (landing page live flag),
+    unique `slug` (the public URL slug)
+  - `hiring_applications` — applicant name/email/phone, qualifications, asking_price,
+    `status` new|reviewing|negotiating|hired|rejected|closed, unique `access_token`;
+    FK to role is `on delete restrict` (role delete blocked once applications exist)
+  - `hiring_messages` — `sender` owner|applicant, sender_name, body
+  - `hires` — hire_name, contact_email, `status` active|ended, and the **owner-defined quota**:
+    `quota_metric`, `quota_unit`, `quota_target`, `quota_period`
+    weekly|monthly|quarterly|custom, `quota_measure_method` (owner's own words),
+    `quota_start`/`quota_end` for custom periods
+  - `hire_quota_entries` — value, note, recorded_by, recorded_at
+- 4 SECURITY DEFINER RPCs (revoke all, grant execute to anon + authenticated — the `999c`
+  pattern):
+  - `hiring_public_role(p_slug)` → published + active role joined with org name
+  - `hiring_public_submit_application(p_slug, p_name, p_email, p_phone, p_qualifications,
+    p_asking_price, p_price_note)` → validates, inserts the application + token, and inserts an
+    in-app notification (`recipient_id 'admin'`, `event_type 'hiring_application'`,
+    `link_page 'hiring'`) via the existing `notifications` table
+  - `hiring_get_thread(p_token)` → application + role + messages jsonb
+  - `hiring_post_message(p_token, p_sender_name, p_body)` → applicant reply
+
+### Admin UI — `HiringPage` (nav route `hiring`, Administration, admin)
+
+- Roles tab: create/edit (title, pitch, description, expectations, price range + note), slug
+  auto-generated and de-duplicated; publish/unpublish toggles the landing page; copy-link and
+  open-landing actions; close (landing goes offline) and delete (**interlocked**: cannot delete a
+  role with applications — close instead; DB `on delete restrict` backs this up).
+- Applications tab: status flow new → reviewing → negotiating → hired/rejected/closed, applicant
+  details (email/phone/asking price/qualifications) and the negotiation thread (owner replies
+  right/blue, applicant left). New-application email alerts batch via `db.sendAdminAlert` +
+  `buildAlertEmail` with the `hiring_alerted_upto` high-water mark in `school_settings` — the
+  existing ZeptoMail/SES path, no second notification system.
+- Hires & Quota tab: hire modal is where the owner defines the metric/unit/target/period and how
+  it is measured; hire detail shows the quota definition, a **descriptive-only** progress bar
+  ("At 60% of quota — 24 of 40 tickets logged"), a progress log, and the internal chat that
+  continues the negotiation thread. End-hire keeps history. No payout math anywhere.
+- Tool gating: orgs whose preset disabled `hiring` see a banner with an Enable button
+  (`org_tools`).
+- Refresh model: 30s polling for open modals + hires tab; applicant thread polls at 15s.
+
+### Client API (`src/supabaseClient.js`)
+
+`getHiringRoles`, `upsertHiringRole`, `deleteHiringRole`, `getHiringRolesWithCounts`,
+`getHiringApplications` (joins role), `getHiringApplication`, `setHiringApplicationStatus`,
+`addHiringMessage`, `getHiringMessages`, `createHire` (inserts hire + flips app to `hired`),
+`getHires`, `getHire` (joins role + application), `updateHire`, `addHireQuotaEntry`,
+`getHireQuotaEntries`, `deleteHireQuotaEntry`, `hiringRoleUrl`, and RPC wrappers
+`publicGetRoleBySlug`, `publicSubmitApplication`, `publicGetThread`, `publicPostMessage`.
+
+### Scope guards (unchanged)
+
+No page builder, no ad-buying/targeting/tracking integration, no payroll/payout calculation —
+the org owner runs their own ads and pays their hire outside the platform. Monetization for JD
+is Phase 4 (subscription) — not started.
+
+---
+
+## Recent Changes (1 Sep 2026) — v32.91 Hiring Phase 1: org creation + presets
+
+The first phase of the **hiring feature area** (push-style hiring — org posts a role, the platform
+generates a shareable ad-destination landing page; Phases 2+ build postings/landing pages, chat,
+and quota tracking). Phase 1 is org creation with business-type presets only — **no hiring,
+no payment, no landing pages yet**.
+
+### Schema — migration `supabase/migrations/016_org_presets.sql` (NOT yet applied)
+
+- `org_presets` — platform-seeded preset catalog (`key`, `name`, `description`, `modules_json`,
+  `settings_seed`). Readable by anon + authenticated (registration needs it pre-auth); writes are
+  service-role only. Seeded with 2 presets: `general_business` and `dev_shop` (dev shop adds
+  `quotas` tool). Future presets are data additions, not code.
+- `schools` — two additive nullable columns: `preset_key`, `onboarding_step`. **Existing rows
+  (preset_key NULL) are untouched — zero behavior change for classic tenants.** No defaults,
+  no triggers, no policy changes on existing tables.
+- `org_submissions` — one row per registered org (org_name, contact, preset_key, status),
+  school-scoped RLS (`FORCE ROW LEVEL SECURITY` + `auth_school_id()`), same as the live 999b
+  pattern. Anon cannot insert (registration writes happen server-side in the edge function).
+- `org_tools` — per-org tool toggles seeded from the preset's `modules_json`
+  (`unique (school_id, tool_key)`), school-scoped RLS. `db.setOrgTool` upserts on
+  `onConflict:'school_id,tool_key'` (plain-column unique constraint — matches the
+  `school_settings` lesson from 001b).
+
+### Server-side registration (`manage-account` edge function)
+
+`register_school` now accepts `presetKey`; validates it against `org_presets` (400 on unknown key,
+before creating anything), stamps `schools.preset_key` + `onboarding_step='complete'`, seeds the
+preset's `settings_seed` rows into `school_settings`, inserts the `org_submissions` row, and seeds
+`org_tools` — all with the service-role client (same reasoning as the existing school_settings
+seeding: the browser is unauthenticated at that point). **The edge function must be redeployed for
+preset seeding to take effect; until then registrations fall back to classic (preset-less) orgs —
+existing behavior, no breakage.**
+
+### Frontend
+
+- **New `src/pages/hiring.jsx`** (hiring domain) exporting:
+  - `OrgPresetSelectPage` — nav route `org-create` (admin-only, under Administration). Preset
+    card grid; choosing one goes to `org-create-details` via the `ctx.pageParam` channel.
+  - `OrgCreatePage` — nav route `org-create-details`; org form bound to the chosen preset;
+    success → `clearSession()` + `clearSelectedSchool()` + reload (lands on school-select so the
+    new admin signs in to the fresh org).
+  - `OrgSignupModal` — pre-auth two-step modal (preset → details) that **replaces the old
+    `SchoolSignupModal` in AppDemo.jsx** (both call sites: SchoolSelectPage + PlatformDashboard
+    "Add School").
+  - `TOOL_LABELS` map — presentation labels for tool keys (`core`, `people`, `billing`, `comms`,
+    `performance`, `hiring`, `quotas`, `education`).
+- `src/supabaseClient.js` — new `db.*` methods: `getOrgPresets()` (global catalog — no school_id
+  column, pre-auth safe), `getOrgSubmission()`, `getOrgTools()`, `setOrgTool(key, enabled)`
+  (all `supabaseSrv` + `_schoolId`-filtered). `createSchoolSignup` now forwards `preset_key`.
+- AppDemo.jsx shell changes are the standard three: import, `ALL_NAV` entry, two render lines.
+
+### Guards honored
+
+- No page builder, no ad platform, no payroll/tax/payout logic anywhere in Phase 1.
+- Business-neutral copy; legacy DB names untouched.
+- All three builds pass (`npm run build`, `build:web`, `build:mobile`).
 
 ---
 
@@ -611,11 +768,28 @@ school_settings
 | 011 | `011_refunds.sql` | Payment refunds |
 | 012 | `012_discounts.sql` | Fee discounts |
 | 013 | `013_fee_audit_log.sql` | Fee audit trail |
+| 015 | `015_portal_results_subject_id_not_null.sql` | `portal_results.subject_id` NOT NULL |
+| 016 | `016_org_presets.sql` | **Hiring Phase 1 — org_presets, org_submissions, org_tools, schools preset columns (PENDING APPLY)** |
+| 017 | `017_hiring_roles.sql` | **Hiring Phases 2–3 — hiring_roles, hiring_applications, hiring_messages, hires, hire_quota_entries + 4 public SECURITY DEFINER RPCs (PENDING APPLY)** |
 
 **Ad-hoc migrations applied via Supabase MCP (not in migration files):**
 - `last_login timestamptz` added to `students` and `teachers`
 - `permission_audit_log` table created
 - `role text NOT NULL DEFAULT 'teacher'` added to `teachers`
+
+**Hiring Phase 1 tables (migration 016):**
+- `org_presets(key unique, name, description, modules_json, settings_seed)` — platform catalog, seeded (`general_business`, `dev_shop`), RLS: public read, service-role write
+- `org_submissions(school_id, preset_key, org_name, contact_name, contact_email, phone, status)` — RLS: `school_id = auth_school_id()`, FORCE RLS
+- `org_tools(school_id, tool_key, is_enabled, unique(school_id, tool_key))` — RLS: `school_id = auth_school_id()`, FORCE RLS
+- `schools.preset_key` + `schools.onboarding_step` — nullable, **NULL for all pre-existing rows (zero behavior change)**
+
+**Hiring Phases 2–3 tables (migration 017):**
+- `hiring_roles(school_id, slug unique, title, summary, description, expectations, price_min/max, price_note, status, is_published, created_by)` — RLS `school_id = auth_school_id()`, RLS enabled (999b pattern — not FORCE)
+- `hiring_applications(school_id, role_id FK restrict, applicant_name/email/phone, qualifications, asking_price, asking_price_note, status, access_token unique)` — RLS same, RLS enabled (999b pattern — not FORCE)
+- `hiring_messages(school_id, application_id FK cascade, sender owner|applicant, sender_name, body)` — RLS same, RLS enabled (999b pattern — not FORCE)
+- `hires(school_id, application_id FK cascade, role_id FK restrict, hire_name, contact_email, status, quota_metric, quota_unit, quota_target, quota_period, quota_measure_method, quota_start/end)` — RLS same, RLS enabled (999b pattern — not FORCE)
+- `hire_quota_entries(school_id, hire_id FK cascade, value, note, recorded_by)` — RLS same, RLS enabled (999b pattern — not FORCE)
+- Public RPCs (security definer, anon + authenticated execute): `hiring_public_role(text)`, `hiring_public_submit_application(text,text,text,text,text,numeric,text)`, `hiring_get_thread(text)`, `hiring_post_message(text,text,text)`
 
 ---
 

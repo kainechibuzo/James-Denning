@@ -1,5 +1,5 @@
 # CLAUDE.md — JAMES-DENNING Project Context
-_Last updated: 20 Aug 2026._
+_Last updated: 1 Sep 2026._
 
 ## Rebrand / Workspace Model (20 Aug 2026)
 
@@ -18,6 +18,36 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
+- **Hiring Phases 2–3 (1 Sep 2026, v32.92)** — postings + auto-generated landing pages,
+  applications/negotiation, hires & owner-defined quota tracking. Migration
+  `017_hiring_roles.sql` (**pending apply**) adds 5 school-scoped tables
+  (`hiring_roles`, `hiring_applications`, `hiring_messages`, `hires`, `hire_quota_entries`; RLS enabled + school-scoped policies per 999b, NOT FORCE — the public definer functions must bypass RLS like 999c) and
+  **4 public SECURITY DEFINER RPCs** (`hiring_public_role`, `hiring_public_submit_application`,
+  `hiring_get_thread`, `hiring_post_message`) — anon never gets table grants; the public landing
+  page at `/apply/<slug>` (rendered by `PublicHireLanding` when `App()` sees the `/apply/` path,
+  no router needed — Vite SPA + Vercel rewrite serves it) reads/writes only through those RPCs.
+  Admin UI is `HiringPage` (nav route `hiring`, under Administration; tabs Roles / Applications /
+  Hires & Quota). Quota metric + how-it's-measured are **owner-defined at hire time**; the
+  dashboard is descriptive only ("at 60% of quota") and **never calculates pay**. New-application
+  alerts reuse the existing in-app notification + `db.sendAdminAlert` email path (high-water mark
+  `hiring_alerted_upto` in `school_settings`); applicant confirmation email via `sendPortalEmail`.
+  Scope guards still apply: no page builder, no ad-buying/tracking, no payroll/payout math.
+- Hiring Phase 1 (1 Sep 2026, v32.91) — org creation + business-type presets. New
+  `src/pages/hiring.jsx` (routes `org-create` → preset grid, `org-create-details` → org form;
+  `OrgSignupModal` replaces the old AppDemo `SchoolSignupModal`). Tables (migration
+  `016_org_presets.sql` — **pending apply**): `org_presets` (seeded catalog: `general_business`,
+  `dev_shop`; anon-readable, service-role-write), `org_submissions` + `org_tools` (school-scoped
+  RLS, FORCE RLS), plus nullable `schools.preset_key` / `schools.onboarding_step`.
+  **Zero-behavior-change rule: existing tenants keep `preset_key` NULL and are never touched by
+  the preset path** — no defaults, no triggers, no policy changes on existing tables. Preset
+  seeding happens server-side in `manage-account` `register_school` (validate `presetKey` against
+  `org_presets` FIRST, stamp schools row, seed `school_settings` from `settings_seed`, insert
+  `org_submissions` + `org_tools`). The edge function needs redeploying for the seeding to work;
+  until then registrations degrade to classic orgs, which is existing behavior. `db.*` methods:
+  `getOrgPresets()`, `getOrgSubmission()`, `getOrgTools()`, `setOrgTool()` (upsert
+  `onConflict:'school_id,tool_key'`). Hiring Phases 2+ (postings, landing pages, chat, quotas)
+  will build on `org_tools`; keep the scope guards: no page builder, no ad platform, no
+  payroll/tax/payout logic, and never auto-calculate payouts from quota data.
 - Public organization registration uses `manage-account` with `verify_jwt = false` at the Edge
   Function boundary; the function itself protects every non-registration action. The client keeps
   a temporary fallback for the legacy deployed `clever-processor` slug and exposes the server's
@@ -221,6 +251,7 @@ db.logPlatformAction(adminId, schoolId, action, details)
 | Email | `mail-compose`, `mail-logs` | ZeptoMail via edge function |
 | Transcript | `transcript` | PDF generation |
 | Settings | `settings` | **Full page** (not panel). Tabs: School Info, Sessions/Terms, Academic, Security, Portal, Permissions |
+| Org presets (Hiring Ph.1) | `org-create`, `org-create-details` | Admin-only. Preset grid → org registration form; `OrgSignupModal` for pre-auth signup |
 | Permissions | embedded in Settings | RBAC matrix UI |
 | Grading | `grading` | Grade schema + CAE traits |
 | Academic Calendar | `calendar` | Month grid + list view, CRUD events (admin), read for teachers |

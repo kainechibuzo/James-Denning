@@ -83,6 +83,325 @@ export const db = {
 
 
 
+  // ── Org presets & registration (Phase 1 — hiring feature area) ──────────
+
+  async getOrgPresets(){
+
+    // Global platform catalog (no school_id column) — safe for pre-auth reads
+    // by the registration flow; RLS policy org_presets_public_read covers anon.
+    return supabaseSrv.from('org_presets').select('*').order('id')
+
+  },
+
+  async getOrgSubmission(){
+
+    let q=supabaseSrv.from('org_submissions').select('*')
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.maybeSingle()
+
+  },
+
+  async getOrgTools(){
+
+    let q=supabaseSrv.from('org_tools').select('*').order('tool_key')
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  async setOrgTool(toolKey,isEnabled){
+
+    const row={tool_key:toolKey,is_enabled:isEnabled,created_at:new Date().toISOString()}
+
+    if(this._schoolId) row.school_id=this._schoolId
+
+    return supabaseSrv.from('org_tools').upsert(row,{onConflict:'school_id,tool_key'}).select()
+
+  },
+
+
+
+  // ── HIRING — roles, applications, threads, hires & quota (Phases 2–3) ─────
+
+  // Landing-page URL for a role (host-relative; caller prepends origin)
+
+  hiringRoleUrl(slug){ return `/apply/${slug}` },
+
+  async getHiringRoles(){
+
+    let q=supabaseSrv.from('hiring_roles').select('*').order('created_at',{ascending:false})
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  async upsertHiringRole(data,id=null){
+
+    if(id){
+
+      let q=supabaseSrv.from('hiring_roles').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+
+      if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+      return q.select().single()
+
+    }
+
+    const ins={...data}
+
+    if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
+
+    return supabaseSrv.from('hiring_roles').insert(ins).select().single()
+
+  },
+
+  async deleteHiringRole(id){
+
+    let q=supabaseSrv.from('hiring_roles').delete().eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  // Role + its application count (paginated-safe; roles are few)
+
+  async getHiringRolesWithCounts(){
+
+    const roles=await this.getHiringRoles()
+
+    if(roles.error) return roles
+
+    const apps=await this.getHiringApplications()
+
+    if(apps.error) return {data:roles.data,error:null}
+
+    const counts={}
+
+    ;(apps.data||[]).forEach(a=>{ counts[a.role_id]=(counts[a.role_id]||0)+1 })
+
+    return {data:(roles.data||[]).map(r=>({...r,application_count:counts[r.id]||0})),error:null}
+
+  },
+
+  async getHiringApplications(filters={}){
+
+    let q=supabaseSrv.from('hiring_applications')
+
+      .select('*,hiring_roles(id,title,slug)')
+
+      .order('created_at',{ascending:false})
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    if(filters.role_id) q=q.eq('role_id',filters.role_id)
+
+    if(filters.status) q=q.eq('status',filters.status)
+
+    return q
+
+  },
+
+  async getHiringApplication(id){
+
+    let q=supabaseSrv.from('hiring_applications')
+
+      .select('*,hiring_roles(id,title,slug)')
+
+      .eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.single()
+
+  },
+
+  async setHiringApplicationStatus(id,status){
+
+    let q=supabaseSrv.from('hiring_applications')
+
+      .update({status,updated_at:new Date().toISOString()}).eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.select().single()
+
+  },
+
+  // Owner-side message (negotiation + post-hire internal chat)
+
+  async addHiringMessage(applicationId, sender, senderName, body){
+
+    const row={application_id:applicationId, sender, sender_name:senderName, body}
+
+    if(this._schoolId) row.school_id=this._schoolId
+
+    return supabaseSrv.from('hiring_messages').insert(row).select().single()
+
+  },
+
+  async getHiringMessages(applicationId){
+
+    let q=supabaseSrv.from('hiring_messages')
+
+      .select('*').eq('application_id',applicationId).order('id')
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  // Hire + quota config (owner-defined metric at hire time). Also flips the
+  // application to 'hired'.
+  async createHire({applicationId, roleId, hireName, contactEmail, quota}){
+
+    const row={
+
+      application_id:applicationId, role_id:roleId,
+
+      hire_name:hireName||'', contact_email:contactEmail||'',
+
+      quota_metric:quota?.metric||'', quota_unit:quota?.unit||'',
+
+      quota_target:quota?.target||0, quota_period:quota?.period||'monthly',
+
+      quota_measure_method:quota?.measureMethod||'',
+
+      quota_start:quota?.start||null, quota_end:quota?.end||null,
+
+    }
+
+    if(this._schoolId) row.school_id=this._schoolId
+
+    const {data,error}=await supabaseSrv.from('hires').insert(row).select().single()
+
+    if(error) return {data:null,error}
+
+    await this.setHiringApplicationStatus(applicationId,'hired').catch(()=>{})
+
+    return {data,error:null}
+
+  },
+
+  async getHires(){
+
+    let q=supabaseSrv.from('hires')
+
+      .select('*,hiring_roles(id,title,slug)')
+
+      .order('created_at',{ascending:false})
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  async getHire(id){
+
+    let q=supabaseSrv.from('hires')
+
+      .select('*,hiring_roles(id,title,slug),hiring_applications(id,applicant_name,applicant_email,applicant_phone)')
+
+      .eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.single()
+
+  },
+
+  async updateHire(id,fields){
+
+    let q=supabaseSrv.from('hires')
+
+      .update({...fields,updated_at:new Date().toISOString()}).eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q.select().single()
+
+  },
+
+  async addHireQuotaEntry(hireId,value,note,recordedBy){
+
+    const row={hire_id:hireId, value, note:note||'', recorded_by:recordedBy||'admin'}
+
+    if(this._schoolId) row.school_id=this._schoolId
+
+    return supabaseSrv.from('hire_quota_entries').insert(row).select().single()
+
+  },
+
+  async getHireQuotaEntries(hireId){
+
+    let q=supabaseSrv.from('hire_quota_entries')
+
+      .select('*').eq('hire_id',hireId).order('recorded_at',{ascending:false})
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  async deleteHireQuotaEntry(id){
+
+    let q=supabaseSrv.from('hire_quota_entries').delete().eq('id',id)
+
+    if(this._schoolId) q=q.eq('school_id',this._schoolId)
+
+    return q
+
+  },
+
+  // Public landing-page RPCs (anon — narrow SECURITY DEFINER functions, no
+  // table grants to anon; see 017_hiring_roles.sql)
+
+  async publicGetRoleBySlug(slug){
+
+    const {data,error}=await supabase.rpc('hiring_public_role',{p_slug:slug})
+
+    return {data:(data&&data.length)?data[0]:null,error}
+
+  },
+
+  async publicSubmitApplication({slug,name,email,phone,qualifications,askingPrice,priceNote}){
+
+    return supabase.rpc('hiring_public_submit_application',{
+
+      p_slug:slug, p_name:name, p_email:email, p_phone:phone||'',
+
+      p_qualifications:qualifications||'', p_asking_price:askingPrice||null,
+
+      p_price_note:priceNote||'',
+
+    })
+
+  },
+
+  async publicGetThread(token){
+
+    return supabase.rpc('hiring_get_thread',{p_token:token})
+
+  },
+
+  async publicPostMessage(token,senderName,body){
+
+    return supabase.rpc('hiring_post_message',{p_token:token,p_sender_name:senderName,p_body:body})
+
+  },
+
+
+
   async getSections(activeOnly=true){
 
     let q=supabaseSrv.from('sections').select('*').order('sort_order')
@@ -5138,6 +5457,7 @@ export const db = {
       address:schoolData.address||'',
       phone:schoolData.phone||schoolData.contact_phone||'',
       state:schoolData.state||'',
+      presetKey:schoolData.preset_key||null,
     };
 
     const readFunctionError=async(error)=>{

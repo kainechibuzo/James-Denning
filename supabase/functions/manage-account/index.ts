@@ -48,9 +48,20 @@ serve(async (req) => {
 
     // ── PUBLIC: register a brand-new school + its admin account ───────────
     if (action === "register_school") {
-      const { schoolName, address, state, phone, studentIdPrefix, adminName, adminEmail, adminPassword } = payload;
+      const { schoolName, address, state, phone, studentIdPrefix, adminName, adminEmail, adminPassword, presetKey } = payload;
       if (!schoolName || !adminEmail || !adminPassword) {
         return json({ error: "schoolName, adminEmail, and adminPassword are required" }, 400);
+      }
+
+      // Phase 1 presets: optional business-type preset. Validate it BEFORE
+      // creating anything so an unknown key fails fast with a clean 400.
+      let preset = null;
+      if (presetKey) {
+        const { data, error: presetErr } = await supabaseAdmin
+          .from("org_presets").select("*").eq("key", presetKey).maybeSingle();
+        if (presetErr) return json({ error: presetErr.message }, 500);
+        if (!data) return json({ error: `Unknown preset: ${presetKey}` }, 400);
+        preset = data;
       }
 
       const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
@@ -66,6 +77,9 @@ serve(async (req) => {
           name: schoolName, address, state, phone,
           student_id_prefix: studentIdPrefix, admin_name: adminName, admin_email: adminEmail,
           setup_done: true,
+          // Null for classic (non-preset) registrations — existing behavior.
+          preset_key: preset?.key ?? null,
+          onboarding_step: preset ? "complete" : null,
         })
         .select().single();
       if (schoolErr) {
@@ -82,6 +96,9 @@ serve(async (req) => {
       // browser is still unauthenticated after registration, so attempting
       // this insert from the frontend would be blocked by RLS and silently
       // leave the new workspace without its identity settings.
+      const settingsSeed = preset?.settings_seed && typeof preset.settings_seed === "object"
+        ? Object.entries(preset.settings_seed).map(([key, value]) => ({ school_id: school.id, key, value: String(value) }))
+        : [];
       const { error: settingsErr } = await supabaseAdmin
         .from("school_settings")
         .upsert([
@@ -89,8 +106,30 @@ serve(async (req) => {
           { school_id: school.id, key: "admin_email", value: adminEmail },
           { school_id: school.id, key: "workspace_type", value: "business" },
           { school_id: school.id, key: "education_module_enabled", value: "false" },
+          ...settingsSeed,
         ], { onConflict: "school_id,key" });
       if (settingsErr) return json({ error: settingsErr.message }, 400);
+
+      // Phase 1: record the org submission + seed org_tools from the preset.
+      // Same service-role reasoning as the settings above.
+      if (preset) {
+        const { error: submissionErr } = await supabaseAdmin
+          .from("org_submissions")
+          .insert({
+            school_id: school.id, preset_key: preset.key,
+            org_name: schoolName, contact_name: adminName || "",
+            contact_email: adminEmail, phone: phone || "",
+          });
+        if (submissionErr) return json({ error: submissionErr.message }, 400);
+
+        const toolRows = Object.entries(preset.modules_json || {})
+          .filter(([, enabled]) => enabled === true)
+          .map(([toolKey]) => ({ school_id: school.id, tool_key: toolKey, is_enabled: true }));
+        if (toolRows.length) {
+          const { error: toolsErr } = await supabaseAdmin.from("org_tools").insert(toolRows);
+          if (toolsErr) return json({ error: toolsErr.message }, 400);
+        }
+      }
 
       return json({ school, userId: authUser.user.id });
     }
