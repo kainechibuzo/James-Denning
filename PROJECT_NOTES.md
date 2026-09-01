@@ -1,7 +1,7 @@
 # JAMES-DENNING — Project Notes
 
 > Rebranded 20 Aug 2026 as a business operations platform. The UI defaults to neutral business terminology and monochrome branding; legacy school-compatible database names and education workflows remain intact. See `documentation/PROJECT_NOTES.md` for the canonical, full notes.
-_Last updated: 1 Sep 2026 (v32.94 — Phase 6: public landing page + email login + business picker)_
+_Last updated: 1 Sep 2026 (v32.95 — Phase 7: visual-prestige overhaul: ink + amber theme, premium landing, dark auth, refined sidebar)_
 
 ---
 
@@ -27,6 +27,14 @@ The product is now a **business-first dashboard for all business types** by defa
   routes `customers`/`projects`/`invoices` under Administration, `db.*` methods added.
 - Zero behavior change for existing tenants: education data intact, hidden until opt-in.
   Hiring Phases 1–3 unchanged.
+
+## Phase 7 — Visual-prestige overhaul (1 Sep 2026, v32.95)
+- Theme tokens (light + dark): ink `#0B0F17` / ink2 `#121826` / ink3 `#1A2233`, warm accent `#F59E0B` (+ `accentSoft #FBBF24`), `ring`, `cardGlow`, `sidebarGrad`, `heroGrad`, `gridLine`.
+- Landing page redesigned: dark ink hero with amber glow + grid, white CTA, pure-CSS app mockup, stats band, feature grid, hiring-showcase section with /apply mockup, how-it-works, CTA, footer; scroll reveals + hover motion.
+- Auth: EmailAuthPage + business picker on dark glass card with brand lockup; classic LoginPage restyled ink + amber (neutral business bullet copy); SchoolSelectPage ink background.
+- App shell: sidebar `C.sidebarGrad` (ink gradient), amber active nav pill + indicator bar + glow, amber badges, amber user avatar chip, brand header amber hairline, topbar amber hairline.
+- Shared components: StatCard (amber-aware glow/hover), Card `cardGlow`, Inp amber focus ring (`C.ring`), PageHeader amber accent radial.
+- Org signup copy: "This email is your login" under Admin Email + success toast notes login email (behavior unchanged — manage-account already sets admin email as the auth login).
 
 ## Phase 6 — Landing page + email auth + business picker (1 Sep 2026, v32.94)
 
@@ -124,8 +132,8 @@ spend/targeting; JAMES-DENNING generates and hosts the mobile-first destination 
 | **Auto-deploy** | Push to `master` → Vercel builds & deploys automatically |
 | **Build command (Vercel)** | `npm run build:web` |
 | **Android build** | `npm run build` then `npx cap sync android` |
-| **Supabase project** | `mcdcwdfdpqzrzsixmrcg` |
-| **Supabase URL** | `https://mcdcwdfdpqzrzsixmrcg.supabase.co` |
+| **Supabase project** | `thklwiybjuhrjqrrxyid` |
+| **Supabase URL** | `https://thklwiybjuhrjqrrxyid.supabase.co` |
 | **Supabase region** | `eu-north-1` (Europe – Stockholm) |
 
 ---
@@ -134,7 +142,7 @@ spend/targeting; JAMES-DENNING generates and hosts the mobile-first destination 
 
 | Service | Account / Detail |
 |---|---|
-| Supabase | Project ID `mcdcwdfdpqzrzsixmrcg` |
+| Supabase | Project ID `thklwiybjuhrjqrrxyid` |
 | Vercel | Connected to GitHub repo, auto-deploys `master` |
 | GitHub | `Ossytrikz/RGS-PORTAL` (private) |
 | Namecheap | Domain: `renaissancegardenschools.com` |

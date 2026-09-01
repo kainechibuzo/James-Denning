@@ -937,12 +937,12 @@ function StatCard({label,value,icon,color=C.blue,sub,valueSize=28}){
   const [h,setH]=useState(false);
   return(
     <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
-      style={{background:C.white,borderRadius:18,padding:"18px 20px",
-      boxShadow:h?C.shadowMd:C.shadow,border:`1px solid ${h?color+"30":C.border}`,
+      style={{background:C.white,borderRadius:20,padding:"18px 20px",
+      boxShadow:h?`0 16px 40px -14px ${color}30`:C.cardGlow,border:`1px solid ${h?color+"35":C.border}`,
       position:"relative",overflow:"hidden",minWidth:0,
       transform:h?"translateY(-2px)":"none",transition:"all .2s ease"}}>
       <div style={{position:"absolute",top:0,left:0,right:0,height:3,
-        background:`linear-gradient(90deg,${color},${color}88)`}}/>
+        background:`linear-gradient(90deg,${color},${color}77)`}}/>
       <div style={{position:"absolute",bottom:-16,right:-16,width:80,height:80,
         borderRadius:"50%",background:color+"08",transition:"transform .3s",
         transform:h?"scale(1.2)":"scale(1)"}}/>
@@ -956,9 +956,9 @@ function StatCard({label,value,icon,color=C.blue,sub,valueSize=28}){
         </div>
         <div style={{width:46,height:46,borderRadius:13,
           background:`linear-gradient(135deg,${color}22,${color}10)`,
-          border:`1.5px solid ${color}20`,
+          border:`1.5px solid ${color}28`,
           display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,
-          boxShadow:`0 4px 12px ${color}20`,transition:"all .2s",
+          boxShadow:`0 6px 16px ${color}26, inset 0 1px 0 rgba(255,255,255,.7)`,transition:"all .2s",
           transform:h?"scale(1.08)":"scale(1)"}}>
           {icon}
         </div>
@@ -1649,8 +1649,8 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
           style={{width:"100%",padding:"11px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
             cursor:"pointer",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",
             fontSize:13,fontWeight:600,transition:"all .15s"}}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";e.currentTarget.style.color="rgba(255,255,255,.8)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";e.currentTarget.style.color="rgba(255,255,255,.5)";}}>
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";e.currentTarget.style.color="rgba(255,255,255,.85)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";e.currentTarget.style.color="rgba(255,255,255,.52)";}}>
           Log Out Now
         </button>
       </div>
@@ -2434,30 +2434,32 @@ function AppInner(){
 
       {/* SIDEBAR */}
       <aside style={{
-        width: isMobile ? 240 : (sideOpen?230:56),
-        background:`linear-gradient(180deg,${C.blueDark} 0%,#0a1f48 50%,${C.blueDark} 100%)`,
+        width: isMobile ? 240 : (sideOpen?232:56),
+        background: C.sidebarGrad,
         transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
         position: isMobile ? "fixed" : "sticky",
         top:0, left:0,
         height:"100vh",zIndex: isMobile ? 499 : "auto",
         overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",
-        boxShadow:"4px 0 24px rgba(0,0,0,.15)",
+        boxShadow:"8px 0 32px -12px rgba(0,0,0,.35)",
         transform: isMobile ? (sideOpen?"translateX(0)":"translateX(-100%)") : "none",
       }}>
 
         {/* Logo / Brand */}
         <div style={{padding:"16px 12px",display:"flex",alignItems:"center",gap:10,
-          borderBottom:"1px solid rgba(255,255,255,.08)",flexShrink:0,minHeight:60}}>
-          <div style={{flexShrink:0,transition:"all .2s"}}><Logo size={32}/></div>
+          borderBottom:"1px solid rgba(255,255,255,.08)",flexShrink:0,minHeight:60,position:"relative"}}>
+          <div style={{flexShrink:0,transition:"all .2s",filter:"drop-shadow(0 2px 8px rgba(245,158,11,.25))"}}><Logo size={32}/></div>
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
-              <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
+              <div style={{color:"#fff",fontWeight:900,fontSize:12.5,lineHeight:1.2,letterSpacing:.2,
                 whiteSpace:"nowrap"}}>{(_sidebarSchoolName||"Business Portal").split(" ").slice(0,2).join(" ")}</div>
-              <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
-                letterSpacing:1.2,marginTop:1}}>Business Portal</div>
+              <div style={{color:"rgba(255,255,255,.42)",fontSize:9,textTransform:"uppercase",
+                letterSpacing:1.2,marginTop:2}}>Business Portal</div>
             </div>
           )}
+          <div style={{position:"absolute",left:12,right:12,bottom:-1,height:1,
+            background:"linear-gradient(90deg,rgba(245,158,11,.55),rgba(245,158,11,.08) 40%,transparent 80%)"}}/>
         </div>
 
         <nav style={{flex:1,padding:"8px 6px",overflowY:"auto",scrollbarWidth:"none"}}>
@@ -2494,32 +2496,33 @@ function AppInner(){
                 style={{width:"100%",display:"flex",alignItems:"center",gap:9,
                   padding:sideOpen?"8px 10px":"10px",
                   borderRadius:10,border:"none",cursor:"pointer",marginBottom:1,
-                  background:active?`linear-gradient(90deg,${C.orange}2a,rgba(255,255,255,.04))`:"transparent",
+                  background:active?`linear-gradient(90deg,${C.accent}1f,rgba(255,255,255,.045))`:"transparent",
                   color:active?"#fff":"rgba(255,255,255,.5)",
                   fontSize:12,fontWeight:active?700:400,
                   transition:"all .15s ease",textAlign:"left",
                   position:"relative",
-                  justifyContent:sideOpen?"flex-start":"center"}}
-                onMouseEnter={e=>{if(!active){e.currentTarget.style.background="rgba(255,255,255,.07)";e.currentTarget.style.color="rgba(255,255,255,.8)";}}}
+                  justifyContent:sideOpen?"flex-start":"center",
+                  boxShadow:active?`inset 0 1px 0 rgba(255,255,255,.06), 0 1px 4px rgba(0,0,0,.3)`:"none"}}
+                onMouseEnter={e=>{if(!active){e.currentTarget.style.background="rgba(255,255,255,.07)";e.currentTarget.style.color="rgba(255,255,255,.85)";}}}
                 onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,.5)";}}}
               >
                 {active&&<div style={{position:"absolute",left:0,top:"12%",bottom:"12%",
-                  width:4,borderRadius:"0 4px 4px 0",background:C.orange,
-                  boxShadow:`0 0 10px ${C.orange}99`}}/>}
-                <AppIcon name={n.icon} size={16} color={active?C.orange:"#94A3B8"}/>
+                  width:4,borderRadius:"0 4px 4px 0",background:C.accent,
+                  boxShadow:`0 0 12px ${C.accent}aa`}}/>}
+                <AppIcon name={n.icon} size={16} color={active?C.accentSoft:"#8B94A7"}/>
                 {(sideOpen||isMobile)&&<span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
                   letterSpacing:".01em"}}>{n.label}</span>}
                 {(sideOpen||isMobile)&&n.id==="approvals"&&pendingApprovals>0&&(
-                  <span style={{background:C.orange,color:"#fff",borderRadius:10,fontSize:9,
+                  <span style={{background:C.accent,color:"#0B0F17",borderRadius:10,fontSize:9,
                     fontWeight:900,padding:"2px 7px",flexShrink:0,
-                    boxShadow:"0 2px 8px rgba(232,86,10,.5)"}}>
+                    boxShadow:"0 2px 10px rgba(245,158,11,.45)"}}>
                     {pendingApprovals}
                   </span>
                 )}
                 {(sideOpen||isMobile)&&n.id==="access-requests"&&pendingAccessRequests>0&&(
-                  <span style={{background:C.orange,color:"#fff",borderRadius:10,fontSize:9,
+                  <span style={{background:C.accent,color:"#0B0F17",borderRadius:10,fontSize:9,
                     fontWeight:900,padding:"2px 7px",flexShrink:0,
-                    boxShadow:"0 2px 8px rgba(232,86,10,.5)"}}>
+                    boxShadow:"0 2px 10px rgba(245,158,11,.45)"}}>
                     {pendingAccessRequests}
                   </span>
                 )}
@@ -2539,10 +2542,10 @@ function AppInner(){
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";}}>
               <div style={{width:30,height:30,borderRadius:9,
-                background:`linear-gradient(135deg,${C.orange},#374151)`,
+                background:`linear-gradient(135deg,${C.accent},${C.accentSoft})`,
                 display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:13,fontWeight:900,flexShrink:0,color:"#fff",
-                boxShadow:"0 2px 8px rgba(232,86,10,.4)"}}>
+                fontSize:13,fontWeight:900,flexShrink:0,color:"#0B0F17",
+                boxShadow:"0 2px 10px rgba(245,158,11,.45), inset 0 1px 0 rgba(255,255,255,.35)"}}>
                 {(user.name||"?")[0].toUpperCase()}
               </div>
               <div style={{overflow:"hidden",flex:1}}>
@@ -2573,7 +2576,7 @@ function AppInner(){
         <header style={{background:C.white,borderBottom:`1px solid ${C.border}`,
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
-          boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
+          boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04), inset 0 -2px 0 rgba(245,158,11,.16)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <button onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
@@ -2877,15 +2880,15 @@ function SchoolSelectPage({onSelect,onPlatformAdmin,onEmail}){
   return(
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
       justifyContent:"center",padding:"24px 16px",position:"relative",overflow:"hidden",
-      background:dark?`linear-gradient(135deg,#030712 0%,#0d1f3c 50%,#050e1a 100%)`
-        :`linear-gradient(135deg,#0b2257 0%,#111827 60%,#0d4a8a 100%)`}}>
+      background:dark?`radial-gradient(900px 480px at 70% -10%, rgba(245,158,11,.10), transparent 60%), linear-gradient(135deg,#080B11 0%,#0E1420 55%,#080B11 100%)`
+        :`radial-gradient(900px 480px at 70% -10%, rgba(245,158,11,.12), transparent 60%), linear-gradient(135deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)`}}>
       {/* Background decorations */}
-      <div style={{position:"fixed",top:-100,right:-100,width:400,height:400,borderRadius:"50%",
+      <div style={{position:"fixed",top:-120,right:-80,width:420,height:420,borderRadius:"50%",
         background:"rgba(255,255,255,.03)",pointerEvents:"none"}}/>
-      <div style={{position:"fixed",bottom:-80,left:-80,width:300,height:300,borderRadius:"50%",
-        background:"rgba(232,86,10,.06)",pointerEvents:"none"}}/>
-      <div style={{position:"fixed",top:"40%",left:"15%",width:150,height:150,borderRadius:"50%",
-        background:"rgba(26,79,160,.15)",pointerEvents:"none"}}/>
+      <div style={{position:"fixed",bottom:-90,left:-90,width:340,height:340,borderRadius:"50%",
+        background:"rgba(245,158,11,.09)",pointerEvents:"none"}}/>
+      <div style={{position:"fixed",top:"40%",left:"12%",width:170,height:170,borderRadius:"50%",
+        background:"rgba(96,165,250,.08)",pointerEvents:"none"}}/>
 
       {/* Header */}
       <div style={{textAlign:"center",marginBottom:36,position:"relative",zIndex:1}}>
@@ -3739,7 +3742,7 @@ function PlatformDashboardPage({admin,onLogout}){
         onDeleted={(id)=>{ setSchools(sc=>sc.filter(s=>s.id!==id)); setDeleteSchool(null); showMsg(`${deleteSchool.name} deleted.`); }}/>}
       {showCopy&&<CopySettingsModal schools={schools} onClose={()=>setShowCopy(false)}/>}
       {showChangePin&&<ChangePinModal onClose={()=>setShowChangePin(false)} onSuccess={(msg)=>{showMsg(msg);setShowChangePin(false);}}/>}
-      {showAddSchool&&<OrgSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"Organization"} created successfully.`); }}/>}
+      {showAddSchool&&<OrgSignupModal onClose={()=>setShowAddSchool(false)} onSuccess={(school)=>{ load(); setShowAddSchool(false); showMsg(`${school?.name||"Organization"} created successfully — log in with the admin email you entered.`); }}/>}
     </div>
   );
 }

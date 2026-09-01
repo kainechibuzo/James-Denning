@@ -5,7 +5,7 @@ CLI or database credentials, so none of this could be done from here. The code
 is complete, committed, and all three builds pass — the feature simply stays
 dormant until these steps run.
 
-Project: **JAMES-DENNING** (Supabase project ref: `mcdcwdfdpqzrzsixmrcg`)
+Project: **JAMES-DENNING** (Supabase project ref: `thklwiybjuhrjqrrxyid`)
 Branch: `arena/01a05d6d-rgs-portal-master` (commit `6d1a6a3` = Phase 1, commit `47ae03c` = Phases 2–3)
 
 ---
@@ -37,7 +37,7 @@ The project ref is already committed in `supabase/config.toml`, so no third
 secret is needed.
 
 **What the action does** (in order):
-1. `supabase link --project-ref mcdcwdfdpqzrzsixmrcg`
+1. `supabase link --project-ref thklwiybjuhrjqrrxyid`
 2. `supabase db push` — applies only migrations not yet recorded remotely
    (016, 017, …). Idempotent — no new migrations = no-op.
 3. `supabase functions deploy` — deploys ALL functions
@@ -53,6 +53,16 @@ You can also run it manually from the Actions tab ("Run workflow").
 > or manually right now using the steps below if you don't want to wait.
 
 ---
+
+## Phase 7 status — visual-prestige overhaul shipped (v32.95)
+
+The front-end wide visual pass (ink + amber theme, redesigned landing page, dark auth shell,
+refined sidebar, premium shared components) is committed on the branch. **No migrations or
+functions changed** — it's purely presentational, plus docs. It reaches production when the
+branch merges to `master` (Vercel auto-deploys). The org-signup copy now states the admin
+email is the login email; that behavior already existed server-side (manage-account creates
+the Supabase Auth user with `email_confirm: true` and stores `schools.admin_email`), so no
+server change is needed for it.
 
 ## Step 0 — Migration 018 (Phase 5 business modules) is now pending too
 
@@ -75,13 +85,13 @@ File: `supabase/migrations/016_org_presets.sql`
 **Option A — Supabase CLI** (from the repo root):
 
 ```bash
-npx supabase db push --project-ref mcdcwdfdpqzrzsixmrcg
+npx supabase db push --project-ref thklwiybjuhrjqrrxyid
 # if you need to select it explicitly:
-npx supabase migration up --project-ref mcdcwdfdpqzrzsixmrcg
+npx supabase migration up --project-ref thklwiybjuhrjqrrxyid
 ```
 
 **Option B — Dashboard SQL editor**: open
-https://supabase.com/dashboard/project/mcdcwdfdpqzrzsixmrcg/sql/new,
+https://supabase.com/dashboard/project/thklwiybjuhrjqrrxyid/sql/new,
 paste the whole contents of `supabase/migrations/016_org_presets.sql`, run it.
 
 What it does: creates `org_presets` (seeded catalog: `general_business`,
@@ -113,7 +123,7 @@ school row, seeds `school_settings` from the preset, and inserts
 redeploy it:
 
 ```bash
-npx supabase functions deploy manage-account --project-ref mcdcwdfdpqzrzsixmrcg --no-verify-jwt
+npx supabase functions deploy manage-account --project-ref thklwiybjuhrjqrrxyid --no-verify-jwt
 ```
 
 Until this runs, registrations degrade to classic orgs (existing behavior) and

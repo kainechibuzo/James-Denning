@@ -259,8 +259,8 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
   return(
     <div style={{minHeight:"100vh",display:"flex",transition:"background .3s",
       background:dark
-        ?`linear-gradient(135deg,#030712 0%,#0d1f3c 50%,#050e1a 100%)`
-        :`linear-gradient(135deg,#0d2d6e 0%,#1A4FA0 55%,#0c4a7a 100%)`}}>
+        ?`radial-gradient(900px 480px at 80% -10%, rgba(245,158,11,.09), transparent 60%), linear-gradient(135deg,#080B11 0%,#0E1420 55%,#080B11 100%)`
+        :`radial-gradient(900px 480px at 80% -10%, rgba(245,158,11,.11), transparent 60%), linear-gradient(135deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)`}}>
 
       {/* Left decorative panel — hidden on mobile */}
       {wideScreen&&<div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",
@@ -269,10 +269,10 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
         {/* Decorative orbs */}
         <div style={{position:"absolute",width:400,height:400,borderRadius:"50%",
           background:"rgba(255,255,255,.03)",top:-100,left:-100}}/>
-        <div style={{position:"absolute",width:300,height:300,borderRadius:"50%",
-          background:"rgba(232,86,10,.08)",bottom:-80,right:-60}}/>
-        <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",
-          background:"rgba(26,140,60,.06)",top:"40%",right:"10%"}}/>
+        <div style={{position:"absolute",width:320,height:320,borderRadius:"50%",
+          background:"rgba(245,158,11,.10)",bottom:-90,right:-70}}/>
+        <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",
+          background:"rgba(96,165,250,.07)",top:"38%",right:"8%"}}/>
         <div style={{textAlign:"center",position:"relative",zIndex:1}}>
           <Logo size={80}/>
           <div style={{color:"#fff",fontSize:26,fontWeight:900,marginTop:20,letterSpacing:"-.02em",lineHeight:1.2}}>
@@ -284,9 +284,9 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           </div>
           <div style={{marginTop:40,display:"flex",flexDirection:"column",gap:16,maxWidth:280}}>
             {[
-              {icon:<LayoutDashboard size={16}/>,text:"Manage members, staff & groups"},
-              {icon:<FileText size={16}/>,text:"Results, report cards & transcripts"},
-              {icon:<DollarSign size={16}/>,text:"Billing billing, tracking & analytics"},
+              {icon:<LayoutDashboard size={16}/>,text:"Overview, team, members & groups"},
+              {icon:<FileText size={16}/>,text:"Projects, tasks, invoices & customers"},
+              {icon:<DollarSign size={16}/>,text:"Billing, quota tracking & analytics"},
             ].map(f=>(
               <div key={f.text} style={{display:"flex",alignItems:"center",gap:12,
                 background:"rgba(255,255,255,.06)",borderRadius:12,padding:"12px 16px",
@@ -308,7 +308,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           overflow:"hidden",backdropFilter:"blur(20px)"}}>
 
           {/* Top accent bar */}
-          <div style={{height:4,background:"linear-gradient(90deg,#E8560A,#FF7A35,#1A8C3C,#1A4FA0)"}}/>
+          <div style={{height:4,background:"linear-gradient(90deg,#0B0F17,#F59E0B 55%,#FBBF24)"}}/>
 
           <div style={{padding:"32px 32px 36px"}}>
             {/* Organization badge row */}
@@ -375,18 +375,18 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
             {/* User ID field */}
             <div style={{marginBottom:16}}>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:focusId?C.blue:C.muted,
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:focusId?C.accent:C.muted,
                 textTransform:"uppercase",letterSpacing:.7,marginBottom:6,transition:"color .15s"}}>
                 User ID
               </label>
               <div style={{position:"relative"}}>
                 <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",
                   display:"flex",alignItems:"center",pointerEvents:"none",zIndex:1}}>
-                  <AppIcon name="user" size={16} color={focusId?C.blue:C.muted}/>
+                  <AppIcon name="user" size={16} color={focusId?C.accent:C.muted}/>
                 </span>
                 <input value={id} onChange={e=>setId(e.target.value)} onKeyDown={onKey}
                   placeholder="Staff ID · Member ID · admin · PAR/…"
-                  onFocus={e=>{setFocusId(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
+                  onFocus={e=>{setFocusId(true);e.target.style.borderColor=C.accent;e.target.style.boxShadow=C.ring;}}
                   onBlur={e=>{setFocusId(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
                   style={{display:"block",width:"100%",padding:"12px 14px 12px 40px",
                     border:`1.5px solid ${focusId?C.blue:C.border}`,borderRadius:11,
@@ -400,18 +400,18 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
             {/* Password field */}
             <div style={{marginBottom:22}}>
-              <label style={{display:"block",fontSize:11,fontWeight:700,color:focusPw?C.blue:C.muted,
+              <label style={{display:"block",fontSize:11,fontWeight:700,color:focusPw?C.accent:C.muted,
                 textTransform:"uppercase",letterSpacing:.7,marginBottom:6,transition:"color .15s"}}>
                 Password
               </label>
               <div style={{position:"relative"}}>
                 <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",
                   display:"flex",alignItems:"center",pointerEvents:"none",zIndex:1}}>
-                  <AppIcon name="lock" size={16} color={focusPw?C.blue:C.muted}/>
+                  <AppIcon name="lock" size={16} color={focusPw?C.accent:C.muted}/>
                 </span>
                 <input type={showPass?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={onKey}
                   placeholder="Your password"
-                  onFocus={e=>{setFocusPw(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
+                  onFocus={e=>{setFocusPw(true);e.target.style.borderColor=C.accent;e.target.style.boxShadow=C.ring;}}
                   onBlur={e=>{setFocusPw(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
                   style={{display:"block",width:"100%",padding:"12px 44px 12px 40px",
                     border:`1.5px solid ${focusPw?C.blue:C.border}`,borderRadius:11,
@@ -428,10 +428,10 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
             {/* Sign in button */}
             <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#CBD5E1":`linear-gradient(135deg,${C.orange} 0%,#FF7A35 100%)`,
+              style={{width:"100%",background:loading?"#CBD5E1":`linear-gradient(135deg,${C.ink} 0%,${C.ink3} 100%)`,
                 color:"#fff",border:"none",padding:"13px",borderRadius:12,fontSize:14,fontWeight:800,
                 cursor:loading?"not-allowed":"pointer",
-                boxShadow:loading?"none":`0 6px 20px rgba(232,86,10,.35)`,
+                boxShadow:loading?"none":`0 6px 20px rgba(245,158,11,.28), inset 0 1px 0 rgba(255,255,255,.08)`,
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 transition:"all .2s",letterSpacing:".01em"}}>
               {loading?(

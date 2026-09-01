@@ -168,9 +168,9 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
         <button onClick={reset} style={linkBtnStyle}>
           <ArrowLeft size={14}/> Use a different account
         </button>
-        <div style={{ fontSize: 20, fontWeight: 900, color: C.text, marginBottom: 6 }}>Choose a business</div>
-        <div style={{ fontSize: 13, color: C.muted, marginBottom: 20, lineHeight: 1.5 }}>
-          You can manage {candidates.length} business{candidates.length > 1 ? "es" : ""} with <b style={{ color: C.text }}>{email.trim().toLowerCase()}</b>.
+        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 6 }}>Choose a business</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,.55)", marginBottom: 20, lineHeight: 1.5 }}>
+          You can manage {candidates.length} business{candidates.length > 1 ? "es" : ""} with <b style={{ color: "#fff" }}>{email.trim().toLowerCase()}</b>.
         </div>
         {err && <ErrorBox msg={err}/>}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -178,19 +178,19 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
             const meta = roleMeta[c.role] || roleMeta.student;
             return (
               <button key={c.school_id + c.role} onClick={() => enterBusiness(c)} disabled={!!enteringId}
-                style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "14px 18px",
+                style={{ background: "rgba(255,255,255,.05)", border: "1.5px solid rgba(255,255,255,.12)", borderRadius: 14, padding: "14px 18px",
                   cursor: enteringId ? "wait" : "pointer", textAlign: "left", width: "100%",
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
                   transition: "all .15s", fontFamily: "inherit" }}
                 onMouseEnter={e => { if (!enteringId) { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.boxShadow = C.shadowMd; } }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: C.offWhite, border: `1px solid ${C.border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: C.text }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff" }}>
                     <Building2 size={18}/>
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.school_name}</div>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.school_name}</div>
                     <div style={{ marginTop: 3, display: "inline-flex", alignItems: "center", gap: 5, background: `${meta.color}14`,
                       color: meta.color, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10 }}>
                       {meta.icon} {meta.label}
@@ -216,8 +216,8 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
   return (
     <AuthShell>
       <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 21, fontWeight: 900, color: C.text, letterSpacing: "-.01em" }}>{PRODUCT.title.replace(" — Business Operations Platform", "")}</div>
-        <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Log in with your email</div>
+        <div style={{ fontSize: 21, fontWeight: 900, color: "#fff", letterSpacing: "-.01em" }}>{PRODUCT.title.replace(" — Business Operations Platform", "")}</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,.55)", marginTop: 4 }}>Log in with your email</div>
       </div>
 
       {err && <ErrorBox msg={err}/>}
@@ -228,8 +228,9 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
           <Mail size={15} color={C.muted} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }}/>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
             autoComplete="email"
-            style={{ width: "100%", padding: "12px 13px 12px 38px", border: `1.5px solid ${C.border}`, borderRadius: 11,
-              fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+            style={{ width: "100%", padding: "12px 13px 12px 38px", border: "1.5px solid rgba(255,255,255,.14)", borderRadius: 11,
+              fontSize: 14, background: "rgba(255,255,255,.06)", color: "#fff", outline: "none", boxSizing: "border-box",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.04)" }}/>
         </div>
       </div>
 
@@ -240,8 +241,9 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
           <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") submit(); }}
             placeholder="••••••••" autoComplete="current-password"
-            style={{ width: "100%", padding: "12px 13px 12px 38px", border: `1.5px solid ${C.border}`, borderRadius: 11,
-              fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+            style={{ width: "100%", padding: "12px 13px 12px 38px", border: "1.5px solid rgba(255,255,255,.14)", borderRadius: 11,
+              fontSize: 14, background: "rgba(255,255,255,.06)", color: "#fff", outline: "none", boxSizing: "border-box",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.04)" }}/>
           <button type="button" onClick={() => setShowPass(s => !s)}
             style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none",
               border: "none", fontSize: 11.5, fontWeight: 700, color: C.muted, cursor: "pointer" }}>
@@ -251,8 +253,9 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
       </div>
 
       <button onClick={submit} disabled={loading}
-        style={{ width: "100%", background: loading ? "#CBD5E1" : "#111827", color: "#fff", border: "none",
+        style={{ width: "100%", background: loading ? "rgba(255,255,255,.25)" : "#fff", color: "#0B0F17", border: "none",
           padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 800,
+          boxShadow: "0 10px 30px -10px rgba(255,255,255,.35)",
           cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
         {loading ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Logging in…</> : <>Log in</>}
       </button>
@@ -269,22 +272,35 @@ export function EmailAuthPage({ onLoginSuccess, onClassic, onRegister, notify })
 function AuthShell({ children }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(160deg,#F7F7F5 0%,#EDEDE9 100%)", padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: 420, background: C.card, border: `1px solid ${C.border}`,
-        borderRadius: 20, padding: "30px 28px", boxShadow: C.shadowMd }}>
+      background: "radial-gradient(900px 500px at 50% -10%, rgba(245,158,11,.08), transparent 60%), linear-gradient(160deg,#0B0F17 0%,#121826 55%,#0B0F17 100%)",
+      padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* subtle grid */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage:
+        "linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px)",
+        backgroundSize: "44px 44px", maskImage: "radial-gradient(720px 420px at 50% 0%, #000 30%, transparent 75%)", pointerEvents: "none" }}/>
+      {/* brand */}
+      <div style={{ position: "absolute", top: 26, left: 0, right: 0, textAlign: "center", pointerEvents: "none" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+          <svg width="30" height="30" viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#fff"/><path d="M13 13h5v22h-5zM18 13h7.5c5.5 0 8.5 2.7 8.5 7.1 0 2.7-1.4 4.8-3.9 5.9L35 35h-6.2l-5.1-7.5H18V35h-5V13h5Zm0 9.8h7c2.4 0 3.7-.9 3.7-2.7s-1.3-2.7-3.7-2.7h-7v5.4Z" fill="#0B0F17"/></svg>
+          <span style={{ color: "#fff", fontWeight: 900, fontSize: 15, letterSpacing: "-.01em" }}>JAMES-DENNING</span>
+        </div>
+      </div>
+      <div style={{ width: "100%", maxWidth: 420, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)",
+        borderRadius: 22, padding: "34px 30px", boxShadow: "0 30px 70px -24px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.07)",
+        backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", position: "relative" }}>
         {children}
       </div>
     </div>
   );
 }
 
-const labelStyle = { display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 6 };
+const labelStyle = { display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 6 };
 const linkBtnStyle = { background: "none", border: "none", padding: "4px 0", fontSize: 13, fontWeight: 700,
-  color: C.muted, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "inherit" };
+  color: "rgba(255,255,255,.6)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "inherit", transition: "color .15s" };
 
 function ErrorBox({ msg }) {
   return (
-    <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
+    <div style={{ background: "rgba(254,242,242,.08)", border: "1.5px solid rgba(252,165,165,.4)", color: "#FCA5A5",
       padding: "11px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 16, fontWeight: 600, lineHeight: 1.5 }}>{msg}</div>
   );
 }

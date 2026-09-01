@@ -18,6 +18,15 @@ compatible names so current education tenants continue to work without a migrati
   icons. The old Apex/RGS logo asset is no longer referenced.
 - `mobile.html` was added because `vite.mobile.config.js` expects it; both web and mobile builds
   must pass before a change is considered complete.
+- **Phase 7 — Visual-prestige overhaul (1 Sep 2026, v32.95)** — premium pass over the whole front-end: new
+  theme tokens (ink charcoal #0B0F17 family + restrained warm accent #F59E0B amber) in both palettes; redesigned
+  public landing page (dark ink hero with amber glow, pure-CSS app mockup, hiring showcase, how-it-works);
+  dark-glass auth shell for email login + business picker; ink-gradiented app sidebar with amber active states,
+  indicator bar and badges; StatCard/Card/Inp/PageHeader premium pass (amber focus ring, hairline gradients, glow
+  shadows); legacy classic-login page restyled to ink + amber with business-neutral bullet copy; org-signup copy
+  now states the admin email is the login email (already true in manage-account: auth.admin.createUser with
+  email_confirm:true + profiles upsert + schools.admin_email). No functional changes; email-first auth and classic
+  organization+ID login both intact.
 - **Phase 6 — Landing page + email auth + business picker (1 Sep 2026, v32.94)** — public
   marketing landing page served at `/` (App() pathname check, same pattern as `/apply/`; PWA
   start_url moved to `/app`); the application lives at `/app`. Email-first login:
@@ -182,7 +191,7 @@ through the optional Education workspace module.
 | Layer | Choice |
 |---|---|
 | Frontend | React 18 + Vite 5 |
-| Database / Auth | Supabase (PostgreSQL) — project ID `mcdcwdfdpqzrzsixmrcg` |
+| Database / Auth | Supabase (PostgreSQL) — project ID `thklwiybjuhrjqrrxyid` |
 | Hosting | Vercel (`npm run build:web`) |
 | Email | ZeptoMail (primary) → AWS SES fallback via Supabase Edge Function `send-email` |
 | Icons | `lucide-react` — **never use emoji or text labels as icons** |
@@ -534,4 +543,4 @@ Available in this session as `mcp__8c361969...`. Use it to:
 - `apply_migration` — apply named SQL migrations
 - `get_logs` — check edge function errors
 
-Project ref: `mcdcwdfdpqzrzsixmrcg`
+Project ref: `thklwiybjuhrjqrrxyid`

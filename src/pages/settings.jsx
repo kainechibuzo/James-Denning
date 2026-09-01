@@ -714,7 +714,7 @@ export function SettingsPage({ctx,inPanel}){
           <div style={{marginTop:16,padding:"14px 16px",background:C.offWhite,borderRadius:10}}>
             <div style={{fontWeight:700,color:C.muted,fontSize:12,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Portal Info</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12}}>
-              {[["Portal Version",APP_VERSION],["Database","Supabase (PostgreSQL)"],["Project ID","mcdcwdfdpqzrzsixmrcg"],["Region","eu-west-1"]].map(([k,v])=>(
+              {[["Portal Version",APP_VERSION],["Database","Supabase (PostgreSQL)"],["Project ID","thklwiybjuhrjqrrxyid"],["Region","eu-west-1"]].map(([k,v])=>(
                 <div key={k} style={{background:C.white,borderRadius:7,padding:"8px 12px",border:`1px solid ${C.border}`}}>
                   <div style={{color:C.muted,fontSize:10,fontWeight:700,marginBottom:2,textTransform:"uppercase"}}>{k}</div>
                   <div style={{color:C.text,fontWeight:600}}>{v}</div>

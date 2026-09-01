@@ -138,8 +138,8 @@ export function Card({ children, style = {}, onClick }) {
     <div onClick={onClick}
       onMouseEnter={() => onClick && setH(true)}
       onMouseLeave={() => setH(false)}
-      style={{ background:C.white, borderRadius:18, padding:22,
-        boxShadow:h ? C.shadowMd : C.shadow,
+      style={{ background:C.white, borderRadius:20, padding:22,
+        boxShadow:h ? C.shadowMd : C.cardGlow,
         border:`1px solid ${h && onClick ? C.blue+"28" : C.border}`,
         cursor:onClick ? "pointer" : "default",
         transform:h && onClick ? "translateY(-2px)" : "none",
@@ -197,18 +197,18 @@ export function Inp({ label, value, onChange, type = "text", placeholder = "", d
     <div style={{ marginBottom:14 }}>
       {label && (
         <label style={{ display:"block", fontSize:11, fontWeight:700,
-          color:focused ? C.blue : C.muted, textTransform:"uppercase",
+          color:focused ? C.accent : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}{required && <span style={{ color:C.red }}> *</span>}
         </label>
       )}
       <input type={type} value={value ?? ""} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} disabled={disabled}
-        onFocus={e => { setFocused(true); e.target.style.borderColor=C.blue; e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`; }}
+        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent; e.target.style.boxShadow=C.ring; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
         style={{ display:"block", width:"100%", padding:"10px 13px",
           border:`1.5px solid ${focused ? C.blue : C.border}`,
-          borderRadius:9, fontSize:13, background:disabled ? C.offWhite : C.white,
+          borderRadius:11, fontSize:13, background:disabled ? C.offWhite : C.white,
           color:C.text, transition:"border-color .15s,box-shadow .15s", outline:"none",
           boxSizing:"border-box", ...style }}/>
     </div>
@@ -222,13 +222,13 @@ export function Sel({ label, value, onChange, options = [], disabled = false }) 
     <div style={{ marginBottom:14 }}>
       {label && (
         <label style={{ display:"block", fontSize:11, fontWeight:700,
-          color:focused ? C.blue : C.muted, textTransform:"uppercase",
+          color:focused ? C.accent : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}
         </label>
       )}
       <select value={value ?? ""} onChange={e => onChange(e.target.value)} disabled={disabled}
-        onFocus={e => { setFocused(true); e.target.style.borderColor=C.blue; e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`; }}
+        onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent; e.target.style.boxShadow=C.ring; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
         style={{ display:"block", width:"100%", padding:"10px 13px",
           border:`1.5px solid ${focused ? C.blue : C.border}`,
@@ -872,15 +872,16 @@ export function ActionsMenu({ items }) {
 // ── Section Pill Tabs ──────────────────────────────────────────────────────────
 // ── Page Header ────────────────────────────────────────────────────────────────
 export function PageHeader({ icon, title, subtitle, action, gradient }) {
-  const bg = gradient || `linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
+  const bg = gradient || `radial-gradient(900px 300px at 90% -40%, rgba(245,158,11,.22), transparent 55%), linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
   return (
-    <div style={{ background:bg, borderRadius:16, padding:"20px 24px", marginBottom:24,
+    <div style={{ background:bg, borderRadius:18, padding:"22px 26px", marginBottom:24,
       display:"flex", alignItems:"center", justifyContent:"space-between", gap:16,
-      boxShadow:`0 4px 20px ${C.blue}22` }}>
+      boxShadow:`0 12px 34px -12px ${C.blue}44, inset 0 1px 0 rgba(255,255,255,.08)` }}>
       <div style={{ display:"flex", alignItems:"center", gap:14 }}>
         {icon && (
-          <div style={{ background:"rgba(255,255,255,.18)", borderRadius:12, padding:10,
-            display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <div style={{ background:"rgba(255,255,255,.14)", border:"1px solid rgba(255,255,255,.14)", borderRadius:13, padding:10,
+            display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+            boxShadow:"inset 0 1px 0 rgba(255,255,255,.12)" }}>
             {typeof icon === "string"
               ? <AppIcon name={icon} size={22} color="#fff"/>
               : React.cloneElement(icon, { size:22, color:"#fff" })}

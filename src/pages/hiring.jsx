@@ -23,7 +23,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   AlertTriangle, ArrowLeft, ArrowRight, Building2, Briefcase, CheckCircle2, Clipboard,
   Code2, Copy, ExternalLink, Eye, EyeOff, FileText, Loader2, MessageSquare, Pencil,
-  Plus, Send, ShieldCheck, Sparkles, Tag, Trash2, Users, X,
+  Plus, Send, ShieldCheck, Sparkles, Tag, Trash2, Users, X, Mail,
 } from "lucide-react";
 import { db } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
@@ -164,13 +164,20 @@ function OrgDetailsForm({ preset, onDone }) {
         letterSpacing: .7, margin: "16px 0 10px" }}>Admin Account</div>
       {inp("Admin Full Name", "admin_name", { placeholder: "e.g. Business Administrator" })}
       {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourbusiness.com" })}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 7, margin: "-4px 0 12px", fontSize: 11.5,
+        color: C.muted, lineHeight: 1.5 }}>
+        <Mail size={12} style={{ flexShrink: 0, marginTop: 2, color: C.accent }}/>
+        <span><b style={{ color: C.text }}>This email is your login.</b> Sign in with it and the password you set
+        below — for this organization and every other one you create.</span>
+      </div>
       {inp("Password", "admin_password", { req: true, type: "password", placeholder: "Set a strong password" })}
 
       <button onClick={submit} disabled={saving}
-        style={{ width: "100%", background: saving ? "#CBD5E1" : "linear-gradient(135deg,#111827,#374151)",
+        style={{ width: "100%", background: saving ? "#CBD5E1" : "linear-gradient(135deg,#0B0F17,#1F2937)",
           color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
-          justifyContent: "center", gap: 8 }}>
+          justifyContent: "center", gap: 8,
+          boxShadow: "0 8px 24px -8px rgba(245,158,11,.35), inset 0 1px 0 rgba(255,255,255,.08)" }}>
         {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating Organization…</>
           : <>Create Organization & Continue <ArrowRight size={15}/></>}
       </button>

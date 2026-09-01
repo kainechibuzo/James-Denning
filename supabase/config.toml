@@ -1,7 +1,7 @@
 # Supabase project configuration.
 # Public registration is intentionally handled inside manage-account's
 # register_school action; all other actions authenticate the caller in code.
-project_id = "mcdcwdfdpqzrzsixmrcg"
+project_id = "thklwiybjuhrjqrrxyid"
 
 [functions.manage-account]
 verify_jwt = false

@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 1 Sep 2026 — Phase 6: landing page + email login + business picker (v32.94)_
+_Last updated: 1 Sep 2026 — Phase 7: visual-prestige overhaul, ink + amber theme (v32.95)_
 
 ---
 
@@ -51,13 +51,19 @@ Education-module settings server-side with the service-role client before the su
 migrations and redeploys edge functions automatically. Triggers on pushes to
 `master` touching `supabase/**` (migrations, functions, config) or the workflow
 file, plus manual `workflow_dispatch`. Steps: `supabase link --project-ref
-mcdcwdfdpqzrzsixmrcg` → `supabase db push` (only unapplied migrations) →
+thklwiybjuhrjqrrxyid` → `supabase db push` (only unapplied migrations) →
 `supabase functions deploy` (all 5 functions; per-function `verify_jwt` from
 `config.toml`, e.g. `manage-account` is `false`). Requires repo secrets
 `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Once live, prefer it over
 the SQL editor for migrations so remote history stays consistent.
 
 ---
+
+## Recent Changes (1 Sep 2026) — v32.95 Phase 7: Visual-Prestige Overhaul
+Premium front-end pass (no functional changes): new ink/amber theme tokens; redesigned landing page with dark
+hero, CSS app mockup, hiring showcase; dark-glass email-auth shell + business picker; ink sidebar with amber
+active states/badges; amber focus rings on shared inputs; classic login restyled; org-signup copy states the
+admin email is the login email (already true via manage-account).
 
 ## Recent Changes (1 Sep 2026) — v32.94 Phase 6: Landing page + Email Auth + Business Picker
 
@@ -460,8 +466,8 @@ Together they replace reading any code to get up to speed.
 | **Auto-deploy** | Push to `master` → Vercel builds & deploys automatically |
 | **Build command (Vercel)** | `npm run build:web` |
 | **Android build** | `npm run build` then `npx cap sync android` |
-| **Supabase project** | `mcdcwdfdpqzrzsixmrcg` |
-| **Supabase URL** | `https://mcdcwdfdpqzrzsixmrcg.supabase.co` |
+| **Supabase project** | `thklwiybjuhrjqrrxyid` |
+| **Supabase URL** | `https://thklwiybjuhrjqrrxyid.supabase.co` |
 | **Supabase region** | `eu-north-1` (Europe – Stockholm) |
 
 ---
@@ -470,7 +476,7 @@ Together they replace reading any code to get up to speed.
 
 | Service | Account / Detail |
 |---|---|
-| Supabase | Project ID `mcdcwdfdpqzrzsixmrcg` |
+| Supabase | Project ID `thklwiybjuhrjqrrxyid` |
 | Vercel | Connected to GitHub repo, auto-deploys `master` |
 | GitHub | `Ossytrikz/RGS-PORTAL` (private) |
 | Namecheap | Domain: `renaissancegardenschools.com` |

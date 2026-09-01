@@ -15,7 +15,7 @@ Built as a single-page React application backed by Supabase.
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite 5 |
-| Database / Auth | Supabase (PostgreSQL + RLS) — project ID `mcdcwdfdpqzrzsixmrcg` |
+| Database / Auth | Supabase (PostgreSQL + RLS) — project ID `thklwiybjuhrjqrrxyid` |
 | Hosting | Vercel (`npm run build:web`) |
 | Email | ZeptoMail (primary) → AWS SES (fallback) via Supabase Edge Function |
 | Icons | `lucide-react` |
@@ -78,7 +78,7 @@ rgs-portal/                       ← Repository root
 ## Environment Variables
 
 ```env
-VITE_SUPABASE_URL=https://mcdcwdfdpqzrzsixmrcg.supabase.co
+VITE_SUPABASE_URL=https://thklwiybjuhrjqrrxyid.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon key>
 VITE_PAYSTACK_PUBLIC_KEY=<paystack live key>
 ```
@@ -112,7 +112,7 @@ git push              # Triggers Vercel auto-deploy via vercel.json
 
 ## Database
 
-The Supabase schema is fully applied to project `mcdcwdfdpqzrzsixmrcg`.
+The Supabase schema is fully applied to project `thklwiybjuhrjqrrxyid`.
 
 **13 migrations applied** (001–013). Additional ad-hoc changes applied via Supabase MCP:
 - `last_login timestamptz` added to `students` and `teachers`
@@ -165,8 +165,8 @@ Visit the portal URL in Safari → Share → Add to Home Screen.
 Deploy the account and email functions:
 ```bash
 # Registration is public; the function authenticates every non-registration action itself.
-npx supabase functions deploy manage-account --project-ref mcdcwdfdpqzrzsixmrcg --no-verify-jwt
-npx supabase functions deploy send-email --project-ref mcdcwdfdpqzrzsixmrcg
+npx supabase functions deploy manage-account --project-ref thklwiybjuhrjqrrxyid --no-verify-jwt
+npx supabase functions deploy send-email --project-ref thklwiybjuhrjqrrxyid
 ```
 
 Secrets are configured in Supabase Dashboard → Settings → Edge Functions → Secrets.
