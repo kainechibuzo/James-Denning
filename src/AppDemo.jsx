@@ -1978,6 +1978,7 @@ function AppInner(){
   const [collapsedGroups,setCollapsedGroups] = useState(new Set());
   const [toasts,setToasts]     = useState([]);
   const [loginLoading,setLoginLoading] = useState(false);
+  const [authMode,setAuthMode]         = useState("email"); // 'email' (default) | 'classic'
   const [showSettings,setShowSettings] = useState(false); // kept for legacy; now uses setPage("settings")
   const [showProfile,setShowProfile]   = useState(false);
   const [showLogout,setShowLogout]     = useState(false);
@@ -2356,10 +2357,10 @@ function AppInner(){
       saveSession(u); setUser(u);
     }}
     onClassic={()=>setAuthMode("classic")}
-    onRegister={()=>{ setAuthMode("classic"); setShowSignup(true); }}
+    onRegister={()=>setAuthMode("classic")}
     notify={notify}/>;
 
-  if(!selectedSchool) return <SchoolSelectPage onSelect={selectSchool} onPlatformAdmin={loginAsPlatformAdmin}/>;
+  if(!selectedSchool) return <SchoolSelectPage onSelect={selectSchool} onPlatformAdmin={loginAsPlatformAdmin} onEmail={()=>setAuthMode("email")}/>;
   if(!user) return <LoginPage login={login} loading={loginLoading} toasts={toasts} rmToast={rmToast}
     selectedSchool={selectedSchool} onChangeSchool={changeSchool} onSchoolUpdated={onSchoolUpdated}/>;
 
@@ -2852,13 +2853,12 @@ function SessionTermBadge(){
 }
 
 // ─── SCHOOL SELECT PAGE ───────────────────────────────────────────────────────
-function SchoolSelectPage({onSelect,onPlatformAdmin}){
+function SchoolSelectPage({onSelect,onPlatformAdmin,onEmail}){
   const {dark}=useDark();
   C = dark ? DARK : LIGHT;
   const [schools,setSchools]=useState([]);
   const [loading,setLoading]=useState(true);
   const [showSignup,setShowSignup]=useState(false);
-  const [authMode,setAuthMode]=useState("email"); // 'email' (default) | 'classic'
   const [showPALogin,setShowPALogin]=useState(false);
   const [paPin,setPaPin]=useState("");
   const [paErr,setPaErr]=useState("");
@@ -2971,8 +2971,18 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
       }
 
       {/* Platform admin link */}
+      {onEmail && (
+        <button onClick={onEmail}
+          style={{marginTop:16,background:"none",border:"1px solid rgba(255,255,255,.12)",
+            borderRadius:8,color:"rgba(255,255,255,.55)",padding:"6px 16px",
+            fontSize:11.5,cursor:"pointer",fontWeight:600,transition:"all .15s",zIndex:1,position:"relative"}}
+          onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,.85)";e.currentTarget.style.borderColor="rgba(255,255,255,.3)";}}
+          onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.55)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}}>
+          Log in with email instead
+        </button>
+      )}
       <button onClick={()=>setShowPALogin(true)}
-        style={{marginTop:28,background:"none",border:"1px solid rgba(255,255,255,.1)",
+        style={{marginTop:12,background:"none",border:"1px solid rgba(255,255,255,.1)",
           borderRadius:8,color:"rgba(255,255,255,.3)",padding:"6px 16px",
           fontSize:11,cursor:"pointer",fontWeight:500,transition:"all .15s",zIndex:1,position:"relative"}}
         onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,255,255,.55)";e.currentTarget.style.borderColor="rgba(255,255,255,.2)";}}
