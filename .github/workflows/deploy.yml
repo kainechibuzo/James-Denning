@@ -1,0 +1,66 @@
+# Supabase Deploy — apply migrations + deploy edge functions automatically.
+#
+# Runs when code touching supabase/ (migrations, functions, config) lands on
+# the default branch, or manually via the Actions tab ("Run workflow").
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN — personal access token from
+#       https://supabase.com/dashboard/account/tokens (account → access tokens)
+#   SUPABASE_DB_PASSWORD  — database password of project mcdcwdfdpqzrzsixmrcg
+#
+# The project ref itself is not secret (it is already committed in
+# supabase/config.toml as project_id).
+
+name: Supabase Deploy
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+  SUPABASE_PROJECT_ID: mcdcwdfdpqzrzsixmrcg
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref $SUPABASE_PROJECT_ID
+
+      # Applies only migrations that are not yet recorded in the remote
+      # supabase_migrations.schema_migrations table (i.e. 016, 017, ...).
+      # Idempotent: a push with no new migrations is a no-op.
+      - name: Apply migrations
+        run: supabase db push
+
+      # No function name = deploy ALL functions in supabase/functions
+      # (manage-account, scheduled-digest, send-email, send-email-batch,
+      # verify-payment). Per-function JWT settings come from config.toml
+      # (e.g. [functions.manage-account] verify_jwt = false).
+      - name: Deploy edge functions
+        run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+
+      # Informational — list deployed functions + their JWT mode in the log.
+      - name: List deployed functions
+        run: supabase functions list --project-ref $SUPABASE_PROJECT_ID || true
