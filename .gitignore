@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+
+# Environment variables (never commit real secrets)
+.env
+.env.local
+.env.production
+
+# Editor & OS
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+
+# Vite
+*.local
+
+# Capacitor / Android build artefacts
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+*.apk
+*.aab
+*.keystore
+# Keep android/ source in git but ignore build output above

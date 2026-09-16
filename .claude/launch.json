@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rgs-dev",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["C:\\Users\\nnago\\Downloads\\WEBSITES-DONT DELETE\\rgs-portal-v30\\rgs-v30\\node_modules\\vite\\bin\\vite.js"],
+      "port": 3000
+    }
+  ]
+}

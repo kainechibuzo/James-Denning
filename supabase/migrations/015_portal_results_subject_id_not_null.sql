@@ -1,0 +1,22 @@
+-- 015: Enforce subject_id NOT NULL on portal_results
+--
+-- Context: On 13 Apr 2026 a bulk results upload for class 28 inserted 15
+-- orphan rows across classes 26/27/28 with subject_id = NULL. These rows
+-- rendered as phantom "18th" subjects on affected report cards (e.g.
+-- RGS/215 Chikamso Chukwukezie showed 18 subjects instead of 17).
+--
+-- Root cause: XLS upload writer did not validate that each score row's
+-- subject name resolved to a section_subjects.id before persisting.
+-- A ghost class_subjects row (or a template column whose header was
+-- blank / didn't match any class subject) produced rows with NULL
+-- subject_id that still passed the filter.
+--
+-- Fix:
+--   1. Delete existing NULL-subject rows (done inline via MCP).
+--   2. Add NOT NULL on subject_id so this failure mode is structurally
+--      impossible.
+--   3. App-side: bulk-upload and per-student save paths now filter out
+--      any record with null/NaN subject_id and surface a warning
+--      instead of attempting the insert.
+
+ALTER TABLE portal_results ALTER COLUMN subject_id SET NOT NULL;
