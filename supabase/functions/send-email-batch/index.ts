@@ -141,11 +141,16 @@ async function processBatch(
     const row = rows[0];
 
     // Mark as sending to prevent double-processing
-    await supa.from("email_queue")
+    const { data: claimed, error: claimError } = await supa.from("email_queue")
       .update({ status: "sending" })
       .eq("id", row.id)
       .eq("school_id", schoolId)
-      .eq("status", "pending"); // guard
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+
+    // Another worker may have claimed this row after our SELECT.
+    if (claimError || !claimed) continue;
 
     let result: { ok: boolean; error?: string };
     const attachments: Attachment[] = Array.isArray(row.attachments) ? row.attachments : [];
