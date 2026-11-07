@@ -14,13 +14,13 @@ if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// ⚠️ supabaseSrv (service-role client) MUST NEVER be used from frontend code
+// All browser database access uses the anon/publishable client and is governed by Supabase RLS.
 // — the service role bypasses RLS entirely, and anything VITE_-prefixed gets
 // bundled into the browser JS, meaning the key would be readable by anyone
 // who opens dev tools. This export is a deliberate landmine left in place
 // on purpose: if you ever add VITE_SUPABASE_SERVICE_ROLE_KEY to your env,
 // this throws immediately instead of silently shipping the key to the
-// browser. The hundreds of existing supabaseSrv.from(...) calls throughout
+// browser. The hundreds of existing supabase.from(...) calls throughout
 // this codebase are a known migration debt — they need to move to
 // supabase.from(...) (respecting the real RLS policies now in place) or to
 // server-side Edge Functions (see supabase/functions/manage-account) over
@@ -33,7 +33,6 @@ if(import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY){
     "which get SUPABASE_SERVICE_ROLE_KEY auto-injected securely."
   )
 }
-export const supabaseSrv = supabase // TEMPORARY alias so existing calls don't crash outright; see warning above.
 
 
 
@@ -67,7 +66,7 @@ export const db = {
 
   async getSchool(id){
 
-    const {data,error}=await supabaseSrv.from('schools').select('*').eq('id',id).limit(1);
+    const {data,error}=await supabase.from('schools').select('*').eq('id',id).limit(1);
 
     if(error) return {data:null,error};
 
@@ -77,7 +76,7 @@ export const db = {
 
   async updateSchool(id,fields){
 
-    return supabaseSrv.from('schools').update(fields).eq('id',id).select().single();
+    return supabase.from('schools').update(fields).eq('id',id).select().single();
 
   },
 
@@ -89,13 +88,13 @@ export const db = {
 
     // Global platform catalog (no school_id column) — safe for pre-auth reads
     // by the registration flow; RLS policy org_presets_public_read covers anon.
-    return supabaseSrv.from('org_presets').select('*').order('id')
+    return supabase.from('org_presets').select('*').order('id')
 
   },
 
   async getOrgSubmission(){
 
-    let q=supabaseSrv.from('org_submissions').select('*')
+    let q=supabase.from('org_submissions').select('*')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -105,7 +104,7 @@ export const db = {
 
   async getOrgTools(){
 
-    let q=supabaseSrv.from('org_tools').select('*').order('tool_key')
+    let q=supabase.from('org_tools').select('*').order('tool_key')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -119,7 +118,7 @@ export const db = {
 
     if(this._schoolId) row.school_id=this._schoolId
 
-    return supabaseSrv.from('org_tools').upsert(row,{onConflict:'school_id,tool_key'}).select()
+    return supabase.from('org_tools').upsert(row,{onConflict:'school_id,tool_key'}).select()
 
   },
 
@@ -133,7 +132,7 @@ export const db = {
 
   async getHiringRoles(){
 
-    let q=supabaseSrv.from('hiring_roles').select('*').order('created_at',{ascending:false})
+    let q=supabase.from('hiring_roles').select('*').order('created_at',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -145,7 +144,7 @@ export const db = {
 
     if(id){
 
-      let q=supabaseSrv.from('hiring_roles').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
+      let q=supabase.from('hiring_roles').update({...data,updated_at:new Date().toISOString()}).eq('id',id)
 
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -157,13 +156,13 @@ export const db = {
 
     if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('hiring_roles').insert(ins).select().single()
+    return supabase.from('hiring_roles').insert(ins).select().single()
 
   },
 
   async deleteHiringRole(id){
 
-    let q=supabaseSrv.from('hiring_roles').delete().eq('id',id)
+    let q=supabase.from('hiring_roles').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -193,7 +192,7 @@ export const db = {
 
   async getHiringApplications(filters={}){
 
-    let q=supabaseSrv.from('hiring_applications')
+    let q=supabase.from('hiring_applications')
 
       .select('*,hiring_roles(id,title,slug)')
 
@@ -211,7 +210,7 @@ export const db = {
 
   async getHiringApplication(id){
 
-    let q=supabaseSrv.from('hiring_applications')
+    let q=supabase.from('hiring_applications')
 
       .select('*,hiring_roles(id,title,slug)')
 
@@ -225,7 +224,7 @@ export const db = {
 
   async setHiringApplicationStatus(id,status){
 
-    let q=supabaseSrv.from('hiring_applications')
+    let q=supabase.from('hiring_applications')
 
       .update({status,updated_at:new Date().toISOString()}).eq('id',id)
 
@@ -243,13 +242,13 @@ export const db = {
 
     if(this._schoolId) row.school_id=this._schoolId
 
-    return supabaseSrv.from('hiring_messages').insert(row).select().single()
+    return supabase.from('hiring_messages').insert(row).select().single()
 
   },
 
   async getHiringMessages(applicationId){
 
-    let q=supabaseSrv.from('hiring_messages')
+    let q=supabase.from('hiring_messages')
 
       .select('*').eq('application_id',applicationId).order('id')
 
@@ -281,7 +280,7 @@ export const db = {
 
     if(this._schoolId) row.school_id=this._schoolId
 
-    const {data,error}=await supabaseSrv.from('hires').insert(row).select().single()
+    const {data,error}=await supabase.from('hires').insert(row).select().single()
 
     if(error) return {data:null,error}
 
@@ -293,7 +292,7 @@ export const db = {
 
   async getHires(){
 
-    let q=supabaseSrv.from('hires')
+    let q=supabase.from('hires')
 
       .select('*,hiring_roles(id,title,slug)')
 
@@ -307,7 +306,7 @@ export const db = {
 
   async getHire(id){
 
-    let q=supabaseSrv.from('hires')
+    let q=supabase.from('hires')
 
       .select('*,hiring_roles(id,title,slug),hiring_applications(id,applicant_name,applicant_email,applicant_phone)')
 
@@ -321,7 +320,7 @@ export const db = {
 
   async updateHire(id,fields){
 
-    let q=supabaseSrv.from('hires')
+    let q=supabase.from('hires')
 
       .update({...fields,updated_at:new Date().toISOString()}).eq('id',id)
 
@@ -337,13 +336,13 @@ export const db = {
 
     if(this._schoolId) row.school_id=this._schoolId
 
-    return supabaseSrv.from('hire_quota_entries').insert(row).select().single()
+    return supabase.from('hire_quota_entries').insert(row).select().single()
 
   },
 
   async getHireQuotaEntries(hireId){
 
-    let q=supabaseSrv.from('hire_quota_entries')
+    let q=supabase.from('hire_quota_entries')
 
       .select('*').eq('hire_id',hireId).order('recorded_at',{ascending:false})
 
@@ -355,7 +354,7 @@ export const db = {
 
   async deleteHireQuotaEntry(id){
 
-    let q=supabaseSrv.from('hire_quota_entries').delete().eq('id',id)
+    let q=supabase.from('hire_quota_entries').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -404,7 +403,7 @@ export const db = {
 
   async getSections(activeOnly=true){
 
-    let q=supabaseSrv.from('sections').select('*').order('sort_order')
+    let q=supabase.from('sections').select('*').order('sort_order')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -416,17 +415,17 @@ export const db = {
 
   async upsertSection(data,id=null){
 
-    if(id)return supabaseSrv.from('sections').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('sections').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('sections').insert(ins).select().single()
+    return supabase.from('sections').insert(ins).select().single()
 
   },
 
   async deleteSection(id){
 
-    let q=supabaseSrv.from('sections').delete().eq('id',id)
+    let q=supabase.from('sections').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -438,7 +437,7 @@ export const db = {
 
   async getClasses(sectionId=null){
 
-    let q=supabaseSrv.from('classes').select('*,sections(id,name,code,color)').order('name')
+    let q=supabase.from('classes').select('*,sections(id,name,code,color)').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -450,19 +449,19 @@ export const db = {
 
   async upsertClass(data,id=null){
 
-    if(id)return supabaseSrv.from('classes').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('classes').update(data).eq('id',id).select().single()
 
     const ins={...data};
 
     if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId;
 
-    return supabaseSrv.from('classes').insert(ins).select().single()
+    return supabase.from('classes').insert(ins).select().single()
 
   },
 
   async deleteClass(id){
 
-    let q=supabaseSrv.from('classes').delete().eq('id',id)
+    let q=supabase.from('classes').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -474,7 +473,7 @@ export const db = {
 
   async getSubjects(){
 
-    let q=supabaseSrv.from('subjects').select('*').order('name')
+    let q=supabase.from('subjects').select('*').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -484,17 +483,17 @@ export const db = {
 
   async upsertSubject(data,id=null){
 
-    if(id)return supabaseSrv.from('subjects').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('subjects').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('subjects').insert(ins).select().single()
+    return supabase.from('subjects').insert(ins).select().single()
 
   },
 
   async deleteSubject(id){
 
-    let q=supabaseSrv.from('subjects').delete().eq('id',id)
+    let q=supabase.from('subjects').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -506,7 +505,7 @@ export const db = {
 
   async getSectionSubjects(sectionId=null){
 
-    let q=supabaseSrv.from('section_subjects').select('*,sections(name,code,color)').order('name')
+    let q=supabase.from('section_subjects').select('*,sections(name,code,color)').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -518,17 +517,17 @@ export const db = {
 
   async upsertSectionSubject(data,id=null){
 
-    if(id)return supabaseSrv.from('section_subjects').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('section_subjects').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('section_subjects').insert(ins).select().single()
+    return supabase.from('section_subjects').insert(ins).select().single()
 
   },
 
   async deleteSectionSubject(id){
 
-    let q=supabaseSrv.from('section_subjects').delete().eq('id',id)
+    let q=supabase.from('section_subjects').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -542,7 +541,7 @@ export const db = {
 
   async getClassSubjects(classId){
 
-    let q=supabaseSrv.from('class_subjects')
+    let q=supabase.from('class_subjects')
 
       .select('*,section_subjects(id,name,code,section_id,sections(name,code,color))')
 
@@ -560,13 +559,13 @@ export const db = {
 
     if(this._schoolId) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('class_subjects').insert(ins).select()
+    return supabase.from('class_subjects').insert(ins).select()
 
   },
 
   async removeSubjectFromClass(classId,sectionSubjectId){
 
-    let q=supabaseSrv.from('class_subjects')
+    let q=supabase.from('class_subjects')
 
       .delete().eq('class_id',classId).eq('section_subject_id',sectionSubjectId)
 
@@ -578,7 +577,7 @@ export const db = {
 
   async getAllClassSubjects(){
 
-    let q=supabaseSrv.from('class_subjects')
+    let q=supabase.from('class_subjects')
 
       .select('*,classes(id,name,section_id,sections(name,code,color)),section_subjects(id,name,code)')
 
@@ -596,7 +595,7 @@ export const db = {
 
   async getAllFormTeachers(){
 
-    let q=supabaseSrv.from('class_teachers')
+    let q=supabase.from('class_teachers')
 
       .select('*,teachers(id,full_name,staff_id),classes(id,name,section_id,sections(name,code,color))')
 
@@ -610,7 +609,7 @@ export const db = {
 
   // Get form teacher name for a single class (for report card header)
   async getFormTeacherForClass(classId){
-    let q=supabaseSrv.from('class_teachers')
+    let q=supabase.from('class_teachers')
       .select('teachers(full_name)').eq('class_id',+classId).eq('is_form_teacher',true).limit(1)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
@@ -618,14 +617,14 @@ export const db = {
 
   // Get class IDs assigned to a teacher (for teacher-restricted class picker)
   async getTeacherClassIds(teacherId){
-    let q=supabaseSrv.from('class_teachers').select('class_id').eq('teacher_id',teacherId)
+    let q=supabase.from('class_teachers').select('class_id').eq('teacher_id',teacherId)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
 
   // Look up teacher email by staff_id or full_name (fallback for old requests without teacher_email)
   async getTeacherByNameOrStaffId(staffId,fullName){
-    let q=supabaseSrv.from('teachers').select('email,full_name,staff_id')
+    let q=supabase.from('teachers').select('email,full_name,staff_id')
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     if(staffId&&fullName) q=q.or(`staff_id.eq.${staffId},full_name.eq.${fullName}`)
     else if(staffId) q=q.eq('staff_id',staffId)
@@ -636,10 +635,10 @@ export const db = {
   // Bulk delete interlock: check which students have unrefunded payments or published report cards
   async checkBulkStudentInterlock(studentIds, classIds){
     const [feePayRes,pubRes]=await Promise.all([
-      supabaseSrv.from('fee_payments').select('student_id')
+      supabase.from('fee_payments').select('student_id')
         .in('student_id',studentIds.map(String)).eq('is_refunded',false),
       classIds.length
-        ? supabaseSrv.from('report_card_publish').select('class_id')
+        ? supabase.from('report_card_publish').select('class_id')
             .in('class_id',classIds).eq('is_published',true)
         : Promise.resolve({data:[]}),
     ])
@@ -656,7 +655,7 @@ export const db = {
 
   async setFormTeacher(classId,teacherId){
 
-    let dq=supabaseSrv.from('class_teachers').delete()
+    let dq=supabase.from('class_teachers').delete()
 
       .eq('class_id',classId).eq('is_form_teacher',true)
 
@@ -670,7 +669,7 @@ export const db = {
 
     if(this._schoolId) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('class_teachers').insert(ins).select()
+    return supabase.from('class_teachers').insert(ins).select()
 
   },
 
@@ -678,7 +677,7 @@ export const db = {
 
   async addFormTeacher(classId,teacherId){
 
-    return supabaseSrv.from('class_teachers')
+    return supabase.from('class_teachers')
 
       .upsert({class_id:+classId,teacher_id:+teacherId,is_form_teacher:true},
 
@@ -692,7 +691,7 @@ export const db = {
 
   async removeFormTeacher(classId,teacherId){
 
-    return supabaseSrv.from('class_teachers').delete()
+    return supabase.from('class_teachers').delete()
 
       .eq('class_id',classId).eq('teacher_id',teacherId).eq('is_form_teacher',true)
 
@@ -704,7 +703,7 @@ export const db = {
 
   async getTeacherSubjects(teacherId=null){
 
-    let q=supabaseSrv.from('teacher_subjects')
+    let q=supabase.from('teacher_subjects')
 
       .select('*,teachers(id,full_name,staff_id),classes(id,name,sections(name,code,color)),section_subjects(id,name,code)')
 
@@ -724,13 +723,13 @@ export const db = {
 
     if(this._schoolId) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('teacher_subjects').insert(ins).select()
+    return supabase.from('teacher_subjects').insert(ins).select()
 
   },
 
   async removeTeacherSubject(id){
 
-    let q=supabaseSrv.from('teacher_subjects').delete().eq('id',id)
+    let q=supabase.from('teacher_subjects').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -744,13 +743,13 @@ export const db = {
       teacher_id:+teacherId,class_id:+e.class_id,subject_id:+e.subject_id,
       ...(this._schoolId?{school_id:this._schoolId}:{}),
     }));
-    return supabaseSrv.from('teacher_subjects')
+    return supabase.from('teacher_subjects')
       .upsert(rows,{onConflict:'teacher_id,class_id,subject_id',ignoreDuplicates:true}).select();
   },
 
   async removeTeacherSubjectBulk(ids){
     if(!ids?.length) return {data:[],error:null};
-    let q=supabaseSrv.from('teacher_subjects').delete().in('id',ids);
+    let q=supabase.from('teacher_subjects').delete().in('id',ids);
     if(this._schoolId) q=q.eq('school_id',this._schoolId);
     return q;
   },
@@ -761,7 +760,7 @@ export const db = {
 
   async getSubjectAccessRequests(filters={}){
 
-    let q=supabaseSrv.from('subject_access_requests')
+    let q=supabase.from('subject_access_requests')
 
       .select(`*,
 
@@ -787,7 +786,7 @@ export const db = {
 
   async createSubjectAccessRequest(schoolId,teacherId,classId,subjectIds){
 
-    return supabaseSrv.from('subject_access_requests')
+    return supabase.from('subject_access_requests')
 
       .insert({school_id:schoolId,teacher_id:+teacherId,class_id:+classId,subject_ids:subjectIds,status:'pending'})
 
@@ -797,7 +796,7 @@ export const db = {
 
   async reviewSubjectAccessRequest(id,status,reviewedBy,adminNote=''){
 
-    return supabaseSrv.from('subject_access_requests')
+    return supabase.from('subject_access_requests')
 
       .update({status,admin_note:adminNote,reviewed_at:new Date().toISOString(),reviewed_by:+reviewedBy})
 
@@ -811,7 +810,7 @@ export const db = {
 
   async getSubjectAccessGrants(filters={}){
 
-    let q=supabaseSrv.from('subject_access_grants')
+    let q=supabase.from('subject_access_grants')
 
       .select('*,section_subjects(id,name,code),classes(id,name),teachers!subject_access_grants_teacher_id_fkey(id,full_name)')
 
@@ -835,13 +834,13 @@ export const db = {
 
     }))
 
-    return supabaseSrv.from('subject_access_grants').upsert(rows,{onConflict:'teacher_id,class_id,subject_id'}).select()
+    return supabase.from('subject_access_grants').upsert(rows,{onConflict:'teacher_id,class_id,subject_id'}).select()
 
   },
 
   async revokeSubjectAccessGrant(id){
 
-    return supabaseSrv.from('subject_access_grants').delete().eq('id',id)
+    return supabase.from('subject_access_grants').delete().eq('id',id)
 
   },
 
@@ -850,7 +849,7 @@ export const db = {
   // Fetch a single student by ID with class+section joins (uses service role — bypasses RLS)
   async getStudentById(id){
 
-    let q=supabaseSrv.from('students')
+    let q=supabase.from('students')
 
       .select('*,classes(id,name,level,section_id,sections(id,name,code,color))')
 
@@ -878,7 +877,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv
+      let q=supabase
 
         .from('students')
 
@@ -966,7 +965,7 @@ export const db = {
 
   async updateSchoolAdmin(schoolId,fields){
 
-    return supabaseSrv.from('schools').update(fields).eq('id',schoolId);
+    return supabase.from('schools').update(fields).eq('id',schoolId);
 
   },
 
@@ -976,13 +975,13 @@ export const db = {
 
     const table=type==='teacher'?'teachers':'students';
 
-    supabaseSrv.from(table).update({last_login:new Date().toISOString()}).eq('id',id).then(()=>{});
+    supabase.from(table).update({last_login:new Date().toISOString()}).eq('id',id).then(()=>{});
 
   },
 
   async setTeacherRole(id,role){
 
-    return supabaseSrv.from('teachers').update({role}).eq('id',id);
+    return supabase.from('teachers').update({role}).eq('id',id);
 
   },
 
@@ -992,13 +991,13 @@ export const db = {
 
   async updateTeacherCredentials(id,fields){
 
-    return supabaseSrv.from('teachers').update(fields).eq('id',id);
+    return supabase.from('teachers').update(fields).eq('id',id);
 
   },
 
   async countStudents(){
 
-    let q=supabaseSrv.from('students').select('*',{count:'exact',head:true})
+    let q=supabase.from('students').select('*',{count:'exact',head:true})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1010,13 +1009,13 @@ export const db = {
 
   async upsertStudent(data,id=null){
 
-    if(id)return supabaseSrv.from('students').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('students').update(data).eq('id',id).select().single()
 
     const ins={...data};
 
     if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId;
 
-    return supabaseSrv.from('students').insert(ins).select().single()
+    return supabase.from('students').insert(ins).select().single()
 
   },
 
@@ -1024,7 +1023,7 @@ export const db = {
 
   async markStudentEnrolled(studentId){
 
-    return supabaseSrv.from('students').update({is_new_enrollee:false}).eq('id',studentId)
+    return supabase.from('students').update({is_new_enrollee:false}).eq('id',studentId)
 
   },
 
@@ -1032,7 +1031,7 @@ export const db = {
 
     if(!studentIds||!studentIds.length)return{error:null};
 
-    return supabaseSrv.from('students').update({is_new_enrollee:false}).in('id',studentIds);
+    return supabase.from('students').update({is_new_enrollee:false}).in('id',studentIds);
 
   },
 
@@ -1042,7 +1041,7 @@ export const db = {
 
   async clearNewEnrolleeOnTermChange(){
 
-    return supabaseSrv.from('students').update({is_new_enrollee:false}).eq('is_new_enrollee',true);
+    return supabase.from('students').update({is_new_enrollee:false}).eq('is_new_enrollee',true);
 
   },
 
@@ -1050,7 +1049,7 @@ export const db = {
 
   async getTemplatesForLevel(classLevel,academicYear,term){
 
-    return supabaseSrv.from('fee_templates')
+    return supabase.from('fee_templates')
 
       .select('*,fee_template_items(*,fee_items!fee_template_items_fee_item_id_fkey(id,name))')
 
@@ -1070,7 +1069,7 @@ export const db = {
 
     // Mark all non-paid bills as cancelled before deleting student
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .update({status:'cancelled',updated_at:new Date().toISOString()})
 
@@ -1082,7 +1081,7 @@ export const db = {
 
   async deleteStudent(id){
 
-    let q=supabaseSrv.from('students').delete().eq('id',id)
+    let q=supabase.from('students').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1106,13 +1105,13 @@ export const db = {
 
       // Cancel unpaid bills for this chunk
 
-      await supabaseSrv.from('fee_bills')
+      await supabase.from('fee_bills')
 
         .update({status:'cancelled',updated_at:new Date().toISOString()})
 
         .in('student_id',chunk).not('status','eq','paid');
 
-      let dq=supabaseSrv.from('students').delete().in('id',chunk)
+      let dq=supabase.from('students').delete().in('id',chunk)
 
       if(this._schoolId) dq=dq.eq('school_id',this._schoolId)
 
@@ -1140,7 +1139,7 @@ export const db = {
 
       const chunk=ids.slice(i,i+CHUNK);
 
-      const{error}=await supabaseSrv.from('teachers').delete().in('id',chunk);
+      const{error}=await supabase.from('teachers').delete().in('id',chunk);
 
       if(error){console.error('[bulkDeleteTeachers]',error);failed+=chunk.length;}
 
@@ -1164,7 +1163,7 @@ export const db = {
 
       const chunk=ids.slice(i,i+CHUNK);
 
-      await supabaseSrv.from('students').update({status,updated_at:new Date().toISOString()}).in('id',chunk);
+      await supabase.from('students').update({status,updated_at:new Date().toISOString()}).in('id',chunk);
 
     }
 
@@ -1178,7 +1177,7 @@ export const db = {
 
       const chunk=ids.slice(i,i+CHUNK);
 
-      await supabaseSrv.from('teachers').update({status,updated_at:new Date().toISOString()}).in('id',chunk);
+      await supabase.from('teachers').update({status,updated_at:new Date().toISOString()}).in('id',chunk);
 
     }
 
@@ -1196,7 +1195,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv
+      let q=supabase
 
         .from('teachers')
 
@@ -1226,19 +1225,19 @@ export const db = {
 
   async upsertTeacher(data,id=null){
 
-    if(id)return supabaseSrv.from('teachers').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('teachers').update(data).eq('id',id).select().single()
 
     const ins={...data};
 
     if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId;
 
-    return supabaseSrv.from('teachers').insert(ins).select().single()
+    return supabase.from('teachers').insert(ins).select().single()
 
   },
 
   async deleteTeacher(id){
 
-    let q=supabaseSrv.from('teachers').delete().eq('id',id)
+    let q=supabase.from('teachers').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1250,7 +1249,7 @@ export const db = {
 
   async getSessions(){
 
-    let q=supabaseSrv.from('sessions').select('*').order('name',{ascending:false})
+    let q=supabase.from('sessions').select('*').order('name',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1260,23 +1259,23 @@ export const db = {
 
   async upsertSession(data,id=null){
 
-    if(id)return supabaseSrv.from('sessions').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('sessions').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('sessions').insert(ins).select().single()
+    return supabase.from('sessions').insert(ins).select().single()
 
   },
 
   async setActiveSession(id){
 
-    let q=supabaseSrv.from('sessions').update({is_active:false}).neq('id',id)
+    let q=supabase.from('sessions').update({is_active:false}).neq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
     await q
 
-    return supabaseSrv.from('sessions').update({is_active:true}).eq('id',id).select().single()
+    return supabase.from('sessions').update({is_active:true}).eq('id',id).select().single()
 
   },
 
@@ -1284,7 +1283,7 @@ export const db = {
 
   async getTerms(sessionId=null){
 
-    let q=supabaseSrv.from('terms').select('*,sessions(name)').order('id')
+    let q=supabase.from('terms').select('*,sessions(name)').order('id')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1307,29 +1306,29 @@ export const db = {
         : (n.includes('third')||n.includes('3rd')||/\bterm.?3\b/.test(n)) ? 3 : null
     }
 
-    if(id)return supabaseSrv.from('terms').update(ins).eq('id',id).select().single()
+    if(id)return supabase.from('terms').update(ins).eq('id',id).select().single()
 
     if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('terms').insert(ins).select().single()
+    return supabase.from('terms').insert(ins).select().single()
 
   },
 
   async setActiveTerm(id,sessionId){
 
-    let q=supabaseSrv.from('terms').update({is_active:false}).neq('id',id)
+    let q=supabase.from('terms').update({is_active:false}).neq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
     await q
 
-    return supabaseSrv.from('terms').update({is_active:true}).eq('id',id).select().single()
+    return supabase.from('terms').update({is_active:true}).eq('id',id).select().single()
 
   },
 
   async deleteTerm(id){
 
-    let q=supabaseSrv.from('terms').delete().eq('id',id)
+    let q=supabase.from('terms').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1340,13 +1339,13 @@ export const db = {
   // Delete a session: removes all its terms first (FK safety), then the session row.
   async deleteSession(id){
 
-    let tq=supabaseSrv.from('terms').delete().eq('session_id',id)
+    let tq=supabase.from('terms').delete().eq('session_id',id)
 
     if(this._schoolId) tq=tq.eq('school_id',this._schoolId)
 
     await tq
 
-    let sq=supabaseSrv.from('sessions').delete().eq('id',id)
+    let sq=supabase.from('sessions').delete().eq('id',id)
 
     if(this._schoolId) sq=sq.eq('school_id',this._schoolId)
 
@@ -1361,7 +1360,7 @@ export const db = {
 
   // Progression map: set/clear a class's destination class (null = terminal → graduate).
   async setPromotesTo(classId, toClassId){
-    let q=supabaseSrv.from('classes')
+    let q=supabase.from('classes')
       .update({promotes_to_class_id: toClassId ? +toClassId : null})
       .eq('id', classId)
     if(this._schoolId) q=q.eq('school_id', this._schoolId)
@@ -1370,7 +1369,7 @@ export const db = {
 
   // The current non-reverted run for a session, with its decisions (null if none).
   async getActivePromotionRun(fromSessionId){
-    let rq=supabaseSrv.from('promotion_runs').select('*')
+    let rq=supabase.from('promotion_runs').select('*')
       .eq('from_session_id', fromSessionId).neq('status','reverted')
       .order('id',{ascending:false}).limit(1)
     if(this._schoolId) rq=rq.eq('school_id', this._schoolId)
@@ -1378,7 +1377,7 @@ export const db = {
     if(error) return {data:null,error}
     const run=runs?.[0]||null
     if(!run) return {data:null,error:null}
-    const {data:decisions}=await supabaseSrv.from('promotion_decisions')
+    const {data:decisions}=await supabase.from('promotion_decisions')
       .select('*').eq('run_id',run.id).order('id')
     return {data:{run,decisions:decisions||[]}, error:null}
   },
@@ -1387,21 +1386,21 @@ export const db = {
   // Returns { run, terminalClassIds } so the UI can warn about unmapped classes.
   async armPromotionRun(fromSessionId, armedBy){
     // Promotion term = highest term_order in the session.
-    let tq=supabaseSrv.from('terms').select('id,term_order').eq('session_id',fromSessionId)
+    let tq=supabase.from('terms').select('id,term_order').eq('session_id',fromSessionId)
     if(this._schoolId) tq=tq.eq('school_id',this._schoolId)
     const {data:terms}=await tq
     const promoTerm=(terms||[]).slice().sort((a,b)=>(b.term_order||0)-(a.term_order||0))[0]
 
-    const {data:run,error:re}=await supabaseSrv.from('promotion_runs')
+    const {data:run,error:re}=await supabase.from('promotion_runs')
       .insert({school_id:this._schoolId, from_session_id:+fromSessionId,
         promotion_term_id:promoTerm?.id||null, status:'armed', armed_by:armedBy||null})
       .select().single()
     if(re) return {data:null,error:re}
 
-    let sq=supabaseSrv.from('students').select('id,class_id,status')
+    let sq=supabase.from('students').select('id,class_id,status')
     if(this._schoolId) sq=sq.eq('school_id',this._schoolId)
     const {data:students}=await sq
-    let cq=supabaseSrv.from('classes').select('id,promotes_to_class_id')
+    let cq=supabase.from('classes').select('id,promotes_to_class_id')
     if(this._schoolId) cq=cq.eq('school_id',this._schoolId)
     const {data:classes}=await cq
     const promMap=Object.fromEntries((classes||[]).map(c=>[c.id,c.promotes_to_class_id]))
@@ -1414,12 +1413,12 @@ export const db = {
       return {run_id:run.id, school_id:this._schoolId, student_id:String(s.id),
         from_class_id:s.class_id, to_class_id:to||null, decision: to ? 'promote' : 'graduate'}
     })
-    if(rows.length) await supabaseSrv.from('promotion_decisions').insert(rows)
+    if(rows.length) await supabase.from('promotion_decisions').insert(rows)
     return {data:{run, terminalClassIds:[...terminalClassIds]}, error:null}
   },
 
   async updatePromotionDecision(id, patch){
-    let q=supabaseSrv.from('promotion_decisions')
+    let q=supabase.from('promotion_decisions')
       .update({...patch, updated_at:new Date().toISOString()}).eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
@@ -1427,7 +1426,7 @@ export const db = {
 
   // Discard an armed (uncommitted) run — cascade deletes its decisions.
   async discardPromotionRun(runId){
-    let q=supabaseSrv.from('promotion_runs').delete().eq('id',runId).eq('status','armed')
+    let q=supabase.from('promotion_runs').delete().eq('id',runId).eq('status','armed')
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
@@ -1435,9 +1434,9 @@ export const db = {
   // Commit: apply class/status changes (grouped so ~550 students = a handful of queries),
   // then create the next session as an INACTIVE draft with its 3 terms. Never activates it.
   async commitPromotionRun(runId, {committedBy, nextSessionName}={}){
-    const {data:run}=await supabaseSrv.from('promotion_runs').select('*').eq('id',runId).single()
+    const {data:run}=await supabase.from('promotion_runs').select('*').eq('id',runId).single()
     if(!run) return {error:{message:'Promotion run not found'}}
-    const {data:decisions}=await supabaseSrv.from('promotion_decisions').select('*').eq('run_id',runId)
+    const {data:decisions}=await supabase.from('promotion_decisions').select('*').eq('run_id',runId)
 
     const byDest={}; const gradIds=[]
     for(const d of decisions||[]){
@@ -1446,12 +1445,12 @@ export const db = {
       // 'repeat' = no change
     }
     for(const [toClass,ids] of Object.entries(byDest)){
-      let q=supabaseSrv.from('students').update({class_id:+toClass}).in('id',ids)
+      let q=supabase.from('students').update({class_id:+toClass}).in('id',ids)
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
       await q
     }
     if(gradIds.length){
-      let q=supabaseSrv.from('students').update({status:'graduated'}).in('id',gradIds)
+      let q=supabase.from('students').update({status:'graduated'}).in('id',gradIds)
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
       await q
     }
@@ -1459,17 +1458,17 @@ export const db = {
     // Draft next session (inactive) + its three terms.
     let toSessionId=null
     if(nextSessionName){
-      const {data:newSess,error:se}=await supabaseSrv.from('sessions')
+      const {data:newSess,error:se}=await supabase.from('sessions')
         .insert({school_id:this._schoolId, name:nextSessionName, is_active:false}).select().single()
       if(!se && newSess){
         toSessionId=newSess.id
         const termRows=[1,2,3].map(n=>({school_id:this._schoolId, session_id:newSess.id,
           name:(n===1?'1st':n===2?'2nd':'3rd')+' Term', term_order:n, is_active:false}))
-        await supabaseSrv.from('terms').insert(termRows)
+        await supabase.from('terms').insert(termRows)
       }
     }
 
-    await supabaseSrv.from('promotion_runs').update({status:'committed',
+    await supabase.from('promotion_runs').update({status:'committed',
       committed_by:committedBy||null, committed_at:new Date().toISOString(), to_session_id:toSessionId})
       .eq('id',runId)
     return {data:{toSessionId, promoted:Object.values(byDest).reduce((a,b)=>a+b.length,0), graduated:gradIds.length}, error:null}
@@ -1477,9 +1476,9 @@ export const db = {
 
   // Undo a committed run: restore class/status; delete the draft next session iff never activated.
   async revertPromotionRun(runId){
-    const {data:run}=await supabaseSrv.from('promotion_runs').select('*').eq('id',runId).single()
+    const {data:run}=await supabase.from('promotion_runs').select('*').eq('id',runId).single()
     if(!run) return {error:{message:'Promotion run not found'}}
-    const {data:decisions}=await supabaseSrv.from('promotion_decisions').select('*').eq('run_id',runId)
+    const {data:decisions}=await supabase.from('promotion_decisions').select('*').eq('run_id',runId)
 
     const byFrom={}; const gradIds=[]
     for(const d of decisions||[]){
@@ -1487,24 +1486,24 @@ export const db = {
       else if(d.decision==='graduate'){ gradIds.push(d.student_id) }
     }
     for(const [fromClass,ids] of Object.entries(byFrom)){
-      let q=supabaseSrv.from('students').update({class_id:+fromClass}).in('id',ids)
+      let q=supabase.from('students').update({class_id:+fromClass}).in('id',ids)
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
       await q
     }
     if(gradIds.length){
-      let q=supabaseSrv.from('students').update({status:'active'}).in('id',gradIds)
+      let q=supabase.from('students').update({status:'active'}).in('id',gradIds)
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
       await q
     }
     // Remove the drafted next session only if it was never activated.
     if(run.to_session_id){
-      const {data:sess}=await supabaseSrv.from('sessions').select('is_active').eq('id',run.to_session_id).single()
+      const {data:sess}=await supabase.from('sessions').select('is_active').eq('id',run.to_session_id).single()
       if(sess && !sess.is_active){
-        await supabaseSrv.from('terms').delete().eq('session_id',run.to_session_id).eq('school_id',this._schoolId)
-        await supabaseSrv.from('sessions').delete().eq('id',run.to_session_id).eq('school_id',this._schoolId)
+        await supabase.from('terms').delete().eq('session_id',run.to_session_id).eq('school_id',this._schoolId)
+        await supabase.from('sessions').delete().eq('id',run.to_session_id).eq('school_id',this._schoolId)
       }
     }
-    await supabaseSrv.from('promotion_runs').update({status:'reverted'}).eq('id',runId)
+    await supabase.from('promotion_runs').update({status:'reverted'}).eq('id',runId)
     return {data:true, error:null}
   },
 
@@ -1524,7 +1523,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv.from('portal_results')
+      let q=supabase.from('portal_results')
 
         .select('*,students(id,name,admission_number),classes(id,name,level,section_id,sections(id,name)),section_subjects(id,name,code),terms(id,name,term_order),sessions(id,name),component_scores')
 
@@ -1564,7 +1563,7 @@ export const db = {
 
     const payload=Array.isArray(data)?data.map(inject):inject(data);
 
-    return supabaseSrv.from('portal_results').upsert(payload,{onConflict:'student_id,class_id,subject_id,term_id,session_id'}).select()
+    return supabase.from('portal_results').upsert(payload,{onConflict:'student_id,class_id,subject_id,term_id,session_id'}).select()
 
   },
 
@@ -1592,7 +1591,7 @@ export const db = {
 
   async deleteResult(id){
 
-    let q=supabaseSrv.from('portal_results').delete().eq('id',id)
+    let q=supabase.from('portal_results').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1602,7 +1601,7 @@ export const db = {
 
   async clearClassResults(classId,termId,sessionId){
 
-    let q=supabaseSrv.from('portal_results').delete()
+    let q=supabase.from('portal_results').delete()
 
       .eq('class_id',classId).eq('term_id',termId).eq('session_id',sessionId)
 
@@ -1614,7 +1613,7 @@ export const db = {
 
   async clearSubjectResults(classId,subjectId,termId,sessionId){
 
-    let q=supabaseSrv.from('portal_results').delete()
+    let q=supabase.from('portal_results').delete()
 
       .eq('class_id',classId).eq('subject_id',subjectId)
 
@@ -1630,7 +1629,7 @@ export const db = {
 
     // Delete results for all classes in the section for the given term+session
 
-    let cq=supabaseSrv.from('classes').select('id').eq('section_id',sectionId)
+    let cq=supabase.from('classes').select('id').eq('section_id',sectionId)
 
     if(this._schoolId) cq=cq.eq('school_id',this._schoolId)
 
@@ -1640,7 +1639,7 @@ export const db = {
 
     if(!classIds.length)return{data:null,error:null}
 
-    let q=supabaseSrv.from('portal_results').delete()
+    let q=supabase.from('portal_results').delete()
 
       .in('class_id',classIds).eq('term_id',termId).eq('session_id',sessionId)
 
@@ -1656,7 +1655,7 @@ export const db = {
 
     if(!this._schoolId) return {error:{message:'No school context set'}}
 
-    return supabaseSrv.from('portal_results').delete().eq('school_id',this._schoolId)
+    return supabase.from('portal_results').delete().eq('school_id',this._schoolId)
 
   },
 
@@ -1664,11 +1663,11 @@ export const db = {
 
     if(!this._schoolId) return {error:{message:'No school context set'}}
 
-    const r1=await supabaseSrv.from('fee_payments').delete().eq('school_id',this._schoolId)
+    const r1=await supabase.from('fee_payments').delete().eq('school_id',this._schoolId)
 
     if(r1.error) return r1
 
-    return supabaseSrv.from('payments').delete().eq('school_id',this._schoolId)
+    return supabase.from('payments').delete().eq('school_id',this._schoolId)
 
   },
 
@@ -1676,7 +1675,7 @@ export const db = {
 
   async getGradingSchema(sectionId=null,schemaType=null){
 
-    let q=supabaseSrv.from('grading_schema').select('*').order('min_score',{ascending:false})
+    let q=supabase.from('grading_schema').select('*').order('min_score',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1690,17 +1689,17 @@ export const db = {
 
   async upsertGrade(data,id=null){
 
-    if(id)return supabaseSrv.from('grading_schema').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('grading_schema').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('grading_schema').insert(ins).select().single()
+    return supabase.from('grading_schema').insert(ins).select().single()
 
   },
 
   async deleteGrade(id){
 
-    let q=supabaseSrv.from('grading_schema').delete().eq('id',id)
+    let q=supabase.from('grading_schema').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1714,7 +1713,7 @@ export const db = {
 
   async getCaeTraits(sectionId=null){
 
-    let q=supabaseSrv.from('cae_traits').select('*').eq('is_active',true).order('sort_order')
+    let q=supabase.from('cae_traits').select('*').eq('is_active',true).order('sort_order')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1726,17 +1725,17 @@ export const db = {
 
   async upsertCaeTrait(data,id=null){
 
-    if(id)return supabaseSrv.from('cae_traits').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('cae_traits').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('cae_traits').insert(ins).select().single()
+    return supabase.from('cae_traits').insert(ins).select().single()
 
   },
 
   async deleteCaeTrait(id){
 
-    let q=supabaseSrv.from('cae_traits').delete().eq('id',id)
+    let q=supabase.from('cae_traits').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1746,7 +1745,7 @@ export const db = {
 
   async getCaeRatings(sectionId=null){
 
-    let q=supabaseSrv.from('cae_ratings').select('*').order('sort_order')
+    let q=supabase.from('cae_ratings').select('*').order('sort_order')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1758,17 +1757,17 @@ export const db = {
 
   async upsertCaeRating(data,id=null){
 
-    if(id)return supabaseSrv.from('cae_ratings').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('cae_ratings').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('cae_ratings').insert(ins).select().single()
+    return supabase.from('cae_ratings').insert(ins).select().single()
 
   },
 
   async deleteCaeRating(id){
 
-    let q=supabaseSrv.from('cae_ratings').delete().eq('id',id)
+    let q=supabase.from('cae_ratings').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1778,7 +1777,7 @@ export const db = {
 
   async getCaeResults(filters={}){
 
-    let q=supabaseSrv.from('portal_cae_results')
+    let q=supabase.from('portal_cae_results')
 
       .select('*,cae_traits(id,category),cae_ratings(id,label,symbol)')
 
@@ -1802,7 +1801,7 @@ export const db = {
 
     const payload=Array.isArray(data)?data.map(inject):inject(data)
 
-    return supabaseSrv.from('portal_cae_results')
+    return supabase.from('portal_cae_results')
 
       .upsert(payload,{onConflict:'student_id,class_id,term_id,session_id,trait_id'}).select()
 
@@ -1814,7 +1813,7 @@ export const db = {
 
   async getReportPublish(filters={}){
 
-    let q=supabaseSrv.from('report_card_publish').select('*')
+    let q=supabase.from('report_card_publish').select('*')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1832,7 +1831,7 @@ export const db = {
 
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data
 
-    return supabaseSrv.from('report_card_publish')
+    return supabase.from('report_card_publish')
 
       .upsert(payload,{onConflict:'school_id,class_id,term_id,session_id'}).select().single()
 
@@ -1842,7 +1841,7 @@ export const db = {
 
   async getFeeStructures(filters={}){
 
-    let q=supabaseSrv.from('fee_structures').select('*,classes(id,name),sections(id,name,code),sessions(id,name),terms(id,name)').order('fee_type')
+    let q=supabase.from('fee_structures').select('*,classes(id,name),sections(id,name,code),sessions(id,name),terms(id,name)').order('fee_type')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1858,21 +1857,21 @@ export const db = {
 
   async upsertFee(data,id=null){
 
-    if(id)return supabaseSrv.from('fee_structures').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('fee_structures').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('fee_structures').insert(ins).select().single()
+    return supabase.from('fee_structures').insert(ins).select().single()
 
   },
 
-  async deleteFee(id){return supabaseSrv.from('fee_structures').delete().eq('id',id)},
+  async deleteFee(id){return supabase.from('fee_structures').delete().eq('id',id)},
 
 
 
   async getPayments(studentId=null){
 
-    let q=supabaseSrv.from('payments').select('*,students(id,name,admission_number),sessions(name),terms(name),fee_structures(fee_type,amount)').order('created_at',{ascending:false})
+    let q=supabase.from('payments').select('*,students(id,name,admission_number),sessions(name),terms(name),fee_structures(fee_type,amount)').order('created_at',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1884,11 +1883,11 @@ export const db = {
 
   async upsertPayment(data,id=null){
 
-    if(id)return supabaseSrv.from('payments').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('payments').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('payments').insert(ins).select().single()
+    return supabase.from('payments').insert(ins).select().single()
 
   },
 
@@ -1896,7 +1895,7 @@ export const db = {
 
   async getAnnouncements(){
 
-    let q=supabaseSrv.from('announcements').select('*').order('created_at',{ascending:false})
+    let q=supabase.from('announcements').select('*').order('created_at',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1906,17 +1905,17 @@ export const db = {
 
   async upsertAnnouncement(data,id=null){
 
-    if(id)return supabaseSrv.from('announcements').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('announcements').update(data).eq('id',id).select().single()
 
     const ins={...data}; if(this._schoolId&&!ins.school_id) ins.school_id=this._schoolId
 
-    return supabaseSrv.from('announcements').insert(ins).select().single()
+    return supabase.from('announcements').insert(ins).select().single()
 
   },
 
   async deleteAnnouncement(id){
 
-    let q=supabaseSrv.from('announcements').delete().eq('id',id)
+    let q=supabase.from('announcements').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -1930,7 +1929,7 @@ export const db = {
 
   async getStudentRequests(status=null){
 
-    let q=supabaseSrv.from('student_requests')
+    let q=supabase.from('student_requests')
 
       .select('*,classes(id,name,sections(name,code,color))')
 
@@ -1948,7 +1947,7 @@ export const db = {
 
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data
 
-    return supabaseSrv.from('student_requests').insert(payload).select().single()
+    return supabase.from('student_requests').insert(payload).select().single()
 
   },
 
@@ -1956,13 +1955,13 @@ export const db = {
 
     const payload=this._schoolId?rows.map(r=>({...r,school_id:this._schoolId})):rows
 
-    return supabaseSrv.from('student_requests').insert(payload).select()
+    return supabase.from('student_requests').insert(payload).select()
 
   },
 
   async reviewStudentRequest(id,status,adminNote,reviewedBy){
 
-    return supabaseSrv.from('student_requests').update({
+    return supabase.from('student_requests').update({
 
       status,admin_note:adminNote||null,
 
@@ -1974,7 +1973,7 @@ export const db = {
 
   async approveAndCreateStudent(reqId,reviewedBy){
 
-    let rq=supabaseSrv.from('student_requests').select('*').eq('id',reqId)
+    let rq=supabase.from('student_requests').select('*').eq('id',reqId)
 
     if(this._schoolId) rq=rq.eq('school_id',this._schoolId)
 
@@ -1982,7 +1981,7 @@ export const db = {
 
     if(re)return{error:re}
 
-    const {data:seq,error:se}=await supabaseSrv.rpc('nextval_student_reg')
+    const {data:seq,error:se}=await supabase.rpc('nextval_student_reg')
 
     if(se)return{error:se}
 
@@ -2014,11 +2013,11 @@ export const db = {
 
     if(this._schoolId) ins.school_id=this._schoolId
 
-    const {error:ue}=await supabaseSrv.from('students').insert(ins)
+    const {error:ue}=await supabase.from('students').insert(ins)
 
     if(ue)return{error:ue}
 
-    await supabaseSrv.from('student_requests').update({
+    await supabase.from('student_requests').update({
 
       status:'approved',reviewed_at:new Date().toISOString(),reviewed_by:reviewedBy
 
@@ -2034,7 +2033,7 @@ export const db = {
 
   async getSettings(){
 
-    let q=supabaseSrv.from('school_settings').select('*')
+    let q=supabase.from('school_settings').select('*')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2044,7 +2043,7 @@ export const db = {
 
   async getSetting(key){
 
-    let q=supabaseSrv.from('school_settings').select('value').eq('key',key)
+    let q=supabase.from('school_settings').select('value').eq('key',key)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2058,7 +2057,7 @@ export const db = {
 
     if(this._schoolId) row.school_id=this._schoolId
 
-    return supabaseSrv.from('school_settings').upsert(row,{onConflict:'school_id,key'}).select()
+    return supabase.from('school_settings').upsert(row,{onConflict:'school_id,key'}).select()
 
   },
 
@@ -2074,14 +2073,14 @@ export const db = {
 
     })
 
-    return supabaseSrv.from('school_settings').upsert(rows,{onConflict:'school_id,key'}).select()
+    return supabase.from('school_settings').upsert(rows,{onConflict:'school_id,key'}).select()
 
   },
 
   // ── Notification config (stored as JSON in school_settings key 'notif_config') ──
 
   async getNotifConfig(){
-    let q=supabaseSrv.from('school_settings').select('value').eq('key','notif_config')
+    let q=supabase.from('school_settings').select('value').eq('key','notif_config')
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     const {data,error}=await q.maybeSingle()
     if(error) return {data:null,error}
@@ -2092,14 +2091,14 @@ export const db = {
   async saveNotifConfig(config){
     const row={key:'notif_config',value:JSON.stringify(config),updated_at:new Date().toISOString()}
     if(this._schoolId) row.school_id=this._schoolId
-    const {error}=await supabaseSrv.from('school_settings').upsert(row,{onConflict:'school_id,key'})
+    const {error}=await supabase.from('school_settings').upsert(row,{onConflict:'school_id,key'})
     return {error}
   },
 
   // ── Digest config (stored as JSON in school_settings key 'digest_config') ──
 
   async getDigestConfig(){
-    let q=supabaseSrv.from('school_settings').select('value').eq('key','digest_config')
+    let q=supabase.from('school_settings').select('value').eq('key','digest_config')
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     const {data,error}=await q.maybeSingle()
     if(error) return {data:null,error}
@@ -2110,7 +2109,7 @@ export const db = {
   async saveDigestConfig(config){
     const row={key:'digest_config',value:JSON.stringify(config),updated_at:new Date().toISOString()}
     if(this._schoolId) row.school_id=this._schoolId
-    const {error}=await supabaseSrv.from('school_settings').upsert(row,{onConflict:'school_id,key'})
+    const {error}=await supabase.from('school_settings').upsert(row,{onConflict:'school_id,key'})
     return {error}
   },
 
@@ -2153,7 +2152,7 @@ export const db = {
 
   async loginGetSettingsForSchool(schoolId){
 
-    return supabaseSrv.from('school_settings').select('*').eq('school_id',schoolId)
+    return supabase.from('school_settings').select('*').eq('school_id',schoolId)
 
   },
 
@@ -2181,7 +2180,7 @@ export const db = {
 
   async getCaeStructures(){
 
-    let q=supabaseSrv.from('cae_structures')
+    let q=supabase.from('cae_structures')
 
       .select('*,sections(id,name,code,color)')
 
@@ -2195,7 +2194,7 @@ export const db = {
 
   async getCaeStructureBySectionId(sectionId){
 
-    let q=supabaseSrv.from('cae_structures')
+    let q=supabase.from('cae_structures')
 
       .select('*,sections(id,name,code,color)')
 
@@ -2213,7 +2212,7 @@ export const db = {
 
     if(id){
 
-      let q=supabaseSrv.from('cae_structures').update({...ins,updated_at:new Date().toISOString()}).eq('id',id)
+      let q=supabase.from('cae_structures').update({...ins,updated_at:new Date().toISOString()}).eq('id',id)
 
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2221,13 +2220,13 @@ export const db = {
 
     }
 
-    return supabaseSrv.from('cae_structures').insert(ins).select().single()
+    return supabase.from('cae_structures').insert(ins).select().single()
 
   },
 
   async deleteCaeStructure(id){
 
-    let q=supabaseSrv.from('cae_structures').delete().eq('id',id)
+    let q=supabase.from('cae_structures').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2239,7 +2238,7 @@ export const db = {
 
   async getCaeComponents(caeId){
 
-    return supabaseSrv.from('cae_components')
+    return supabase.from('cae_components')
 
       .select('*')
 
@@ -2251,19 +2250,19 @@ export const db = {
 
   async upsertCaeComponent(data,id=null){
 
-    if(id)return supabaseSrv.from('cae_components').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('cae_components').update(data).eq('id',id).select().single()
 
-    return supabaseSrv.from('cae_components').insert(data).select().single()
+    return supabase.from('cae_components').insert(data).select().single()
 
   },
 
-  async deleteCaeComponent(id){return supabaseSrv.from('cae_components').delete().eq('id',id)},
+  async deleteCaeComponent(id){return supabase.from('cae_components').delete().eq('id',id)},
 
   // Replace ALL components for a structure in one shot (delete+insert)
 
   async replaceCaeComponents(caeId, components){
 
-    await supabaseSrv.from('cae_components').delete().eq('cae_id',caeId)
+    await supabase.from('cae_components').delete().eq('cae_id',caeId)
 
     if(!components.length) return {data:[],error:null}
 
@@ -2283,7 +2282,7 @@ export const db = {
 
     }))
 
-    return supabaseSrv.from('cae_components').insert(rows).select()
+    return supabase.from('cae_components').insert(rows).select()
 
   },
 
@@ -2293,7 +2292,7 @@ export const db = {
 
   async getRolePermissions(role=null){
 
-    let q=supabaseSrv.from('role_permissions').select('*').order('role').order('page_id')
+    let q=supabase.from('role_permissions').select('*').order('role').order('page_id')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2309,7 +2308,7 @@ export const db = {
 
     if(this._schoolId) payload.school_id=this._schoolId
 
-    return supabaseSrv.from('role_permissions')
+    return supabase.from('role_permissions')
 
       .upsert(payload,{onConflict:'school_id,role,page_id'}).select()
 
@@ -2321,13 +2320,13 @@ export const db = {
 
   async getUserPermissions(userId){
 
-    return supabaseSrv.from('user_permissions').select('*').eq('user_id',userId)
+    return supabase.from('user_permissions').select('*').eq('user_id',userId)
 
   },
 
   async setUserPermission(userType,userId,pageId,allowed){
 
-    return supabaseSrv.from('user_permissions')
+    return supabase.from('user_permissions')
 
       .upsert({user_type:userType,user_id:userId,page_id:pageId,allowed,updated_at:new Date().toISOString()},
 
@@ -2337,7 +2336,7 @@ export const db = {
 
   async removeUserPermission(userType,userId,pageId){
 
-    return supabaseSrv.from('user_permissions')
+    return supabase.from('user_permissions')
 
       .delete().eq('user_type',userType).eq('user_id',userId).eq('page_id',pageId)
 
@@ -2347,7 +2346,7 @@ export const db = {
 
   async logPermissionChange(adminId,action,targetRole,targetUserId,pageId,oldVal,newVal){
 
-    return supabaseSrv.from('permission_audit_log')
+    return supabase.from('permission_audit_log')
 
       .insert({admin_id:adminId,action,target_role:targetRole||null,
 
@@ -2363,7 +2362,7 @@ export const db = {
 
   async getPermissionAuditLog(limit=100){
 
-    return supabaseSrv.from('permission_audit_log')
+    return supabase.from('permission_audit_log')
 
       .select('*').order('created_at',{ascending:false}).limit(limit)
 
@@ -2375,7 +2374,7 @@ export const db = {
 
   async getResultApprovals(filters={}){
 
-    let q=supabaseSrv.from('result_approvals')
+    let q=supabase.from('result_approvals')
 
       .select('*,classes(id,name),terms(id,name),sessions(id,name)')
 
@@ -2395,7 +2394,7 @@ export const db = {
 
   async getResultApproval(classId,termId,sessionId){
 
-    let q=supabaseSrv.from('result_approvals')
+    let q=supabase.from('result_approvals')
 
       .select('*')
 
@@ -2411,7 +2410,7 @@ export const db = {
 
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data
 
-    return supabaseSrv.from('result_approvals')
+    return supabase.from('result_approvals')
 
       .upsert({...payload,updated_at:new Date().toISOString()},{onConflict:'school_id,class_id,term_id,session_id'})
 
@@ -2427,9 +2426,9 @@ export const db = {
 
     const [{data:ss},{data:ts}]=await Promise.all([
 
-      supabaseSrv.from('sessions').select('id').eq('is_active',true).eq('school_id',this._schoolId).limit(1),
+      supabase.from('sessions').select('id').eq('is_active',true).eq('school_id',this._schoolId).limit(1),
 
-      supabaseSrv.from('terms').select('id').eq('is_active',true).eq('school_id',this._schoolId).limit(1),
+      supabase.from('terms').select('id').eq('is_active',true).eq('school_id',this._schoolId).limit(1),
 
     ]);
 
@@ -2439,7 +2438,7 @@ export const db = {
 
     if(!sessionId||!termId)return{count:0};
 
-    let q=supabaseSrv.from('result_approvals')
+    let q=supabase.from('result_approvals')
 
       .select('*',{count:'exact',head:true})
 
@@ -2467,7 +2466,7 @@ export const db = {
 
     if(this._schoolId) payload.school_id=this._schoolId
 
-    return supabaseSrv.from('result_approvals')
+    return supabase.from('result_approvals')
 
       .upsert(payload,{onConflict:'class_id,term_id,session_id'}).select().single()
 
@@ -2485,7 +2484,7 @@ export const db = {
 
     if(this._schoolId) payload.school_id=this._schoolId
 
-    return supabaseSrv.from('result_approvals')
+    return supabase.from('result_approvals')
 
       .upsert(payload,{onConflict:'class_id,term_id,session_id'}).select().single()
 
@@ -2501,7 +2500,7 @@ export const db = {
 
     if(this._schoolId) payload.school_id=this._schoolId
 
-    return supabaseSrv.from('result_approvals')
+    return supabase.from('result_approvals')
 
       .upsert(payload,{onConflict:'class_id,term_id,session_id'}).select().single()
 
@@ -2517,7 +2516,7 @@ export const db = {
 
     if(this._schoolId) payload.school_id=this._schoolId
 
-    return supabaseSrv.from('result_approvals')
+    return supabase.from('result_approvals')
 
       .upsert(payload,{onConflict:'class_id,term_id,session_id'}).select().single()
 
@@ -2529,7 +2528,7 @@ export const db = {
 
   async getSignatures(activeOnly=true){
 
-    let q=supabaseSrv.from('signatures').select('*').order('name')
+    let q=supabase.from('signatures').select('*').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2545,15 +2544,15 @@ export const db = {
 
     if(this._schoolId&&!payload.school_id) payload.school_id=this._schoolId
 
-    if(id) return supabaseSrv.from('signatures').update(payload).eq('id',id).select().single()
+    if(id) return supabase.from('signatures').update(payload).eq('id',id).select().single()
 
-    return supabaseSrv.from('signatures').insert(payload).select().single()
+    return supabase.from('signatures').insert(payload).select().single()
 
   },
 
   async deleteSignature(id){
 
-    let q=supabaseSrv.from('signatures').delete().eq('id',id)
+    let q=supabase.from('signatures').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2567,7 +2566,7 @@ export const db = {
 
   async getReportTemplates(){
 
-    let q=supabaseSrv.from('report_templates')
+    let q=supabase.from('report_templates')
 
       .select('*,teacher_sig:signatures!report_templates_teacher_signature_id_fkey(id,name,image_url),principal_sig:signatures!report_templates_principal_signature_id_fkey(id,name,image_url)')
 
@@ -2585,15 +2584,15 @@ export const db = {
 
     if(this._schoolId&&!payload.school_id) payload.school_id=this._schoolId
 
-    if(id) return supabaseSrv.from('report_templates').update(payload).eq('id',id).select().single()
+    if(id) return supabase.from('report_templates').update(payload).eq('id',id).select().single()
 
-    return supabaseSrv.from('report_templates').insert(payload).select().single()
+    return supabase.from('report_templates').insert(payload).select().single()
 
   },
 
   async deleteReportTemplate(id){
 
-    let q=supabaseSrv.from('report_templates').delete().eq('id',id)
+    let q=supabase.from('report_templates').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2603,13 +2602,13 @@ export const db = {
 
   async setDefaultTemplate(id){
 
-    let q=supabaseSrv.from('report_templates').update({is_default:false}).neq('id',id)
+    let q=supabase.from('report_templates').update({is_default:false}).neq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
     await q
 
-    return supabaseSrv.from('report_templates').update({is_default:true}).eq('id',id).select().single()
+    return supabase.from('report_templates').update({is_default:true}).eq('id',id).select().single()
 
   },
 
@@ -2627,7 +2626,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv.from('portal_results')
+      let q=supabase.from('portal_results')
 
         .select('student_id,class_id,subject_id')
 
@@ -2659,7 +2658,7 @@ export const db = {
 
     if(!this._schoolId) return{data:[],error:null}
 
-    let q=supabaseSrv.from('class_subjects')
+    let q=supabase.from('class_subjects')
 
       .select('class_id,subject_id,subjects(id,name,code)')
 
@@ -2681,7 +2680,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv.from('portal_results')
+      let q=supabase.from('portal_results')
 
         .select('student_id,class_id,total_score,ca_score,exam_score,students(first_name,last_name,middle_name),classes(name,sections(name,color)),section_subjects(name)')
 
@@ -2837,7 +2836,7 @@ export const db = {
 
       : rows;
 
-    return supabaseSrv.from('students').insert(hydrated)
+    return supabase.from('students').insert(hydrated)
 
   },
 
@@ -2847,7 +2846,7 @@ export const db = {
 
   async getAttendance(filters={}){
 
-    let q=supabaseSrv.from('attendance').select('*,students(id,first_name,last_name,name),classes(id,name)').order('date',{ascending:false})
+    let q=supabase.from('attendance').select('*,students(id,first_name,last_name,name),classes(id,name)').order('date',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2871,7 +2870,7 @@ export const db = {
 
     const rows=Array.isArray(records)?records.map(inject):inject(records)
 
-    return supabaseSrv.from('attendance')
+    return supabase.from('attendance')
 
       .upsert(rows,{onConflict:'school_id,student_id,date'})
 
@@ -2881,7 +2880,7 @@ export const db = {
 
   async getAttendanceSummary(classId,termId,sessionId){
 
-    let q=supabaseSrv.from('attendance')
+    let q=supabase.from('attendance')
 
       .select('student_id,status')
 
@@ -2899,7 +2898,7 @@ export const db = {
 
   async getEmailTemplates(){
 
-    let q=supabaseSrv.from('email_templates').select('*').order('name')
+    let q=supabase.from('email_templates').select('*').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2915,7 +2914,7 @@ export const db = {
 
     if(id){
 
-      let q=supabaseSrv.from('email_templates').update(payload).eq('id',id)
+      let q=supabase.from('email_templates').update(payload).eq('id',id)
 
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2923,13 +2922,13 @@ export const db = {
 
     }
 
-    return supabaseSrv.from('email_templates').insert(payload).select().single()
+    return supabase.from('email_templates').insert(payload).select().single()
 
   },
 
   async deleteEmailTemplate(id){
 
-    let q=supabaseSrv.from('email_templates').delete().eq('id',id)
+    let q=supabase.from('email_templates').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -2959,7 +2958,7 @@ export const db = {
 
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data
 
-    return supabaseSrv.from('email_logs').insert(payload).select().single()
+    return supabase.from('email_logs').insert(payload).select().single()
 
   },
 
@@ -2995,7 +2994,7 @@ export const db = {
 
     for(let i=0;i<rows.length;i+=CHUNK){
 
-      const{error}=await supabaseSrv.from('email_queue').insert(rows.slice(i,i+CHUNK));
+      const{error}=await supabase.from('email_queue').insert(rows.slice(i,i+CHUNK));
 
       if(error)return{error};
 
@@ -3007,7 +3006,7 @@ export const db = {
 
   async getEmailQueueStatus(batchId){
 
-    const{data,error}=await supabaseSrv.from('email_queue')
+    const{data,error}=await supabase.from('email_queue')
 
       .select('status,error_message,to_email,processed_at')
 
@@ -3041,7 +3040,7 @@ export const db = {
 
     const schoolFilter=this._schoolId;
 
-    let q=supabaseSrv.from('email_queue')
+    let q=supabase.from('email_queue')
 
       .select('batch_id,status,to_email,subject,created_at,processed_at,error_message')
 
@@ -3094,7 +3093,7 @@ export const db = {
 
     // Re-mark any stuck "sending" rows back to "pending" then re-trigger
 
-    await supabaseSrv.from('email_queue').update({status:'pending'}).eq('batch_id',batchId).eq('status','sending')
+    await supabase.from('email_queue').update({status:'pending'}).eq('batch_id',batchId).eq('status','sending')
 
     return{batchId,error:null}
 
@@ -3118,7 +3117,7 @@ export const db = {
 
   async getFeeItems(activeOnly=false){
 
-    let q=supabaseSrv.from('fee_items').select('*').order('name')
+    let q=supabase.from('fee_items').select('*').order('name')
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3132,7 +3131,7 @@ export const db = {
 
   async getTemplateBillCounts(academicYear,term){
 
-    const{data,error}=await supabaseSrv.from('fee_bills')
+    const{data,error}=await supabase.from('fee_bills')
 
       .select('template_id').eq('academic_year',academicYear).eq('term',term)
 
@@ -3152,7 +3151,7 @@ export const db = {
 
   async getItemBillCounts(academicYear,term){
 
-    const{data:bills,error:bErr}=await supabaseSrv.from('fee_bills')
+    const{data:bills,error:bErr}=await supabase.from('fee_bills')
 
       .select('id').eq('academic_year',academicYear).eq('term',term)
 
@@ -3164,7 +3163,7 @@ export const db = {
 
     while(true){
 
-      const{data,error}=await supabaseSrv.from('fee_bill_items')
+      const{data,error}=await supabase.from('fee_bill_items')
 
         .select('fee_item_id').in('bill_id',billIds).range(from,from+BATCH-1)
 
@@ -3190,15 +3189,15 @@ export const db = {
 
     const payload={...data,updated_at:new Date().toISOString()}
 
-    if(id)return supabaseSrv.from('fee_items').update(payload).eq('id',id).select().single()
+    if(id)return supabase.from('fee_items').update(payload).eq('id',id).select().single()
 
-    return supabaseSrv.from('fee_items').insert(payload).select().single()
+    return supabase.from('fee_items').insert(payload).select().single()
 
   },
 
   async deleteFeeItem(id){
 
-    let q=supabaseSrv.from('fee_items').delete().eq('id',id)
+    let q=supabase.from('fee_items').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3212,9 +3211,9 @@ export const db = {
 
     const [tmplRes,billRes]=await Promise.all([
 
-      supabaseSrv.from('fee_template_items').select('id,fee_templates(name)',{count:'exact'}).eq('fee_item_id',id),
+      supabase.from('fee_template_items').select('id,fee_templates(name)',{count:'exact'}).eq('fee_item_id',id),
 
-      supabaseSrv.from('fee_bill_items').select('id',{count:'exact'}).eq('fee_item_id',id).limit(1),
+      supabase.from('fee_bill_items').select('id',{count:'exact'}).eq('fee_item_id',id).limit(1),
 
     ]);
 
@@ -3238,7 +3237,7 @@ export const db = {
 
   async getFeeTemplates(){
 
-    let q=supabaseSrv.from('fee_templates').select('*,fee_template_items(*,fee_items!fee_template_items_fee_item_id_fkey(id,name))').order('created_at',{ascending:false})
+    let q=supabase.from('fee_templates').select('*,fee_template_items(*,fee_items!fee_template_items_fee_item_id_fkey(id,name))').order('created_at',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3250,17 +3249,17 @@ export const db = {
 
     const payload={...data,updated_at:new Date().toISOString()}
 
-    if(id)return supabaseSrv.from('fee_templates').update(payload).eq('id',id).select().single()
+    if(id)return supabase.from('fee_templates').update(payload).eq('id',id).select().single()
 
     const ins=this._schoolId?{...payload,school_id:this._schoolId}:payload
 
-    return supabaseSrv.from('fee_templates').insert(ins).select().single()
+    return supabase.from('fee_templates').insert(ins).select().single()
 
   },
 
   async deleteFeeTemplate(id){
 
-    let q=supabaseSrv.from('fee_templates').delete().eq('id',id)
+    let q=supabase.from('fee_templates').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3270,13 +3269,13 @@ export const db = {
 
   async setActiveTemplate(id){
 
-    let deactivate=supabaseSrv.from('fee_templates').update({is_active:false}).neq('id',id)
+    let deactivate=supabase.from('fee_templates').update({is_active:false}).neq('id',id)
 
     if(this._schoolId) deactivate=deactivate.eq('school_id',this._schoolId)
 
     await deactivate
 
-    return supabaseSrv.from('fee_templates').update({is_active:true}).eq('id',id).select().single()
+    return supabase.from('fee_templates').update({is_active:true}).eq('id',id).select().single()
 
   },
 
@@ -3286,17 +3285,17 @@ export const db = {
 
   async upsertFeeTemplateItem(data,id=null){
 
-    if(id)return supabaseSrv.from('fee_template_items').update(data).eq('id',id).select().single()
+    if(id)return supabase.from('fee_template_items').update(data).eq('id',id).select().single()
 
-    return supabaseSrv.from('fee_template_items').insert(data).select().single()
+    return supabase.from('fee_template_items').insert(data).select().single()
 
   },
 
-  async deleteFeeTemplateItem(id){return supabaseSrv.from('fee_template_items').delete().eq('id',id)},
+  async deleteFeeTemplateItem(id){return supabase.from('fee_template_items').delete().eq('id',id)},
 
-  async deleteTemplateItems(templateId){return supabaseSrv.from('fee_template_items').delete().eq('template_id',templateId)},
+  async deleteTemplateItems(templateId){return supabase.from('fee_template_items').delete().eq('template_id',templateId)},
 
-  async insertTemplateItems(rows){return supabaseSrv.from('fee_template_items').insert(rows).select()},
+  async insertTemplateItems(rows){return supabase.from('fee_template_items').insert(rows).select()},
 
 
 
@@ -3316,7 +3315,7 @@ export const db = {
 
     while(true){
 
-      const{data,error}=await supabaseSrv.from('students').select('id').range(from,from+BATCH-1);
+      const{data,error}=await supabase.from('students').select('id').range(from,from+BATCH-1);
 
       if(error)return{deleted:0,error};
 
@@ -3336,7 +3335,7 @@ export const db = {
 
     while(true){
 
-      const{data,error}=await supabaseSrv.from('fee_bills').select('id,student_id').range(from,from+BATCH-1);
+      const{data,error}=await supabase.from('fee_bills').select('id,student_id').range(from,from+BATCH-1);
 
       if(error)return{deleted:0,error};
 
@@ -3354,7 +3353,7 @@ export const db = {
 
     if(!orphanIds.length)return{deleted:0};
 
-    const{error}=await supabaseSrv.from('fee_bills').delete().in('id',orphanIds);
+    const{error}=await supabase.from('fee_bills').delete().in('id',orphanIds);
 
     return{deleted:error?0:orphanIds.length,error};
 
@@ -3362,7 +3361,7 @@ export const db = {
 
   async checkExistingBill(studentId,academicYear,term){
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .select('id')
 
@@ -3378,7 +3377,7 @@ export const db = {
 
   async getFeeBills(filters={}){
 
-    let q=supabaseSrv.from('fee_bills')
+    let q=supabase.from('fee_bills')
 
       .select('*,fee_bill_items(*),fee_payments(*),fee_refunds(*),fee_discounts(*)')
 
@@ -3404,7 +3403,7 @@ export const db = {
 
   async getFeeBill(id){
 
-    return supabaseSrv.from('fee_bills').select('*,fee_bill_items(*),fee_payments(*)').eq('id',id).single()
+    return supabase.from('fee_bills').select('*,fee_bill_items(*),fee_payments(*)').eq('id',id).single()
 
   },
 
@@ -3412,21 +3411,21 @@ export const db = {
 
     const payload={...data,updated_at:new Date().toISOString()}
 
-    if(id)return supabaseSrv.from('fee_bills').update(payload).eq('id',id).select().single()
+    if(id)return supabase.from('fee_bills').update(payload).eq('id',id).select().single()
 
     const ins=this._schoolId?{...payload,school_id:this._schoolId}:payload
 
-    return supabaseSrv.from('fee_bills').insert(ins).select().single()
+    return supabase.from('fee_bills').insert(ins).select().single()
 
   },
 
-  async deleteFeeBill(id){return supabaseSrv.from('fee_bills').delete().eq('id',id)},
+  async deleteFeeBill(id){return supabase.from('fee_bills').delete().eq('id',id)},
 
-  async deleteFeeBills(ids){return supabaseSrv.from('fee_bills').delete().in('id',ids)},
+  async deleteFeeBills(ids){return supabase.from('fee_bills').delete().in('id',ids)},
 
   async checkExistingBill(studentId,academicYear,term){
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .select('id')
 
@@ -3444,7 +3443,7 @@ export const db = {
 
   async getBilledStudentIdsForTerm(academicYear,term){
 
-    let q=supabaseSrv.from('fee_bills').select('student_id,class_id').eq('academic_year',academicYear).eq('term',term)
+    let q=supabase.from('fee_bills').select('student_id,class_id').eq('academic_year',academicYear).eq('term',term)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3462,7 +3461,7 @@ export const db = {
 
     // it should not block a fresh bill from being generated.
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .select('id,student_id')
 
@@ -3480,7 +3479,7 @@ export const db = {
 
   async getCorruptCFBillsForStudents(studentIds,academicYear,term){
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .select('id,student_id')
 
@@ -3504,7 +3503,7 @@ export const db = {
 
     if(!studentIds?.length)return{data:[],error:null};
 
-    const{data,error}=await supabaseSrv.from('fee_bills')
+    const{data,error}=await supabase.from('fee_bills')
 
       .select('id,student_id,academic_year,term,total_amount,amount_paid,balance,status')
 
@@ -3530,7 +3529,7 @@ export const db = {
 
     if(!billIds?.length)return{error:null};
 
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .update({carried_forward:true,updated_at:new Date().toISOString()})
 
@@ -3543,7 +3542,7 @@ export const db = {
     if(!billIds?.length)return{error:null};
 
     // NOTE: do NOT include `balance` — it is a GENERATED column (total_amount - amount_paid)
-    return supabaseSrv.from('fee_bills')
+    return supabase.from('fee_bills')
 
       .update({status:'paid',updated_at:new Date().toISOString()})
 
@@ -3559,7 +3558,7 @@ export const db = {
     const map={};
     const BATCH=1000; let from=0;
     while(true){
-      let q=supabaseSrv.from('fee_bills')
+      let q=supabase.from('fee_bills')
         .select('student_id,balance,status,carried_forward')
         .in('student_id',ids)
         .eq('carried_forward',false)
@@ -3579,7 +3578,7 @@ export const db = {
 
   async getStudentOutstandingBalance(studentId){
 
-    const{data,error}=await supabaseSrv.from('fee_bills')
+    const{data,error}=await supabase.from('fee_bills')
 
       .select('balance,status')
 
@@ -3603,13 +3602,13 @@ export const db = {
 
   async insertFeeBillItems(items){
 
-    return supabaseSrv.from('fee_bill_items').insert(items).select()
+    return supabase.from('fee_bill_items').insert(items).select()
 
   },
 
   async updateFeeBillItem(id,data){
 
-    return supabaseSrv.from('fee_bill_items').update(data).eq('id',id).select().single()
+    return supabase.from('fee_bill_items').update(data).eq('id',id).select().single()
 
   },
 
@@ -3619,7 +3618,7 @@ export const db = {
 
     if(!ids?.length)return{error:null};
 
-    return supabaseSrv.from('fee_bill_items').delete().in('id',ids);
+    return supabase.from('fee_bill_items').delete().in('id',ids);
 
   },
 
@@ -3629,7 +3628,7 @@ export const db = {
 
     if(!sourceBillIds?.length)return{data:[],error:null};
 
-    return supabaseSrv.from('fee_bill_items')
+    return supabase.from('fee_bill_items')
 
       .select('id,bill_id,amount')
 
@@ -3648,19 +3647,19 @@ export const db = {
     if(!billIds?.length)return{error:null};
 
     // Fetch all bill items for these bills
-    const{data:items,error:iErr}=await supabaseSrv.from('fee_bill_items')
+    const{data:items,error:iErr}=await supabase.from('fee_bill_items')
       .select('bill_id,amount,is_included')
       .in('bill_id',billIds);
     if(iErr)return{error:iErr};
 
     // Fetch discounts for these bills
-    const{data:discountRows,error:dErr}=await supabaseSrv.from('fee_discounts')
+    const{data:discountRows,error:dErr}=await supabase.from('fee_discounts')
       .select('bill_id,amount')
       .in('bill_id',billIds);
     if(dErr)return{error:dErr};
 
     // Fetch current amount_paid for these bills
-    const{data:bills,error:bErr}=await supabaseSrv.from('fee_bills')
+    const{data:bills,error:bErr}=await supabase.from('fee_bills')
       .select('id,amount_paid')
       .in('id',billIds);
     if(bErr)return{error:bErr};
@@ -3691,7 +3690,7 @@ export const db = {
       // A fully-discounted bill (total=0) is always paid even if amount_paid=0
       const status=total<=0?'paid':paid<=0?'unpaid':balance<=0?'paid':'partial';
       // Do NOT include `balance` — it is a GENERATED column, writing it causes a Postgres 400 error
-      return supabaseSrv.from('fee_bills')
+      return supabase.from('fee_bills')
         .update({total_amount:total,status,updated_at:new Date().toISOString()})
         .eq('id',id);
     });
@@ -3708,9 +3707,9 @@ export const db = {
 
     const ops=[];
 
-    if(includeIds.length) ops.push(supabaseSrv.from('fee_bill_items').update({is_included:true}).in('id',includeIds));
+    if(includeIds.length) ops.push(supabase.from('fee_bill_items').update({is_included:true}).in('id',includeIds));
 
-    if(excludeIds.length) ops.push(supabaseSrv.from('fee_bill_items').update({is_included:false}).in('id',excludeIds));
+    if(excludeIds.length) ops.push(supabase.from('fee_bill_items').update({is_included:false}).in('id',excludeIds));
 
     const results=await Promise.all(ops);
 
@@ -3726,7 +3725,7 @@ export const db = {
 
   async getFeePayments(filters={}){
 
-    let q=supabaseSrv.from('fee_payments').select('*').order('payment_date',{ascending:false})
+    let q=supabase.from('fee_payments').select('*').order('payment_date',{ascending:false})
 
     if(filters.bill_id)q=q.eq('bill_id',filters.bill_id)
 
@@ -3738,10 +3737,10 @@ export const db = {
 
   async insertFeePayment(data){
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data;
-    return supabaseSrv.from('fee_payments').insert(payload).select().single()
+    return supabase.from('fee_payments').insert(payload).select().single()
   },
 
-  async deleteFeePayment(id){return supabaseSrv.from('fee_payments').delete().eq('id',id)},
+  async deleteFeePayment(id){return supabase.from('fee_payments').delete().eq('id',id)},
 
 
 
@@ -3749,7 +3748,7 @@ export const db = {
 
   async getFeeRefunds(filters={}){
 
-    let q=supabaseSrv.from('fee_refunds').select('*').order('refund_date',{ascending:false})
+    let q=supabase.from('fee_refunds').select('*').order('refund_date',{ascending:false})
 
     if(filters.bill_id)q=q.eq('bill_id',filters.bill_id)
 
@@ -3761,53 +3760,53 @@ export const db = {
 
   async insertFeeRefund(data){
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data;
-    return supabaseSrv.from('fee_refunds').insert(payload).select().single()
+    return supabase.from('fee_refunds').insert(payload).select().single()
   },
 
   async deleteFeeRefund(id){
-    let q=supabaseSrv.from('fee_refunds').delete().eq('id',id)
+    let q=supabase.from('fee_refunds').delete().eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
 
   async deleteFeePayment(id){
-    let q=supabaseSrv.from('fee_payments').delete().eq('id',id)
+    let q=supabase.from('fee_payments').delete().eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
 
   async deleteRefundsByPayment(paymentId){
-    let q=supabaseSrv.from('fee_refunds').delete().eq('payment_id',paymentId)
+    let q=supabase.from('fee_refunds').delete().eq('payment_id',paymentId)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
 
   async getFeePayment(id){
-    let q=supabaseSrv.from('fee_payments').select('id,bill_id,amount,is_refunded').eq('id',id)
+    let q=supabase.from('fee_payments').select('id,bill_id,amount,is_refunded').eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q.maybeSingle()
   },
 
   async checkDuplicateBankRef(bankRef){
-    let q=supabaseSrv.from('fee_payments').select('id').eq('bank_reference',bankRef)
+    let q=supabase.from('fee_payments').select('id').eq('bank_reference',bankRef)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q.maybeSingle()
   },
 
   async checkRefundByPayment(paymentId){
-    let q=supabaseSrv.from('fee_refunds').select('id').eq('payment_id',paymentId)
+    let q=supabase.from('fee_refunds').select('id').eq('payment_id',paymentId)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q.maybeSingle()
   },
 
   async deleteFeeAuditEntry(id){
-    let q=supabaseSrv.from('fee_audit_log').delete().eq('id',id)
+    let q=supabase.from('fee_audit_log').delete().eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
 
   async deleteFeeDiscount(id){
-    let q=supabaseSrv.from('fee_discounts').delete().eq('id',id)
+    let q=supabase.from('fee_discounts').delete().eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
@@ -3815,15 +3814,15 @@ export const db = {
   // Clear all payment, refund, and audit history for a bill (bill itself stays intact)
   async clearBillHistory(billId){
     const [r1,r2,r3]=await Promise.all([
-      supabaseSrv.from('fee_payments').delete().eq('bill_id',billId),
-      supabaseSrv.from('fee_refunds').delete().eq('bill_id',billId),
-      supabaseSrv.from('fee_audit_log').delete().eq('bill_id',billId),
+      supabase.from('fee_payments').delete().eq('bill_id',billId),
+      supabase.from('fee_refunds').delete().eq('bill_id',billId),
+      supabase.from('fee_audit_log').delete().eq('bill_id',billId),
     ])
     return {r1,r2,r3,error:r1.error||r2.error||r3.error}
   },
 
   async markPaymentRefunded(id){
-    let q=supabaseSrv.from('fee_payments').update({is_refunded:true}).eq('id',id)
+    let q=supabase.from('fee_payments').update({is_refunded:true}).eq('id',id)
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
     return q
   },
@@ -3834,18 +3833,18 @@ export const db = {
 
   async getFeeDiscounts(billId){
 
-    return supabaseSrv.from('fee_discounts').select('*').eq('bill_id',billId).order('created_at')
+    return supabase.from('fee_discounts').select('*').eq('bill_id',billId).order('created_at')
 
   },
 
   async insertFeeDiscount(data){
     const payload=this._schoolId?{...data,school_id:this._schoolId}:data;
-    return supabaseSrv.from('fee_discounts').insert(payload).select().single()
+    return supabase.from('fee_discounts').insert(payload).select().single()
   },
 
   async deleteFeeDiscount(id){
 
-    return supabaseSrv.from('fee_discounts').delete().eq('id',id)
+    return supabase.from('fee_discounts').delete().eq('id',id)
 
   },
 
@@ -3857,7 +3856,7 @@ export const db = {
 
     // entry: {bill_id, student_id, action, amount?, details?, performed_by?}
 
-    return supabaseSrv.from('fee_audit_log').insert({
+    return supabase.from('fee_audit_log').insert({
 
       ...entry,
 
@@ -3873,13 +3872,13 @@ export const db = {
 
     const rows=entries.map(e=>({...e,performed_by:e.performed_by||'admin'}));
 
-    return supabaseSrv.from('fee_audit_log').insert(rows);
+    return supabase.from('fee_audit_log').insert(rows);
 
   },
 
   async getFeeAuditLog(billId){
 
-    return supabaseSrv.from('fee_audit_log')
+    return supabase.from('fee_audit_log')
 
       .select('*').eq('bill_id',billId)
 
@@ -3889,7 +3888,7 @@ export const db = {
 
   async getFeeAuditLogAll(){
 
-    let q=supabaseSrv.from('fee_audit_log').select('*').order('created_at',{ascending:false}).limit(500)
+    let q=supabase.from('fee_audit_log').select('*').order('created_at',{ascending:false}).limit(500)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -3899,7 +3898,7 @@ export const db = {
 
   async getFeeAuditLogByStudent(studentId){
     if(!studentId)return{data:[],error:null};
-    return supabaseSrv.from('fee_audit_log')
+    return supabase.from('fee_audit_log')
       .select('*')
       .eq('school_id',this._schoolId)
       .eq('student_id',String(studentId))
@@ -3951,7 +3950,7 @@ export const db = {
 
   async updateManualTranscript(id,data,subjects){
 
-    let uq=supabaseSrv.from('manual_transcripts').update(data).eq('id',id)
+    let uq=supabase.from('manual_transcripts').update(data).eq('id',id)
 
     if(this._schoolId) uq=uq.eq('school_id',this._schoolId)
 
@@ -3959,13 +3958,13 @@ export const db = {
 
     if(error)return{error}
 
-    await supabaseSrv.from('manual_transcript_subjects').delete().eq('transcript_id',id)
+    await supabase.from('manual_transcript_subjects').delete().eq('transcript_id',id)
 
     if(subjects&&subjects.length>0){
 
       const rows=subjects.map((s,i)=>({...s,transcript_id:id,display_order:i}))
 
-      await supabaseSrv.from('manual_transcript_subjects').insert(rows)
+      await supabase.from('manual_transcript_subjects').insert(rows)
 
     }
 
@@ -3975,7 +3974,7 @@ export const db = {
 
   async deleteManualTranscript(id){
 
-    let q=supabaseSrv.from('manual_transcripts').delete().eq('id',id)
+    let q=supabase.from('manual_transcripts').delete().eq('id',id)
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -4001,15 +4000,15 @@ export const db = {
     const payload={...rest,updated_at:new Date().toISOString()}
     if(this._schoolId)payload.school_id=this._schoolId
     if(id){
-      return supabaseSrv.from('transcript_drafts').update(payload).eq('id',id).select().single()
+      return supabase.from('transcript_drafts').update(payload).eq('id',id).select().single()
     }
-    return supabaseSrv.from('transcript_drafts')
+    return supabase.from('transcript_drafts')
       .insert({...payload,created_by_name,created_at:new Date().toISOString()})
       .select().single()
   },
 
   async deleteTranscriptDraft(id){
-    return supabaseSrv.from('transcript_drafts').delete().eq('id',id)
+    return supabase.from('transcript_drafts').delete().eq('id',id)
   },
 
 
@@ -4020,7 +4019,7 @@ export const db = {
 
     // entry: {action, entity_type, entity_id, entity_name, old_value?, new_value?, performed_by?, notes?}
 
-    return supabaseSrv.from('admin_audit_log').insert({
+    return supabase.from('admin_audit_log').insert({
 
       ...entry,
 
@@ -4046,13 +4045,13 @@ export const db = {
 
     }));
 
-    return supabaseSrv.from('admin_audit_log').insert(rows);
+    return supabase.from('admin_audit_log').insert(rows);
 
   },
 
   async getAdminAuditLog(filters={}){
 
-    let q=supabaseSrv.from('admin_audit_log').select('*').order('performed_at',{ascending:false})
+    let q=supabase.from('admin_audit_log').select('*').order('performed_at',{ascending:false})
 
     if(this._schoolId)      q=q.eq('school_id',this._schoolId)
 
@@ -4072,7 +4071,7 @@ export const db = {
 
     if(!studentId)return{data:[],error:null};
 
-    return supabaseSrv.from('admin_audit_log')
+    return supabase.from('admin_audit_log')
 
       .select('*')
 
@@ -4094,7 +4093,7 @@ export const db = {
 
   async getAllResultApprovalsForTerm(termId,sessionId){
 
-    let q=supabaseSrv.from('result_approvals')
+    let q=supabase.from('result_approvals')
 
       .select('class_id,ea_status,ma_status')
 
@@ -4108,7 +4107,7 @@ export const db = {
 
   async getAllReportPublishesForTerm(termId,sessionId){
 
-    let q=supabaseSrv.from('report_card_publish')
+    let q=supabase.from('report_card_publish')
 
       .select('class_id,is_published')
 
@@ -4132,7 +4131,7 @@ export const db = {
 
     while(true){
 
-      let q=supabaseSrv.from('portal_results')
+      let q=supabase.from('portal_results')
 
         .select('class_id')
 
@@ -4194,7 +4193,7 @@ export const db = {
 
       if(!rows.length) return Promise.resolve({error:null});
 
-      const q=supabaseSrv.from(table).insert(rows,{defaultToNull:false});
+      const q=supabase.from(table).insert(rows,{defaultToNull:false});
 
       return q;
 
@@ -4208,7 +4207,7 @@ export const db = {
 
     if(items.sections){
 
-      const {data:srcSections,error:e}=await supabaseSrv.from('sections').select('*').eq('school_id',srcId);
+      const {data:srcSections,error:e}=await supabase.from('sections').select('*').eq('school_id',srcId);
 
       if(e){err(`Sections fetch failed: ${e.message}`);hadError=true;}
 
@@ -4222,11 +4221,11 @@ export const db = {
 
           // Check if section with same name already exists in dst
 
-          const {data:ex}=await supabaseSrv.from('sections').select('id').eq('school_id',dstId).eq('name',s.name).limit(1);
+          const {data:ex}=await supabase.from('sections').select('id').eq('school_id',dstId).eq('name',s.name).limit(1);
 
           if(ex&&ex.length>0){ sectionIdMap[s.id]=ex[0].id; skipped++; continue; }
 
-          const {data:ins_,error:ie}=await supabaseSrv.from('sections').insert(remap(s)).select('id').single();
+          const {data:ins_,error:ie}=await supabase.from('sections').insert(remap(s)).select('id').single();
 
           if(ie){err(`Section "${s.name}": ${ie.message}`);hadError=true;}
 
@@ -4248,7 +4247,7 @@ export const db = {
 
     if(items.section_subjects){
 
-      const {data:srcSS,error:e}=await supabaseSrv.from('section_subjects').select('*').eq('school_id',srcId);
+      const {data:srcSS,error:e}=await supabase.from('section_subjects').select('*').eq('school_id',srcId);
 
       if(e){err(`Section subjects fetch failed: ${e.message}`);hadError=true;}
 
@@ -4262,11 +4261,11 @@ export const db = {
 
           const dstSectionId=sectionIdMap[ss.section_id]??ss.section_id;
 
-          const {data:ex}=await supabaseSrv.from('section_subjects').select('id').eq('school_id',dstId).eq('section_id',dstSectionId).eq('code',ss.code).limit(1);
+          const {data:ex}=await supabase.from('section_subjects').select('id').eq('school_id',dstId).eq('section_id',dstSectionId).eq('code',ss.code).limit(1);
 
           if(ex&&ex.length>0){ sectionSubjectIdMap[ss.id]=ex[0].id; skipped++; continue; }
 
-          const {data:ins_,error:ie}=await supabaseSrv.from('section_subjects')
+          const {data:ins_,error:ie}=await supabase.from('section_subjects')
 
             .insert({...remap(ss),section_id:dstSectionId}).select('id').single();
 
@@ -4288,7 +4287,7 @@ export const db = {
 
     if(items.classes){
 
-      const {data:srcClasses,error:e}=await supabaseSrv.from('classes').select('*').eq('school_id',srcId);
+      const {data:srcClasses,error:e}=await supabase.from('classes').select('*').eq('school_id',srcId);
 
       if(e){err(`Classes fetch failed: ${e.message}`);hadError=true;}
 
@@ -4302,11 +4301,11 @@ export const db = {
 
           const dstSectionId=c.section_id?sectionIdMap[c.section_id]??null:null;
 
-          const {data:ex}=await supabaseSrv.from('classes').select('id').eq('school_id',dstId).eq('name',c.name).limit(1);
+          const {data:ex}=await supabase.from('classes').select('id').eq('school_id',dstId).eq('name',c.name).limit(1);
 
           if(ex&&ex.length>0){skipped++;continue;}
 
-          const {error:ie}=await supabaseSrv.from('classes')
+          const {error:ie}=await supabase.from('classes')
 
             .insert({...remap(c),section_id:dstSectionId});
 
@@ -4330,7 +4329,7 @@ export const db = {
 
     if(items.sessions){
 
-      const {data:srcSessions,error:e}=await supabaseSrv.from('sessions').select('*').eq('school_id',srcId);
+      const {data:srcSessions,error:e}=await supabase.from('sessions').select('*').eq('school_id',srcId);
 
       if(e){err(`Sessions fetch failed: ${e.message}`);hadError=true;}
 
@@ -4342,11 +4341,11 @@ export const db = {
 
         for(const s of srcSessions){
 
-          const {data:ex}=await supabaseSrv.from('sessions').select('id').eq('school_id',dstId).eq('name',s.name).limit(1);
+          const {data:ex}=await supabase.from('sessions').select('id').eq('school_id',dstId).eq('name',s.name).limit(1);
 
           if(ex&&ex.length>0){sessionIdMap[s.id]=ex[0].id;skipped++;continue;}
 
-          const {data:ins_,error:ie}=await supabaseSrv.from('sessions')
+          const {data:ins_,error:ie}=await supabase.from('sessions')
 
             .insert({...remap(s),is_active:false}).select('id').single();
 
@@ -4368,7 +4367,7 @@ export const db = {
 
     if(items.terms){
 
-      const {data:srcTerms,error:e}=await supabaseSrv.from('terms').select('*').eq('school_id',srcId);
+      const {data:srcTerms,error:e}=await supabase.from('terms').select('*').eq('school_id',srcId);
 
       if(e){err(`Terms fetch failed: ${e.message}`);hadError=true;}
 
@@ -4384,11 +4383,11 @@ export const db = {
 
           if(!dstSessionId){err(`Term "${t.name}": parent session not found in target — run Sessions copy first.`);hadError=true;continue;}
 
-          const {data:ex}=await supabaseSrv.from('terms').select('id').eq('school_id',dstId).eq('session_id',dstSessionId).eq('name',t.name).limit(1);
+          const {data:ex}=await supabase.from('terms').select('id').eq('school_id',dstId).eq('session_id',dstSessionId).eq('name',t.name).limit(1);
 
           if(ex&&ex.length>0){skipped++;continue;}
 
-          const {error:ie}=await supabaseSrv.from('terms')
+          const {error:ie}=await supabase.from('terms')
 
             .insert({...remap(t),session_id:dstSessionId,is_active:false});
 
@@ -4410,7 +4409,7 @@ export const db = {
 
     if(items.grading){
 
-      const {data:srcGrades,error:e}=await supabaseSrv.from('grading_schema').select('*').eq('school_id',srcId);
+      const {data:srcGrades,error:e}=await supabase.from('grading_schema').select('*').eq('school_id',srcId);
 
       if(e){err(`Grading schema fetch failed: ${e.message}`);hadError=true;}
 
@@ -4420,11 +4419,11 @@ export const db = {
 
         // Clear existing and replace
 
-        await supabaseSrv.from('grading_schema').delete().eq('school_id',dstId);
+        await supabase.from('grading_schema').delete().eq('school_id',dstId);
 
         const rows=srcGrades.map(g=>remap(g));
 
-        const {error:ie}=await supabaseSrv.from('grading_schema').insert(rows);
+        const {error:ie}=await supabase.from('grading_schema').insert(rows);
 
         if(ie){err(`Grading schema: ${ie.message}`);hadError=true;}
 
@@ -4442,7 +4441,7 @@ export const db = {
 
     if(items.fee_items){
 
-      const {data:srcItems,error:e}=await supabaseSrv.from('fee_items').select('*').eq('school_id',srcId);
+      const {data:srcItems,error:e}=await supabase.from('fee_items').select('*').eq('school_id',srcId);
 
       if(e){err(`Fee items fetch failed: ${e.message}`);hadError=true;}
 
@@ -4454,11 +4453,11 @@ export const db = {
 
         for(const fi of srcItems){
 
-          const {data:ex}=await supabaseSrv.from('fee_items').select('id').eq('school_id',dstId).eq('name',fi.name).limit(1);
+          const {data:ex}=await supabase.from('fee_items').select('id').eq('school_id',dstId).eq('name',fi.name).limit(1);
 
           if(ex&&ex.length>0){feeItemIdMap[fi.id]=ex[0].id;skipped++;continue;}
 
-          const {data:ins_,error:ie}=await supabaseSrv.from('fee_items').insert(remap(fi)).select('id').single();
+          const {data:ins_,error:ie}=await supabase.from('fee_items').insert(remap(fi)).select('id').single();
 
           if(ie){err(`Fee item "${fi.name}": ${ie.message}`);hadError=true;}
 
@@ -4478,7 +4477,7 @@ export const db = {
 
     if(items.fee_templates){
 
-      const {data:srcTmpl,error:e}=await supabaseSrv.from('fee_templates')
+      const {data:srcTmpl,error:e}=await supabase.from('fee_templates')
 
         .select('*,fee_template_items(*)').eq('school_id',srcId);
 
@@ -4494,11 +4493,11 @@ export const db = {
 
           const {fee_template_items:srcTmplItems,...tmpl}=t;
 
-          const {data:ex}=await supabaseSrv.from('fee_templates').select('id').eq('school_id',dstId).eq('name',tmpl.name).limit(1);
+          const {data:ex}=await supabase.from('fee_templates').select('id').eq('school_id',dstId).eq('name',tmpl.name).limit(1);
 
           if(ex&&ex.length>0){skipped++;continue;}
 
-          const {data:newTmpl,error:te}=await supabaseSrv.from('fee_templates')
+          const {data:newTmpl,error:te}=await supabase.from('fee_templates')
 
             .insert({...remap(tmpl),is_active:false}).select('id').single();
 
@@ -4518,7 +4517,7 @@ export const db = {
 
             });
 
-            const {error:tiErr}=await supabaseSrv.from('fee_template_items').insert(tiRows);
+            const {error:tiErr}=await supabase.from('fee_template_items').insert(tiRows);
 
             if(tiErr) err(`Template "${tmpl.name}" items: ${tiErr.message}`);
 
@@ -4540,7 +4539,7 @@ export const db = {
 
     if(items.cae_traits){
 
-      const {data:srcTraits,error:e}=await supabaseSrv.from('cae_traits').select('*').eq('school_id',srcId);
+      const {data:srcTraits,error:e}=await supabase.from('cae_traits').select('*').eq('school_id',srcId);
 
       if(e){err(`CAE traits fetch failed: ${e.message}`);hadError=true;}
 
@@ -4552,11 +4551,11 @@ export const db = {
 
         for(const t of srcTraits){
 
-          const {data:ex}=await supabaseSrv.from('cae_traits').select('id').eq('school_id',dstId).eq('name',t.name).limit(1);
+          const {data:ex}=await supabase.from('cae_traits').select('id').eq('school_id',dstId).eq('name',t.name).limit(1);
 
           if(ex&&ex.length>0){skipped++;continue;}
 
-          const {error:ie}=await supabaseSrv.from('cae_traits').insert(remap(t));
+          const {error:ie}=await supabase.from('cae_traits').insert(remap(t));
 
           if(ie){err(`CAE trait "${t.name}": ${ie.message}`);hadError=true;}
 
@@ -4576,7 +4575,7 @@ export const db = {
 
     if(items.cae_ratings){
 
-      const {data:srcRatings,error:e}=await supabaseSrv.from('cae_ratings').select('*').eq('school_id',srcId);
+      const {data:srcRatings,error:e}=await supabase.from('cae_ratings').select('*').eq('school_id',srcId);
 
       if(e){err(`CAE ratings fetch failed: ${e.message}`);hadError=true;}
 
@@ -4588,11 +4587,11 @@ export const db = {
 
         for(const r of srcRatings){
 
-          const {data:ex}=await supabaseSrv.from('cae_ratings').select('id').eq('school_id',dstId).eq('label',r.label).limit(1);
+          const {data:ex}=await supabase.from('cae_ratings').select('id').eq('school_id',dstId).eq('label',r.label).limit(1);
 
           if(ex&&ex.length>0){skipped++;continue;}
 
-          const {error:ie}=await supabaseSrv.from('cae_ratings').insert(remap(r));
+          const {error:ie}=await supabase.from('cae_ratings').insert(remap(r));
 
           if(ie){err(`CAE rating "${r.label}": ${ie.message}`);hadError=true;}
 
@@ -4618,7 +4617,7 @@ export const db = {
 
         'settings_password','student_id_prefix'];
 
-      const {data:srcSettings,error:e}=await supabaseSrv.from('school_settings').select('*').eq('school_id',srcId);
+      const {data:srcSettings,error:e}=await supabase.from('school_settings').select('*').eq('school_id',srcId);
 
       if(e){err(`School settings fetch failed: ${e.message}`);hadError=true;}
 
@@ -4634,7 +4633,7 @@ export const db = {
 
         else{
 
-          const {error:ie}=await supabaseSrv.from('school_settings')
+          const {error:ie}=await supabase.from('school_settings')
 
             .upsert(rows,{onConflict:'school_id,key'});
 
@@ -4664,17 +4663,17 @@ export const db = {
 
     const promises=[
 
-      supabaseSrv.from('portal_results').select('*',{count:'exact',head:true}).eq('student_id',studentId).eq('school_id',sid),
+      supabase.from('portal_results').select('*',{count:'exact',head:true}).eq('student_id',studentId).eq('school_id',sid),
 
-      supabaseSrv.from('fee_payments').select('*',{count:'exact',head:true}).eq('student_id',String(studentId)).eq('is_refunded',false).eq('school_id',sid),
+      supabase.from('fee_payments').select('*',{count:'exact',head:true}).eq('student_id',String(studentId)).eq('is_refunded',false).eq('school_id',sid),
 
-      supabaseSrv.from('payments').select('*',{count:'exact',head:true}).eq('student_id',String(studentId)).eq('school_id',sid),
+      supabase.from('payments').select('*',{count:'exact',head:true}).eq('student_id',String(studentId)).eq('school_id',sid),
 
     ]
 
     if(classId) promises.push(
 
-      supabaseSrv.from('report_card_publish').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('is_published',true).eq('school_id',sid)
+      supabase.from('report_card_publish').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('is_published',true).eq('school_id',sid)
 
     )
 
@@ -4700,9 +4699,9 @@ export const db = {
 
     const [{count:stuCount},{count:resCount}]=await Promise.all([
 
-      supabaseSrv.from('students').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('school_id',sid),
+      supabase.from('students').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('school_id',sid),
 
-      supabaseSrv.from('portal_results').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('school_id',sid),
+      supabase.from('portal_results').select('*',{count:'exact',head:true}).eq('class_id',classId).eq('school_id',sid),
 
     ])
 
@@ -4722,9 +4721,9 @@ export const db = {
 
     const [{count},{count:tsCount}]=await Promise.all([
 
-      supabaseSrv.from('class_teachers').select('*',{count:'exact',head:true}).eq('teacher_id',teacherId).eq('school_id',sid),
+      supabase.from('class_teachers').select('*',{count:'exact',head:true}).eq('teacher_id',teacherId).eq('school_id',sid),
 
-      supabaseSrv.from('teacher_subjects').select('*',{count:'exact',head:true}).eq('teacher_id',teacherId).eq('school_id',sid),
+      supabase.from('teacher_subjects').select('*',{count:'exact',head:true}).eq('teacher_id',teacherId).eq('school_id',sid),
 
     ])
 
@@ -4744,9 +4743,9 @@ export const db = {
 
     const [{count:classCount},{count:subCount}]=await Promise.all([
 
-      supabaseSrv.from('classes').select('*',{count:'exact',head:true}).eq('section_id',sectionId).eq('school_id',sid),
+      supabase.from('classes').select('*',{count:'exact',head:true}).eq('section_id',sectionId).eq('school_id',sid),
 
-      supabaseSrv.from('section_subjects').select('*',{count:'exact',head:true}).eq('section_id',sectionId).eq('school_id',sid),
+      supabase.from('section_subjects').select('*',{count:'exact',head:true}).eq('section_id',sectionId).eq('school_id',sid),
 
     ])
 
@@ -4772,7 +4771,7 @@ export const db = {
 
     const results=await Promise.all(chunks.map(chunk=>{
 
-      let q=supabaseSrv.from(table).select('*',{count:'exact',head:true}).in(column,chunk)
+      let q=supabase.from(table).select('*',{count:'exact',head:true}).in(column,chunk)
 
       if(this._schoolId) q=q.eq('school_id',this._schoolId)
 
@@ -4794,7 +4793,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    let q=supabaseSrv.from('academic_calendar').select('*').eq('school_id',this._schoolId).order('start_date')
+    let q=supabase.from('academic_calendar').select('*').eq('school_id',this._schoolId).order('start_date')
 
     if(filters.session_id) q=q.eq('session_id',filters.session_id)
 
@@ -4808,15 +4807,15 @@ export const db = {
 
     const row={...data,school_id:this._schoolId}
 
-    if(id) return supabaseSrv.from('academic_calendar').update(row).eq('id',id).eq('school_id',this._schoolId).select().single()
+    if(id) return supabase.from('academic_calendar').update(row).eq('id',id).eq('school_id',this._schoolId).select().single()
 
-    return supabaseSrv.from('academic_calendar').insert(row).select().single()
+    return supabase.from('academic_calendar').insert(row).select().single()
 
   },
 
   async deleteCalendarEvent(id){
 
-    return supabaseSrv.from('academic_calendar').delete().eq('id',id).eq('school_id',this._schoolId)
+    return supabase.from('academic_calendar').delete().eq('id',id).eq('school_id',this._schoolId)
 
   },
 
@@ -4828,7 +4827,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    return supabaseSrv.from('timetable_periods').select('*').eq('school_id',this._schoolId).order('order_index')
+    return supabase.from('timetable_periods').select('*').eq('school_id',this._schoolId).order('order_index')
 
   },
 
@@ -4836,15 +4835,15 @@ export const db = {
 
     const row={...data,school_id:this._schoolId}
 
-    if(id) return supabaseSrv.from('timetable_periods').update(row).eq('id',id).eq('school_id',this._schoolId).select().single()
+    if(id) return supabase.from('timetable_periods').update(row).eq('id',id).eq('school_id',this._schoolId).select().single()
 
-    return supabaseSrv.from('timetable_periods').insert(row).select().single()
+    return supabase.from('timetable_periods').insert(row).select().single()
 
   },
 
   async deleteTimetablePeriod(id){
 
-    return supabaseSrv.from('timetable_periods').delete().eq('id',id).eq('school_id',this._schoolId)
+    return supabase.from('timetable_periods').delete().eq('id',id).eq('school_id',this._schoolId)
 
   },
 
@@ -4852,7 +4851,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    return supabaseSrv.from('timetable_slots')
+    return supabase.from('timetable_slots')
 
       .select('*,timetable_periods(id,name,start_time,end_time,is_break,order_index),section_subjects(id,name),teachers(id,full_name,staff_id)')
 
@@ -4866,7 +4865,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    return supabaseSrv.from('timetable_slots')
+    return supabase.from('timetable_slots')
 
       .select('*,timetable_periods(id,name,start_time,end_time,order_index),section_subjects(id,name),classes(id,name)')
 
@@ -4880,7 +4879,7 @@ export const db = {
 
     const row={...data,school_id:this._schoolId}
 
-    return supabaseSrv.from('timetable_slots')
+    return supabase.from('timetable_slots')
 
       .upsert(row,{onConflict:'school_id,class_id,period_id,day_of_week,term_id,session_id'}).select().single()
 
@@ -4888,7 +4887,7 @@ export const db = {
 
   async clearTimetableSlot(classId,periodId,day,termId,sessionId){
 
-    return supabaseSrv.from('timetable_slots').delete()
+    return supabase.from('timetable_slots').delete()
 
       .eq('school_id',this._schoolId).eq('class_id',classId)
 
@@ -4901,7 +4900,7 @@ export const db = {
   // Detect if a teacher is already assigned to the same period+day+term+session in another class
   async checkTeacherClash(teacherId,periodId,day,termId,sessionId,excludeClassId){
 
-    let q=supabaseSrv.from('timetable_slots')
+    let q=supabase.from('timetable_slots')
 
       .select('id,class_id,classes(name)')
 
@@ -4925,7 +4924,7 @@ export const db = {
 
     if(!this._schoolId)return
 
-    return supabaseSrv.from('notifications').insert({
+    return supabase.from('notifications').insert({
 
       school_id:this._schoolId,recipient_id:recipientId,recipient_role:recipientRole,
 
@@ -4939,7 +4938,7 @@ export const db = {
 
     if(!this._schoolId)return
 
-    return supabaseSrv.from('notifications').insert({
+    return supabase.from('notifications').insert({
 
       school_id:this._schoolId,recipient_id:'admin',recipient_role:'admin',
 
@@ -4953,7 +4952,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    return supabaseSrv.from('notifications').select('*')
+    return supabase.from('notifications').select('*')
 
       .eq('school_id',this._schoolId).eq('recipient_id',recipientId)
 
@@ -4965,7 +4964,7 @@ export const db = {
 
     if(!this._schoolId)return{data:[]}
 
-    return supabaseSrv.from('notifications').select('*')
+    return supabase.from('notifications').select('*')
 
       .eq('school_id',this._schoolId).eq('recipient_id','admin')
 
@@ -4975,7 +4974,7 @@ export const db = {
 
   async markNotificationRead(id){
 
-    return supabaseSrv.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id)
+    return supabase.from('notifications').update({read_at:new Date().toISOString()}).eq('id',id)
 
   },
 
@@ -4983,7 +4982,7 @@ export const db = {
 
     if(!this._schoolId)return
 
-    return supabaseSrv.from('notifications').update({read_at:new Date().toISOString()})
+    return supabase.from('notifications').update({read_at:new Date().toISOString()})
 
       .eq('school_id',this._schoolId).eq('recipient_id',recipientId).is('read_at',null)
 
@@ -4993,7 +4992,7 @@ export const db = {
 
     if(!this._schoolId)return 0
 
-    const{count}=await supabaseSrv.from('notifications')
+    const{count}=await supabase.from('notifications')
 
       .select('*',{count:'exact',head:true})
 
@@ -5013,7 +5012,7 @@ export const db = {
 
     const table=userType==='student'?'students':'teachers'
 
-    return supabaseSrv.from(table).update({session_token:token}).eq('id',userId).eq('school_id',this._schoolId)
+    return supabase.from(table).update({session_token:token}).eq('id',userId).eq('school_id',this._schoolId)
 
   },
 
@@ -5023,7 +5022,7 @@ export const db = {
 
     const table=userType==='student'?'students':'teachers'
 
-    const{data,error}=await supabaseSrv.from(table).select('session_token')
+    const{data,error}=await supabase.from(table).select('session_token')
 
       .eq('id',userId).eq('school_id',this._schoolId).single()
 
@@ -5043,7 +5042,7 @@ export const db = {
 
     // Only clear if the token still matches — avoids wiping a newer session on another device
 
-    return supabaseSrv.from(table).update({session_token:null})
+    return supabase.from(table).update({session_token:null})
 
       .eq('id',userId).eq('school_id',this._schoolId).eq('session_token',token)
 
@@ -5057,7 +5056,7 @@ export const db = {
 
     const sid=schoolId||this._schoolId
 
-    return supabaseSrv.from(table).update({password_hash:newPassword})
+    return supabase.from(table).update({password_hash:newPassword})
 
       .eq('id',userId).eq('school_id',sid)
 
@@ -5075,11 +5074,11 @@ export const db = {
 
     const[s,t]=await Promise.all([
 
-      supabaseSrv.from('students').select('id,first_name,last_name,last_login,status,classes(name)')
+      supabase.from('students').select('id,first_name,last_name,last_login,status,classes(name)')
 
         .eq('school_id',this._schoolId).eq('status','active').order('created_at',{ascending:false}),
 
-      supabaseSrv.from('teachers').select('id,full_name,staff_id,last_login,role')
+      supabase.from('teachers').select('id,full_name,staff_id,last_login,role')
 
         .eq('school_id',this._schoolId).order('full_name',{ascending:true}),
 
@@ -5157,7 +5156,7 @@ export const db = {
 
     if(!this._schoolId) return 30
 
-    const{data}=await supabaseSrv.from('school_settings')
+    const{data}=await supabase.from('school_settings')
 
       .select('value').eq('key','recycle_bin_retention_days').eq('school_id',this._schoolId).maybeSingle()
 
@@ -5177,7 +5176,7 @@ export const db = {
 
     // Fetch full record snapshot
 
-    const{data:record,error:fetchErr}=await supabaseSrv.from(table)
+    const{data:record,error:fetchErr}=await supabase.from(table)
 
       .select('*').eq('id',recordId).eq('school_id',this._schoolId).single()
 
@@ -5187,7 +5186,7 @@ export const db = {
 
     const expires=new Date(Date.now()+days*24*60*60*1000).toISOString()
 
-    const{error:binErr}=await supabaseSrv.from('recycle_bin').insert({
+    const{error:binErr}=await supabase.from('recycle_bin').insert({
 
       school_id:this._schoolId,record_type:type,
 
@@ -5199,7 +5198,7 @@ export const db = {
 
     if(binErr) return{error:binErr}
 
-    let dq=supabaseSrv.from(table).delete().eq('id',recordId)
+    let dq=supabase.from(table).delete().eq('id',recordId)
 
     if(this._schoolId) dq=dq.eq('school_id',this._schoolId)
 
@@ -5223,7 +5222,7 @@ export const db = {
 
     for(let i=0;i<ids.length;i+=CHUNK){
 
-      const{data}=await supabaseSrv.from(table).select('*')
+      const{data}=await supabase.from(table).select('*')
 
         .in('id',ids.slice(i,i+CHUNK)).eq('school_id',this._schoolId)
 
@@ -5247,11 +5246,11 @@ export const db = {
 
     for(let i=0;i<rows.length;i+=CHUNK)
 
-      await supabaseSrv.from('recycle_bin').insert(rows.slice(i,i+CHUNK))
+      await supabase.from('recycle_bin').insert(rows.slice(i,i+CHUNK))
 
     for(let i=0;i<ids.length;i+=CHUNK)
 
-      await supabaseSrv.from(table).delete().in('id',ids.slice(i,i+CHUNK)).eq('school_id',this._schoolId)
+      await supabase.from(table).delete().in('id',ids.slice(i,i+CHUNK)).eq('school_id',this._schoolId)
 
     return{error:null}
 
@@ -5261,7 +5260,7 @@ export const db = {
 
     if(!this._schoolId) return{data:[]}
 
-    return supabaseSrv.from('recycle_bin')
+    return supabase.from('recycle_bin')
 
       .select('*').eq('school_id',this._schoolId)
 
@@ -5275,7 +5274,7 @@ export const db = {
 
     if(!this._schoolId) return{error:{message:'No school context'}}
 
-    const{data:item,error:fetchErr}=await supabaseSrv.from('recycle_bin')
+    const{data:item,error:fetchErr}=await supabase.from('recycle_bin')
 
       .select('*').eq('id',binId).eq('school_id',this._schoolId).single()
 
@@ -5291,11 +5290,11 @@ export const db = {
 
     payload.school_id=this._schoolId
 
-    const{error:insertErr}=await supabaseSrv.from(table).insert(payload)
+    const{error:insertErr}=await supabase.from(table).insert(payload)
 
     if(insertErr) return{error:insertErr}
 
-    await supabaseSrv.from('recycle_bin').delete().eq('id',binId)
+    await supabase.from('recycle_bin').delete().eq('id',binId)
 
     return{error:null}
 
@@ -5303,7 +5302,7 @@ export const db = {
 
   async permanentDeleteFromBin(binId){
 
-    return supabaseSrv.from('recycle_bin').delete()
+    return supabase.from('recycle_bin').delete()
 
       .eq('id',binId).eq('school_id',this._schoolId)
 
@@ -5313,7 +5312,7 @@ export const db = {
 
     if(!this._schoolId) return{error:{message:'No school context'}}
 
-    return supabaseSrv.from('recycle_bin').delete().eq('school_id',this._schoolId)
+    return supabase.from('recycle_bin').delete().eq('school_id',this._schoolId)
 
   },
 
@@ -5321,7 +5320,7 @@ export const db = {
 
     if(!this._schoolId) return
 
-    await supabaseSrv.from('recycle_bin').delete()
+    await supabase.from('recycle_bin').delete()
 
       .eq('school_id',this._schoolId).lt('expires_at',new Date().toISOString())
 
@@ -5331,7 +5330,7 @@ export const db = {
 
     if(!this._schoolId) return 0
 
-    const{count}=await supabaseSrv.from('recycle_bin')
+    const{count}=await supabase.from('recycle_bin')
 
       .select('*',{count:'exact',head:true})
 
@@ -5347,7 +5346,7 @@ export const db = {
 
   async getPlatformAdmin(){
 
-    const{data,error}=await supabaseSrv.from('platform_admins')
+    const{data,error}=await supabase.from('platform_admins')
 
       .select('*').limit(1)
 
@@ -5359,7 +5358,7 @@ export const db = {
 
   async updatePlatformAdminLogin(id){
 
-    return supabaseSrv.from('platform_admins')
+    return supabase.from('platform_admins')
 
       .update({last_login:new Date().toISOString()}).eq('id',id)
 
@@ -5367,7 +5366,7 @@ export const db = {
 
   async updatePlatformAdminPin(id,newPin){
 
-    return supabaseSrv.from('platform_admins')
+    return supabase.from('platform_admins')
 
       .update({password_hash:newPin}).eq('id',id)
 
@@ -5379,7 +5378,7 @@ export const db = {
 
   async getAllSchools(){
 
-    const {data,error}=await supabaseSrv.from('schools')
+    const {data,error}=await supabase.from('schools')
 
       .select('id,name,logo,admin_email,admin_name,status,plan,created_at,student_id_prefix,contact_phone,address,state,country,setup_done,settings_password')
 
@@ -5391,7 +5390,7 @@ export const db = {
 
     const counts=await Promise.all(data.map(s=>
 
-      supabaseSrv.from('students').select('id',{count:'exact',head:true}).eq('school_id',s.id)
+      supabase.from('students').select('id',{count:'exact',head:true}).eq('school_id',s.id)
 
     ));
 
@@ -5401,25 +5400,25 @@ export const db = {
 
   async updateSchoolStatus(id,status){
 
-    return supabaseSrv.from('schools').update({status}).eq('id',id).select().single()
+    return supabase.from('schools').update({status}).eq('id',id).select().single()
 
   },
 
   async updateSchoolPlan(id,plan){
 
-    return supabaseSrv.from('schools').update({plan}).eq('id',id)
+    return supabase.from('schools').update({plan}).eq('id',id)
 
   },
 
   async deleteSchool(id){
 
-    return supabaseSrv.from('schools').delete().eq('id',id)
+    return supabase.from('schools').delete().eq('id',id)
 
   },
 
   async getAllPlatformAuditLog(){
 
-    return supabaseSrv.from('admin_audit_log')
+    return supabase.from('admin_audit_log')
 
       .select('*').order('performed_at',{ascending:false}).limit(500)
 
@@ -5427,7 +5426,7 @@ export const db = {
 
   async logPlatformAction(action,entityType,entityId,entityName,notes){
 
-    return supabaseSrv.from('admin_audit_log').insert({
+    return supabase.from('admin_audit_log').insert({
 
       action,entity_type:entityType,entity_id:String(entityId),
 
@@ -5500,7 +5499,7 @@ export const db = {
 
   async getAttendance(filters={}){
 
-    let q=supabaseSrv.from('attendance').select('*').order('date',{ascending:false})
+    let q=supabase.from('attendance').select('*').order('date',{ascending:false})
 
     if(this._schoolId) q=q.eq('school_id',this._schoolId)
 

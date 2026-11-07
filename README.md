@@ -6,7 +6,7 @@ and reporting while preserving compatibility with existing education tenants.
 Built as a single-page React application backed by Supabase.
 
 **Current deployment URL:** https://portal.renaissancegardenschools.com (legacy host retained for compatibility while the new public domain is finalized)
-**GitHub:** https://github.com/Ossytrikz/RGS-PORTAL (private — `master` branch auto-deploys to Vercel)
+**GitHub:** https://github.com/kainechibuzo/James-Denning (private — `master` is the default branch)
 
 ---
 
@@ -15,7 +15,7 @@ Built as a single-page React application backed by Supabase.
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite 5 |
-| Database / Auth | Supabase (PostgreSQL + RLS) — project ID `mcdcwdfdpqzrzsixmrcg` |
+| Database / Auth | Supabase (PostgreSQL + RLS) — project ID `thklwiybjuhrjqrrxyid` |
 | Hosting | Vercel (`npm run build:web`) |
 | Email | ZeptoMail (primary) → AWS SES (fallback) via Supabase Edge Function |
 | Icons | `lucide-react` |
@@ -78,7 +78,7 @@ rgs-portal/                       ← Repository root
 ## Environment Variables
 
 ```env
-VITE_SUPABASE_URL=https://mcdcwdfdpqzrzsixmrcg.supabase.co
+VITE_SUPABASE_URL=https://thklwiybjuhrjqrrxyid.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon key>
 VITE_PAYSTACK_PUBLIC_KEY=<paystack live key>
 ```
@@ -112,9 +112,9 @@ git push              # Triggers Vercel auto-deploy via vercel.json
 
 ## Database
 
-The Supabase schema is fully applied to project `mcdcwdfdpqzrzsixmrcg`.
+The Supabase schema is fully applied to project `thklwiybjuhrjqrrxyid`.
 
-**13 migrations applied** (001–013). Additional ad-hoc changes applied via Supabase MCP:
+**Remote migration history currently includes** versions 001–013, 015–017 and 999 (`column_audit_PATCH`). The `999b` and `999c` SQL files are also present in the repository and must be reconciled against the remote migration history before future automated pushes.
 - `last_login timestamptz` added to `students` and `teachers`
 - `permission_audit_log` table created
 - `role text NOT NULL DEFAULT 'teacher'` added to `teachers`
