@@ -54,6 +54,14 @@ serve(async (req) => {
       });
     }
 
+    const transactionEmail = String(verifyData.data?.customer?.email || "").trim().toLowerCase();
+    const accountEmail = String(authData.user.email || "").trim().toLowerCase();
+    if (!accountEmail || !transactionEmail || transactionEmail !== accountEmail) {
+      return new Response(JSON.stringify({ error: "The Paystack transaction email must match the signed-in student account" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const paidAmountKobo = verifyData.data.amount; // Paystack returns amount in kobo
     const paidAmountNaira = paidAmountKobo / 100;
 
