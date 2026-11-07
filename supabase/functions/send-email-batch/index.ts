@@ -144,6 +144,7 @@ async function processBatch(
     await supa.from("email_queue")
       .update({ status: "sending" })
       .eq("id", row.id)
+      .eq("school_id", schoolId)
       .eq("status", "pending"); // guard
 
     let result: { ok: boolean; error?: string };
@@ -162,7 +163,7 @@ async function processBatch(
       processed_at: new Date().toISOString(),
       error_message: result.error || null,
       attempts: (row.attempts || 0) + 1,
-    }).eq("id", row.id);
+    }).eq("id", row.id).eq("school_id", schoolId);
 
     if (delay > 0) {
       await new Promise(r => setTimeout(r, delay));
