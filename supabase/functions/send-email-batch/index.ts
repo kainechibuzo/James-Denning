@@ -112,6 +112,7 @@ async function processBatch(
   supabaseUrl: string,
   serviceRoleKey: string,
   batchId: string,
+  schoolId: string,
   ratePerMin: number,
   zeptoKey: string | undefined,
   zeptoFrom: string,
@@ -130,6 +131,7 @@ async function processBatch(
       .from("email_queue")
       .select("id, to_email, subject, html, attachments, attempts")
       .eq("batch_id", batchId)
+      .eq("school_id", schoolId)
       .eq("status", "pending")
       .order("id")
       .limit(1);
@@ -174,6 +176,20 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (!anonKey || !serviceRoleKey) throw new Error("Supabase server configuration missing");
+    const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    const { data: actor } = await adminClient.from("profiles").select("role,school_id").eq("id", authData.user.id).maybeSingle();
+    if (!actor || actor.role !== "admin" || !actor.school_id) return new Response(JSON.stringify({ error: "School administrator access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     const { batch_id, rate_per_min = 10 } = await req.json();
     if (!batch_id) {
       return new Response(
@@ -182,8 +198,7 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
     const zeptoKey = Deno.env.get("ZEPTO_API_KEY");
     const zeptoFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "noreply@renaissancegardenschools.com";
     const zeptoName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
@@ -193,7 +208,7 @@ serve(async (req) => {
     const sesFrom = Deno.env.get("SES_FROM_EMAIL") || "noreply@renaissancegardenschools.com";
 
     const task = processBatch(
-      supabaseUrl, serviceRoleKey, batch_id, rate_per_min,
+      supabaseUrl, serviceRoleKey, batch_id, actor.school_id, rate_per_min,
       zeptoKey, zeptoFrom, zeptoName, awsKey, awsSecret, awsRegion, sesFrom,
     );
 
@@ -211,7 +226,8 @@ serve(async (req) => {
     const { count } = await supa
       .from("email_queue")
       .select("*", { count: "exact", head: true })
-      .eq("batch_id", batch_id);
+      .eq("batch_id", batch_id)
+      .eq("school_id", actor.school_id);
 
     return new Response(
       JSON.stringify({ accepted: true, batch_id, total: count || 0 }),
