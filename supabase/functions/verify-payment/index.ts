@@ -10,7 +10,24 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (!anonKey || !serviceKey) throw new Error("Supabase server configuration missing");
+    const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const { data: studentProfile } = await supabase.from("student_profiles").select("student_id").eq("profile_id", authData.user.id).maybeSingle();
+    if (!studentProfile?.student_id) return new Response(JSON.stringify({ error: "A linked student account is required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     const { reference, bill_id, student_id } = await req.json();
+    if (typeof reference !== "string" || !reference.trim() || !bill_id || student_id !== studentProfile.student_id) {
+      return new Response(JSON.stringify({ error: "Invalid payment details for this signed-in student" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (!reference || !bill_id || !student_id) {
       return new Response(JSON.stringify({ error: "Missing required fields: reference, bill_id, student_id" }), {
@@ -31,7 +48,7 @@ serve(async (req) => {
     });
     const verifyData = await verifyRes.json();
 
-    if (!verifyData.status || verifyData.data?.status !== "success") {
+    if (!verifyData.status || verifyData.data?.status !== "success" || verifyData.data?.currency !== "NGN") {
       return new Response(JSON.stringify({ error: "Payment not successful", detail: verifyData.message }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -41,10 +58,7 @@ serve(async (req) => {
     const paidAmountNaira = paidAmountKobo / 100;
 
     // ── 2. Connect to Supabase with service role (bypasses RLS) ───────────
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    // Authenticated student identity was verified above; privileged writes stay server-side.
 
     // ── 3. Guard: check this reference hasn't already been recorded ───────
     const { data: existing } = await supabase
@@ -65,6 +79,7 @@ serve(async (req) => {
       .select("*")
       .eq("id", bill_id)
       .eq("student_id", student_id)
+      .eq("school_id", (await supabase.from("profiles").select("school_id").eq("id", authData.user.id).single()).data?.school_id)
       .single();
 
     if (billFetchErr || !bill) {
@@ -80,7 +95,7 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (paidAmountNaira > balance + 1) {
+    if (paidAmountNaira > balance) {
       // Allow ₦1 tolerance for rounding; reject clear overpayments
       return new Response(JSON.stringify({
         error: `Overpayment: Paystack recorded ₦${paidAmountNaira}, but outstanding balance is only ₦${balance}`,
@@ -96,7 +111,8 @@ serve(async (req) => {
         amount: paidAmountNaira,
         payment_method: "paystack",
         paystack_reference: reference,
-        payment_date: new Date().toISOString().split("T")[0],
+        payment_date: new Date().toISOString(),
+        school_id: bill.school_id,
       })
       .select()
       .single();
@@ -110,10 +126,20 @@ serve(async (req) => {
     // ── 7. Update bill totals ──────────────────────────────────────────────
     const newPaid = Math.round((+(bill.amount_paid) + paidAmountNaira) * 100) / 100;
     const newStatus = newPaid >= +(bill.total_amount) ? "paid" : "partial";
-    const { error: billUpdateErr } = await supabase
+    const { data: updatedBill, error: billUpdateErr } = await supabase
       .from("fee_bills")
       .update({ amount_paid: newPaid, status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", bill_id);
+      .eq("id", bill_id)
+      .eq("school_id", bill.school_id)
+      .eq("amount_paid", bill.amount_paid)
+      .select("id")
+      .maybeSingle();
+    if (!billUpdateErr && !updatedBill) {
+      await supabase.from("fee_payments").delete().eq("id", payment.id);
+      return new Response(JSON.stringify({ error: "Bill changed during verification; retry the payment verification" }), {
+        status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (billUpdateErr) {
       // Rollback: delete the payment we just inserted
@@ -127,6 +153,7 @@ serve(async (req) => {
     await supabase.from("fee_audit_log").insert({
       bill_id,
       student_id,
+      school_id: bill.school_id,
       action: "payment_recorded",
       amount: paidAmountNaira,
       performed_by: "paystack",
