@@ -7,7 +7,7 @@ import {
   Activity, AlertTriangle, BookUser, Check, CheckCircle, ChevronRight,
   ClipboardCheck, ClipboardList, Dot, DollarSign,
   Edit, GraduationCap, Info, Lock, Megaphone, Pencil, Save, School,
-  Settings, ShieldCheck, Trash2, Upload, Users, XCircle, Zap,
+  Settings, ShieldCheck, Trash2, Upload, Users, XCircle, Zap, ReceiptText, Wallet, Mail, BarChart3, GraduationCap, CreditCard,
 } from "lucide-react";
 import { db } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
