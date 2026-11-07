@@ -319,7 +319,7 @@ export function DashboardPage({ctx}){
             <div style={{fontSize:10,color:C.muted,marginTop:5}}>{item.hint}</div></div>
         </div>)}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.15fr) minmax(300px,.95fr)",gap:16,marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginBottom:16}}>
         <section style={panel}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
             <h2 style={{fontSize:17,margin:0,fontWeight:720}}>Recent Activity</h2>
@@ -347,7 +347,7 @@ export function DashboardPage({ctx}){
           </div>
         </section>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.1fr) minmax(280px,.9fr)",gap:16,marginBottom:18}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginBottom:18}}>
         <section style={panel}>
           <h2 style={{fontSize:17,margin:"0 0 15px",fontWeight:720}}>Quick Actions</h2>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",gap:10}}>
