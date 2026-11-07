@@ -23,6 +23,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
     const { data: studentProfile } = await supabase.from("student_profiles").select("student_id").eq("profile_id", authData.user.id).maybeSingle();
     if (!studentProfile?.student_id) return new Response(JSON.stringify({ error: "A linked student account is required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: actor } = await supabase.from("profiles").select("role,school_id").eq("id", authData.user.id).maybeSingle();
+    if (!actor || actor.role !== "student" || !actor.school_id) return new Response(JSON.stringify({ error: "Student account access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const { reference, bill_id, student_id } = await req.json();
     if (typeof reference !== "string" || !reference.trim() || !bill_id || student_id !== studentProfile.student_id) {
@@ -87,7 +89,7 @@ serve(async (req) => {
       .select("*")
       .eq("id", bill_id)
       .eq("student_id", student_id)
-      .eq("school_id", (await supabase.from("profiles").select("school_id").eq("id", authData.user.id).single()).data?.school_id)
+      .eq("school_id", actor.school_id)
       .single();
 
     if (billFetchErr || !bill) {
