@@ -27,7 +27,7 @@ function getGreeting(name){
 }
 
 export function DashboardPage({ctx}){
-  const {user,role,notify,setPage,setPageParam,selectedSection,pendingApprovals,refreshKey}=ctx;
+  const {user,role,notify,setPage,setPageParam,selectedSection,pendingApprovals,refreshKey,workspaceType}=ctx;
   const sectionCtx=useContext(SectionCtx);
   const [stats,setStats]=useState({students:0,teachers:0,classes:0,results:0});
   const [announcements,setAnnouncements]=useState([]);
@@ -281,6 +281,99 @@ export function DashboardPage({ctx}){
       }
     }).catch(err=>console.error('[Dashboard] load failed:',err));
   },[refreshKey]);
+
+  if(role==="admin" && workspaceType!=="education"){
+    const money = value => "₦"+Number(value||0).toLocaleString("en-NG");
+    const billCount = feeStats.paidCount+feeStats.partialCount+feeStats.unpaidCount;
+    const panel={background:C.card,border:`1px solid ${C.border}`,borderRadius:18,boxShadow:C.shadow,padding:20,minWidth:0};
+    const action=(label,icon,page)=>(
+      <button key={label} onClick={()=>setPage(page)} style={{minHeight:92,borderRadius:14,
+        border:`1px solid ${C.border}`,background:C.white,color:C.text,cursor:"pointer",
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,
+        fontSize:12,fontWeight:650,transition:"transform .18s,border-color .18s"}}>
+        <span style={{color:C.orange,display:"flex"}}>{icon}</span>{label}
+      </button>
+    );
+    return <div style={{color:C.text,maxWidth:1500,margin:"0 auto"}}>
+      <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:18,flexWrap:"wrap",marginBottom:24}}>
+        <div>
+          <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:2,color:C.muted,marginBottom:9}}>James-Denning · Business Monitor & Assistant</div>
+          <h1 style={{fontSize:30,lineHeight:1.12,letterSpacing:"-.8px",fontWeight:750,margin:0}}>{getGreeting(user?.name||"there")}</h1>
+          <p style={{fontSize:14,color:C.muted,margin:"8px 0 0"}}>Monitor your business, run operations and get AI assistance.</p>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",background:C.card,color:C.muted,fontSize:12}}>
+          <span style={{color:C.orange}}>◷</span>{new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:14,marginBottom:18}}>
+        {[
+          {label:"Active Workspace",value:"1",hint:"Current workspace",icon:"▱"},
+          {label:"Fee Records",value:billCount.toLocaleString("en-NG"),hint:"Records in this workspace",icon:"▤"},
+          {label:"Payments Received",value:money(feeStats.totalPaid),hint:"Recorded payments",icon:"▣"},
+          {label:"Outstanding Fees",value:money(feeStats.totalBalance),hint:"Unpaid balance",icon:"◇"},
+        ].map((item,i)=><div key={item.label} style={{...panel,padding:"19px 20px",display:"flex",alignItems:"flex-start",gap:14,borderColor:i===0?C.orange:C.border}}>
+          <div style={{width:42,height:42,flexShrink:0,borderRadius:12,display:"grid",placeItems:"center",fontSize:22,
+            color:C.orange,background:C.orangePale,border:`1px solid ${C.orange}55`}}>{item.icon}</div>
+          <div style={{minWidth:0}}><div style={{fontSize:12,color:C.muted,marginBottom:8}}>{item.label}</div>
+            <div style={{fontSize:24,fontWeight:760,letterSpacing:"-.5px",overflowWrap:"anywhere"}}>{item.value}</div>
+            <div style={{fontSize:10,color:C.muted,marginTop:5}}>{item.hint}</div></div>
+        </div>)}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.15fr) minmax(300px,.95fr)",gap:16,marginBottom:16}}>
+        <section style={panel}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12}}>
+            <h2 style={{fontSize:17,margin:0,fontWeight:720}}>Recent Activity</h2>
+            <button onClick={()=>setPage("admin-tools")} style={{border:0,background:"transparent",color:C.orange,cursor:"pointer",fontSize:12}}>View activity →</button>
+          </div>
+          {recentActivity.length===0?<div style={{padding:"26px 8px",textAlign:"center",color:C.muted,fontSize:13}}>No recent activity recorded yet.</div>:
+            recentActivity.slice(0,4).map((item,i)=><div key={item.id||i} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 0",borderBottom:i<Math.min(recentActivity.length,4)-1?`1px solid ${C.border}`:"none"}}>
+              <div style={{width:34,height:34,borderRadius:10,display:"grid",placeItems:"center",background:C.orangePale,color:C.orange}}>✧</div>
+              <div style={{minWidth:0,flex:1}}><div style={{fontSize:13,fontWeight:650}}>{item.action||item.event_type||item.title||"Workspace activity"}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.description||item.entity_type||"An update was recorded"}</div></div>
+              <time style={{fontSize:10,color:C.muted,whiteSpace:"nowrap"}}>{item.created_at?new Date(item.created_at).toLocaleString("en-NG",{hour:"2-digit",minute:"2-digit"}):"Recent"}</time>
+            </div>)}
+        </section>
+        <section style={{...panel,display:"flex",flexDirection:"column",justifyContent:"space-between",background:C.card}}>
+          <div style={{display:"flex",gap:13,alignItems:"center"}}>
+            <div style={{fontSize:27,color:C.orange}}>✧</div><div><h2 style={{fontSize:17,margin:0}}>JD Assistant</h2><p style={{fontSize:12,color:C.muted,margin:"5px 0 0"}}>Your AI business assistant</p></div>
+          </div>
+          <div style={{margin:"22px 0",padding:15,borderRadius:13,border:`1px solid ${C.border}`,background:C.white}}>
+            <div style={{fontSize:13,fontWeight:650}}>Business intelligence, in one place.</div>
+            <div style={{fontSize:11,color:C.muted,marginTop:6,lineHeight:1.6}}>The assistant panel is ready for its live AI connection. Your existing workspace data and tools remain available below.</div>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <button onClick={()=>setPage("academic-summary")} style={{flex:1,minWidth:110,padding:11,borderRadius:11,border:`1px solid ${C.border}`,background:C.white,color:C.text,cursor:"pointer",fontSize:11}}>Analyse data</button>
+            <button onClick={()=>setPage("report-cards")} style={{flex:1,minWidth:110,padding:11,borderRadius:11,border:`1px solid ${C.border}`,background:C.white,color:C.text,cursor:"pointer",fontSize:11}}>View reports</button>
+          </div>
+        </section>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.1fr) minmax(280px,.9fr)",gap:16,marginBottom:18}}>
+        <section style={panel}>
+          <h2 style={{fontSize:17,margin:"0 0 15px",fontWeight:720}}>Quick Actions</h2>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:10}}>
+            {action("Add Person",<Users size={22}/>, "students")}
+            {action("Create Fee",<DollarSign size={22}/>, "fee-generate")}
+            {action("Record Payment",<Activity size={22}/>, "fee-tracker")}
+            {action("Generate Report",<ClipboardList size={22}/>, "report-cards")}
+          </div>
+        </section>
+        <section style={panel}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <h2 style={{fontSize:17,margin:0,fontWeight:720}}>Your Workspace</h2><span style={{fontSize:11,color:C.muted}}>1 workspace</span>
+          </div>
+          <button onClick={()=>setPage("admin-tools")} style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:14,borderRadius:13,border:`1px solid ${C.border}`,background:C.white,color:C.text,textAlign:"left",cursor:"pointer"}}>
+            <span style={{fontSize:22,color:C.orange}}>▱</span><span style={{flex:1,minWidth:0}}><strong style={{fontSize:13,display:"block"}}>James-Denning</strong><small style={{fontSize:11,color:C.muted}}>Active workspace · {sectionCtx?.schoolName||"Default"}</small></span><span style={{color:C.orange}}>›</span>
+          </button>
+        </section>
+      </div>
+      <section style={{...panel,marginBottom:18}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <div><h2 style={{fontSize:16,margin:0}}>Operations overview</h2><p style={{fontSize:11,color:C.muted,margin:"5px 0 0"}}>Your existing billing, approvals, reporting and workspace health tools remain accessible.</p></div>
+          <button onClick={()=>setPage("fee-tracker")} style={{padding:"9px 13px",borderRadius:10,border:`1px solid ${C.orange}`,background:C.orangePale,color:C.orange,cursor:"pointer",fontSize:11}}>Open finance →</button>
+        </div>
+      </section>
+    </div>;
+  }
 
   return(
     <div>
