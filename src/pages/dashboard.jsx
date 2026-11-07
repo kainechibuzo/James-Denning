@@ -7,7 +7,7 @@ import {
   Activity, AlertTriangle, BookUser, Check, CheckCircle, ChevronRight,
   ClipboardCheck, ClipboardList, Dot, DollarSign,
   Edit, GraduationCap, Info, Lock, Megaphone, Pencil, Save, School,
-  Settings, ShieldCheck, Trash2, Upload, Users, XCircle, Zap, ReceiptText, Wallet, Mail, BarChart3, GraduationCap, CreditCard,
+  Settings, ShieldCheck, Trash2, Upload, Users, XCircle, Zap, ReceiptText, Wallet, Mail, BarChart3, CreditCard,
 } from "lucide-react";
 import { db } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
@@ -30,7 +30,6 @@ export function DashboardPage({ctx}){
   const {user,role,setPage,refreshKey}=ctx;
   const [data,setData]=useState({students:0,staff:0,groups:0,bills:0,collected:0,notices:[],activity:[]});
   const [loading,setLoading]=useState(true);
-  const [period,setPeriod]=useState("all");
   useEffect(()=>{
     let live=true;
     setLoading(true);
@@ -104,7 +103,7 @@ export function DashboardPage({ctx}){
         <div style={{fontSize:25,fontWeight:850,letterSpacing:"-.04em"}}>{loading?"—":item.value}</div>
       </button>)}
     </section>
-    <section style={{display:"grid",gridTemplateColumns:"minmax(0,1.15fr) minmax(300px,.85fr)",gap:14,marginBottom:14}}>
+    <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:14,marginBottom:14}}>
       <div style={{...panel,padding:20,minWidth:0}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <div><div style={titleStyle}>Recent activity</div><div style={{fontSize:12,color:labelColor,marginTop:4}}>Latest recorded workspace actions</div></div>
