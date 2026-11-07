@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -130,6 +131,19 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const authClient = createClient(url, anonKey, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const { data: actor } = await adminClient.from("profiles").select("role,school_id").eq("id", authData.user.id).maybeSingle();
+    if (!actor || actor.role !== "admin" || !actor.school_id) return new Response(JSON.stringify({ error: "School administrator access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     const { to, subject, html, from, attachments } = await req.json();
 
     if (!to || !subject || !html) {
@@ -140,7 +154,7 @@ serve(async (req) => {
     }
 
     const recipients: string[] = Array.isArray(to) ? to.filter(Boolean) : [to].filter(Boolean);
-    if (!recipients.length) {
+    if (!recipients.length || recipients.length > 100 || recipients.some((email) => typeof email !== "string" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) {
       return new Response(
         JSON.stringify({ error: "No valid recipients" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
