@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -212,8 +213,19 @@ serve(async (req) => {
     const { school_id, force = false } = reqBody as { school_id?: string; force?: boolean };
     if (!school_id) return new Response(JSON.stringify({ error: "school_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
+    if (!ANON_KEY) throw new Error("Supabase anon/publishable key missing");
+    const authClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const adminClient = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+    const { data: actor } = await adminClient.from("profiles").select("role,school_id").eq("id", authData.user.id).maybeSingle();
+    if (!actor || actor.role !== "admin" || actor.school_id !== school_id) return new Response(JSON.stringify({ error: "Administrator access to this school is required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // ── Load digest config ──
     const { data: dcRow } = await pgGet(SUPABASE_URL, SERVICE_KEY, "school_settings", { select: "value", key: "eq.notif_digest_config", school_id: `eq.${school_id}` });
