@@ -30,9 +30,9 @@ export const LIGHT = {
 };
 
 export const DARK = {
-  orange: "#F3F4F6", orangeDark: "#FFFFFF", orangePale: "#1F2937", orangeLight: "#4B5563",
-  blue: "#F3F4F6", bluePale: "#1F2937", blueDark: "#000000", blueLight: "#4B5563",
-  white: "#111111", offWhite: "#000000", card: "#111111", filter: "#171717",
+  orange: "#D9B650", orangeDark: "#F0D77C", orangePale: "#292315", orangeLight: "#8B7435",
+  blue: "#D9B650", bluePale: "#292315", blueDark: "#080808", blueLight: "#8B7435",
+  white: "#101010", offWhite: "#080808", card: "#101010", filter: "#171717",
   border: "#2A2A2A", borderLight: "#1F1F1F",
   text: "#F9FAFB", textSoft: "#D1D5DB", muted: "#9CA3AF", light: "#6B7280",
   green: "#86EFAC", greenPale: "#052E16", greenLight: "#166534",
