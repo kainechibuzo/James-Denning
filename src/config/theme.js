@@ -17,11 +17,11 @@ const semantic = {
 export const LIGHT = {
   // Primary brand is charcoal/black. Legacy token names remain so every
   // existing feature keeps working without a visual rewrite in each page.
-  orange: "#111827", orangeDark: "#030712", orangePale: "#F3F4F6", orangeLight: "#D1D5DB",
-  blue: "#111827", bluePale: "#F3F4F6", blueDark: "#030712", blueLight: "#D1D5DB",
-  white: "#FFFFFF", offWhite: "#F7F7F5", card: "#FFFFFF", filter: "#F9FAFB",
-  border: "#E5E7EB", borderLight: "#F3F4F6",
-  text: "#111827", textSoft: "#374151", muted: "#6B7280", light: "#9CA3AF",
+  orange: "#B89432", orangeDark: "#8F6D19", orangePale: "#F4EBD2", orangeLight: "#D8C58F",
+  blue: "#B89432", bluePale: "#F4EBD2", blueDark: "#111318", blueLight: "#D8C58F",
+  white: "#F3F4F6", offWhite: "#E5E7EB", card: "#F1F2F4", filter: "#E9EAED",
+  border: "#17191D", borderLight: "#C9CDD3",
+  text: "#111318", textSoft: "#343941", muted: "#626873", light: "#858B95",
   ...semantic,
   shadow: "0 1px 2px rgba(17,24,39,.05), 0 1px 3px rgba(17,24,39,.04)",
   shadowMd: "0 8px 24px rgba(17,24,39,.08), 0 2px 6px rgba(17,24,39,.05)",
@@ -30,9 +30,9 @@ export const LIGHT = {
 };
 
 export const DARK = {
-  orange: "#F3F4F6", orangeDark: "#FFFFFF", orangePale: "#1F2937", orangeLight: "#4B5563",
-  blue: "#F3F4F6", bluePale: "#1F2937", blueDark: "#000000", blueLight: "#4B5563",
-  white: "#111111", offWhite: "#000000", card: "#111111", filter: "#171717",
+  orange: "#D9B650", orangeDark: "#F0D77C", orangePale: "#292315", orangeLight: "#8B7435",
+  blue: "#D9B650", bluePale: "#292315", blueDark: "#080808", blueLight: "#8B7435",
+  white: "#101010", offWhite: "#080808", card: "#101010", filter: "#171717",
   border: "#2A2A2A", borderLight: "#1F1F1F",
   text: "#F9FAFB", textSoft: "#D1D5DB", muted: "#9CA3AF", light: "#6B7280",
   green: "#86EFAC", greenPale: "#052E16", greenLight: "#166534",
