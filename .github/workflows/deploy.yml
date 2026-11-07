@@ -52,7 +52,7 @@ jobs:
       # before they were tracked. Live schema inspection confirms their objects
       # already exist, so record their history rather than replaying their DDL.
       - name: Reconcile manually applied production migrations
-        run: supabase migration repair --status applied 000a 000b 001b 999b 999c
+        run: supabase migration repair 000a 000b 001b 999b 999c --status applied
 
       # Apply only migrations still pending after history reconciliation.
       - name: Apply pending migrations
