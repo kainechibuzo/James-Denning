@@ -350,7 +350,7 @@ export function DashboardPage({ctx}){
       <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.1fr) minmax(280px,.9fr)",gap:16,marginBottom:18}}>
         <section style={panel}>
           <h2 style={{fontSize:17,margin:"0 0 15px",fontWeight:720}}>Quick Actions</h2>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:10}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",gap:10}}>
             {action("Add Person",<Users size={22}/>, "students")}
             {action("Create Fee",<DollarSign size={22}/>, "fee-generate")}
             {action("Record Payment",<Activity size={22}/>, "fee-tracker")}
