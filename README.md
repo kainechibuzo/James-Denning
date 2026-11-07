@@ -1,4 +1,4 @@
-# JAMES-DENNING — Business Operations Platform
+ # JAMES-DENNING — Business Operations Platform
 
 A multi-tenant business operations workspace for organizations of every kind.
 It manages people, teams, groups, billing, performance records, approvals, communications,
