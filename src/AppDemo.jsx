@@ -57,7 +57,7 @@ let C = LIGHT;
 // DarkCtx/useDark -- imported from contexts/dark.jsx
 
 function DarkProvider({children}){
-  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : localStorage.getItem("rgs_dark")==="1"; }catch{ return false; } };
+  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : (localStorage.getItem("rgs_dark")!=null ? localStorage.getItem("rgs_dark")==="1" : true); }catch{ return false; } };
   const [dark,setDark] = useState(stored);
   C = dark ? DARK : LIGHT;
   setTheme(dark);
@@ -1252,7 +1252,7 @@ function SectionSelector(){
   ];
 
   if(loading) return(
-    <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"10px 20px"}}>
+    <div style={{background:"#0B0B0B",borderBottom:`1px solid ${C.border}`,padding:"10px 20px"}}>
       <span style={{color:C.muted,fontSize:12}}>Loading sections…</span>
     </div>
   );
@@ -2394,7 +2394,7 @@ function AppInner(){
       {/* SIDEBAR */}
       <aside style={{
         width: isMobile ? 240 : (sideOpen?230:56),
-        background:`linear-gradient(180deg,${C.blueDark} 0%,#0a1f48 50%,${C.blueDark} 100%)`,
+        background:"linear-gradient(180deg,#080808 0%,#101010 55%,#080808 100%)",
         transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
         position: isMobile ? "fixed" : "sticky",
