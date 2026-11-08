@@ -1,5 +1,5 @@
 # CLAUDE.md — JAMES-DENNING Project Context
-_Last updated: 1 Sep 2026._
+_Last updated: 8 Nov 2026._
 
 ## Rebrand / Workspace Model (20 Aug 2026)
 
@@ -128,7 +128,7 @@ This keeps the next session fully informed without needing to re-read code.
 
 ---
 
-## Project Summary
+## Current Identity Overhaul (8 Nov 2026)\n\nThe canonical product identity remains JAMES-DENNING. Public landing/auth surfaces, browser metadata, native status bar and organization email mastheads must use the same charcoal/silver identity. Keep all organization names tenant-driven; never hard-code a legacy school name in shared templates. Marketing copy must describe shipped capabilities only. Registration remains invitation-based: the owner verifies their email and chooses a password from the secure invite flow; do not add a frontend password field unless the server-side registration contract is changed to safely create and verify credentials.\n\n## Project Summary
 
 **JAMES-DENNING** — a multi-tenant business operations platform for organizations of every kind.
 Built as a single-page React app. Page components live in `src/pages/` (one file per domain).

@@ -12,7 +12,7 @@ if (Capacitor.isNativePlatform()) {
   // Navy status bar, light (white) icons, does NOT overlay the WebView
   // setOverlaysWebView(false) is the key fix — pushes app content below the bar
   StatusBar.setStyle({ style: Style.Dark }).catch(() => {})
-  StatusBar.setBackgroundColor({ color: '#0d2d6e' }).catch(() => {})
+  StatusBar.setBackgroundColor({ color: '#090a0c' }).catch(() => {})
   StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {})
 }
 

@@ -1,7 +1,7 @@
 {
-  "name": "rgs-school-portal",
+  "name": "james-denning",
   "version": "1.0.0",
-  "description": "JAMES-DENNING — Business Operations Platform",
+  "description": "JAMES-DENNING — Organization Operations Workspace",
   "private": true,
   "scripts": {
     "dev": "vite",
