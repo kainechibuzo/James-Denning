@@ -53,7 +53,7 @@ serve(async (req) => {
         return json({ error: "schoolName, adminName, and adminEmail are required" }, 400);
       }
       const normalizedEmail = String(adminEmail).trim().toLowerCase();
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return json({ error: "Enter a valid email address" }, 400);
       }
       const allowedRedirects = new Set([
@@ -95,7 +95,13 @@ serve(async (req) => {
       if (authErr || !authUser?.user) return json({ error: authErr?.message ?? "Failed to send the verification invitation" }, 400);
 
       const rollbackRegistration = async (schoolId?: string) => {
-        if (schoolId) await supabaseAdmin.from("schools").delete().eq("id", schoolId);
+        if (schoolId) {
+          await supabaseAdmin.from("org_tools").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("org_submissions").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("school_settings").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("profiles").delete().eq("id", authUser.user.id);
+          await supabaseAdmin.from("schools").delete().eq("id", schoolId);
+        }
         await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
       };
 
@@ -117,7 +123,7 @@ serve(async (req) => {
 
       const { error: profileErr } = await supabaseAdmin
         .from("profiles")
-        .upsert({ id: authUser.user.id, email: adminEmail, full_name: adminName, role: "admin", school_id: school.id });
+        .upsert({ id: authUser.user.id, email: normalizedEmail, full_name: adminName.trim(), role: "admin", school_id: school.id });
       if (profileErr) {
         await rollbackRegistration(school.id);
         return json({ error: profileErr.message }, 400);
