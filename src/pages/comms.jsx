@@ -346,12 +346,8 @@ export function MailComposePage({ctx}){
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td style="vertical-align:middle;">
-          <div style="line-height:1.15;margin-bottom:6px;">
-            <span style="font-family:Georgia,serif;font-size:26px;font-weight:900;color:${ORANGE};letter-spacing:0.5px;">RENAISSANCE</span><br/>
-            <span style="font-family:Georgia,serif;font-size:26px;font-weight:900;color:${GREEN};">GARDEN</span>
-            <span style="font-family:Georgia,serif;font-size:26px;font-weight:900;color:${GREEN};"> SCHOOLS</span>
-          </div>
-          <div style="font-family:Arial,sans-serif;font-size:12px;font-style:italic;color:${PURPLE};font-weight:600;letter-spacing:0.3px;">Our God, Our Vision, Our Strength</div>
+          <div style="font-family:Arial,sans-serif;font-size:20px;font-weight:800;color:${GREEN};letter-spacing:-0.4px;line-height:1.2;margin-bottom:5px;">${esc(_mailSN)}</div>
+          <div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};letter-spacing:0.4px;">Organization update</div>
         </td>
         <td style="vertical-align:top;text-align:right;white-space:nowrap;">
           <div style="font-family:Arial,sans-serif;font-size:11px;color:${TEXTLIGHT};">${dateStr}</div>
