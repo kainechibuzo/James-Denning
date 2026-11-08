@@ -5451,7 +5451,7 @@ export const db = {
       schoolName:schoolData.name,
       adminEmail:schoolData.admin_email,
       adminName:schoolData.admin_name,
-      adminPassword:schoolData.admin_password,
+      redirectTo:schoolData.redirect_to,
       studentIdPrefix:(schoolData.student_id_prefix||schoolData.name.slice(0,3)).toUpperCase(),
       address:schoolData.address||'',
       phone:schoolData.phone||schoolData.contact_phone||'',
