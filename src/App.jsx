@@ -49,6 +49,6 @@ export default function App(){
  if(screen==="loading")return <div style={{minHeight:"100vh",background:"#090a0c",color:"#d8b36a",display:"grid",placeItems:"center",fontFamily:"system-ui"}}>Loading James-Denning…</div>;
  if(screen==="app"||isApply)return <AppDemo/>;
  if(screen==="legacy")return <AppDemo/>;
- if(screen==="auth")return <EmailAuthPage mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated} onLegacy={()=>setScreen("legacy")}/>;
+ if(screen==="auth")return <EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated} onLegacy={()=>setScreen("legacy")}/>;
  return <><PublicLanding onSignIn={()=>{setAuthMode("signin");setScreen("auth")}} onGetStarted={()=>{setAuthMode("signup");setScreen("auth")}}/>{bootError&&<div role="status" style={{position:"fixed",bottom:12,left:12,right:12,background:"#351b1b",color:"#ffb3b3",padding:10,borderRadius:8,fontSize:12}}>{bootError}</div>}</>;
 }
