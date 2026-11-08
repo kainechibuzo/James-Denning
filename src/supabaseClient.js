@@ -5475,22 +5475,14 @@ export const db = {
       return {message:detail||error?.message||'Registration service unavailable.'};
     };
 
-    let lastError=null;
-    for(const functionName of ['manage-account','clever-processor']){
-      const result=await supabase.functions.invoke(functionName,{body});
-      if(!result.error){
-        if(result.data?.error) return {data:null,error:{message:result.data.error}};
-        const school=result.data?.school;
-        if(!school) return {data:null,error:{message:'Registration service returned no organization record.'}};
-        return {data:school,error:null};
-      }
-      lastError=await readFunctionError(result.error);
-      const status=result.error?.context?.status;
-      // Only try the legacy slug when the canonical function is absent.
-      if(functionName==='manage-account' && (status===404||status===405)) continue;
-      return {data:null,error:lastError};
+    const result=await supabase.functions.invoke('manage-account',{body});
+    if(!result.error){
+      if(result.data?.error) return {data:null,error:{message:result.data.error}};
+      const school=result.data?.school;
+      if(!school) return {data:null,error:{message:'Registration service returned no organization record.'}};
+      return {data:{school,verificationEmailSent:result.data?.verificationEmailSent===true},error:null};
     }
-    return {data:null,error:lastError||{message:'Registration service unavailable.'}};
+    return {data:null,error:await readFunctionError(result.error)};
   },
 
 
