@@ -26,8 +26,8 @@ export default function App(){
  useEffect(()=>{
   if(isApply){setScreen("app");return}
   let alive=true;
-  let recoveryMode=typeof window!=="undefined"&&(window.location.hash.includes("type=recovery")||window.location.hash.includes("type=invite"));
-  const {data:authListener}=supabase.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"||(event==="SIGNED_IN"&&window.location.hash.includes("type=invite"))){recoveryMode=true;setAuthMode("update");setScreen("auth");}});
+  let recoveryMode=typeof window!=="undefined"&&(window.location.hash.includes("type=recovery")||window.location.hash.includes("type=invite")||window.location.search.includes("invite=1"));
+  const {data:authListener}=supabase.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"||(event==="SIGNED_IN"&&(window.location.hash.includes("type=invite")||window.location.search.includes("invite=1")))){recoveryMode=true;setAuthMode("update");setScreen("auth");}});
   const boot=async()=>{
    try{
     const {data}=await supabase.auth.getSession();
