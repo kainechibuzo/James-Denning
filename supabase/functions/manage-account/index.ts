@@ -268,6 +268,7 @@ serve(async (req) => {
     if (action === "backfill_existing_school") {
       const { schoolId, tempPassword } = payload;
       if (!schoolId || !tempPassword) return json({ error: "schoolId, tempPassword required" }, 400);
+      if (schoolId !== caller.school_id) return json({ error: "Cannot backfill an organization outside your own workspace" }, 403);
 
       const { count: existingAdmins } = await supabaseAdmin
         .from("profiles").select("id", { count: "exact", head: true })
