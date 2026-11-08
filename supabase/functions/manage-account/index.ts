@@ -57,9 +57,7 @@ serve(async (req) => {
         return json({ error: "Enter a valid email address" }, 400);
       }
       const allowedRedirects = new Set([
-        "https://rgs-portal-master.vercel.app",
         "https://james-denning-james-projects-57651351.vercel.app",
-        "http://localhost:5173",
       ]);
       let inviteRedirect = "https://james-denning-james-projects-57651351.vercel.app";
       if (redirectTo) {
