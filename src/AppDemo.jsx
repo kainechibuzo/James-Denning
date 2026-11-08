@@ -2853,13 +2853,13 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
           <div style={{width:8,height:8,borderRadius:"50%",background:"#4ade80",
             boxShadow:"0 0 8px #4ade80"}}/>
           <span style={{color:"rgba(255,255,255,.75)",fontSize:12,fontWeight:600,letterSpacing:.5}}>
-            Business Management Portal
+            School & Staff Portal
           </span>
         </div>
         <div style={{color:"rgba(255,255,255,.9)",fontSize:28,fontWeight:900,letterSpacing:"-.02em",
-          lineHeight:1.2}}>Select Your Business</div>
+          lineHeight:1.2}}>Select Your School</div>
         <div style={{color:"rgba(255,255,255,.45)",fontSize:13,marginTop:6}}>
-          Choose your business to continue
+          Choose your school to continue
         </div>
       </div>
 
@@ -2923,7 +2923,7 @@ function SchoolSelectPage({onSelect,onPlatformAdmin}){
                 transition:"all .15s",marginTop:4}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(232,86,10,.22)";e.currentTarget.style.borderColor="rgba(232,86,10,.7)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(232,86,10,.12)";e.currentTarget.style.borderColor="rgba(232,86,10,.45)";}}>
-              <Plus size={15}/> Register New Business
+              <Plus size={15}/> Register a School
             </button>
           </div>
       }
