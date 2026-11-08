@@ -48,9 +48,28 @@ serve(async (req) => {
 
     // ── PUBLIC: register a brand-new school + its admin account ───────────
     if (action === "register_school") {
-      const { schoolName, address, state, phone, studentIdPrefix, adminName, adminEmail, adminPassword, presetKey } = payload;
-      if (!schoolName || !adminEmail || !adminPassword) {
-        return json({ error: "schoolName, adminEmail, and adminPassword are required" }, 400);
+      const { schoolName, address, state, phone, studentIdPrefix, adminName, adminEmail, redirectTo, presetKey } = payload;
+      if (!schoolName?.trim() || !adminName?.trim() || !adminEmail?.trim()) {
+        return json({ error: "schoolName, adminName, and adminEmail are required" }, 400);
+      }
+      const normalizedEmail = String(adminEmail).trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+        return json({ error: "Enter a valid email address" }, 400);
+      }
+      const allowedRedirects = new Set([
+        "https://rgs-portal-master.vercel.app",
+        "https://james-denning-james-projects-57651351.vercel.app",
+        "http://localhost:5173",
+      ]);
+      let inviteRedirect = "https://james-denning-james-projects-57651351.vercel.app";
+      if (redirectTo) {
+        try {
+          const parsed = new URL(redirectTo);
+          if (!allowedRedirects.has(parsed.origin)) return json({ error: "Unsupported email redirect destination" }, 400);
+          inviteRedirect = `${parsed.origin}/?invite=1`;
+        } catch {
+          return json({ error: "Invalid email redirect destination" }, 400);
+        }
       }
 
       // Phase 1 presets: optional business-type preset. Validate it BEFORE
@@ -64,18 +83,33 @@ serve(async (req) => {
         preset = data;
       }
 
-      const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
-        email: adminEmail,
-        password: adminPassword,
-        email_confirm: true,
-      });
-      if (authErr || !authUser?.user) return json({ error: authErr?.message ?? "Failed to create admin account" }, 400);
+      // Invitation creates an unconfirmed identity and sends the verification
+      // email. The user chooses their password after opening the invite link.
+      const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+        normalizedEmail,
+        {
+          data: { full_name: adminName.trim(), role: "admin" },
+          redirectTo: inviteRedirect,
+        },
+      );
+      if (authErr || !authUser?.user) return json({ error: authErr?.message ?? "Failed to send the verification invitation" }, 400);
+
+      const rollbackRegistration = async (schoolId?: string) => {
+        if (schoolId) {
+          await supabaseAdmin.from("org_tools").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("org_submissions").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("school_settings").delete().eq("school_id", schoolId);
+          await supabaseAdmin.from("profiles").delete().eq("id", authUser.user.id);
+          await supabaseAdmin.from("schools").delete().eq("id", schoolId);
+        }
+        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
+      };
 
       const { data: school, error: schoolErr } = await supabaseAdmin
         .from("schools")
         .insert({
           name: schoolName, address, state, phone,
-          student_id_prefix: studentIdPrefix, admin_name: adminName, admin_email: adminEmail,
+          student_id_prefix: studentIdPrefix, admin_name: adminName.trim(), admin_email: normalizedEmail,
           setup_done: true,
           // Null for classic (non-preset) registrations — existing behavior.
           preset_key: preset?.key ?? null,
@@ -83,14 +117,17 @@ serve(async (req) => {
         })
         .select().single();
       if (schoolErr) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id); // rollback
+        await rollbackRegistration();
         return json({ error: schoolErr.message }, 400);
       }
 
       const { error: profileErr } = await supabaseAdmin
         .from("profiles")
-        .upsert({ id: authUser.user.id, email: adminEmail, full_name: adminName, role: "admin", school_id: school.id });
-      if (profileErr) return json({ error: profileErr.message }, 400);
+        .upsert({ id: authUser.user.id, email: normalizedEmail, full_name: adminName.trim(), role: "admin", school_id: school.id });
+      if (profileErr) {
+        await rollbackRegistration(school.id);
+        return json({ error: profileErr.message }, 400);
+      }
 
       // Seed the organization settings with the service-role client. The
       // browser is still unauthenticated after registration, so attempting
@@ -103,12 +140,15 @@ serve(async (req) => {
         .from("school_settings")
         .upsert([
           { school_id: school.id, key: "school_name", value: schoolName },
-          { school_id: school.id, key: "admin_email", value: adminEmail },
+          { school_id: school.id, key: "admin_email", value: normalizedEmail },
           { school_id: school.id, key: "workspace_type", value: "business" },
           { school_id: school.id, key: "education_module_enabled", value: "false" },
           ...settingsSeed,
         ], { onConflict: "school_id,key" });
-      if (settingsErr) return json({ error: settingsErr.message }, 400);
+      if (settingsErr) {
+        await rollbackRegistration(school.id);
+        return json({ error: settingsErr.message }, 400);
+      }
 
       // Phase 1: record the org submission + seed org_tools from the preset.
       // Same service-role reasoning as the settings above.
@@ -118,20 +158,26 @@ serve(async (req) => {
           .insert({
             school_id: school.id, preset_key: preset.key,
             org_name: schoolName, contact_name: adminName || "",
-            contact_email: adminEmail, phone: phone || "",
+            contact_email: normalizedEmail, phone: phone || "",
           });
-        if (submissionErr) return json({ error: submissionErr.message }, 400);
+        if (submissionErr) {
+          await rollbackRegistration(school.id);
+          return json({ error: submissionErr.message }, 400);
+        }
 
         const toolRows = Object.entries(preset.modules_json || {})
           .filter(([, enabled]) => enabled === true)
           .map(([toolKey]) => ({ school_id: school.id, tool_key: toolKey, is_enabled: true }));
         if (toolRows.length) {
           const { error: toolsErr } = await supabaseAdmin.from("org_tools").insert(toolRows);
-          if (toolsErr) return json({ error: toolsErr.message }, 400);
+          if (toolsErr) {
+            await rollbackRegistration(school.id);
+            return json({ error: toolsErr.message }, 400);
+          }
         }
       }
 
-      return json({ school, userId: authUser.user.id });
+      return json({ school, userId: authUser.user.id, verificationEmailSent: true });
     }
 
     // ── ADMIN-ONLY from here down: verify the caller is a real admin ──────
