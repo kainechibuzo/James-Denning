@@ -1,6 +1,7 @@
 name: Configure production Supabase Auth
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths:
