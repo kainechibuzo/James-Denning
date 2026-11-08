@@ -26,10 +26,12 @@ export default function App(){
  useEffect(()=>{
   if(isApply){setScreen("app");return}
   let alive=true;
-  const {data:authListener}=supabase.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){setAuthMode("update");setScreen("auth");}});
+  let recoveryMode=typeof window!=="undefined"&&window.location.hash.includes("type=recovery");
+  const {data:authListener}=supabase.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){recoveryMode=true;setAuthMode("update");setScreen("auth");}});
   const boot=async()=>{
    try{
     const {data}=await supabase.auth.getSession();
+    if(recoveryMode){setAuthMode("update");setScreen("auth");return}
     if(data.session?.user){
      const p=await supabase.from("profiles").select("*").eq("id",data.session.user.id).maybeSingle();
      if(p.data?.school_id){
