@@ -2044,8 +2044,10 @@ function AppInner(){
       try{sessionStorage.setItem('rgs_manual_logout','1');}catch{}
     }
     clearSession();
-    // Hard reload: clears all React state, Supabase cache, and any
-    // service-worker / PWA stale data so the next user starts clean.
+    // Keep Supabase Auth and the legacy portal session in sync. Without this,
+    // the public SaaS shell would restore the same account after a hard reload.
+    supabase.auth.signOut().catch(()=>{});
+    // Hard reload clears React state and returns the user to the public site.
     window.location.reload();
   };
 
