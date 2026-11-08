@@ -1,5 +1,5 @@
 # JAMES-DENNING — Project Notes
-_Last updated: 1 Sep 2026 — Hiring Phases 2–3: postings, ad-ready landing pages, applications, quota tracking (v32.92)_
+_Last updated: 8 Nov 2026 — identity consistency pass_
 
 ---
 
