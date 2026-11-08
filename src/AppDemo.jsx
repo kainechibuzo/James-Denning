@@ -2029,7 +2029,7 @@ function AppInner(){
 
   // (inactivity timeout handled by useInactivityTimeout hook above)
 
-  const doLogout=(kicked=false)=>{
+  const doLogout=async(kicked=false)=>{
     // Fire-and-forget: clear DB session token only if it still matches ours.
     // If another device already replaced it, this is a no-op (avoids kicking the new session).
     if(user&&user._sessionToken&&user._userType){
@@ -2046,7 +2046,7 @@ function AppInner(){
     clearSession();
     // Keep Supabase Auth and the legacy portal session in sync. Without this,
     // the public SaaS shell would restore the same account after a hard reload.
-    supabase.auth.signOut().catch(()=>{});
+    try{await supabase.auth.signOut();}catch{}
     // Hard reload clears React state and returns the user to the public site.
     window.location.reload();
   };
