@@ -26,6 +26,7 @@ export default function App(){
  useEffect(()=>{
   if(isApply){setScreen("app");return}
   let alive=true;
+  const {data:authListener}=supabase.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){setAuthMode("update");setScreen("auth");}});
   const boot=async()=>{
    try{
     const {data}=await supabase.auth.getSession();
@@ -42,7 +43,7 @@ export default function App(){
    }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen("landing")}}
   };
   boot();
-  return()=>{alive=false};
+  return()=>{alive=false;authListener.subscription.unsubscribe()};
  },[]);
  const onAuthenticated=payload=>activate(payload);
  if(screen==="loading")return <div style={{minHeight:"100vh",background:"#090a0c",color:"#d8b36a",display:"grid",placeItems:"center",fontFamily:"system-ui"}}>Loading James-Denning…</div>;
