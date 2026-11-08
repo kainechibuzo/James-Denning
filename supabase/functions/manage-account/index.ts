@@ -66,7 +66,7 @@ serve(async (req) => {
         try {
           const parsed = new URL(redirectTo);
           if (!allowedRedirects.has(parsed.origin)) return json({ error: "Unsupported email redirect destination" }, 400);
-          inviteRedirect = parsed.origin;
+          inviteRedirect = `${parsed.origin}/?invite=1`;
         } catch {
           return json({ error: "Invalid email redirect destination" }, 400);
         }
