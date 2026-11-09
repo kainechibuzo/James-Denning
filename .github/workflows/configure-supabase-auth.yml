@@ -22,8 +22,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
-            echo "::warning::SUPABASE_ACCESS_TOKEN is not configured; Auth dashboard settings were not changed."
-            exit 0
+            echo "::error::SUPABASE_ACCESS_TOKEN is required. Add it to repository Actions secrets before running this workflow."
+            exit 1
           fi
 
           current="$(curl --fail --silent --show-error \
@@ -31,7 +31,7 @@ jobs:
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
 
           existing="$(printf '%s' "$current" | jq -r '.uri_allow_list // ""')"
-          filtered="$(printf '%s' "$existing" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -Ev 'localhost|legacy-rgs-portal-master\.vercel\.app' || true)"
+          filtered="$(printf '%s' "$existing" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -Ev 'localhost|james-denning-james-projects-57651351\.vercel\.app' || true)"
           allow_list="$(printf '%s\n' "$filtered" "https://rgs-portal-master.vercel.app" "https://rgs-portal-master.vercel.app/**" | sed '/^$/d' | awk '!seen[$0]++' | paste -sd, -)"
 
           payload="$(jq -n --arg site_url "$SITE_URL" --arg uri_allow_list "$allow_list" \
