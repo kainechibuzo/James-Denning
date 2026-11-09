@@ -57,7 +57,7 @@ let C = LIGHT;
 // DarkCtx/useDark -- imported from contexts/dark.jsx
 
 function DarkProvider({children}){
-  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : (localStorage.getItem("rgs_dark")!=null ? localStorage.getItem("rgs_dark")==="1" : true); }catch{ return false; } };
+  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : (localStorage.getItem("rgs_dark")!=null ? localStorage.getItem("rgs_dark")==="1" : false); }catch{ return false; } };
   const [dark,setDark] = useState(stored);
   C = dark ? DARK : LIGHT;
   setTheme(dark);
