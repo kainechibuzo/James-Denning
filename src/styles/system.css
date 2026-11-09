@@ -38,3 +38,10 @@ input,select,textarea{accent-color:var(--jd-ink);max-width:100%}
   tr,td,th{page-break-inside:avoid}
   @page{margin:1.5cm}
 }
+
+/* Dashboard actions: consistent hover, pressed and keyboard states */
+.jd-dashboard-action{min-width:0;min-height:48px;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.jd-dashboard-action:hover{transform:translateY(-2px);border-color:#c9cdd1!important;box-shadow:0 8px 22px rgba(32,33,36,.07)}
+.jd-dashboard-action:active{transform:translateY(0);box-shadow:none}
+.jd-dashboard-action:focus-visible{outline:3px solid var(--jd-accent);outline-offset:3px}
+@media(hover:none){.jd-dashboard-action:hover{transform:none;box-shadow:none}}
