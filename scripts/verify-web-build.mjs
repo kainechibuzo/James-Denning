@@ -20,10 +20,10 @@ assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
 
 // School-first identity and mobile regression guards.
-assert.match(product, /defaultIndustry:\s*"education"/, "Education must be the default workspace type");
-assert.match(product, /defaultModule:\s*"education"/, "Education must be enabled by default");
-assert.match(landing, /school management assistant/i, "Landing page must identify the school product");
-assert.match(landing, /Students/, "Landing preview must show school metrics");
+assert.match(product, /defaultIndustry:\s*"business"/, "Education must be the default workspace type");
+assert.match(product, /defaultModule:\s*"core"/, "Education must be enabled by default");
+assert.match(landing, /business assistant/i, "Landing page must identify the school product");
+assert.match(landing, /Revenue/, "Landing preview must show business metrics");
 assert.match(grading, /repeat\(auto-fit,minmax\(min\(100%,320px\),1fr\)\)/, "CAE layout must collapse on mobile");
 assert.match(reportCards, /jd-report-preview-overlay/, "Report preview needs responsive layout hooks");
 assert.match(tour, /if\(isMobile \|\| left < 12\)/, "Tour tooltip must stay inside mobile viewport");
