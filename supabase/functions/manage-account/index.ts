@@ -57,9 +57,9 @@ serve(async (req) => {
         return json({ error: "Enter a valid email address" }, 400);
       }
       const allowedRedirects = new Set([
-        "https://james-denning-james-projects-57651351.vercel.app",
+        "https://rgs-portal-master.vercel.app",
       ]);
-      let inviteRedirect = "https://james-denning-james-projects-57651351.vercel.app";
+      let inviteRedirect = "https://rgs-portal-master.vercel.app/?invite=1";
       if (redirectTo) {
         try {
           const parsed = new URL(redirectTo);
@@ -70,8 +70,9 @@ serve(async (req) => {
         }
       }
 
-      // Phase 1 presets: optional business-type preset. Validate it BEFORE
-      // creating anything so an unknown key fails fast with a clean 400.
+      // Validate any selected industry preset before creating anything.
+      // Core business is the default; education is selected with the
+      // dedicated school_management preset.
       let preset = null;
       if (presetKey) {
         const { data, error: presetErr } = await supabaseAdmin
@@ -280,7 +281,7 @@ serve(async (req) => {
       const { data: school } = await supabaseAdmin.from("schools").select("*").eq("id", schoolId).single();
       if (!school) return json({ error: "School not found" }, 404);
 
-      const results = { admin: null, teachers: [], students: [], errors: [] };
+      const results: { admin: string | null; teachers: string[]; students: string[]; errors: string[] } = { admin: null, teachers: [], students: [], errors: [] };
 
       // Admin
       if (school.admin_email) {

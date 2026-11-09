@@ -1,18 +1,17 @@
 /**
  * Product identity and terminology.
  *
- * The database still uses the original school-oriented table/column names for
- * backwards compatibility. This file is the presentation layer: new tenants
- * see business-neutral language while existing education tenants can keep the
- * education module enabled without a schema migration.
+ * The database retains legacy school-oriented names for backwards compatibility.
+ * The product is a multi-industry operations workspace: core business operations
+ * are the default, while education is an explicitly selectable vertical.
  */
 
 export const PRODUCT = {
   name: "JAMES-DENNING",
   shortName: "JD",
-  title: "JAMES-DENNING — Business Operations Platform",
+  title: "JAMES-DENNING — Organization Operations Platform",
   tagline: "A clearer way to run your organization.",
-  description: "Manage people, teams, operations, billing, performance, and communication in one connected workspace. Education tools remain available as an optional industry module.",
+  description: "Monitor business activity, manage people and workflows, and turn operations data into useful insights.",
   version: "v32.92",
   defaultIndustry: "business",
   defaultModule: "core",
@@ -24,7 +23,7 @@ export const INDUSTRIES = [
   { value: "retail", label: "Retail and commerce", description: "People, locations, products, and payments." },
   { value: "nonprofit", label: "Nonprofit", description: "Members, programs, contributions, and reporting." },
   { value: "healthcare", label: "Health and wellness", description: "People, practitioners, schedules, and records." },
-  { value: "education", label: "Education", description: "Enable education terminology and academic workflows." },
+  { value: "education", label: "School management", description: "Students, staff, academics, fees, attendance and reports." },
   { value: "other", label: "Other", description: "Use the core workspace with your own terminology." },
 ];
 

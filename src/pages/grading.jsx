@@ -235,7 +235,7 @@ export function GradingPage({ctx}){
       {tab==="cae"&&(
         <div>
           {tLoading?<Spinner/>:(
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16}}>
               {/* Traits */}
               <div>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>

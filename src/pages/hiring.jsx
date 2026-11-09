@@ -69,7 +69,7 @@ function PresetGrid({ presets, onSelect, compact }) {
                 background: C.bluePale, border: `1px solid ${C.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                {p.key === "dev_shop" ? <Code2 size={20} color={C.blue}/> : <Building2 size={20} color={C.blue}/>}
+                {p.key === "school_management" ? <Code2 size={20} color={C.blue}/> : <Building2 size={20} color={C.blue}/>}
               </div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{p.name}</div>
@@ -121,7 +121,7 @@ function OrgDetailsForm({ preset, onDone }) {
 
   const submit = async () => {
     if (!form.name.trim() || !form.admin_email.trim() || !form.admin_password.trim()) {
-      setErr("Organization name, admin email, and password are required."); return;
+      setErr("School name, admin email, and password are required."); return;
     }
     setSaving(true); setErr("");
     const pfx = (form.student_id_prefix || form.name.slice(0, 4).replace(/\s+/g, "")).toUpperCase();
@@ -140,12 +140,12 @@ function OrgDetailsForm({ preset, onDone }) {
         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
         background: C.bluePale, border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 16,
       }}>
-        {preset?.key === "dev_shop"
+        {preset?.key === "school_management"
           ? <Code2 size={16} color={C.blue}/>
           : <Building2 size={16} color={C.blue}/>}
         <div style={{ fontSize: 12.5, color: C.textSoft }}>
-          <b style={{ color: C.text }}>{preset?.name || "General business"}</b>
-          {" "}preset — tools will be enabled for this organization on creation.
+          <b style={{ color: C.text }}>{preset?.name || "School management"}</b>
+          {" "}preset — tools will be enabled for this school on creation.
         </div>
       </div>
 
@@ -162,7 +162,7 @@ function OrgDetailsForm({ preset, onDone }) {
 
       <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase",
         letterSpacing: .7, margin: "16px 0 10px" }}>Admin Account</div>
-      {inp("Admin Full Name", "admin_name", { placeholder: "e.g. Business Administrator" })}
+      {inp("Admin Full Name", "admin_name", { placeholder: "e.g. Organization Administrator" })}
       {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourbusiness.com" })}
       {inp("Password", "admin_password", { req: true, type: "password", placeholder: "Set a strong password" })}
 
@@ -171,8 +171,8 @@ function OrgDetailsForm({ preset, onDone }) {
           color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
           justifyContent: "center", gap: 8 }}>
-        {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating Organization…</>
-          : <>Create Organization & Continue <ArrowRight size={15}/></>}
+        {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating School…</>
+          : <>Create School & Continue <ArrowRight size={15}/></>}
       </button>
     </div>
   );
@@ -202,7 +202,7 @@ export function OrgPresetSelectPage({ ctx }) {
   return (
     <div style={{ padding: "20px 24px", maxWidth: 900, margin: "0 auto" }}>
       <PageHeader icon="building" title="Register an Organization"
-        subtitle="Choose a business-type preset — it decides which tools and defaults the new organization starts with."
+        subtitle="Choose an industry preset — it decides which tools and defaults the new workspace starts with."
         action={<Btn onClick={() => notify("Pick a preset to continue")} outline sm>Help</Btn>}/>
       {loading
         ? <div style={{ padding: 48, textAlign: "center" }}><Spinner text="Loading…"/></div>
@@ -242,9 +242,9 @@ export function OrgCreatePage({ ctx }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const done = (school) => {
-    notify(`${school?.name || "Organization"} created successfully ✓`);
+    notify(`${school?.name || "School"} created successfully ✓`);
     // Hand off to the school-select screen: clear local session + school so the
-    // new admin can sign in to their fresh organization.
+    // new admin can sign in to their fresh school.
     clearSession(); clearSelectedSchool();
     window.location.reload();
   };
@@ -254,10 +254,10 @@ export function OrgCreatePage({ ctx }) {
   if (!preset) {
     return (
       <div style={{ padding: "20px 24px", maxWidth: 900, margin: "0 auto" }}>
-        <PageHeader icon="building" title="Register an Organization" subtitle="Pick a preset first."/>
+        <PageHeader icon="building" title="Register an Organization" subtitle="Pick an industry preset first."/>
         <EmptyState icon={<Building2 size={28} color={C.muted}/>}
           title="No preset selected"
-          message="Choose a business-type preset before entering organization details."
+          message="Choose an industry preset before entering organization details."
           action={<Btn onClick={() => setPage("org-create")}><ArrowLeft size={14}/> Back to presets</Btn>}/>
       </div>
     );
@@ -302,12 +302,12 @@ export function OrgSignupModal({ onClose, onSuccess }) {
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 900, color: C.text }}>
-              {step === "preset" ? "Register Your Business" : `Create ${preset?.name || "Your"} Organization`}
+              {step === "preset" ? "Register Your Business" : `Create ${preset?.name || "Your"} School`}
             </div>
             <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
               {step === "preset"
                 ? "Step 1 of 2 — choose your business type"
-                : "Step 2 of 2 — organization details"}
+                : "Step 2 of 2 — school details"}
             </div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
@@ -453,7 +453,7 @@ export function PublicHireLanding() {
     if (!token) return;
     db.publicGetThread(token).then(({ data, error }) => {
       if (error || !data || data.ok === false) {
-        setError("This application link is not valid. If you believe this is a mistake, contact the organization.");
+        setError("This application link is not valid. If you believe this is a mistake, contact the school.");
         setLoading(false); return;
       }
       setThread(data);
@@ -491,7 +491,7 @@ export function PublicHireLanding() {
         to: form.email,
         subject: `Application received — ${role?.title || "Role"}`,
         html: buildNeutralEmailHtml(`Application received — ${role?.title || "Role"}`,
-          `Thank you for applying to ${role?.title || "this role"} at ${role?.org_name || "the organization"}.\n\nYour application has been sent. Track it and chat with the organization using your private link:\n${link}\n\nKeep this link safe — it is your personal application thread.`,
+          `Thank you for applying to ${role?.title || "this role"} at ${role?.org_name || "the school"}.\n\nYour application has been sent. Track it and chat with the school using your private link:\n${link}\n\nKeep this link safe — it is your personal application thread.`,
           role?.org_name || "Business Portal"),
       });
     }
@@ -530,12 +530,12 @@ export function PublicHireLanding() {
           </div>
           <Card style={{ padding: 18, marginBottom: 14 }}>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 10, lineHeight: 1.6 }}>
-              This is your private conversation with the organization. They can see your qualifications and asking price
+              This is your private conversation with the school. They can see your qualifications and asking price
               {app.asking_price != null ? <> — <b style={{ color: C.text }}>{fmtNum(app.asking_price)}</b>{app.asking_price_note ? ` (${app.asking_price_note})` : ""}</> : ""}.
             </div>
             <ThreadView messages={thread.messages} onSend={sendReply} sending={sendingReply}
-              reply={reply} setReply={setReply} ownerName="Organization"
-              placeholder="Reply to the organization…"/>
+              reply={reply} setReply={setReply} ownerName="School"
+              placeholder="Reply to the school…"/>
           </Card>
         </div>
       </div>
@@ -607,7 +607,7 @@ export function PublicHireLanding() {
             <CheckCircle2 size={36} color={C.green} style={{ margin: "0 auto 12px" }}/>
             <div style={{ fontSize: 17, fontWeight: 900, color: C.text, marginBottom: 6 }}>Application sent ✓</div>
             <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>
-              The organization will review your application and reach out through your private thread.
+              The school will review your application and reach out through your private thread.
             </div>
             <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px",
               fontSize: 12, color: C.textSoft, wordBreak: "break-all", marginBottom: 10, textAlign: "left", lineHeight: 1.5 }}>
@@ -620,7 +620,7 @@ export function PublicHireLanding() {
         ) : (
           <Card style={{ padding: 22 }}>
             <div style={{ fontSize: 16, fontWeight: 900, color: C.text, marginBottom: 4 }}>Apply now</div>
-            <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 16 }}>Tell the organization about yourself and your asking price.</div>
+            <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 16 }}>Tell the school about yourself and your asking price.</div>
             {submitError && <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
               padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14, fontWeight: 600 }}>{submitError}</div>}
             <div style={{ marginBottom: 12 }}>
@@ -933,7 +933,7 @@ export function HiringPage({ ctx }) {
         <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
           padding: "12px 16px", borderRadius: 10, fontSize: 12.5, marginBottom: 16, fontWeight: 600,
           display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
-          <span>The hiring tool is currently disabled for this organization (set by its business-type preset).</span>
+          <span>The hiring tool is currently disabled for this school (set by its school preset).</span>
           <Btn sm color="#111827" onClick={async () => {
             const { error } = await db.setOrgTool("hiring", true);
             if (error) notify(error.message, "error"); else { notify("Hiring tool enabled ✓"); db.getOrgTools().then(({ data }) => setTools(data || [])); }
