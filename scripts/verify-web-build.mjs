@@ -22,7 +22,7 @@ assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable err
 // School-first identity and mobile regression guards.
 assert.match(product, /defaultIndustry:\s*"education"/, "Education must be the default workspace type");
 assert.match(product, /defaultModule:\s*"education"/, "Education must be enabled by default");
-assert.match(landing, /SCHOOL MANAGEMENT WORKSPACE/, "Landing page must identify the school product");
+assert.match(landing, /school management assistant/i, "Landing page must identify the school product");
 assert.match(landing, /Students/, "Landing preview must show school metrics");
 assert.match(grading, /repeat\(auto-fit,minmax\(min\(100%,320px\),1fr\)\)/, "CAE layout must collapse on mobile");
 assert.match(reportCards, /jd-report-preview-overlay/, "Report preview needs responsive layout hooks");
