@@ -1,6 +1,7 @@
 import React,{useEffect,useState} from "react";
 import AppDemo from "./AppDemo.jsx";
-import {PublicLanding,EmailAuthPage} from "./pages/saas-entry.jsx";
+import {EmailAuthPage} from "./pages/saas-entry.jsx";
+import {PublicLanding} from "./pages/public-landing.jsx";
 import {supabase,db} from "./supabaseClient.js";
 import {loadSession,loadSelectedSchool,saveSession,saveSelectedSchool} from "./utils/session.js";
 
