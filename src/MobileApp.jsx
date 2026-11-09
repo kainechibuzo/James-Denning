@@ -53,7 +53,8 @@ function MAvatar({name="?", size=38, color="#111827"}){
 
 function MRow({t, children, last, onClick, style={}}){
   return(
-    <div onClick={onClick}
+    <div onClick={onClick} role={onClick?"button":undefined} tabIndex={onClick?0:undefined}
+      onKeyDown={onClick?(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onClick();}}:undefined}
       style={{padding:"11px 16px",borderBottom:last?"none":`1px solid ${t.brd}`,
         display:"flex",alignItems:"center",gap:12,
         cursor:onClick?"pointer":"default",
