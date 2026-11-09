@@ -8,12 +8,26 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 const app = read("src/App.jsx");
 const landing = read("src/pages/public-landing.jsx");
 const auth = read("src/pages/saas-entry.jsx");
+const product = read("src/config/product.js");
+const grading = read("src/pages/grading.jsx");
+const reportCards = read("src/pages/reportcards.jsx");
+const tour = read("src/AppDemo.jsx");
 
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/AppDemo\.jsx["']\)\)/, "Workspace must be lazy-loaded");
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/saas-entry\.jsx["']\)/, "Authentication must be lazy-loaded");
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/public-landing\.jsx["']\)/, "Landing page must be lazy-loaded");
 assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
+
+// School-first identity and mobile regression guards.
+assert.match(product, /defaultIndustry:\s*"education"/, "Education must be the default workspace type");
+assert.match(product, /defaultModule:\s*"education"/, "Education must be enabled by default");
+assert.match(landing, /SCHOOL MANAGEMENT WORKSPACE/, "Landing page must identify the school product");
+assert.match(landing, /Students/, "Landing preview must show school metrics");
+assert.match(grading, /repeat\(auto-fit,minmax\(min\(100%,320px\),1fr\)\)/, "CAE layout must collapse on mobile");
+assert.match(reportCards, /jd-report-preview-overlay/, "Report preview needs responsive layout hooks");
+assert.match(tour, /if\(isMobile \|\| left < 12\)/, "Tour tooltip must stay inside mobile viewport");
+assert.doesNotMatch(auth, /james-denning-james-projects-57651351\.vercel\.app/, "Auth must not redirect to stale deployment URL");
 
 // Verify every marketing-page button has an action and every in-page link resolves.
 const buttonTags = [...landing.matchAll(/<button\b[^>]*>/g)].map((m) => m[0]);
