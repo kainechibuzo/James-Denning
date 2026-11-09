@@ -2345,11 +2345,11 @@ export function ReportCardSettingsPage({ctx}){
             );
           }catch(e){html=`<div style="padding:40px;text-align:center;color:#dc2626;">Preview error: ${e.message}</div>`;}
           return(
-            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:9999,
-              display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
+            <div className="jd-report-preview-overlay" style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:9999,
+              display:"flex",alignItems:"center",justifyContent:"center",padding:"clamp(6px,2vw,20px)"}}
               onClick={()=>setPreviewId(null)}>
-              <div style={{background:"#fff",borderRadius:12,width:"min(900px,95vw)",height:"min(90vh,1100px)",
-                display:"flex",flexDirection:"column",overflow:"hidden"}}
+              <div className="jd-report-preview-panel" style={{background:"#fff",borderRadius:12,width:"min(1100px,100%)",height:"min(96dvh,1200px)",
+                display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}
                 onClick={e=>e.stopPropagation()}>
                 <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`,
                   display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
