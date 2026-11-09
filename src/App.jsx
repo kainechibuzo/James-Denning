@@ -20,7 +20,7 @@ class LazyRouteBoundary extends React.Component{
   return this.props.children;
  }
 }
-function LazyRoute({children,label}){return <LazyRouteBoundary><Suspense fallback={<RouteLoading label={label}/ >}>{children}</Suspense></LazyRouteBoundary>;}
+function LazyRoute({children,label}){return <LazyRouteBoundary><Suspense fallback={<RouteLoading label={label}/>}>{children}</Suspense></LazyRouteBoundary>;}
 
 export default function App(){
  const [screen,setScreen]=useState("loading");
