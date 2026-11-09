@@ -67,7 +67,7 @@ export function SectionProvider({ children }) {
     const value = nextType || PRODUCT.defaultIndustry;
     setWorkspaceType(value); setEducationModuleEnabled(educationEnabled); storeWorkspaceType(value);
   }, []);
-  const presentationType = workspaceType === "education" && educationModuleEnabled ? "education" : "business";
+  const presentationType = workspaceType === "education" ? "education" : "business";
 
   return <SectionCtx.Provider value={{
     sections, selectedSection, selectSection, loading, schoolLogo, schoolName, workspaceType,
