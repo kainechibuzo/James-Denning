@@ -258,12 +258,10 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
   return(
     <div style={{minHeight:"100vh",display:"flex",transition:"background .3s",
-      background:dark
-        ?`linear-gradient(135deg,#030712 0%,#0d1f3c 50%,#050e1a 100%)`
-        :`linear-gradient(135deg,#0d2d6e 0%,#1A4FA0 55%,#0c4a7a 100%)`}}>
+      background:"#f8f9fa"}}>
 
       {/* Left decorative panel — hidden on mobile */}
-      {wideScreen&&<div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",
+      {false&&wideScreen&&<div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",
         justifyContent:"center",padding:"48px 32px",position:"relative",overflow:"hidden",
         minWidth:0}}>
         {/* Decorative orbs */}
@@ -302,13 +300,11 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
       {/* Right: Login form */}
       <div style={{width:wideScreen?"min(440px,100%)":"100%",display:"flex",alignItems:"center",
         justifyContent:"center",padding:wideScreen?"32px 24px":"24px 16px",position:"relative"}}>
-        <div style={{width:"100%",background:dark?"rgba(30,37,48,.98)":"rgba(255,255,255,.98)",
-          borderRadius:24,boxShadow:"0 32px 80px rgba(0,0,0,.4)",
-          border:`1px solid ${dark?"rgba(255,255,255,.08)":"rgba(255,255,255,.6)"}`,
-          overflow:"hidden",backdropFilter:"blur(20px)"}}>
+        <div style={{width:"100%",background:"#fff",borderRadius:14,boxShadow:"none",
+          border:"1px solid #dadce0",overflow:"hidden"}}>
 
           {/* Top accent bar */}
-          <div style={{height:4,background:"linear-gradient(90deg,#E8560A,#FF7A35,#1A8C3C,#1A4FA0)"}}/>
+          <div style={{height:0}}/>
 
           <div style={{padding:"32px 32px 36px"}}>
             {/* Organization badge row */}
@@ -389,7 +385,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
                   onFocus={e=>{setFocusId(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
                   onBlur={e=>{setFocusId(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
                   style={{display:"block",width:"100%",padding:"12px 14px 12px 40px",
-                    border:`1.5px solid ${focusId?C.blue:C.border}`,borderRadius:11,
+                    border:`1.5px solid ${focusId?C.blue:C.border}`,borderRadius:8,
                     fontSize:13,background:C.white,color:C.text,outline:"none",
                     boxSizing:"border-box",transition:"border-color .15s,box-shadow .15s"}}/>
               </div>
@@ -414,7 +410,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
                   onFocus={e=>{setFocusPw(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
                   onBlur={e=>{setFocusPw(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
                   style={{display:"block",width:"100%",padding:"12px 44px 12px 40px",
-                    border:`1.5px solid ${focusPw?C.blue:C.border}`,borderRadius:11,
+                    border:`1.5px solid ${focusPw?C.blue:C.border}`,borderRadius:8,
                     fontSize:13,background:C.white,color:C.text,outline:"none",
                     boxSizing:"border-box",transition:"border-color .15s,box-shadow .15s"}}/>
                 <button onClick={()=>setShowPass(p=>!p)} tabIndex={-1}
@@ -428,10 +424,10 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
             {/* Sign in button */}
             <button onClick={submit} disabled={loading}
-              style={{width:"100%",background:loading?"#CBD5E1":`linear-gradient(135deg,${C.orange} 0%,#FF7A35 100%)`,
-                color:"#fff",border:"none",padding:"13px",borderRadius:12,fontSize:14,fontWeight:800,
+              style={{width:"100%",background:loading?"#9aa0a6":"#202124",
+                color:"#fff",border:"none",padding:"13px",borderRadius:8,fontSize:14,fontWeight:600,
                 cursor:loading?"not-allowed":"pointer",
-                boxShadow:loading?"none":`0 6px 20px rgba(232,86,10,.35)`,
+                boxShadow:"none",
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 transition:"all .2s",letterSpacing:".01em"}}>
               {loading?(
