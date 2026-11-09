@@ -1,21 +1,20 @@
 /**
  * Product identity and terminology.
  *
- * The database still uses the original school-oriented table/column names for
- * backwards compatibility. This file is the presentation layer: school
- * management is the default product experience; other industries can be
- * enabled deliberately for future multi-industry deployments.
+ * The database retains legacy school-oriented names for backwards compatibility.
+ * The product is a multi-industry operations workspace: core business operations
+ * are the default, while education is an explicitly selectable vertical.
  */
 
 export const PRODUCT = {
   name: "JAMES-DENNING",
   shortName: "JD",
-  title: "JAMES-DENNING — School Management Platform",
-  tagline: "A clearer way to run your school.",
-  description: "Manage students, staff, academics, attendance, results, fees and school communication in one connected workspace.",
+  title: "JAMES-DENNING — Organization Operations Platform",
+  tagline: "A clearer way to run your organization.",
+  description: "Monitor business activity, manage people and workflows, and turn operations data into useful insights.",
   version: "v32.92",
-  defaultIndustry: "education",
-  defaultModule: "education",
+  defaultIndustry: "business",
+  defaultModule: "core",
 };
 
 export const INDUSTRIES = [
