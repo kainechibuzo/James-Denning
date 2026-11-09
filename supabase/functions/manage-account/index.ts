@@ -57,9 +57,9 @@ serve(async (req) => {
         return json({ error: "Enter a valid email address" }, 400);
       }
       const allowedRedirects = new Set([
-        "https://james-denning-james-projects-57651351.vercel.app",
+        "https://rgs-portal-master.vercel.app",
       ]);
-      let inviteRedirect = "https://james-denning-james-projects-57651351.vercel.app";
+      let inviteRedirect = "https://rgs-portal-master.vercel.app";
       if (redirectTo) {
         try {
           const parsed = new URL(redirectTo);
@@ -139,8 +139,8 @@ serve(async (req) => {
         .upsert([
           { school_id: school.id, key: "school_name", value: schoolName },
           { school_id: school.id, key: "admin_email", value: normalizedEmail },
-          { school_id: school.id, key: "workspace_type", value: "business" },
-          { school_id: school.id, key: "education_module_enabled", value: "false" },
+          { school_id: school.id, key: "workspace_type", value: "education" },
+          { school_id: school.id, key: "education_module_enabled", value: "true" },
           ...settingsSeed,
         ], { onConflict: "school_id,key" });
       if (settingsErr) {
