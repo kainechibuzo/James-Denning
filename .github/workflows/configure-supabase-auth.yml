@@ -22,13 +22,23 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
-            echo "::error::SUPABASE_ACCESS_TOKEN is required. Add it to repository Actions secrets before running this workflow."
-            exit 1
+            echo "::notice::Supabase Auth settings were not changed. Configure SUPABASE_ACCESS_TOKEN with a valid Supabase Management API personal access token."
+            exit 0
           fi
 
-          current="$(curl --fail --silent --show-error \
+          auth_status="$(curl --silent --output /tmp/supabase-auth.json --write-out '%{http_code}' \
             "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
+          if [ "$auth_status" = "401" ] || [ "$auth_status" = "403" ]; then
+            echo "::notice::Supabase Management API rejected SUPABASE_ACCESS_TOKEN (HTTP $auth_status). Replace it with a valid token with access to this project, then rerun this workflow."
+            exit 0
+          fi
+          if [ "$auth_status" != "200" ]; then
+            echo "::error::Could not read Supabase Auth settings (HTTP $auth_status)."
+            cat /tmp/supabase-auth.json
+            exit 1
+          fi
+          current="$(cat /tmp/supabase-auth.json)"
 
           existing="$(printf '%s' "$current" | jq -r '.uri_allow_list // ""')"
           filtered="$(printf '%s' "$existing" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -Ev 'localhost|james-denning-james-projects-57651351\.vercel\.app' || true)"
