@@ -12,6 +12,7 @@ on:
       - 'package-lock.json'
       - 'vite.config.*'
       - 'vercel.json'
+      - 'supabase/**'
       - '.github/workflows/ci.yml'
 
 permissions:
@@ -51,3 +52,4 @@ jobs:
           deno check supabase/functions/send-email/index.ts
           deno check supabase/functions/send-email-batch/index.ts
           deno check supabase/functions/scheduled-digest/index.ts
+          deno check supabase/functions/manage-account/index.ts
