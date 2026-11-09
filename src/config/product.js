@@ -2,9 +2,9 @@
  * Product identity and terminology.
  *
  * The database still uses the original school-oriented table/column names for
- * backwards compatibility. This file is the presentation layer: new tenants
- * see business-neutral language while existing education tenants can keep the
- * education module enabled without a schema migration.
+ * backwards compatibility. This file is the presentation layer: school
+ * management is the default product experience; other industries can be
+ * enabled deliberately for future multi-industry deployments.
  */
 
 export const PRODUCT = {
@@ -24,7 +24,7 @@ export const INDUSTRIES = [
   { value: "retail", label: "Retail and commerce", description: "People, locations, products, and payments." },
   { value: "nonprofit", label: "Nonprofit", description: "Members, programs, contributions, and reporting." },
   { value: "healthcare", label: "Health and wellness", description: "People, practitioners, schedules, and records." },
-  { value: "education", label: "Education", description: "Enable education terminology and academic workflows." },
+  { value: "education", label: "School management", description: "Students, staff, academics, fees, attendance and reports." },
   { value: "other", label: "Other", description: "Use the core workspace with your own terminology." },
 ];
 
