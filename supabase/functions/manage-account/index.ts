@@ -58,8 +58,9 @@ serve(async (req) => {
       }
       const allowedRedirects = new Set([
         "https://rgs-portal-master.vercel.app",
+        "https://james-denning-james-projects-57651351.vercel.app",
       ]);
-      let inviteRedirect = "https://rgs-portal-master.vercel.app";
+      let inviteRedirect = "https://rgs-portal-master.vercel.app/?invite=1";
       if (redirectTo) {
         try {
           const parsed = new URL(redirectTo);
@@ -70,8 +71,11 @@ serve(async (req) => {
         }
       }
 
-      // Phase 1 presets: optional business-type preset. Validate it BEFORE
-      // creating anything so an unknown key fails fast with a clean 400.
+      // School-first product: unsupported business presets are rejected.
+      if (presetKey && presetKey !== "school_management") {
+        return json({ error: "Unsupported workspace preset" }, 400);
+      }
+      // Validate the optional preset before creating anything.
       let preset = null;
       if (presetKey) {
         const { data, error: presetErr } = await supabaseAdmin
