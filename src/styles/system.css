@@ -4,7 +4,7 @@
   color:#202124;background:#f7f8f8;font-synthesis:none;text-rendering:optimizeLegibility;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   --jd-ink:#202124;--jd-muted:#737980;--jd-border:#e5e7e9;--jd-surface:#fff;
-  --jd-accent:#e46a45;--jd-radius-sm:8px;--jd-radius-md:14px;--jd-radius-lg:18px;
+  --jd-accent:#4285F4;--jd-radius-sm:8px;--jd-radius-md:14px;--jd-radius-lg:18px;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{min-height:100%;margin:0;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
