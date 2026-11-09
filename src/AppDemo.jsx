@@ -1837,7 +1837,14 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
       top = Math.max(12, Math.min(vh - 200, top));
       let left=spotRect.left + spotRect.width + 16;
       if(left + TOOLTIP_W > vw - 12) left = spotRect.left - TOOLTIP_W - 16;
-      tooltipStyle={position:"fixed", top, left, width:TOOLTIP_W};
+      // On narrow screens anchor the tour card to the viewport instead of
+      // trying to squeeze it between the highlighted control and screen edge.
+      if(isMobile || left < 12) {
+        left = 12;
+        top = Math.max(12, Math.min(vh - 220, spotRect.top + spotRect.height + 14));
+      }
+      left = Math.max(12, Math.min(vw - TOOLTIP_W - 12, left));
+      tooltipStyle={position:"fixed", top, left, width:TOOLTIP_W, maxHeight:"calc(100dvh - 24px)", overflowY:"auto"};
     } else if(placement==="bottom"){
       let top=spotRect.top + spotRect.height + 14;
       if(top + 160 > vh - 12) top = spotRect.top - 170;
