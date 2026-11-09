@@ -58,7 +58,6 @@ serve(async (req) => {
       }
       const allowedRedirects = new Set([
         "https://rgs-portal-master.vercel.app",
-        "https://james-denning-james-projects-57651351.vercel.app",
       ]);
       let inviteRedirect = "https://rgs-portal-master.vercel.app/?invite=1";
       if (redirectTo) {
@@ -71,14 +70,13 @@ serve(async (req) => {
         }
       }
 
-      // New workspaces use the school-first product defaults. Legacy business
-      // presets are ignored on signup rather than causing a dead-end error.
-      // Existing preset catalog rows remain readable for legacy tenants.
-      const requestedPresetKey = presetKey === "school_management" ? presetKey : null;
+      // Validate any selected industry preset before creating anything.
+      // Core business is the default; education is selected with the
+      // dedicated school_management preset.
       let preset = null;
-      if (requestedPresetKey) {
+      if (presetKey) {
         const { data, error: presetErr } = await supabaseAdmin
-          .from("org_presets").select("*").eq("key", requestedPresetKey).maybeSingle();
+          .from("org_presets").select("*").eq("key", presetKey).maybeSingle();
         if (presetErr) return json({ error: presetErr.message }, 500);
         if (!data) return json({ error: `Unknown preset: ${presetKey}` }, 400);
         preset = data;
@@ -142,8 +140,8 @@ serve(async (req) => {
         .upsert([
           { school_id: school.id, key: "school_name", value: schoolName },
           { school_id: school.id, key: "admin_email", value: normalizedEmail },
-          { school_id: school.id, key: "workspace_type", value: "education" },
-          { school_id: school.id, key: "education_module_enabled", value: "true" },
+          { school_id: school.id, key: "workspace_type", value: "business" },
+          { school_id: school.id, key: "education_module_enabled", value: "false" },
           ...settingsSeed,
         ], { onConflict: "school_id,key" });
       if (settingsErr) {
