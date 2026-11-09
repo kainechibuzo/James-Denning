@@ -1,49 +1,79 @@
-import React, { useState, useEffect, useMemo, useCallback, createContext, useContext, Component, useRef } from "react";
+import React, { lazy, useState, useEffect, useMemo, useCallback, createContext, useContext, Component, useRef } from "react";
 import { LayoutDashboard, Users, GraduationCap, BookUser, School, BookOpen, Layers, Paperclip, BarChart3, FileText, ScrollText, ShieldCheck, Settings2, ListChecks, Tag, FileStack, Zap, CreditCard, TrendingUp, Megaphone, ClipboardCheck, Mail, Inbox, ArrowUpCircle, History, CheckCircle2, UserPlus, Upload, Wallet, MessageSquare, Settings, BadgeCheck, ReceiptText, Link2, Bell, ChevronRight, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, ChevronDown, ChevronUp, MoreHorizontal, Calendar, CalendarDays, CalendarCheck, Clock, Star, Heart, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, LineChart, Hash, AtSign, Link, ExternalLink, Copy, Share2, Printer, Save, RotateCcw, RotateCw, ZoomIn, ZoomOut, Maximize, Minimize, HelpCircle, BookMarked, FlaskConical, Award, Clipboard, ClipboardList, UserCircle, UserCheck, UserX, UserMinus, UsersRound, BriefcaseBusiness, Banknote, Receipt, PiggyBank, TrendingDown, DollarSign, Percent, Calculator, ListOrdered, ListTree, Grid2x2, Columns2, Rows2, AlignLeft, AlignCenter, CircleCheck, CircleX, CircleAlert, CircleDot, CheckSquare, Square, Circle, Triangle, Hexagon, Bookmark, BookmarkCheck, Flag, FlagOff, Target, Crosshair, Compass, Map as MapIcon, Navigation, Bus, Car, Plane, Train, Package, Box, Boxes, ShoppingCart, ShoppingBag, Store, Building, Hotel, Hospital, Church, Landmark, PenLine, Pen, Type, Bold, Italic, Underline, Strikethrough, Subscript, Superscript, AlignJustify, IndentIncrease, IndentDecrease, List, TableProperties, Table, LayoutGrid, LayoutList, LayoutPanelLeft, Sidebar, SidebarClose, SidebarOpen, PanelLeft, PanelRight, Columns, Rows, MoveHorizontal, MoveVertical, Move, Maximize2, Minimize2, SquarePlus, SquareMinus, SquareCheck, SquareX, PlusCircle, MinusCircle, XCircle, AlertCircle, CheckCircle, Loader2, WifiOff, Wifi, ArrowRight, ArrowLeft, KeyRound } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
-import * as XLSX from "xlsx-js-style";
 // -- SHARED CONTEXT IMPORTS (src/contexts/ -- shared with pages/) ---------------
 import { DarkCtx, useDark } from './contexts/dark.jsx';
 import { ConfirmProvider, useConfirm } from './contexts/confirm.jsx';
 import { SectionCtx, useSection, SectionProvider } from './contexts/section.jsx';
 import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
 import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
-// -- PAGE IMPORTS Phase 1 (equal components migrated from inline) ---------------
-import { TeachersPage }               from './pages/teachers.jsx';
-import { SubjectsPage, SessionsPage } from './pages/curriculum.jsx';
-import { TranscriptPage }             from './pages/transcript.jsx';
-import { GradingPage, CaeStructurePanel } from './pages/grading.jsx';
-import { ClassesPage, AssignmentsPage }   from './pages/classes.jsx';
-import { LoginPage, SchoolManagerModal }  from './pages/login.jsx';
-import { RecycleBinPage, DataExportPage, AdminToolsPage } from './pages/tools.jsx';
-import { MembersPage }                    from './pages/members.jsx';
-import { AttendancePage }                 from './pages/schedule.jsx';
-import { ReportTemplatesPage }            from './pages/reportcards.jsx';
-import { AnnouncePage }                   from './pages/comms.jsx';
-import { MyPaymentsPage }                 from './pages/fees.jsx';
-import { DashboardPage }                  from './pages/dashboard.jsx';
-import { StudentsPage, TeacherAddStudentsPage, StudentApprovalsPage } from './pages/students.jsx';
-import { FeesPage, PaymentsPage, FeeItemsPage, FeeTemplatesPage, MyBillPage,
-         FeeGeneratePage, PayItemModal, BillDetailModal, FeeTrackerPage, FeeStatsPage } from './pages/fees.jsx';
-import { ResultsAdminPage, MyClassesPage, MyResultsPage,
-         ResultsTeachPage, ResultsHubPage }                         from './pages/results.jsx';
-import { TeacherAccessRequestPage }                                  from './pages/access.jsx';
-import { ReportCardsPage }                                           from './pages/reportcards.jsx';
-import { PermissionsPage }                                           from './pages/permissions.jsx';
-import { AuditLogPage, ActivityPage, BroadsheetPage,
-         BulkPromotionPage }                                         from './pages/tools.jsx';
-import { AccessRequestsAdminPage }                                   from './pages/access.jsx';
-import { MailLogsPage, MailComposePage }                             from './pages/comms.jsx';
-import { TimetablePage, AcademicCalendarPage }                       from './pages/schedule.jsx';
-import { ReportCardSettingsPage }                                     from './pages/reportcards.jsx';
-import { SettingsPage, NotificationsPage }                           from './pages/settings.jsx';
-import { MyProfilePage }                                            from './pages/members.jsx';
-import { SectionsPage }                                             from './pages/classes.jsx';
-import { ResultApprovalsPage }                                      from './pages/results.jsx';
-import { AcademicSummaryPage }                                      from './pages/analytics.jsx';
-import { OrgPresetSelectPage, OrgCreatePage, OrgSignupModal, PublicHireLanding, HiringPage } from './pages/hiring.jsx';
+// -- Route-level page chunks. The app shell is ready before feature modules download.
+const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
+const TeachersPage = lazyPage(() => import("./pages/teachers.jsx"), "TeachersPage");
+const SubjectsPage = lazyPage(() => import("./pages/curriculum.jsx"), "SubjectsPage");
+const SessionsPage = lazyPage(() => import("./pages/curriculum.jsx"), "SessionsPage");
+const TranscriptPage = lazyPage(() => import("./pages/transcript.jsx"), "TranscriptPage");
+const GradingPage = lazyPage(() => import("./pages/grading.jsx"), "GradingPage");
+const CaeStructurePanel = lazyPage(() => import("./pages/grading.jsx"), "CaeStructurePanel");
+const ClassesPage = lazyPage(() => import("./pages/classes.jsx"), "ClassesPage");
+const AssignmentsPage = lazyPage(() => import("./pages/classes.jsx"), "AssignmentsPage");
+const SectionsPage = lazyPage(() => import("./pages/classes.jsx"), "SectionsPage");
+const LoginPage = lazyPage(() => import("./pages/login.jsx"), "LoginPage");
+const SchoolManagerModal = lazyPage(() => import("./pages/login.jsx"), "SchoolManagerModal");
+const RecycleBinPage = lazyPage(() => import("./pages/tools.jsx"), "RecycleBinPage");
+const DataExportPage = lazyPage(() => import("./pages/tools.jsx"), "DataExportPage");
+const AdminToolsPage = lazyPage(() => import("./pages/tools.jsx"), "AdminToolsPage");
+const AuditLogPage = lazyPage(() => import("./pages/tools.jsx"), "AuditLogPage");
+const ActivityPage = lazyPage(() => import("./pages/tools.jsx"), "ActivityPage");
+const BroadsheetPage = lazyPage(() => import("./pages/tools.jsx"), "BroadsheetPage");
+const BulkPromotionPage = lazyPage(() => import("./pages/tools.jsx"), "BulkPromotionPage");
+const MembersPage = lazyPage(() => import("./pages/members.jsx"), "MembersPage");
+const MyProfilePage = lazyPage(() => import("./pages/members.jsx"), "MyProfilePage");
+const AttendancePage = lazyPage(() => import("./pages/schedule.jsx"), "AttendancePage");
+const TimetablePage = lazyPage(() => import("./pages/schedule.jsx"), "TimetablePage");
+const AcademicCalendarPage = lazyPage(() => import("./pages/schedule.jsx"), "AcademicCalendarPage");
+const ReportTemplatesPage = lazyPage(() => import("./pages/reportcards.jsx"), "ReportTemplatesPage");
+const ReportCardsPage = lazyPage(() => import("./pages/reportcards.jsx"), "ReportCardsPage");
+const ReportCardSettingsPage = lazyPage(() => import("./pages/reportcards.jsx"), "ReportCardSettingsPage");
+const AnnouncePage = lazyPage(() => import("./pages/comms.jsx"), "AnnouncePage");
+const MailLogsPage = lazyPage(() => import("./pages/comms.jsx"), "MailLogsPage");
+const MailComposePage = lazyPage(() => import("./pages/comms.jsx"), "MailComposePage");
+const MyPaymentsPage = lazyPage(() => import("./pages/fees.jsx"), "MyPaymentsPage");
+const FeesPage = lazyPage(() => import("./pages/fees.jsx"), "FeesPage");
+const PaymentsPage = lazyPage(() => import("./pages/fees.jsx"), "PaymentsPage");
+const FeeItemsPage = lazyPage(() => import("./pages/fees.jsx"), "FeeItemsPage");
+const FeeTemplatesPage = lazyPage(() => import("./pages/fees.jsx"), "FeeTemplatesPage");
+const MyBillPage = lazyPage(() => import("./pages/fees.jsx"), "MyBillPage");
+const FeeGeneratePage = lazyPage(() => import("./pages/fees.jsx"), "FeeGeneratePage");
+const PayItemModal = lazyPage(() => import("./pages/fees.jsx"), "PayItemModal");
+const BillDetailModal = lazyPage(() => import("./pages/fees.jsx"), "BillDetailModal");
+const FeeTrackerPage = lazyPage(() => import("./pages/fees.jsx"), "FeeTrackerPage");
+const FeeStatsPage = lazyPage(() => import("./pages/fees.jsx"), "FeeStatsPage");
+const DashboardPage = lazyPage(() => import("./pages/dashboard.jsx"), "DashboardPage");
+const StudentsPage = lazyPage(() => import("./pages/students.jsx"), "StudentsPage");
+const TeacherAddStudentsPage = lazyPage(() => import("./pages/students.jsx"), "TeacherAddStudentsPage");
+const StudentApprovalsPage = lazyPage(() => import("./pages/students.jsx"), "StudentApprovalsPage");
+const ResultsAdminPage = lazyPage(() => import("./pages/results.jsx"), "ResultsAdminPage");
+const MyClassesPage = lazyPage(() => import("./pages/results.jsx"), "MyClassesPage");
+const MyResultsPage = lazyPage(() => import("./pages/results.jsx"), "MyResultsPage");
+const ResultsTeachPage = lazyPage(() => import("./pages/results.jsx"), "ResultsTeachPage");
+const ResultsHubPage = lazyPage(() => import("./pages/results.jsx"), "ResultsHubPage");
+const ResultApprovalsPage = lazyPage(() => import("./pages/results.jsx"), "ResultApprovalsPage");
+const TeacherAccessRequestPage = lazyPage(() => import("./pages/access.jsx"), "TeacherAccessRequestPage");
+const AccessRequestsAdminPage = lazyPage(() => import("./pages/access.jsx"), "AccessRequestsAdminPage");
+const PermissionsPage = lazyPage(() => import("./pages/permissions.jsx"), "PermissionsPage");
+const SettingsPage = lazyPage(() => import("./pages/settings.jsx"), "SettingsPage");
+const NotificationsPage = lazyPage(() => import("./pages/settings.jsx"), "NotificationsPage");
+const AcademicSummaryPage = lazyPage(() => import("./pages/analytics.jsx"), "AcademicSummaryPage");
+const OrgPresetSelectPage = lazyPage(() => import("./pages/hiring.jsx"), "OrgPresetSelectPage");
+const OrgCreatePage = lazyPage(() => import("./pages/hiring.jsx"), "OrgCreatePage");
+const OrgSignupModal = lazyPage(() => import("./pages/hiring.jsx"), "OrgSignupModal");
+const PublicHireLanding = lazyPage(() => import("./pages/hiring.jsx"), "PublicHireLanding");
+const HiringPage = lazyPage(() => import("./pages/hiring.jsx"), "HiringPage");
+
+
 
 
 // ─── VERSION / BRAND ─────────────────────────────────────────────────────────
