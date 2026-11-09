@@ -287,7 +287,7 @@ export function DashboardPage({ctx}){
     const billCount = feeStats.paidCount+feeStats.partialCount+feeStats.unpaidCount;
     const panel={background:C.card,border:`1px solid ${C.border}`,borderRadius:18,boxShadow:C.shadow,padding:20,minWidth:0};
     const action=(label,icon,page)=>(
-      <button key={label} onClick={()=>setPage(page)} style={{minHeight:92,borderRadius:14,
+      <button key={label} className="jd-dashboard-action" onClick={()=>setPage(page)} style={{minHeight:92,borderRadius:14,minWidth:0,
         border:`1px solid ${C.border}`,background:C.white,color:C.text,cursor:"pointer",
         display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,
         fontSize:12,fontWeight:650,transition:"transform .18s,border-color .18s"}}>
