@@ -71,15 +71,14 @@ serve(async (req) => {
         }
       }
 
-      // School-first product: unsupported business presets are rejected.
-      if (presetKey && presetKey !== "school_management") {
-        return json({ error: "Unsupported workspace preset" }, 400);
-      }
-      // Validate the optional preset before creating anything.
+      // New workspaces use the school-first product defaults. Legacy business
+      // presets are ignored on signup rather than causing a dead-end error.
+      // Existing preset catalog rows remain readable for legacy tenants.
+      const requestedPresetKey = presetKey === "school_management" ? presetKey : null;
       let preset = null;
-      if (presetKey) {
+      if (requestedPresetKey) {
         const { data, error: presetErr } = await supabaseAdmin
-          .from("org_presets").select("*").eq("key", presetKey).maybeSingle();
+          .from("org_presets").select("*").eq("key", requestedPresetKey).maybeSingle();
         if (presetErr) return json({ error: presetErr.message }, 500);
         if (!data) return json({ error: `Unknown preset: ${presetKey}` }, 400);
         preset = data;
