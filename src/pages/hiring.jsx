@@ -162,8 +162,8 @@ function OrgDetailsForm({ preset, onDone }) {
 
       <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase",
         letterSpacing: .7, margin: "16px 0 10px" }}>Admin Account</div>
-      {inp("Admin Full Name", "admin_name", { placeholder: "e.g. Business Administrator" })}
-      {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourbusiness.com" })}
+      {inp("Admin Full Name", "admin_name", { placeholder: "e.g. School Administrator" })}
+      {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourschool.edu.ng" })}
       {inp("Password", "admin_password", { req: true, type: "password", placeholder: "Set a strong password" })}
 
       <button onClick={submit} disabled={saving}
@@ -189,7 +189,7 @@ export function OrgPresetSelectPage({ ctx }) {
     setLoading(true); setError(null);
     db.getOrgPresets().then(({ data, error }) => {
       if (error) { setError(error.message); }
-      else setPresets(data || []);
+      else setPresets((data || []).filter(p => p.key === 'school_management'));
       setLoading(false);
     });
   }, []);
@@ -209,7 +209,7 @@ export function OrgPresetSelectPage({ ctx }) {
         : error
           ? <EmptyState icon={<AlertTriangle size={28} color={C.red}/>} title="Could not load presets"
               message={error} action={<Btn onClick={() => { setLoading(true); setError(null);
-                db.getOrgPresets().then(({ data, error }) => { if (error) setError(error.message); else setPresets(data || []); setLoading(false); }); }}>Retry</Btn>}/>
+                db.getOrgPresets().then(({ data, error }) => { if (error) setError(error.message); else setPresets((data || []).filter(p => p.key === 'school_management')); setLoading(false); }); }}>Retry</Btn>}/>
           : <>
               <div style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>
                 <Sparkles size={13} style={{ verticalAlign: "-2px", marginRight: 4 }}/>
@@ -217,7 +217,7 @@ export function OrgPresetSelectPage({ ctx }) {
               </div>
               <PresetGrid presets={presets} onSelect={choose}/>
               <div style={{ marginTop: 16, fontSize: 12, color: C.light, display: "flex", alignItems: "center", gap: 6 }}>
-                <ShieldCheck size={14}/> Creating an school here registers a brand-new workspace with its own admin login.
+                <ShieldCheck size={14}/> Creating a school here registers a brand-new workspace with its own admin login.
               </div>
             </>
       }
@@ -288,7 +288,7 @@ export function OrgSignupModal({ onClose, onSuccess }) {
 
   useEffect(() => {
     db.getOrgPresets().then(({ data }) => {
-      setPresets(data || []);
+      setPresets((data || []).filter(p => p.key === 'school_management'));
       setLoading(false);
     });
   }, []);
