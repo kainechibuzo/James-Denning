@@ -281,7 +281,7 @@ serve(async (req) => {
       const { data: school } = await supabaseAdmin.from("schools").select("*").eq("id", schoolId).single();
       if (!school) return json({ error: "School not found" }, 404);
 
-      const results = { admin: null, teachers: [], students: [], errors: [] };
+      const results: { admin: string | null; teachers: string[]; students: string[]; errors: string[] } = { admin: null, teachers: [], students: [], errors: [] };
 
       // Admin
       if (school.admin_email) {
