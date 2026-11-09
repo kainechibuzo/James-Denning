@@ -3,27 +3,24 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-
-  // 'web' mode → absolute paths for Vercel (base: '/')
-  // default mode → relative paths for Capacitor Android (base: './')
+  // Web deployments use root-relative asset URLs; Capacitor uses bundled relative URLs.
   base: mode === 'web' ? '/' : './',
-
   build: {
     outDir: 'dist',
-    // Slightly larger chunk warning threshold — AppDemo.jsx is intentionally large
-    chunkSizeWarningLimit: 3000,
+    chunkSizeWarningLimit: 900,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
-        // Split Supabase into its own chunk for better caching
-        manualChunks: {
-          supabase: ['@supabase/supabase-js'],
+        // Keep framework, data access and spreadsheet code independently cacheable.
+        // AppDemo and auth/landing routes are split automatically by React.lazy().
+        manualChunks(id) {
+          if (!id.includes('/node_modules/')) return
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor'
+          if (id.includes('/node_modules/@supabase/')) return 'supabase'
+          if (/\/node_modules\/(xlsx|xlsx-js-style)\//.test(id)) return 'spreadsheet-vendor'
         },
       },
     },
   },
-
-  server: {
-    port: 3000,
-    open: true,
-  },
+  server: { port: 3000, open: true },
 }))
