@@ -10,12 +10,12 @@
 export const PRODUCT = {
   name: "JAMES-DENNING",
   shortName: "JD",
-  title: "JAMES-DENNING — Business Operations Platform",
-  tagline: "A clearer way to run your organization.",
-  description: "Manage people, teams, operations, billing, performance, and communication in one connected workspace. Education tools remain available as an optional industry module.",
+  title: "JAMES-DENNING — School Management Platform",
+  tagline: "A clearer way to run your school.",
+  description: "Manage students, staff, academics, attendance, results, fees and school communication in one connected workspace.",
   version: "v32.92",
-  defaultIndustry: "business",
-  defaultModule: "core",
+  defaultIndustry: "education",
+  defaultModule: "education",
 };
 
 export const INDUSTRIES = [
