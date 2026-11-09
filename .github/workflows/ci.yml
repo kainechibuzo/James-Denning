@@ -38,7 +38,7 @@ jobs:
         run: npm ci
 
       - name: Production web build
-        run: npm run build:web
+        run: npm run verify:web
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
