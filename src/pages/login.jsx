@@ -174,7 +174,6 @@ export function SchoolManagerModal({school, onClose, onSaved}){
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
 export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeSchool,onSchoolUpdated}){
   const ctx=useContext(SectionCtx);
-  const {dark,toggle:toggleDark}=useDark();
   const [id,setId]=useState("");
   const [pass,setPass]=useState("");
   const [showPass,setShowPass]=useState(false);
