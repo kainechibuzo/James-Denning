@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
+import './styles/system.css'
 import App from './App.jsx'
 
 // ── Native platform bootstrap ─────────────────────────────────────────────────

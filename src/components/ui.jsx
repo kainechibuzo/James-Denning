@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center",
-          background:"linear-gradient(135deg,#0d2d6e,#1A4FA0)", fontFamily:"'Segoe UI',system-ui,sans-serif", padding:24 }}>
+          background:"#f7f8f8", fontFamily:"'Segoe UI',system-ui,sans-serif", padding:24 }}>
           <div style={{ background:"#fff", borderRadius:20, padding:"38px 32px", maxWidth:500, width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)", textAlign:"center" }}>
             <div style={{ marginBottom:14 }}><Shield size={52} color={C.blue}/></div>
@@ -75,12 +75,12 @@ export class ErrorBoundary extends Component {
             )}
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={() => this.setState({ hasError:false, error:null, info:null })}
-                style={{ flex:1, background:"#fff", color:"#1A4FA0", border:"2px solid #1A4FA0",
+                style={{ flex:1, background:"#fff", color:"#202124", border:"1px solid #dfe2e5",
                   padding:"12px", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer" }}>
                 ↩ Try Again
               </button>
               <button onClick={() => window.location.reload()}
-                style={{ flex:1, background:"#1A4FA0", color:"#fff", border:"none", padding:"12px",
+                style={{ flex:1, background:"#202124", color:"#fff", border:"none", padding:"12px",
                   borderRadius:10, fontWeight:800, fontSize:13, cursor:"pointer",
                   boxShadow:"0 4px 14px rgba(26,79,160,.4)" }}>
                 Reload Portal

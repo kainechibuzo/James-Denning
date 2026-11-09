@@ -23,11 +23,11 @@ import { PRODUCT } from "./config/product.js";
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 const CLARITY = {
-  id:"clarity", dark:false, bg:"#F7F7F5", card:"#FFFFFF", hdr:"linear-gradient(150deg,#111827 0%,#030712 100%)", pri:"#111827", acc:"#111827", txt:"#111827", sft:"#6B7280", mut:"#9CA3AF", brd:"#E5E7EB", tabBg:"#FFFFFF", tabA:"#111827", tabI:"#9CA3AF",
-  tag:{blue:["#F3F4F6","#111827"],green:["#F0FDF4","#166534"],orange:["#F3F4F6","#374151"],red:["#FEF2F2","#991B1B"],purple:["#F3F4F6","#4B5563"],amber:["#FFFBEB","#92400E"]},
+  id:"clarity", dark:false, bg:"#F7F8F8", card:"#FFFFFF", hdr:"#FFFFFF", pri:"#202124", acc:"#202124", txt:"#202124", sft:"#737980", mut:"#969BA2", brd:"#E5E7E9", tabBg:"#FFFFFF", tabA:"#202124", tabI:"#969BA2",
+  tag:{blue:["#F1F2F3","#202124"],green:["#EAF5EE","#16794B"],orange:["#F1F2F3","#44484E"],red:["#FFF0EE","#B42318"],purple:["#F1F2F4","#5C6470"],amber:["#FFF7E5","#946200"]},
 };
 const MIDNIGHT = {
-  id:"midnight", dark:true, bg:"#000000", card:"#111111", hdr:"linear-gradient(150deg,#000000 0%,#1F2937 100%)", pri:"#F3F4F6", acc:"#F3F4F6", txt:"#F9FAFB", sft:"#9CA3AF", mut:"#6B7280", brd:"#2A2A2A", tabBg:"#111111", tabA:"#F3F4F6", tabI:"#6B7280",
+  id:"midnight", dark:true, bg:"#101214", card:"#191C1F", hdr:"#191C1F", pri:"#F3F4F6", acc:"#F3F4F6", txt:"#F9FAFB", sft:"#9CA3AF", mut:"#6B7280", brd:"#303438", tabBg:"#111111", tabA:"#F3F4F6", tabI:"#6B7280",
   tag:{blue:["rgba(243,244,246,.12)","#F3F4F6"],green:["rgba(134,239,172,.1)","#86EFAC"],orange:["rgba(243,244,246,.12)","#D1D5DB"],red:["rgba(252,165,165,.1)","#FCA5A5"],purple:["rgba(209,213,219,.12)","#D1D5DB"],amber:["rgba(252,211,77,.1)","#FCD34D"]},
 };
 
