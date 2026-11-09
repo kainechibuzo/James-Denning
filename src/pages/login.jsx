@@ -299,7 +299,7 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
 
       {/* Right: Login form */}
       <div style={{width:"100%",maxWidth:440,minHeight:"100vh",margin:"0 auto",display:"flex",alignItems:"center",
-        justifyContent:"center",padding:wideScreen?"96px 24px 32px":"88px 16px 28px",position:"relative",boxSizing:"border-box"}}>
+        justifyContent:"center",padding:wideScreen?"32px 24px":"32px 16px",position:"relative",boxSizing:"border-box"}}>
         <div style={{width:"100%",background:"#fff",borderRadius:14,boxShadow:"none",
           border:"1px solid #dadce0",overflow:"hidden"}}>
 
@@ -307,6 +307,10 @@ export function LoginPage({login,loading,toasts,rmToast,selectedSchool,onChangeS
           <div style={{height:0}}/>
 
           <div style={{padding:"32px 32px 36px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:26}}>
+              <Logo size={32}/>
+              <span style={{fontSize:13,fontWeight:700,letterSpacing:"-.02em",color:"#202124"}}>JAMES DENNING</span>
+            </div>
             {/* Organization badge row */}
             {selectedSchool&&(
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20,
