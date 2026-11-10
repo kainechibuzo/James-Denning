@@ -124,12 +124,11 @@ const tools: ToolSpec[] = [
     execute: async (args, ctx) => {
       const limit = Math.min(50, Math.max(1, Number(args.limit || 20)));
       const { data, error } = await ctx.admin.from("email_logs")
-        .select("subject,recipient_count,delivered_count,failed_count,status,error_message,sent_at")
+        .select("subject,recipient_count,status,error_message,sent_at")
         .eq("school_id", ctx.schoolId).order("sent_at", { ascending: false }).limit(limit);
       if (error) throw new Error("Could not read email delivery logs");
       return { entries: (data || []).map((row: any) => ({
-        subject: row.subject, recipients: row.recipient_count, delivered: row.delivered_count,
-        failed: row.failed_count, status: row.status, error: row.error_message, sent_at: row.sent_at,
+        subject: row.subject, recipients: row.recipient_count, status: row.status, error: row.error_message, sent_at: row.sent_at,
       })), count: data?.length || 0 };
     },
   },
