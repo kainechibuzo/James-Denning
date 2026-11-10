@@ -81,7 +81,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
         </div>
         <div className="jd-chat-composer-wrap">
-          {showNotice && <div className="jd-chat-notice"><Sparkles size={14} style={{flex:"0 0 auto",marginTop:1}}/><span>The chat interface is in place. Secure conversation persistence and the AI connection are being added in the next implementation stages.</span><button type="button" aria-label="Dismiss setup notice" onClick={()=>setShowNotice(false)} style={{marginLeft:"auto",border:0,background:"transparent",color:"inherit",cursor:"pointer"}}>×</button></div>}
+          {showNotice && <div className="jd-chat-notice"><Sparkles size={14} style={{flex:"0 0 auto",marginTop:1}}/><span>The interface is ready. Secure conversation history and the AI connection will be enabled after the backend foundation is in place.</span><button type="button" aria-label="Dismiss setup notice" onClick={()=>setShowNotice(false)} style={{marginLeft:"auto",border:0,background:"transparent",color:"inherit",cursor:"pointer"}}>×</button></div>}
           <div className="jd-chat-composer">
             <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Message JD…" disabled rows={2}/>
             <div className="jd-chat-composer-bottom"><button type="button" className="jd-chat-attach" disabled aria-label="Attach a file"><Plus size={18}/></button><button type="button" className="jd-chat-send" disabled aria-label="Send message"><ArrowUp size={17}/></button></div>
