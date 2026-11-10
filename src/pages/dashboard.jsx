@@ -299,7 +299,7 @@ export function DashboardPage({ctx}){
         <div>
           <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:2,color:C.muted,marginBottom:9}}>James-Denning · Business Monitor & Assistant</div>
           <h1 style={{fontSize:30,lineHeight:1.12,letterSpacing:"-.8px",fontWeight:750,margin:0}}>{getGreeting(user?.name||"there")}</h1>
-          <p style={{fontSize:14,color:C.muted,margin:"8px 0 0"}}>Monitor your business, run operations and get AI assistance.</p>
+          <p style={{fontSize:14,color:C.muted,margin:"8px 0 0"}}>Monitor your organisation, coordinate operations and get AI assistance.</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",background:C.card,color:C.muted,fontSize:12}}>
           <span style={{color:C.orange}}>◷</span>{new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}
@@ -308,9 +308,9 @@ export function DashboardPage({ctx}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:14,marginBottom:18}}>
         {[
           {label:"Active Workspace",value:"1",hint:"Current workspace",icon:"▱"},
-          {label:"Fee Records",value:billCount.toLocaleString("en-NG"),hint:"Records in this workspace",icon:"▤"},
+          {label:"Billing Records",value:billCount.toLocaleString("en-NG"),hint:"Invoices and billing records",icon:"▤"},
           {label:"Payments Received",value:money(feeStats.totalPaid),hint:"Recorded payments",icon:"▣"},
-          {label:"Outstanding Fees",value:money(feeStats.totalBalance),hint:"Unpaid balance",icon:"◇"},
+          {label:"Outstanding Balance",value:money(feeStats.totalBalance),hint:"Unpaid invoices and charges",icon:"◇"},
         ].map((item,i)=><div key={item.label} style={{...panel,padding:"19px 20px",display:"flex",alignItems:"flex-start",gap:14,borderColor:i===0?C.orange:C.border}}>
           <div style={{width:42,height:42,flexShrink:0,borderRadius:12,display:"grid",placeItems:"center",fontSize:22,
             color:C.orange,background:C.orangePale,border:`1px solid ${C.orange}55`}}>{item.icon}</div>
@@ -351,8 +351,8 @@ export function DashboardPage({ctx}){
         <section style={panel}>
           <h2 style={{fontSize:17,margin:"0 0 15px",fontWeight:720}}>Quick Actions</h2>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",gap:10}}>
-            {action("Add Person",<Users size={22}/>, "students")}
-            {action("Create Fee",<DollarSign size={22}/>, "fee-generate")}
+            {action("Add Member",<Users size={22}/>, "students")}
+            {action("Create Invoice",<DollarSign size={22}/>, "fee-generate")}
             {action("Record Payment",<Activity size={22}/>, "fee-tracker")}
             {action("Generate Report",<ClipboardList size={22}/>, "report-cards")}
           </div>

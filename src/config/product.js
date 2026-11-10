@@ -23,7 +23,7 @@ export const INDUSTRIES = [
   { value: "retail", label: "Retail and commerce", description: "People, locations, products, and payments." },
   { value: "nonprofit", label: "Nonprofit", description: "Members, programs, contributions, and reporting." },
   { value: "healthcare", label: "Health and wellness", description: "People, practitioners, schedules, and records." },
-  { value: "education", label: "School management", description: "Students, staff, academics, fees, attendance and reports." },
+  { value: "education", label: "Educational institutions", description: "Students, educators, academic programmes, attendance, fees and reporting." },
   { value: "other", label: "Other", description: "Use the core workspace with your own terminology." },
 ];
 

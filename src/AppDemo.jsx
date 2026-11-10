@@ -2453,7 +2453,7 @@ function AppInner(){
               <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
                 whiteSpace:"nowrap"}}>{(_sidebarSchoolName||"Business Portal").split(" ").slice(0,2).join(" ")}</div>
               <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
-                letterSpacing:1.2,marginTop:1}}>Business Portal</div>
+                letterSpacing:1.2,marginTop:1}}>Organisation Workspace</div>
             </div>
           )}
         </div>
