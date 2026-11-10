@@ -58,9 +58,10 @@ Deno.serve(async (req) => {
   await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{blocked:true,reason:"approval_workflow_not_enabled"},completed_at:new Date().toISOString()}).eq("id",run.id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true});
  }
- const apiKey=Deno.env.get("JD_MODEL_API_KEY")||Deno.env.get("OPENAI_API_KEY");
- if(!apiKey){
-  const reply="The request is saved, but JD's model provider is not configured. Add JD_MODEL_API_KEY and JD_MODEL_NAME to the Edge Function secrets to enable the agent.";
+ const apiKey=Deno.env.get("OPENROUTER_API_KEY");
+ const model=Deno.env.get("JD_MODEL_NAME");
+ if(!apiKey||!model){
+  const reply="The request is saved, but JD's model provider is not configured. Add OPENROUTER_API_KEY and JD_MODEL_NAME to the Edge Function secrets to enable the agent.";
   await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply});
   await admin.from("jd_automation_runs").update({status:"failed",result_json:{error:"model_provider_not_configured"},completed_at:new Date().toISOString()}).eq("id",run.id);
   return json({conversationId,run:{...run,status:"failed"},reply,configured:false},503);
@@ -71,7 +72,7 @@ Deno.serve(async (req) => {
   const result=await runAgent({
    message,history:(history||[]).map((m:any)=>({role:m.role,content:m.content})),
    context:{admin,schoolId:profile.school_id,userId:authData.user.id,role:profile.role||"member"},
-   apiKey,model:Deno.env.get("JD_MODEL_NAME")||"gpt-5.5",baseUrl:Deno.env.get("JD_MODEL_BASE_URL")||"https://api.openai.com/v1",
+   apiKey,model:model||"",baseUrl:Deno.env.get("JD_MODEL_BASE_URL")||"https://openrouter.ai/api/v1",
    onToolEvent:async(event)=>{
     events.push(event);
     await admin.from("jd_automation_steps").insert({
