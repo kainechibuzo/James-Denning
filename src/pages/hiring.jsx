@@ -144,8 +144,8 @@ function OrgDetailsForm({ preset, onDone }) {
           ? <Code2 size={16} color={C.blue}/>
           : <Building2 size={16} color={C.blue}/>}
         <div style={{ fontSize: 12.5, color: C.textSoft }}>
-          <b style={{ color: C.text }}>{preset?.name || "School management"}</b>
-          {" "}preset — tools will be enabled for this school on creation.
+          <b style={{ color: C.text }}>{preset?.name || "General business"}</b>
+          {" "}preset — tools will be enabled for this organisation on creation.
         </div>
       </div>
 
@@ -302,7 +302,7 @@ export function OrgSignupModal({ onClose, onSuccess }) {
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 900, color: C.text }}>
-              {step === "preset" ? "Register Your Business" : `Create ${preset?.name || "Your"} School`}
+              {step === "preset" ? "Register Your Business" : `Create ${preset?.name || "Your"} Workspace`}
             </div>
             <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
               {step === "preset"
