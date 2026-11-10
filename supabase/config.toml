@@ -1,7 +1,10 @@
 # Supabase project configuration.
 # Public registration is intentionally handled inside manage-account's
-# register_school action; all other actions authenticate the caller in code.
+# register_school action; the JD automation endpoint requires a user JWT.
 project_id = "thklwiybjuhrjqrrxyid"
 
 [functions.manage-account]
 verify_jwt = false
+
+[functions.jd-automation]
+verify_jwt = true
