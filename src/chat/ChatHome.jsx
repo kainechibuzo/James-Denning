@@ -49,7 +49,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-chat-composer-wrap{width:min(760px,calc(100% - 40px));margin:0 auto 18px}
         .jd-chat-notice{display:flex;align-items:flex-start;gap:9px;background:#fff8e1;border:1px solid #f3e5b2;color:#765b13;border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;margin-bottom:12px}
         .jd-chat-composer{background:#fff;border:1px solid #dadce0;border-radius:18px;box-shadow:0 4px 18px rgba(60,64,67,.07);padding:12px 13px 10px}
-        .jd-chat-composer textarea{width:100%;resize:vertical;min-height:50px;max-height:130px;border:0;outline:0;background:transparent;color:#202124;font:13px/1.6 inherit;box-sizing:border-box}
+        .jd-chat-composer textarea{width:100%;resize:vertical;min-height:50px;max-height:130px;border:0;outline:0;background:transparent;color:#202124;font:inherit;font-size:13px;line-height:1.6;box-sizing:border-box}
         .jd-chat-composer-bottom{display:flex;align-items:center;justify-content:space-between}
         .jd-chat-attach{width:31px;height:31px;border:0;background:transparent;color:#70757a;display:grid;place-items:center;border-radius:50%}
         .jd-chat-send{width:34px;height:34px;border:0;background:#202124;color:#fff;border-radius:50%;display:grid;place-items:center;opacity:.35;cursor:not-allowed}
