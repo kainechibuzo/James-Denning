@@ -14,7 +14,7 @@ JD is an organisation-wide agent, not a scripted chatbot. It receives an objecti
 6. Persist tool events, assistant response, run result and audit events.
 7. Stop safely on timeout, provider error, permission denial, unknown tool, or turn limit.
 
-The Responses API function-calling loop is implemented in `supabase/functions/_shared/jd-agent-runtime.ts`. The provider URL, model and key are configurable using `JD_MODEL_BASE_URL`, `JD_MODEL_NAME`, and `JD_MODEL_API_KEY` (or `OPENAI_API_KEY`). The default endpoint is OpenAI's Responses API. A future provider adapter can implement the same runtime contract without changing the tool registry.
+The Responses API function-calling loop is implemented in `supabase/functions/_shared/jd-agent-runtime.ts`. This deployment uses OpenRouter. Configure `OPENROUTER_API_KEY` and `JD_MODEL_NAME` as Supabase Edge Function secrets. The default endpoint is `https://openrouter.ai/api/v1`; `JD_MODEL_BASE_URL` can override it for testing. Select a model slug from the OpenRouter catalogue that supports Responses API function calling. Optional `OPENROUTER_SITE_URL` supplies the app attribution header. The key remains server-side.
 
 ## Available tools in this first runtime slice
 
