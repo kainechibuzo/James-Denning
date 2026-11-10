@@ -21,6 +21,38 @@ Deno.serve(async (req) => {
  if(profileErr||!profile?.school_id) return json({error:"Your account is not linked to an organisation workspace"},403);
  let payload:any; try{payload=await req.json()}catch{return json({error:"Invalid JSON"},400)}
 
+ if(payload.action==="approvals.list"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can review approval requests"},403);
+  const {data,error}=await admin.from("jd_approvals")
+   .select("id,run_id,requested_by,status,reason,title,action_key,risk_level,proposal_json,audience_text,execution_status,execution_result_json,decision_note,decided_by,decided_at,expires_at,created_at")
+   .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
+  if(error) return json({error:"Could not load the Review Centre queue"},500);
+  return json({approvals:data||[]});
+ }
+ if(payload.action==="approvals.decide"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can decide approval requests"},403);
+  const approvalId=typeof payload.approvalId==="string"?payload.approvalId:"";
+  const decision=payload.decision==="approve"?"approved":payload.decision==="reject"?"rejected":null;
+  const note=typeof payload.note==="string"?payload.note.trim().slice(0,2000):null;
+  if(!approvalId||!decision) return json({error:"approvalId and a valid decision are required"},400);
+  const {data:approval,error:approvalErr}=await admin.from("jd_approvals")
+   .select("id,run_id,status,expires_at,execution_status").eq("id",approvalId)
+   .eq("school_id",profile.school_id).maybeSingle();
+  if(approvalErr||!approval) return json({error:"Approval request not found"},404);
+  if(approval.status!=="pending") return json({error:"This request has already been decided"},409);
+  if(new Date(approval.expires_at).getTime()<=Date.now()){
+   await admin.from("jd_approvals").update({status:"expired",updated_at:new Date().toISOString()}).eq("id",approvalId).eq("school_id",profile.school_id);
+   return json({error:"This approval request has expired"},410);
+  }
+  const now=new Date().toISOString();
+  const {data:updated,error:updateErr}=await admin.from("jd_approvals")
+   .update({status:decision,decided_by:authData.user.id,decision_note:note,decided_at:now,updated_at:now})
+   .eq("id",approvalId).eq("school_id",profile.school_id).eq("status","pending")
+   .select("id,status,execution_status,decided_by,decided_at,decision_note").maybeSingle();
+  if(updateErr||!updated) return json({error:"Could not record the approval decision"},500);
+  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:approval.run_id,event_type:"approval."+decision,event_json:{approval_id:approvalId,execution_status:"not_executed"}});
+  return json({approval:updated,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
+ }
  if(payload.action==="history"){
   const id=String(payload.conversationId||"");
   if(!id) return json({error:"conversationId is required"},400);
@@ -53,10 +85,17 @@ Deno.serve(async (req) => {
  if(runErr||!run){if(runErr?.code==="23505")return json({error:"Duplicate request",duplicate:true},409);return json({error:"Could not create automation run"},500)}
  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,event_type:"automation.requested",event_json:{risk}});
  if(risk==="approval_required"){
-  const reply="This request involves an action with external or high-impact consequences. It is recorded but paused. I won't send, pay, delete, or change access until the proper approval flow is available.";
-  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply});
-  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{blocked:true,reason:"approval_workflow_not_enabled"},completed_at:new Date().toISOString()}).eq("id",run.id);
-  return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true});
+  const reason="This request may cause external or high-impact consequences and requires an administrator decision.";
+  const {data:approval,error:approvalErr}=await admin.from("jd_approvals").insert({
+   school_id:profile.school_id,run_id:run.id,requested_by:authData.user.id,status:"pending",
+   reason,title:"Review JD action request",action_key:"unclassified_request",risk_level:"high",
+   proposal_json:{request_text:message,execution_enabled:false},audience_text:null,execution_status:"not_executed"
+  }).select("id,status,expires_at").single();
+  if(approvalErr||!approval) return json({error:"The request was paused but its approval record could not be created"},500);
+  const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. Approval records the decision only; execution remains disabled until a separately verified action handler is available.";
+  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id}});
+  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id);
+  return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true,approval});
  }
  const apiKey=Deno.env.get("OPENROUTER_API_KEY");
  const model=Deno.env.get("JD_MODEL_NAME");
