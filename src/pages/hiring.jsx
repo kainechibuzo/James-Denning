@@ -121,7 +121,7 @@ function OrgDetailsForm({ preset, onDone }) {
 
   const submit = async () => {
     if (!form.name.trim() || !form.admin_email.trim() || !form.admin_password.trim()) {
-      setErr("School name, admin email, and password are required."); return;
+      setErr("Organisation name, admin email, and password are required."); return;
     }
     setSaving(true); setErr("");
     const pfx = (form.student_id_prefix || form.name.slice(0, 4).replace(/\s+/g, "")).toUpperCase();
@@ -171,8 +171,8 @@ function OrgDetailsForm({ preset, onDone }) {
           color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
           justifyContent: "center", gap: 8 }}>
-        {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating School…</>
-          : <>Create School & Continue <ArrowRight size={15}/></>}
+        {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating workspace…</>
+          : <>Create Workspace & Continue <ArrowRight size={15}/></>}
       </button>
     </div>
   );
@@ -242,7 +242,7 @@ export function OrgCreatePage({ ctx }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const done = (school) => {
-    notify(`${school?.name || "School"} created successfully ✓`);
+    notify(`${school?.name || "Organisation"} created successfully ✓`);
     // Hand off to the school-select screen: clear local session + school so the
     // new admin can sign in to their fresh school.
     clearSession(); clearSelectedSchool();
@@ -307,7 +307,7 @@ export function OrgSignupModal({ onClose, onSuccess }) {
             <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
               {step === "preset"
                 ? "Step 1 of 2 — choose your business type"
-                : "Step 2 of 2 — school details"}
+                : "Step 2 of 2 — organisation details"}
             </div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
