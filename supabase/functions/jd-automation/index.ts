@@ -114,17 +114,30 @@ Deno.serve(async (req) => {
    apiKey,model:model||"",baseUrl:Deno.env.get("JD_MODEL_BASE_URL")||"https://openrouter.ai/api/v1",
    onToolEvent:async(event)=>{
     events.push(event);
-    await admin.from("jd_automation_steps").insert({
-     school_id:profile.school_id,run_id:run.id,step_index:events.length,tool_key:String(event.name||"unknown"),
-     risk_level:String(event.risk||"low"),status:event.status==="completed"?"completed":event.status==="failed"?"failed":"running",
-     output_json:{event:event.status},completed_at:event.status==="completed"||event.status==="failed"?new Date().toISOString():null
-    });
+    const callId=String(event.callId||"");
+    if(event.status==="started"){
+     const {data,error}=await admin.from("jd_automation_steps").insert({
+      school_id:profile.school_id,run_id:run.id,step_index:++stepIndex,tool_key:String(event.name||"unknown"),
+      risk_level:String(event.risk||"low"),status:"running",input_json:{call_id:callId}
+     }).select("id").single();
+     if(error||!data) throw new Error("Could not record agent tool execution step");
+     if(callId) stepIds.set(callId,data.id);
+    }else{
+     const stepId=stepIds.get(callId);
+     if(stepId){
+      const {error}=await admin.from("jd_automation_steps").update({
+       status:event.status==="completed"?"completed":"failed",
+       output_json:{event:event.status},completed_at:new Date().toISOString()
+      }).eq("id",stepId).eq("school_id",profile.school_id);
+      if(error) throw new Error("Could not update agent tool execution step");
+     }
+    }
    }
   });
   const {error:assistantErr}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:result.text,content_json:{toolEvents:events.map(e=>({name:e.name,status:e.status}))}});
   if(assistantErr) throw new Error("Agent response could not be saved");
-  await admin.from("jd_automation_runs").update({status:"completed",result_json:{toolEvents:events,responseId:result.responseId},completed_at:new Date().toISOString()}).eq("id",run.id);
-  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,event_type:"automation.completed",event_json:{tool_count:events.length}});
+  await admin.from("jd_automation_runs").update({status:"completed",result_json:{toolEvents:events,responseId:result.responseId,tokenUsage:result.tokenUsage,model:result.model,provider:result.provider},completed_at:new Date().toISOString()}).eq("id",run.id);
+  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,event_type:"automation.completed",event_json:{tool_count:events.filter((event:any)=>event.status==="completed").length,token_usage:result.tokenUsage,model:result.model,provider:result.provider}});
   return json({conversationId,run:{...run,status:"completed"},reply:result.text,toolEvents:events});
  }catch(error){
   const detail=error instanceof Error?error.message:"Agent execution failed";

@@ -185,6 +185,19 @@ const modelTools = (context: AgentContext) => tools
     parameters: tool.parameters,
   }));
 
+type TokenUsage = { input_tokens: number; output_tokens: number; total_tokens: number; cached_input_tokens: number; reasoning_tokens: number };
+const emptyUsage = (): TokenUsage => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0, cached_input_tokens: 0, reasoning_tokens: 0 });
+function addUsage(total: TokenUsage, raw: any) {
+  if (!raw || typeof raw !== "object") return;
+  const input = Number(raw.input_tokens ?? raw.prompt_tokens ?? 0) || 0;
+  const output = Number(raw.output_tokens ?? raw.completion_tokens ?? 0) || 0;
+  total.input_tokens += input;
+  total.output_tokens += output;
+  total.total_tokens += Number(raw.total_tokens ?? (input + output)) || 0;
+  total.cached_input_tokens += Number(raw.input_tokens_details?.cached_tokens ?? raw.prompt_tokens_details?.cached_tokens ?? 0) || 0;
+  total.reasoning_tokens += Number(raw.output_tokens_details?.reasoning_tokens ?? raw.completion_tokens_details?.reasoning_tokens ?? 0) || 0;
+}
+
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/responses`, {
     method: "POST",
@@ -236,13 +249,15 @@ export async function runAgent(input: {
   }, input.apiKey, baseUrl);
 
   const completedCalls = new Set<string>();
+  const tokenUsage = emptyUsage();
+  addUsage(tokenUsage, response.usage);
   for (let turn = 0; turn < 8; turn += 1) {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
     if (!calls.length) {
       const text = typeof response.output_text === "string" ? response.output_text : "";
       if (!text.trim()) throw new Error("The model returned no final answer");
-      return { text, toolEvents: [...completedCalls], responseId: response.id || null };
+      return { text, toolEvents: [...completedCalls], responseId: response.id || null, tokenUsage, model: input.model, provider: "openrouter" };
     }
 
     const outputs = await Promise.all(calls.map(async (call: any) => {
@@ -255,13 +270,13 @@ export async function runAgent(input: {
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ error: "Invalid tool arguments" }) };
       }
       try {
-        await input.onToolEvent?.({ name: tool.name, status: "started", risk: tool.risk });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "started", risk: tool.risk });
         const result = await tool.execute(args, input.context);
-        await input.onToolEvent?.({ name: tool.name, status: "completed", risk: tool.risk });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: true, result }) };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
-        await input.onToolEvent?.({ name: tool.name, status: "failed", risk: tool.risk });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "failed", risk: tool.risk });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: false, error: message }) };
       }
     }));
@@ -275,11 +290,15 @@ export async function runAgent(input: {
       parallel_tool_calls: true,
       store: false,
     }, input.apiKey, baseUrl);
+    addUsage(tokenUsage, response.usage);
   }
 
   return {
     text: "I reached the maximum number of tool steps for this request. I’ve stopped safely rather than looping indefinitely. Please narrow the task or split it into smaller steps.",
     toolEvents: [...completedCalls],
     responseId: response.id || null,
+    tokenUsage,
+    model: input.model,
+    provider: "openrouter",
   };
 }
