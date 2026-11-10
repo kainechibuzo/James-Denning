@@ -20,7 +20,7 @@ assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
 
 // Multi-industry product identity and mobile regression guards.
-assert.match(product, /defaultIndustry:\s*"business"/, "Education must be the default workspace type");
+assert.match(product, /defaultIndustry:\s*"business"/, "General business is the default workspace type");
 assert.match(product, /defaultModule:\s*"core"/, "Education must be enabled by default");
 assert.match(landing, /organisation operations platform/i, "Landing page must identify the multi-industry organisation product");
 assert.match(landing, /Revenue/, "Landing preview must show business metrics");
