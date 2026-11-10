@@ -111,7 +111,7 @@ const modelTools = (context: AgentContext) => tools
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/responses`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com", "X-OpenRouter-Title": "James Denning JD" },
     body: JSON.stringify(input),
     signal: AbortSignal.timeout(45000),
   });
@@ -131,7 +131,7 @@ export async function runAgent(input: {
   baseUrl?: string;
   onToolEvent?: (event: Record<string, unknown>) => Promise<void>;
 }) {
-  const baseUrl = input.baseUrl || "https://api.openai.com/v1";
+  const baseUrl = input.baseUrl || "https://openrouter.ai/api/v1";
   const available = tools.filter((tool) => tool.risk === "low" && roleAllowed(input.context, tool.roles));
   const instructions = [
     "You are JD, the autonomous organisation operations agent.",
