@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
+import { ReviewCentre } from "./ReviewCentre.jsx";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -17,6 +18,7 @@ const actions = [
 export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [draft, setDraft] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showReview, setShowReview] = useState(false);
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
@@ -111,10 +113,11 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       {sidebarOpen && <aside className="jd-rail">
         <div className="jd-brand"><span className="jd-brand-mark">JD</span><span>James-Denning</span></div>
         <button className="jd-new" type="button" onClick={newConversation}><Plus size={15}/> New conversation</button>
+        <button className="jd-new" type="button" onClick={()=>setShowReview(true)}><ShieldCheck size={15}/> Review Centre</button>
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
       </aside>}
-      <section className="jd-main">
+      {showReview ? <ReviewCentre onClose={()=>setShowReview(false)}/> : <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setSidebarOpen(v=>!v)}>{sidebarOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
@@ -146,7 +149,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-disclaimer">JD verifies available records and reports what it could and could not complete.</div>
         </div>
-      </section>
+      </section>}
     </div>
   );
 }
