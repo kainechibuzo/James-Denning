@@ -235,13 +235,18 @@ export async function runAgent(input: {
     "Be concise but useful. Summarise what you checked, what you found, and any remaining blockers.",
   ].join("\n");
 
+  const conversationInput = [
+    ...input.history
+      .filter((item) => item.role === "assistant" || item.role === "user")
+      .slice(-20)
+      .map((item) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) })),
+    { role: "user", content: input.message },
+  ];
+
   let response = await callModel({
     model: input.model,
     instructions,
-    input: [
-      ...input.history.slice(-20).map((item) => ({ role: item.role === "assistant" ? "assistant" : "user", content: item.content })),
-      { role: "user", content: input.message },
-    ],
+    input: conversationInput,
     tools: modelTools(input.context),
     tool_choice: "auto",
     parallel_tool_calls: true,
@@ -281,10 +286,11 @@ export async function runAgent(input: {
       }
     }));
 
+    conversationInput.push(...output, ...outputs);
     response = await callModel({
       model: input.model,
       instructions,
-      input: [...output, ...outputs],
+      input: conversationInput,
       tools: modelTools(input.context),
       tool_choice: "auto",
       parallel_tool_calls: true,
