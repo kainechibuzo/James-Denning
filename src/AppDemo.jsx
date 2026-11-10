@@ -9,6 +9,7 @@ import { ConfirmProvider, useConfirm } from './contexts/confirm.jsx';
 import { SectionCtx, useSection, SectionProvider } from './contexts/section.jsx';
 import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
 import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
+import { ChatHome } from "./chat/ChatHome.jsx";
 // -- Route-level page chunks. The app shell is ready before feature modules download.
 const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const TeachersPage = lazyPage(() => import("./pages/teachers.jsx"), "TeachersPage");
@@ -1989,7 +1990,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
 
 function AppInner(){
   const [user,setUser]         = useState(()=>loadSession());
-  const [page,setPage]         = useState("dashboard");
+  const [page,setPage]         = useState("jd-chat");
   // Optional payload set alongside a page navigation (e.g. dashboard "Fix →" links) so the
   // target page can pre-apply a filter. The target page should clear it after reading it.
   const [pageParam,setPageParam] = useState(null);
@@ -2283,6 +2284,7 @@ function AppInner(){
   // Admin: grouped by category with dividers
   // Staff/Member: only permitted pages
   const ALL_NAV = [
+    {id:"jd-chat",          label:"JD Assistant",    icon:"dashboard", roles:["admin","teacher","student","bursar","manager"]},
     {id:"dashboard",       label:"Overview",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
     // ── Admin groups ──
     {id:"g-academic",      group:"Operations",      roles:["admin","bursar"]},
@@ -2664,7 +2666,8 @@ function AppInner(){
           <SectionSelector/>
         )}
 
-        <main style={{flex:1,padding:isMobile?12:20,overflowY:"auto",background:C.offWhite,transition:"background .2s"}}>
+        <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
+          {page==="jd-chat"       && <ChatHome user={user} organizationName={selectedSchool?.name||"Your organisation"}/>}
           {page==="sections"      && <SectionsPage ctx={ctx}/>}
           {page==="dashboard"     && <DashboardPage ctx={ctx}/>}
           {page==="members"       && <MembersPage ctx={ctx}/>}
