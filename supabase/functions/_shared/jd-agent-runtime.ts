@@ -348,7 +348,8 @@ export async function runAgent(input: {
   });
 
   const completedCalls = new Set<string>();
-  for (let turn = 0; turn < 8; turn += 1) {
+  const maxToolRounds = 8;
+  for (let turn = 0; turn <= maxToolRounds; turn += 1) {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
     if (!calls.length) {
@@ -360,6 +361,7 @@ export async function runAgent(input: {
         tokenUsage, modelRequests, model: input.model, provider: "openrouter",
       };
     }
+    if (turn === maxToolRounds) break;
 
     const outputs = await Promise.all(calls.map(async (call: any) => {
       const tool = available.find((candidate) => candidate.name === call.name);
