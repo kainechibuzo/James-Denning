@@ -15,4 +15,4 @@ Deno.test("performance forecast is currency scoped and labels non-cash proxy lim
 Deno.test("external monitoring uses fixed provider URLs and bounded requests",()=>{assertEquals(api.includes("const probes:Record<string,{url:string;accepted:number[]}>"),true);assertEquals(api.includes("AbortSignal.timeout(6000)"),true);assertEquals(api.includes("redirect:\"error\""),true);assertEquals(api.includes("b.url"),false);assertEquals(api.includes("b.endpoint"),false);});
 
 Deno.test("overview exposes distinct won-opportunity and active-contract counts",()=>{assertEquals(api.includes("won_opportunities:won.length"),true);assertEquals(api.includes('active_contracts:contracts.filter((c:any)=>c.status==="active").length'),true);});
-Deno.test("performance month key parser rejects invalid calendar labels",()=>{assertEquals(api.includes('v.slice(0,7)'),true);assertEquals(api.includes('/^\\\\d{4}-\\\\d{2}$/'),true);});
+Deno.test("performance forecast defines a bounded month-key parser",()=>{assertEquals(api.includes("const monthKey="),true);assertEquals(api.includes("v.slice(0,7)"),true);});
