@@ -265,3 +265,6 @@ grant execute on function public.jd_claim_business_notification_batch(integer) t
 -- Enable scanned-image uploads; external OCR remains explicitly opt-in at the worker secret layer.
 update storage.buckets set allowed_mime_types=array['application/pdf','text/plain','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/png','image/jpeg','image/tiff']
 where id='jd-business-documents';
+
+alter table public.jd_business_support_cases add column if not exists first_response_at timestamptz;
+create index if not exists jd_business_support_sla_idx on public.jd_business_support_cases(school_id,status,priority,created_at);
