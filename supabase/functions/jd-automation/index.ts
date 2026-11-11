@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
    if(stepErr){
     const code=String(stepErr.code||"");
     const status=code==="42501"?403:code==="P0002"?404:code==="22023"?409:500;
-    return json({error:"Settings execution stopped; no later steps were attempted",reason:stepErr.message||"Execution RPC failed",results,failed_step:item.index,partial:results.some(x=>x.status==="step_completed"||x.status==="already_completed"),retry_safe:true},status);
+    return json({error:"Settings execution stopped; no later steps were attempted",reason:"The database rejected this execution step; inspect the server audit trail before retrying",results,failed_step:item.index,partial:results.some(x=>x.status==="step_completed"||x.status==="already_completed"),retry_safe:true},status);
    }
    results.push(step);
    if(step?.status==="conflict"||step?.status==="failed"){
