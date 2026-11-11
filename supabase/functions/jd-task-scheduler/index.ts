@@ -17,7 +17,7 @@ Deno.serve(async(req)=>{
  const outcomes=[];
  for(const schedule of schedules||[]){
   try{
-   const next=nextScheduleAt(now,{frequency:schedule.frequency,localTime:String(schedule.local_time).slice(0,5),timezone:schedule.timezone,weekdays:(schedule.weekdays||[]).map(Number)} as LocalSchedule);
+   const next=nextScheduleAt(now,{frequency:schedule.frequency,localTime:String(schedule.local_time).slice(0,5),timezone:schedule.timezone,weekdays:Array.isArray(schedule.weekdays)?schedule.weekdays.map((day:unknown)=>Number(day)).filter((day:number)=>Number.isInteger(day)):[]} as LocalSchedule);
    const {data,error:dispatchError}=await admin.rpc("jd_dispatch_task_schedule",{
     p_schedule_id:schedule.id,p_expected_run_at:schedule.next_run_at,p_next_run_at:next.toISOString()
    });
