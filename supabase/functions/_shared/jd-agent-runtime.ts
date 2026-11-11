@@ -281,7 +281,7 @@ export async function runAgent(input: {
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: true, result }) };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "failed", risk: tool.risk });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "failed", risk: tool.risk, error: message.slice(0, 240) });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: false, error: message }) };
       }
     }));
