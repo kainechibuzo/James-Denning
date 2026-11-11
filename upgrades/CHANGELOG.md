@@ -182,3 +182,17 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Execution:** Approval does not execute settings changes. Approved proposals remain not_executed until a separately secured, hash-verifying executor is implemented.
 - **Token usage:** Unknown; provider usage metadata unavailable.
 - **Next:** Implement the approval-bound executor with atomic decision/hash checks, narrow typed writes, idempotency and read-after-write verification.
+
+
+### JD-005E — Approval-bound settings executor
+- **Date:** 2026-11-11
+- **Status:** implemented; CI and live database verification pending
+- **Scope:** Added a service-role-only per-step database executor and an admin-only Edge Function action. Every step locks and verifies the approved Review Centre item, recomputes the exact stored JSONB SHA-256 hash, checks the proposal's before-value against the current workspace setting, revalidates the registered key/value, applies one setting, reads it back, and records a unique execution-step result plus audit event.
+- **Recovery:** Each step is its own transaction with a unique (approval_id, step_index) record. Completed steps return already_completed on retry. Stale values become explicit conflicts and halt later steps. An RPC failure halts the batch; retries re-enter the same executor and skip recorded successes.
+- **Files:** supabase/migrations/20261111160000_jd_approved_settings_executor.sql, supabase/functions/jd-automation/index.ts, supabase/functions/_shared/jd-settings-executor-migration.test.ts, .github/workflows/ci.yml.
+- **Security:** Admin role checked server-side; workspace derived from profile; approval row locked; approved action_key and exact proposal hash enforced in SQL; only a fixed allowlist of registered keys; browser execution revoked; service role only.
+- **Validation:** Static migration contract tests and secured Edge Function type-check added to CI. Live SQL, concurrency, actual school_settings type compatibility, RLS and end-to-end partial-failure tests remain required.
+- **Database:** New migration 20261111160000; not applied to production.
+- **Deployment:** Edge Function not deployed.
+- **Token usage:** Unknown; provider usage metadata unavailable.
+- **Limitations:** Execution is one step per transaction. A setting changed after approval is never overwritten; that step is marked conflict and the remaining batch stops. A retry resumes only steps not already recorded as completed.

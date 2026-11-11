@@ -64,6 +64,9 @@ jobs:
       - name: Test JD settings proposal review migration contract
         run: deno test --allow-read=supabase/migrations/20261111150000_jd_settings_proposal_review.sql supabase/functions/_shared/jd-settings-proposal-migration.test.ts
 
+      - name: Test JD approved settings executor migration contract
+        run: deno test --allow-read=supabase/migrations/20261111160000_jd_approved_settings_executor.sql supabase/functions/_shared/jd-settings-executor-migration.test.ts
+
       - name: Test JD private checkpoint migration contract
         run: deno test --allow-read=supabase/migrations/20261111140000_jd_durable_execution_checkpoints.sql supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts
 
