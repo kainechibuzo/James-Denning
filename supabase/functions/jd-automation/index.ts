@@ -28,6 +28,27 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="organisation.blueprints.list"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation blueprints"},403);
+  const {data,error}=await admin.from("jd_organisation_blueprints").select("id,title,industry,status,blueprint_json,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
+  if(error) return json({error:"Could not load organisation blueprints"},500);
+  return json({blueprints:data||[]});
+ }
+ if(payload.action==="operations.task.list"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect operational tasks"},403);
+  const {data,error}=await admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,assigned_to,due_at,completed_at,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(250);
+  if(error) return json({error:"Could not load operational tasks"},500);
+  return json({tasks:data||[]});
+ }
+ if(payload.action==="hiring.pipeline.list"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect the recruitment pipeline"},403);
+  const [{data:requisitions,error:reqErr},{data:candidates,error:candidateErr}]=await Promise.all([
+   admin.from("jd_hiring_requisitions").select("id,title,department,description,requirements,status,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(150),
+   admin.from("jd_hiring_candidates").select("id,requisition_id,full_name,stage,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500)
+  ]);
+  if(reqErr||candidateErr) return json({error:"Could not load recruitment pipeline"},500);
+  return json({requisitions:requisitions||[],candidates:candidates||[]});
+ }
  if(payload.action==="capabilities.report"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation capabilities"},403);
   // Capability status is intentionally unverified until migrations, deployment and smoke tests
