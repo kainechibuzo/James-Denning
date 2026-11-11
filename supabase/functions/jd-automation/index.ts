@@ -3,6 +3,7 @@ import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts"
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
 import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskStatus } from "../_shared/jd-operations.ts";
 import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
+import { summariseScores, summariseTaskStatuses } from "../_shared/jd-business-intelligence.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 
