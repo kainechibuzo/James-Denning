@@ -230,3 +230,12 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - Added CI contract tests for the retry migration.
 - **Release gate:** worker and automation Edge Functions are not deployed; migrations are not applied. Staging validation and secret configuration are required before live operation.
 - **Token usage:** provider-reported token usage unavailable; no estimate recorded.
+
+### Final interface and durable execution verification
+- Added Business Intelligence dashboard/API for workforce aggregates, finance summary, active-period performance, task metrics, announcements and email delivery metadata.
+- Added multi-department blueprint editor, task department/due-date controls, execution monitor and retry/cancel controls.
+- Routed routine JD requests through the durable queue; removed synchronous model execution from the chat request path.
+- Scoped manager execution history to the manager's own runs.
+- **Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`.
+- **CI:** Web CI passed (production build, Deno helper/migration tests, Edge Function type-check); application verification passed (web navigation/build and default application build).
+- **Still not live:** no staging migration, production migration, or Edge Function deployment has been performed.
