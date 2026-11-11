@@ -12,3 +12,7 @@ verify_jwt = true
 [functions.jd-execution-worker]
 # The worker authenticates with a dedicated server-side secret header.
 verify_jwt = false
+
+[functions.jd-task-scheduler]
+# Scheduler uses the same dedicated internal secret as the execution worker.
+verify_jwt = false
