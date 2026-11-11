@@ -34,6 +34,18 @@ This is the canonical, human-readable upgrade index. The detailed implementation
 - [ ] Context/memory scoped appropriately to user and organisation.
 - [ ] OpenRouter integration with configurable model selection and provider abstraction.
 
+### 1A. Portal usability and settings operations (JD-005)
+- [ ] Consistent, fully legible light and dark themes across every route and interactive state.
+- [ ] Mobile-first page layouts: single-column stacking, no clipped controls, readable labels and touch-sized actions.
+- [ ] Responsive settings rows, tabs, tables, forms, dialogs and summary panels.
+- [ ] A searchable organisation settings catalogue grouped by workspace, identity, cycles, performance, security, portal, billing, people, communications and integrations.
+- [ ] JD can explain each setting, its current value, dependencies, affected modules, permission boundary and save behaviour.
+- [ ] JD can audit configuration completeness and identify missing or contradictory settings without changing them.
+- [ ] JD can propose grouped configuration changes as a preview/diff, validate dependencies and request confirmation before saving.
+- [ ] JD applies approved changes through existing server-authorised operations, then reads values back to verify.
+- [ ] JD can organise modules and workflows into an organisation blueprint, but cannot invent unsupported features or silently change access/security settings.
+- [ ] Upgrade registry records coverage, test evidence, deployment state and actual provider token usage.
+
 ### 2. Organisation Builder
 - [ ] Turn a plain-language business idea into an organisation blueprint.
 - [ ] Inspect the codebase, database schema, integrations and registered tools to audit available capabilities.
