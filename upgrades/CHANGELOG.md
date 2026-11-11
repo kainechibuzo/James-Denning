@@ -196,3 +196,16 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Deployment:** Edge Function not deployed.
 - **Token usage:** Unknown; provider usage metadata unavailable.
 - **Limitations:** Execution is one step per transaction. A setting changed after approval is never overwritten; that step is marked conflict and the remaining batch stops. A retry resumes only steps not already recorded as completed.
+
+
+### JD-BATCH-01 — Operational intelligence and organisation builder foundations
+- **Date:** 2026-11-11
+- **Status:** foundation implemented; CI and integration verification pending
+- **Scope:** Added a 20-track capability registry, evidence-based capability classification, organisation blueprint validation and preview/submission actions, tenant-scoped organisation blueprint persistence, operational task contracts and idempotency keys, tenant-scoped operational task creation, vacancy draft validation/persistence, and guarded recruitment candidate stage transitions.
+- **Migration:** `supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql` (not applied to production).
+- **Edge Function:** `supabase/functions/jd-automation/index.ts` now exposes `capabilities.report`, `organisation.blueprint.preview`, `organisation.blueprint.submit`, `operations.task.create`, `hiring.vacancy.draft`, and `hiring.candidate.transition`.
+- **Shared contracts:** `jd-capability-intelligence.ts`, `jd-organisation-blueprint.ts`, `jd-operations.ts`, `jd-hiring.ts`.
+- **Tests:** Added `jd-batch01.test.ts` to CI for registry count, evidence classification, blueprint validation, task transitions, idempotency and hiring pipeline validation.
+- **Security boundaries:** New tables are tenant-keyed, RLS-enabled and inaccessible to browser roles. Blueprint persistence derives tenant from admin profile. No blueprint is auto-provisioned, vacancy is not published, candidate stages are human-admin controlled, and external messages are not sent.
+- **Known gaps:** Dispatcher scheduling and lease recovery still need end-to-end implementation; UI for blueprint review, operations monitor and recruitment pipeline is not included; people, performance, finance, communications and workforce planning integrations remain capability slots rather than complete modules. Capability reporting returns unverified until trusted deployment/smoke-test evidence is supplied.
+- **Token usage:** Provider-reported token usage unavailable for repository edits; no estimate recorded.
