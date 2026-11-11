@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
    id:run.id,requested_by:run.requested_by,trigger_type:run.trigger_type,status:run.status,
    request_preview:String(run.request_text||"").slice(0,500),created_at:run.created_at,
    started_at:run.started_at,completed_at:run.completed_at,
-   token_usage:run.result_json?.tokenUsage||null,model:run.result_json?.model||null,
+   token_usage:run.result_json?.tokenUsage||null,model_requests:run.result_json?.modelRequests||[],model:run.result_json?.model||null,
    steps:byRun.get(run.id)||[]
   }))});
  }
@@ -84,22 +84,26 @@ Deno.serve(async (req) => {
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500);
   if(error) return json({error:"Could not load agent usage"},500);
   const runs=data||[];
-  const summary={runs:runs.length,input_tokens:0,output_tokens:0,total_tokens:0,cached_input_tokens:0,reasoning_tokens:0,reported_runs:0,unreported_runs:0};
-  const byDay:Record<string,{runs:number;tokens:number}>={};
-  const byModel:Record<string,{runs:number;tokens:number}>={};
+  const summary={runs:runs.length,input_tokens:0,output_tokens:0,total_tokens:0,total_tokens_reported_runs:0,cached_input_tokens:0,reasoning_tokens:0,reported_runs:0,unreported_runs:0};
+  const byDay:Record<string,{runs:number;tokens:number;reported_runs:number}>={};
+  const byModel:Record<string,{runs:number;tokens:number;reported_runs:number}>={};
   for(const run of runs){
    const usage=run.result_json?.tokenUsage;
-   if(!usage||typeof usage!=="object"){summary.unreported_runs++;continue;}
+   if(!usage||typeof usage!=="object"||Number(usage.usage_reported_requests||0)===0){summary.unreported_runs++;continue;}
    summary.reported_runs++;
    const input=Number(usage.input_tokens)||0, output=Number(usage.output_tokens)||0;
-   const total=Number(usage.total_tokens)||input+output;
-   summary.input_tokens+=input; summary.output_tokens+=output; summary.total_tokens+=total;
+   summary.input_tokens+=input; summary.output_tokens+=output;
    summary.cached_input_tokens+=Number(usage.cached_input_tokens)||0;
    summary.reasoning_tokens+=Number(usage.reasoning_tokens)||0;
+   const totalsComplete=Number(usage.model_requests)>0&&Number(usage.total_tokens_reported_requests)===Number(usage.model_requests);
+   const total=totalsComplete?Number(usage.total_tokens):null;
+   if(total!==null){summary.total_tokens+=total;summary.total_tokens_reported_runs++;}
    const day=String(run.created_at||"").slice(0,10)||"unknown";
-   byDay[day]??={runs:0,tokens:0}; byDay[day].runs++; byDay[day].tokens+=total;
+   byDay[day]??={runs:0,tokens:0,reported_runs:0}; byDay[day].runs++;
+   if(total!==null){byDay[day].tokens+=total;byDay[day].reported_runs++;}
    const model=String(run.result_json?.model||"unknown");
-   byModel[model]??={runs:0,tokens:0}; byModel[model].runs++; byModel[model].tokens+=total;
+   byModel[model]??={runs:0,tokens:0,reported_runs:0}; byModel[model].runs++;
+   if(total!==null){byModel[model].tokens+=total;byModel[model].reported_runs++;}
   }
   return json({summary,byDay:Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),byModel:Object.entries(byModel).sort((a,b)=>b[1].tokens-a[1].tokens),note:"Token totals include only provider-reported usage. Costs are not estimated."});
  }
@@ -164,7 +168,8 @@ Deno.serve(async (req) => {
  let stepIndex=0;
  const stepIds=new Map<string,string>();
  try{
-  await admin.from("jd_automation_runs").update({status:"running",started_at:new Date().toISOString()}).eq("id",run.id);
+  const {error:runningErr}=await admin.from("jd_automation_runs").update({status:"running",started_at:new Date().toISOString()}).eq("id",run.id);
+  if(runningErr) throw new Error("Could not mark automation run as running");
   const result=await runAgent({
    message,history:(history||[]).map((m:any)=>({role:m.role,content:m.content})),
    context:{admin,schoolId:profile.school_id,userId:authData.user.id,role:profile.role||"member"},
@@ -182,21 +187,32 @@ Deno.serve(async (req) => {
     }else{
      const stepId=stepIds.get(callId);
      if(stepId){
-      const {error}=await admin.from("jd_automation_steps").update({
+      const {data:updatedStep,error}=await admin.from("jd_automation_steps").update({
        status:event.status==="completed"?"completed":"failed",
        output_json:{event:event.status},error_message:event.status==="failed"?String(event.error||"Tool execution failed").slice(0,240):null,
        completed_at:new Date().toISOString()
-      }).eq("id",stepId).eq("school_id",profile.school_id);
-      if(error) throw new Error("Could not update agent tool execution step");
+      }).eq("id",stepId).eq("school_id",profile.school_id).select("id").maybeSingle();
+      if(error||!updatedStep) throw new Error("Could not verify agent tool execution step update");
      }
     }
    }
   });
   const {error:assistantErr}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:result.text,content_json:{toolEvents:events.map(e=>({name:e.name,status:e.status}))}});
   if(assistantErr) throw new Error("Agent response could not be saved");
-  await admin.from("jd_automation_runs").update({status:"completed",result_json:{toolEvents:events,responseId:result.responseId,tokenUsage:result.tokenUsage,model:result.model,provider:result.provider},completed_at:new Date().toISOString()}).eq("id",run.id);
-  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,event_type:"automation.completed",event_json:{tool_count:events.filter((event:any)=>event.status==="completed").length,token_usage:result.tokenUsage,model:result.model,provider:result.provider}});
-  return json({conversationId,run:{...run,status:"completed"},reply:result.text,toolEvents:events});
+  const finalStatus=result.status==="partially_completed"?"partially_completed":"completed";
+  const {data:finalRun,error:finalRunErr}=await admin.from("jd_automation_runs").update({
+   status:finalStatus,
+   result_json:{toolEvents:events,responseId:result.responseId,tokenUsage:result.tokenUsage,modelRequests:result.modelRequests,model:result.model,provider:result.provider,truncated:result.truncated===true},
+   completed_at:new Date().toISOString()
+  }).eq("id",run.id).eq("school_id",profile.school_id).select("id,status").maybeSingle();
+  if(finalRunErr||!finalRun) throw new Error("Could not verify final automation run status");
+  const {error:auditErr}=await admin.from("jd_audit_events").insert({
+   school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,
+   event_type:finalStatus==="completed"?"automation.completed":"automation.partially_completed",
+   event_json:{tool_count:events.filter((event:any)=>event.status==="completed").length,token_usage:result.tokenUsage,model:result.model,provider:result.provider,truncated:result.truncated===true}
+  });
+  if(auditErr) throw new Error("Could not record automation completion audit event");
+  return json({conversationId,run:{...run,status:finalStatus},reply:result.text,toolEvents:events,modelRequests:result.modelRequests,tokenUsage:result.tokenUsage});
  }catch(error){
   const detail=error instanceof Error?error.message:"Agent execution failed";
   const reply=`I couldn't complete this run. It is marked failed rather than pretending it succeeded. ${detail.slice(0,240)}`;
