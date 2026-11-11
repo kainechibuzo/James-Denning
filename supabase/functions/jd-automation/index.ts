@@ -104,6 +104,30 @@ Deno.serve(async (req) => {
   if(error) return json({error:"Could not save vacancy draft"},500);
   return json({vacancy:created,published:false,approval_required:true},201);
  }
+ if(payload.action==="hiring.vacancy.approve"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can approve vacancy publication"},403);
+  const id=typeof payload.vacancyId==="string"?payload.vacancyId:"";
+  if(!id) return json({error:"vacancyId is required"},400);
+  const {data:vacancy,error:lookupErr}=await admin.from("jd_hiring_requisitions").select("id,status").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
+  if(lookupErr||!vacancy) return json({error:"Vacancy draft not found"},404);
+  if(!["draft","pending_approval","paused"].includes(vacancy.status)) return json({error:"Vacancy is not eligible to be opened"},409);
+  const {data:updated,error}=await admin.from("jd_hiring_requisitions").update({status:"open",approved_by:authData.user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",profile.school_id).eq("status",vacancy.status).select("id,title,status,approved_at").maybeSingle();
+  if(error||!updated) return json({error:"Vacancy changed concurrently; reload before retrying"},409);
+  return json({vacancy:updated,public_publishing:false});
+ }
+ if(payload.action==="hiring.candidate.create"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can register candidates"},403);
+  const requisitionId=typeof payload.requisitionId==="string"?payload.requisitionId:"";
+  const fullName=typeof payload.fullName==="string"?payload.fullName.trim().slice(0,160):"";
+  const email=typeof payload.email==="string"?payload.email.trim().slice(0,254):null;
+  if(!requisitionId||!fullName) return json({error:"An open vacancy and candidate name are required"},400);
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({error:"Candidate email is invalid"},400);
+  const {data:vacancy,error:vacancyErr}=await admin.from("jd_hiring_requisitions").select("id,status").eq("id",requisitionId).eq("school_id",profile.school_id).maybeSingle();
+  if(vacancyErr||!vacancy||vacancy.status!=="open") return json({error:"Candidate intake is available only for an internally open vacancy"},409);
+  const {data:created,error}=await admin.from("jd_hiring_candidates").insert({school_id:profile.school_id,requisition_id:requisitionId,full_name:fullName,contact_email:email,stage:"applied"}).select("id,requisition_id,full_name,stage,created_at").single();
+  if(error) return json({error:"Could not register candidate"},500);
+  return json({candidate:created},201);
+ }
  if(payload.action==="hiring.candidate.transition"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can change recruitment stages"},403);
   const id=typeof payload.candidateId==="string"?payload.candidateId:"";
