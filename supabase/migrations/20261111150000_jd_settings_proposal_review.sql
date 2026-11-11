@@ -87,11 +87,11 @@ begin
   );
 
   return jsonb_build_object('id', v_approval_id, 'run_id', v_run_id,
-    'status', 'pending', 'duplicate', false, 'proposal_hash', p_proposal_hash,
+    'status', 'pending', 'duplicate', false, 'proposal_hash', v_proposal_hash,
     'execution_status', 'not_executed');
 end;
 $$;
 
 revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb) from public;
-revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb, text) from anon, authenticated;
-grant execute on function public.jd_submit_settings_proposal(uuid, text, jsonb, text) to service_role;
+revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb) from anon, authenticated;
+grant execute on function public.jd_submit_settings_proposal(uuid, text, jsonb) to service_role;
