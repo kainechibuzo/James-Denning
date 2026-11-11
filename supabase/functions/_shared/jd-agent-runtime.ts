@@ -196,11 +196,7 @@ type TokenUsage = {
   total_tokens_reported_requests: number;
 };
 
-const emptyUsage = (): TokenUsage => ({
-  input_tokens: 0, output_tokens: 0, total_tokens: 0,
-  cached_input_tokens: 0, reasoning_tokens: 0,
-  model_requests: 0, usage_reported_requests: 0, total_tokens_reported_requests: 0,
-});
+export function emptyUsage(): TokenUsage { return { input_tokens: 0, output_tokens: 0, total_tokens: 0, cached_input_tokens: 0, reasoning_tokens: 0, model_requests: 0, usage_reported_requests: 0, total_tokens_reported_requests: 0 }; }
 
 function numericUsage(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -208,7 +204,7 @@ function numericUsage(value: unknown): number | null {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
-function normaliseUsage(raw: any) {
+export function normaliseUsage(raw: any) {
   if (!raw || typeof raw !== "object") return null;
   return {
     input_tokens: numericUsage(raw.input_tokens ?? raw.prompt_tokens),
@@ -219,7 +215,7 @@ function normaliseUsage(raw: any) {
   };
 }
 
-function addUsage(total: TokenUsage, raw: any) {
+export function addUsage(total: TokenUsage, raw: any) {
   total.model_requests += 1;
   const usage = normaliseUsage(raw);
   if (!usage) return;
@@ -232,6 +228,16 @@ function addUsage(total: TokenUsage, raw: any) {
   }
   if (usage.cached_input_tokens !== null) total.cached_input_tokens += usage.cached_input_tokens;
   if (usage.reasoning_tokens !== null) total.reasoning_tokens += usage.reasoning_tokens;
+}
+
+export function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+export function retryDelayMs(retryAfterHeader: string | null, attempt: number): number {
+  const retryAfter = Number(retryAfterHeader);
+  if (Number.isFinite(retryAfter) && retryAfter > 0) return Math.min(8000, retryAfter * 1000);
+  return Math.min(8000, 500 * (2 ** Math.max(0, attempt - 1)));
 }
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
@@ -273,16 +279,12 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
 
     const status = response.status;
     const detail = await response.text().catch(() => "");
-    const retryable = status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+    const retryable = isRetryableStatus(status);
     if (!retryable || attempt === maxAttempts) {
       throw new Error(`Model provider returned HTTP ${status} after ${attempt} attempt(s): ${detail.slice(0, 300)}`);
     }
 
-    const retryAfter = Number(response.headers.get("retry-after"));
-    const delay = Number.isFinite(retryAfter) && retryAfter > 0
-      ? Math.min(8000, retryAfter * 1000)
-      : Math.min(8000, 500 * (2 ** (attempt - 1)));
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs(response.headers.get("retry-after"), attempt)));
   }
 
   const detail = lastNetworkError instanceof Error ? lastNetworkError.message : "Unknown provider error";
