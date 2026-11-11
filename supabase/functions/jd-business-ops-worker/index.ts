@@ -18,7 +18,7 @@ Deno.serve(async req=>{
   for(const c of cases||[]){
    const createdAt=new Date(c.created_at).getTime(),events:any[]=[];
    if(!c.first_response_at&&createdAt+policy.first_response_minutes*60000<=now.getTime())events.push({type:"first_response_due",due:new Date(createdAt+policy.first_response_minutes*60000)});
-   if(createdAt+policy.resolution_minutes*60000<=now.getTime())events.push({type:"resolution_due",due:new Date(createdAt+policy.resolution_minutes*60000)});
+   const resolutionDue=c.sla_due_at?new Date(c.sla_due_at).getTime():createdAt+policy.resolution_minutes*60000;if(resolutionDue<=now.getTime())events.push({type:"resolution_due",due:new Date(resolutionDue)});
    if(createdAt+policy.escalation_after_minutes*60000<=now.getTime())events.push({type:"escalation",due:new Date(createdAt+policy.escalation_after_minutes*60000)});
    for(const event of events){
     const {data:inserted,error:insertError}=await db.from("jd_business_sla_events").upsert({school_id:c.school_id,case_id:c.id,event_type:event.type,due_at:event.due.toISOString()},{onConflict:"case_id,event_type",ignoreDuplicates:true}).select("id");
