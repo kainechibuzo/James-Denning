@@ -36,7 +36,8 @@ This is the canonical, human-readable upgrade index. The detailed implementation
 
 ### 1A. Portal usability and settings operations (JD-005)
 - [x] JD read-only settings catalogue: configured/missing status, category filters, safe values and protected-key exclusion. (JD-005B.)
-- [x] JD validated settings change planner with before/after diffs and approval classification; no writes. (JD-005C; CI pending.)
+- [x] JD validated settings change planner with before/after diffs and approval classification; no writes. (JD-005C.)
+- [x] Persist hash-bound settings proposals in Review Centre with server-side revalidation and audit; still no settings execution. (JD-005D; CI pending.)
 - [ ] Consistent, fully legible light and dark themes across every route and interactive state.
 - [ ] Mobile-first page layouts: single-column stacking, no clipped controls, readable labels and touch-sized actions.
 - [ ] Responsive settings rows, tabs, tables, forms, dialogs and summary panels.
