@@ -131,3 +131,8 @@ revoke all on public.jd_business_integration_catalog from anon,authenticated;gra
 create or replace function public.jd_business_audit(p_school_id uuid,p_actor_id uuid,p_event_type text,p_event jsonb) returns void language plpgsql security definer set search_path='' as $$
 begin if length(p_event_type) not between 1 and 100 then raise exception 'Invalid audit event';end if;insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(p_school_id,p_actor_id,p_event_type,coalesce(p_event,'{}'::jsonb));end;$$;
 revoke all on function public.jd_business_audit(uuid,uuid,text,jsonb) from public,anon,authenticated;grant execute on function public.jd_business_audit(uuid,uuid,text,jsonb) to service_role;
+
+-- Private document bucket. Access is mediated by short-lived signed upload/download URLs from the authenticated Edge Function.
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values('jd-business-documents','jd-business-documents',false,20971520,array['application/pdf','text/plain','application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+on conflict(id) do update set public=false,file_size_limit=20971520,allowed_mime_types=excluded.allowed_mime_types;

@@ -82,6 +82,34 @@ Deno.serve(async req=>{
    const renewal=contracts.filter((x:any)=>x.status==="active"&&x.expires_on&&new Date(x.expires_on).getTime()<=Date.now()+Number(x.renewal_notice_days)*86400000);
    return send({indicators:{customer_records:customers.length,open_opportunities:opportunities.filter((x:any)=>!["won","lost"].includes(x.stage)).length,overdue_support_cases:overdue.length,renewals_due:renewal.length,unreviewed_expenses:expenses.filter((x:any)=>x.status==="submitted").length,documents_pending_extraction:documents.filter((x:any)=>["pending","processing","failed"].includes(x.extraction_status)).length},grade:null,grade_note:"No single health grade is issued until business-specific thresholds and sufficient history are configured.",data_as_of:new Date().toISOString()});
   }
+  if(b.action==="document.upload.prepare"){
+   const title=str(b.title,180),mime=str(b.mimeType,120).toLowerCase(),size=num(b.byteSize,1,20*1024*1024);
+   const allowed:Record<string,string>={"application/pdf":"pdf","text/plain":"txt","application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx"};
+   if(!title||!allowed[mime]||size===null)return send({error:"Use a titled PDF, DOCX or plain-text file up to 20 MB"},400);
+   const path=`${school}/${crypto.randomUUID()}.${allowed[mime]}`;
+   const {data,error}=await db.storage.from("jd-business-documents").createSignedUploadUrl(path,{upsert:false});
+   if(error||!data?.token)return send({error:"Could not prepare secure upload"},500);
+   return send({path,token:data.token,bucket:"jd-business-documents",expires_in_seconds:120});
+  }
+  if(b.action==="document.upload.confirm"){
+   const path=str(b.path,500),title=str(b.title,180),mime=str(b.mimeType,120).toLowerCase();
+   if(!path.startsWith(`${school}/`)||!title)return send({error:"Invalid document upload reference"},400);
+   const folder=school,file=path.slice(school.length+1);
+   const {data:objects,error:storageError}=await db.storage.from("jd-business-documents").list(folder,{search:file,limit:20});
+   if(storageError)throw storageError;const object=(objects||[]).find((x:any)=>x.name===file);
+   const actualSize=Number(object?.metadata?.size||0),actualMime=str(object?.metadata?.mimetype,120).toLowerCase();
+   if(!object||actualSize<1||actualSize>20*1024*1024||actualMime!==mime)return send({error:"Uploaded file could not be verified"},400);
+   const {data,error}=await db.from("jd_business_documents").insert({school_id:school,title,storage_path:path,mime_type:mime,byte_size:actualSize,extraction_status:"pending",source_metadata:{uploaded_at:new Date().toISOString(),scan_status:"pending"},created_by:actor}).select(columns.documents).single();
+   if(error)throw error;await audit("business.document.uploaded",{document_id:data.id,byte_size:actualSize,mime_type:mime});return send({item:data,extraction_status:"pending",notice:"Upload verified. Text extraction remains pending until the document scanning/extraction worker is deployed."},201);
+  }
+  if(b.action==="document.download.url"){
+   if(!uuid(b.documentId))return send({error:"Document ID required"},400);
+   const {data:doc,error}=await db.from("jd_business_documents").select("storage_path,title").eq("id",b.documentId).eq("school_id",school).maybeSingle();
+   if(error||!doc)return send({error:"Document not found"},404);
+   const {data,error:signError}=await db.storage.from("jd-business-documents").createSignedUrl(doc.storage_path,60);
+   if(signError||!data?.signedUrl)return send({error:"Could not create secure download link"},500);
+   return send({url:data.signedUrl,title:doc.title,expires_in_seconds:60});
+  }
   if(b.action==="report.generate"){
    const start=date(b.period_start),end=date(b.period_end);if(!start||!end||end<start)return send({error:"Valid report period required"},400);
    const [customers,opportunities,expenses,contracts,support]=await Promise.all([list("customers"),list("opportunities"),list("expenses"),list("contracts"),list("support")]);
