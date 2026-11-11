@@ -176,10 +176,27 @@ begin
     return jsonb_build_object('dispatched',false,'reason','already_processed_or_not_due');
   end if;
   if p_next_run_at<=p_expected_run_at then raise exception 'Next occurrence must be later than the due occurrence' using errcode='22023'; end if;
+  v_assignee:=v_schedule.assigned_to;
+  if v_assignee is null and v_schedule.auto_assign then
+    select m.profile_id into v_assignee
+    from public.jd_task_assignment_members m
+    join public.profiles p on p.id=m.profile_id and p.school_id=m.school_id
+    left join public.jd_operational_tasks t on t.school_id=m.school_id and t.assigned_to=m.profile_id and t.status in ('queued','in_progress','blocked')
+    where m.school_id=v_schedule.school_id and lower(m.department)=lower(v_schedule.department) and m.active=true
+      and p.role in ('admin','manager','teacher','bursar')
+    group by m.profile_id,m.max_open_tasks,m.last_assigned_at
+    having count(t.id)<m.max_open_tasks
+    order by count(t.id) asc,m.last_assigned_at asc nulls first,m.profile_id
+    limit 1;
+    if v_assignee is not null then
+      update public.jd_task_assignment_members set last_assigned_at=now(),updated_at=now()
+      where school_id=v_schedule.school_id and profile_id=v_assignee and lower(department)=lower(v_schedule.department);
+    end if;
+  end if;
   v_key:='schedule:'||v_schedule.id::text||':'||floor(extract(epoch from p_expected_run_at))::bigint::text;
   insert into public.jd_operational_tasks(school_id,created_by,title,description,department,priority,assigned_to,idempotency_key,metadata)
   values(v_schedule.school_id,v_schedule.created_by,v_schedule.title,v_schedule.description,v_schedule.department,v_schedule.priority,
-    v_schedule.assigned_to,v_key,jsonb_build_object('source','recurring_schedule','schedule_id',v_schedule.id,'scheduled_for',p_expected_run_at))
+    v_assignee,v_key,jsonb_build_object('source','recurring_schedule','schedule_id',v_schedule.id,'scheduled_for',p_expected_run_at))
   on conflict(school_id,idempotency_key) do nothing
   returning id into v_task_id;
   if v_task_id is null then
