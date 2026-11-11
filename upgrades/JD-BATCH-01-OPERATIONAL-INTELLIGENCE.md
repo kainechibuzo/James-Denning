@@ -68,3 +68,27 @@ No organisation is provisioned automatically. Blueprint submission creates a dra
 ## Acceptance rule
 
 A track is complete only when implementation, tests, tenant/role checks, deployment evidence and relevant authenticated smoke tests are recorded. A registry entry or schema alone is not completion.
+
+
+## Operational interface and integration completion pass
+
+A dedicated Business Operations workspace is now wired into the application navigation for admins and managers. It provides:
+- Overview cards and recent task/blueprint activity.
+- Organisation blueprint editor, validation and saved draft list.
+- Operational task creation, queue, status transitions and tenant-verified team assignment.
+- Vacancy draft creation, explicit internal approval/opening, candidate registration and valid recruitment-stage controls.
+- Capability evidence view that does not label capabilities deployed without evidence.
+
+New tenant-scoped Edge Function read actions: `organisation.blueprints.list`, `operations.task.list`, `operations.team.list`, and `hiring.pipeline.list`. New write actions: `operations.task.assign`, `hiring.vacancy.approve`, and `hiring.candidate.create`. Candidate intake is allowed only for an internally opened requisition; opening a vacancy does not publish externally or send messages.
+
+JD's agent now has read-only people, performance and operations intelligence tools. Performance summaries use the active session/term and aggregate scores only; no individual learner results are returned. Existing billing, attendance, announcement, email-delivery and hiring read tools remain available.
+
+Tests cover score aggregation, task aggregation and existing workflow state machines. CI type-checks the secured Edge Functions and builds the web app.
+
+### Still not complete
+- The durable execution dispatcher/scheduler and expired-lease recovery need end-to-end live verification.
+- Blueprint provisioning still needs a Review Centre approval action and idempotent provisioner; saving a blueprint is not provisioning departments or accounts.
+- External hiring publication, email sending, campaign scheduling and social publishing are intentionally not activated by this pass.
+- Finance is currently read-only aggregate intelligence; no payments, refunds or ledger writes are automated.
+- Performance intelligence is aggregate-only; KPI dashboards and trend history still need UI work.
+- Production migration and Edge Function deployment have not been performed.
