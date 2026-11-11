@@ -121,7 +121,7 @@ create table if not exists public.jd_business_cash_transactions (
  updated_at timestamptz not null default now()
 );
 create index if not exists jd_business_cash_transactions_school_idx on public.jd_business_cash_transactions(school_id,occurred_on desc,status);
-do $
+do $$
 declare t text;
 begin foreach t in array array['jd_business_cash_transactions','jd_business_customers','jd_business_opportunities','jd_business_activities','jd_business_expenses','jd_business_contracts','jd_business_contract_versions','jd_business_documents','jd_business_support_cases','jd_business_support_notes','jd_business_oauth_connections','jd_business_oauth_states','jd_business_service_checks','jd_business_reports'] loop
  execute format('alter table public.%I enable row level security',t);execute format('revoke all on public.%I from anon,authenticated',t);execute format('grant select,insert,update,delete on public.%I to service_role',t);
