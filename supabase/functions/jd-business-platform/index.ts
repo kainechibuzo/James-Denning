@@ -363,8 +363,8 @@ Deno.serve(async req=>{
    if(p.role!=="admin")return send({error:"Only workspace administrators can create report share links"},403);
    const reportId=uuid(b.reportId)?b.reportId:null,days=num(b.expiresInDays??7,1,30);
    if(!reportId||days===null)return send({error:"Report ID and expiry between 1 and 30 days are required"},400);
-   const {data:report,error:reportError}=await db.from("jd_business_reports").select("id").eq("id",reportId).eq("school_id",school).maybeSingle();
-   if(reportError||!report)return send({error:"Report not found"},404);
+   const {data:report,error:reportError}=await db.from("jd_business_reports").select("id,status").eq("id",reportId).eq("school_id",school).maybeSingle();
+   if(reportError||!report)return send({error:"Report not found"},404);if(!["approved","shared"].includes(report.status))return send({error:"Approve the report before creating a public share link"},409);
    const token=base64Url(crypto.getRandomValues(new Uint8Array(32))),hash=await sha256Hex(token),expiresAt=new Date(Date.now()+days*86400000).toISOString();
    const {data:share,error}=await db.from("jd_business_report_shares").insert({school_id:school,report_id:reportId,token_hash:hash,expires_at:expiresAt,created_by:actor}).select("id,expires_at").single();
    if(error)throw error;const base=Deno.env.get("JD_REPORT_SHARE_BASE_URL")||Deno.env.get("SUPABASE_URL");
@@ -387,7 +387,7 @@ Deno.serve(async req=>{
    const metrics=(data.report_json as any)?.metrics||{},escapeCsv=(v:unknown)=>'"'+String(v??"").replace(/"/g,'""')+'"';
    const csv=["metric,value",...Object.entries(metrics).flatMap(([key,value]:[string,any])=>value&&typeof value==="object"?Object.entries(value).map(([currency,amount])=>[key+"_"+currency,amount].map(escapeCsv).join(",")):[[key,value].map(escapeCsv).join(",")])].join("\n");
    await audit("business.report.exported",{report_id:reportId,format:"csv"});
-   return new Response(csv,{status:200,headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":'attachment; filename="jd-executive-report.csv"',"Cache-Control":"no-store"}});
+   return new Response(csv,{status:200,headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":'attachment; filename="jd-executive-report.csv"',"Cache-Control":"no-store","Access-Control-Allow-Origin":"*"}});
   }
   return send({error:"Unsupported action"},400);
  }catch(e){console.error("JD business platform",e);return send({error:"Business platform request failed",detail:e instanceof Error?e.message:"Unknown error"},500);}
