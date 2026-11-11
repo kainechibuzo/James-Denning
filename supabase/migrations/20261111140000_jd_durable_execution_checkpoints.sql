@@ -62,12 +62,6 @@ begin
         state_version = 1,
         updated_at = excluded.updated_at;
 
-  update public.jd_execution_jobs
-  set checkpoint_step_index = greatest(checkpoint_step_index, 0),
-      heartbeat_at = v_now,
-      updated_at = v_now
-  where id = p_job_id and lease_token = p_lease_token;
-
   return true;
 end;
 $$;
