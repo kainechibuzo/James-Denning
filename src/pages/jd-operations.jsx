@@ -30,8 +30,8 @@ export function JDOperationsPage({ctx}){
  const refresh=useCallback(async()=>{
   setLoading(true);setError("");
   try{
-   const [op,teamResult]=await Promise.all([invoke("operations.task.list"),invoke("operations.team.list")]);
-   setTasks(op.tasks||[]);setTeam(teamResult.members||[]);
+   const [op,teamResult,execution]=await Promise.all([invoke("operations.task.list"),invoke("operations.team.list"),invoke("execution.monitor.list")]);
+   setTasks(op.tasks||[]);setTeam(teamResult.members||[]);setRuns(execution.runs||[]);setJobs(execution.jobs||[]);setSteps(execution.steps||[]);
    if(isAdmin){
     const [cap,bp,hi]=await Promise.all([invoke("capabilities.report"),invoke("organisation.blueprints.list"),invoke("hiring.pipeline.list")]);
     setCapabilities(cap.capabilities||[]);setBlueprints(bp.blueprints||[]);setRequisitions(hi.requisitions||[]);setCandidates(hi.candidates||[]);
