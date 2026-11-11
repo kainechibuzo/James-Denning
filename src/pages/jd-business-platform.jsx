@@ -6,7 +6,7 @@ const input={width:"100%",boxSizing:"border-box",border:"1px solid var(--jd-bord
 const primary={border:0,borderRadius:9,padding:"10px 13px",background:"#17191c",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"};
 const secondary={border:"1px solid var(--jd-border,#dfe2e7)",borderRadius:9,padding:"9px 12px",background:"transparent",color:"inherit",fontSize:12,fontWeight:650,cursor:"pointer"};
 const money=n=>"₦"+Number(n||0).toLocaleString("en-NG",{maximumFractionDigits:2});
-const kinds={customers:"Customers",opportunities:"Sales pipeline",expenses:"Expenses",contracts:"Contracts & proposals",support:"Support cases",documents:"Documents",reports:"Executive reports"};
+const kinds={customers:"Customers",opportunities:"Sales pipeline",expenses:"Expenses",contracts:"Contracts & proposals",support:"Support cases",documents:"Documents",reports:"Executive reports",cashflow:"Cash transactions"};
 const tabs=[["overview","Overview"],["customers","CRM"],["opportunities","Sales"],["expenses","Expenses"],["contracts","Contracts"],["support","Support"],["documents","Documents"],["integrations","Integrations"],["cashflow","Cash flow"],["performance","Predictive analysis"],["reports","Executive reports"],["health","Business health"]];
 function Field({label,value,onChange,type="text",placeholder=""}){return <label style={{display:"grid",gap:5,fontSize:11,fontWeight:650}}>{label}<input type={type} value={value??""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={input}/></label>}
 export function JDBusinessPlatform(){
@@ -24,7 +24,8 @@ export function JDBusinessPlatform(){
  expenses:[["category","Category"],["description","Description"],["amount","Amount (numeric)","number"],["incurred_on","Date","date"],["vendor","Vendor"]],
  contracts:[["title","Contract / proposal"],["value","Value","number"],["starts_on","Start date","date"],["expires_on","Expiry date","date"],["body","Draft content"]],
  support:[["title","Case title"],["description","Issue description"],["sla_due_at","SLA due at","datetime-local"]],
- reports:[["title","Report title"],["period_start","Period starts","date"],["period_end","Period ends","date"]],\n cashflow:[["direction","Direction"],["amount","Amount","number"],["occurred_on","Date","date"],["category","Category"],["description","Description"],["reference","Reference"]]
+ reports:[["title","Report title"],["period_start","Period starts","date"],["period_end","Period ends","date"]],
+ cashflow:[["direction","Direction"],["amount","Amount","number"],["occurred_on","Date","date"],["category","Category"],["description","Description"],["reference","Reference"]]
  }[tab]||[]),[tab]);
  const renderRows=()=>items.length?items.map(it=><article key={it.id} style={{padding:"13px 0",borderTop:"1px solid var(--jd-border,#eee)",display:"grid",gap:8}}>
  <div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}><div><b style={{fontSize:13}}>{it.name||it.title||it.description}</b><div style={{fontSize:10,color:"var(--jd-muted,#727780)"}}>{it.company||it.email||it.category||it.stage||it.status||it.extraction_status||""} · {it.created_at?new Date(it.created_at).toLocaleDateString():""}</div></div>
