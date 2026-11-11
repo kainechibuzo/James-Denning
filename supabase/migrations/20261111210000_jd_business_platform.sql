@@ -254,10 +254,12 @@ returns setof public.jd_business_notification_outbox language sql security defin
 as $$
  with picked as (
   select id from public.jd_business_notification_outbox
-  where status in ('queued','failed') and attempts<10 and next_attempt_at<=now()
+  where ((status in ('queued','failed') and attempts<10 and next_attempt_at<=now())
+     or (status='processing' and locked_at<now()-interval '10 minutes'))
   order by created_at for update skip locked limit greatest(1,least(coalesce(p_limit,25),100))
  )
- update public.jd_business_notification_outbox n set attempts=n.attempts+1,status='queued'
+ update public.jd_business_notification_outbox n
+ set attempts=n.attempts+1,status='processing',locked_at=now()
  from picked where n.id=picked.id returning n.*;
 $$;
 revoke all on function public.jd_claim_business_notification_batch(integer) from public,anon,authenticated;
