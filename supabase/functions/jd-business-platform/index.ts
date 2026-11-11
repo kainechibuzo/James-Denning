@@ -4,13 +4,13 @@ const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:c
 const uuid=(v:unknown):v is string=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const str=(v:unknown,n=500)=>typeof v==="string"?v.trim().slice(0,n):"";
 const num=(v:unknown,min=0,max=1e12)=>{const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null;};
-const date=(v:unknown)=>typeof v==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(v)?v:null;
+const date=(v:unknown)=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null;
 const tables:Record<string,string>={customers:"jd_business_customers",opportunities:"jd_business_opportunities",expenses:"jd_business_expenses",contracts:"jd_business_contracts",documents:"jd_business_documents",support:"jd_business_support_cases",reports:"jd_business_reports"};
 const columns:Record<string,string>={customers:"id,name,customer_type,email,phone,company,status,consent_status,owner_id,created_at,updated_at",opportunities:"id,customer_id,title,stage,amount,currency,probability,expected_close_date,next_action,owner_id,created_at,updated_at",expenses:"id,category,description,amount,currency,incurred_on,status,vendor,reference,created_at,updated_at",contracts:"id,customer_id,title,contract_type,status,value,currency,starts_on,expires_on,renewal_notice_days,created_at,updated_at",documents:"id,title,mime_type,byte_size,extraction_status,summary,source_metadata,created_at,updated_at",support:"id,customer_id,title,description,status,priority,assigned_to,sla_due_at,resolved_at,resolution_note,created_at,updated_at",reports:"id,title,report_type,period_start,period_end,status,report_json,source_metadata,created_at,updated_at"};
 const stages=["lead","qualified","proposal","negotiation","won","lost"];
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});if(req.method!=="POST")return send({error:"Method not allowed"},405);
- const token=(req.headers.get("Authorization")||"").replace(/^Bearer\\s+/i,"");if(!token)return send({error:"Authentication required"},401);
+ const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");if(!token)return send({error:"Authentication required"},401);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!url||!anon||!key)return send({error:"Service not configured"},503);
  const auth=createClient(url,anon,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false}});
  const {data:user,error:authErr}=await auth.auth.getUser(token);if(authErr||!user.user)return send({error:"Invalid session"},401);
