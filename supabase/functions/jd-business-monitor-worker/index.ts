@@ -31,6 +31,13 @@ Deno.serve(async req=>{
    const {error:stateError}=await db.from("jd_business_service_states").upsert({school_id:pair.school_id,provider_id:pair.provider_id,status,last_error_code:errorCode,last_checked_at:checkedAt,status_changed_at:changed?checkedAt:previous?.status_changed_at||checkedAt},{onConflict:"school_id,provider_id"});
    if(stateError)throw stateError;
    if(changed){
+    const {data:alertPolicies}=await db.from("jd_business_sla_policies").select("notify_email,notify_phone").eq("school_id",pair.school_id).eq("priority","urgent").eq("enabled",true).limit(1);
+    const alertKey=`integration:${pair.provider_id}:${status}:${checkedAt}`,alertBody=`Integration ${pair.provider_id} changed status to ${status}. Error: ${errorCode||"none"}. Checked at ${checkedAt}.`;
+    for(const policy of alertPolicies||[]){
+     for(const [channel,recipient] of [["email",policy.notify_email],["sms",policy.notify_phone]] as const){
+      if(recipient)await db.from("jd_business_notification_outbox").upsert({school_id:pair.school_id,event_key:alertKey,channel,recipient,subject:`JD integration alert: ${pair.provider_id}`,body:alertBody,payload:{provider_id:pair.provider_id,status,error_code:errorCode}},{onConflict:"school_id,event_key,channel,recipient",ignoreDuplicates:true});
+     }
+    }
     if(status==="healthy"&&previous&&previous.status!=="healthy"){
      await db.from("jd_business_service_alerts").insert({school_id:pair.school_id,provider_id:pair.provider_id,status:"recovered",error_code:previous.status,resolved_at:checkedAt});
      await db.from("jd_business_service_alerts").update({resolved_at:checkedAt}).eq("school_id",pair.school_id).eq("provider_id",pair.provider_id).is("resolved_at",null);
