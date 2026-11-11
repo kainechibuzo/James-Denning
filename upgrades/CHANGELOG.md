@@ -75,3 +75,15 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Merge commit:** `b2ccfb8ed4065ac2418a8f198e9b5732b655c544`
 - **Validation:** Production web build, application verification, Deno unit tests and secured Edge Function type-check all passed on the PR head. Vercel preview deployment completed successfully; the post-merge master deployment was still pending at the last check.
 - **Remaining:** Merge and production deployment verification. Durable background jobs, leases, resumability and crash recovery remain a separate follow-up; this synchronous handler is not a durable queue.
+
+
+### JD-004 — Durable background execution design
+- **Date:** 2026-11-11
+- **Status:** proposed; design documented, implementation not started
+- **Priority:** critical
+- **Scope:** Define Postgres-backed job ledger, Supabase Queues/pgmq delivery, atomic claims and leases, checkpointed resumability, retry scheduling, crash recovery, idempotent side effects, progress reporting and tenant-safe worker execution.
+- **Evidence:** `upgrades/JD-004-DURABLE-EXECUTION.md` on branch `feature/jd-004-durable-execution-design`.
+- **Repository inspection:** Existing JD migrations and synchronous runtime are present in GitHub. The configured Supabase project has no JD tables and its migration history does not include the JD migration versions. The extension catalogue lists pgmq, pg_cron and pg_net as available, but none is installed.
+- **Validation:** Design review only. No code, migration, extension, schedule, secret or Edge Function was deployed or applied.
+- **Token usage:** No provider usage metadata available; usage and cost are unknown and not estimated.
+- **Next:** Implement JD-004A as a separately reviewable schema/queue-primitives change, validate locally and in staging, then proceed to worker/runtime phases.
