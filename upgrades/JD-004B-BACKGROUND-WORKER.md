@@ -10,6 +10,12 @@ The worker is a server-only Supabase Edge Function. It accepts POST requests wit
 
 Each invocation reads at most one queue message with a bounded visibility timeout. It accepts only schema version 1 messages containing an opaque job UUID. The database remains authoritative: the worker claims the job using the exact queue message ID and a fresh lease token, then re-derives the run, workspace, requester and role from trusted database records.
 
+## Resumable runtime state
+
+The worker loads the latest versioned runtime checkpoint from the private `jd_execution_checkpoints` table. The JD runtime restores the model conversation input, completed tool-call IDs, token counters and model-request telemetry. After each complete parallel tool-call round, the runtime persists the new state through a service-role-only RPC fenced by the current unexpired lease. The raw checkpoint is limited to 512 KiB and is never readable by authenticated browser roles.
+
+A crash during a parallel tool-call round can cause that round to be replayed because its outputs are checkpointed as a batch. This is safe only while the tool registry remains read-only. Any future write-capable tool requires stable idempotency and ambiguous-outcome reconciliation before it can be used by the background worker.
+
 ## Execution lifecycle
 
 1. Validate the worker secret and server configuration.
