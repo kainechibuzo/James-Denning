@@ -185,31 +185,108 @@ const modelTools = (context: AgentContext) => tools
     parameters: tool.parameters,
   }));
 
-type TokenUsage = { input_tokens: number; output_tokens: number; total_tokens: number; cached_input_tokens: number; reasoning_tokens: number };
-const emptyUsage = (): TokenUsage => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0, cached_input_tokens: 0, reasoning_tokens: 0 });
+type TokenUsage = {
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  cached_input_tokens: number;
+  reasoning_tokens: number;
+  model_requests: number;
+  usage_reported_requests: number;
+  total_tokens_reported_requests: number;
+};
+
+const emptyUsage = (): TokenUsage => ({
+  input_tokens: 0, output_tokens: 0, total_tokens: 0,
+  cached_input_tokens: 0, reasoning_tokens: 0,
+  model_requests: 0, usage_reported_requests: 0, total_tokens_reported_requests: 0,
+});
+
+function numericUsage(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function normaliseUsage(raw: any) {
+  if (!raw || typeof raw !== "object") return null;
+  return {
+    input_tokens: numericUsage(raw.input_tokens ?? raw.prompt_tokens),
+    output_tokens: numericUsage(raw.output_tokens ?? raw.completion_tokens),
+    total_tokens: numericUsage(raw.total_tokens),
+    cached_input_tokens: numericUsage(raw.input_tokens_details?.cached_tokens ?? raw.prompt_tokens_details?.cached_tokens),
+    reasoning_tokens: numericUsage(raw.output_tokens_details?.reasoning_tokens ?? raw.completion_tokens_details?.reasoning_tokens),
+  };
+}
+
 function addUsage(total: TokenUsage, raw: any) {
-  if (!raw || typeof raw !== "object") return;
-  const input = Number(raw.input_tokens ?? raw.prompt_tokens ?? 0) || 0;
-  const output = Number(raw.output_tokens ?? raw.completion_tokens ?? 0) || 0;
-  total.input_tokens += input;
-  total.output_tokens += output;
-  total.total_tokens += Number(raw.total_tokens ?? (input + output)) || 0;
-  total.cached_input_tokens += Number(raw.input_tokens_details?.cached_tokens ?? raw.prompt_tokens_details?.cached_tokens ?? 0) || 0;
-  total.reasoning_tokens += Number(raw.output_tokens_details?.reasoning_tokens ?? raw.completion_tokens_details?.reasoning_tokens ?? 0) || 0;
+  total.model_requests += 1;
+  const usage = normaliseUsage(raw);
+  if (!usage) return;
+  total.usage_reported_requests += 1;
+  if (usage.input_tokens !== null) total.input_tokens += usage.input_tokens;
+  if (usage.output_tokens !== null) total.output_tokens += usage.output_tokens;
+  if (usage.total_tokens !== null) {
+    total.total_tokens += usage.total_tokens;
+    total.total_tokens_reported_requests += 1;
+  }
+  if (usage.cached_input_tokens !== null) total.cached_input_tokens += usage.cached_input_tokens;
+  if (usage.reasoning_tokens !== null) total.reasoning_tokens += usage.reasoning_tokens;
 }
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/responses`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com", "X-OpenRouter-Title": "James Denning JD" },
-    body: JSON.stringify(input),
-    signal: AbortSignal.timeout(45000),
-  });
-  if (!response.ok) {
+  const endpoint = `${baseUrl.replace(/\\/$/, "")}/responses`;
+  const maxAttempts = 3;
+  let lastNetworkError: unknown = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com",
+          "X-OpenRouter-Title": "James Denning JD",
+        },
+        body: JSON.stringify(input),
+        signal: AbortSignal.timeout(45000),
+      });
+    } catch (error) {
+      lastNetworkError = error;
+      if (attempt === maxAttempts) {
+        const detail = error instanceof Error ? error.message : "Network request failed";
+        throw new Error(`Model provider request failed after ${maxAttempts} attempts: ${detail.slice(0, 180)}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, Math.min(8000, 500 * (2 ** (attempt - 1)))));
+      continue;
+    }
+
+    if (response.ok) {
+      try {
+        return { response: await response.json(), attempts: attempt };
+      } catch {
+        throw new Error("Model provider returned an invalid JSON response");
+      }
+    }
+
+    const status = response.status;
     const detail = await response.text().catch(() => "");
-    throw new Error(`Model provider returned HTTP ${response.status}: ${detail.slice(0, 400)}`);
+    const retryable = status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+    if (!retryable || attempt === maxAttempts) {
+      throw new Error(`Model provider returned HTTP ${status} after ${attempt} attempt(s): ${detail.slice(0, 300)}`);
+    }
+
+    const retryAfter = Number(response.headers.get("retry-after"));
+    const delay = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(8000, retryAfter * 1000)
+      : Math.min(8000, 500 * (2 ** (attempt - 1)));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  return await response.json();
+
+  const detail = lastNetworkError instanceof Error ? lastNetworkError.message : "Unknown provider error";
+  throw new Error(`Model provider request failed: ${detail.slice(0, 180)}`);
 }
 
 export async function runAgent(input: {
@@ -233,7 +310,7 @@ export async function runAgent(input: {
     "This deployment currently provides read-only organisation tools plus drafting in the conversation. You may draft emails, notices, reports, plans and structured data for review, but do not claim to send, publish, change, delete, pay, invite, or modify records.",
     "When drafting an email, produce a polished subject line and complete message, adapt tone to the audience, and ask only for genuinely missing details. Never claim a draft was sent. If a task requires an unavailable capability, explain the missing capability and offer the closest safe next step.",
     "Be concise but useful. Summarise what you checked, what you found, and any remaining blockers.",
-  ].join("\n");
+  ].join("\\n");
 
   const conversationInput = [
     ...input.history
@@ -243,7 +320,22 @@ export async function runAgent(input: {
     { role: "user", content: input.message },
   ];
 
-  let response = await callModel({
+  const tokenUsage = emptyUsage();
+  const modelRequests: Array<Record<string, unknown>> = [];
+  let requestIndex = 0;
+  const requestModel = async (payload: Record<string, unknown>) => {
+    const result = await callModel(payload, input.apiKey, baseUrl);
+    requestIndex += 1;
+    addUsage(tokenUsage, result.response.usage);
+    modelRequests.push({
+      request_index: requestIndex,
+      attempts: result.attempts,
+      usage: normaliseUsage(result.response.usage),
+    });
+    return result.response;
+  };
+
+  let response = await requestModel({
     model: input.model,
     instructions,
     input: conversationInput,
@@ -251,18 +343,20 @@ export async function runAgent(input: {
     tool_choice: "auto",
     parallel_tool_calls: true,
     store: false,
-  }, input.apiKey, baseUrl);
+  });
 
   const completedCalls = new Set<string>();
-  const tokenUsage = emptyUsage();
-  addUsage(tokenUsage, response.usage);
   for (let turn = 0; turn < 8; turn += 1) {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
     if (!calls.length) {
       const text = typeof response.output_text === "string" ? response.output_text : "";
       if (!text.trim()) throw new Error("The model returned no final answer");
-      return { text, toolEvents: [...completedCalls], responseId: response.id || null, tokenUsage, model: input.model, provider: "openrouter" };
+      return {
+        text, status: "completed", truncated: false,
+        toolEvents: [...completedCalls], responseId: response.id || null,
+        tokenUsage, modelRequests, model: input.model, provider: "openrouter",
+      };
     }
 
     const outputs = await Promise.all(calls.map(async (call: any) => {
@@ -287,7 +381,7 @@ export async function runAgent(input: {
     }));
 
     conversationInput.push(...output, ...outputs);
-    response = await callModel({
+    response = await requestModel({
       model: input.model,
       instructions,
       input: conversationInput,
@@ -295,15 +389,17 @@ export async function runAgent(input: {
       tool_choice: "auto",
       parallel_tool_calls: true,
       store: false,
-    }, input.apiKey, baseUrl);
-    addUsage(tokenUsage, response.usage);
+    });
   }
 
   return {
-    text: "I reached the maximum number of tool steps for this request. I’ve stopped safely rather than looping indefinitely. Please narrow the task or split it into smaller steps.",
+    text: "I reached the maximum number of tool steps for this request. I stopped safely, but this task may be incomplete. Review the recorded steps before deciding how to continue.",
+    status: "partially_completed",
+    truncated: true,
     toolEvents: [...completedCalls],
     responseId: response.id || null,
     tokenUsage,
+    modelRequests,
     model: input.model,
     provider: "openrouter",
   };
