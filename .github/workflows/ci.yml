@@ -113,3 +113,4 @@ jobs:
           deno check supabase/functions/jd-task-collaboration/index.ts
           deno check supabase/functions/jd-business-platform/index.ts
           deno check supabase/functions/jd-business-oauth-callback/index.ts
+          deno check supabase/functions/jd-business-monitor-worker/index.ts

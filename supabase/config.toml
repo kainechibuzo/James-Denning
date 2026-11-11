@@ -25,3 +25,6 @@ verify_jwt = true
 
 [functions.jd-business-oauth-callback]
 verify_jwt = false
+
+[functions.jd-business-monitor-worker]
+verify_jwt = false

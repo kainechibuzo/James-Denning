@@ -25,7 +25,7 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 15 | Customer Support Workflows | in_progress | Case intake, assignment, priority, SLA clocks, internal notes and verified resolution. |
 | 16 | Integration Marketplace | in_progress | Provider catalogue, scopes, capabilities and truthful configured/connected/healthy states. |
 | 17 | Secure OAuth Integration Manager | in_progress | OAuth state/PKCE, encrypted server-side credentials, scope minimisation, refresh/revoke and audit. |
-| 18 | External Service Monitoring | in_progress | Scheduled health checks, bounded timeouts, latency/error history and alert deduplication. |
+| 18 | External Service Monitoring | in_progress | 15-minute scheduled fixed-endpoint probes, bounded timeouts, latency/error history and status-transition deduplication; notification delivery remains open. |
 | 19 | Business Health Monitoring | in_progress | Explainable scorecards with contributing evidence, freshness and missing-data caveats. |
 | 20 | Executive Intelligence Reports | in_progress | Date-scoped evidence-linked reports, source freshness, export and approval-bound sharing. |
 

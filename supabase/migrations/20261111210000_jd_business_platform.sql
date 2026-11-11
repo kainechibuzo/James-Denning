@@ -169,3 +169,15 @@ grant execute on function public.jd_consume_business_oauth_state(text) to servic
 -- Retain who recorded customer consent and the basis/source supplied by the operator.
 alter table public.jd_business_customers add column if not exists consent_updated_by uuid references auth.users(id) on delete set null;
 alter table public.jd_business_customers add column if not exists consent_source text not null default '' check(length(consent_source)<=500);
+
+-- Last-known external provider state for alert deduplication and transition history.
+create table if not exists public.jd_business_service_states (
+ school_id uuid not null references public.schools(id) on delete cascade,
+ provider_id text not null references public.jd_business_integration_catalog(id),
+ status text not null check(status in ('healthy','degraded','down','unknown')),
+ last_error_code text, last_checked_at timestamptz not null default now(), status_changed_at timestamptz not null default now(),
+ primary key(school_id,provider_id)
+);
+alter table public.jd_business_service_states enable row level security;
+revoke all on public.jd_business_service_states from anon,authenticated;
+grant select,insert,update,delete on public.jd_business_service_states to service_role;

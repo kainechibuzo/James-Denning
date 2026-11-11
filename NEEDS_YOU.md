@@ -57,3 +57,15 @@ Add these as Supabase Edge Function secrets for the target environment (do not p
 - `JD_OAUTH_LINKEDIN_CLIENT_ID` and `JD_OAUTH_LINKEDIN_CLIENT_SECRET`.
 
 Register the exact callback URL in each provider developer console. Deploy `jd-business-platform` and `jd-business-oauth-callback` only after applying the migration in a staging project and verifying the callback. Slack and Paystack are not enabled in this OAuth flow; they require separate provider-specific API credential handling. Token refresh and remote revocation are not implemented yet, so do not use these connections for unattended long-lived production automation.
+
+
+## JD Business Platform — scheduled external service monitoring
+
+The repository now includes a bounded monitoring worker and a 15-minute GitHub Actions schedule. It checks only fixed public provider health URLs for integrations marked connected, records latency/status history, and records status transitions. It does **not** validate OAuth tokens or provider SLAs and does not send email/SMS alerts.
+
+Configure these GitHub Actions repository secrets:
+
+- `JD_MONITOR_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-monitor-worker` for the current production project, or the equivalent staging function URL.
+- `JD_BUSINESS_MONITOR_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
+
+The worker is configured with `verify_jwt = false` and protects itself with the dedicated bearer secret. Deploy it only after staging migration and smoke tests. The scheduled workflow safely skips when secrets are absent.
