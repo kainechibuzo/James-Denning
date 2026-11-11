@@ -271,6 +271,10 @@ begin
      or v_approval.proposal_hash <> encode(public.digest(convert_to(v_approval.proposal_json::text,'UTF8'),'sha256'),'hex') then
     raise exception 'Approved workflow version is stale or has been altered' using errcode = '40001';
   end if;
+  if v_workflow.active_version_id = v_version.id then
+    return jsonb_build_object('workflow_id',v_workflow.id,'version_id',v_version.id,
+      'version_no',v_version.version_no,'status','active','execution_status','completed','duplicate',true);
+  end if;
 
   update public.jd_workflows
   set active_version_id = v_version.id,status = 'active',updated_at = now()
