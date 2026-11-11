@@ -39,14 +39,14 @@ Deno.serve(async req=>{
  if(queueError)return json({error:"Could not claim notification batch"},500);
  let sent=0,failed=0,waiting=0;
  for(const row of queued||[]){
-  if((row.channel==="email"&&!emailReady)||(row.channel==="sms"&&!smsReady)){waiting++;await db.from("jd_business_notification_outbox").update({status:"queued",attempts:Math.max(0,Number(row.attempts||1)-1),next_attempt_at:new Date(Date.now()+15*60000).toISOString()}).eq("id",row.id);continue;}
+  if((row.channel==="email"&&!emailReady)||(row.channel==="sms"&&!smsReady)){waiting++;await db.from("jd_business_notification_outbox").update({status:"queued",locked_at:null,attempts:Math.max(0,Number(row.attempts||1)-1),next_attempt_at:new Date(Date.now()+15*60000).toISOString()}).eq("id",row.id);continue;}
   try{
    const providerResult=row.channel==="email"?await sendEmail(row):await sendSms(row);
-   const {error}=await db.from("jd_business_notification_outbox").update({status:"sent",sent_at:new Date().toISOString(),last_error:null,payload:{...row.payload,provider_id:providerResult?.id||providerResult?.sid||null}}).eq("id",row.id);
+   const {error}=await db.from("jd_business_notification_outbox").update({status:"sent",locked_at:null,sent_at:new Date().toISOString(),last_error:null,payload:{...row.payload,provider_id:providerResult?.id||providerResult?.sid||null}}).eq("id",row.id);
    if(error)throw error;sent++;
   }catch(e){
    failed++;const attempts=Number(row.attempts||1),delay=Math.min(360,Math.pow(2,Math.min(attempts,8)));
-   await db.from("jd_business_notification_outbox").update({status:"failed",last_error:e instanceof Error?e.message:"Delivery failed",next_attempt_at:new Date(Date.now()+delay*60000).toISOString()}).eq("id",row.id);
+   await db.from("jd_business_notification_outbox").update({status:"failed",locked_at:null,last_error:e instanceof Error?e.message:"Delivery failed",next_attempt_at:new Date(Date.now()+delay*60000).toISOString()}).eq("id",row.id);
   }
  }
  return json({policies:policies?.length||0,notifications_queued:created,sent,failed,waiting_for_provider_configuration:waiting,delivery:{email_configured:emailReady,sms_configured:smsReady}});
