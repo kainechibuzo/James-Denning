@@ -17,7 +17,7 @@ export function RunMonitor({onClose}){
  {expanded===run.id&&<div className="jd-runs-detail"><div className="jd-runs-meta"><span>Trigger: {run.trigger_type}</span><span>Started: {fmt(run.started_at)}</span><span>Finished: {fmt(run.completed_at)}</span></div>
  {run.token_usage&&<div className="jd-runs-tokens">Tokens: {num(run.token_usage.total_tokens)} total · {num(run.token_usage.input_tokens)} input · {num(run.token_usage.output_tokens)} output{run.model?" · "+run.model:""}</div>}
  <div className="jd-runs-step-title">Execution steps ({run.steps?.length||0})</div>
- {run.steps?.length?run.steps.map(step=><div className="jd-runs-step" key={step.id}><span className={"jd-runs-step-dot "+step.status}>{step.status==="completed"?<CheckCircle2 size={13}/>:step.status==="failed"?<XCircle size={13}/>:<Clock3 size={13}/>}</span><span>{step.tool_key.replaceAll("_"," ")}</span><small>{step.status.replaceAll("_"," ")} · {step.risk_level} risk</small></div>):<div className="jd-runs-no-steps">No tool steps recorded for this run.</div>}</div>}
+ {run.steps?.length?run.steps.map(step=><div className="jd-runs-step" key={step.id}><span className={"jd-runs-step-dot "+step.status}>{step.status==="completed"?<CheckCircle2 size={13}/>:step.status==="failed"?<XCircle size={13}/>:<Clock3 size={13}/>}</span><span>{step.tool_key.replaceAll("_"," ")}</span><small>{step.status.replaceAll("_"," ")} · {step.risk_level} risk{step.error_message?" · "+step.error_message:""}</small></div>):<div className="jd-runs-no-steps">No tool steps recorded for this run.</div>}</div>}
  </article>)}</div>}
  <div className="jd-runs-foot">Showing the 50 most recent runs in this workspace. Request text is truncated for display. Only workspace administrators can access this view.</div>
  <style>{`
