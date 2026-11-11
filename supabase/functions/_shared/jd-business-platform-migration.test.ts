@@ -19,3 +19,6 @@ Deno.test("performance forecast defines a bounded month-key parser",()=>{assertE
 
 Deno.test("expense budgets are tenant scoped and bounded",()=>{assertEquals(sql.includes("create table if not exists public.jd_business_budgets"),true);assertEquals(sql.includes("alert_threshold_pct between 1 and 100"),true);assertEquals(sql.includes("unique(school_id,category,currency,period_start,period_end)"),true);});
 Deno.test("cash transactions can be attributed to a tenant customer",()=>{assertEquals(sql.includes("add column if not exists customer_id uuid references public.jd_business_customers"),true);});
+
+Deno.test("revenue intelligence counts cleared inflows and separates currencies",()=>{assertEquals(api.includes('if(b.action==="revenue.analytics")'),true);assertEquals(api.includes('.eq("direction","inflow")'),true);assertEquals(api.includes('r.status==="cleared"'),true);assertEquals(api.includes("by_currency:byCurrency"),true);});
+Deno.test("expense budgets compute category/currency/period utilisation and alerts",()=>{assertEquals(api.includes('if(b.action==="budget.analytics")'),true);assertEquals(api.includes('e.currency===budget.currency&&e.category===budget.category'),true);assertEquals(api.includes('alert:pct>=100?"over_budget"'),true);});

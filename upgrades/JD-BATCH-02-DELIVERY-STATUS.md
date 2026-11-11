@@ -15,9 +15,9 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 05 | Automated Task Assignment | in_progress | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
 | 06 | Department Collaboration | in_progress | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
 | 07 | Predictive Performance Analysis | in_progress | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
-| 08 | Revenue Intelligence | in_progress | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
-| 09 | Expense Monitoring | in_progress | Categorised expenses, budget thresholds, variance evidence and approval-bound edits. |
-| 10 | Cash-flow Reporting | in_progress | Cash-in/out timeline, receivables/payables, scenario assumptions and reconciliation warnings. |
+| 08 | Revenue Intelligence | in_progress | Cleared cash-in by currency/category/month, pending inflows and customer-attributed receipts; invoice/recurring revenue recognition still requires a billing source. |
+| 09 | Expense Monitoring | in_progress | Categorised expense intake, admin approvals, period/category/currency budgets, utilisation thresholds and over-budget alerts. |
+| 10 | Cash-flow Reporting | in_progress | Manually recorded cash-in/out, pending/cleared/void reconciliation, period totals by currency; receivables/payables automation and scenarios remain open. |
 | 11 | Document Intelligence | in_progress | Secure upload metadata, extraction pipeline, untrusted-content handling and source-linked summaries. |
 | 12 | Contract and Proposal Management | in_progress | Versioned records, review lifecycle, renewal reminders and no e-signature without a separate provider/approval design. |
 | 13 | Customer Relationship Management | in_progress | Tenant-scoped customer records, contacts, activity timeline, consent and access boundaries. |
