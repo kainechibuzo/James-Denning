@@ -152,6 +152,7 @@ $$;
 
 create or replace function public.jd_claim_execution_job(
   p_job_id uuid,
+  p_queue_message_id bigint,
   p_worker_id text,
   p_lease_seconds integer default 90
 )
@@ -168,7 +169,7 @@ begin
   if p_worker_id is null or length(trim(p_worker_id)) = 0 or length(p_worker_id) > 120 then
     raise exception 'Invalid worker identifier' using errcode = '22023';
   end if;
-  if p_lease_seconds < 15 or p_lease_seconds > 600 then
+  if p_lease_seconds is null or p_lease_seconds < 15 or p_lease_seconds > 600 then
     raise exception 'Lease duration must be between 15 and 600 seconds' using errcode = '22023';
   end if;
 
@@ -182,6 +183,7 @@ begin
       started_at = coalesce(j.started_at, v_now),
       updated_at = v_now
   where j.id = p_job_id
+    and j.queue_message_id = p_queue_message_id
     and j.attempt_count < j.max_attempts
     and (
       (j.status in ('queued','retry_wait') and j.available_at <= v_now)
@@ -334,13 +336,14 @@ declare
   v_message_id bigint;
   v_now timestamptz := now();
 begin
-  if p_delay_seconds < 1 or p_delay_seconds > 3600 then
+  if p_delay_seconds is null or p_delay_seconds < 1 or p_delay_seconds > 3600 then
     raise exception 'Retry delay must be between 1 and 3600 seconds' using errcode = '22023';
   end if;
 
   select * into v_job
   from public.jd_execution_jobs
   where id = p_job_id and status = 'running'
+    and queue_message_id = p_queue_message_id
     and lease_token = p_lease_token and lease_expires_at > v_now
   for update;
 
@@ -404,14 +407,14 @@ end;
 $$;
 
 revoke all on function public.jd_enqueue_execution_job(uuid) from public, anon, authenticated;
-revoke all on function public.jd_claim_execution_job(uuid, text, integer) from public, anon, authenticated;
+revoke all on function public.jd_claim_execution_job(uuid, bigint, text, integer) from public, anon, authenticated;
 revoke all on function public.jd_heartbeat_execution_job(uuid, uuid, integer) from public, anon, authenticated;
 revoke all on function public.jd_checkpoint_execution_job(uuid, uuid, integer) from public, anon, authenticated;
 revoke all on function public.jd_finish_execution_job(uuid, uuid, text) from public, anon, authenticated;
 revoke all on function public.jd_retry_execution_job(uuid, uuid, bigint, integer, text, text) from public, anon, authenticated;
 
 grant execute on function public.jd_enqueue_execution_job(uuid) to service_role;
-grant execute on function public.jd_claim_execution_job(uuid, text, integer) to service_role;
+grant execute on function public.jd_claim_execution_job(uuid, bigint, text, integer) to service_role;
 grant execute on function public.jd_heartbeat_execution_job(uuid, uuid, integer) to service_role;
 grant execute on function public.jd_checkpoint_execution_job(uuid, uuid, integer) to service_role;
 grant execute on function public.jd_finish_execution_job(uuid, uuid, text) to service_role;
@@ -431,10 +434,10 @@ as $$
 declare
   v_messages jsonb;
 begin
-  if p_visibility_seconds < 15 or p_visibility_seconds > 600 then
+  if p_visibility_seconds is null or p_visibility_seconds < 15 or p_visibility_seconds > 600 then
     raise exception 'Visibility timeout must be between 15 and 600 seconds' using errcode = '22023';
   end if;
-  if p_batch_size < 1 or p_batch_size > 20 then
+  if p_batch_size is null or p_batch_size < 1 or p_batch_size > 20 then
     raise exception 'Batch size must be between 1 and 20' using errcode = '22023';
   end if;
 
@@ -469,7 +472,7 @@ declare
 begin
   select status into v_status
   from public.jd_execution_jobs
-  where id = p_job_id;
+  where id = p_job_id and queue_message_id = p_queue_message_id;
 
   if v_status not in ('completed','partially_completed','failed','cancelled') then
     return false;
