@@ -35,23 +35,21 @@ Deno.serve(async (req) => {
   const decision=payload.decision==="approve"?"approved":payload.decision==="reject"?"rejected":null;
   const note=typeof payload.note==="string"?payload.note.trim().slice(0,2000):null;
   if(!approvalId||!decision) return json({error:"approvalId and a valid decision are required"},400);
-  const {data:approval,error:approvalErr}=await admin.from("jd_approvals")
-   .select("id,run_id,status,expires_at,execution_status").eq("id",approvalId)
-   .eq("school_id",profile.school_id).maybeSingle();
-  if(approvalErr||!approval) return json({error:"Approval request not found"},404);
-  if(approval.status!=="pending") return json({error:"This request has already been decided"},409);
-  if(new Date(approval.expires_at).getTime()<=Date.now()){
-   await admin.from("jd_approvals").update({status:"expired",updated_at:new Date().toISOString()}).eq("id",approvalId).eq("school_id",profile.school_id);
-   return json({error:"This approval request has expired"},410);
+  const {data:result,error:decisionErr}=await admin.rpc("jd_decide_approval",{
+   p_approval_id:approvalId,
+   p_actor_id:authData.user.id,
+   p_decision:decision,
+   p_note:note
+  });
+  if(decisionErr){
+   const code=String(decisionErr.code||"");
+   if(code==="P0002") return json({error:"Approval request not found"},404);
+   if(code==="40001") return json({error:"This request has already been decided"},409);
+   if(code==="42501") return json({error:"Only workspace admins can decide approval requests"},403);
+   return json({error:"Could not record the approval decision and audit event"},500);
   }
-  const now=new Date().toISOString();
-  const {data:updated,error:updateErr}=await admin.from("jd_approvals")
-   .update({status:decision,decided_by:authData.user.id,decision_note:note,decided_at:now,updated_at:now})
-   .eq("id",approvalId).eq("school_id",profile.school_id).eq("status","pending")
-   .select("id,status,execution_status,decided_by,decided_at,decision_note").maybeSingle();
-  if(updateErr||!updated) return json({error:"Could not record the approval decision"},500);
-  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:approval.run_id,event_type:"approval."+decision,event_json:{approval_id:approvalId,execution_status:"not_executed"}});
-  return json({approval:updated,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
+  if(result?.status==="expired") return json({error:"This approval request has expired",approval:result},410);
+  return json({approval:result,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
  }
  if(payload.action==="runs.list"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can view automation runs"},403);
