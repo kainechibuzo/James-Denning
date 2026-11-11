@@ -343,17 +343,8 @@ Deno.serve(async req=>{
   if(b.action==="cashflow.reconciliation.match"){
    const rowId=uuid(b.statementRowId)?b.statementRowId:null,transactionId=uuid(b.transactionId)?b.transactionId:null;
    if(!rowId||!transactionId)return send({error:"Statement row and cash transaction IDs are required"},400);
-   const {data:statement,error:statementError}=await db.from("jd_business_cash_statement_rows").select("id,occurred_on,direction,amount,currency,reconciliation_status,matched_transaction_id").eq("id",rowId).eq("school_id",school).maybeSingle();
-   if(statementError||!statement)return send({error:"Statement row not found"},404);
-   if(statement.reconciliation_status==="matched"||statement.matched_transaction_id)return send({error:"Statement row is already reconciled"},409);
-   const {data:transaction,error:transactionError}=await db.from("jd_business_cash_transactions").select("id,occurred_on,direction,amount,currency,status,reference").eq("id",transactionId).eq("school_id",school).maybeSingle();
-   if(transactionError||!transaction)return send({error:"Cash transaction not found"},404);
-   const delta=Math.abs(new Date(statement.occurred_on+"T00:00:00Z").getTime()-new Date(transaction.occurred_on+"T00:00:00Z").getTime())/86400000;
-   if(statement.direction!==transaction.direction||statement.currency!==transaction.currency||Number(statement.amount)!==Number(transaction.amount)||delta>3)return send({error:"The selected records do not match on direction, currency, amount and date window"},409);
-   const {data:updated,error:updateError}=await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"matched",matched_transaction_id:transactionId,matched_by:actor,matched_at:new Date().toISOString()}).eq("id",rowId).eq("school_id",school).is("matched_transaction_id",null).select("id").maybeSingle();
-   if(updateError||!updated)return send({error:"Statement row was reconciled by another operation; refresh and retry"},409);
-   const {error:clearError}=await db.from("jd_business_cash_transactions").update({status:"cleared",reference:transaction.reference||str(b.reference,180)||null,updated_at:new Date().toISOString()}).eq("id",transactionId).eq("school_id",school);
-   if(clearError)throw clearError;
+   const {error}=await db.rpc("jd_reconcile_business_cash_row",{p_school_id:school,p_actor_id:actor,p_statement_row_id:rowId,p_transaction_id:transactionId});
+   if(error)return send({error:"Reconciliation rejected",detail:error.message},409);
    await audit("business.cashflow.reconciled",{statement_row_id:rowId,transaction_id:transactionId});
    return send({matched:true,statement_row_id:rowId,transaction_id:transactionId});
   }
