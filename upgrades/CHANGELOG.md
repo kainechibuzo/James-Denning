@@ -127,3 +127,15 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Validation:** Static migration contract test and Deno type-check added to CI. Live PostgreSQL execution, checkpoint permission tests, crash/replay integration and tenant-isolation tests remain pending. No migration or function deployed.
 - **Token usage:** Provider/model and token/cost values unknown; no provider usage metadata available for this implementation session.
 - **Next:** Verify migrations and queue behaviour in staging, add integration tests for lease replacement and checkpoint resume, then build dispatcher/recovery and progress UI.
+
+
+### JD-005 — Responsive portal and organisation settings intelligence
+- **Date:** 2026-11-11
+- **Status:** implemented UI foundation; JD settings catalogue and browser verification pending
+- **Priority:** high
+- **Scope:** Fix document theme synchronisation and native browser colour scheme; add dark-mode safeguards for hard-coded light controls; make shared settings rows stack on mobile; add responsive grid, form and table safeguards; document the JD Settings Intelligence and Organisation Builder workflow.
+- **Files:** src/styles/system.css, src/AppDemo.jsx, src/pages/settings.jsx, upgrades.md, upgrades/JD-005-RESPONSIVE-SETTINGS-INTELLIGENCE.md.
+- **Validation:** Static review of screenshots and source implementation. Production build, automated browser visual tests, and full route-by-route mobile verification remain pending.
+- **Database:** No migration required for this UI/specification phase.
+- **Token usage:** Unknown; provider usage metadata unavailable.
+- **Next:** Add visual regression coverage for Generate Bills, Assignments and every Settings tab; implement the server-derived settings catalogue and typed, permission-scoped JD configuration tools.
