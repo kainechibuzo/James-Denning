@@ -39,7 +39,7 @@ Deno.serve(async req=>{
  if(queueError)return json({error:"Could not claim notification batch"},500);
  let sent=0,failed=0,waiting=0;
  for(const row of queued||[]){
-  if((row.channel==="email"&&!emailReady)||(row.channel==="sms"&&!smsReady)){waiting++;continue;}
+  if((row.channel==="email"&&!emailReady)||(row.channel==="sms"&&!smsReady)){waiting++;await db.from("jd_business_notification_outbox").update({status:"queued",attempts:Math.max(0,Number(row.attempts||1)-1),next_attempt_at:new Date(Date.now()+15*60000).toISOString()}).eq("id",row.id);continue;}
   try{
    const providerResult=row.channel==="email"?await sendEmail(row):await sendSms(row);
    const {error}=await db.from("jd_business_notification_outbox").update({status:"sent",sent_at:new Date().toISOString(),last_error:null,payload:{...row.payload,provider_id:providerResult?.id||providerResult?.sid||null}}).eq("id",row.id);
