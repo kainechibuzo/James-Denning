@@ -57,6 +57,26 @@ Deno.serve(async req=>{
   }
   if(b.action==="pipeline.analytics"){const rows=await list("opportunities"),byCurrency:Record<string,any>={};for(const r of rows){const currency=r.currency||"NGN";byCurrency[currency]??={total:0,stages:{}};byCurrency[currency].total++;byCurrency[currency].stages[r.stage]??={count:0,amount:0,weighted:0};byCurrency[currency].stages[r.stage].count++;byCurrency[currency].stages[r.stage].amount+=Number(r.amount);byCurrency[currency].stages[r.stage].weighted+=Number(r.amount)*Number(r.probability)/100;}return send({by_currency:byCurrency,total:rows.length,caveat:"Pipeline values and weighted values are grouped by currency; do not add across currencies."});}
   if(b.action==="expense.analytics"){const {data:expenseRows,error}=await db.from("jd_business_expenses").select("category,amount,currency,status").eq("school_id",school).limit(200);if(error)throw error;const rows=(expenseRows||[]) as Array<{category:string;amount:number;currency:string;status:string}>;const approved=rows.filter(e=>["approved","paid"].includes(e.status)),byCategory:Record<string,number>={};for(const e of approved)byCategory[e.category]=(byCategory[e.category]||0)+Number(e.amount);const byCurrency:Record<string,number>={};for(const e of approved)byCurrency[e.currency]=(byCurrency[e.currency]||0)+Number(e.amount);return send({approved_total:approved.length===0?0:Object.keys(byCurrency).length===1?Object.values(byCurrency)[0]:null,byCurrency,byCategory,source_count:approved.length,caveat:"Approved and paid records only. Totals are split by currency; no mixed-currency sum is produced."});}
+  if(b.action==="monitor.run"){
+   if(p.role!=="admin")return send({error:"Admin permission required to run external service checks"},403);
+   const probes:Record<string,{url:string;accepted:number[]}>={
+    "google-workspace":{url:"https://accounts.google.com/.well-known/openid-configuration",accepted:[200]},
+    "microsoft-365":{url:"https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",accepted:[200]},
+    "linkedin":{url:"https://www.linkedin.com/oauth/.well-known/openid-configuration",accepted:[200]},
+    "slack":{url:"https://slack.com/api/api.test",accepted:[200]},
+    "paystack":{url:"https://api.paystack.co/bank",accepted:[200,401,403]}
+   };
+   const results:any[]=[];
+   for(const [provider,probe] of Object.entries(probes)){
+    const started=Date.now();let status="unknown",statusCode:number|null=null,errorCode:string|null=null;
+    try{const response=await fetch(probe.url,{method:"GET",headers:{"Accept":"application/json"},signal:AbortSignal.timeout(6000),redirect:"error"});statusCode=response.status;status=probe.accepted.includes(response.status)?"healthy":response.status>=500?"down":"degraded";if(status!=="healthy")errorCode="unexpected_http_status";await response.body?.cancel();}
+    catch(e){status="down";errorCode=e instanceof Error?(e.name==="TimeoutError"?"timeout":"connection_failed"):"connection_failed";}
+    const result={provider_id:provider,status,latency_ms:Date.now()-started,status_code:statusCode,error_code:errorCode,checked_at:new Date().toISOString()};results.push(result);
+    const {error}=await db.from("jd_business_service_checks").insert({school_id:school,...result});if(error)throw error;
+   }
+   await audit("business.monitor.completed",{providers:results.length,down:results.filter(x=>x.status==="down").length});
+   return send({checks:results,notice:"Checks verify public endpoint reachability only; they do not prove that your OAuth credentials or business integration are connected."});
+  }
   if(b.action==="integration.catalog"){const [c,v]=await Promise.all([db.from("jd_business_integration_catalog").select("id,name,category,description,required_scopes,supported_capabilities").eq("enabled",true),db.from("jd_business_oauth_connections").select("provider_id,status,scopes,token_expires_at,last_checked_at,last_error_code").eq("school_id",school)]);if(c.error||v.error)throw c.error||v.error;return send({integrations:(c.data||[]).map((i:any)=>({...i,connection:v.data?.find((x:any)=>x.provider_id===i.id)||{status:"not_connected"}}))});}
   if(b.action==="contract.versions"){if(!uuid(b.contractId))return send({error:"Contract ID required"},400);const {data,error}=await db.from("jd_business_contract_versions").select("id,version_no,title,body,content_hash,created_at").eq("school_id",school).eq("contract_id",b.contractId).order("version_no",{ascending:false});if(error)throw error;return send({versions:data||[]});}
   if(b.action==="activity.list"){let q=db.from("jd_business_activities").select("id,customer_id,opportunity_id,activity_type,title,body,created_at,created_by").eq("school_id",school);if(uuid(b.customerId))q=q.eq("customer_id",b.customerId);if(uuid(b.opportunityId))q=q.eq("opportunity_id",b.opportunityId);const {data,error}=await q.order("created_at",{ascending:false}).limit(100);if(error)throw error;return send({activities:data||[]});}
