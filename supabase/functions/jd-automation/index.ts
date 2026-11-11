@@ -71,6 +71,27 @@ Deno.serve(async (req) => {
   if(error) return json({error:"Could not persist organisation blueprint"},500);
   return json({blueprint:saved,status:"draft",provisioning:{performed:false,requires_review:true}});
  }
+ if(payload.action==="operations.team.list"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect the team directory"},403);
+  const {data,error}=await admin.from("profiles").select("id,full_name,role").eq("school_id",profile.school_id).in("role",["admin","manager","teacher","bursar"]).order("full_name",{ascending:true}).limit(250);
+  if(error) return json({error:"Could not load workspace team"},500);
+  return json({members:data||[]});
+ }
+ if(payload.action==="operations.task.assign"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to assign tasks"},403);
+  const taskId=typeof payload.taskId==="string"?payload.taskId:"";
+  const assigneeId=typeof payload.assigneeId==="string"?payload.assigneeId:"";
+  if(!taskId||!assigneeId) return json({error:"taskId and assigneeId are required"},400);
+  const [{data:task,error:taskErr},{data:member,error:memberErr}]=await Promise.all([
+   admin.from("jd_operational_tasks").select("id").eq("id",taskId).eq("school_id",profile.school_id).maybeSingle(),
+   admin.from("profiles").select("id,role").eq("id",assigneeId).eq("school_id",profile.school_id).maybeSingle()
+  ]);
+  if(taskErr||!task) return json({error:"Operational task not found"},404);
+  if(memberErr||!member||!["admin","manager","teacher","bursar"].includes(String(member.role))) return json({error:"Assignee is not an eligible member of this workspace"},400);
+  const {data:updated,error}=await admin.from("jd_operational_tasks").update({assigned_to:assigneeId,updated_at:new Date().toISOString()}).eq("id",taskId).eq("school_id",profile.school_id).select("id,assigned_to,status").single();
+  if(error) return json({error:"Could not assign operational task"},500);
+  return json({task:updated});
+ }
  if(payload.action==="operations.task.create"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to create operational tasks"},403);
   let task:any;try{task=normaliseTaskInput(payload.task||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid task"},400);}
