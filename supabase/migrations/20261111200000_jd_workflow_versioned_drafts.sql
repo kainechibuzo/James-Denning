@@ -42,7 +42,9 @@ create index if not exists jd_workflow_versions_school_workflow_idx
 alter table public.jd_workflows enable row level security;
 alter table public.jd_workflow_versions enable row level security;
 revoke all on public.jd_workflows, public.jd_workflow_versions from anon, authenticated;
-grant select, insert, update, delete on public.jd_workflows, public.jd_workflow_versions to service_role;
+grant select, insert, update, delete on public.jd_workflows to service_role;
+revoke update, delete on public.jd_workflow_versions from service_role;
+grant select, insert on public.jd_workflow_versions to service_role;
 
 -- Version records are append-only. The service role uses the RPC below for inserts;
 -- no browser role can mutate workflow records directly.
@@ -64,6 +66,7 @@ declare
   v_hash text;
   v_title text;
   v_description text;
+  v_audit_id uuid;
 begin
   select p.school_id into v_school_id
   from public.profiles p
@@ -84,7 +87,7 @@ begin
   end if;
   v_title := trim(p_definition->>'name');
   v_description := coalesce(p_definition->>'description','');
-  v_hash := encode(digest(convert_to(p_definition::text,'UTF8'),'sha256'),'hex');
+  v_hash := encode(public.digest(convert_to(p_definition::text,'UTF8'),'sha256'),'hex');
 
   if p_workflow_id is null then
     if coalesce(p_expected_version,0) <> 0 then
@@ -180,7 +183,7 @@ begin
     'version_no',v_version.version_no,'definition_hash',v_version.definition_hash,
     'definition',v_version.definition_json
   );
-  v_proposal_hash := encode(digest(convert_to(v_proposal::text,'UTF8'),'sha256'),'hex');
+  v_proposal_hash := encode(public.digest(convert_to(v_proposal::text,'UTF8'),'sha256'),'hex');
 
   insert into public.jd_automation_runs(
     school_id,requested_by,trigger_type,status,autonomy_mode,scope,
@@ -259,7 +262,7 @@ begin
   if not found then raise exception 'Workflow version not found' using errcode = 'P0002'; end if;
   if v_version.version_no <> v_workflow.latest_version_no
      or v_version.definition_hash <> v_expected_hash
-     or v_approval.proposal_hash <> encode(digest(convert_to(v_approval.proposal_json::text,'UTF8'),'sha256'),'hex') then
+     or v_approval.proposal_hash <> encode(public.digest(convert_to(v_approval.proposal_json::text,'UTF8'),'sha256'),'hex') then
     raise exception 'Approved workflow version is stale or has been altered' using errcode = '40001';
   end if;
 
