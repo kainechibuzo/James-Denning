@@ -152,3 +152,25 @@ Do not use this document alone to assert implementation status. The append-only 
 ## Current known context
 
 The project has previously started a JD chat foundation, automation control plane, OpenRouter-backed agent runtime and command-centre redesign in stacked pull requests. Treat all such work as **unverified until current GitHub branch, CI, deployment and Supabase state are checked**. Do not assume prior conversational claims mean the code is merged or deployed.
+
+
+### 2A. Batch 01 — Operational intelligence and organisation builder
+Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTELLIGENCE.md).
+
+- [x] Define a 20-capability registry and evidence-based capability status classifier.
+- [x] Validate organisation blueprints and provide a no-write preview.
+- [x] Persist organisation blueprint drafts through an admin- and tenant-validated service RPC.
+- [x] Add tenant-scoped operational task storage and idempotency-key helper.
+- [x] Add guarded operational task creation action and task state-machine contract.
+- [x] Add vacancy draft validation and admin-only draft creation.
+- [x] Add candidate recruitment-stage transition validation and tenant-scoped update.
+- [ ] Complete scheduler/dispatcher and expired-lease recovery integration.
+- [ ] Complete live execution monitor controls and cancellation/retry UI.
+- [ ] Implement actual capability evidence collectors for schema, source, deployment and smoke tests.
+- [ ] Complete division/department visual builder and approved provisioning workflow.
+- [ ] Complete people, performance, finance and communications module tools.
+- [ ] Complete workforce planner, recruitment assistant and hiring campaign integrations.
+- [ ] Complete blueprint, operations and hiring UI.
+- [ ] Apply migration in staging and pass cross-tenant, concurrency and failure-injection tests.
+
+**Status:** foundations implemented; integration verification pending. The checked items above describe code/contracts added in this branch, not production deployment.
