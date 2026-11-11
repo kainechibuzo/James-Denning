@@ -45,7 +45,7 @@ The remote history has no version `014`; the repository has no corresponding `01
 
 ## JD Business Platform — OAuth provider setup
 
-The repository now includes a PKCE OAuth start/callback flow for Google Workspace, Microsoft 365 and LinkedIn. The callback uses one-time 10-minute state, PKCE S256 and AES-GCM encryption for stored token bundles. **It is not live until provider credentials and the callback secrets are configured and the migration/functions are deployed.**
+The repository now includes a PKCE OAuth start/callback flow for Google Workspace, Microsoft 365, LinkedIn and Slack. The callback uses one-time 10-minute state, PKCE S256 and AES-GCM encryption for stored token bundles. **It is not live until provider credentials and the callback secrets are configured and the migration/functions are deployed.**
 
 Add these as Supabase Edge Function secrets for the target environment (do not put them in GitHub files or paste them into chat):
 
@@ -56,12 +56,12 @@ Add these as Supabase Edge Function secrets for the target environment (do not p
 - `JD_OAUTH_MICROSOFT_CLIENT_ID` and `JD_OAUTH_MICROSOFT_CLIENT_SECRET`.
 - `JD_OAUTH_LINKEDIN_CLIENT_ID` and `JD_OAUTH_LINKEDIN_CLIENT_SECRET`.
 
-Register the exact callback URL in each provider developer console. Deploy `jd-business-platform` and `jd-business-oauth-callback` only after applying the migration in a staging project and verifying the callback. Slack and Paystack are not enabled in this OAuth flow; they require separate provider-specific API credential handling. Token refresh and remote revocation are not implemented yet, so do not use these connections for unattended long-lived production automation.
+Register the exact callback URL in each provider developer console. Deploy `jd-business-platform` and `jd-business-oauth-callback` only after applying the migration in a staging project and verifying the callback. Slack uses the OAuth callback. Paystack uses a separate read-only encrypted API-key connection from the integrations panel; no payment, refund or transfer operation is exposed. Token refresh and live verification are implemented for the supported OAuth providers. Google and Slack remote revocation are implemented; Microsoft remote session revocation requires User.RevokeSessions.All; LinkedIn remote revocation remains unsupported and must be handled through LinkedIn account/app settings.
 
 
 ## JD Business Platform — scheduled external service monitoring
 
-The repository now includes a bounded monitoring worker and a 15-minute GitHub Actions schedule. It checks only fixed public provider health URLs for integrations marked connected, records latency/status history, and records status transitions. It does **not** validate OAuth tokens or provider SLAs and does not send email/SMS alerts.
+The repository now includes a bounded monitoring worker and a 15-minute GitHub Actions schedule. It checks only fixed public provider health URLs for integrations marked connected, records latency/status history, and records status transitions. It does **not** validate OAuth tokens or provider SLAs. Status transitions are queued for email/SMS by the scheduled operations worker when Resend/Twilio secrets and workspace recipients are configured.
 
 Configure these GitHub Actions repository secrets:
 
@@ -73,7 +73,7 @@ The worker is configured with `verify_jwt = false` and protects itself with the 
 
 ## JD Business Platform — scheduled document extraction
 
-The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts **plain text only**, computes a checksum and creates a bounded extractive summary. PDF and DOCX are marked unsupported; OCR, PDF/DOCX parsing, malware scanning and AI-generated summaries are not claimed as implemented.
+The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text, computes a checksum and creates a bounded extractive summary. Scanned PDF/image OCR is opt-in through OCR.space and requires explicit external-processing approval plus a server API key. Malware scanning and AI-generated summaries are not implemented.
 
 Configure GitHub Actions repository secrets:
 
