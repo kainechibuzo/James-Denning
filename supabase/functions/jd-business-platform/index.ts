@@ -91,7 +91,7 @@ Deno.serve(async req=>{
    return send({period:{start,end},by_currency:summary,transactions:rows,caveat:"Cash flow is based only on manually recorded cleared/pending cash transactions. Sales opportunities and expenses are not treated as cash movements automatically."});
   }
   if(b.action==="performance.predict"){
-   const rows:any[]=await list("opportunities"),expenses:any[]=await list("expenses"),byCurrency:Record<string,Record<string,any>>={};
+   const rows:any[]=await list("opportunities"),expenses:any[]=await list("expenses"),byCurrency:Record<string,Record<string,any>>={};const monthKey=(v:string)=>v?.slice(0,7);
    const ensure=(currency:string,month:string)=>{byCurrency[currency]??={};byCurrency[currency][month]??={month,won_value:0,won_count:0,approved_spend:0,expense_count:0};return byCurrency[currency][month];};
    for(const o of rows.filter((x:any)=>x.stage==="won")){const k=monthKey(o.expected_close_date||o.updated_at||o.created_at);if(k){const r=ensure(o.currency||"NGN",k);r.won_value+=Number(o.amount);r.won_count++;}}
    for(const e of expenses.filter((x:any)=>["approved","paid"].includes(x.status))){const k=monthKey(e.incurred_on);if(k){const r=ensure(e.currency||"NGN",k);r.approved_spend+=Number(e.amount);r.expense_count++;}}
