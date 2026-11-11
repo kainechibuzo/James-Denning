@@ -11,7 +11,9 @@ export function makeIdempotencyKey(scope:string,operation:string,stableId:string
 export function normaliseTaskInput(x:Record<string,unknown>) {
  const title=typeof x.title==="string"?x.title.trim().slice(0,180):"";
  const description=typeof x.description==="string"?x.description.trim().slice(0,5000):"";
+ const department=typeof x.department==="string"?x.department.trim().slice(0,120):"";
+ const dueAt=typeof x.dueAt==="string"&&x.dueAt.trim()?new Date(x.dueAt).toISOString():null;
  const priority=["low","normal","high","urgent"].includes(String(x.priority))?String(x.priority):"normal";
  if(!title) throw new Error("Task title is required");
- return {title,description,priority};
+ return {title,description,department,priority,due_at:dueAt};
 }
