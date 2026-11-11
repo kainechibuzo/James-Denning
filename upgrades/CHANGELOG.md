@@ -221,3 +221,12 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - Added deterministic aggregation tests and CI coverage.
 - **Not deployed:** migration and Edge Function remain pending staging and production release procedures.
 - **Token usage:** provider-reported token usage unavailable; no estimate recorded.
+
+### Durable execution and operations monitor follow-through
+- Routine JD chat requests now enqueue durable jobs instead of running the model inside the request/response Edge Function.
+- Added the scheduled worker poll workflow (five-minute cadence; one job per invocation) using `SUPABASE_URL` and `JD_WORKER_SECRET` repository secrets.
+- Added the execution monitor, admin-only safe cancellation for queued/retry-wait jobs, and admin-only retry for failed jobs.
+- Added migration `20261111190000_jd_execution_retry_controls.sql` for tenant-verified, audited failed-job retry.
+- Added CI contract tests for the retry migration.
+- **Release gate:** worker and automation Edge Functions are not deployed; migrations are not applied. Staging validation and secret configuration are required before live operation.
+- **Token usage:** provider-reported token usage unavailable; no estimate recorded.
