@@ -5,7 +5,7 @@ Deno.test("daily schedule follows the selected timezone across UTC offsets",()=>
  assertEquals(next.toISOString(),"2026-11-12T08:00:00.000Z");
 });
 Deno.test("weekly schedule selects only configured ISO weekdays",()=>{
- const next=nextScheduleAt(new Date("2026-11-11T08:00:00.000Z"),{frequency:"weekly",localTime:"10:00",timezone:"Africa/Lagos",weekdays:[1,3,5]});
+ const next=nextScheduleAt(new Date("2026-11-11T10:00:00.000Z"),{frequency:"weekly",localTime:"10:00",timezone:"Africa/Lagos",weekdays:[1,3,5]});
  assertEquals(next.toISOString(),"2026-11-13T09:00:00.000Z");
 });
 Deno.test("spring-forward gap moves to the first valid local minute",()=>{
