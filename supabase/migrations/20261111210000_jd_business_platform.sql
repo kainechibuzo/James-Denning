@@ -112,9 +112,18 @@ create table if not exists public.jd_business_reports (
  created_by uuid not null references auth.users(id), created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
  check(period_end>=period_start)
 );
-do $$
+create table if not exists public.jd_business_cash_transactions (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ direction text not null check(direction in ('inflow','outflow')), amount numeric(14,2) not null check(amount>0),
+ currency char(3) not null default 'NGN', occurred_on date not null, status text not null default 'pending' check(status in ('pending','cleared','void')),
+ category text not null, description text not null check(length(trim(description)) between 1 and 300),
+ reference text, created_by uuid not null references auth.users(id), created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
+);
+create index if not exists jd_business_cash_transactions_school_idx on public.jd_business_cash_transactions(school_id,occurred_on desc,status);
+do $
 declare t text;
-begin foreach t in array array['jd_business_customers','jd_business_opportunities','jd_business_activities','jd_business_expenses','jd_business_contracts','jd_business_contract_versions','jd_business_documents','jd_business_support_cases','jd_business_support_notes','jd_business_oauth_connections','jd_business_oauth_states','jd_business_service_checks','jd_business_reports'] loop
+begin foreach t in array array['jd_business_cash_transactions','jd_business_customers','jd_business_opportunities','jd_business_activities','jd_business_expenses','jd_business_contracts','jd_business_contract_versions','jd_business_documents','jd_business_support_cases','jd_business_support_notes','jd_business_oauth_connections','jd_business_oauth_states','jd_business_service_checks','jd_business_reports'] loop
  execute format('alter table public.%I enable row level security',t);execute format('revoke all on public.%I from anon,authenticated',t);execute format('grant select,insert,update,delete on public.%I to service_role',t);
 end loop;end $$;
 alter table public.jd_business_integration_catalog enable row level security;
