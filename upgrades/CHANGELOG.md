@@ -239,3 +239,31 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`.
 - **CI:** Web CI passed (production build, Deno helper/migration tests, Edge Function type-check); application verification passed (web navigation/build and default application build).
 - **Still not live:** no staging migration, production migration, or Edge Function deployment has been performed.
+
+
+### JD-BATCH-02 — Autonomous Business Platform
+- **Date:** 2026-11-11
+- **Status:** in_progress (planning baseline)
+- **Priority:** high
+- **Branch:** `feature/jd-batch-02-autonomous-business-platform`
+- **Base commit:** `81fd482f8e99ffcbd658a0a18133647d270189e1`
+- **Scope:** Define 20 upgrade tracks spanning workflow authoring, scheduling, collaboration, business intelligence, forecasting, financial visibility, document and contract handling, CRM, sales, support, integrations, monitoring and executive reporting.
+- **Evidence:** `upgrades/JD-BATCH-02-AUTONOMOUS-BUSINESS-PLATFORM.md`
+- **Validation:** Planning/acceptance contract only. No feature implementation or runtime tests claimed by this entry.
+- **Security:** Draft-first workflow design; tenant isolation, least privilege, exact-payload approval for consequential actions, secure OAuth and server-side secrets are mandatory.
+- **Deployment/migrations:** None performed.
+- **Token usage:** unknown; provider usage metadata unavailable.
+- **Next:** Implement and test the workflow-definition foundation (JD-B02-01), after verifying existing schema and durable execution contracts.
+
+
+### JD-B02-01 — Workflow definition validation
+- **Date:** 2026-11-11
+- **Status:** implemented; CI verification pending
+- **Branch:** `feature/jd-batch-02-autonomous-business-platform`
+- **Scope:** Add a bounded, allowlisted, cycle-free workflow graph validator and an authenticated admin/manager preview action. Validation is non-persistent and non-executable.
+- **Files:** `supabase/functions/_shared/jd-workflow-definition.ts`, `supabase/functions/_shared/jd-workflow-definition.test.ts`, `supabase/functions/jd-automation/index.ts`, `.github/workflows/ci.yml`.
+- **Tests:** Deno contract tests added to CI; run result pending.
+- **Security:** Server-derived profile role gates preview; action types and trigger events are allowlisted; graph and config sizes bounded; arbitrary external HTTP/SQL/shell actions are not supported.
+- **Deployment/migrations:** None performed.
+- **Limitations:** No persistence, version history, visual editor, schedule, execution or activation. No capability is marked deployed.
+- **Token usage:** unknown; provider usage metadata unavailable.
