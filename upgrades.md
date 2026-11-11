@@ -253,3 +253,19 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [ ] Add durable recurring scheduler and idempotent run enqueue.
 
 **Status:** first workflow foundation implemented; automated verification pending. No migration or deployment performed.
+
+
+### Batch 02 progress — versioned workflow governance
+- [x] Persist tenant-scoped workflow definitions and immutable numbered versions.
+- [x] Reject stale draft writes using expected-version checks.
+- [x] Bind Review Centre proposals to exact workflow/version IDs, immutable definition hash and proposal hash.
+- [x] Cancel superseded pending review requests when a newer draft is saved.
+- [x] Require administrator approval and latest-version/hash revalidation before activation.
+- [x] Add service-only Edge Function endpoints for draft listing, saving, review submission and activation.
+- [x] Add migration contract tests to CI.
+- [ ] Run CI on the implementation branch and resolve any failures.
+- [ ] Apply migration in an isolated staging environment and run authenticated tenant/role/approval tests.
+- [ ] Build the visual workflow editor.
+- [ ] Implement scheduler and execution separately; activation does not execute workflow nodes.
+
+**Status:** code and migration authored; verification and deployment remain pending. No migration has been applied and no Edge Function deployed.
