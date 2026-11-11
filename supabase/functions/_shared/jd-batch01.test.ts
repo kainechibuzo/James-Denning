@@ -1,0 +1,14 @@
+import {assertEquals,assertThrows} from "https://deno.land/std@0.224.0/assert/mod.ts";
+import {buildCapabilityReport,JD_BATCH_01_CAPABILITY_KEYS} from "./jd-capability-intelligence.ts";
+import {validateOrganisationBlueprint} from "./jd-organisation-blueprint.ts";
+import {canTransitionTask,makeIdempotencyKey} from "./jd-operations.ts";
+import {candidateStageTransition,validateVacancy} from "./jd-hiring.ts";
+Deno.test("batch 01 registry enumerates all twenty upgrade capabilities",()=>assertEquals(JD_BATCH_01_CAPABILITY_KEYS.length,20));
+Deno.test("capability report does not claim deployment without evidence",()=>assertEquals(buildCapabilityReport({"execution.dispatcher":{code:true,migration:true}})[0].state,"implemented"));
+Deno.test("deployment requires smoke test and configuration",()=>assertEquals(buildCapabilityReport({"execution.dispatcher":{code:true,migration:true,deployment:true,configuration:true}})[0].state,"configured"));
+Deno.test("blueprint validation rejects duplicate departments",()=>{const r=validateOrganisationBlueprint({name:"Fleet",industry:"Transport",businessModel:"B2B",departments:[{name:"Ops",purpose:"Fleet"},{name:"ops",purpose:"Dispatch"}]});assertEquals(r.ok,false);});
+Deno.test("blueprint accepts bounded, reviewable structure",()=>{const r=validateOrganisationBlueprint({name:"Fleet",industry:"Transport",businessModel:"B2B",departments:[{name:"Operations",purpose:"Fleet",roles:["Dispatcher"]}]});assertEquals(r.ok,true);});
+Deno.test("task state machine blocks invalid terminal transitions",()=>assertEquals(canTransitionTask("completed","queued"),false));
+Deno.test("idempotency keys require stable operation identity",()=>assertEquals(makeIdempotencyKey("org","create","abc"),"org:create:abc"));
+Deno.test("hiring stage machine validates allowed progression",()=>{candidateStageTransition("applied","screening");assertThrows(()=>candidateStageTransition("applied","hired"));});
+Deno.test("vacancy generator creates drafts, never published vacancies",()=>assertEquals(validateVacancy({title:"Dispatcher",department:"Operations",description:"Manage fleet"}).status,"draft"));
