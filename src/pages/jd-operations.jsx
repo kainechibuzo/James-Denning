@@ -74,7 +74,8 @@ export function JDOperationsPage({ctx}){
   await invoke("hiring.candidate.create",{requisitionId:candidate.requisitionId,fullName:candidate.fullName,email:candidate.email});
   setCandidate({requisitionId:"",fullName:"",email:""});
  },"Candidate added to the recruitment pipeline.");
- const changeCandidate=(candidateId,stage)=>act(()=>invoke("hiring.candidate.transition",{candidateId,stage}),"Candidate stage updated.");\n const cancelJob=jobId=>act(()=>invoke("execution.job.cancel",{jobId}),"Queued JD job cancelled.");
+ const changeCandidate=(candidateId,stage)=>act(()=>invoke("hiring.candidate.transition",{candidateId,stage}),"Candidate stage updated.");
+ const cancelJob=jobId=>act(()=>invoke("execution.job.cancel",{jobId}),"Queued JD job cancelled.");
  const statusColor=s=>s==="completed"||s==="deployed"?"#16835d":s==="failed"||s==="missing"?"#c34d4d":s==="running"||s==="in_progress"?"#b7791f":"#747b85";
  const nextTaskStatus=s=>s==="queued"?"in_progress":s==="in_progress"?"completed":s==="blocked"?"queued":null;
  const candidateNextStages={applied:["screening","rejected","withdrawn"],screening:["interview","rejected","withdrawn"],interview:["assessment","offer","rejected","withdrawn"],assessment:["offer","rejected","withdrawn"],offer:["hired","rejected","withdrawn"],hired:[],rejected:[],withdrawn:[]};
