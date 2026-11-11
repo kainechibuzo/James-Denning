@@ -30,6 +30,67 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="workflow.draft.list"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect workflow drafts"},403);
+  const {data:workflows,error}=await admin.from("jd_workflows")
+   .select("id,title,description,status,latest_version_no,active_version_id,created_at,updated_at")
+   .eq("school_id",profile.school_id).order("updated_at",{ascending:false}).limit(100);
+  if(error) return json({error:"Could not load workflow drafts"},500);
+  const ids=(workflows||[]).map((item:any)=>item.id);
+  if(!ids.length) return json({workflows:[],versions:[]});
+  const {data:versions,error:versionErr}=await admin.from("jd_workflow_versions")
+   .select("id,workflow_id,version_no,definition_hash,created_by,created_at")
+   .eq("school_id",profile.school_id).in("workflow_id",ids)
+   .order("version_no",{ascending:false}).limit(500);
+  if(versionErr) return json({error:"Could not load workflow version history"},500);
+  return json({workflows:workflows||[],versions:versions||[],execution_enabled:false});
+ }
+ if(payload.action==="workflow.draft.save"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to save workflow drafts"},403);
+  const result=validateWorkflowDefinition(payload.definition);
+  if(!result.valid||!result.definition) return json({error:"Workflow definition failed validation",validation_errors:result.errors},400);
+  const workflowId=typeof payload.workflowId==="string"?payload.workflowId:null;
+  const expectedVersion=Number.isInteger(payload.expectedVersion)?Number(payload.expectedVersion):0;
+  const {data:saved,error}=await admin.rpc("jd_save_workflow_draft",{
+   p_actor_id:authData.user.id,p_workflow_id:workflowId,
+   p_expected_version:expectedVersion,p_definition:result.definition
+  });
+  if(error){
+   const code=String(error.code||"");
+   const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:400;
+   return json({error:code==="40001"?"Workflow changed or is stale; reload before saving":"Could not save workflow draft",reason:error.message},status);
+  }
+  return json({workflow:saved,execution_enabled:false,notice:"Saved as an immutable draft version. It is not active or executable."},201);
+ }
+ if(payload.action==="workflow.review.submit"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to submit workflows for review"},403);
+  const workflowId=typeof payload.workflowId==="string"?payload.workflowId:"";
+  const versionId=typeof payload.versionId==="string"?payload.versionId:"";
+  if(!workflowId||!versionId) return json({error:"workflowId and versionId are required"},400);
+  const {data:approval,error}=await admin.rpc("jd_submit_workflow_review",{
+   p_actor_id:authData.user.id,p_workflow_id:workflowId,p_version_id:versionId
+  });
+  if(error){
+   const code=String(error.code||"");
+   const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:code==="23505"?409:400;
+   return json({error:"Could not submit this workflow version for review",reason:error.message},status);
+  }
+  return json({approval,execution_enabled:false,notice:"The exact immutable workflow version was submitted to the Review Centre. No workflow action has run."},201);
+ }
+ if(payload.action==="workflow.activate"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can activate an approved workflow"},403);
+  const approvalId=typeof payload.approvalId==="string"?payload.approvalId:"";
+  if(!approvalId) return json({error:"approvalId is required"},400);
+  const {data:activated,error}=await admin.rpc("jd_activate_approved_workflow",{
+   p_actor_id:authData.user.id,p_approval_id:approvalId
+  });
+  if(error){
+   const code=String(error.code||"");
+   const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:400;
+   return json({error:"Could not activate this approved workflow",reason:error.message},status);
+  }
+  return json({workflow:activated,execution_enabled:false,notice:"The approved workflow version is active, but workflow execution is not enabled."});
+ }
  if(payload.action==="workflow.definition.validate"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to design workflows"},403);
   const result=validateWorkflowDefinition(payload.definition);

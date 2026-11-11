@@ -95,3 +95,19 @@ Provider-reported token usage: unknown. No provider usage metadata was available
 - **Not delivered yet:** persistence/version history, visual editor, scheduler, workflow execution or activation.
 - **Deployment/migrations:** none.
 - **Verification:** awaiting GitHub Actions on the PR head.
+
+
+## Implementation update — versioned workflow drafts and review binding
+
+### JD-B02-02 — Immutable workflow versions and approval-bound activation
+- **Status:** implementation added; CI and migration contract verification pending.
+- Added tenant-scoped `jd_workflows` and append-only `jd_workflow_versions` records. Workflow versions carry a canonical JSON definition and SHA-256 digest; browser roles have no direct table access.
+- Added service-only RPCs to save drafts with optimistic version checks, submit the latest immutable version to the Review Centre, and activate only an approved exact version.
+- Review proposals bind workflow ID, version ID, version number, definition hash and the complete definition. Activation recomputes the proposal envelope hash and checks that the approved version is still the latest version.
+- Saving a newer version cancels older pending activation approvals. Duplicate submission of the same immutable proposal returns the existing approval.
+- Added authenticated Edge Function actions: `workflow.draft.list`, `workflow.draft.save`, `workflow.review.submit` and `workflow.activate`. Activation only changes workflow state; it does not run workflow nodes.
+- Added migration contract tests to CI.
+- **Not delivered:** visual editor, scheduler, workflow execution, or production deployment.
+- **Migration:** `supabase/migrations/20261111200000_jd_workflow_versioned_drafts.sql`; authored only, not applied to staging or production.
+- **Security boundary:** all tenant IDs and roles are derived server-side; privileged RPCs are service-role-only; managers may author and submit, but only admins may activate after approval.
+- **Token usage:** unknown; provider usage metadata unavailable.

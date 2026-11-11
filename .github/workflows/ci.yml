@@ -52,6 +52,9 @@ jobs:
       - name: Test JD workflow definition validation
         run: deno test supabase/functions/_shared/jd-workflow-definition.test.ts
 
+      - name: Test JD workflow versioning and approval contracts
+        run: deno test --allow-read=supabase/migrations/20261111200000_jd_workflow_versioned_drafts.sql supabase/functions/_shared/jd-workflow-versioning.test.ts
+
       - name: Test JD Batch 01 operational intelligence foundations
         run: deno test --allow-read=supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql supabase/functions/_shared/jd-batch01.test.ts
 
