@@ -359,6 +359,27 @@ Deno.serve(async req=>{
    const {data,error}=await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"ignored"}).eq("id",rowId).eq("school_id",school).neq("reconciliation_status","matched").select("id").maybeSingle();
    if(error||!data)return send({error:"Statement row could not be ignored"},409);await audit("business.cashflow.statement_row_ignored",{statement_row_id:rowId});return send({ignored:true});
   }
+  if(b.action==="report.share.create"){
+   if(p.role!=="admin")return send({error:"Only workspace administrators can create report share links"},403);
+   const reportId=uuid(b.reportId)?b.reportId:null,days=num(b.expiresInDays??7,1,30);
+   if(!reportId||days===null)return send({error:"Report ID and expiry between 1 and 30 days are required"},400);
+   const {data:report,error:reportError}=await db.from("jd_business_reports").select("id").eq("id",reportId).eq("school_id",school).maybeSingle();
+   if(reportError||!report)return send({error:"Report not found"},404);
+   const token=base64Url(crypto.getRandomValues(new Uint8Array(32))),hash=await sha256Hex(token),expiresAt=new Date(Date.now()+days*86400000).toISOString();
+   const {data:share,error}=await db.from("jd_business_report_shares").insert({school_id:school,report_id:reportId,token_hash:hash,expires_at:expiresAt,created_by:actor}).select("id,expires_at").single();
+   if(error)throw error;const base=Deno.env.get("JD_REPORT_SHARE_BASE_URL")||Deno.env.get("SUPABASE_URL");
+   if(!base)return send({error:"Share URL is not configured"},503);
+   const shareUrl=`${base.replace(/\\/$/,"")}/functions/v1/jd-business-report-share?token=${token}`;
+   await audit("business.report.share_created",{report_id:reportId,share_id:share.id,expires_at:expiresAt});
+   return send({share_id:share.id,share_url:shareUrl,expires_at:expiresAt});
+  }
+  if(b.action==="report.share.revoke"){
+   if(p.role!=="admin")return send({error:"Only workspace administrators can revoke report shares"},403);
+   const shareId=uuid(b.shareId)?b.shareId:null;if(!shareId)return send({error:"Share ID required"},400);
+   const {data,error}=await db.from("jd_business_report_shares").update({revoked_at:new Date().toISOString()}).eq("id",shareId).eq("school_id",school).is("revoked_at",null).select("id").maybeSingle();
+   if(error||!data)return send({error:"Active report share not found"},404);
+   await audit("business.report.share_revoked",{share_id:shareId});return send({revoked:true,share_id:shareId});
+  }
   if(b.action==="report.export.csv"){
    const reportId=uuid(b.reportId)?b.reportId:null;if(!reportId)return send({error:"Report ID required"},400);
    const {data,error}=await db.from("jd_business_reports").select("id,title,period_start,period_end,report_json,source_metadata").eq("id",reportId).eq("school_id",school).maybeSingle();
