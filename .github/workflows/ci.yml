@@ -46,6 +46,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Test JD execution reliability helpers
+        run: deno test supabase/functions/_shared/jd-agent-runtime.test.ts
+
       - name: Type-check secured Edge Functions
         run: |
           deno check supabase/functions/verify-payment/index.ts
