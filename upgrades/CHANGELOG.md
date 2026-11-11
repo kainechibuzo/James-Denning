@@ -267,3 +267,15 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Deployment/migrations:** None performed.
 - **Limitations:** No persistence, version history, visual editor, schedule, execution or activation. No capability is marked deployed.
 - **Token usage:** unknown; provider usage metadata unavailable.
+
+
+### JD-B02-02 — Versioned workflow drafts and approval-bound activation
+- **Date:** 2026-11-11
+- **Status:** implemented in source; CI and database verification pending
+- **Branch:** `feature/jd-batch-02-workflow-versioning`
+- **Scope:** Tenant-scoped workflow registry, immutable version records, optimistic concurrency, exact-version Review Centre proposal and administrator-only activation after approval.
+- **Files:** `supabase/migrations/20261111200000_jd_workflow_versioned_drafts.sql`, `supabase/functions/jd-automation/index.ts`, `supabase/functions/_shared/jd-workflow-versioning.test.ts`, `.github/workflows/ci.yml`.
+- **Security:** RLS enabled; browser table access revoked; service-only RPCs; server-derived tenant/role; manager authoring; admin activation; stale approval and definition hash checks.
+- **Tests:** migration contract tests added to CI; run pending.
+- **Not included:** visual editor, scheduler, workflow execution, migration application or Edge Function deployment.
+- **Token usage:** unknown; provider usage metadata unavailable.
