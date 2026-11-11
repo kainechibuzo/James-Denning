@@ -1,3 +1,4 @@
+import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 
@@ -21,6 +22,32 @@ Deno.serve(async (req) => {
  if(profileErr||!profile?.school_id) return json({error:"Your account is not linked to an organisation workspace"},403);
  let payload:any; try{payload=await req.json()}catch{return json({error:"Invalid JSON"},400)}
 
+
+ if(payload.action==="settings.proposal.submit"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can submit settings proposals"},403);
+  const changes=Array.isArray(payload.changes)?payload.changes:[];
+  if(changes.length<1||changes.length>20) return json({error:"Submit between 1 and 20 setting changes"},400);
+  const keys=[...new Set(changes.map((item:any)=>typeof item?.key==="string"?item.key:"").filter(Boolean))];
+  const {data:current,error:settingsErr}=await admin.from("school_settings")
+   .select("key,value").eq("school_id",profile.school_id).in("key",keys).limit(100);
+  if(settingsErr) return json({error:"Could not load current settings"},500);
+  const plan=buildSettingsChangePlan(changes,(current||[]).map((row:any)=>({key:String(row.key||""),value:row.value})));
+  if(plan.status!=="ready_for_review"||plan.rejected.length) return json({error:"Settings proposal failed validation",plan},400);
+  if(plan.summary.approval_required<1) return json({error:"No change in this proposal requires Review Centre approval"},400);
+  const title=typeof payload.title==="string"?payload.title.trim().slice(0,160):"Settings change proposal";
+  const {data:proposal,error:proposalErr}=await admin.rpc("jd_submit_settings_proposal",{
+   p_actor_id:authData.user.id,
+   p_title:title||"Settings change proposal",
+   p_proposal_json:plan
+  });
+  if(proposalErr){
+   const code=String(proposalErr.code||"");
+   if(code==="42501") return json({error:"Only workspace admins can submit settings proposals"},403);
+   if(code==="22023") return json({error:"Settings proposal was rejected by database validation"},400);
+   return json({error:"Could not persist settings proposal in Review Centre"},500);
+  }
+  return json({proposal,plan,execution:{performed:false,status:"not_executed"}});
+ }
  if(payload.action==="approvals.list"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can review approval requests"},403);
   const {data,error}=await admin.from("jd_approvals")

@@ -168,3 +168,17 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Token usage:** Unknown; provider usage metadata unavailable.
 - **Limitations:** The tool prepares a plan only. It does not persist a proposal in the Review Centre or execute changes. Review Centre approval binding to an exact settings proposal and verified execution remain future work.
 - **Next:** Persist the exact proposed diff as a Review Centre item, bind approval to the proposal hash, implement narrow idempotent writes and verify each changed value after execution.
+
+
+### JD-005D — Persist hash-bound settings proposals in Review Centre
+- **Date:** 2026-11-11
+- **Status:** implemented; CI verification pending
+- **Scope:** Added a service-role-only database RPC that verifies admin workspace membership, computes a SHA-256 hash from the exact JSONB proposal in the database, persists a Review Centre approval and automation run, and writes an audit event. The Edge Function re-derives the settings diff from current tenant-scoped values before calling the RPC. Duplicate proposal hashes return the existing review item.
+- **Files:** supabase/migrations/20261111150000_jd_settings_proposal_review.sql, supabase/functions/_shared/jd-settings-proposal-migration.test.ts, supabase/functions/jd-automation/index.ts, .github/workflows/ci.yml.
+- **Security:** Admin check inside security-definer RPC; server-derived tenant; service-role-only execution; exact proposal JSONB hash stored with the approval; no browser write grants; settings remain unchanged.
+- **Validation:** Static migration contract test added; secured Edge Function type-check remains in CI. Live migration/RPC and concurrent duplicate-submission tests still required.
+- **Database:** New migration 20261111150000; not yet applied to any Supabase project.
+- **Deployment:** Edge Function not deployed.
+- **Execution:** Approval does not execute settings changes. Approved proposals remain not_executed until a separately secured, hash-verifying executor is implemented.
+- **Token usage:** Unknown; provider usage metadata unavailable.
+- **Next:** Implement the approval-bound executor with atomic decision/hash checks, narrow typed writes, idempotency and read-after-write verification.
