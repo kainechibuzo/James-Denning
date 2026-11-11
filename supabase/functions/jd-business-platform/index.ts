@@ -1,5 +1,5 @@
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
-import {createClient} from "npm:@supabase/supabase-js@2";
+import {createClient} from "npm:@supabase/supabase-js@2";\nimport {evaluateTrailingMean} from "../_shared/jd-business-forecast.ts";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
 const uuid=(v:unknown):v is string=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -235,8 +235,23 @@ Deno.serve(async req=>{
    for(const e of expenses.filter((x:any)=>["approved","paid"].includes(x.status))){const k=monthKey(e.incurred_on);if(k){const r=ensure(e.currency||"NGN",k);r.approved_spend+=Number(e.amount);r.expense_count++;}}
    const seriesByCurrency:Record<string,any[]>={};const forecastByCurrency:Record<string,any>={};
    for(const [currency,months] of Object.entries(byCurrency)){const series=Object.keys(months).sort().slice(-6).map(k=>({...months[k],net_proxy:months[k].won_value-months[k].approved_spend}));seriesByCurrency[currency]=series;if(series.length>=3){const avg=(field:string)=>series.slice(-3).reduce((n:any,x:any)=>n+Number(x[field]||0),0)/3;forecastByCurrency[currency]={next_period_won_value_run_rate:avg("won_value"),next_period_approved_spend_run_rate:avg("approved_spend"),next_period_net_proxy:avg("net_proxy"),method:"simple trailing-three-period average"};}}
+   const evaluations:Record<string,any>={};
+   for(const [currency,months] of Object.entries(byCurrency)){
+    const keys=Object.keys(months).sort();if(keys.length<2)continue;
+    const start=new Date(keys[0]+"-01T00:00:00Z"),end=new Date(keys[keys.length-1]+"-01T00:00:00Z"),dense:any[]=[];
+    for(let cursor=new Date(start);cursor<=end;cursor.setUTCMonth(cursor.getUTCMonth()+1)){
+     const key=cursor.toISOString().slice(0,7),entry=(months as any)[key]||{month:key,won_value:0,approved_spend:0};
+     dense.push({month:key,actual:Number(entry.won_value||0)-Number(entry.approved_spend||0)});
+    }
+    const evaluation=evaluateTrailingMean(dense,3);
+    if(evaluation.holdoutPeriods>=3){
+     evaluations[currency]=evaluation;
+     await db.from("jd_business_forecast_evaluations").insert({school_id:school,currency,training_periods:evaluation.trainingPeriods,holdout_periods:evaluation.holdoutPeriods,mae:evaluation.mae,mape:evaluation.mape,baseline_method:evaluation.method,metrics:{predictions:evaluation.predictions},limitations:["Historical opportunity wins are not cash receipts.","Approved expenses are not necessarily cash payments.","A small holdout sample is not evidence of future performance."]});
+    }else evaluations[currency]={...evaluation,validation_status:"insufficient_holdout"};
+   }
    const currencyCount=Object.keys(byCurrency).length,one=currencyCount===1?Object.keys(byCurrency)[0]:null,series=one?seriesByCurrency[one]:[];
-   return send({series,series_by_currency:seriesByCurrency,forecast:one?forecastByCurrency[one]||null:null,forecast_by_currency:forecastByCurrency,sample_periods:series.length,confidence:one&&series.length>=3?"low":"insufficient_data",explanation:currencyCount>1?"Metrics are separated by currency. Select a single currency before interpreting a forecast.":one&&series.length>=3?"Descriptive baseline only, not a validated forecast. It uses won opportunity value and approved expense records, not cash receipts.":"At least three monthly periods in one currency are required for a descriptive baseline.",sources:["jd_business_opportunities","jd_business_expenses"],limitations:["Won opportunity value is not cash received.","Expense approval is not necessarily a cash payment.","Periods with no recorded activity may be absent."]});
+   const validated=one?evaluations[one]:null;
+   return send({series,series_by_currency:seriesByCurrency,forecast:one?forecastByCurrency[one]||null:null,forecast_by_currency:forecastByCurrency,backtest_by_currency:evaluations,sample_periods:series.length,confidence:validated?.holdoutPeriods>=3?"backtested_descriptive_baseline":"insufficient_data",explanation:currencyCount>1?"Metrics are separated by currency. Select a single currency before interpreting a forecast.":validated?.holdoutPeriods>=3?"A trailing-mean baseline was evaluated against held-out historical months. Review MAE/MAPE and the small-sample limitations before using it.":"At least six distinct monthly periods are required: three training periods and at least three holdout periods.",sources:["jd_business_opportunities","jd_business_expenses"],limitations:["Won opportunity value is not cash received.","Expense approval is not necessarily a cash payment.","Months with no saved records are zero-filled for the evaluation period.","Backtesting is descriptive and does not establish predictive reliability."]});
   }
   if(b.action==="health.scorecard"){
    const [customers,opportunities,expenses,contracts,support,documents]=await Promise.all([list("customers"),list("opportunities"),list("expenses"),list("contracts"),list("support"),list("documents")]);
