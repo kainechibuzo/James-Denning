@@ -106,6 +106,10 @@ Deno.serve(async (req) => {
  if(payload.action==="history"){
   const id=String(payload.conversationId||"");
   if(!id) return json({error:"conversationId is required"},400);
+  const {data:conversation,error:conversationErr}=await admin.from("jd_conversations")
+   .select("id,created_by").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
+  if(conversationErr||!conversation||(conversation.created_by!==authData.user.id&&profile.role!=="admin"))
+   return json({error:"Conversation not found"},404);
   const {data,error}=await admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id).order("created_at").limit(100);
   if(error) return json({error:"Could not load conversation"},500);
   return json({messages:data||[]});
@@ -115,8 +119,9 @@ Deno.serve(async (req) => {
  if(!message||message.length>12000) return json({error:"Message is required and must be under 12,000 characters"},400);
  let conversationId=typeof payload.conversationId==="string"?payload.conversationId:null;
  if(conversationId){
-  const {data}=await admin.from("jd_conversations").select("id").eq("id",conversationId).eq("school_id",profile.school_id).maybeSingle();
-  if(!data) return json({error:"Conversation not found in this workspace"},404);
+  const {data}=await admin.from("jd_conversations").select("id,created_by").eq("id",conversationId).eq("school_id",profile.school_id).maybeSingle();
+  if(!data||(data.created_by!==authData.user.id&&profile.role!=="admin"))
+   return json({error:"Conversation not found"},404);
  }else{
   const {data,error}=await admin.from("jd_conversations").insert({school_id:profile.school_id,created_by:authData.user.id,title:message.replace(/\s+/g," ").slice(0,72)}).select("id").single();
   if(error||!data) return json({error:"Could not create conversation"},500);
