@@ -386,6 +386,16 @@ Deno.serve(async (req) => {
   await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true,approval});
  }
+ // Routine requests enter the durable queue. The worker owns model execution,
+ // checkpoints, retries and terminal run state; this request returns immediately.
+ const {data:job,error:enqueueError}=await admin.rpc("jd_enqueue_execution_job",{p_run_id:run.id});
+ if(enqueueError||!job?.job_id){
+  await admin.from("jd_automation_runs").update({status:"failed",result_json:{error:"execution_enqueue_failed"},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
+  return json({conversationId,run:{...run,status:"failed"},error:"JD could not queue this request. No execution was started."},503);
+ }
+ const queuedReply="Your request is safely queued. JD will process it in the background and preserve progress if a worker needs to retry.";
+ await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:queuedReply,content_json:{execution_job_id:job.job_id,execution_status:"queued"}});
+ return json({conversationId,run:{...run,status:"queued"},job:{id:job.job_id,status:job.status},reply:queuedReply,queued:true});
  const apiKey=Deno.env.get("OPENROUTER_API_KEY");
  const model=Deno.env.get("JD_MODEL_NAME");
  if(!apiKey||!model){
