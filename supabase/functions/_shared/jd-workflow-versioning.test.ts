@@ -28,7 +28,7 @@ Deno.test("review proposal binds immutable version id and definition hash", () =
   assert(migration.includes("'workflow_id',v_workflow.id,'version_id',v_version.id"), "proposal includes exact workflow/version");
   assert(migration.includes("'definition_hash',v_version.definition_hash"), "proposal includes definition hash");
   assert(migration.includes("v_version.version_no <> v_workflow.latest_version_no"), "only latest version may be reviewed");
-  assert(migration.includes("a.proposal_hash = v_proposal_hash"), "duplicate review submission is idempotent");
+  assert(migration.includes("proposal_hash = v_proposal_hash"), "duplicate review submission is idempotent");
 });
 
 Deno.test("activation requires admin, approved review and unchanged latest version", () => {
