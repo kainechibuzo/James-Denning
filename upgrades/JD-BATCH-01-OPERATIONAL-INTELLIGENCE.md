@@ -49,6 +49,7 @@ No organisation is provisioned automatically. Blueprint submission creates a dra
 - `organisation.blueprint.preview` — admin-only; validates a proposed blueprint without writes.
 - `organisation.blueprint.submit` — admin-only; stores a draft via service-role RPC.
 - `operations.task.create` — admin/manager; creates an idempotent tenant-scoped task.
+- `operations.task.transition` — admin/manager; applies guarded task state transitions with optimistic concurrency checks.
 - `hiring.vacancy.draft` — admin-only; creates a draft requisition, not a published vacancy.
 - `hiring.candidate.transition` — admin-only; enforces allowed pipeline transitions and tenant scope.
 - Existing `settings.proposal.submit/execute` actions remain available.
