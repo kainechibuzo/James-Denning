@@ -5,6 +5,7 @@ const uuid=(v:unknown):v is string=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{
 const str=(v:unknown,n=500)=>typeof v==="string"?v.trim().slice(0,n):"";
 const num=(v:unknown,min=0,max=1e12)=>{const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null;};
 const date=(v:unknown)=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null;
+const monthKey=(v:unknown)=>{if(typeof v!=="string")return null;const m=v.match(/^(\\d{4}-\\d{2})/);return m?m[1]:null;};
 const tables:Record<string,string>={customers:"jd_business_customers",opportunities:"jd_business_opportunities",expenses:"jd_business_expenses",contracts:"jd_business_contracts",documents:"jd_business_documents",support:"jd_business_support_cases",reports:"jd_business_reports",cashflow:"jd_business_cash_transactions"};
 const columns:Record<string,string>={customers:"id,name,customer_type,email,phone,company,status,consent_status,owner_id,created_at,updated_at",opportunities:"id,customer_id,title,stage,amount,currency,probability,expected_close_date,next_action,owner_id,created_at,updated_at",expenses:"id,category,description,amount,currency,incurred_on,status,vendor,reference,created_at,updated_at",contracts:"id,customer_id,title,contract_type,status,value,currency,starts_on,expires_on,renewal_notice_days,created_at,updated_at",documents:"id,title,mime_type,byte_size,extraction_status,summary,source_metadata,created_at,updated_at",support:"id,customer_id,title,description,status,priority,assigned_to,sla_due_at,resolved_at,resolution_note,created_at,updated_at",reports:"id,title,report_type,period_start,period_end,status,report_json,source_metadata,created_at,updated_at",cashflow:"id,direction,amount,currency,occurred_on,status,category,description,reference,created_at,updated_at"};
 const stages=["lead","qualified","proposal","negotiation","won","lost"];
@@ -19,7 +20,7 @@ Deno.serve(async req=>{
  if(pe||!p?.school_id)return send({error:"Workspace required"},403);if(!["admin","manager"].includes(p.role))return send({error:"Manager permission required"},403);
  let b:any;try{b=await req.json();}catch{return send({error:"Invalid JSON"},400);}const school=p.school_id,actor=user.user.id;
  const audit=async(type:string,meta:any)=>{await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});};
- const list=async(k:string)=>{if(!tables[k])throw new Error("Unsupported type");const {data,error}=await db.from(tables[k]).select(columns[k]).eq("school_id",school).order("created_at",{ascending:false}).limit(200);if(error)throw error;return data||[];};
+ const list=async(k:string)=>{if(!tables[k])throw new Error("Unsupported type");const {data,error}=await db.from(tables[k]).select(columns[k]).eq("school_id",school).order("created_at",{ascending:false}).limit(200);if(error)throw error;return (data||[]) as any[];};
  try{
   if(b.action==="overview"){
    const [customers,opportunities,expenses,contracts,support,documents,checks]=await Promise.all([list("customers"),list("opportunities"),list("expenses"),list("contracts"),list("support"),list("documents"),db.from("jd_business_service_checks").select("provider_id,status,latency_ms,checked_at").eq("school_id",school).order("checked_at",{ascending:false}).limit(100)]);
@@ -123,7 +124,7 @@ Deno.serve(async req=>{
    const actualSize=Number(object?.metadata?.size||0),actualMime=str(object?.metadata?.mimetype,120).toLowerCase();
    if(!object||actualSize<1||actualSize>20*1024*1024||actualMime!==mime)return send({error:"Uploaded file could not be verified"},400);
    const {data,error}=await db.from("jd_business_documents").insert({school_id:school,title,storage_path:path,mime_type:mime,byte_size:actualSize,extraction_status:"pending",source_metadata:{uploaded_at:new Date().toISOString(),scan_status:"pending"},created_by:actor}).select(columns.documents).single();
-   if(error)throw error;await audit("business.document.uploaded",{document_id:data.id,byte_size:actualSize,mime_type:mime});return send({item:data,extraction_status:"pending",notice:"Upload verified. Text extraction remains pending until the document scanning/extraction worker is deployed."},201);
+   if(error)throw error;const saved:any=data;await audit("business.document.uploaded",{document_id:saved.id,byte_size:actualSize,mime_type:mime});return send({item:saved,extraction_status:"pending",notice:"Upload verified. Text extraction remains pending until the document scanning/extraction worker is deployed."},201);
   }
   if(b.action==="document.download.url"){
    if(!uuid(b.documentId))return send({error:"Document ID required"},400);
