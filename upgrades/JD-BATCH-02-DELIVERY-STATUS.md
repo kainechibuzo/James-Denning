@@ -144,7 +144,7 @@ Provider-reported token usage for this repository work is unavailable and is not
 ## JD-B02-11 — Document extraction worker
 
 - Added a server-secret protected worker with bounded batches and atomic pending-to-processing claims.
-- Plain-text files are downloaded only from the private tenant bucket, normalised, SHA-256 hashed, truncated to the schema limit and given an extractive summary.
+- Plain text, DOCX and embedded-text PDF files are downloaded only from the private tenant bucket, parsed with pinned dependencies, normalised, SHA-256 hashed, truncated to the schema limit and given an extractive summary.
 - PDF embedded-text and DOCX parsing are supported. Scanned PDFs and PNG/JPEG/TIFF files can use OCR.space only when the administrator explicitly enables external processing with a server API key; otherwise they fail with ocr_required. OCR remains off by default.
 - CI tests cover text normalisation and source-grounded summary bounds.
 - Added a ten-minute GitHub Actions dispatcher with required worker URL/secret validation; production deployment and repository secret configuration remain required.
@@ -155,5 +155,5 @@ Provider-reported token usage for this repository work is unavailable and is not
 - The protected monitoring worker runs on a 15-minute schedule for connected providers only. A separate ten-minute operations worker queues and dispatches SLA and integration incident email/SMS notifications when Resend/Twilio credentials and workspace recipients are configured.
 - It checks a fixed allowlist of public provider endpoints, with request timeouts and redirects disabled.
 - Observations are stored per workspace. Status transitions create incident/recovery records and are visible in the integration workspace.
-- Checks prove endpoint reachability only; they do not validate tenant credentials or provider SLAs. No email/SMS alert delivery is enabled.
+- Checks prove endpoint reachability only; they do not validate tenant credentials or provider SLAs. Incident transitions are queued for email/SMS by the operations worker when provider credentials and workspace recipients are configured.
 - CI verified the worker and migration contracts. Production migration, worker deployment and secret configuration remain release gates.
