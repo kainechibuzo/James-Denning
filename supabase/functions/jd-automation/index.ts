@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
   const ids=(workflows||[]).map((item:any)=>item.id);
   if(!ids.length) return json({workflows:[],versions:[]});
   const {data:versions,error:versionErr}=await admin.from("jd_workflow_versions")
-   .select("id,workflow_id,version_no,definition_hash,created_by,created_at")
+   .select("id,workflow_id,version_no,definition_json,definition_hash,created_by,created_at")
    .eq("school_id",profile.school_id).in("workflow_id",ids)
    .order("version_no",{ascending:false}).limit(500);
   if(versionErr) return json({error:"Could not load workflow version history"},500);
