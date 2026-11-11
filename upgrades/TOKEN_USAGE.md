@@ -43,3 +43,8 @@ timestamp_utc,upgrade_id,run_id,provider,model,input_tokens,output_tokens,cached
 ## Implementation requirement
 
 The JD server runtime should persist provider usage metadata per model request, not only once per user conversation. Store it in a tenant-scoped operational table with restricted access and aggregate it for authorised admins. The app should display provider/model, period, input/output/total usage, cached/reasoning usage when available, and reported cost. Missing values must remain visibly unknown. Do not expose raw prompts or credentials in admin usage screens.
+
+
+### JD-004 design work — 2026-11-11
+
+Provider/model: unknown. Input/output/cached/reasoning/total tokens: unknown. Cost: unknown. Usage source: unavailable. No provider response metadata was supplied for this design session; no token or cost estimate is recorded.
