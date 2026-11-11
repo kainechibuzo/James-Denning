@@ -41,6 +41,19 @@ Deno.serve(async (req) => {
   if(jobErr||stepErr) return json({error:"Could not load execution job details"},500);
   return json({runs:runs||[],jobs:jobs||[],steps:steps||[]});
  }
+ if(payload.action==="execution.job.retry"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can retry failed JD jobs"},403);
+  const jobId=typeof payload.jobId==="string"?payload.jobId:"";
+  if(!jobId) return json({error:"jobId is required"},400);
+  const {data:retry,error}=await admin.rpc("jd_requeue_failed_execution_job",{p_job_id:jobId,p_actor_id:authData.user.id});
+  if(error){
+   if(error.code==="42501") return json({error:"Only workspace admins can retry failed JD jobs"},403);
+   if(error.code==="P0002") return json({error:"Execution job not found"},404);
+   if(error.code==="22023") return json({error:"Only failed jobs can be manually retried"},409);
+   return json({error:"Could not queue the failed job for retry"},500);
+  }
+  return json({job:retry});
+ }
  if(payload.action==="execution.job.cancel"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can cancel queued JD jobs"},403);
   const jobId=typeof payload.jobId==="string"?payload.jobId:"";
