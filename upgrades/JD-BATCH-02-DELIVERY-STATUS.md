@@ -11,8 +11,8 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | # | Upgrade | Status | Scope / acceptance |
 |---:|---|---|---|
 | 03 | Visual Workflow Editor | in_progress | Workflow Studio editor, validation, immutable version saving, history, Review Centre submission, admin activation. Execution remains disabled. |
-| 04 | Recurring Operations Scheduler | proposed | IANA timezone schedules, DST-safe next-run calculation, durable queue dispatch, idempotency and missed-run policy. |
-| 05 | Automated Task Assignment | proposed | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
+| 04 | Recurring Operations Scheduler | in_progress | IANA timezone schedules, DST-safe next-run calculation, durable queue dispatch, idempotency and missed-run policy. |
+| 05 | Automated Task Assignment | in_progress | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
 | 06 | Department Collaboration | proposed | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
 | 07 | Predictive Performance Analysis | proposed | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
 | 08 | Revenue Intelligence | proposed | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
@@ -63,3 +63,41 @@ The remaining work is intentionally sequenced by dependency: finish and verify w
 ## Token usage
 
 Provider-reported token usage for these repository edits is unavailable. Do not estimate it.
+
+
+## JD-B02-04 — Recurring Operations Scheduler
+
+### Implemented in this change
+- Tenant-scoped recurring task schedules with daily and weekly cadence.
+- IANA timezone and local wall-clock time stored per schedule.
+- DST handling in the schedule calculator: spring-forward gaps move to the first valid local minute; fall-back overlaps choose the earlier occurrence.
+- A bounded scheduler Edge Function, protected by the dedicated worker secret, dispatches due schedules.
+- Dispatch RPC locks each schedule, verifies the expected due timestamp, creates one task with a deterministic idempotency key and advances the next occurrence atomically.
+- Missed runs are coalesced into one task on the next dispatcher pass.
+- Pause/resume and schedule management actions are exposed to workspace managers/admins.
+- A GitHub Actions dispatcher runs every five minutes when repository secrets and the Edge Function are configured.
+
+### Not yet verified
+- Migration has not been applied.
+- Edge Function has not been deployed.
+- GitHub repository secrets have not been configured or validated.
+- Live duplicate-dispatch, concurrent-worker and tenant-isolation tests remain required.
+
+## JD-B02-05 — Automated Task Assignment
+
+### Implemented in this change
+- Explicit department assignment pools map eligible workspace profiles to departments; no assumed profiles.department column is required.
+- Each pool member has an active flag and maximum open-task capacity.
+- Assignment chooses the least-loaded eligible member in the exact department, then uses last-assigned time and profile ID as deterministic tie-breakers.
+- Completed/cancelled tasks cannot be auto-assigned.
+- Assignment pool changes and automatic assignments are audited.
+- Recurring task creation can optionally use the same capacity-aware department assignment policy.
+- Business Operations exposes assignment-pool management and per-task auto-assignment.
+
+### Not yet verified
+- Migration has not been applied.
+- Live cross-tenant and concurrent assignment tests remain required.
+- Existing manual assignment remains available; auto-assignment is an explicit manager action or schedule option.
+
+### Token usage
+Provider-reported token usage for this repository work is unavailable and is not estimated.
