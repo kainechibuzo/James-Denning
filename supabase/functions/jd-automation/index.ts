@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
   // Capability status is intentionally unverified until migrations, deployment and smoke tests
   // are observed by a trusted deployment inventory. Do not infer live status from source code.
   const evidence:Record<string,any>={};
-  return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:true,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
+  return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:false,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
  }
 
  if(payload.action==="organisation.blueprint.preview"){
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
   if(profile.role!=="admin") return json({error:"Only workspace admins can register candidates"},403);
   const requisitionId=typeof payload.requisitionId==="string"?payload.requisitionId:"";
   const fullName=typeof payload.fullName==="string"?payload.fullName.trim().slice(0,160):"";
-  const email=typeof payload.email==="string"?payload.email.trim().slice(0,254):null;
+  const email=typeof payload.email==="string"&&payload.email.trim()?payload.email.trim().slice(0,254):null;
   if(!requisitionId||!fullName) return json({error:"An open vacancy and candidate name are required"},400);
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({error:"Candidate email is invalid"},400);
   const {data:vacancy,error:vacancyErr}=await admin.from("jd_hiring_requisitions").select("id,status").eq("id",requisitionId).eq("school_id",profile.school_id).maybeSingle();
