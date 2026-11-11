@@ -45,7 +45,7 @@ function localToInstant(target:LocalParts,timezone:string):Date{
  throw new Error("Could not resolve local schedule time in the selected timezone");
 }
 function parseTime(value:string){
- const m=/^(\\d{2}):(\\d{2})(?::\\d{2})?$/.exec(value);
+ const m=/^(\d{2}):(\d{2})(?::\d{2})?$/.exec(value);
  if(!m||Number(m[1])>23||Number(m[2])>59)throw new Error("Local time must use HH:MM");
  return {hour:Number(m[1]),minute:Number(m[2])};
 }
