@@ -68,13 +68,12 @@ export const STAMP_TEMPLATES=[
 // component references and never cause focus-loss on re-render ─────────────────
 export function SettingRow({label,desc,children}){
   return(
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",
-      padding:"16px 0",borderBottom:`1px solid ${C.border}`}}>
-      <div style={{flex:1,paddingRight:20}}>
+    <div className="jd-setting-row" style={{borderBottom:`1px solid ${C.border}`,padding:"16px 0"}}>
+      <div style={{flex:"1 1 220px",minWidth:0,paddingRight:8}}>
         <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:2}}>{label}</div>
         {desc&&<div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{desc}</div>}
       </div>
-      <div style={{flexShrink:0,minWidth:240}}>{children}</div>
+      <div className="jd-setting-row__control">{children}</div>
     </div>
   );
 }
