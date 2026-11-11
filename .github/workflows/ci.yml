@@ -49,6 +49,9 @@ jobs:
       - name: Test JD execution reliability helpers
         run: deno test supabase/functions/_shared/jd-agent-runtime.test.ts
 
+      - name: Test JD workflow definition validation
+        run: deno test supabase/functions/_shared/jd-workflow-definition.test.ts
+
       - name: Test JD Batch 01 operational intelligence foundations
         run: deno test --allow-read=supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql supabase/functions/_shared/jd-batch01.test.ts
 
