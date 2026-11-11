@@ -16,3 +16,6 @@ Deno.test("external monitoring uses fixed provider URLs and bounded requests",()
 
 Deno.test("overview exposes distinct won-opportunity and active-contract counts",()=>{assertEquals(api.includes("won_opportunities:won.length"),true);assertEquals(api.includes('active_contracts:contracts.filter((c:any)=>c.status==="active").length'),true);});
 Deno.test("performance forecast defines a bounded month-key parser",()=>{assertEquals(api.includes("const monthKey="),true);assertEquals(api.includes("v.slice(0,7)"),true);});
+
+Deno.test("expense budgets are tenant scoped and bounded",()=>{assertEquals(sql.includes("create table if not exists public.jd_business_budgets"),true);assertEquals(sql.includes("alert_threshold_pct between 1 and 100"),true);assertEquals(sql.includes("unique(school_id,category,currency,period_start,period_end)"),true);});
+Deno.test("cash transactions can be attributed to a tenant customer",()=>{assertEquals(sql.includes("add column if not exists customer_id uuid references public.jd_business_customers"),true);});

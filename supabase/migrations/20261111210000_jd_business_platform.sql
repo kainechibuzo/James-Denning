@@ -123,7 +123,7 @@ create table if not exists public.jd_business_cash_transactions (
 create index if not exists jd_business_cash_transactions_school_idx on public.jd_business_cash_transactions(school_id,occurred_on desc,status);
 do $$
 declare t text;
-begin foreach t in array array['jd_business_cash_transactions','jd_business_customers','jd_business_opportunities','jd_business_activities','jd_business_expenses','jd_business_contracts','jd_business_contract_versions','jd_business_documents','jd_business_support_cases','jd_business_support_notes','jd_business_oauth_connections','jd_business_oauth_states','jd_business_service_checks','jd_business_reports'] loop
+begin foreach t in array array['jd_business_budgets','jd_business_cash_transactions','jd_business_customers','jd_business_opportunities','jd_business_activities','jd_business_expenses','jd_business_contracts','jd_business_contract_versions','jd_business_documents','jd_business_support_cases','jd_business_support_notes','jd_business_oauth_connections','jd_business_oauth_states','jd_business_service_checks','jd_business_reports'] loop
  execute format('alter table public.%I enable row level security',t);execute format('revoke all on public.%I from anon,authenticated',t);execute format('grant select,insert,update,delete on public.%I to service_role',t);
 end loop;end $$;
 alter table public.jd_business_integration_catalog enable row level security;
@@ -136,3 +136,20 @@ revoke all on function public.jd_business_audit(uuid,uuid,text,jsonb) from publi
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values('jd-business-documents','jd-business-documents',false,20971520,array['application/pdf','text/plain','application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
 on conflict(id) do update set public=false,file_size_limit=20971520,allowed_mime_types=excluded.allowed_mime_types;
+
+-- Budget controls and customer attribution for actual cash receipts.
+alter table public.jd_business_cash_transactions add column if not exists customer_id uuid references public.jd_business_customers(id) on delete set null;
+create index if not exists jd_business_cash_transactions_customer_idx on public.jd_business_cash_transactions(school_id,customer_id,occurred_on desc);
+create table if not exists public.jd_business_budgets (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ category text not null check(length(trim(category)) between 1 and 100), currency char(3) not null default 'NGN',
+ period_start date not null, period_end date not null, budget_amount numeric(14,2) not null check(budget_amount>0),
+ alert_threshold_pct smallint not null default 80 check(alert_threshold_pct between 1 and 100),
+ status text not null default 'active' check(status in ('active','archived')),
+ created_by uuid not null references auth.users(id), created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+ check(period_end>=period_start), unique(school_id,category,currency,period_start,period_end)
+);
+create index if not exists jd_business_budgets_school_idx on public.jd_business_budgets(school_id,status,period_start,period_end);
+alter table public.jd_business_budgets enable row level security;
+revoke all on public.jd_business_budgets from anon,authenticated;
+grant select,insert,update,delete on public.jd_business_budgets to service_role;
