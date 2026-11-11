@@ -76,7 +76,8 @@ Do not treat a queue message as the source of truth for run state. Queue deliver
 ## Implementation progress
 
 - **JD-004A:** Job ledger, pgmq queue creation, restricted queue read/ack RPCs, atomic claim, lease fencing, heartbeat, checkpoint, bounded retry and terminal-state handling are merged. Static contract tests are in CI. SQL execution and concurrency/RLS integration tests remain pending.
-- **JD-004B:** Internal worker Edge Function, opaque-message validation, tenant/requester verification, bounded queue read, lease heartbeat, tool-step persistence, checkpoints, bounded retries and terminal acknowledgement are implemented on `feature/jd-004b-background-worker`. CI checks are pending. The worker is not deployed; JD_WORKER_SECRET is not configured.
+- **JD-004B:** Internal worker Edge Function, opaque-message validation, tenant/requester verification, bounded queue read, lease heartbeat, tool-step persistence, bounded retries and terminal acknowledgement are implemented on `feature/jd-004b-background-worker`. CI and application verification passed at an earlier commit; latest checkpoint changes are awaiting CI. The worker is not deployed; JD_WORKER_SECRET is not configured.
+- **JD-004C:** Versioned runtime checkpoints now persist model conversation state and usage counters after each complete tool-call round. The worker restores that state after a restart. Private checkpoint storage is service-role-only, lease-fenced and capped at 512 KiB. Mid-round replay remains possible and is safe only because current tools are read-only; write tools still require per-tool idempotency.
 
 ## Proposed implementation sequence
 
