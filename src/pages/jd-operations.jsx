@@ -53,7 +53,7 @@ export function JDOperationsPage({ctx}){
  const removeDepartment=index=>setBlueprint(b=>({...b,departments:b.departments.length>1?b.departments.filter((_,i)=>i!==index):b.departments}));
  const createTask=()=>act(async()=>{
   if(!task.title.trim())throw new Error("Give the task a title.");
-  await invoke("operations.task.create",{task,idempotencyId:crypto.randomUUID()});
+  await invoke("operations.task.create",{task:{...task,dueAt:task.dueAt?new Date(task.dueAt).toISOString():null},idempotencyId:crypto.randomUUID()});
   setTask({title:"",description:"",department:"",dueAt:"",priority:"normal"});
  },"Operational task created.");
  const transitionTask=(id,status)=>act(()=>invoke("operations.task.transition",{taskId:id,status}),"Task updated.");
