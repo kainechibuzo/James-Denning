@@ -12,3 +12,15 @@ Deno.test("task state machine blocks invalid terminal transitions",()=>assertEqu
 Deno.test("idempotency keys require stable operation identity",()=>assertEquals(makeIdempotencyKey("org","create","abc"),"org:create:abc"));
 Deno.test("hiring stage machine validates allowed progression",()=>{candidateStageTransition("applied","screening");assertThrows(()=>candidateStageTransition("applied","hired"));});
 Deno.test("vacancy generator creates drafts, never published vacancies",()=>assertEquals(validateVacancy({title:"Dispatcher",department:"Operations",description:"Manage fleet"}).status,"draft"));
+
+const schema = await Deno.readTextFile(new URL("../../migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql", import.meta.url));
+Deno.test("batch 01 schema is tenant-scoped and browser-inaccessible",()=>{
+ for(const table of ["jd_organisation_blueprints","jd_operational_tasks","jd_hiring_requisitions","jd_hiring_candidates"]) {
+  assertEquals(schema.includes(`alter table public.${table} enable row level security`),true);
+  assertEquals(schema.includes(`revoke all on public.${table} from anon, authenticated`),true);
+ }
+});
+Deno.test("organisation blueprint persistence is admin-derived and service-role only",()=>{
+ assertEquals(schema.includes("where id=p_actor_id and role='admin'"),true);
+ assertEquals(schema.includes("grant execute on function public.jd_create_organisation_blueprint"),true);
+});
