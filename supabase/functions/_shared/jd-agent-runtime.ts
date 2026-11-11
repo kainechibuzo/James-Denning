@@ -291,6 +291,15 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
   throw new Error(`Model provider request failed: ${detail.slice(0, 180)}`);
 }
 
+export type AgentRuntimeCheckpoint = {
+  version: 1;
+  conversationInput: Array<Record<string, unknown>>;
+  completedCalls: string[];
+  tokenUsage: TokenUsage;
+  modelRequests: Array<Record<string, unknown>>;
+  requestIndex: number;
+};
+
 export async function runAgent(input: {
   message: string;
   history: Array<{ role: string; content: string }>;
@@ -298,6 +307,8 @@ export async function runAgent(input: {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  resumeState?: AgentRuntimeCheckpoint | null;
+  onCheckpoint?: (state: AgentRuntimeCheckpoint) => Promise<void>;
   onToolEvent?: (event: Record<string, unknown>) => Promise<void>;
 }) {
   const baseUrl = input.baseUrl || "https://openrouter.ai/api/v1";
@@ -314,7 +325,8 @@ export async function runAgent(input: {
     "Be concise but useful. Summarise what you checked, what you found, and any remaining blockers.",
   ].join("\n");
 
-  const conversationInput = [
+  const restored = input.resumeState?.version === 1 ? input.resumeState : null;
+  const conversationInput = restored?.conversationInput || [
     ...input.history
       .filter((item) => item.role === "assistant" || item.role === "user")
       .slice(-20)
@@ -322,9 +334,20 @@ export async function runAgent(input: {
     { role: "user", content: input.message },
   ];
 
-  const tokenUsage = emptyUsage();
-  const modelRequests: Array<Record<string, unknown>> = [];
-  let requestIndex = 0;
+  const tokenUsage = restored?.tokenUsage || emptyUsage();
+  const modelRequests: Array<Record<string, unknown>> = restored?.modelRequests || [];
+  let requestIndex = restored?.requestIndex || 0;
+  const completedCalls = new Set<string>(restored?.completedCalls || []);
+  const persistCheckpoint = async () => {
+    await input.onCheckpoint?.({
+      version: 1,
+      conversationInput,
+      completedCalls: [...completedCalls],
+      tokenUsage,
+      modelRequests,
+      requestIndex,
+    });
+  };
   const requestModel = async (payload: Record<string, unknown>) => {
     const result = await callModel(payload, input.apiKey, baseUrl);
     requestIndex += 1;
@@ -347,7 +370,6 @@ export async function runAgent(input: {
     store: false,
   });
 
-  const completedCalls = new Set<string>();
   const maxToolRounds = 8;
   for (let turn = 0; turn <= maxToolRounds; turn += 1) {
     const output = Array.isArray(response.output) ? response.output : [];
@@ -385,6 +407,7 @@ export async function runAgent(input: {
     }));
 
     conversationInput.push(...output, ...outputs);
+    await persistCheckpoint();
     response = await requestModel({
       model: input.model,
       instructions,

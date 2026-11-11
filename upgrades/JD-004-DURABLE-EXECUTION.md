@@ -1,7 +1,7 @@
 # JD-004 — Durable Background Execution Design
 
 - **Created (UTC):** 2026-11-11
-- **Status:** architecture proposed; JD-004A primitives implemented on a review branch, database verification pending
+- **Status:** JD-004A primitives merged; JD-004B worker implemented on a review branch; database verification pending
 - **Priority:** critical
 - **Target:** Supabase Postgres + Supabase Queues (pgmq) + authenticated JD worker Edge Function
 
@@ -75,12 +75,14 @@ Do not treat a queue message as the source of truth for run state. Queue deliver
 
 ## Implementation progress
 
-- **JD-004A:** Job ledger, pgmq queue creation, restricted queue read/ack RPCs, atomic claim, lease fencing, heartbeat, checkpoint, bounded retry and terminal-state handling are implemented in a separate review branch. Static contract tests are included in CI. SQL execution and concurrency/RLS integration tests remain pending.
+- **JD-004A:** Job ledger, pgmq queue creation, restricted queue read/ack RPCs, atomic claim, lease fencing, heartbeat, checkpoint, bounded retry and terminal-state handling are merged. Static contract tests are in CI. SQL execution and concurrency/RLS integration tests remain pending.
+- **JD-004B:** Internal worker Edge Function, opaque-message validation, tenant/requester verification, bounded queue read, lease heartbeat, tool-step persistence, bounded retries and terminal acknowledgement are implemented on `feature/jd-004b-background-worker`. CI and application verification passed at an earlier commit; latest checkpoint changes are awaiting CI. The worker is not deployed; JD_WORKER_SECRET is not configured.
+- **JD-004C:** Versioned runtime checkpoints now persist model conversation state and usage counters after each complete tool-call round. The worker restores that state after a restart. Private checkpoint storage is service-role-only, lease-fenced and capped at 512 KiB. Mid-round replay remains possible and is safe only because current tools are read-only; write tools still require per-tool idempotency.
 
 ## Proposed implementation sequence
 
 1. **JD-004A — Schema and queue primitives:** migration for job ledger, constraints, indexes, RLS, transition/claim/heartbeat/checkpoint/recovery RPCs; pgmq extension + queue creation only in a disposable/local or staging environment first.
-2. **JD-004B — Worker:** authenticated worker Edge Function, bounded batch processing, lease validation, checkpoint persistence and safe failure handling.
+2. **JD-004B — Worker:** internal-secret-authenticated worker Edge Function, bounded queue processing, lease validation, step persistence, heartbeat/checkpoint persistence and safe failure handling.
 3. **JD-004C — Runtime refactor:** resumable plan/step executor and idempotency contract for each tool; explicit handling of ambiguous external side effects.
 4. **JD-004D — Dispatcher and recovery:** scheduled worker wake-up, expired-lease recovery, retry scheduling and dead-letter handling.
 5. **JD-004E — UI and verification:** progress, retry state, cancel where safe, failure diagnostics, cross-tenant tests, crash/replay tests and staging soak.
@@ -110,7 +112,7 @@ Do not treat a queue message as the source of truth for run state. Queue deliver
 
 ## Validation and deployment
 
-- **Code implementation:** not started.
+- **Code implementation:** JD-004A and JD-004B code are present in GitHub; CI and staging integration verification remain pending.
 - **Migrations applied:** no JD migrations verified in the target project.
 - **Extensions installed:** pgmq, pg_cron and pg_net are not installed in the target project.
 - **Edge Function deployed:** not verified.

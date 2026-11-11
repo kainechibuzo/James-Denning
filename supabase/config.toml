@@ -8,3 +8,7 @@ verify_jwt = false
 
 [functions.jd-automation]
 verify_jwt = true
+
+[functions.jd-execution-worker]
+# The worker authenticates with a dedicated server-side secret header.
+verify_jwt = false
