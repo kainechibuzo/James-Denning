@@ -140,3 +140,9 @@ Provider-reported token usage for this repository work is unavailable and is not
 - The server records the authenticated actor and timestamp and the existing audit event records the update.
 - Evidence source is a short reference/description; do not store sensitive document contents in this field.
 \n\n## JD-B02-11 — Document extraction worker\n\n- Added a server-secret protected worker with bounded batches and atomic pending-to-processing claims.\n- Plain-text files are downloaded only from the private tenant bucket, normalised, SHA-256 hashed, truncated to the schema limit and given an extractive summary.\n- PDF/DOCX are explicitly marked unsupported; no false claim of OCR or parsing.\n- CI tests cover text normalisation and source-grounded summary bounds.\n- Added a ten-minute GitHub Actions dispatcher with required worker URL/secret validation; production deployment and repository secret configuration remain required.\n
+
+## JD-B02-18 — Service incident history
+
+- Scheduled monitoring creates incident records on provider service state transitions, including recovery events.
+- Workspace integration view displays recent incidents and open/recovered state.
+- No notification delivery is claimed; outbound email/SMS requires a separate notification policy and provider configuration.

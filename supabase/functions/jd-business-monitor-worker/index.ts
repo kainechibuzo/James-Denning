@@ -30,6 +30,14 @@ Deno.serve(async req=>{
    const changed=previous?.status!==status;
    const {error:stateError}=await db.from("jd_business_service_states").upsert({school_id:pair.school_id,provider_id:pair.provider_id,status,last_error_code:errorCode,last_checked_at:checkedAt,status_changed_at:changed?checkedAt:previous?.status_changed_at||checkedAt},{onConflict:"school_id,provider_id"});
    if(stateError)throw stateError;
+   if(changed){
+    if(status==="healthy"&&previous&&previous.status!=="healthy"){
+     await db.from("jd_business_service_alerts").insert({school_id:pair.school_id,provider_id:pair.provider_id,status:"recovered",error_code:previous.status,resolved_at:checkedAt});
+     await db.from("jd_business_service_alerts").update({resolved_at:checkedAt}).eq("school_id",pair.school_id).eq("provider_id",pair.provider_id).is("resolved_at",null);
+    }else if(status!=="healthy"){
+     await db.from("jd_business_service_alerts").insert({school_id:pair.school_id,provider_id:pair.provider_id,status,error_code:errorCode});
+    }
+   }
    return {provider_id:pair.provider_id,school_id:pair.school_id,status,latency_ms:latency,status_changed:changed,error_code:errorCode};
   }));
   results.push(...batch);

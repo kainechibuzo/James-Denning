@@ -181,3 +181,14 @@ create table if not exists public.jd_business_service_states (
 alter table public.jd_business_service_states enable row level security;
 revoke all on public.jd_business_service_states from anon,authenticated;
 grant select,insert,update,delete on public.jd_business_service_states to service_role;
+
+create table if not exists public.jd_business_service_alerts (
+ id uuid primary key default gen_random_uuid(),school_id uuid not null references public.schools(id) on delete cascade,
+ provider_id text not null references public.jd_business_integration_catalog(id),
+ status text not null check(status in ('degraded','down','recovered')),error_code text,
+ opened_at timestamptz not null default now(),resolved_at timestamptz,last_notified_at timestamptz
+);
+create index if not exists jd_business_service_alerts_school_idx on public.jd_business_service_alerts(school_id,opened_at desc);
+alter table public.jd_business_service_alerts enable row level security;
+revoke all on public.jd_business_service_alerts from anon,authenticated;
+grant select,insert,update,delete on public.jd_business_service_alerts to service_role;
