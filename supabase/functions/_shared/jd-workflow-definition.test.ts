@@ -1,7 +1,7 @@
 import { validateWorkflowDefinition } from "./jd-workflow-definition.ts";
 
 function assert(value: unknown, message: string) { if (!value) throw new Error(message); }
-function base() {
+function base(): any {
   return {
     name: "Daily operations",
     nodes: [
