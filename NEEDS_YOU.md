@@ -93,3 +93,72 @@ Configure GitHub Actions repository secrets:
 - `JD_DOCUMENT_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
 
 Deploy the worker and verify private bucket access in staging before enabling the schedule in production.
+
+
+## JD Business Platform — additional batch implementation
+
+The current branch now includes these code paths. None are live until the correct Supabase project is confirmed, the migration is applied to staging, and the required secrets are configured.
+
+### Scanned-document OCR
+
+- The document worker can send scanned PDF/image files to OCR.space only when JD_OCR_SPACE_API_KEY is configured and JD_OCR_ALLOW_EXTERNAL_PROCESSING=true.
+- This is an external data-processing service: documents leave the Supabase project for OCR processing. Enable it only after the workspace owner has approved that data-sharing arrangement and checked applicable privacy requirements.
+- Without the opt-in and API key, image-only/scanned documents fail explicitly with ocr_required; they are not reported as successfully extracted.
+- Plain text, DOCX and embedded-text PDF extraction continue to work without the external OCR provider.
+
+### OAuth provider checks and revocation
+
+- Live verification actions now call the relevant provider identity endpoint for Google Workspace, Microsoft 365, LinkedIn and Slack.
+- Google and Slack remote token revocation are implemented before local encrypted credentials are erased.
+- Microsoft remote session revocation requires the Microsoft Graph User.RevokeSessions.All permission and a work/school account. It can invalidate sessions for other apps too, so grant it only after admin review. The provider documents that revocation can take several minutes.
+- LinkedIn token inspection can check token state, but this branch does not claim a verified remote revoke API. Disconnect is blocked until the LinkedIn app grant is revoked through LinkedIn account/app settings; the local token is retained rather than falsely reporting remote revocation.
+- Configure JD_OAUTH_SLACK_CLIENT_ID and JD_OAUTH_SLACK_CLIENT_SECRET alongside the existing Google/Microsoft/LinkedIn credentials. Register the same callback URL in Slack's app configuration.
+
+### Paystack read-only integration
+
+- The Business Platform accepts a Paystack secret or restricted key through the authenticated integrations UI, verifies it against Paystack, and stores it only as an AES-GCM encrypted server-side credential bundle.
+- Transaction sync imports successful Paystack transactions as statement rows for manual reconciliation. It does not initiate charges, refunds or transfers.
+- Use a restricted key limited to transaction-read permissions where possible. Never put a Paystack secret in Vite/client environment variables, source code or GitHub commits.
+
+### SLA, notifications and integration incidents
+
+Configure the Supabase Edge Function secrets for jd-business-ops-worker:
+- JD_BUSINESS_OPS_WORKER_SECRET: random value of at least 32 characters.
+- RESEND_API_KEY and JD_ALERT_EMAIL_FROM for email delivery.
+- JD_TWILIO_ACCOUNT_SID, JD_TWILIO_AUTH_TOKEN, and JD_TWILIO_FROM_NUMBER for SMS delivery.
+
+Configure the matching GitHub Actions repository secrets:
+- JD_BUSINESS_OPS_FUNCTION_URL: the target environment's jd-business-ops-worker URL.
+- JD_BUSINESS_OPS_WORKER_SECRET: the same value as the Edge Function secret.
+
+Workspace admins configure response/resolution/escalation thresholds and notification recipients in the SLA Policies panel. The scheduled worker queues deduplicated SLA and integration incident notifications. Messages remain queued until the relevant delivery provider credentials are configured.
+
+### Cash statement reconciliation and report export
+
+- Import CSV/XLSX bank statement rows in Cash Flow. JD suggests matches using direction, currency, amount and a three-day date window; a manager must confirm the match.
+- Matching is performed by a database function in one transaction and prevents a cash transaction from being matched twice.
+- Executive reports can be exported as JSON or CSV. Exports remain scoped to the authenticated workspace and are audit logged.
+
+### Predictive baseline evaluation
+
+- The descriptive trailing-mean baseline now has rolling-origin historical backtesting and records MAE/MAPE when there are at least three training periods and three holdout periods.
+- The output still does not claim a validated cash forecast: the inputs are won opportunity values and approved expenses, not reconciled cash receipts. Insufficient history is labelled accordingly.
+
+### Authenticated staging verification
+
+A manual workflow and script are available:
+- .github/workflows/jd-business-staging-verify.yml
+- scripts/verify-jd-business-staging.mjs
+
+Configure GitHub Actions secrets:
+- JD_STAGING_SUPABASE_URL
+- JD_STAGING_SUPABASE_ANON_KEY
+- JD_STAGING_TENANT_A_EMAIL, JD_STAGING_TENANT_A_PASSWORD
+- JD_STAGING_TENANT_B_EMAIL, JD_STAGING_TENANT_B_PASSWORD
+- JD_STAGING_TENANT_A_FIXTURE_CUSTOMER_ID
+
+The workflow checks authenticated Business Platform endpoints and verifies that a second tenant cannot read or update a known first-tenant fixture. Run it only against a disposable staging environment with two test tenants.
+
+### Deployment identity gate
+
+The current supabase/config.toml and older deployment notes reference thklwiybjuhrjqrrxyid. The connected Supabase account currently labels that project RGS-PORTAL-master, and its live migration/function inventory does not show this Batch 02 deployment. Do not apply the migration or deploy functions until the project owner confirms the correct James Denning Supabase project reference. Production data must not be written to a project based only on a stale reference string.
