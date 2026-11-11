@@ -28,4 +28,6 @@ verify_jwt = false
 
 [functions.jd-business-monitor-worker]
 verify_jwt = false
-\n[functions.jd-business-document-worker]\nverify_jwt = false\n
+
+[functions.jd-business-document-worker]
+verify_jwt = false
