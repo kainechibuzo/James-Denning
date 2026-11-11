@@ -169,7 +169,11 @@ const tools: ToolSpec[] = [
         .order("created_at", { ascending: false }).limit(limit);
       if (error) throw new Error("Could not read organisation announcements");
       return { announcements: (data || []).map((row: any) => ({
-        title: row.title, body: row.body, audience: row.audi,
+        title: row.title, body: row.body, audience: row.audience,
+        created_at: row.created_at, expires_at: row.expires_at,
+      })) };
+    },
+  },
   {
     name: "get_workspace_settings_catalogue",
     description: "Read and audit the authenticated organisation's registered portal settings. Reports configured and missing values, categories and known limitations. Secret-like setting values are excluded. This tool is read-only and cannot change settings.",
@@ -192,10 +196,6 @@ const tools: ToolSpec[] = [
         value: row.value,
       })).filter((row: any) => row.key));
       return filterSettingsCatalogue(catalogue, typeof args.category === "string" ? args.category : undefined);
-    },
-  },ence,
-        created_at: row.created_at, expires_at: row.expires_at,
-      })) };
     },
   },
 ];
