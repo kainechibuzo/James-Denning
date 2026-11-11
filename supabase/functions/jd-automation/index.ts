@@ -30,7 +30,9 @@ Deno.serve(async (req) => {
 
  if(payload.action==="execution.monitor.list"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
-  const {data:runs,error:runErr}=await admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
+  let runQuery=admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id);
+  if(profile.role!=="admin") runQuery=runQuery.eq("requested_by",authData.user.id);
+  const {data:runs,error:runErr}=await runQuery.order("created_at",{ascending:false}).limit(100);
   if(runErr) return json({error:"Could not load JD execution history"},500);
   const ids=(runs||[]).map((r:any)=>r.id);
   if(!ids.length) return json({runs:[],jobs:[],steps:[]});
