@@ -5,7 +5,7 @@ Deno.test("settings proposal migration binds approvals to immutable content hash
   assert(migration.includes("proposal_hash text"), "hash column exists");
   assert(migration.includes("jd_approvals_school_proposal_hash_uidx"), "workspace hash uniqueness exists");
   assert(migration.includes("digest(convert_to(p_proposal_json::text, 'UTF8'), 'sha256')"), "server recomputes canonical JSONB hash");
-  assert(migration.includes("p_proposal_hash"), "hash is supplied and checked");
+  assert(migration.includes("v_proposal_hash := encode(digest(convert_to(p_proposal_json::text"), "database computes hash from exact JSONB payload");
 });
 
 Deno.test("settings proposal submission is tenant and admin scoped", () => {
