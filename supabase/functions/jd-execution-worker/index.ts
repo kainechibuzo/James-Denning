@@ -23,7 +23,7 @@ function secretMatches(provided: string, expected: string): boolean {
   return difference === 0;
 }
 
-async function processMessage(admin: ReturnType<typeof createClient>, message: QueueMessage, workerId: string) {
+async function processMessage(admin: any, message: QueueMessage, workerId: string) {
   const jobId = message.message.job_id!;
   const { data: claim, error: claimError } = await admin.rpc("jd_claim_execution_job", {
     p_job_id: jobId,
@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const admin = createClient(url, serviceRoleKey, {
+  const admin = createClient<any>(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const workerId = safeWorkerId(Deno.env.get("JD_WORKER_ID"));
