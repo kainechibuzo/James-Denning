@@ -202,3 +202,16 @@ Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTEL
 - [ ] Apply JD-004 and Batch 01 migrations in staging and verify queue/worker lifecycle.
 - [ ] Deploy `jd-automation` and `jd-execution-worker` only after staging validation.
 - [ ] Run failure-injection tests for worker crashes, lease expiry, duplicate deliveries and retry exhaustion.
+
+### Final operational integration verification
+- [x] Add live Business Intelligence dashboard and tenant-scoped snapshot API.
+- [x] Include workforce aggregates, finance summaries, active-period performance, operations totals and communications delivery metadata.
+- [x] Add multi-department blueprint editor.
+- [x] Add task department and due-date controls with browser-timezone-safe ISO conversion.
+- [x] Route routine JD requests through durable background execution.
+- [x] Scope manager execution history to the manager's own runs.
+- [x] Verify production web build, Deno tests, Edge Function type-check and application build.
+- [ ] Configure GitHub worker secrets and deploy the worker/automation functions after staging validation.
+- [ ] Apply migrations in staging and run authenticated tenant-isolation/failure-injection tests.
+
+**Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`. CI passed; production deployment remains pending.
