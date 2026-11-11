@@ -88,36 +88,35 @@ let C = LIGHT;
 // DarkCtx/useDark -- imported from contexts/dark.jsx
 
 function DarkProvider({children}){
-  const stored = ()=>{ try{ const value=localStorage.getItem("jd_dark"); return value!=null ? value==="1" : (localStorage.getItem("rgs_dark")!=null ? localStorage.getItem("rgs_dark")==="1" : false); }catch{ return false; } };
-  const [dark,setDark] = useState(stored);
-  C = dark ? DARK : LIGHT;
+  const stored=()=>{try{const value=localStorage.getItem("jd_dark");return value!=null?value==="1":(localStorage.getItem("rgs_dark")!=null?localStorage.getItem("rgs_dark")==="1":false)}catch{return false}};
+  const [dark,setDark]=useState(stored);
+  C=dark?DARK:LIGHT;
   setTheme(dark);
-  const toggle = () => {
-    setDark(d=>{
-      const next=!d;
-      try{ localStorage.setItem("jd_dark",next?"1":"0"); localStorage.setItem("rgs_dark",next?"1":"0"); }catch{}
-      return next;
-    });
-  };
-  // Apply dark class to body for any global CSS
+  const toggle=()=>setDark(current=>{
+    const next=!current;
+    try{localStorage.setItem("jd_dark",next?"1":"0");localStorage.setItem("rgs_dark",next?"1":"0")}catch{}
+    return next;
+  });
   useEffect(()=>{
-    document.body.style.background = dark ? DARK.offWhite : LIGHT.offWhite;
+    const mode=dark?"dark":"light";
+    document.documentElement.dataset.theme=mode;
+    document.body.dataset.theme=mode;
+    document.documentElement.style.colorScheme=mode;
+    document.body.style.background=dark?DARK.offWhite:LIGHT.offWhite;
   },[dark]);
   return <DarkCtx.Provider value={{dark,toggle}}>{children}</DarkCtx.Provider>;
 }
 
 function DarkToggle(){
   const {dark,toggle}=useDark();
-  return(
-    <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
-      style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
-        border:`1px solid ${C.border}`,borderRadius:20,padding:"5px 12px",cursor:"pointer",
-        display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,
-        color:C.muted,transition:"all .2s",flexShrink:0,backdropFilter:"blur(4px)"}}>
-      
-      <span>{dark?"Light":"Dark"}</span>
-    </button>
-  );
+  return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
+    aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
+    style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
+      border:`1px solid ${C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",
+      display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,
+      color:C.text,transition:"all .2s",flexShrink:0,backdropFilter:"blur(4px)"}}>
+    <span>{dark?"Light":"Dark"}</span>
+  </button>;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
