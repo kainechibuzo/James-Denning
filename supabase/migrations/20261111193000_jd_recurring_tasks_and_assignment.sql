@@ -98,6 +98,9 @@ begin
   if v_task.status in ('completed','cancelled') then
     raise exception 'Terminal tasks cannot be auto-assigned' using errcode='22023';
   end if;
+  if v_task.assigned_to is not null then
+    return jsonb_build_object('assigned',true,'task_id',v_task.id,'assignee_id',v_task.assigned_to,'already_assigned',true);
+  end if;
   select m.profile_id,count(t.id)::integer into v_assignee,v_open
   from public.jd_task_assignment_members m
   join public.profiles p on p.id=m.profile_id and p.school_id=m.school_id
@@ -145,9 +148,12 @@ begin
      or (p_frequency='weekly' and (coalesce(cardinality(p_weekdays),0)=0 or not (p_weekdays <@ array[1,2,3,4,5,6,7]::smallint[]))) then
     raise exception 'Invalid recurring task schedule' using errcode='22023';
   end if;
+  if p_assigned_to is not null and coalesce(p_auto_assign,false) then
+    raise exception 'Choose a fixed assignee or automatic assignment, not both' using errcode='22023';
+  end if;
   if p_assigned_to is not null then
-    select school_id into v_target_school from public.profiles where id=p_assigned_to;
-    if v_target_school is distinct from v_school then raise exception 'Assignee must belong to this workspace' using errcode='42501'; end if;
+    select school_id into v_target_school from public.profiles where id=p_assigned_to and role in ('admin','manager','teacher','bursar');
+    if v_target_school is distinct from v_school then raise exception 'Assignee must be an eligible member of this workspace' using errcode='42501'; end if;
   end if;
   insert into public.jd_task_schedules(school_id,created_by,title,description,department,priority,frequency,local_time,timezone,weekdays,next_run_at,assigned_to,auto_assign)
   values(v_school,p_actor_id,trim(p_title),coalesce(p_description,''),trim(p_department),p_priority,p_frequency,p_local_time,p_timezone,
