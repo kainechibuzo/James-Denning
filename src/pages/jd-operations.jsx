@@ -54,7 +54,8 @@ export function JDOperationsPage({ctx}){
   await invoke("operations.task.create",{task,idempotencyId:crypto.randomUUID()});
   setTask({title:"",description:"",priority:"normal"});
  },"Operational task created.");
- const transitionTask=(id,status)=>act(()=>invoke("operations.task.transition",{taskId:id,status}),"Task updated.");\n const assignTask=(id,assigneeId)=>act(()=>invoke("operations.task.assign",{taskId:id,assigneeId}),"Task assigned.");
+ const transitionTask=(id,status)=>act(()=>invoke("operations.task.transition",{taskId:id,status}),"Task updated.");
+ const assignTask=(id,assigneeId)=>act(()=>invoke("operations.task.assign",{taskId:id,assigneeId}),"Task assigned.");
  const submitBlueprint=()=>act(async()=>{
   const result=await invoke("organisation.blueprint.preview",{blueprint});
   setPreview(result.blueprint);
