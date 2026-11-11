@@ -213,6 +213,65 @@ Deno.serve(async req=>{
    const {data,error}:any=await db.from("jd_business_reports").insert({school_id:school,title:str(b.title,180)||"Executive intelligence report",report_type:"executive",period_start:start,period_end:end,status:"draft",report_json:snapshot,source_metadata:{generated_at:snapshot.generated_at,sources:snapshot.sources},created_by:actor}).select(columns.reports).single();
    if(error)throw error;await audit("business.report.generated",{report_id:data.id,period:{start,end}});return send({report:data},201);
   }
+
+  if(b.action==="cashflow.reconciliation.import"){
+   const rows=Array.isArray(b.rows)?b.rows.slice(0,500):[],fileName=str(b.fileName,180)||"bank-statement.csv";
+   if(!rows.length)return send({error:"Provide at least one parsed statement row"},400);
+   const {data:batch,error:batchError}=await db.from("jd_business_cash_statement_imports").insert({school_id:school,file_name:fileName,currency:str(b.currency,3).toUpperCase()||"NGN",row_count:rows.length,imported_by:actor}).select("id").single();
+   if(batchError||!batch)return send({error:"Could not create statement import"},500);
+   const imported:any[]=[],rejected:any[]=[];
+   for(let i=0;i<rows.length;i++){
+    const x=rows[i]||{},amount=num(x.amount,0.01),occurred=date(x.occurred_on),direction=x.direction,currency=str(x.currency||b.currency||"NGN",3).toUpperCase();
+    if(amount===null||!occurred||!["inflow","outflow"].includes(direction)||!/^[A-Z]{3}$/.test(currency)){rejected.push({row:i+1,reason:"Invalid date, direction, amount or currency"});continue;}
+    const reference=str(x.reference,180),description=str(x.description,300);
+    const canonical=[occurred,direction,amount.toFixed(2),currency,reference,description].join("|");
+    const fingerprint=await sha256Hex(canonical);
+    const {data:inserted,error}=await db.from("jd_business_cash_statement_rows").insert({school_id:school,import_id:batch.id,occurred_on:occurred,direction,amount,currency,reference:reference||null,description,row_fingerprint:fingerprint}).select("id,occurred_on,direction,amount,currency,reference,description,reconciliation_status").single();
+    if(error){rejected.push({row:i+1,reason:"Duplicate or invalid statement row"});continue;}
+    const dayBefore=new Date(new Date(occurred+"T00:00:00Z").getTime()-3*86400000).toISOString().slice(0,10),dayAfter=new Date(new Date(occurred+"T00:00:00Z").getTime()+3*86400000).toISOString().slice(0,10);
+    const {data:candidates}=await db.from("jd_business_cash_transactions").select("id,occurred_on,direction,amount,currency,reference,description,status").eq("school_id",school).eq("currency",currency).eq("direction",direction).eq("amount",amount).gte("occurred_on",dayBefore).lte("occurred_on",dayAfter).in("status",["pending","cleared"]).limit(10);
+    const exact=(candidates||[]).filter((t:any)=>!t.reference||!reference||t.reference===reference);
+    if(exact.length===1)await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"suggested"}).eq("id",inserted.id).eq("school_id",school);
+    imported.push({row:inserted,suggestions:exact});
+   }
+   await audit("business.cashflow.statement_imported",{import_id:batch.id,accepted:imported.length,rejected:rejected.length});
+   return send({import_id:batch.id,imported:imported.length,rejected,rows:imported,notice:"Matches are suggestions only. Confirm each match to clear a cash transaction."},201);
+  }
+  if(b.action==="cashflow.reconciliation.list"){
+   const {data,error}=await db.from("jd_business_cash_statement_rows").select("id,import_id,occurred_on,direction,amount,currency,reference,description,reconciliation_status,matched_transaction_id,matched_at,created_at").eq("school_id",school).order("occurred_on",{ascending:false}).limit(500);
+   if(error)throw error;return send({rows:data||[]});
+  }
+  if(b.action==="cashflow.reconciliation.match"){
+   const rowId=uuid(b.statementRowId)?b.statementRowId:null,transactionId=uuid(b.transactionId)?b.transactionId:null;
+   if(!rowId||!transactionId)return send({error:"Statement row and cash transaction IDs are required"},400);
+   const {data:statement,error:statementError}=await db.from("jd_business_cash_statement_rows").select("id,occurred_on,direction,amount,currency,reconciliation_status,matched_transaction_id").eq("id",rowId).eq("school_id",school).maybeSingle();
+   if(statementError||!statement)return send({error:"Statement row not found"},404);
+   if(statement.reconciliation_status==="matched"||statement.matched_transaction_id)return send({error:"Statement row is already reconciled"},409);
+   const {data:transaction,error:transactionError}=await db.from("jd_business_cash_transactions").select("id,occurred_on,direction,amount,currency,status,reference").eq("id",transactionId).eq("school_id",school).maybeSingle();
+   if(transactionError||!transaction)return send({error:"Cash transaction not found"},404);
+   const delta=Math.abs(new Date(statement.occurred_on+"T00:00:00Z").getTime()-new Date(transaction.occurred_on+"T00:00:00Z").getTime())/86400000;
+   if(statement.direction!==transaction.direction||statement.currency!==transaction.currency||Number(statement.amount)!==Number(transaction.amount)||delta>3)return send({error:"The selected records do not match on direction, currency, amount and date window"},409);
+   const {data:updated,error:updateError}=await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"matched",matched_transaction_id:transactionId,matched_by:actor,matched_at:new Date().toISOString()}).eq("id",rowId).eq("school_id",school).is("matched_transaction_id",null).select("id").maybeSingle();
+   if(updateError||!updated)return send({error:"Statement row was reconciled by another operation; refresh and retry"},409);
+   const {error:clearError}=await db.from("jd_business_cash_transactions").update({status:"cleared",reference:transaction.reference||str(b.reference,180)||null,updated_at:new Date().toISOString()}).eq("id",transactionId).eq("school_id",school);
+   if(clearError)throw clearError;
+   await audit("business.cashflow.reconciled",{statement_row_id:rowId,transaction_id:transactionId});
+   return send({matched:true,statement_row_id:rowId,transaction_id:transactionId});
+  }
+  if(b.action==="cashflow.reconciliation.ignore"){
+   const rowId=uuid(b.statementRowId)?b.statementRowId:null;if(!rowId)return send({error:"Statement row ID required"},400);
+   const {data,error}=await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"ignored"}).eq("id",rowId).eq("school_id",school).neq("reconciliation_status","matched").select("id").maybeSingle();
+   if(error||!data)return send({error:"Statement row could not be ignored"},409);await audit("business.cashflow.statement_row_ignored",{statement_row_id:rowId});return send({ignored:true});
+  }
+  if(b.action==="report.export.csv"){
+   const reportId=uuid(b.reportId)?b.reportId:null;if(!reportId)return send({error:"Report ID required"},400);
+   const {data,error}=await db.from("jd_business_reports").select("id,title,period_start,period_end,report_json,source_metadata").eq("id",reportId).eq("school_id",school).maybeSingle();
+   if(error||!data)return send({error:"Report not found"},404);
+   const metrics=(data.report_json as any)?.metrics||{},escapeCsv=(v:unknown)=>'"'+String(v??"").replace(/"/g,'""')+'"';
+   const csv=["metric,value",...Object.entries(metrics).flatMap(([key,value]:[string,any])=>value&&typeof value==="object"?Object.entries(value).map(([currency,amount])=>[key+"_"+currency,amount].map(escapeCsv).join(",")):[[key,value].map(escapeCsv).join(",")])].join("\\n");
+   await audit("business.report.exported",{report_id:reportId,format:"csv"});
+   return new Response(csv,{status:200,headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":'attachment; filename="jd-executive-report.csv"',"Cache-Control":"no-store"}});
+  }
   return send({error:"Unsupported action"},400);
  }catch(e){console.error("JD business platform",e);return send({error:"Business platform request failed",detail:e instanceof Error?e.message:"Unknown error"},500);}
 });
