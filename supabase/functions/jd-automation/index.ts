@@ -62,6 +62,20 @@ Deno.serve(async (req) => {
   if(error) return json({error:"Could not create operational task"},500);
   return json({task:created,reused:false},201);
  }
+ if(payload.action==="operations.task.transition"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to update operational tasks"},403);
+  const id=typeof payload.taskId==="string"?payload.taskId:"";
+  const next=typeof payload.status==="string"?payload.status as TaskStatus:null;
+  if(!id||!next) return json({error:"taskId and status are required"},400);
+  const {data:task,error:lookupErr}=await admin.from("jd_operational_tasks").select("id,status").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
+  if(lookupErr||!task) return json({error:"Operational task not found"},404);
+  if(!canTransitionTask(task.status as TaskStatus,next)) return json({error:"Invalid operational task transition"},409);
+  const updates:any={status:next,updated_at:new Date().toISOString()};
+  if(next==="completed") updates.completed_at=new Date().toISOString();
+  const {data:updated,error}=await admin.from("jd_operational_tasks").update(updates).eq("id",id).eq("school_id",profile.school_id).eq("status",task.status).select("id,status,completed_at,updated_at").maybeSingle();
+  if(error||!updated) return json({error:"Task changed concurrently; reload before retrying"},409);
+  return json({task:updated});
+ }
  if(payload.action==="hiring.vacancy.draft"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can prepare vacancy drafts"},403);
   let vacancy:any;try{vacancy=validateVacancy(payload.vacancy||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid vacancy"},400);}
