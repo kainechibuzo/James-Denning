@@ -416,3 +416,70 @@ grant execute on function public.jd_heartbeat_execution_job(uuid, uuid, integer)
 grant execute on function public.jd_checkpoint_execution_job(uuid, uuid, integer) to service_role;
 grant execute on function public.jd_finish_execution_job(uuid, uuid, text) to service_role;
 grant execute on function public.jd_retry_execution_job(uuid, uuid, bigint, integer, text, text) to service_role;
+
+
+-- Worker-only queue access. The queue schema itself is never exposed to browser clients.
+create or replace function public.jd_read_execution_messages(
+  p_visibility_seconds integer default 120,
+  p_batch_size integer default 5
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_messages jsonb;
+begin
+  if p_visibility_seconds < 15 or p_visibility_seconds > 600 then
+    raise exception 'Visibility timeout must be between 15 and 600 seconds' using errcode = '22023';
+  end if;
+  if p_batch_size < 1 or p_batch_size > 20 then
+    raise exception 'Batch size must be between 1 and 20' using errcode = '22023';
+  end if;
+
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+      'message_id', q.msg_id,
+      'read_count', q.read_ct,
+      'enqueued_at', q.enqueued_at,
+      'visible_at', q.vt,
+      'message', q.message
+    ) order by q.msg_id),
+    '[]'::jsonb
+  )
+  into v_messages
+  from pgmq.read('jd_execution_jobs', p_visibility_seconds, p_batch_size) q;
+
+  return v_messages;
+end;
+$$;
+
+create or replace function public.jd_ack_execution_message(
+  p_job_id uuid,
+  p_queue_message_id bigint
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_status text;
+begin
+  select status into v_status
+  from public.jd_execution_jobs
+  where id = p_job_id;
+
+  if v_status not in ('completed','partially_completed','failed','cancelled') then
+    return false;
+  end if;
+
+  return pgmq.archive('jd_execution_jobs', p_queue_message_id);
+end;
+$$;
+
+revoke all on function public.jd_read_execution_messages(integer, integer) from public, anon, authenticated;
+revoke all on function public.jd_ack_execution_message(uuid, bigint) from public, anon, authenticated;
+grant execute on function public.jd_read_execution_messages(integer, integer) to service_role;
+grant execute on function public.jd_ack_execution_message(uuid, bigint) to service_role;
