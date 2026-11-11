@@ -4,6 +4,7 @@ import { validateOrganisationBlueprint } from "../_shared/jd-organisation-bluepr
 import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskStatus } from "../_shared/jd-operations.ts";
 import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
 import { summariseScores, summariseTaskStatuses } from "../_shared/jd-business-intelligence.ts";
+import { validateWorkflowDefinition } from "../_shared/jd-workflow-definition.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 
@@ -29,6 +30,11 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="workflow.definition.validate"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to design workflows"},403);
+  const result=validateWorkflowDefinition(payload.definition);
+  return json({valid:result.valid,errors:result.errors,definition:result.definition,execution_enabled:false,notice:"This is a validated draft preview only. It is not saved, scheduled or executable."});
+ }
  if(payload.action==="intelligence.snapshot"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect business intelligence"},403);
   const [{data:people,error:peopleErr},{data:bills,error:billsErr},{data:announcements,error:annErr},{data:emails,error:emailErr},{data:tasks,error:tasksErr},{data:session,error:sessionErr},{data:terms,error:termsErr}]=await Promise.all([
