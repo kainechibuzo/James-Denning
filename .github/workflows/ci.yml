@@ -47,7 +47,7 @@ jobs:
           deno-version: v2.x
 
       - name: Test JD document intelligence helpers
-        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-document-intelligence.test.ts
+        run: deno test --node-modules-dir=auto --allow-env=BLUEBIRD_DEBUG supabase/functions/_shared/jd-document-intelligence.test.ts
 
       - name: Test JD OAuth cryptography helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-oauth-crypto.test.ts
