@@ -1,0 +1,293 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { runAgent } from "../_shared/jd-agent-runtime.ts";
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, type QueueMessage } from "../_shared/jd-execution-worker-helpers.ts";
+
+const LEASE_SECONDS = 90;
+const HEARTBEAT_INTERVAL_MS = 25_000;
+const QUEUE_VISIBILITY_SECONDS = 120;
+const MAX_ERROR_LENGTH = 240;
+
+function secretMatches(provided: string, expected: string): boolean {
+  if (!provided || !expected || provided.length !== expected.length) return false;
+  let difference = 0;
+  for (let i = 0; i < expected.length; i += 1) {
+    difference |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return difference === 0;
+}
+
+async function processMessage(admin: ReturnType<typeof createClient>, message: QueueMessage, workerId: string) {
+  const jobId = message.message.job_id!;
+  const { data: claim, error: claimError } = await admin.rpc("jd_claim_execution_job", {
+    p_job_id: jobId,
+    p_queue_message_id: message.message_id,
+    p_worker_id: workerId,
+    p_lease_seconds: LEASE_SECONDS,
+  });
+  if (claimError) throw new Error("Could not claim queued execution job");
+  if (!claim?.claimed) {
+    // A message can be redelivered after its job became terminal. The RPC
+    // acknowledges only when this exact delivery belongs to a terminal job.
+    await admin.rpc("jd_ack_execution_message", {
+      p_job_id: jobId,
+      p_queue_message_id: message.message_id,
+    });
+    return { job_id: jobId, status: "not_claimed" };
+  }
+
+  const leaseToken = String(claim.lease_token || "");
+  const runId = String(claim.run_id || "");
+  const schoolId = String(claim.school_id || "");
+  const requestedBy = String(claim.requested_by || "");
+  if (!leaseToken || !runId || !schoolId || !requestedBy) {
+    throw new Error("Claim response was incomplete");
+  }
+
+  let leaseLost = false;
+  let heartbeatBusy = false;
+  const heartbeat = setInterval(async () => {
+    if (heartbeatBusy || leaseLost) return;
+    heartbeatBusy = true;
+    try {
+      const { data, error } = await admin.rpc("jd_heartbeat_execution_job", {
+        p_job_id: jobId,
+        p_lease_token: leaseToken,
+        p_lease_seconds: LEASE_SECONDS,
+      });
+      if (error || data !== true) leaseLost = true;
+    } catch {
+      leaseLost = true;
+    } finally {
+      heartbeatBusy = false;
+    }
+  }, HEARTBEAT_INTERVAL_MS);
+
+  try {
+    const [{ data: run, error: runError }, { data: profile, error: profileError }] = await Promise.all([
+      admin.from("jd_automation_runs")
+        .select("id,school_id,conversation_id,requested_by,request_text,status,created_at")
+        .eq("id", runId).eq("school_id", schoolId).maybeSingle(),
+      admin.from("profiles")
+        .select("id,school_id,role")
+        .eq("id", requestedBy).eq("school_id", schoolId).maybeSingle(),
+    ]);
+    if (runError || !run || run.requested_by !== requestedBy || run.school_id !== schoolId) {
+      throw new Error("Queued run could not be verified against its tenant and requester");
+    }
+    if (profileError || !profile) throw new Error("Run requester workspace profile could not be verified");
+    if (!run.conversation_id || typeof run.request_text !== "string" || !run.request_text.trim()) {
+      throw new Error("Queued run is missing its conversation or request");
+    }
+    if (run.status === "awaiting_approval" || run.status === "cancelled") {
+      const { data: finished } = await admin.rpc("jd_finish_execution_job", {
+        p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "cancelled",
+      });
+      if (finished) await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
+      return { job_id: jobId, status: "cancelled" };
+    }
+
+    const { data: rows, error: historyError } = await admin.from("jd_messages")
+      .select("role,content,created_at")
+      .eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
+      .order("created_at", { ascending: true }).limit(100);
+    if (historyError) throw new Error("Conversation history could not be loaded");
+
+    const historyRows = rows || [];
+    let currentMessageIndex = -1;
+    for (let i = historyRows.length - 1; i >= 0; i -= 1) {
+      if (historyRows[i].role === "user" && historyRows[i].content === run.request_text) {
+        currentMessageIndex = i;
+        break;
+      }
+    }
+    const history = (currentMessageIndex >= 0 ? historyRows.slice(0, currentMessageIndex) : historyRows)
+      .slice(-20)
+      .filter((item: any) => item.role === "assistant" || item.role === "user")
+      .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
+
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+    const model = Deno.env.get("JD_MODEL_NAME");
+    if (!apiKey || !model) throw new Error("JD model provider is not configured");
+
+    const { data: lastStep, error: stepLookupError } = await admin.from("jd_automation_steps")
+      .select("step_index").eq("school_id", schoolId).eq("run_id", runId)
+      .order("step_index", { ascending: false }).limit(1).maybeSingle();
+    if (stepLookupError) throw new Error("Could not inspect existing execution steps");
+    let stepIndex = Number(lastStep?.step_index ?? 0);
+    const stepIds = new Map<string, string>();
+    const events: Record<string, unknown>[] = [];
+
+    const result = await runAgent({
+      message: run.request_text,
+      history,
+      context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member") },
+      apiKey,
+      model,
+      baseUrl: Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1",
+      onToolEvent: async (event) => {
+        if (leaseLost) throw new Error("Execution lease was lost");
+        events.push(event);
+        const callId = String(event.callId || "");
+        if (event.status === "started") {
+          const { data, error } = await admin.from("jd_automation_steps").insert({
+            school_id: schoolId, run_id: runId, step_index: ++stepIndex,
+            tool_key: String(event.name || "unknown"),
+            risk_level: String(event.risk || "low"), status: "running",
+            input_json: { call_id: callId }, started_at: new Date().toISOString(),
+          }).select("id").single();
+          if (error || !data) throw new Error("Could not persist execution step");
+          if (callId) stepIds.set(callId, data.id);
+          return;
+        }
+
+        const stepId = stepIds.get(callId);
+        if (stepId) {
+          const { data, error } = await admin.from("jd_automation_steps").update({
+            status: event.status === "completed" ? "completed" : "failed",
+            output_json: { event: event.status },
+            error_message: event.status === "failed" ? "Read-only tool execution failed" : null,
+            completed_at: new Date().toISOString(),
+          }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
+            .select("id").maybeSingle();
+          if (error || !data) throw new Error("Could not persist execution step result");
+        }
+        if (event.status === "completed") {
+          const { data, error } = await admin.rpc("jd_checkpoint_execution_job", {
+            p_job_id: jobId, p_lease_token: leaseToken, p_step_index: stepIndex,
+          });
+          if (error || data !== true) {
+            leaseLost = true;
+            throw new Error("Execution checkpoint was rejected because the lease is no longer valid");
+          }
+        }
+      },
+    });
+
+    if (leaseLost) throw new Error("Execution lease was lost before completion");
+    const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
+    const { data: existingReply, error: replyLookupError } = await admin.from("jd_messages")
+      .select("id").eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
+      .contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
+    if (replyLookupError) throw new Error("Could not verify whether the job response was already saved");
+    if (!existingReply) {
+      const { error: replyError } = await admin.from("jd_messages").insert({
+        school_id: schoolId, conversation_id: run.conversation_id, role: "assistant",
+        content: result.text,
+        content_json: {
+          job_id: jobId,
+          toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })),
+          tokenUsage: result.tokenUsage,
+        },
+      });
+      if (replyError) throw new Error("Agent response could not be saved");
+    }
+
+    const { data: runUpdated, error: runUpdateError } = await admin.from("jd_automation_runs").update({
+      status: finalStatus,
+      result_json: {
+        toolEvents: events, responseId: result.responseId, tokenUsage: result.tokenUsage,
+        modelRequests: result.modelRequests, model: result.model, provider: result.provider,
+        truncated: result.truncated === true, execution_job_id: jobId,
+      },
+      completed_at: new Date().toISOString(),
+    }).eq("id", runId).eq("school_id", schoolId).select("id").maybeSingle();
+    if (runUpdateError || !runUpdated) throw new Error("Could not persist final automation run state");
+
+    const { data: finished, error: finishError } = await admin.rpc("jd_finish_execution_job", {
+      p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: finalStatus,
+    });
+    if (finishError || finished !== true) throw new Error("Execution lease expired before the job could be finalized");
+
+    await admin.from("jd_audit_events").insert({
+      school_id: schoolId, actor_id: requestedBy, run_id: runId,
+      event_type: finalStatus === "completed" ? "automation.completed" : "automation.partially_completed",
+      event_json: { job_id: jobId, tool_count: events.filter((event: any) => event.status === "completed").length },
+    });
+    const { data: acknowledged, error: ackError } = await admin.rpc("jd_ack_execution_message", {
+      p_job_id: jobId, p_queue_message_id: message.message_id,
+    });
+    if (ackError || acknowledged !== true) throw new Error("Terminal job was saved but queue acknowledgement failed");
+    return { job_id: jobId, status: finalStatus };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "Execution failed";
+    if (leaseLost) return { job_id: jobId, status: "lease_lost" };
+    const { data: retryResult, error: retryError } = await admin.rpc("jd_retry_execution_job", {
+      p_job_id: jobId,
+      p_lease_token: leaseToken,
+      p_queue_message_id: message.message_id,
+      p_delay_seconds: retryDelaySeconds(Number(claim.attempt_count || 1)),
+      p_error_code: "worker_execution_failed",
+      p_safe_error_message: detail.slice(0, MAX_ERROR_LENGTH),
+    });
+    if (retryError) throw new Error("Execution failed and retry could not be scheduled");
+    if (retryResult?.status === "failed") {
+      await admin.from("jd_messages").insert({
+        school_id: schoolId, conversation_id: (await admin.from("jd_automation_runs")
+          .select("conversation_id").eq("id", runId).maybeSingle()).data?.conversation_id,
+        role: "assistant",
+        content: "I couldn't complete this background task after the permitted attempts. The run is marked failed; please review its execution history before retrying.",
+        content_json: { job_id: jobId, status: "failed" },
+      });
+      await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
+      return { job_id: jobId, status: "failed" };
+    }
+    return { job_id: jobId, status: retryResult?.status || "retry_scheduled" };
+  } finally {
+    clearInterval(heartbeat);
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok");
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const expectedSecret = Deno.env.get("JD_WORKER_SECRET") || "";
+  const providedSecret = (req.headers.get("x-jd-worker-secret") || "").trim();
+  if (!secretMatches(providedSecret, expectedSecret)) return json({ error: "Unauthorized" }, 401);
+
+  const url = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !serviceRoleKey) return json({ error: "Worker is not configured" }, 503);
+
+  let payload: Record<string, unknown> = {};
+  try {
+    const parsed = await req.json();
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) payload = parsed;
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
+
+  const admin = createClient(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const workerId = safeWorkerId(Deno.env.get("JD_WORKER_ID"));
+  const { data: messages, error } = await admin.rpc("jd_read_execution_messages", {
+    p_visibility_seconds: QUEUE_VISIBILITY_SECONDS,
+    p_batch_size: 1,
+  });
+  if (error) return json({ error: "Could not read the execution queue" }, 503);
+
+  const queueMessages = Array.isArray(messages) ? messages : [];
+  const outcomes: Record<string, unknown>[] = [];
+  for (const candidate of queueMessages) {
+    if (!isQueueMessage(candidate)) {
+      outcomes.push({ status: "invalid_message" });
+      continue;
+    }
+    try {
+      outcomes.push(await processMessage(admin, candidate, workerId));
+    } catch {
+      // Do not leak provider, database, or tenant data into public responses.
+      outcomes.push({ job_id: candidate.message.job_id, status: "worker_error" });
+    }
+  }
+
+  return json({ worker_id: workerId, processed: outcomes.length, outcomes });
+});
