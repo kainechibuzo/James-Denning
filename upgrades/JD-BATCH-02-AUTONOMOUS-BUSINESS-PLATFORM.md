@@ -82,3 +82,16 @@ Make JD a governed business operating platform: a user describes an outcome, JD 
 ## Token usage
 
 Provider-reported token usage: unknown. No provider usage metadata was available for this planning operation.
+
+
+## Implementation update — workflow foundation
+
+### JD-B02-01 — Workflow definition validation
+- **Status:** implemented; CI verification pending
+- Added `supabase/functions/_shared/jd-workflow-definition.ts` with bounded graph validation, unique node/edge IDs, allowlisted node/trigger/action types, required trigger/end nodes, edge-reference checks, reachability checks, cycle rejection, bounded delay/config sizes and unsafe-key rejection.
+- Added `workflow.definition.validate` to `jd-automation`. It is admin/manager-gated and returns a validated draft preview only; it does not persist, schedule or execute workflows.
+- Added Deno tests for valid graphs, malformed input, duplicate IDs, dangling edges, cycles, allowlists, size bounds and unsafe keys.
+- CI now includes the workflow definition test.
+- **Not delivered yet:** persistence/version history, visual editor, scheduler, workflow execution or activation.
+- **Deployment/migrations:** none.
+- **Verification:** awaiting GitHub Actions on the PR head.
