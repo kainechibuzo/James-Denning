@@ -75,8 +75,8 @@ begin
     raise exception 'Workflow manager permission required' using errcode = '42501';
   end if;
   if p_definition is null or jsonb_typeof(p_definition) <> 'object'
-     or jsonb_typeof(p_definition->'nodes') <> 'array'
-     or jsonb_typeof(p_definition->'edges') <> 'array'
+     or jsonb_typeof(p_definition->'nodes') is distinct from 'array'
+     or jsonb_typeof(p_definition->'edges') is distinct from 'array'
      or length(trim(coalesce(p_definition->>'name',''))) not between 1 and 120
      or length(coalesce(p_definition->>'description','')) > 2000 then
     raise exception 'Invalid workflow definition' using errcode = '22023';
