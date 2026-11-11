@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
   const key=makeIdempotencyKey(profile.school_id,"task.create",stableId);
   const {data:existing}=await admin.from("jd_operational_tasks").select("id,status,title").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
   if(existing) return json({task:existing,reused:true});
-  const {data:created,error}=await admin.from("jd_operational_tasks").insert({school_id:profile.school_id,created_by:authData.user.id,title:task.title,description:task.description,priority:task.priority,idempotency_key:key}).select("id,status,title,description,priority,created_at").single();
+  const {data:created,error}=await admin.from("jd_operational_tasks").insert({school_id:profile.school_id,created_by:authData.user.id,title:task.title,description:task.description,department:task.department,due_at:task.due_at,priority:task.priority,idempotency_key:key}).select("id,status,title,description,priority,created_at").single();
   if(error?.code==="23505"){
    const {data:duplicate}=await admin.from("jd_operational_tasks").select("id,status,title,description,priority,created_at").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
    if(duplicate) return json({task:duplicate,reused:true});
