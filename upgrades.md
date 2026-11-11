@@ -191,3 +191,14 @@ Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTEL
 - [ ] Run staging migration, cross-tenant tests and authenticated smoke tests before deployment.
 
 **Status:** operational interface and selected integrations implemented; staging and live verification pending.
+
+### Durable execution and recovery
+- [x] Route routine JD requests through the durable job ledger and return a queued response.
+- [x] Add a five-minute scheduled worker poll workflow.
+- [x] Add execution monitor UI for runs, attempts, steps and errors.
+- [x] Add safe admin cancellation for queued/retry-wait jobs.
+- [x] Add tenant-scoped, audited admin retry for failed jobs.
+- [ ] Configure GitHub repository secrets `SUPABASE_URL` and `JD_WORKER_SECRET`.
+- [ ] Apply JD-004 and Batch 01 migrations in staging and verify queue/worker lifecycle.
+- [ ] Deploy `jd-automation` and `jd-execution-worker` only after staging validation.
+- [ ] Run failure-injection tests for worker crashes, lease expiry, duplicate deliveries and retry exhaustion.
