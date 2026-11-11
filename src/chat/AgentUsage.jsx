@@ -27,7 +27,7 @@ export function AgentUsage({ onClose }) {
     {error&&<div className="jd-usage-error">{error}</div>}
     {loading?<div className="jd-usage-empty">Loading usage data…</div>:!s?<div className="jd-usage-empty">No usage data available yet.</div>:<>
       <div className="jd-usage-grid">
-        <article><span><Gauge size={14}/> Total tokens</span><strong>{s.total_tokens_reported_runs===s.reported_runs?number(s.total_tokens):"Partial / unknown"}</strong><small>{number(s.reported_runs)} runs with provider usage</small></article>
+        <article><span><Gauge size={14}/> Total tokens</span><strong>{s.reported_runs>0&&s.total_tokens_reported_runs===s.reported_runs?number(s.total_tokens):"Partial / unknown"}</strong><small>{number(s.reported_runs)} runs with provider usage</small></article>
         <article><span><Cpu size={14}/> Input tokens</span><strong>{number(s.input_tokens)}</strong><small>Prompt and context tokens</small></article>
         <article><span><Activity size={14}/> Output tokens</span><strong>{number(s.output_tokens)}</strong><small>Generated response tokens</small></article>
         <article><span><Database size={14}/> Cached tokens</span><strong>{number(s.cached_input_tokens)}</strong><small>Reported cached input</small></article>
