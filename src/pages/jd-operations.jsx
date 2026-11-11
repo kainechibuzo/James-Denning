@@ -66,6 +66,12 @@ export function JDOperationsPage({ctx}){
   await invoke("hiring.vacancy.draft",{vacancy});
   setVacancy(defaultVacancy);
  },"Vacancy draft saved. It has not been published.");
+ const approveVacancy=id=>act(()=>invoke("hiring.vacancy.approve",{vacancyId:id}),"Vacancy opened for internal candidate intake.");
+ const createCandidate=()=>act(async()=>{
+  if(!candidate.requisitionId||!candidate.fullName.trim())throw new Error("Choose an open vacancy and enter the candidate name.");
+  await invoke("hiring.candidate.create",{requisitionId:candidate.requisitionId,fullName:candidate.fullName,email:candidate.email});
+  setCandidate({requisitionId:"",fullName:"",email:""});
+ },"Candidate added to the recruitment pipeline.");
  const changeCandidate=(candidateId,stage)=>act(()=>invoke("hiring.candidate.transition",{candidateId,stage}),"Candidate stage updated.");
  const statusColor=s=>s==="completed"||s==="deployed"?"#16835d":s==="failed"||s==="missing"?"#c34d4d":s==="running"||s==="in_progress"?"#b7791f":"#747b85";
  const nextTaskStatus=s=>s==="queued"?"in_progress":s==="in_progress"?"completed":s==="blocked"?"queued":null;
