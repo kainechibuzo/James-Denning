@@ -1,0 +1,44 @@
+name: JD Background Execution Dispatcher
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: jd-background-execution-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Poll durable JD queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate worker secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+        run: |
+          test -n "$SUPABASE_URL" || { echo "::error::Missing SUPABASE_URL repository secret"; exit 1; }
+          test -n "$JD_WORKER_SECRET" || { echo "::error::Missing JD_WORKER_SECRET repository secret"; exit 1; }
+      - name: Poll worker and process available jobs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+        run: |
+          set -euo pipefail
+          endpoint="${SUPABASE_URL%/}/functions/v1/jd-execution-worker"
+          for attempt in 1 2 3 4 5; do
+            response="$(curl --silent --show-error --fail-with-body --max-time 50 \
+              -X POST "$endpoint" \
+              -H "Content-Type: application/json" \
+              -H "x-jd-worker-secret: $JD_WORKER_SECRET" \
+              --data '{}')"
+            echo "$response"
+            processed="$(printf '%s' "$response" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.processed??0))}catch{process.exit(2)}})')"
+            if [ "$processed" = "0" ]; then
+              echo "Queue is empty; stopping this poll cycle."
+              break
+            fi
+          done
