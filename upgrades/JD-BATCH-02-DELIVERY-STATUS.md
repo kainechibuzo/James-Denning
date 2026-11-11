@@ -13,7 +13,7 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 03 | Visual Workflow Editor | in_progress | Workflow Studio editor, validation, immutable version saving, history, Review Centre submission, admin activation. Execution remains disabled. |
 | 04 | Recurring Operations Scheduler | in_progress | IANA timezone schedules, DST-safe next-run calculation, durable queue dispatch, idempotency and missed-run policy. |
 | 05 | Automated Task Assignment | in_progress | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
-| 06 | Department Collaboration | proposed | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
+| 06 | Department Collaboration | in_progress | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
 | 07 | Predictive Performance Analysis | proposed | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
 | 08 | Revenue Intelligence | proposed | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
 | 09 | Expense Monitoring | proposed | Categorised expenses, budget thresholds, variance evidence and approval-bound edits. |
