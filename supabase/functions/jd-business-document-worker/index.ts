@@ -38,7 +38,7 @@ Deno.serve(async req=>{
     if(ocr){parsed=ocr;ocrUsed=true;}
    }
    const text=parsed.text;
-   if(!text)throw new Error(parsed.parser==="pdfjs-text"?"No embedded PDF text found; OCR is not configured or returned no text":"No readable text was found");
+   if(!text)throw new Error(["pdfjs-text","image-no-text"].includes(parsed.parser)?"No embedded text found; OCR is not configured or returned no text":"No readable text was found");
    const checksum=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(text)))).map(x=>x.toString(16).padStart(2,"0")).join("");
    const summary=extractiveSummary(text);
    const {error:saveError}=await db.from("jd_business_documents").update({extracted_text:text.slice(0,100000),summary,checksum_sha256:checksum,extraction_status:"completed",source_metadata:{worker:"jd-document-worker",extraction:parsed.parser,pages:parsed.pages,processed_at:new Date().toISOString(),truncated:text.length>100000,original_characters:text.length,ocr:ocrUsed?"external_ocr_space":"not_used"}}).eq("id",doc.id).eq("school_id",doc.school_id);
@@ -46,7 +46,7 @@ Deno.serve(async req=>{
    results.push({id:doc.id,status:"completed",parser:parsed.parser,characters:Math.min(text.length,100000),ocr:ocrUsed});
   }catch(e){
    const message=e instanceof Error?e.message:"Extraction failed";
-   const code=message.includes("OCR is not configured")||message.includes("OCR provider")?"ocr_required":"extraction_failed";
+   const code=message.includes("OCR is not configured")||message.includes("OCR provider")||message.includes("OCR is not configured or returned no text")?"ocr_required":"extraction_failed";
    await db.from("jd_business_documents").update({extraction_status:"failed",source_metadata:{worker:"jd-document-worker",error_code:code,processed_at:new Date().toISOString()}}).eq("id",doc.id).eq("school_id",doc.school_id);
    results.push({id:doc.id,status:"failed",error_code:code});
   }
