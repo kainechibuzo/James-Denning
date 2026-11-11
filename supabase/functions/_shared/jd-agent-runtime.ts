@@ -235,7 +235,7 @@ function addUsage(total: TokenUsage, raw: any) {
 }
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
-  const endpoint = `${baseUrl.replace(/\\/$/, "")}/responses`;
+  const endpoint = `${baseUrl.replace(/\/$/, "")}/responses`;
   const maxAttempts = 3;
   let lastNetworkError: unknown = null;
 
@@ -310,7 +310,7 @@ export async function runAgent(input: {
     "This deployment currently provides read-only organisation tools plus drafting in the conversation. You may draft emails, notices, reports, plans and structured data for review, but do not claim to send, publish, change, delete, pay, invite, or modify records.",
     "When drafting an email, produce a polished subject line and complete message, adapt tone to the audience, and ask only for genuinely missing details. Never claim a draft was sent. If a task requires an unavailable capability, explain the missing capability and offer the closest safe next step.",
     "Be concise but useful. Summarise what you checked, what you found, and any remaining blockers.",
-  ].join("\\n");
+  ].join("\n");
 
   const conversationInput = [
     ...input.history
