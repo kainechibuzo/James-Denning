@@ -255,7 +255,7 @@ as $$
  with picked as (
   select id from public.jd_business_notification_outbox
   where ((status in ('queued','failed') and attempts<10 and next_attempt_at<=now())
-     or (status='processing' and locked_at<now()-interval '10 minutes'))
+     or (status='processing' and locked_at<now()-interval '10 minutes')) and attempts<10
   order by created_at for update skip locked limit greatest(1,least(coalesce(p_limit,25),100))
  )
  update public.jd_business_notification_outbox n
@@ -285,7 +285,7 @@ begin
  if not found then raise exception 'Cash transaction not found'; end if;
  if s.reconciliation_status='matched' or s.matched_transaction_id is not null then raise exception 'Statement row already matched'; end if;
  if exists(select 1 from public.jd_business_cash_statement_rows where school_id=p_school_id and matched_transaction_id=p_transaction_id) then raise exception 'Cash transaction already matched'; end if;
- if s.direction<>t.direction or s.currency<>t.currency or s.amount<>t.amount or abs(s.occurred_on-t.occurred_on)>3 then raise exception 'Statement and cash transaction do not match'; end if;
+ if t.status='void' then raise exception 'Voided cash transactions cannot be reconciled'; end if;\n if s.direction<>t.direction or s.currency<>t.currency or s.amount<>t.amount or abs(s.occurred_on-t.occurred_on)>3 then raise exception 'Statement and cash transaction do not match'; end if;
  update public.jd_business_cash_statement_rows set reconciliation_status='matched',matched_transaction_id=p_transaction_id,matched_by=p_actor_id,matched_at=now() where id=p_statement_row_id;
  update public.jd_business_cash_transactions set status='cleared',updated_at=now() where id=p_transaction_id and school_id=p_school_id;
 end;
