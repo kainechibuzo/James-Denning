@@ -215,3 +215,30 @@ Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTEL
 - [ ] Apply migrations in staging and run authenticated tenant-isolation/failure-injection tests.
 
 **Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`. CI passed; production deployment remains pending.
+
+
+### 2B. Batch 02 — Autonomous Business Platform
+Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSINESS-PLATFORM.md).
+
+- [ ] Workflow Builder
+- [ ] Visual Workflow Editor
+- [ ] Recurring Operations Scheduler
+- [ ] Automated Task Assignment
+- [ ] Department Collaboration
+- [ ] Business Intelligence Dashboard
+- [ ] Predictive Performance Analysis
+- [ ] Revenue Intelligence
+- [ ] Expense Monitoring
+- [ ] Cash-flow Reporting
+- [ ] Document Intelligence
+- [ ] Contract and Proposal Management
+- [ ] Customer Relationship Management
+- [ ] Sales Pipeline Automation
+- [ ] Customer Support Workflows
+- [ ] Integration Marketplace
+- [ ] Secure OAuth Integration Manager
+- [ ] External Service Monitoring
+- [ ] Business Health Monitoring
+- [ ] Executive Intelligence Reports
+
+**Status:** planning baseline committed on `feature/jd-batch-02-autonomous-business-platform`; no Batch 02 feature is marked implemented until code and tests provide evidence. No database migrations or production deployments are included in the planning commit.
