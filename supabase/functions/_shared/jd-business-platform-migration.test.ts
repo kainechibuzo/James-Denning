@@ -26,3 +26,5 @@ Deno.test("expense budgets compute category/currency/period utilisation and aler
 Deno.test("OAuth state consumption is atomic, one-time and expires",()=>{assertEquals(sql.includes("jd_consume_business_oauth_state"),true);assertEquals(sql.includes("s.consumed_at is null and s.expires_at>now()"),true);assertEquals(sql.includes("grant execute on function public.jd_consume_business_oauth_state(text) to service_role"),true);});
 
 Deno.test("support cases retain SLA deadlines and resolution evidence fields",()=>{assertEquals(sql.includes("sla_due_at timestamptz"),true);assertEquals(sql.includes("resolved_at timestamptz, resolution_note text"),true);assertEquals(api.includes('patch.resolution_note=str(x.resolution_note,5000)'),true);});
+
+Deno.test("customer consent changes require evidence and retain actor attribution",()=>{assertEquals(sql.includes("consent_updated_by uuid references auth.users(id)"),true);assertEquals(sql.includes("consent_source text not null default"),true);assertEquals(api.includes("Record the consent source or evidence before changing consent status"),true);assertEquals(api.includes("patch.consent_updated_by=actor"),true);});

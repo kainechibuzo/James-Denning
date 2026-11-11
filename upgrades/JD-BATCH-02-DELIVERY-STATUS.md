@@ -131,3 +131,11 @@ Provider-reported token usage for this repository work is unavailable and is not
 - Resolution timestamp and summary are persisted through the existing manager-authorised update action.
 - Internal notes remain separate from the customer-facing resolution summary.
 - Automated SLA policy calculation, notifications and escalation delivery remain unimplemented; deadlines are explicitly set on case creation.
+
+
+## JD-B02-13 — Customer consent evidence
+
+- Customer records expose consent status, last recorded timestamp and evidence/source reference.
+- A consent grant or withdrawal cannot be saved without a source/evidence reference.
+- The server records the authenticated actor and timestamp and the existing audit event records the update.
+- Evidence source is a short reference/description; do not store sensitive document contents in this field.

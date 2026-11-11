@@ -165,3 +165,7 @@ as $$
 $$;
 revoke all on function public.jd_consume_business_oauth_state(text) from public,anon,authenticated;
 grant execute on function public.jd_consume_business_oauth_state(text) to service_role;
+
+-- Retain who recorded customer consent and the basis/source supplied by the operator.
+alter table public.jd_business_customers add column if not exists consent_updated_by uuid references auth.users(id) on delete set null;
+alter table public.jd_business_customers add column if not exists consent_source text not null default '' check(length(consent_source)<=500);
