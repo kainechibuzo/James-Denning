@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
    id:run.id,requested_by:run.requested_by,trigger_type:run.trigger_type,status:run.status,
    request_preview:String(run.request_text||"").slice(0,500),created_at:run.created_at,
    started_at:run.started_at,completed_at:run.completed_at,
-   token_usage:run.result_json?.tokenUsage||null,model:run.result_json?.model||null,
+   token_usage:run.result_json?.tokenUsage||null,model_requests:run.result_json?.modelRequests||[],model:run.result_json?.model||null,
    steps:byRun.get(run.id)||[]
   }))});
  }
@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
   if(error) return json({error:"Could not load agent usage"},500);
   const runs=data||[];
   const summary={runs:runs.length,input_tokens:0,output_tokens:0,total_tokens:0,total_tokens_reported_runs:0,cached_input_tokens:0,reasoning_tokens:0,reported_runs:0,unreported_runs:0};
-  const byDay:Record<string,{runs:number;tokens:number}>={};
-  const byModel:Record<string,{runs:number;tokens:number}>={};
+  const byDay:Record<string,{runs:number;tokens:number;reported_runs:number}>={};
+  const byModel:Record<string,{runs:number;tokens:number;reported_runs:number}>={};
   for(const run of runs){
    const usage=run.result_json?.tokenUsage;
    if(!usage||typeof usage!=="object"){summary.unreported_runs++;continue;}
