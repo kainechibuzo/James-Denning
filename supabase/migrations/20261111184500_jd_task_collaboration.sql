@@ -60,8 +60,8 @@ begin
   end if;
 
   if exists (
-    select 1 from unnest(v_mentions) as mention_id
-    left join public.profiles p on p.id=mention_id and p.school_id=v_school
+    select 1 from unnest(v_mentions) as mention(mention_id)
+    left join public.profiles p on p.id=mention.mention_id and p.school_id=v_school
     where p.id is null
   ) then
     raise exception 'Every mentioned member must belong to this workspace' using errcode='42501';
