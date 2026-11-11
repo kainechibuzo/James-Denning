@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
   if(approval.action_key!=="settings.apply"||approval.status!=="approved")
    return json({error:"This settings proposal has not been approved"},409);
   const changes=Array.isArray(approval.proposal_json?.changes)?approval.proposal_json.changes:[];
-  const actionable=changes.map((change:any,index:number)=>({change,index})).filter(x=>x.change?.status==="proposed"&&x.change?.approval_required===true);
+  const actionable=changes.map((change:any,index:number)=>({change,index})).filter((item:{change:any;index:number})=>item.change?.status==="proposed"&&item.change?.approval_required===true);
   if(!actionable.length) return json({error:"No approved actionable settings changes were found"},400);
   const results:any[]=[];
   for(const item of actionable){
