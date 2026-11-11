@@ -287,7 +287,7 @@ declare
   v_job public.jd_execution_jobs%rowtype;
   v_now timestamptz := now();
 begin
-  if p_terminal_status not in ('completed','partially_completed','failed','cancelled') then
+  if p_terminal_status is null or p_terminal_status not in ('completed','partially_completed','failed','cancelled') then
     raise exception 'Invalid terminal execution status' using errcode = '22023';
   end if;
 
@@ -474,7 +474,7 @@ begin
   from public.jd_execution_jobs
   where id = p_job_id and queue_message_id = p_queue_message_id;
 
-  if v_status not in ('completed','partially_completed','failed','cancelled') then
+  if v_status is null or v_status not in ('completed','partially_completed','failed','cancelled') then
     return false;
   end if;
 
