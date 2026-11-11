@@ -24,7 +24,8 @@ Deno.test("queue messages contain opaque job identifiers, not prompts or tool pa
 });
 
 Deno.test("claims use bounded leases, fencing tokens and bounded attempts", () => {
-  assert(migration.includes("p_lease_seconds < 15 or p_lease_seconds > 600"), "lease duration is bounded");
+  assert(migration.includes("p_lease_seconds is null or p_lease_seconds < 15 or p_lease_seconds > 600"), "lease duration is bounded");
+  assert(migration.includes("j.queue_message_id = p_queue_message_id"), "claim is fenced to the delivered queue message");
   assert(migration.includes("attempt_count = j.attempt_count + 1"), "attempt count increments atomically");
   assert(migration.includes("j.attempt_count < j.max_attempts"), "maximum attempts are enforced");
   assert(migration.includes("lease_token = p_lease_token and lease_expires_at > v_now"), "heartbeat and checkpoint reject stale leases");
