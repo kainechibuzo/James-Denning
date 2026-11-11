@@ -279,3 +279,13 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Tests:** migration contract tests added to CI; run pending.
 - **Not included:** visual editor, scheduler, workflow execution, migration application or Edge Function deployment.
 - **Token usage:** unknown; provider usage metadata unavailable.
+
+
+## 2026-11-11 — JD-B02-06 Department Collaboration foundation
+
+- **Status:** in_progress (implementation branch; CI and staging verification pending).
+- **Scope:** tenant-scoped operational task discussions, threaded comment parent references, validated workspace-member mentions, and an internal collaboration panel in Business Operations.
+- **Security:** Edge Function authenticates the Supabase user and derives school/role from the server profile; service-only database access; database RPC revalidates manager role, task tenant, mention tenant and parent-task relationship; comment creation emits an audit event.
+- **Files:** `supabase/migrations/20261111184500_jd_task_collaboration.sql`, `supabase/functions/jd-task-collaboration/index.ts`, `supabase/functions/_shared/jd-task-collaboration-migration.test.ts`, `src/pages/jd-department-collaboration.jsx`, Business Operations integration, Supabase function config.
+- **Limitations:** mentions are stored and displayed but do not send notifications; no realtime subscriptions, file attachments or per-department visibility policy. Comments are append-only in the UI. No production migration or function deployment performed.
+- **Token usage:** provider-reported usage unavailable; not estimated.

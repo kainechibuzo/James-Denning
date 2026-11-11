@@ -16,3 +16,6 @@ verify_jwt = false
 [functions.jd-task-scheduler]
 # Scheduler uses the same dedicated internal secret as the execution worker.
 verify_jwt = false
+
+[functions.jd-task-collaboration]
+verify_jwt = true

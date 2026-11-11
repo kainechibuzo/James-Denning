@@ -101,3 +101,12 @@ Provider-reported token usage for these repository edits is unavailable. Do not 
 
 ### Token usage
 Provider-reported token usage for this repository work is unavailable and is not estimated.
+
+
+## JD-B02-06 — Department Collaboration
+
+- **Status:** in_progress; implementation and automated checks pending.
+- **Delivered in code:** tenant-scoped task discussion records; manager-only server-side list/create API; append-only comment creation; parent-comment linkage; workspace-validated member mentions; audit events; Business Operations collaboration panel.
+- **Not delivered:** mention notifications, realtime updates, attachments, staff self-service access, per-department membership visibility, or production deployment.
+- **Verification gate:** GitHub Web CI, Deno type-check for the new Edge Function, migration contract tests, staging migration, manager-role and cross-tenant denial tests.
+- **Production state:** migration not applied; Edge Function not deployed.
