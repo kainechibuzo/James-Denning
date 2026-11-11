@@ -87,3 +87,16 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Validation:** Design review only. No code, migration, extension, schedule, secret or Edge Function was deployed or applied.
 - **Token usage:** No provider usage metadata available; usage and cost are unknown and not estimated.
 - **Next:** Implement JD-004A as a separately reviewable schema/queue-primitives change, validate locally and in staging, then proceed to worker/runtime phases.
+
+
+### JD-004A — Durable execution job ledger and queue primitives
+- **Date:** 2026-11-11
+- **Status:** implemented; SQL integration verification pending
+- **Priority:** critical
+- **Scope:** Add a tenant-scoped durable job ledger; enforce one job per run and workspace idempotency; create a durable pgmq queue; add server-only enqueue, bounded queue-read, atomic claim, lease heartbeat, checkpoint, terminal completion, retry scheduling and message acknowledgement RPCs.
+- **Security:** Authenticated users have read-only job visibility through requester/admin and workspace checks. Queue reads and all mutation RPCs are service-role-only. Queue messages contain opaque job IDs and schema version only. Claims, retries and acknowledgements are fenced by queue message ID; worker mutations are fenced by lease token and lease expiry.
+- **Files:** `supabase/migrations/20261111130000_jd_durable_execution_jobs.sql`, `supabase/functions/_shared/jd-execution-migration.test.ts`, `.github/workflows/ci.yml`.
+- **Validation:** Static migration-contract tests added to CI. Live PostgreSQL migration execution, pgmq API compatibility, concurrent worker tests, RLS integration tests and crash/recovery tests have not yet run. No JD migration or extension was applied to the configured Supabase project.
+- **Deployment:** Not deployed. This branch is for review and CI only.
+- **Token usage:** Provider usage metadata unavailable; token counts and cost unknown, not estimated.
+- **Next:** Pass CI and SQL review, then validate against a disposable/local or staging Supabase database before implementing the worker.
