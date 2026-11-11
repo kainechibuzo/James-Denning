@@ -67,7 +67,7 @@ Deno.serve(async req=>{
    return send({period:{start,end},by_currency:summary,transactions:rows,caveat:"Cash flow is based only on manually recorded cleared/pending cash transactions. Sales opportunities and expenses are not treated as cash movements automatically."});
   }
   if(b.action==="performance.predict"){
-   const rows=await list("opportunities"),expenses=await list("expenses"),months:any={};
+   const rows:any[]=await list("opportunities"),expenses:any[]=await list("expenses"),months:any={};
    const monthKey=(v:string)=>v?.slice(0,7);for(const o of rows.filter((x:any)=>x.stage==="won")){const k=monthKey(o.expected_close_date||o.updated_at||o.created_at);if(k){months[k]??={won_revenue:0,won_count:0,approved_expenses:0,expense_count:0};months[k].won_revenue+=Number(o.amount);months[k].won_count++;}}
    for(const e of expenses.filter((x:any)=>["approved","paid"].includes(x.status))){const k=monthKey(e.incurred_on);if(k){months[k]??={won_revenue:0,won_count:0,approved_expenses:0,expense_count:0};months[k].approved_expenses+=Number(e.amount);months[k].expense_count++;}}
    const keys=Object.keys(months).sort().slice(-6),series=keys.map(k=>({month:k,...months[k],net_proxy:months[k].won_revenue-months[k].approved_expenses}));
