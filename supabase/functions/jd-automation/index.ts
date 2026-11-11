@@ -1,4 +1,8 @@
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
+import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts";
+import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
+import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskStatus } from "../_shared/jd-operations.ts";
+import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 
@@ -23,6 +27,71 @@ Deno.serve(async (req) => {
  let payload:any; try{payload=await req.json()}catch{return json({error:"Invalid JSON"},400)}
 
 
+
+ if(payload.action==="capabilities.report"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation capabilities"},403);
+  const {data:tables,error:tableErr}=await admin.from("information_schema.tables").select("table_name").eq("table_schema","public").limit(500);
+  if(tableErr) return json({error:"Capability inventory could not be loaded"},500);
+  const knownTables=new Set((tables||[]).map((x:any)=>String(x.table_name)));
+  const evidence:Record<string,any>={
+   "execution.dispatcher":{code:true,migration:knownTables.has("jd_execution_jobs")},
+   "execution.recovery":{code:true,migration:knownTables.has("jd_execution_jobs")},
+   "execution.idempotency":{code:true,migration:knownTables.has("jd_execution_jobs")},
+   "execution.monitor":{code:true,migration:knownTables.has("jd_execution_jobs")},
+   "execution.controls":{code:true,migration:knownTables.has("jd_execution_jobs")},
+   "org.blueprint":{code:true,migration:knownTables.has("jd_organisation_blueprints")},
+   "operations.intelligence":{code:true,migration:knownTables.has("jd_operational_tasks")},
+   "hiring.vacancies":{code:true,migration:knownTables.has("jd_hiring_requisitions")},
+   "hiring.pipeline":{code:true,migration:knownTables.has("jd_hiring_candidates")}
+  };
+  return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:true,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
+ }
+
+ if(payload.action==="organisation.blueprint.preview"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can prepare organisation blueprints"},403);
+  const result=validateOrganisationBlueprint(payload.blueprint);
+  if(!result.ok) return json({error:"Organisation blueprint needs correction",validation_errors:result.errors},400);
+  return json({blueprint:result.blueprint,status:"draft",provisioning:{performed:false,requires_review:true},message:"Blueprint validated. No organisation configuration has been changed."});
+ }
+ if(payload.action==="organisation.blueprint.submit"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can submit organisation blueprints"},403);
+  const result=validateOrganisationBlueprint(payload.blueprint);
+  if(!result.ok) return json({error:"Organisation blueprint needs correction",validation_errors:result.errors},400);
+  const {data:saved,error}=await admin.rpc("jd_create_organisation_blueprint",{p_actor_id:authData.user.id,p_title:result.blueprint.name,p_industry:result.blueprint.industry,p_description:result.blueprint.businessModel,p_blueprint:result.blueprint});
+  if(error) return json({error:"Could not persist organisation blueprint"},500);
+  return json({blueprint:saved,status:"draft",provisioning:{performed:false,requires_review:true}});
+ }
+ if(payload.action==="operations.task.create"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to create operational tasks"},403);
+  let task:any;try{task=normaliseTaskInput(payload.task||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid task"},400);}
+  const stableId=typeof payload.idempotencyId==="string"?payload.idempotencyId:"";
+  if(!stableId) return json({error:"idempotencyId is required"},400);
+  const key=makeIdempotencyKey(profile.school_id,"task.create",stableId);
+  const {data:existing}=await admin.from("jd_operational_tasks").select("id,status,title").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
+  if(existing) return json({task:existing,reused:true});
+  const {data:created,error}=await admin.from("jd_operational_tasks").insert({school_id:profile.school_id,created_by:authData.user.id,title:task.title,description:task.description,priority:task.priority,idempotency_key:key}).select("id,status,title,description,priority,created_at").single();
+  if(error) return json({error:"Could not create operational task"},500);
+  return json({task:created,reused:false},201);
+ }
+ if(payload.action==="hiring.vacancy.draft"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can prepare vacancy drafts"},403);
+  let vacancy:any;try{vacancy=validateVacancy(payload.vacancy||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid vacancy"},400);}
+  const {data:created,error}=await admin.from("jd_hiring_requisitions").insert({school_id:profile.school_id,created_by:authData.user.id,...vacancy}).select("id,title,department,status,created_at").single();
+  if(error) return json({error:"Could not save vacancy draft"},500);
+  return json({vacancy:created,published:false,approval_required:true},201);
+ }
+ if(payload.action==="hiring.candidate.transition"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can change recruitment stages"},403);
+  const id=typeof payload.candidateId==="string"?payload.candidateId:"";
+  const next=typeof payload.stage==="string"?payload.stage as HiringStage:null;
+  if(!id||!next) return json({error:"candidateId and stage are required"},400);
+  const {data:candidate,error:lookupErr}=await admin.from("jd_hiring_candidates").select("id,stage,requisition_id").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
+  if(lookupErr||!candidate) return json({error:"Candidate not found"},404);
+  let transition:any;try{transition=candidateStageTransition(candidate.stage as HiringStage,next);}catch{return json({error:"Invalid recruitment stage transition"},409);}
+  const {data:updated,error}=await admin.from("jd_hiring_candidates").update({stage:transition.to,stage_updated_by:authData.user.id,updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",profile.school_id).eq("stage",transition.from).select("id,stage,updated_at").maybeSingle();
+  if(error||!updated) return json({error:"Candidate stage changed concurrently; reload before retrying"},409);
+  return json({candidate:updated});
+ }
  if(payload.action==="settings.proposal.submit"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can submit settings proposals"},403);
   const changes=Array.isArray(payload.changes)?payload.changes:[];
