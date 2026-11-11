@@ -1,0 +1,29 @@
+name: JD Business Operations Worker
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate worker configuration
+        env:
+          FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
+          WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
+        run: |
+          test -n "$FUNCTION_URL" || { echo "Missing JD_BUSINESS_OPS_FUNCTION_URL"; exit 1; }
+          test -n "$WORKER_SECRET" || { echo "Missing JD_BUSINESS_OPS_WORKER_SECRET"; exit 1; }
+          test "${#WORKER_SECRET}" -ge 32 || { echo "Worker secret must be at least 32 characters"; exit 1; }
+      - name: Process SLA escalations and queued notifications
+        env:
+          FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
+          WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $WORKER_SECRET" \
+            -H "Content-Type: application/json" \
+            --data '{"limit":50}'
