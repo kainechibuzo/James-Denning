@@ -214,9 +214,9 @@ create table if not exists public.jd_business_notification_outbox (
  id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
  event_key text not null, channel text not null check(channel in ('email','sms')),
  recipient text not null, subject text not null default '', body text not null,
- payload jsonb not null default '{}'::jsonb, status text not null default 'queued' check(status in ('queued','sent','failed')),
+ payload jsonb not null default '{}'::jsonb, status text not null default 'queued' check(status in ('queued','processing','sent','failed')),
  attempts smallint not null default 0 check(attempts between 0 and 10), last_error text,
- next_attempt_at timestamptz not null default now(), sent_at timestamptz,
+ next_attempt_at timestamptz not null default now(), sent_at timestamptz, locked_at timestamptz,
  created_at timestamptz not null default now(), unique(school_id,event_key,channel,recipient)
 );
 create index if not exists jd_business_notification_queue_idx on public.jd_business_notification_outbox(status,next_attempt_at,created_at);
