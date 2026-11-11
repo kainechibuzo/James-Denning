@@ -53,3 +53,4 @@ jobs:
           deno check supabase/functions/send-email-batch/index.ts
           deno check supabase/functions/scheduled-digest/index.ts
           deno check supabase/functions/manage-account/index.ts
+          deno check supabase/functions/jd-automation/index.ts

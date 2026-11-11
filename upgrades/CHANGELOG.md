@@ -1,0 +1,42 @@
+# Upgrade Changelog
+
+Append-only record of work on JD and James-Denning upgrades. Newest entries go at the bottom. Use `UPGRADE_TEMPLATE.md` for full records.
+
+## Status definitions
+
+- `proposed` — captured, not implemented.
+- `in_progress` — implementation has started.
+- `blocked` — blocked by dependency, access, decision or failure.
+- `implemented` — code/configuration exists; verification may remain.
+- `verified` — required tests and relevant integration checks passed.
+- `deployed` — verified change is confirmed in the target environment.
+
+## Historical baseline
+
+### JD-BASE-001 — Chat-first JD foundation
+- **Status:** unverified historical baseline
+- **Context:** Prior work described a chat-first interface and authenticated JD Edge Function integration.
+- **Evidence:** Historical reference to PR #20: https://github.com/kainechibuzo/James-Denning/pull/20
+- **Caution:** Re-check current PR state, merge commit, branch contents, CI and deployment before treating this as merged or deployed.
+
+### JD-BASE-002 — Autonomous automation control plane
+- **Status:** unverified historical baseline
+- **Context:** Prior work described conversation, message, run, step, approval and audit tables with tenant-scoped RLS.
+- **Evidence:** Historical reference to PR #21: https://github.com/kainechibuzo/James-Denning/pull/21
+- **Caution:** Verify migration state and policies in the target Supabase project before use.
+
+### JD-BASE-003 — OpenRouter agent runtime
+- **Status:** unverified historical baseline
+- **Context:** Prior work described an OpenRouter-backed Responses API function-calling runtime with a limited read-only tool registry.
+- **Evidence:** Historical reference to PR #22: https://github.com/kainechibuzo/James-Denning/pull/22
+- **Caution:** Verify current code, selected model compatibility, provider usage metadata, CI and deployment.
+
+### JD-BASE-004 — JD command-centre UI and read tools
+- **Status:** unverified historical baseline
+- **Context:** Prior work described a JD command-centre redesign and additional read tools for activity, email logs, attendance and announcements.
+- **Evidence:** Historical reference to PR #24: https://github.com/kainechibuzo/James-Denning/pull/24
+- **Caution:** Verify PR state, actual schema columns, role access, tenant isolation and deployment.
+
+## Upgrade records
+
+No new upgrade implementation is recorded by this registry initialisation commit. Append new entries below using the template. Historical baselines above are explicitly unverified and must not be counted as completed work.
