@@ -40,3 +40,24 @@ Append-only record of work on JD and James-Denning upgrades. Newest entries go a
 ## Upgrade records
 
 No new upgrade implementation is recorded by this registry initialisation commit. Append new entries below using the template. Historical baselines above are explicitly unverified and must not be counted as completed work.
+
+
+### JD-001 — Reconcile JD runtime, command centre and upgrade registry into master
+- **Date:** 2026-11-11
+- **Status:** implemented; deployment prerequisites remain
+- **Priority:** high
+- **Evidence:** PR #34 merged: https://github.com/kainechibuzo/James-Denning/pull/34
+- **Merge commit:** `0a7c6d8d77d0d70c48370f56cd3c13e7e5c03104`
+- **Scope:** Integrated the OpenRouter-backed JD runtime, chat-first command centre, organisation-scoped read tools, Review Centre foundation, automation run monitor, token-usage dashboard, approval decision RPC, additive migrations and the `upgrades.md` / `upgrades/` registry.
+- **Validation:** Web CI passed, application verification passed, secured Edge Function Deno checks passed, and Vercel reported a successful deployment for the PR head.
+- **Not yet deployed:** JD SQL migrations and the `jd-automation` Edge Function are absent from the configured Supabase project. Do not claim JD is live until schema migration, function deployment, secrets/configuration and authenticated smoke tests are completed.
+
+### JD-002 — Restrict JD conversation and operational-record access
+- **Date:** 2026-11-11
+- **Status:** implemented; database verification pending
+- **Priority:** critical
+- **Evidence:** PR #35 merged: https://github.com/kainechibuzo/James-Denning/pull/35
+- **Merge commit:** `f2b7ede738c8540eec85b5f82ec2820a6e997c43`
+- **Scope:** Restricts conversation/message reads to the creator or workspace admin; run/step reads to requester or admin; approvals to requester or admin; audit events to admins. Authenticated browser clients no longer write JD control-plane records directly. Edge Function history and submit paths enforce conversation ownership.
+- **Validation:** Web CI passed, application verification passed, secured Edge Function Deno checks passed, and Vercel reported a successful deployment.
+- **Not yet verified:** The RLS migration has not been applied to Supabase and no staging cross-user/cross-tenant RLS test has run. Keep production migration and live JD activation blocked until these checks pass.
