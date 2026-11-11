@@ -35,7 +35,8 @@ This is the canonical, human-readable upgrade index. The detailed implementation
 - [ ] OpenRouter integration with configurable model selection and provider abstraction.
 
 ### 1A. Portal usability and settings operations (JD-005)
-- [x] JD read-only settings catalogue: configured/missing status, category filters, safe values and protected-key exclusion. (JD-005B; CI pending.)
+- [x] JD read-only settings catalogue: configured/missing status, category filters, safe values and protected-key exclusion. (JD-005B.)
+- [x] JD validated settings change planner with before/after diffs and approval classification; no writes. (JD-005C; CI pending.)
 - [ ] Consistent, fully legible light and dark themes across every route and interactive state.
 - [ ] Mobile-first page layouts: single-column stacking, no clipped controls, readable labels and touch-sized actions.
 - [ ] Responsive settings rows, tabs, tables, forms, dialogs and summary panels.
