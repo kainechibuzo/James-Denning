@@ -139,3 +139,18 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Database:** No migration required for this UI/specification phase.
 - **Token usage:** Unknown; provider usage metadata unavailable.
 - **Next:** Add visual regression coverage for Generate Bills, Assignments and every Settings tab; implement the server-derived settings catalogue and typed, permission-scoped JD configuration tools.
+
+
+### JD-005B — Read-only organisation settings intelligence
+- **Date:** 2026-11-11
+- **Status:** implemented; CI verification pending
+- **Priority:** high
+- **Scope:** Added a server-derived, read-only settings catalogue tool for JD admins. It reads settings only for the authenticated workspace, classifies registered settings by category, reports configured/missing values, counts unknown settings without exposing their values, and excludes secret-like settings entirely. Added pure helper tests for completeness, privacy and category filtering.
+- **Files:** supabase/functions/_shared/jd-settings-catalogue.ts, supabase/functions/_shared/jd-settings-catalogue.test.ts, supabase/functions/_shared/jd-agent-runtime.ts, .github/workflows/ci.yml.
+- **Security:** Low-risk read-only tool; role restricted to admin; tenant scope comes from server-derived context; no write operation or arbitrary key lookup; secret-like values never enter model context.
+- **Validation:** Deno helper tests and secured Edge Function type-check added to CI; results pending.
+- **Database:** No migration required; reads existing school_settings key/value rows.
+- **Deployment:** Edge Function not deployed by this PR.
+- **Token usage:** Unknown; no provider usage metadata available.
+- **Limitations:** Catalogue is intentionally limited to settings explicitly registered from the current settings UI; it does not claim complete coverage of all modules or settings. JD cannot change settings in this phase.
+- **Next:** Add full settings inventory and a typed, approval-gated configuration proposal/apply workflow with read-after-write verification.
