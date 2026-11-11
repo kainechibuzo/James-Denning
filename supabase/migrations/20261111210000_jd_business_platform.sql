@@ -192,3 +192,76 @@ create index if not exists jd_business_service_alerts_school_idx on public.jd_bu
 alter table public.jd_business_service_alerts enable row level security;
 revoke all on public.jd_business_service_alerts from anon,authenticated;
 grant select,insert,update,delete on public.jd_business_service_alerts to service_role;
+
+-- SLA policy, reliable alert delivery, statement reconciliation and forecast evaluation.
+create table if not exists public.jd_business_sla_policies (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ priority text not null check(priority in ('low','normal','high','urgent')),
+ first_response_minutes integer not null check(first_response_minutes between 1 and 43200),
+ resolution_minutes integer not null check(resolution_minutes between 1 and 129600),
+ escalation_after_minutes integer not null check(escalation_after_minutes between 1 and 129600),
+ notify_email text, notify_phone text,
+ enabled boolean not null default true, created_by uuid references auth.users(id), created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(), unique(school_id,priority)
+);
+create table if not exists public.jd_business_sla_events (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ case_id uuid not null references public.jd_business_support_cases(id) on delete cascade,
+ event_type text not null check(event_type in ('first_response_due','resolution_due','escalation')),
+ due_at timestamptz not null, created_at timestamptz not null default now(), unique(case_id,event_type)
+);
+create table if not exists public.jd_business_notification_outbox (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ event_key text not null, channel text not null check(channel in ('email','sms')),
+ recipient text not null, subject text not null default '', body text not null,
+ payload jsonb not null default '{}'::jsonb, status text not null default 'queued' check(status in ('queued','sent','failed')),
+ attempts smallint not null default 0 check(attempts between 0 and 10), last_error text,
+ next_attempt_at timestamptz not null default now(), sent_at timestamptz,
+ created_at timestamptz not null default now(), unique(school_id,event_key,channel,recipient)
+);
+create index if not exists jd_business_notification_queue_idx on public.jd_business_notification_outbox(status,next_attempt_at,created_at);
+create table if not exists public.jd_business_cash_statement_imports (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ file_name text not null, currency char(3) not null, row_count integer not null default 0,
+ imported_by uuid not null references auth.users(id), imported_at timestamptz not null default now()
+);
+create table if not exists public.jd_business_cash_statement_rows (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ import_id uuid not null references public.jd_business_cash_statement_imports(id) on delete cascade,
+ occurred_on date not null, direction text not null check(direction in ('inflow','outflow')),
+ amount numeric(14,2) not null check(amount>0), currency char(3) not null, reference text, description text not null default '',
+ row_fingerprint text not null, reconciliation_status text not null default 'unmatched' check(reconciliation_status in ('unmatched','suggested','matched','ignored')),
+ matched_transaction_id uuid references public.jd_business_cash_transactions(id) on delete set null,
+ matched_by uuid references auth.users(id), matched_at timestamptz, created_at timestamptz not null default now(),
+ unique(import_id,row_fingerprint)
+);
+create index if not exists jd_business_cash_statement_rows_match_idx on public.jd_business_cash_statement_rows(school_id,currency,occurred_on,amount,reconciliation_status);
+create table if not exists public.jd_business_forecast_evaluations (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ currency char(3) not null, evaluated_at timestamptz not null default now(), training_periods integer not null,
+ holdout_periods integer not null, mae numeric(14,4), mape numeric(8,4), baseline_method text not null,
+ metrics jsonb not null default '{}'::jsonb, limitations text[] not null default '{}', created_by uuid references auth.users(id)
+);
+do $$
+declare t text;
+begin foreach t in array array['jd_business_sla_policies','jd_business_sla_events','jd_business_notification_outbox','jd_business_cash_statement_imports','jd_business_cash_statement_rows','jd_business_forecast_evaluations'] loop
+ execute format('alter table public.%I enable row level security',t);
+ execute format('revoke all on public.%I from anon,authenticated',t);
+ execute format('grant select,insert,update,delete on public.%I to service_role',t);
+end loop;end $$;
+create or replace function public.jd_claim_business_notification_batch(p_limit integer default 25)
+returns setof public.jd_business_notification_outbox language sql security definer set search_path=''
+as $$
+ with picked as (
+  select id from public.jd_business_notification_outbox
+  where status in ('queued','failed') and attempts<10 and next_attempt_at<=now()
+  order by created_at for update skip locked limit greatest(1,least(coalesce(p_limit,25),100))
+ )
+ update public.jd_business_notification_outbox n set attempts=n.attempts+1,status='queued'
+ from picked where n.id=picked.id returning n.*;
+$$;
+revoke all on function public.jd_claim_business_notification_batch(integer) from public,anon,authenticated;
+grant execute on function public.jd_claim_business_notification_batch(integer) to service_role;
+-- Enable scanned-image uploads; external OCR remains explicitly opt-in at the worker secret layer.
+update storage.buckets set allowed_mime_types=array['application/pdf','text/plain','application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/png','image/jpeg','image/tiff']
+where id='jd-business-documents';
