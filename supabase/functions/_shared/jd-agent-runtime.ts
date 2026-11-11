@@ -1,3 +1,4 @@
+import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -168,7 +169,31 @@ const tools: ToolSpec[] = [
         .order("created_at", { ascending: false }).limit(limit);
       if (error) throw new Error("Could not read organisation announcements");
       return { announcements: (data || []).map((row: any) => ({
-        title: row.title, body: row.body, audience: row.audience,
+        title: row.title, body: row.body, audience: row.audi,
+  {
+    name: "get_workspace_settings_catalogue",
+    description: "Read and audit the authenticated organisation's registered portal settings. Reports configured and missing values, categories and known limitations. Secret-like setting values are excluded. This tool is read-only and cannot change settings.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: {
+      type: "object",
+      properties: {
+        category: { type: "string", enum: ["workspace", "identity", "performance", "security", "billing", "portal"] },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+    execute: async (args, ctx) => {
+      const { data, error } = await ctx.admin.from("school_settings")
+        .select("key,value").eq("school_id", ctx.schoolId).limit(500);
+      if (error) throw new Error("Could not inspect organisation settings");
+      const catalogue = buildSettingsCatalogue((data || []).map((row: any) => ({
+        key: String(row.key || ""),
+        value: row.value,
+      })).filter((row: any) => row.key));
+      return filterSettingsCatalogue(catalogue, typeof args.category === "string" ? args.category : undefined);
+    },
+  },ence,
         created_at: row.created_at, expires_at: row.expires_at,
       })) };
     },
