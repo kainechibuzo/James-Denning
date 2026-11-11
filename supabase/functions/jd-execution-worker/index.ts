@@ -116,6 +116,15 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const model = Deno.env.get("JD_MODEL_NAME");
     if (!apiKey || !model) throw new Error("JD model provider is not configured");
 
+    const { data: checkpointRow, error: checkpointReadError } = await admin
+      .from("jd_execution_checkpoints")
+      .select("runtime_state_json,state_version")
+      .eq("job_id", jobId).eq("school_id", schoolId).maybeSingle();
+    if (checkpointReadError) throw new Error("Could not load the saved runtime checkpoint");
+    const resumeState = checkpointRow?.state_version === 1
+      ? checkpointRow.runtime_state_json
+      : null;
+
     const { data: lastStep, error: stepLookupError } = await admin.from("jd_automation_steps")
       .select("step_index").eq("school_id", schoolId).eq("run_id", runId)
       .order("step_index", { ascending: false }).limit(1).maybeSingle();
@@ -131,6 +140,19 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       apiKey,
       model,
       baseUrl: Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1",
+      resumeState,
+      onCheckpoint: async (state) => {
+        if (leaseLost) throw new Error("Execution lease was lost");
+        const { data, error } = await admin.rpc("jd_save_execution_checkpoint", {
+          p_job_id: jobId,
+          p_lease_token: leaseToken,
+          p_runtime_state_json: state,
+        });
+        if (error || data !== true) {
+          leaseLost = true;
+          throw new Error("Runtime checkpoint could not be saved under the current lease");
+        }
+      },
       onToolEvent: async (event) => {
         if (leaseLost) throw new Error("Execution lease was lost");
         events.push(event);
@@ -214,6 +236,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       p_job_id: jobId, p_queue_message_id: message.message_id,
     });
     if (ackError || acknowledged !== true) throw new Error("Terminal job was saved but queue acknowledgement failed");
+    await admin.from("jd_execution_checkpoints").delete().eq("job_id", jobId).eq("school_id", schoolId);
     return { job_id: jobId, status: finalStatus };
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Execution failed";
