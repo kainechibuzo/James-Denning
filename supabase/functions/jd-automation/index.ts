@@ -101,7 +101,11 @@ Deno.serve(async (req) => {
   const {data:existing}=await admin.from("jd_operational_tasks").select("id,status,title").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
   if(existing) return json({task:existing,reused:true});
   const {data:created,error}=await admin.from("jd_operational_tasks").insert({school_id:profile.school_id,created_by:authData.user.id,title:task.title,description:task.description,priority:task.priority,idempotency_key:key}).select("id,status,title,description,priority,created_at").single();
-  if(error) return json({error:"Could not create operational task"},500);
+  if(error?.code==="23505"){
+   const {data:duplicate}=await admin.from("jd_operational_tasks").select("id,status,title,description,priority,created_at").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
+   if(duplicate) return json({task:duplicate,reused:true});
+  }
+  if(error||!created) return json({error:"Could not create operational task"},500);
   return json({task:created,reused:false},201);
  }
  if(payload.action==="operations.task.transition"){
