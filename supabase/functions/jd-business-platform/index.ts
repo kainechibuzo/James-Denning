@@ -1,4 +1,4 @@
-import {base64Url,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
+import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
@@ -111,6 +111,30 @@ Deno.serve(async req=>{
    const authUrl=new URL(config.authUrl);authUrl.searchParams.set("client_id",clientId);authUrl.searchParams.set("redirect_uri",callback);authUrl.searchParams.set("response_type","code");authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(" "));authUrl.searchParams.set("state",state);authUrl.searchParams.set("code_challenge",challenge);authUrl.searchParams.set("code_challenge_method","S256");
    if(providerId==="google-workspace"){authUrl.searchParams.set("access_type","offline");authUrl.searchParams.set("prompt","consent");}
    await audit("business.oauth.started",{provider_id:providerId,expires_at:expiresAt});return send({authorization_url:authUrl.toString(),expires_at:expiresAt});
+  }
+  if(b.action==="oauth.refresh"){
+   const providerId=str(b.providerId,60),config:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={
+    "google-workspace":{tokenUrl:"https://oauth2.googleapis.com/token",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID",clientSecretEnv:"JD_OAUTH_GOOGLE_CLIENT_SECRET"},
+    "microsoft-365":{tokenUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/token",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID",clientSecretEnv:"JD_OAUTH_MICROSOFT_CLIENT_SECRET"},
+    "linkedin":{tokenUrl:"https://www.linkedin.com/oauth/v2/accessToken",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID",clientSecretEnv:"JD_OAUTH_LINKEDIN_CLIENT_SECRET"}
+   };
+   const provider=config[providerId];if(!provider)return send({error:"Refresh is not supported for this provider"},400);
+   const {data:connectionData,error:connectionError}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();const connection:any=connectionData;
+   if(connectionError||!connection?.encrypted_credentials)return send({error:"No active encrypted connection was found"},404);
+   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY"),clientId=Deno.env.get(provider.clientIdEnv),clientSecret=Deno.env.get(provider.clientSecretEnv);if(!encoded||!clientId||!clientSecret)return send({error:"OAuth encryption key or provider credentials are not configured"},503);
+   const key=await importAesKey(encoded),stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,key));if(!stored.refresh_token)return send({error:"Provider did not issue a refresh token; reconnect with offline access"},409);
+   const form=new URLSearchParams({grant_type:"refresh_token",refresh_token:stored.refresh_token,client_id:clientId,client_secret:clientSecret});
+   const response=await fetch(provider.tokenUrl,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/json"},body:form,signal:AbortSignal.timeout(10000),redirect:"error"});const token:any=await response.json().catch(()=>null);
+   if(!response.ok||!token?.access_token)return send({error:"Provider token refresh failed; reconnect this integration"},502);
+   const next={access_token:token.access_token,refresh_token:token.refresh_token||stored.refresh_token,token_type:token.token_type||stored.token_type||"Bearer",scope:connection.scopes,issued_at:new Date().toISOString()};
+   const encrypted=await encryptSecret(JSON.stringify(next),key),expires=Number(token.expires_in),expiresAt=Number.isFinite(expires)&&expires>0?new Date(Date.now()+expires*1000).toISOString():null;
+   const {error:saveError}=await db.from("jd_business_oauth_connections").update({encrypted_credentials:encrypted,token_expires_at:expiresAt,last_checked_at:new Date().toISOString(),last_error_code:null,key_version:"aes-gcm-v1",updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId);if(saveError)throw saveError;
+   await audit("business.oauth.refreshed",{provider_id:providerId});return send({provider_id:providerId,status:"connected",token_expires_at:expiresAt});
+  }
+  if(b.action==="oauth.disconnect"){
+   const providerId=str(b.providerId,60);if(!["google-workspace","microsoft-365","linkedin"].includes(providerId))return send({error:"Local disconnect is not supported for this provider"},400);
+   const {data:connection,error}=await db.from("jd_business_oauth_connections").update({status:"revoked",encrypted_credentials:null,token_expires_at:null,key_version:null,last_error_code:"locally_disconnected",updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId).select("provider_id").maybeSingle();
+   if(error||!connection)return send({error:"Connected integration not found"},404);await audit("business.oauth.disconnected",{provider_id:providerId,mode:"local_credential_removal"});return send({provider_id:providerId,status:"revoked",notice:"JD credentials were erased locally. Revoke the app grant in the provider account as well to invalidate provider-side consent immediately."});
   }
   if(b.action==="integration.catalog"){const [c,v,h]=await Promise.all([db.from("jd_business_integration_catalog").select("id,name,category,description,required_scopes,supported_capabilities").eq("enabled",true),db.from("jd_business_oauth_connections").select("provider_id,status,scopes,token_expires_at,last_checked_at,last_error_code").eq("school_id",school),db.from("jd_business_service_checks").select("provider_id,status,latency_ms,status_code,error_code,checked_at").eq("school_id",school).order("checked_at",{ascending:false}).limit(100)]);if(c.error||v.error||h.error)throw c.error||v.error||h.error;const latestChecks=Object.values((h.data||[]).reduce((a:any,x:any)=>{if(!a[x.provider_id])a[x.provider_id]=x;return a;},{}));return send({integrations:(c.data||[]).map((i:any)=>({...i,connection:v.data?.find((x:any)=>x.provider_id===i.id)||{status:"not_connected"}})),service_checks:latestChecks});}
   if(b.action==="contract.versions"){if(!uuid(b.contractId))return send({error:"Contract ID required"},400);const {data,error}=await db.from("jd_business_contract_versions").select("id,version_no,title,body,content_hash,created_at").eq("school_id",school).eq("contract_id",b.contractId).order("version_no",{ascending:false});if(error)throw error;return send({versions:data||[]});}
