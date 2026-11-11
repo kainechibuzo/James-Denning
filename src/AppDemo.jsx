@@ -73,6 +73,7 @@ const OrgCreatePage = lazyPage(() => import("./pages/hiring.jsx"), "OrgCreatePag
 const OrgSignupModal = lazyPage(() => import("./pages/hiring.jsx"), "OrgSignupModal");
 const PublicHireLanding = lazyPage(() => import("./pages/hiring.jsx"), "PublicHireLanding");
 const HiringPage = lazyPage(() => import("./pages/hiring.jsx"), "HiringPage");
+const JDOperationsPage = lazyPage(() => import("./pages/jd-operations.jsx"), "JDOperationsPage");
 
 
 
@@ -2284,6 +2285,7 @@ function AppInner(){
   // Staff/Member: only permitted pages
   const ALL_NAV = [
     {id:"jd-chat",          label:"JD Assistant",    icon:"dashboard", roles:["admin","teacher","student","bursar","manager"]},
+    {id:"jd-operations", label:"Business Operations", icon:"activity", roles:["admin","manager"]},
     {id:"dashboard",       label:"Overview",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
     // ── Admin groups ──
     {id:"g-academic",      group:"Operations",      roles:["admin","bursar"]},
@@ -2667,6 +2669,7 @@ function AppInner(){
 
         <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
           {page==="jd-chat"       && <ChatHome user={user} organizationName={selectedSchool?.name||"Your organisation"}/>}
+          {page==="jd-operations" && (role==="admin"||role==="manager" ? <JDOperationsPage ctx={ctx}/> : <AccessDenied/>)}
           {page==="sections"      && <SectionsPage ctx={ctx}/>}
           {page==="dashboard"     && <DashboardPage ctx={ctx}/>}
           {page==="members"       && <MembersPage ctx={ctx}/>}
