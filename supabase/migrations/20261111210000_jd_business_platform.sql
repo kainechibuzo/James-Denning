@@ -153,3 +153,15 @@ create index if not exists jd_business_budgets_school_idx on public.jd_business_
 alter table public.jd_business_budgets enable row level security;
 revoke all on public.jd_business_budgets from anon,authenticated;
 grant select,insert,update,delete on public.jd_business_budgets to service_role;
+
+-- Consume OAuth state atomically so callbacks cannot be replayed.
+create or replace function public.jd_consume_business_oauth_state(p_state_hash text)
+returns table(id uuid,school_id uuid,provider_id text,actor_id uuid,pkce_verifier_encrypted bytea,redirect_uri text)
+language sql security definer set search_path=''
+as $$
+ update public.jd_business_oauth_states s set consumed_at=now()
+ where s.state_hash=p_state_hash and s.consumed_at is null and s.expires_at>now()
+ returning s.id,s.school_id,s.provider_id,s.actor_id,s.pkce_verifier_encrypted,s.redirect_uri;
+$$;
+revoke all on function public.jd_consume_business_oauth_state(text) from public,anon,authenticated;
+grant execute on function public.jd_consume_business_oauth_state(text) to service_role;

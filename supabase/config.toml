@@ -22,3 +22,6 @@ verify_jwt = true
 
 [functions.jd-business-platform]
 verify_jwt = true
+
+[functions.jd-business-oauth-callback]
+verify_jwt = false

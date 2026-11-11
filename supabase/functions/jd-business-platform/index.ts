@@ -1,3 +1,4 @@
+import {base64Url,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
@@ -92,6 +93,24 @@ Deno.serve(async req=>{
    }
    await audit("business.monitor.completed",{providers:results.length,down:results.filter(x=>x.status==="down").length});
    return send({checks:results,notice:"Checks verify public endpoint reachability only; they do not prove that your OAuth credentials or business integration are connected."});
+  }
+  if(b.action==="oauth.start"){
+   const providerId=str(b.providerId,60),providerConfig:Record<string,{authUrl:string;clientIdEnv:string}>={
+    "google-workspace":{authUrl:"https://accounts.google.com/o/oauth2/v2/auth",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID"},
+    "microsoft-365":{authUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/authorize",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID"},
+    "linkedin":{authUrl:"https://www.linkedin.com/oauth/v2/authorization",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID"}
+   };
+   const config=providerConfig[providerId];if(!config)return send({error:"This provider requires a separate API-key or provider-specific connection flow"},400);
+   const clientId=Deno.env.get(config.clientIdEnv),callback=Deno.env.get("JD_OAUTH_CALLBACK_URL"),encodedKey=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   if(!clientId||!callback||!encodedKey)return send({error:"OAuth provider credentials, callback URL or encryption key are not configured"},503);
+   const callbackUrl=new URL(callback);if(callbackUrl.protocol!=="https:"&&callbackUrl.hostname!=="localhost")return send({error:"OAuth callback URL must use HTTPS"},503);
+   const {data:catalog,error:catalogError}=await db.from("jd_business_integration_catalog").select("required_scopes").eq("id",providerId).eq("enabled",true).maybeSingle();if(catalogError||!catalog)return send({error:"Integration is unavailable"},404);
+   const state=base64Url(crypto.getRandomValues(new Uint8Array(32))),verifier=base64Url(crypto.getRandomValues(new Uint8Array(32))),challenge=base64Url(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(verifier))));
+   const key=await importAesKey(encodedKey),encryptedVerifier=await encryptSecret(verifier,key),stateHash=await sha256Hex(state),expiresAt=new Date(Date.now()+10*60*1000).toISOString();
+   const {error:stateError}=await db.from("jd_business_oauth_states").insert({school_id:school,provider_id:providerId,actor_id:actor,state_hash:stateHash,pkce_verifier_encrypted:encryptedVerifier,redirect_uri:callback,expires_at:expiresAt});if(stateError)throw stateError;
+   const authUrl=new URL(config.authUrl);authUrl.searchParams.set("client_id",clientId);authUrl.searchParams.set("redirect_uri",callback);authUrl.searchParams.set("response_type","code");authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(" "));authUrl.searchParams.set("state",state);authUrl.searchParams.set("code_challenge",challenge);authUrl.searchParams.set("code_challenge_method","S256");
+   if(providerId==="google-workspace"){authUrl.searchParams.set("access_type","offline");authUrl.searchParams.set("prompt","consent");}
+   await audit("business.oauth.started",{provider_id:providerId,expires_at:expiresAt});return send({authorization_url:authUrl.toString(),expires_at:expiresAt});
   }
   if(b.action==="integration.catalog"){const [c,v,h]=await Promise.all([db.from("jd_business_integration_catalog").select("id,name,category,description,required_scopes,supported_capabilities").eq("enabled",true),db.from("jd_business_oauth_connections").select("provider_id,status,scopes,token_expires_at,last_checked_at,last_error_code").eq("school_id",school),db.from("jd_business_service_checks").select("provider_id,status,latency_ms,status_code,error_code,checked_at").eq("school_id",school).order("checked_at",{ascending:false}).limit(100)]);if(c.error||v.error||h.error)throw c.error||v.error||h.error;const latestChecks=Object.values((h.data||[]).reduce((a:any,x:any)=>{if(!a[x.provider_id])a[x.provider_id]=x;return a;},{}));return send({integrations:(c.data||[]).map((i:any)=>({...i,connection:v.data?.find((x:any)=>x.provider_id===i.id)||{status:"not_connected"}})),service_checks:latestChecks});}
   if(b.action==="contract.versions"){if(!uuid(b.contractId))return send({error:"Contract ID required"},400);const {data,error}=await db.from("jd_business_contract_versions").select("id,version_no,title,body,content_hash,created_at").eq("school_id",school).eq("contract_id",b.contractId).order("version_no",{ascending:false});if(error)throw error;return send({versions:data||[]});}

@@ -22,3 +22,5 @@ Deno.test("cash transactions can be attributed to a tenant customer",()=>{assert
 
 Deno.test("revenue intelligence counts cleared inflows and separates currencies",()=>{assertEquals(api.includes('if(b.action==="revenue.analytics")'),true);assertEquals(api.includes('.eq("direction","inflow")'),true);assertEquals(api.includes('r.status==="cleared"'),true);assertEquals(api.includes("by_currency:byCurrency"),true);});
 Deno.test("expense budgets compute category/currency/period utilisation and alerts",()=>{assertEquals(api.includes('if(b.action==="budget.analytics")'),true);assertEquals(api.includes('e.currency===budget.currency&&e.category===budget.category'),true);assertEquals(api.includes('alert:pct>=100?"over_budget"'),true);});
+
+Deno.test("OAuth state consumption is atomic, one-time and expires",()=>{assertEquals(sql.includes("jd_consume_business_oauth_state"),true);assertEquals(sql.includes("s.consumed_at is null and s.expires_at>now()"),true);assertEquals(sql.includes("grant execute on function public.jd_consume_business_oauth_state(text) to service_role"),true);});

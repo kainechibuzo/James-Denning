@@ -46,6 +46,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Test JD OAuth cryptography helpers
+        run: deno test supabase/functions/_shared/jd-oauth-crypto.test.ts
+
       - name: Test JD business platform migration contract
         run: deno test --allow-read=supabase/migrations/20261111210000_jd_business_platform.sql,supabase/functions/jd-business-platform/index.ts supabase/functions/_shared/jd-business-platform-migration.test.ts
 
@@ -109,3 +112,4 @@ jobs:
           deno check supabase/functions/jd-task-scheduler/index.ts
           deno check supabase/functions/jd-task-collaboration/index.ts
           deno check supabase/functions/jd-business-platform/index.ts
+          deno check supabase/functions/jd-business-oauth-callback/index.ts
