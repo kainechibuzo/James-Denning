@@ -53,6 +53,32 @@ Deno.serve(async (req) => {
   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:approval.run_id,event_type:"approval."+decision,event_json:{approval_id:approvalId,execution_status:"not_executed"}});
   return json({approval:updated,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
  }
+ if(payload.action==="usage.summary"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can view agent usage"},403);
+  const {data,error}=await admin.from("jd_automation_runs")
+   .select("id,status,result_json,created_at")
+   .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500);
+  if(error) return json({error:"Could not load agent usage"},500);
+  const runs=data||[];
+  const summary={runs:runs.length,input_tokens:0,output_tokens:0,total_tokens:0,cached_input_tokens:0,reasoning_tokens:0,reported_runs:0,unreported_runs:0};
+  const byDay:Record<string,{runs:number;tokens:number}>={};
+  const byModel:Record<string,{runs:number;tokens:number}>={};
+  for(const run of runs){
+   const usage=run.result_json?.tokenUsage;
+   if(!usage||typeof usage!=="object"){summary.unreported_runs++;continue;}
+   summary.reported_runs++;
+   const input=Number(usage.input_tokens)||0, output=Number(usage.output_tokens)||0;
+   const total=Number(usage.total_tokens)||input+output;
+   summary.input_tokens+=input; summary.output_tokens+=output; summary.total_tokens+=total;
+   summary.cached_input_tokens+=Number(usage.cached_input_tokens)||0;
+   summary.reasoning_tokens+=Number(usage.reasoning_tokens)||0;
+   const day=String(run.created_at||"").slice(0,10)||"unknown";
+   byDay[day]??={runs:0,tokens:0}; byDay[day].runs++; byDay[day].tokens+=total;
+   const model=String(run.result_json?.model||"unknown");
+   byModel[model]??={runs:0,tokens:0}; byModel[model].runs++; byModel[model].tokens+=total;
+  }
+  return json({summary,byDay:Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),byModel:Object.entries(byModel).sort((a,b)=>b[1].tokens-a[1].tokens),note:"Token totals include only provider-reported usage. Costs are not estimated."});
+ }
  if(payload.action==="history"){
   const id=String(payload.conversationId||"");
   if(!id) return json({error:"conversationId is required"},400);
