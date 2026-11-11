@@ -46,7 +46,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Test JD document intelligence helpers\n        run: deno test supabase/functions/_shared/jd-document-intelligence.test.ts\n\n      - name: Test JD OAuth cryptography helpers
+      - name: Test JD document intelligence helpers
+        run: deno test supabase/functions/_shared/jd-document-intelligence.test.ts
+
+      - name: Test JD OAuth cryptography helpers
         run: deno test supabase/functions/_shared/jd-oauth-crypto.test.ts
 
       - name: Test JD business platform migration contract
@@ -112,5 +115,6 @@ jobs:
           deno check supabase/functions/jd-task-scheduler/index.ts
           deno check supabase/functions/jd-task-collaboration/index.ts
           deno check supabase/functions/jd-business-platform/index.ts
-          deno check supabase/functions/jd-business-oauth-callback/index.ts\n          deno check supabase/functions/jd-business-document-worker/index.ts
+          deno check supabase/functions/jd-business-oauth-callback/index.ts
+          deno check supabase/functions/jd-business-document-worker/index.ts
           deno check supabase/functions/jd-business-monitor-worker/index.ts
