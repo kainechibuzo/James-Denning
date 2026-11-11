@@ -28,6 +28,33 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="execution.monitor.list"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
+  const {data:runs,error:runErr}=await admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
+  if(runErr) return json({error:"Could not load JD execution history"},500);
+  const ids=(runs||[]).map((r:any)=>r.id);
+  if(!ids.length) return json({runs:[],jobs:[],steps:[]});
+  const [{data:jobs,error:jobErr},{data:steps,error:stepErr}]=await Promise.all([
+   admin.from("jd_execution_jobs").select("id,run_id,status,attempt_count,max_attempts,available_at,lease_expires_at,heartbeat_at,last_error_code,last_error_message,created_at,updated_at").eq("school_id",profile.school_id).in("run_id",ids).order("created_at",{ascending:false}),
+   admin.from("jd_automation_steps").select("id,run_id,tool_key,risk_level,status,error_message,started_at,completed_at").eq("school_id",profile.school_id).in("run_id",ids).order("step_index",{ascending:true}).limit(500)
+  ]);
+  if(jobErr||stepErr) return json({error:"Could not load execution job details"},500);
+  return json({runs:runs||[],jobs:jobs||[],steps:steps||[]});
+ }
+ if(payload.action==="execution.job.cancel"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can cancel queued JD jobs"},403);
+  const jobId=typeof payload.jobId==="string"?payload.jobId:"";
+  if(!jobId) return json({error:"jobId is required"},400);
+  const {data:job,error:jobErr}=await admin.from("jd_execution_jobs").select("id,run_id,status").eq("id",jobId).eq("school_id",profile.school_id).maybeSingle();
+  if(jobErr||!job) return json({error:"Execution job not found"},404);
+  if(!["queued","retry_wait"].includes(job.status)) return json({error:"Only queued or waiting jobs can be cancelled safely"},409);
+  const {data:updated,error:updateErr}=await admin.from("jd_execution_jobs").update({status:"cancelled",updated_at:new Date().toISOString(),completed_at:new Date().toISOString()}).eq("id",jobId).eq("school_id",profile.school_id).eq("status",job.status).select("id,status").maybeSingle();
+  if(updateErr||!updated) return json({error:"Job changed concurrently; refresh before retrying"},409);
+  const {error:runUpdateErr}=await admin.from("jd_automation_runs").update({status:"cancelled",completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.run_id).eq("school_id",profile.school_id);
+  if(runUpdateErr) return json({error:"Job was cancelled but run summary could not be updated"},500);
+  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:job.run_id,event_type:"execution.cancelled",event_json:{job_id:jobId,previous_status:job.status}});
+  return json({job:updated});
+ }
  if(payload.action==="organisation.blueprints.list"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation blueprints"},403);
   const {data,error}=await admin.from("jd_organisation_blueprints").select("id,title,industry,status,blueprint_json,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
