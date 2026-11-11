@@ -1,0 +1,2 @@
+export function normaliseDocumentText(input:string){return input.replace(/\\u0000/g,"").replace(/\\r\\n?/g,"\\n").replace(/[\\t ]+\\n/g,"\\n").replace(/\\n{4,}/g,"\\n\\n\\n").trim();}
+export function extractiveSummary(input:string,maxSentences=5){const sentences=input.replace(/\\s+/g," ").match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[];const cleaned=sentences.map(x=>x.trim()).filter(x=>x.length>35);if(!cleaned.length)return input.slice(0,500);const chosen=cleaned.slice(0,Math.max(1,Math.min(8,maxSentences)));return chosen.join(" ").slice(0,2000);}
