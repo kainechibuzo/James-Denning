@@ -268,3 +268,25 @@ where id='jd-business-documents';
 
 alter table public.jd_business_support_cases add column if not exists first_response_at timestamptz;
 create index if not exists jd_business_support_sla_idx on public.jd_business_support_cases(school_id,status,priority,created_at);
+
+create unique index if not exists jd_business_cash_statement_one_match_idx
+ on public.jd_business_cash_statement_rows(school_id,matched_transaction_id)
+ where matched_transaction_id is not null;
+create or replace function public.jd_reconcile_business_cash_row(p_school_id uuid,p_actor_id uuid,p_statement_row_id uuid,p_transaction_id uuid)
+returns void language plpgsql security definer set search_path=''
+as $$
+declare s public.jd_business_cash_statement_rows%rowtype; t public.jd_business_cash_transactions%rowtype;
+begin
+ select * into s from public.jd_business_cash_statement_rows where id=p_statement_row_id and school_id=p_school_id for update;
+ if not found then raise exception 'Statement row not found'; end if;
+ select * into t from public.jd_business_cash_transactions where id=p_transaction_id and school_id=p_school_id for update;
+ if not found then raise exception 'Cash transaction not found'; end if;
+ if s.reconciliation_status='matched' or s.matched_transaction_id is not null then raise exception 'Statement row already matched'; end if;
+ if exists(select 1 from public.jd_business_cash_statement_rows where school_id=p_school_id and matched_transaction_id=p_transaction_id) then raise exception 'Cash transaction already matched'; end if;
+ if s.direction<>t.direction or s.currency<>t.currency or s.amount<>t.amount or abs(s.occurred_on-t.occurred_on)>3 then raise exception 'Statement and cash transaction do not match'; end if;
+ update public.jd_business_cash_statement_rows set reconciliation_status='matched',matched_transaction_id=p_transaction_id,matched_by=p_actor_id,matched_at=now() where id=p_statement_row_id;
+ update public.jd_business_cash_transactions set status='cleared',updated_at=now() where id=p_transaction_id and school_id=p_school_id;
+end;
+$$;
+revoke all on function public.jd_reconcile_business_cash_row(uuid,uuid,uuid,uuid) from public,anon,authenticated;
+grant execute on function public.jd_reconcile_business_cash_row(uuid,uuid,uuid,uuid) to service_role;
