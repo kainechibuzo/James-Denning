@@ -98,7 +98,7 @@ Deno.serve(async req=>{
    const providerId=str(b.providerId,60),providerConfig:Record<string,{authUrl:string;clientIdEnv:string}>={
     "google-workspace":{authUrl:"https://accounts.google.com/o/oauth2/v2/auth",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID"},
     "microsoft-365":{authUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/authorize",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID"},
-    "linkedin":{authUrl:"https://www.linkedin.com/oauth/v2/authorization",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID"}
+    "linkedin":{authUrl:"https://www.linkedin.com/oauth/v2/authorization",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID"},\n    "slack":{authUrl:"https://slack.com/oauth/v2/authorize",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID"}
    };
    const config=providerConfig[providerId];if(!config)return send({error:"This provider requires a separate API-key or provider-specific connection flow"},400);
    const clientId=Deno.env.get(config.clientIdEnv),callback=Deno.env.get("JD_OAUTH_CALLBACK_URL"),encodedKey=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
@@ -109,14 +109,14 @@ Deno.serve(async req=>{
    const key=await importAesKey(encodedKey),encryptedVerifier=await encryptSecret(verifier,key),stateHash=await sha256Hex(state),expiresAt=new Date(Date.now()+10*60*1000).toISOString();
    const {error:stateError}=await db.from("jd_business_oauth_states").insert({school_id:school,provider_id:providerId,actor_id:actor,state_hash:stateHash,pkce_verifier_encrypted:encryptedVerifier,redirect_uri:callback,expires_at:expiresAt});if(stateError)throw stateError;
    const authUrl=new URL(config.authUrl);authUrl.searchParams.set("client_id",clientId);authUrl.searchParams.set("redirect_uri",callback);authUrl.searchParams.set("response_type","code");authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(" "));authUrl.searchParams.set("state",state);authUrl.searchParams.set("code_challenge",challenge);authUrl.searchParams.set("code_challenge_method","S256");
-   if(providerId==="google-workspace"){authUrl.searchParams.set("access_type","offline");authUrl.searchParams.set("prompt","consent");}
+   if(providerId==="google-workspace"){authUrl.searchParams.set("access_type","offline");authUrl.searchParams.set("prompt","consent");}if(providerId==="slack"){authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(","));}
    await audit("business.oauth.started",{provider_id:providerId,expires_at:expiresAt});return send({authorization_url:authUrl.toString(),expires_at:expiresAt});
   }
   if(b.action==="oauth.refresh"){
    const providerId=str(b.providerId,60),config:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={
     "google-workspace":{tokenUrl:"https://oauth2.googleapis.com/token",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID",clientSecretEnv:"JD_OAUTH_GOOGLE_CLIENT_SECRET"},
     "microsoft-365":{tokenUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/token",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID",clientSecretEnv:"JD_OAUTH_MICROSOFT_CLIENT_SECRET"},
-    "linkedin":{tokenUrl:"https://www.linkedin.com/oauth/v2/accessToken",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID",clientSecretEnv:"JD_OAUTH_LINKEDIN_CLIENT_SECRET"}
+    "linkedin":{tokenUrl:"https://www.linkedin.com/oauth/v2/accessToken",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID",clientSecretEnv:"JD_OAUTH_LINKEDIN_CLIENT_SECRET"},\n    "slack":{tokenUrl:"https://slack.com/api/oauth.v2.access",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID",clientSecretEnv:"JD_OAUTH_SLACK_CLIENT_SECRET"}
    };
    const provider=config[providerId];if(!provider)return send({error:"Refresh is not supported for this provider"},400);
    const {data:connectionData,error:connectionError}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();const connection:any=connectionData;
@@ -130,6 +130,54 @@ Deno.serve(async req=>{
    const encrypted=await encryptSecret(JSON.stringify(next),key),expires=Number(token.expires_in),expiresAt=Number.isFinite(expires)&&expires>0?new Date(Date.now()+expires*1000).toISOString():null;
    const {error:saveError}=await db.from("jd_business_oauth_connections").update({encrypted_credentials:encrypted,token_expires_at:expiresAt,last_checked_at:new Date().toISOString(),last_error_code:null,key_version:"aes-gcm-v1",updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId);if(saveError)throw saveError;
    await audit("business.oauth.refreshed",{provider_id:providerId});return send({provider_id:providerId,status:"connected",token_expires_at:expiresAt});
+  }
+
+  if(b.action==="oauth.verify"){
+   const providerId=str(b.providerId,60),encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   if(!encoded)return send({error:"OAuth encryption key is not configured"},503);
+   const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();
+   if(error||!connection?.encrypted_credentials)return send({error:"No active connection found"},404);
+   const stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,await importAesKey(encoded)));
+   const endpoints:Record<string,string>={"google-workspace":"https://openidconnect.googleapis.com/v1/userinfo","microsoft-365":"https://graph.microsoft.com/v1.0/me?$select=id,displayName,userPrincipalName","linkedin":"https://api.linkedin.com/v2/userinfo","slack":"https://slack.com/api/auth.test"};
+   const endpoint=endpoints[providerId];if(!endpoint)return send({error:"Live verification is not supported for this provider"},400);
+   const response=await fetch(endpoint,{headers:{Authorization:`Bearer ${stored.access_token}`,Accept:"application/json"},signal:AbortSignal.timeout(10000),redirect:"error"});
+   const payload:any=await response.json().catch(()=>null);
+   if(!response.ok||(providerId==="slack"&&payload?.ok!==true)){await db.from("jd_business_oauth_connections").update({last_error_code:"provider_verification_failed",last_checked_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId);return send({verified:false,provider_id:providerId,error:"Provider rejected the stored access token. Reconnect the integration."},502);}
+   await db.from("jd_business_oauth_connections").update({last_checked_at:new Date().toISOString(),last_error_code:null}).eq("school_id",school).eq("provider_id",providerId);
+   await audit("business.oauth.verified",{provider_id:providerId});
+   const identity=providerId==="slack"?{team:payload.team,name:payload.user}:providerId==="microsoft-365"?{name:payload.displayName,account:payload.userPrincipalName}:{name:payload.name,email:payload.email,sub:payload.sub};
+   return send({verified:true,provider_id:providerId,identity});
+  }
+  if(b.action==="integration.save_paystack_key"){
+   const apiKey=str(b.apiKey,200);if(!/^(sk_test_|sk_live_|rk_test_|rk_live_)[A-Za-z0-9_]+$/.test(apiKey))return send({error:"A valid Paystack test, live or restricted secret key is required"},400);
+   const response=await fetch("https://api.paystack.co/balance",{headers:{Authorization:`Bearer ${apiKey}`,Accept:"application/json"},signal:AbortSignal.timeout(10000),redirect:"error"});
+   const verification:any=await response.json().catch(()=>null);if(!response.ok||verification?.status!==true)return send({error:"Paystack rejected this API key"},401);
+   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
+   const encrypted=await encryptSecret(JSON.stringify({secret_key:apiKey,issued_at:new Date().toISOString()}),await importAesKey(encoded));
+   const {error}=await db.from("jd_business_oauth_connections").upsert({school_id:school,provider_id:"paystack",status:"connected",scopes:["transaction:read"],connected_by:actor,connected_at:new Date().toISOString(),encrypted_credentials:encrypted,key_version:"aes-gcm-v1",last_checked_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()},{onConflict:"school_id,provider_id"});
+   if(error)throw error;await audit("business.paystack.connected",{mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live"});return send({provider_id:"paystack",status:"connected",mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live",verified:true});
+  }
+  if(b.action==="paystack.transactions.sync"){
+   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
+   const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials").eq("school_id",school).eq("provider_id","paystack").eq("status","connected").maybeSingle();
+   if(error||!connection?.encrypted_credentials)return send({error:"Paystack is not connected"},404);
+   const stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,await importAesKey(encoded))),from=date(b.from),to=date(b.to);
+   const query=new URLSearchParams({perPage:"100",page:"1",status:"success"});if(from)query.set("from",from+"T00:00:00.000Z");if(to)query.set("to",to+"T23:59:59.999Z");
+   const response=await fetch("https://api.paystack.co/transaction?"+query.toString(),{headers:{Authorization:`Bearer ${stored.secret_key}`,Accept:"application/json"},signal:AbortSignal.timeout(15000),redirect:"error"});
+   const payload:any=await response.json().catch(()=>null);if(!response.ok||payload?.status!==true)return send({error:"Paystack transaction retrieval failed"},502);
+   const transactions=Array.isArray(payload.data)?payload.data:[],currency=String(transactions[0]?.currency||"NGN").toUpperCase();
+   const {data:batch,error:batchError}=await db.from("jd_business_cash_statement_imports").insert({school_id:school,file_name:"Paystack API import",currency,row_count:transactions.length,imported_by:actor}).select("id").single();if(batchError)throw batchError;
+   const accepted=[];
+   for(const tx of transactions){
+    if(tx.status!=="success"||!tx.paid_at||!Number.isFinite(Number(tx.amount))||!tx.currency)continue;
+    const ccy=String(tx.currency).toUpperCase(),decimals=["JPY","KRW"].includes(ccy)?0:2,amount=Number(tx.amount)/Math.pow(10,decimals),occurred=new Date(tx.paid_at).toISOString().slice(0,10),reference=str(tx.reference,180),description=str(tx.gateway_response||tx.channel||"Paystack transaction",300);
+    if(amount<=0)continue;
+    const fingerprint=await sha256Hex([occurred,"inflow",amount.toFixed(2),ccy,reference].join("|"));
+    const {error}=await db.from("jd_business_cash_statement_rows").insert({school_id:school,import_id:batch.id,occurred_on:occurred,direction:"inflow",amount,currency:ccy,reference,description,row_fingerprint:fingerprint}).select("id").maybeSingle();
+    if(!error)accepted.push(reference);
+   }
+   await audit("business.paystack.transactions_synced",{import_id:batch.id,received:transactions.length,imported:accepted.length});
+   return send({import_id:batch.id,received:transactions.length,imported:accepted.length,notice:"Paystack transactions were imported as bank-statement rows. Reconcile them against cashflow records manually; no payment or refund action is exposed."});
   }
   if(b.action==="oauth.disconnect"){
    const providerId=str(b.providerId,60);if(!["google-workspace","microsoft-365","linkedin"].includes(providerId))return send({error:"Local disconnect is not supported for this provider"},400);
