@@ -1,7 +1,7 @@
 import {assertEquals,assertThrows} from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {buildCapabilityReport,JD_BATCH_01_CAPABILITY_KEYS} from "./jd-capability-intelligence.ts";
 import {validateOrganisationBlueprint} from "./jd-organisation-blueprint.ts";
-import {canTransitionTask,makeIdempotencyKey} from "./jd-operations.ts";
+import {canTransitionTask,makeIdempotencyKey,normaliseTaskInput} from "./jd-operations.ts";
 import {candidateStageTransition,validateVacancy} from "./jd-hiring.ts";
 Deno.test("batch 01 registry enumerates all twenty upgrade capabilities",()=>assertEquals(JD_BATCH_01_CAPABILITY_KEYS.length,20));
 Deno.test("capability report does not claim deployment without evidence",()=>assertEquals(buildCapabilityReport({"execution.dispatcher":{code:true,migration:true}})[0].state,"implemented"));
