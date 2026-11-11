@@ -24,3 +24,5 @@ Deno.test("revenue intelligence counts cleared inflows and separates currencies"
 Deno.test("expense budgets compute category/currency/period utilisation and alerts",()=>{assertEquals(api.includes('if(b.action==="budget.analytics")'),true);assertEquals(api.includes('e.currency===budget.currency&&e.category===budget.category'),true);assertEquals(api.includes('alert:pct>=100?"over_budget"'),true);});
 
 Deno.test("OAuth state consumption is atomic, one-time and expires",()=>{assertEquals(sql.includes("jd_consume_business_oauth_state"),true);assertEquals(sql.includes("s.consumed_at is null and s.expires_at>now()"),true);assertEquals(sql.includes("grant execute on function public.jd_consume_business_oauth_state(text) to service_role"),true);});
+
+Deno.test("support cases retain SLA deadlines and resolution evidence fields",()=>{assertEquals(sql.includes("sla_due_at timestamptz"),true);assertEquals(sql.includes("resolved_at timestamptz, resolution_note text"),true);assertEquals(api.includes('patch.resolution_note=str(x.resolution_note,5000)'),true);});

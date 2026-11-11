@@ -122,3 +122,12 @@ Provider-reported token usage for this repository work is unavailable and is not
 - **Intentional gaps:** secure private document upload/download is implemented with tenant-prefixed paths and short-lived signed URLs; document scanning, extraction, OCR and summaries still require a worker and must remain pending until it runs. OAuth PKCE and encrypted token persistence are implemented but provider secrets and live callback smoke tests remain outstanding; refresh/revoke and Slack/Paystack credential flows remain open; external service monitoring has allowlisted, manager-triggered public endpoint probes and persisted observations, but no scheduled probe worker/alert delivery; report sharing/export and predictive validation are not enabled; cashflow entries must be entered and reconciled manually. Predictive baselines are descriptive, low-confidence, currency-separated, and must not be described as cash forecasts.
 - **Production:** no migrations applied and no Edge Function deployed. No outbound sends, payments, refunds, contract signing or OAuth token exchange enabled.
 - **Token usage:** provider-reported usage unavailable; not estimated.
+
+
+## JD-B02-15 — Support SLA and resolution evidence
+
+- Support records now expose their SLA deadline and clearly flag overdue cases while they remain open.
+- A resolution summary is required in the workspace before the case can be marked resolved.
+- Resolution timestamp and summary are persisted through the existing manager-authorised update action.
+- Internal notes remain separate from the customer-facing resolution summary.
+- Automated SLA policy calculation, notifications and escalation delivery remain unimplemented; deadlines are explicitly set on case creation.
