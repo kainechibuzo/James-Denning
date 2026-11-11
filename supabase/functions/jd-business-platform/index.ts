@@ -385,7 +385,7 @@ Deno.serve(async req=>{
    const {data,error}=await db.from("jd_business_reports").select("id,title,period_start,period_end,report_json,source_metadata").eq("id",reportId).eq("school_id",school).maybeSingle();
    if(error||!data)return send({error:"Report not found"},404);
    const metrics=(data.report_json as any)?.metrics||{},escapeCsv=(v:unknown)=>'"'+String(v??"").replace(/"/g,'""')+'"';
-   const csv=["metric,value",...Object.entries(metrics).flatMap(([key,value]:[string,any])=>value&&typeof value==="object"?Object.entries(value).map(([currency,amount])=>[key+"_"+currency,amount].map(escapeCsv).join(",")):[[key,value].map(escapeCsv).join(",")])].join("\\n");
+   const csv=["metric,value",...Object.entries(metrics).flatMap(([key,value]:[string,any])=>value&&typeof value==="object"?Object.entries(value).map(([currency,amount])=>[key+"_"+currency,amount].map(escapeCsv).join(",")):[[key,value].map(escapeCsv).join(",")])].join("\n");
    await audit("business.report.exported",{report_id:reportId,format:"csv"});
    return new Response(csv,{status:200,headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":'attachment; filename="jd-executive-report.csv"',"Cache-Control":"no-store"}});
   }
