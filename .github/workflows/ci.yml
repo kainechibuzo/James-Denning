@@ -46,6 +46,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Test JD timezone-aware recurring schedule calculation
+        run: deno test supabase/functions/_shared/jd-scheduler.test.ts
+
       - name: Test JD execution reliability helpers
         run: deno test supabase/functions/_shared/jd-agent-runtime.test.ts
 
@@ -94,3 +97,4 @@ jobs:
           deno check supabase/functions/manage-account/index.ts
           deno check supabase/functions/jd-automation/index.ts
           deno check supabase/functions/jd-execution-worker/index.ts
+          deno check supabase/functions/jd-task-scheduler/index.ts
