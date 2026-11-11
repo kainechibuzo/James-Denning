@@ -28,6 +28,43 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="intelligence.snapshot"){
+  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect business intelligence"},403);
+  const [{data:people,error:peopleErr},{data:bills,error:billsErr},{data:announcements,error:annErr},{data:emails,error:emailErr},{data:tasks,error:tasksErr},{data:session,error:sessionErr},{data:terms,error:termsErr}]=await Promise.all([
+   admin.from("profiles").select("role").eq("school_id",profile.school_id).limit(5000),
+   admin.from("fee_bills").select("total_amount,amount_paid,balance,status").eq("school_id",profile.school_id).limit(5000),
+   admin.from("announcements").select("title,audience,target_audience,created_at,is_active").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(8),
+   admin.from("email_logs").select("subject,recipient_count,status,error_message,sent_at").eq("school_id",profile.school_id).order("sent_at",{ascending:false}).limit(20),
+   admin.from("jd_operational_tasks").select("status,priority").eq("school_id",profile.school_id).limit(5000),
+   admin.from("sessions").select("id,name").eq("school_id",profile.school_id).eq("is_active",true).limit(1).maybeSingle(),
+   admin.from("terms").select("id,name,session_id").eq("school_id",profile.school_id).eq("is_active",true).limit(5)
+  ]);
+  if(peopleErr||billsErr||annErr||emailErr||tasksErr||sessionErr||termsErr) return json({error:"Business intelligence sources could not be loaded"},500);
+  const roleCounts:Record<string,number>={};
+  for(const row of people||[]){const role=String(row.role||"unknown");roleCounts[role]=(roleCounts[role]||0)+1;}
+  const billRows=bills||[];
+  const finance={bill_count:billRows.length,total_billed:billRows.reduce((a:any,r:any)=>a+Number(r.total_amount||0),0),total_paid:billRows.reduce((a:any,r:any)=>a+Number(r.amount_paid||0),0),outstanding:billRows.reduce((a:any,r:any)=>a+Number(r.balance||0),0),by_status:billRows.reduce((a:any,r:any)=>{const s=String(r.status||"unknown");a[s]=(a[s]||0)+1;return a;},{})};
+  const term=(terms||[]).find((t:any)=>!session||String(t.session_id)===String(session.id));
+  let performance:any={available:false,reason:"No active session and term are configured"};
+  if(session&&term){
+   const scores:number[]=[];let from=0;const batch=1000;let truncated=false;
+   while(from<10000){
+    const {data,error}=await admin.from("portal_results").select("total_score").eq("school_id",profile.school_id).eq("session_id",session.id).eq("term_id",term.id).not("total_score","is",null).range(from,from+batch-1);
+    if(error) return json({error:"Performance records could not be summarised"},500);
+    for(const row of data||[]) scores.push(Number(row.total_score));
+    if(!data||data.length<batch) break;
+    from+=batch;if(from>=10000) truncated=true;
+   }
+   performance={available:true,session:session.name,term:term.name,...summariseScores(scores),truncated};
+  }
+  return json({
+   people:{total_members:(people||[]).length,roles:roleCounts,sample_truncated:(people||[]).length>=5000},
+   finance,
+   performance,
+   operations:summariseTaskStatuses(tasks||[]),
+   communications:{recent_announcements:announcements||[],recent_email_batches:(emails||[]).map((e:any)=>({subject:e.subject,recipients:e.recipient_count,status:e.status,error:e.error_message,sent_at:e.sent_at}))}
+  });
+ }
  if(payload.action==="execution.monitor.list"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
   let runQuery=admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id);
