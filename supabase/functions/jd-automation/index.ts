@@ -53,6 +53,32 @@ Deno.serve(async (req) => {
   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:approval.run_id,event_type:"approval."+decision,event_json:{approval_id:approvalId,execution_status:"not_executed"}});
   return json({approval:updated,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
  }
+ if(payload.action==="runs.list"){
+  if(profile.role!=="admin") return json({error:"Only workspace admins can view automation runs"},403);
+  const {data,error}=await admin.from("jd_automation_runs")
+   .select("id,requested_by,trigger_type,status,request_text,result_json,created_at,started_at,completed_at")
+   .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(50);
+  if(error) return json({error:"Could not load automation runs"},500);
+  const runs=data||[];
+  const ids=runs.map((run:any)=>run.id);
+  let steps:any[]=[];
+  if(ids.length){
+   const {data:stepData,error:stepError}=await admin.from("jd_automation_steps")
+    .select("id,run_id,step_index,tool_key,risk_level,status,error_message,started_at,completed_at")
+    .eq("school_id",profile.school_id).in("run_id",ids).order("step_index",{ascending:true});
+   if(stepError) return json({error:"Could not load automation steps"},500);
+   steps=stepData||[];
+  }
+  const byRun=new Map<string,any[]>();
+  for(const step of steps){const list=byRun.get(step.run_id)||[];list.push(step);byRun.set(step.run_id,list);}
+  return json({runs:runs.map((run:any)=>({
+   id:run.id,requested_by:run.requested_by,trigger_type:run.trigger_type,status:run.status,
+   request_preview:String(run.request_text||"").slice(0,500),created_at:run.created_at,
+   started_at:run.started_at,completed_at:run.completed_at,
+   token_usage:run.result_json?.tokenUsage||null,model:run.result_json?.model||null,
+   steps:byRun.get(run.id)||[]
+  }))});
+ }
  if(payload.action==="usage.summary"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can view agent usage"},403);
   const {data,error}=await admin.from("jd_automation_runs")
