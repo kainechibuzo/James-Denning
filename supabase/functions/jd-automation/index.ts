@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
     if(event.status==="started"){
      const {data,error}=await admin.from("jd_automation_steps").insert({
       school_id:profile.school_id,run_id:run.id,step_index:++stepIndex,tool_key:String(event.name||"unknown"),
-      risk_level:String(event.risk||"low"),status:"running",input_json:{call_id:callId}
+      risk_level:String(event.risk||"low"),status:"running",input_json:{call_id:callId},started_at:new Date().toISOString()
      }).select("id").single();
      if(error||!data) throw new Error("Could not record agent tool execution step");
      if(callId) stepIds.set(callId,data.id);
@@ -179,7 +179,8 @@ Deno.serve(async (req) => {
      if(stepId){
       const {error}=await admin.from("jd_automation_steps").update({
        status:event.status==="completed"?"completed":"failed",
-       output_json:{event:event.status},completed_at:new Date().toISOString()
+       output_json:{event:event.status},error_message:event.status==="failed"?String(event.error||"Tool execution failed").slice(0,240):null,
+       completed_at:new Date().toISOString()
       }).eq("id",stepId).eq("school_id",profile.school_id);
       if(error) throw new Error("Could not update agent tool execution step");
      }
