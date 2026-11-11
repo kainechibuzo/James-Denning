@@ -172,6 +172,12 @@ Deno.serve(async req=>{
    const {error}=await db.from("jd_business_oauth_connections").upsert({school_id:school,provider_id:"paystack",status:"connected",scopes:["transaction:read"],connected_by:actor,connected_at:new Date().toISOString(),encrypted_credentials:encrypted,key_version:"aes-gcm-v1",last_checked_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()},{onConflict:"school_id,provider_id"});
    if(error)throw error;await audit("business.paystack.connected",{mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live"});return send({provider_id:"paystack",status:"connected",mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live",verified:true});
   }
+  if(b.action==="integration.disconnect_paystack"){
+   const {data,error}=await db.from("jd_business_oauth_connections").update({status:"revoked",encrypted_credentials:null,key_version:null,last_error_code:"locally_disconnected",updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id","paystack").select("provider_id").maybeSingle();
+   if(error||!data)return send({error:"Paystack connection not found"},404);
+   await audit("business.paystack.disconnected",{mode:"local_credential_erasure"});
+   return send({provider_id:"paystack",status:"revoked",notice:"The encrypted Paystack key was erased from JD. Rotate/revoke the key in Paystack if it may have been exposed."});
+  }
   if(b.action==="paystack.transactions.sync"){
    const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
    const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials").eq("school_id",school).eq("provider_id","paystack").eq("status","connected").maybeSingle();
@@ -333,7 +339,7 @@ Deno.serve(async req=>{
     if(exact.length===1)await db.from("jd_business_cash_statement_rows").update({reconciliation_status:"suggested"}).eq("id",inserted.id).eq("school_id",school);
     imported.push({row:inserted,suggestions:exact});
    }
-   await audit("business.cashflow.statement_imported",{import_id:batch.id,accepted:imported.length,rejected:rejected.length});
+   await db.from("jd_business_cash_statement_imports").update({row_count:imported.length}).eq("id",batch.id).eq("school_id",school);await audit("business.cashflow.statement_imported",{import_id:batch.id,accepted:imported.length,rejected:rejected.length});
    return send({import_id:batch.id,imported:imported.length,rejected,rows:imported,notice:"Matches are suggestions only. Confirm each match to clear a cash transaction."},201);
   }
   if(b.action==="cashflow.reconciliation.list"){
