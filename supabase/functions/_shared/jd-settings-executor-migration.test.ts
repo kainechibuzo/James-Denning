@@ -25,6 +25,7 @@ Deno.test("executor checks stale before-values and verifies persisted values", (
 Deno.test("execution steps are idempotent and separately audited", () => {
   assert(migration.includes("unique (approval_id, step_index)"), "one record per proposal step");
   assert(migration.includes("already_completed"), "completed steps are never applied twice");
+  assert(migration.includes("coalesce((c->>'approval_required')::boolean,false) is true"), "completion count includes only approval-gated steps");
   assert(migration.includes("settings.step_completed"), "each completed step is audited");
   assert(migration.includes("settings.step_conflict"), "conflicts are audited");
   assert(migration.includes("settings.proposal_completed"), "final completion is audited");
