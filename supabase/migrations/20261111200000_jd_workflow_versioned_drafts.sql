@@ -161,6 +161,7 @@ declare
   v_proposal jsonb;
   v_proposal_hash text;
   v_existing public.jd_approvals%rowtype;
+  v_audit_id uuid;
 begin
   select p.school_id into v_school_id
   from public.profiles p
@@ -178,12 +179,6 @@ begin
   if v_version.version_no <> v_workflow.latest_version_no then
     raise exception 'Only the latest workflow version can be submitted for review' using errcode = '40001';
   end if;
-  if exists(select 1 from public.jd_approvals a
-    where a.school_id = v_school_id and a.action_key = 'workflow.activate'
-      and a.status = 'pending' and a.proposal_json->>'workflow_id' = v_workflow.id::text) then
-    raise exception 'A workflow version is already awaiting review' using errcode = '23505';
-  end if;
-
   v_proposal := jsonb_build_object(
     'workflow_id',v_workflow.id,'version_id',v_version.id,
     'version_no',v_version.version_no,'definition_hash',v_version.definition_hash,
@@ -219,15 +214,12 @@ begin
     'not_executed',v_proposal_hash
   ) returning id into v_approval_id;
 
-  update public.jd_audit_events
-  set event_json = event_json || jsonb_build_object('approval_id',v_approval_id)
-  where id = (
-    insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json)
-    values(v_school_id,p_actor_id,v_run_id,'workflow.review.submitted',
-      jsonb_build_object('workflow_id',v_workflow.id,'version_id',v_version.id,
-        'version_no',v_version.version_no,'definition_hash',v_version.definition_hash))
-    returning id
-  );
+  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json)
+  values(v_school_id,p_actor_id,v_run_id,'workflow.review.submitted',
+    jsonb_build_object('approval_id',v_approval_id,'workflow_id',v_workflow.id,
+      'version_id',v_version.id,'version_no',v_version.version_no,
+      'definition_hash',v_version.definition_hash))
+  returning id into v_audit_id;
 
   return jsonb_build_object('approval_id',v_approval_id,'run_id',v_run_id,
     'workflow_id',v_workflow.id,'version_id',v_version.id,
