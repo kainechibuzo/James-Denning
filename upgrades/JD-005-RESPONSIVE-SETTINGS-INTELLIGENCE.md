@@ -84,7 +84,13 @@ JD must distinguish existing supported configuration from new development. It mu
 - Marks workspace, identity, security and billing changes as Review Centre approval-required; other registered settings require explicit confirmation.
 - No setting is changed by this tool. Proposal persistence, exact-payload approval binding and verified execution remain outstanding.
 
-## 7. Verification and remaining work
+## 7. JD-005D Review Centre proposal persistence
+- Settings proposals are revalidated server-side against current workspace values.
+- A service-role-only RPC verifies administrator membership, hashes the exact JSONB proposal in the database, persists a Review Centre approval and automation run, and records an audit event.
+- Duplicate proposal hashes resolve to the existing review item.
+- No settings are changed; approved proposals remain not_executed until a dedicated executor exists.
+
+## 8. Verification and remaining work
 - Run production build, lint/type checks and existing tests.
 - Add browser visual tests for the screenshot routes at the acceptance widths.
 - Audit remaining page-specific inline styles; generic CSS overrides are not a substitute for per-page verification.
