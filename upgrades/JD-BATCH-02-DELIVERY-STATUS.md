@@ -14,20 +14,20 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 04 | Recurring Operations Scheduler | in_progress | IANA timezone schedules, DST-safe next-run calculation, durable queue dispatch, idempotency and missed-run policy. |
 | 05 | Automated Task Assignment | in_progress | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
 | 06 | Department Collaboration | in_progress | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
-| 07 | Predictive Performance Analysis | proposed | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
-| 08 | Revenue Intelligence | proposed | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
-| 09 | Expense Monitoring | proposed | Categorised expenses, budget thresholds, variance evidence and approval-bound edits. |
+| 07 | Predictive Performance Analysis | in_progress | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
+| 08 | Revenue Intelligence | in_progress | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
+| 09 | Expense Monitoring | in_progress | Categorised expenses, budget thresholds, variance evidence and approval-bound edits. |
 | 10 | Cash-flow Reporting | proposed | Cash-in/out timeline, receivables/payables, scenario assumptions and reconciliation warnings. |
-| 11 | Document Intelligence | proposed | Secure upload metadata, extraction pipeline, untrusted-content handling and source-linked summaries. |
-| 12 | Contract and Proposal Management | proposed | Versioned records, review lifecycle, renewal reminders and no e-signature without a separate provider/approval design. |
-| 13 | Customer Relationship Management | proposed | Tenant-scoped customer records, contacts, activity timeline, consent and access boundaries. |
-| 14 | Sales Pipeline Automation | proposed | Opportunity stages, weighted forecast, next actions and approval-bound external communications. |
-| 15 | Customer Support Workflows | proposed | Case intake, assignment, priority, SLA clocks, internal notes and verified resolution. |
-| 16 | Integration Marketplace | proposed | Provider catalogue, scopes, capabilities and truthful configured/connected/healthy states. |
-| 17 | Secure OAuth Integration Manager | proposed | OAuth state/PKCE, encrypted server-side credentials, scope minimisation, refresh/revoke and audit. |
-| 18 | External Service Monitoring | proposed | Scheduled health checks, bounded timeouts, latency/error history and alert deduplication. |
-| 19 | Business Health Monitoring | proposed | Explainable scorecards with contributing evidence, freshness and missing-data caveats. |
-| 20 | Executive Intelligence Reports | proposed | Date-scoped evidence-linked reports, source freshness, export and approval-bound sharing. |
+| 11 | Document Intelligence | in_progress | Secure upload metadata, extraction pipeline, untrusted-content handling and source-linked summaries. |
+| 12 | Contract and Proposal Management | in_progress | Versioned records, review lifecycle, renewal reminders and no e-signature without a separate provider/approval design. |
+| 13 | Customer Relationship Management | in_progress | Tenant-scoped customer records, contacts, activity timeline, consent and access boundaries. |
+| 14 | Sales Pipeline Automation | in_progress | Opportunity stages, weighted forecast, next actions and approval-bound external communications. |
+| 15 | Customer Support Workflows | in_progress | Case intake, assignment, priority, SLA clocks, internal notes and verified resolution. |
+| 16 | Integration Marketplace | in_progress | Provider catalogue, scopes, capabilities and truthful configured/connected/healthy states. |
+| 17 | Secure OAuth Integration Manager | in_progress | OAuth state/PKCE, encrypted server-side credentials, scope minimisation, refresh/revoke and audit. |
+| 18 | External Service Monitoring | in_progress | Scheduled health checks, bounded timeouts, latency/error history and alert deduplication. |
+| 19 | Business Health Monitoring | in_progress | Explainable scorecards with contributing evidence, freshness and missing-data caveats. |
+| 20 | Executive Intelligence Reports | in_progress | Date-scoped evidence-linked reports, source freshness, export and approval-bound sharing. |
 
 ## JD-B02-03 — Visual Workflow Editor
 
@@ -110,3 +110,15 @@ Provider-reported token usage for this repository work is unavailable and is not
 - **Not delivered:** mention notifications, realtime updates, attachments, staff self-service access, per-department membership visibility, or production deployment.
 - **Verification gate:** GitHub Web CI, Deno type-check for the new Edge Function, migration contract tests, staging migration, manager-role and cross-tenant denial tests.
 - **Production state:** migration not applied; Edge Function not deployed.
+
+
+## JD-B02-07–20 — Multi-industry Business Platform implementation foundation
+
+- **Status:** implementation added; CI and staging verification pending.
+- **Data model:** tenant-scoped customer/CRM records, sales opportunities, activity timeline, expenses with admin decision controls, contracts with immutable content versions, secure document metadata, support cases/internal notes, integration catalogue, OAuth connection/state metadata, service-health observations and executive report snapshots.
+- **API:** authenticated `jd-business-platform` Edge Function derives workspace and role from the signed-in profile; browser-supplied tenant IDs are ignored; reads/writes are tenant-filtered; expense/contract/report decisions have role checks; record changes emit audit events.
+- **Delivered operational flows:** customer and opportunity CRUD; activity timeline API; opportunity stage/weighted pipeline; expense intake and admin approval/rejection; contract draft creation with SHA-256 version 1 and review/activation state controls; support case intake, priority/status/assignment and internal-note API; cash transaction intake and clear/void reconciliation; generated executive report snapshots saved as drafts.
+- **Analytics:** revenue won, pipeline and weighted pipeline; approved expense rollups; cash in/out/net split by currency; trailing-three-period performance baseline (only with at least three periods, explicitly low-confidence); explainable business health indicators with no unsupported single score; 30-day executive report generation with source/limitation metadata.
+- **Intentional gaps:** document upload/extraction is disabled until a private storage bucket, per-tenant object policies, malware scanning and extraction worker exist; OAuth is catalogue/schema-only (no PKCE callback, KMS-backed token encryption, refresh/revoke or connected providers); service monitoring has observation tables but no scheduled probe worker/alert delivery; report sharing/export and predictive validation are not enabled; cashflow entries must be entered and reconciled manually.
+- **Production:** no migrations applied and no Edge Function deployed. No outbound sends, payments, refunds, contract signing or OAuth token exchange enabled.
+- **Token usage:** provider-reported usage unavailable; not estimated.

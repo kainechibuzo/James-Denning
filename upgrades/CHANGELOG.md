@@ -298,3 +298,14 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Verification:** GitHub Web CI passed, including production web build, task-collaboration migration contract test, all existing JD contract/unit tests, and secured Edge Function type-check.
 - **Deployment:** Vercel preview status remains blocked by the daily deployment quota. Supabase migration and Edge Function remain undeployed pending staging validation.
 - **Token usage:** provider-reported usage unavailable; not estimated.
+
+
+## JD-B02-07–20 — Multi-industry Business Platform implementation foundation
+
+- **Status:** implementation added; CI and staging verification pending.
+- **Data model:** tenant-scoped customer/CRM records, sales opportunities, activity timeline, expenses with admin decision controls, contracts with immutable content versions, secure document metadata, support cases/internal notes, integration catalogue, OAuth connection/state metadata, service-health observations and executive report snapshots.
+- **API:** authenticated `jd-business-platform` Edge Function derives workspace and role from the signed-in profile; rejects browser role escalation; reads/writes are tenant-filtered; expense/contract/report decisions have role checks; record changes emit audit events.
+- **Analytics:** pipeline weighted value, wins, approved spend, support volume and record coverage derive from saved JD records. Legacy school billing is not presumed corporate revenue. Currency aggregation is labelled and requires currency separation.
+- **Intentional gaps:** no document upload/extraction worker or storage bucket yet; no provider OAuth callback/token encryption implementation or connected integrations yet; monitoring tables exist but checks are not actively scheduled; forecasts/reports need historical source data and UI workflow completion.
+- **Production:** no migrations applied and no Edge Function deployed. No outbound sends, payments, refunds or signing actions enabled.
+- **Token usage:** provider-reported usage unavailable; not estimated.

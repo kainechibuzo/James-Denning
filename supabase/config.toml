@@ -19,3 +19,6 @@ verify_jwt = false
 
 [functions.jd-task-collaboration]
 verify_jwt = true
+
+[functions.jd-business-platform]
+verify_jwt = true
