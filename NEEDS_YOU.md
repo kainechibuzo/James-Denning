@@ -85,7 +85,7 @@ The scheduled workflow fails visibly when these secrets are absent. Deploy the w
 
 ## JD Business Platform — document extraction worker
 
-The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, computes a checksum and creates a bounded extractive summary. PDF and DOCX are marked unsupported until parser runtimes are added; OCR, malware scanning and AI-generated summaries are not claimed.
+The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text using pinned Deno npm parser dependencies, computes a checksum and creates a bounded extractive summary. Scanned-image OCR, malware scanning and AI-generated summaries are not implemented; PDFs without embedded text are marked `ocr_required`.
 
 Configure GitHub Actions repository secrets:
 
