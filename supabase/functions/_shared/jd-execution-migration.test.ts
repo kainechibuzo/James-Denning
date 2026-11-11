@@ -38,7 +38,7 @@ Deno.test("worker queue access is bounded and server-only", () => {
   assert(migration.includes("p_batch_size < 1 or p_batch_size > 20"), "worker batch size is bounded");
   assert(migration.includes("grant execute on function public.jd_read_execution_messages(integer, integer) to service_role"), "only service role can read queue messages");
   assert(migration.includes("grant execute on function public.jd_ack_execution_message(uuid, bigint) to service_role"), "only service role can acknowledge messages");
-  assert(migration.includes("if v_status not in ('completed','partially_completed','failed','cancelled')"), "acknowledgement is terminal-state-only");
+  assert(migration.includes("if v_status is null or v_status not in ('completed','partially_completed','failed','cancelled')"), "acknowledgement rejects unknown jobs and non-terminal states");
 });
 
 Deno.test("retry scheduling is bounded and archives the replaced delivery", () => {
