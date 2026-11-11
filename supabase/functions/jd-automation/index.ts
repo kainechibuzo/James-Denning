@@ -262,7 +262,7 @@ Deno.serve(async (req) => {
    const timezone=typeof input.timezone==="string"?input.timezone:"";
    const localTime=typeof input.localTime==="string"?input.localTime:"";
    const weekdays=Array.isArray(input.weekdays)?[...new Set(input.weekdays.map(Number).filter((x:number)=>Number.isInteger(x)&&x>=1&&x<=7))]:[1,2,3,4,5];
-   if(!frequency||!/^\\d{2}:\\d{2}$/.test(localTime)||!timezone)return json({error:"Choose a frequency, HH:MM local time and IANA timezone"},400);
+   if(!frequency||!/^\d{2}:\d{2}$/.test(localTime)||!timezone)return json({error:"Choose a frequency, HH:MM local time and IANA timezone"},400);
    let nextRun:Date;try{nextRun=nextScheduleAt(new Date(),{frequency,localTime,timezone,weekdays});}catch(e){return json({error:e instanceof Error?e.message:"Invalid schedule"},400);}
    const title=typeof input.title==="string"?input.title.trim():"";
    const department=typeof input.department==="string"?input.department.trim():"";
