@@ -78,7 +78,13 @@ JD must distinguish existing supported configuration from new development. It mu
 - Added responsive CSS rules for two-column grids, narrow controls and scrollable tables.
 - Added this upgrade specification and master checklist entry.
 
-## 6. Verification and remaining work
+## 6. JD-005C settings change planner
+- Added a validated, read-only proposal tool for up to 20 registered settings.
+- Shows before/after values, rejects unknown or invalid keys, detects duplicates and no-op changes.
+- Marks workspace, identity, security and billing changes as Review Centre approval-required; other registered settings require explicit confirmation.
+- No setting is changed by this tool. Proposal persistence, exact-payload approval binding and verified execution remain outstanding.
+
+## 7. Verification and remaining work
 - Run production build, lint/type checks and existing tests.
 - Add browser visual tests for the screenshot routes at the acceptance widths.
 - Audit remaining page-specific inline styles; generic CSS overrides are not a substitute for per-page verification.

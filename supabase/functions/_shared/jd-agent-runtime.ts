@@ -1,3 +1,4 @@
+import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
 export type AgentContext = {
   admin: any;
@@ -196,6 +197,44 @@ const tools: ToolSpec[] = [
         value: row.value,
       })).filter((row: any) => row.key));
       return filterSettingsCatalogue(catalogue, typeof args.category === "string" ? args.category : undefined);
+    },
+  },
+  {
+    name: "plan_workspace_settings_changes",
+    description: "Prepare a validated, read-only before-and-after proposal for up to 20 registered organisation settings. Marks identity, workspace, security and billing changes as requiring Review Centre approval; ordinary portal/performance changes require explicit confirmation. Never applies changes.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: {
+      type: "object",
+      properties: {
+        changes: {
+          type: "array",
+          minItems: 1,
+          maxItems: 20,
+          items: {
+            type: "object",
+            properties: {
+              key: { type: "string" },
+              value: { type: ["string", "number", "boolean"] },
+            },
+            required: ["key", "value"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["changes"],
+      additionalProperties: false,
+    },
+    execute: async (args, ctx) => {
+      const requested = Array.isArray(args.changes) ? args.changes as Array<{ key: string; value: unknown }> : [];
+      const keys = [...new Set(requested.map((item) => item.key).filter((key) => typeof key === "string"))];
+      const { data, error } = await ctx.admin.from("school_settings")
+        .select("key,value").eq("school_id", ctx.schoolId).in("key", keys).limit(100);
+      if (error) throw new Error("Could not load current settings for proposal validation");
+      return buildSettingsChangePlan(requested, (data || []).map((row: any) => ({
+        key: String(row.key || ""),
+        value: row.value,
+      })));
     },
   },
 ];

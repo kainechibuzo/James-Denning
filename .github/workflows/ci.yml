@@ -58,6 +58,9 @@ jobs:
       - name: Test JD settings catalogue privacy and filtering
         run: deno test supabase/functions/_shared/jd-settings-catalogue.test.ts
 
+      - name: Test JD settings change planner
+        run: deno test supabase/functions/_shared/jd-settings-change-planner.test.ts
+
       - name: Test JD private checkpoint migration contract
         run: deno test --allow-read=supabase/migrations/20261111140000_jd_durable_execution_checkpoints.sql supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts
 

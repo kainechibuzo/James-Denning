@@ -154,3 +154,17 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Token usage:** Unknown; no provider usage metadata available.
 - **Limitations:** Catalogue is intentionally limited to settings explicitly registered from the current settings UI; it does not claim complete coverage of all modules or settings. JD cannot change settings in this phase.
 - **Next:** Add full settings inventory and a typed, approval-gated configuration proposal/apply workflow with read-after-write verification.
+
+
+### JD-005C — Validated settings change planning
+- **Date:** 2026-11-11
+- **Status:** implemented; CI verification pending
+- **Scope:** JD can prepare a read-only before/after plan for up to 20 registered settings. The planner validates supported keys and values, detects duplicates/no-op changes, identifies invalid entries, and classifies identity/workspace/security/billing changes as requiring Review Centre approval. Other supported settings require explicit confirmation.
+- **Files:** supabase/functions/_shared/jd-settings-change-planner.ts, supabase/functions/_shared/jd-settings-change-planner.test.ts, supabase/functions/_shared/jd-agent-runtime.ts, .github/workflows/ci.yml.
+- **Security:** Admin-only tool; workspace ID comes from server context; only registered setting keys; current values are read tenant-scoped; no write path; no arbitrary SQL or table mutation.
+- **Validation:** Deno tests cover diffs, approval classification, invalid values, unknown keys, duplicates and no-op values. CI type-checks the secured automation Edge Function.
+- **Database:** No migration required.
+- **Deployment:** Not deployed. No settings were changed.
+- **Token usage:** Unknown; provider usage metadata unavailable.
+- **Limitations:** The tool prepares a plan only. It does not persist a proposal in the Review Centre or execute changes. Review Centre approval binding to an exact settings proposal and verified execution remain future work.
+- **Next:** Persist the exact proposed diff as a Review Centre item, bind approval to the proposal hash, implement narrow idempotent writes and verify each changed value after execution.
