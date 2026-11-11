@@ -174,3 +174,20 @@ Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTEL
 - [ ] Apply migration in staging and pass cross-tenant, concurrency and failure-injection tests.
 
 **Status:** foundations implemented; integration verification pending. The checked items above describe code/contracts added in this branch, not production deployment.
+
+
+### Batch 01 operational interface and integration follow-through
+- [x] Add Business Operations route and admin/manager navigation.
+- [x] Add live task queue, task status controls and tenant-validated team assignment.
+- [x] Add blueprint editor, validation and saved draft view.
+- [x] Add vacancy draft, internal approval/opening and candidate intake UI.
+- [x] Restrict candidate stage controls to valid next transitions.
+- [x] Add JD aggregate people, performance and operations intelligence tools.
+- [x] Add business-intelligence unit tests to CI.
+- [ ] Complete dispatcher/scheduler and lease-recovery integration tests.
+- [ ] Implement approval-gated, idempotent organisation provisioning.
+- [ ] Add complete KPI trend dashboard and workforce planning workflows.
+- [ ] Complete authorised communications and external hiring campaign integrations.
+- [ ] Run staging migration, cross-tenant tests and authenticated smoke tests before deployment.
+
+**Status:** operational interface and selected integrations implemented; staging and live verification pending.
