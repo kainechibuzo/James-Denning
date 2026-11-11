@@ -52,6 +52,9 @@ jobs:
       - name: Test JD durable execution migration contract
         run: deno test --allow-read=supabase/migrations/20261111130000_jd_durable_execution_jobs.sql supabase/functions/_shared/jd-execution-migration.test.ts
 
+      - name: Test JD execution worker helpers
+        run: deno test supabase/functions/_shared/jd-execution-worker.test.ts
+
       - name: Type-check secured Edge Functions
         run: |
           deno check supabase/functions/verify-payment/index.ts
@@ -60,3 +63,4 @@ jobs:
           deno check supabase/functions/scheduled-digest/index.ts
           deno check supabase/functions/manage-account/index.ts
           deno check supabase/functions/jd-automation/index.ts
+          deno check supabase/functions/jd-execution-worker/index.ts
