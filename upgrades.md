@@ -242,3 +242,14 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [ ] Executive Intelligence Reports
 
 **Status:** planning baseline committed on `feature/jd-batch-02-autonomous-business-platform`; no Batch 02 feature is marked implemented until code and tests provide evidence. No database migrations or production deployments are included in the planning commit.
+
+
+### Batch 02 progress — workflow foundation
+- [x] Add bounded workflow-definition validator with allowlisted trigger/action types and cycle/reachability validation.
+- [x] Expose admin/manager-only workflow draft validation preview (no persistence or execution).
+- [x] Add workflow validator tests to CI.
+- [ ] Persist versioned workflow drafts and add review/activation governance.
+- [ ] Build visual workflow editor.
+- [ ] Add durable recurring scheduler and idempotent run enqueue.
+
+**Status:** first workflow foundation implemented; automated verification pending. No migration or deployment performed.
