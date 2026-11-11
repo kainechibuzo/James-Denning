@@ -209,3 +209,15 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Security boundaries:** New tables are tenant-keyed, RLS-enabled and inaccessible to browser roles. Blueprint persistence derives tenant from admin profile. No blueprint is auto-provisioned, vacancy is not published, candidate stages are human-admin controlled, and external messages are not sent.
 - **Known gaps:** Dispatcher scheduling and lease recovery still need end-to-end implementation; UI for blueprint review, operations monitor and recruitment pipeline is not included; people, performance, finance, communications and workforce planning integrations remain capability slots rather than complete modules. Capability reporting returns unverified until trusted deployment/smoke-test evidence is supplied.
 - **Token usage:** Provider-reported token usage unavailable for repository edits; no estimate recorded.
+
+
+### JD-BATCH-01 follow-through — operational interfaces and integrations
+- **Date:** 2026-11-11
+- Added the Business Operations page and navigation for admin/manager roles.
+- Connected live tenant-scoped read APIs for task queue, team directory, organisation blueprint drafts and hiring pipeline.
+- Added team assignment with same-workspace staff validation; task transitions use optimistic concurrency checks.
+- Added vacancy approval/opening and candidate intake, with candidate intake restricted to internally open requisitions; UI exposes only valid next stages.
+- Added JD agent tools for aggregate people, active-period performance and operational task intelligence. Existing finance, communications, attendance and hiring read tools are reused.
+- Added deterministic aggregation tests and CI coverage.
+- **Not deployed:** migration and Edge Function remain pending staging and production release procedures.
+- **Token usage:** provider-reported token usage unavailable; no estimate recorded.
