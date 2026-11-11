@@ -54,10 +54,25 @@ Deno.serve(async req=>{
    else if(k==="cashflow"){if(!["cleared","void"].includes(x.status))return send({error:"Cash transactions may only be cleared or voided"},400);patch.status=x.status;}
    else if(k==="expenses"){if(p.role!=="admin")return send({error:"Admin required for expense decisions"},403);if(!["approved","rejected"].includes(x.status))return send({error:"Only approve/reject decisions supported"},400);patch.status=x.status;patch.approved_by=actor;patch.approved_at=new Date().toISOString();}
    else if(k==="contracts"){if(!["draft","in_review","approved","active","expired","terminated"].includes(x.status))return send({error:"Invalid contract state"},400);if(["approved","active","terminated"].includes(x.status)&&p.role!=="admin")return send({error:"Admin approval required"},403);patch.status=x.status;}
-   else if(k==="support"){if("status" in x){if(!["open","in_progress","waiting","resolved","closed"].includes(x.status))return send({error:"Invalid case status"},400);patch.status=x.status;if(x.status==="resolved")patch.resolved_at=new Date().toISOString();}if("priority" in x){if(!["low","normal","high","urgent"].includes(x.priority))return send({error:"Invalid priority"},400);patch.priority=x.priority;}if("resolution_note" in x)patch.resolution_note=str(x.resolution_note,5000);if("assigned_to" in x)patch.assigned_to=uuid(x.assigned_to)?x.assigned_to:null;}
+   else if(k==="support"){if("status" in x){if(!["open","in_progress","waiting","resolved","closed"].includes(x.status))return send({error:"Invalid case status"},400);patch.status=x.status;if(x.status==="resolved")patch.resolved_at=new Date().toISOString();if(x.status==="in_progress")patch.first_response_at=new Date().toISOString();}if("priority" in x){if(!["low","normal","high","urgent"].includes(x.priority))return send({error:"Invalid priority"},400);patch.priority=x.priority;}if("resolution_note" in x)patch.resolution_note=str(x.resolution_note,5000);if("assigned_to" in x)patch.assigned_to=uuid(x.assigned_to)?x.assigned_to:null;}
    else if(k==="budgets"){if(!["active","archived"].includes(x.status))return send({error:"Invalid budget state"},400);patch.status=x.status;if("budget_amount" in x){const amount=num(x.budget_amount,0.01);if(!amount)return send({error:"Invalid budget amount"},400);patch.budget_amount=amount;}if("alert_threshold_pct" in x){const threshold=num(x.alert_threshold_pct,1,100);if(!threshold)return send({error:"Invalid alert threshold"},400);patch.alert_threshold_pct=threshold;}}
    else if(k==="reports"){if(!["in_review","approved","shared"].includes(x.status))return send({error:"Invalid report state"},400);if(x.status==="shared"&&p.role!=="admin")return send({error:"Admin required"},403);patch.status=x.status;}
    const {data:updated,error}=await db.from(tables[k]).update(patch).eq("id",id).eq("school_id",school).select(columns[k]).maybeSingle();if(error||!updated)return send({error:"Record not found or update rejected"},404);const data:any=updated;await audit(`business.${k}.updated`,{record_id:id,fields:Object.keys(patch)});return send({item:data});
+  }
+
+  if(b.action==="sla.policy.list"){
+   const {data,error}=await db.from("jd_business_sla_policies").select("id,priority,first_response_minutes,resolution_minutes,escalation_after_minutes,notify_email,notify_phone,enabled,updated_at").eq("school_id",school).order("priority");
+   if(error)throw error;return send({policies:data||[]});
+  }
+  if(b.action==="sla.policy.save"){
+   if(p.role!=="admin")return send({error:"Only workspace administrators can change SLA policies"},403);
+   const priority=str(b.priority,20),first=num(b.first_response_minutes,1,43200),resolution=num(b.resolution_minutes,1,129600),escalation=num(b.escalation_after_minutes,1,129600);
+   if(!["low","normal","high","urgent"].includes(priority)||first===null||resolution===null||escalation===null||escalation<first)return send({error:"Valid priority and SLA minute thresholds are required"},400);
+   const email=str(b.notify_email,254),phone=str(b.notify_phone,30);
+   if(email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))return send({error:"Notification email is invalid"},400);
+   if(phone&&!/^\\+[1-9]\\d{7,14}$/.test(phone))return send({error:"SMS destination must be E.164 format"},400);
+   const {data,error}=await db.from("jd_business_sla_policies").upsert({school_id:school,priority,first_response_minutes:first,resolution_minutes:resolution,escalation_after_minutes:escalation,notify_email:email||null,notify_phone:phone||null,enabled:b.enabled!==false,created_by:actor,updated_at:new Date().toISOString()},{onConflict:"school_id,priority"}).select("id,priority,first_response_minutes,resolution_minutes,escalation_after_minutes,notify_email,notify_phone,enabled").single();
+   if(error)throw error;await audit("business.sla.policy_updated",{priority});return send({policy:data});
   }
   if(b.action==="revenue.analytics"){
    const start=date(b.period_start)||new Date(Date.now()-365*86400000).toISOString().slice(0,10),end=date(b.period_end)||new Date().toISOString().slice(0,10);
