@@ -114,3 +114,16 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Deployment:** No Supabase migration, secret, extension, schedule or Edge Function deployed. Production unchanged.
 - **Token usage:** Provider/model and all token/cost fields unknown; no provider usage metadata was available and no estimate is recorded.
 - **Next:** Pass CI, validate against a disposable/staging database with the full JD migration chain, then implement JD-004C resumable execution and JD-004D dispatch/recovery.
+
+
+### JD-004C — Persisted runtime checkpoints and resume
+- **Date:** 2026-11-11
+- **Status:** implemented on the JD-004B review branch; CI and database integration verification pending
+- **Priority:** critical
+- **Scope:** Extend the JD runtime with a versioned resume-state contract. After each completed tool-call round, persist the Responses API conversation input, completed call IDs, provider usage counters and model-request telemetry. On worker restart, restore that state and continue from the next model request instead of restarting the conversation from its original prompt.
+- **Data protection:** Runtime checkpoints are stored in a separate RLS-enabled table with no browser-role policies or grants. Only the service role can access the raw state. The checkpoint writer is a security-definer RPC fenced by the current unexpired job lease token. Checkpoint payloads are limited to 512 KiB.
+- **Files:** supabase/functions/_shared/jd-agent-runtime.ts, supabase/functions/jd-execution-worker/index.ts, supabase/migrations/20261111140000_jd_durable_execution_checkpoints.sql, supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts, .github/workflows/ci.yml.
+- **Resume boundary:** A checkpoint is saved after an entire parallel tool-call round has completed and its outputs have been appended to the model conversation. If a worker crashes mid-round, that round may be replayed. This is currently safe because the exposed JD tool registry is read-only. Before introducing write-capable tools, each tool must implement a stable idempotency key and reconciliation contract; this checkpoint mechanism alone does not provide exactly-once side effects.
+- **Validation:** Static migration contract test and Deno type-check added to CI. Live PostgreSQL execution, checkpoint permission tests, crash/replay integration and tenant-isolation tests remain pending. No migration or function deployed.
+- **Token usage:** Provider/model and token/cost values unknown; no provider usage metadata available for this implementation session.
+- **Next:** Verify migrations and queue behaviour in staging, add integration tests for lease replacement and checkpoint resume, then build dispatcher/recovery and progress UI.
