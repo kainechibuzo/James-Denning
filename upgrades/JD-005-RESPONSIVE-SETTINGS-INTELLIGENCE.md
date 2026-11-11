@@ -90,7 +90,16 @@ JD must distinguish existing supported configuration from new development. It mu
 - Duplicate proposal hashes resolve to the existing review item.
 - No settings are changed; approved proposals remain not_executed until a dedicated executor exists.
 
-## 8. Verification and remaining work
+## 8. JD-005E approved settings executor
+- Execution is admin-only and requires a stored `approved` Review Centre item with `action_key=settings.apply`.
+- The database recomputes SHA-256 over the exact stored JSONB proposal while locking the approval row.
+- Each approved setting is executed in a separate transaction, restricted to a fixed registered-key allowlist and revalidated server-side.
+- Before applying, the executor compares the live setting with the proposal's original before-value. A mismatch is recorded as a conflict and halts subsequent steps.
+- Each successful setting is read back, recorded under a unique approval/step index and audited. Repeated requests skip completed steps.
+- RPC errors stop the batch; retries resume without repeating recorded successes.
+- Live database integration and failure-injection tests are still required before deployment.
+
+## 9. Verification and remaining work
 - Run production build, lint/type checks and existing tests.
 - Add browser visual tests for the screenshot routes at the acceptance widths.
 - Audit remaining page-specific inline styles; generic CSS overrides are not a substitute for per-page verification.
