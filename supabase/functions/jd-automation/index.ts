@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
   const byModel:Record<string,{runs:number;tokens:number;reported_runs:number}>={};
   for(const run of runs){
    const usage=run.result_json?.tokenUsage;
-   if(!usage||typeof usage!=="object"){summary.unreported_runs++;continue;}
+   if(!usage||typeof usage!=="object"||Number(usage.usage_reported_requests||0)===0){summary.unreported_runs++;continue;}
    summary.reported_runs++;
    const input=Number(usage.input_tokens)||0, output=Number(usage.output_tokens)||0;
    summary.input_tokens+=input; summary.output_tokens+=output;
