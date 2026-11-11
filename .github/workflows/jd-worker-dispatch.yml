@@ -1,0 +1,37 @@
+name: JD Background Execution Dispatcher
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: jd-background-execution-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Poll durable JD queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate worker secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+        run: |
+          test -n "$SUPABASE_URL" || { echo "::error::Missing SUPABASE_URL repository secret"; exit 1; }
+          test -n "$JD_WORKER_SECRET" || { echo "::error::Missing JD_WORKER_SECRET repository secret"; exit 1; }
+      - name: Poll worker and process available jobs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+        run: |
+          set -euo pipefail
+          endpoint="${SUPABASE_URL%/}/functions/v1/jd-execution-worker"
+          response="$(curl --silent --show-error --fail-with-body --max-time 540 \
+            -X POST "$endpoint" \
+            -H "Content-Type: application/json" \
+            -H "x-jd-worker-secret: $JD_WORKER_SECRET" \
+            --data '{}')"
+          echo "$response"

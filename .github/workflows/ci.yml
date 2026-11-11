@@ -49,6 +49,12 @@ jobs:
       - name: Test JD execution reliability helpers
         run: deno test supabase/functions/_shared/jd-agent-runtime.test.ts
 
+      - name: Test JD Batch 01 operational intelligence foundations
+        run: deno test --allow-read=supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql supabase/functions/_shared/jd-batch01.test.ts
+
+      - name: Test JD business intelligence aggregations
+        run: deno test supabase/functions/_shared/jd-business-intelligence.test.ts
+
       - name: Test JD durable execution migration contract
         run: deno test --allow-read=supabase/migrations/20261111130000_jd_durable_execution_jobs.sql supabase/functions/_shared/jd-execution-migration.test.ts
 
@@ -69,6 +75,9 @@ jobs:
 
       - name: Test JD private checkpoint migration contract
         run: deno test --allow-read=supabase/migrations/20261111140000_jd_durable_execution_checkpoints.sql supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts
+
+      - name: Test JD manual execution retry migration contract
+        run: deno test --allow-read=supabase/migrations/20261111190000_jd_execution_retry_controls.sql supabase/functions/_shared/jd-execution-retry-migration.test.ts
 
       - name: Type-check secured Edge Functions
         run: |

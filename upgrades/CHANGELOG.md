@@ -196,3 +196,46 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Deployment:** Edge Function not deployed.
 - **Token usage:** Unknown; provider usage metadata unavailable.
 - **Limitations:** Execution is one step per transaction. A setting changed after approval is never overwritten; that step is marked conflict and the remaining batch stops. A retry resumes only steps not already recorded as completed.
+
+
+### JD-BATCH-01 — Operational intelligence and organisation builder foundations
+- **Date:** 2026-11-11
+- **Status:** foundation implemented; CI and integration verification pending
+- **Scope:** Added a 20-track capability registry, evidence-based capability classification, organisation blueprint validation and preview/submission actions, tenant-scoped organisation blueprint persistence, operational task contracts and idempotency keys, tenant-scoped operational task creation, vacancy draft validation/persistence, and guarded recruitment candidate stage transitions.
+- **Migration:** `supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql` (not applied to production).
+- **Edge Function:** `supabase/functions/jd-automation/index.ts` now exposes `capabilities.report`, `organisation.blueprint.preview`, `organisation.blueprint.submit`, `operations.task.create`, `hiring.vacancy.draft`, and `hiring.candidate.transition`.
+- **Shared contracts:** `jd-capability-intelligence.ts`, `jd-organisation-blueprint.ts`, `jd-operations.ts`, `jd-hiring.ts`.
+- **Tests:** Added `jd-batch01.test.ts` to CI for registry count, evidence classification, blueprint validation, task transitions, idempotency and hiring pipeline validation.
+- **Security boundaries:** New tables are tenant-keyed, RLS-enabled and inaccessible to browser roles. Blueprint persistence derives tenant from admin profile. No blueprint is auto-provisioned, vacancy is not published, candidate stages are human-admin controlled, and external messages are not sent.
+- **Known gaps:** Dispatcher scheduling and lease recovery still need end-to-end implementation; UI for blueprint review, operations monitor and recruitment pipeline is not included; people, performance, finance, communications and workforce planning integrations remain capability slots rather than complete modules. Capability reporting returns unverified until trusted deployment/smoke-test evidence is supplied.
+- **Token usage:** Provider-reported token usage unavailable for repository edits; no estimate recorded.
+
+
+### JD-BATCH-01 follow-through — operational interfaces and integrations
+- **Date:** 2026-11-11
+- Added the Business Operations page and navigation for admin/manager roles.
+- Connected live tenant-scoped read APIs for task queue, team directory, organisation blueprint drafts and hiring pipeline.
+- Added team assignment with same-workspace staff validation; task transitions use optimistic concurrency checks.
+- Added vacancy approval/opening and candidate intake, with candidate intake restricted to internally open requisitions; UI exposes only valid next stages.
+- Added JD agent tools for aggregate people, active-period performance and operational task intelligence. Existing finance, communications, attendance and hiring read tools are reused.
+- Added deterministic aggregation tests and CI coverage.
+- **Not deployed:** migration and Edge Function remain pending staging and production release procedures.
+- **Token usage:** provider-reported token usage unavailable; no estimate recorded.
+
+### Durable execution and operations monitor follow-through
+- Routine JD chat requests now enqueue durable jobs instead of running the model inside the request/response Edge Function.
+- Added the scheduled worker poll workflow (five-minute cadence; one job per invocation) using `SUPABASE_URL` and `JD_WORKER_SECRET` repository secrets.
+- Added the execution monitor, admin-only safe cancellation for queued/retry-wait jobs, and admin-only retry for failed jobs.
+- Added migration `20261111190000_jd_execution_retry_controls.sql` for tenant-verified, audited failed-job retry.
+- Added CI contract tests for the retry migration.
+- **Release gate:** worker and automation Edge Functions are not deployed; migrations are not applied. Staging validation and secret configuration are required before live operation.
+- **Token usage:** provider-reported token usage unavailable; no estimate recorded.
+
+### Final interface and durable execution verification
+- Added Business Intelligence dashboard/API for workforce aggregates, finance summary, active-period performance, task metrics, announcements and email delivery metadata.
+- Added multi-department blueprint editor, task department/due-date controls, execution monitor and retry/cancel controls.
+- Routed routine JD requests through the durable queue; removed synchronous model execution from the chat request path.
+- Scoped manager execution history to the manager's own runs.
+- **Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`.
+- **CI:** Web CI passed (production build, Deno helper/migration tests, Edge Function type-check); application verification passed (web navigation/build and default application build).
+- **Still not live:** no staging migration, production migration, or Edge Function deployment has been performed.

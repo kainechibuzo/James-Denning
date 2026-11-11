@@ -152,3 +152,66 @@ Do not use this document alone to assert implementation status. The append-only 
 ## Current known context
 
 The project has previously started a JD chat foundation, automation control plane, OpenRouter-backed agent runtime and command-centre redesign in stacked pull requests. Treat all such work as **unverified until current GitHub branch, CI, deployment and Supabase state are checked**. Do not assume prior conversational claims mean the code is merged or deployed.
+
+
+### 2A. Batch 01 — Operational intelligence and organisation builder
+Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTELLIGENCE.md).
+
+- [x] Define a 20-capability registry and evidence-based capability status classifier.
+- [x] Validate organisation blueprints and provide a no-write preview.
+- [x] Persist organisation blueprint drafts through an admin- and tenant-validated service RPC.
+- [x] Add tenant-scoped operational task storage and idempotency-key helper.
+- [x] Add guarded operational task creation action and task state-machine contract.
+- [x] Add vacancy draft validation and admin-only draft creation.
+- [x] Add candidate recruitment-stage transition validation and tenant-scoped update.
+- [ ] Complete scheduler/dispatcher and expired-lease recovery integration.
+- [ ] Complete live execution monitor controls and cancellation/retry UI.
+- [ ] Implement actual capability evidence collectors for schema, source, deployment and smoke tests.
+- [ ] Complete division/department visual builder and approved provisioning workflow.
+- [ ] Complete people, performance, finance and communications module tools.
+- [ ] Complete workforce planner, recruitment assistant and hiring campaign integrations.
+- [ ] Complete blueprint, operations and hiring UI.
+- [ ] Apply migration in staging and pass cross-tenant, concurrency and failure-injection tests.
+
+**Status:** foundations implemented; integration verification pending. The checked items above describe code/contracts added in this branch, not production deployment.
+
+
+### Batch 01 operational interface and integration follow-through
+- [x] Add Business Operations route and admin/manager navigation.
+- [x] Add live task queue, task status controls and tenant-validated team assignment.
+- [x] Add blueprint editor, validation and saved draft view.
+- [x] Add vacancy draft, internal approval/opening and candidate intake UI.
+- [x] Restrict candidate stage controls to valid next transitions.
+- [x] Add JD aggregate people, performance and operations intelligence tools.
+- [x] Add business-intelligence unit tests to CI.
+- [ ] Complete dispatcher/scheduler and lease-recovery integration tests.
+- [ ] Implement approval-gated, idempotent organisation provisioning.
+- [ ] Add complete KPI trend dashboard and workforce planning workflows.
+- [ ] Complete authorised communications and external hiring campaign integrations.
+- [ ] Run staging migration, cross-tenant tests and authenticated smoke tests before deployment.
+
+**Status:** operational interface and selected integrations implemented; staging and live verification pending.
+
+### Durable execution and recovery
+- [x] Route routine JD requests through the durable job ledger and return a queued response.
+- [x] Add a five-minute scheduled worker poll workflow.
+- [x] Add execution monitor UI for runs, attempts, steps and errors.
+- [x] Add safe admin cancellation for queued/retry-wait jobs.
+- [x] Add tenant-scoped, audited admin retry for failed jobs.
+- [ ] Configure GitHub repository secrets `SUPABASE_URL` and `JD_WORKER_SECRET`.
+- [ ] Apply JD-004 and Batch 01 migrations in staging and verify queue/worker lifecycle.
+- [ ] Deploy `jd-automation` and `jd-execution-worker` only after staging validation.
+- [ ] Run failure-injection tests for worker crashes, lease expiry, duplicate deliveries and retry exhaustion.
+
+### Final operational integration verification
+- [x] Add live Business Intelligence dashboard and tenant-scoped snapshot API.
+- [x] Include workforce aggregates, finance summaries, active-period performance, operations totals and communications delivery metadata.
+- [x] Add multi-department blueprint editor.
+- [x] Add task department and due-date controls with browser-timezone-safe ISO conversion.
+- [x] Route routine JD requests through durable background execution.
+- [x] Scope manager execution history to the manager's own runs.
+- [x] Verify production web build, Deno tests, Edge Function type-check and application build.
+- [ ] Configure GitHub worker secrets and deploy the worker/automation functions after staging validation.
+- [ ] Apply migrations in staging and run authenticated tenant-isolation/failure-injection tests.
+
+**Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`. CI passed; production deployment remains pending.

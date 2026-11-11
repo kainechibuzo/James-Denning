@@ -1,5 +1,9 @@
 import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
+import { summariseScores, summariseTaskStatuses } from "./jd-business-intelligence.ts";
+import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
+import { validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
+import { validateVacancy } from "./jd-hiring.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -19,7 +23,107 @@ type ToolSpec = {
 const roleAllowed = (context: AgentContext, roles: string[]) =>
   roles.includes("*") || roles.includes(context.role);
 
-const tools: ToolSpec[] = [
+const tools: ToolSpec[] = [  {
+    name: "get_people_intelligence",
+    description: "Return a privacy-conscious workforce snapshot for the authenticated organisation: total members grouped by role. Does not expose names, emails or personal records.",
+    risk: "low",
+    roles: ["admin","manager"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async (_args,ctx) => {
+      const {data,error,count}=await ctx.admin.from("profiles").select("role",{count:"exact"}).eq("school_id",ctx.schoolId).limit(5000);
+      if(error) throw new Error("Could not read workforce summary");
+      const byRole:Record<string,number>={};
+      for(const row of data||[]){const role=String(row.role||"unknown");byRole[role]=(byRole[role]||0)+1;}
+      return {total_members:count??(data||[]).length,roles:byRole,sample_truncated:(data||[]).length>=5000};
+    },
+  },
+  {
+    name: "get_performance_intelligence",
+    description: "Summarise the active academic period's organisation-wide performance using score aggregates only. Returns average, pass rate, grade distribution and sample size; never returns individual learner records.",
+    risk: "low",
+    roles: ["admin","manager"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async (_args,ctx) => {
+      const [{data:session,error:sessionError},{data:terms,error:termError}]=await Promise.all([
+        ctx.admin.from("sessions").select("id,name").eq("school_id",ctx.schoolId).eq("is_active",true).limit(1).maybeSingle(),
+        ctx.admin.from("terms").select("id,name,session_id").eq("school_id",ctx.schoolId).eq("is_active",true).limit(1),
+      ]);
+      if(sessionError||termError) throw new Error("Could not identify the active academic period");
+      const term=(terms||[]).find((item:any)=>!session||String(item.session_id)===String(session.id));
+      if(!session||!term) return {available:false,reason:"No active session and term are configured"};
+      const scores:number[]=[];let from=0;const batch=1000;let truncated=false;
+      while(from<10000){
+        const {data,error}=await ctx.admin.from("portal_results").select("total_score").eq("school_id",ctx.schoolId).eq("session_id",session.id).eq("term_id",term.id).not("total_score","is",null).range(from,from+batch-1);
+        if(error) throw new Error("Could not read organisation performance records");
+        for(const row of data||[]) scores.push(Number(row.total_score));
+        if(!data||data.length<batch) break;
+        from+=batch;if(from>=10000) truncated=true;
+      }
+      return {available:true,session:session.name,term:term.name,...summariseScores(scores),truncated};
+    },
+  },
+  {
+    name: "get_operations_intelligence",
+    description: "Summarise operational task volume by status and priority for the authenticated organisation. Does not return task descriptions or employee details.",
+    risk: "low",
+    roles: ["admin","manager"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async (_args,ctx) => {
+      const {data,error}=await ctx.admin.from("jd_operational_tasks").select("status,priority").eq("school_id",ctx.schoolId).limit(5000);
+      if(error) throw new Error("Could not read operational task summary");
+      return {...summariseTaskStatuses(data||[]),sample_truncated:(data||[]).length>=5000};
+    },
+  },
+
+  {
+    name: "get_jd_capability_inventory",
+    description: "Return JD's registered organisation capability inventory. Capability states remain unverified until trusted deployment and authenticated smoke-test evidence is recorded. Use this before promising that a module can be operated.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async () => ({ capabilities: buildCapabilityReport({}), policy: "Never infer deployment from source-code presence." }),
+  },
+  {
+    name: "preview_organisation_blueprint",
+    description: "Validate a proposed organisation blueprint from the user's business idea. This is a no-write preview: it does not create departments, accounts, permissions, integrations or workflows.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: {
+      type: "object",
+      properties: {
+        blueprint: {
+          type: "object",
+          properties: {
+            name: { type: "string", minLength: 1, maxLength: 160 },
+            industry: { type: "string", minLength: 1, maxLength: 80 },
+            businessModel: { type: "string", minLength: 1, maxLength: 500 },
+            departments: { type: "array", minItems: 1, maxItems: 30, items: { type: "object", properties: { name: { type: "string" }, purpose: { type: "string" }, roles: { type: "array", items: { type: "string" } }, workflows: { type: "array", items: { type: "string" } }, kpis: { type: "array", items: { type: "string" } } }, required: ["name","purpose","roles","workflows","kpis"], additionalProperties: false } },
+            integrations: { type: "array", items: { type: "string" } },
+            risks: { type: "array", items: { type: "string" } },
+            gaps: { type: "array", items: { type: "string" } }
+          },
+          required: ["name","industry","businessModel","departments","integrations","risks","gaps"],
+          additionalProperties: false
+        }
+      },
+      required: ["blueprint"],
+      additionalProperties: false
+    },
+    execute: async (args) => {
+      const result = validateOrganisationBlueprint(args.blueprint);
+      if (!result.ok) return { valid: false, errors: result.errors, persisted: false };
+      return { valid: true, blueprint: result.blueprint, persisted: false, provisioning_requires_admin_review: true };
+    },
+  },
+  {
+    name: "preview_hiring_vacancy",
+    description: "Prepare and validate a vacancy draft with title, department, description and requirements. This tool does not publish a vacancy, contact candidates or make hiring decisions.",
+    risk: "low",
+    roles: ["admin","manager"],
+    parameters: { type: "object", properties: { title: { type: "string" }, department: { type: "string" }, description: { type: "string" }, requirements: { type: "array", items: { type: "string" } } }, required: ["title","department","description","requirements"], additionalProperties: false },
+    execute: async (args) => ({ vacancy: validateVacancy(args), persisted: false, published: false }),
+  },
+
   {
     name: "get_workspace_overview",
     description: "Read a high-level overview of the authenticated organisation workspace, including organisation name, member count, open hiring roles, applications and hires. Use this before answering broad questions about the organisation.",
