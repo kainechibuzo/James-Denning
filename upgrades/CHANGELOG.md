@@ -289,3 +289,12 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Files:** `supabase/migrations/20261111184500_jd_task_collaboration.sql`, `supabase/functions/jd-task-collaboration/index.ts`, `supabase/functions/_shared/jd-task-collaboration-migration.test.ts`, `src/pages/jd-department-collaboration.jsx`, Business Operations integration, Supabase function config.
 - **Limitations:** mentions are stored and displayed but do not send notifications; no realtime subscriptions, file attachments or per-department visibility policy. Comments are append-only in the UI. No production migration or function deployment performed.
 - **Token usage:** provider-reported usage unavailable; not estimated.
+
+
+## 2026-11-11 — JD-B02-06 merge and CI verification
+
+- **Status:** merged; CI verified; staging and deployment pending.
+- **PR:** [#51](https://github.com/kainechibuzo/James-Denning/pull/51), squash merge commit `b9286e75fd04d8df16e613b3baa27d0432e851ff`.
+- **Verification:** GitHub Web CI passed, including production web build, task-collaboration migration contract test, all existing JD contract/unit tests, and secured Edge Function type-check.
+- **Deployment:** Vercel preview status remains blocked by the daily deployment quota. Supabase migration and Edge Function remain undeployed pending staging validation.
+- **Token usage:** provider-reported usage unavailable; not estimated.
