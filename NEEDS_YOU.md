@@ -81,3 +81,15 @@ Configure GitHub Actions repository secrets:
 - `JD_DOCUMENT_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
 
 The scheduled workflow fails visibly when these secrets are absent. Deploy the worker and verify private bucket access in staging before enabling the schedule in production.
+
+
+## JD Business Platform — document extraction worker
+
+The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, computes a checksum and creates a bounded extractive summary. PDF and DOCX are marked unsupported until parser runtimes are added; OCR, malware scanning and AI-generated summaries are not claimed.
+
+Configure GitHub Actions repository secrets:
+
+- `JD_DOCUMENT_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-document-worker` for production, or the equivalent staging URL.
+- `JD_DOCUMENT_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
+
+Deploy the worker and verify private bucket access in staging before enabling the schedule in production.
