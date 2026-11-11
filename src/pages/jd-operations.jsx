@@ -18,7 +18,7 @@ function Field({label,value,onChange,placeholder,multiline=false}){const Tag=mul
 export function JDOperationsPage({ctx}){
  const [tab,setTab]=useState("overview"),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const [capabilities,setCapabilities]=useState([]),[blueprints,setBlueprints]=useState([]),[tasks,setTasks]=useState([]),[requisitions,setRequisitions]=useState([]),[candidates,setCandidates]=useState([]),[team,setTeam]=useState([]);
- const [blueprint,setBlueprint]=useState(defaultBlueprint),[vacancy,setVacancy]=useState(defaultVacancy),[task,setTask]=useState({title:"",description:"",priority:"normal"});
+ const [blueprint,setBlueprint]=useState(defaultBlueprint),[vacancy,setVacancy]=useState(defaultVacancy),[task,setTask]=useState({title:"",description:"",priority:"normal"}),[candidate,setCandidate]=useState({requisitionId:"",fullName:"",email:""});
  const [preview,setPreview]=useState(null);
  const isAdmin=ctx?.role==="admin",canManage=["admin","manager"].includes(ctx?.role);
  const invoke=useCallback(async(action,extra={})=>{
@@ -30,10 +30,12 @@ export function JDOperationsPage({ctx}){
  const refresh=useCallback(async()=>{
   setLoading(true);setError("");
   try{
-   const [cap,bp,op,hi]=await Promise.all([
-    invoke("capabilities.report"),invoke("organisation.blueprints.list"),invoke("operations.task.list"),invoke("hiring.pipeline.list")
-   ]);
-   setCapabilities(cap.capabilities||[]);setBlueprints(bp.blueprints||[]);setTasks(op.tasks||[]);setRequisitions(hi.requisitions||[]);setCandidates(hi.candidates||[]);
+   const [op,teamResult]=await Promise.all([invoke("operations.task.list"),invoke("operations.team.list")]);
+   setTasks(op.tasks||[]);setTeam(teamResult.members||[]);
+   if(isAdmin){
+    const [cap,bp,hi]=await Promise.all([invoke("capabilities.report"),invoke("organisation.blueprints.list"),invoke("hiring.pipeline.list")]);
+    setCapabilities(cap.capabilities||[]);setBlueprints(bp.blueprints||[]);setRequisitions(hi.requisitions||[]);setCandidates(hi.candidates||[]);
+   }else{setCapabilities([]);setBlueprints([]);setRequisitions([]);setCandidates([]);}
   }catch(e){setError(e.message||"Could not load JD operational data");}
   finally{setLoading(false);}
  },[invoke,isAdmin]);
