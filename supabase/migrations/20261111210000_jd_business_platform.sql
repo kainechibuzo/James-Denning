@@ -290,3 +290,15 @@ end;
 $$;
 revoke all on function public.jd_reconcile_business_cash_row(uuid,uuid,uuid,uuid) from public,anon,authenticated;
 grant execute on function public.jd_reconcile_business_cash_row(uuid,uuid,uuid,uuid) to service_role;
+
+create table if not exists public.jd_business_report_shares (
+ id uuid primary key default gen_random_uuid(), school_id uuid not null references public.schools(id) on delete cascade,
+ report_id uuid not null references public.jd_business_reports(id) on delete cascade,
+ token_hash text not null unique, expires_at timestamptz not null, revoked_at timestamptz,
+ created_by uuid not null references auth.users(id), created_at timestamptz not null default now(),
+ check(expires_at>created_at)
+);
+create index if not exists jd_business_report_shares_report_idx on public.jd_business_report_shares(school_id,report_id,expires_at desc);
+alter table public.jd_business_report_shares enable row level security;
+revoke all on public.jd_business_report_shares from anon,authenticated;
+grant select,insert,update,delete on public.jd_business_report_shares to service_role;
