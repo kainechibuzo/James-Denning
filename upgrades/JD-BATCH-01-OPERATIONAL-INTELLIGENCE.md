@@ -107,3 +107,14 @@ Added:
 **Required GitHub repository secrets for the scheduled poller:** `SUPABASE_URL` and `JD_WORKER_SECRET`. The latter must exactly match the Supabase Edge Function secret `JD_WORKER_SECRET`. The worker function must be deployed, and the JD-004A/004B/004C migrations plus this batch's migrations must be applied in staging before live operation.
 
 This source change does not itself deploy functions or apply database migrations. Until those release steps are performed, the queue and monitor cannot be considered live.
+
+
+### Business intelligence and final interface pass
+- Added a live Business Intelligence panel with people-by-role counts, aggregate finance totals, active-period performance metrics, operations status totals, recent announcements and email delivery summaries.
+- Added the corresponding tenant-scoped `intelligence.snapshot` Edge Function action. It returns aggregates and bounded communication metadata, not student-level performance or recipient addresses.
+- The operations task form now supports department and due date; browser-local due dates are converted to ISO timestamps before submission.
+- The organisation editor now supports multiple departments.
+- The execution monitor is available to managers for their own runs; administrators can inspect workspace-wide execution history.
+- The routine JD request path now uses durable queue execution only; the old synchronous model execution branch has been removed.
+- Final verified source head for this pass: `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`.
+- **CI evidence:** production web build, app verification, all Deno tests and secured Edge Function type-check passed on that head.
