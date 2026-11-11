@@ -276,8 +276,8 @@ Deno.serve(async req=>{
   }
   if(b.action==="document.upload.prepare"){
    const title=str(b.title,180),mime=str(b.mimeType,120).toLowerCase(),size=num(b.byteSize,1,20*1024*1024);
-   const allowed:Record<string,string>={"application/pdf":"pdf","text/plain":"txt","application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx"};
-   if(!title||!allowed[mime]||size===null)return send({error:"Use a titled PDF, DOCX or plain-text file up to 20 MB"},400);
+   const allowed:Record<string,string>={"application/pdf":"pdf","text/plain":"txt","application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx","image/png":"png","image/jpeg":"jpg","image/tiff":"tiff"};
+   if(!title||!allowed[mime]||size===null)return send({error:"Use a titled PDF, DOCX, plain-text or scanned PNG/JPEG/TIFF file up to 20 MB"},400);
    const path=`${school}/${crypto.randomUUID()}.${allowed[mime]}`;
    const {data,error}=await db.storage.from("jd-business-documents").createSignedUploadUrl(path,{upsert:false});
    if(error||!data?.token)return send({error:"Could not prepare secure upload"},500);
