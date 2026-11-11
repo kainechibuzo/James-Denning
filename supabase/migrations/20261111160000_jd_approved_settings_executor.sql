@@ -150,7 +150,7 @@ begin
   values(v_actor_school,p_actor_id,v_approval.run_id,'settings.step_completed',
     jsonb_build_object('approval_id',p_approval_id,'step_index',p_step_index,'key',v_key,'proposal_hash',v_approval.proposal_hash,'verified',true));
 
-  select count(*) into v_total from jsonb_array_elements(v_approval.proposal_json->'changes') c where c->>'status'='proposed';
+  select count(*) into v_total from jsonb_array_elements(v_approval.proposal_json->'changes') c where c->>'status'='proposed' and coalesce((c->>'approval_required')::boolean,false) is true;
   select count(*) into v_done from public.jd_settings_execution_steps es
     join jsonb_array_elements(v_approval.proposal_json->'changes') with ordinality c(value,ord)
       on (c.ord-1)::integer=es.step_index
