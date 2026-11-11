@@ -24,3 +24,5 @@ Deno.test("organisation blueprint persistence is admin-derived and service-role 
  assertEquals(schema.includes("where id=p_actor_id and role='admin'"),true);
  assertEquals(schema.includes("grant execute on function public.jd_create_organisation_blueprint"),true);
 });
+
+Deno.test("task input preserves department and ISO due date",()=>{const r=normaliseTaskInput({title:"Dispatch audit",department:"Operations",dueAt:"2026-11-12T09:00:00.000Z"});assertEquals(r.department,"Operations");assertEquals(r.due_at,"2026-11-12T09:00:00.000Z");});
