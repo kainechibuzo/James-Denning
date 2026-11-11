@@ -100,3 +100,17 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Deployment:** Not deployed. This branch is for review and CI only.
 - **Token usage:** Provider usage metadata unavailable; token counts and cost unknown, not estimated.
 - **Next:** Pass CI and SQL review, then validate against a disposable/local or staging Supabase database before implementing the worker.
+
+
+### JD-004B — Authenticated durable execution worker
+- **Date:** 2026-11-11
+- **Status:** implemented; CI and database integration verification pending
+- **Priority:** critical
+- **Scope:** Add a dedicated internal Edge Function that reads one opaque queue message per invocation, validates its schema, atomically claims the job, verifies run/requester/workspace consistency, executes the existing low-risk JD tool registry, persists tool-step transitions, heartbeats and checkpoints the lease, records the final response, retries bounded failures, and acknowledges only terminal deliveries.
+- **Security:** Worker endpoint disables platform JWT verification only because it uses a dedicated JD_WORKER_SECRET header with constant-time comparison. Supabase service-role credentials remain server-side. Queue payloads are restricted to job ID and schema version. Worker re-derives tenant and requester from the claimed job and database records. Existing JD runtime remains read-only; consequential actions are not introduced.
+- **Files:** supabase/functions/jd-execution-worker/index.ts, supabase/functions/_shared/jd-execution-worker-helpers.ts, supabase/functions/_shared/jd-execution-worker.test.ts, supabase/config.toml, .github/workflows/ci.yml.
+- **Validation:** Helper unit tests and Edge Function type-check added to CI. GitHub Actions results pending. Live queue/lease/pgmq execution, concurrent-worker tests, crash recovery and tenant-isolation integration tests remain pending because the JD migrations are not applied to the configured Supabase project.
+- **Limitations:** This phase does not add the scheduler/dispatcher, expired-lease recovery sweep, chat-submit enqueue integration, UI progress polling or deterministic per-tool resume. Those remain JD-004C/004D/004E work. The worker is not deployed and cannot process production jobs yet.
+- **Deployment:** No Supabase migration, secret, extension, schedule or Edge Function deployed. Production unchanged.
+- **Token usage:** Provider/model and all token/cost fields unknown; no provider usage metadata was available and no estimate is recorded.
+- **Next:** Pass CI, validate against a disposable/staging database with the full JD migration chain, then implement JD-004C resumable execution and JD-004D dispatch/recovery.
