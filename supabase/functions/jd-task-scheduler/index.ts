@@ -18,10 +18,10 @@ Deno.serve(async(req)=>{
  for(const schedule of schedules||[]){
   try{
    const next=nextScheduleAt(now,{frequency:schedule.frequency,localTime:String(schedule.local_time).slice(0,5),timezone:schedule.timezone,weekdays:(schedule.weekdays||[]).map(Number)} as LocalSchedule);
-   const {data,resultError}=await admin.rpc("jd_dispatch_task_schedule",{
+   const {data,error:dispatchError}=await admin.rpc("jd_dispatch_task_schedule",{
     p_schedule_id:schedule.id,p_expected_run_at:schedule.next_run_at,p_next_run_at:next.toISOString()
    });
-   if(resultError)throw new Error("Schedule dispatch RPC failed");
+   if(dispatchError)throw new Error("Schedule dispatch RPC failed");
    outcomes.push(data||{dispatched:false});
   }catch{
    // Keep the due row for retry; do not leak tenant or database details.
