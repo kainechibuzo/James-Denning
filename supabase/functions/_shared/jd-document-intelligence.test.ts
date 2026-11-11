@@ -1,4 +1,7 @@
-import {assertEquals,assertStringIncludes} from "jsr:@std/assert";
-import {extractiveSummary,normaliseDocumentText} from "./jd-document-intelligence.ts";
-Deno.test("normalises CRLF, tabs and NUL bytes",()=>assertEquals(normaliseDocumentText(" A\r\nB\u0000 \t\n"),"A\nB"));
+import {assertEquals,assertStringIncludes,assertRejects} from "jsr:@std/assert";
+import {extractDocumentText,extractiveSummary,normaliseDocumentText} from "./jd-document-intelligence.ts";
+Deno.test("normalises CRLF, tabs and NUL bytes",()=>assertEquals(normaliseDocumentText(" A\\r\\nB\\u0000 \\t\\n"),"A\\nB"));
 Deno.test("extractive summary is bounded and grounded in source sentences",()=>{const source="This is a sufficiently long opening sentence with details. This is another sufficiently long sentence describing the next point. A short bit.";const summary=extractiveSummary(source,1);assertStringIncludes(source,summary);});
+Deno.test("plain-text extraction reports its parser and normalises content",async()=>{const result=await extractDocumentText("text/plain",new TextEncoder().encode("Hello\\r\\nworld"));assertEquals(result.text,"Hello\\nworld");assertEquals(result.parser,"plain-text");});
+Deno.test("unsupported document types are rejected instead of silently marked complete",()=>assertRejects(()=>extractDocumentText("image/png",new Uint8Array([1])),"Unsupported document MIME type"));
+Deno.test("oversized documents are rejected before parsing",()=>assertRejects(()=>extractDocumentText("text/plain",new Uint8Array(20*1024*1024+1)),"outside the supported range"));
