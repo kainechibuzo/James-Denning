@@ -1,5 +1,8 @@
 import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
+import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
+import { validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
+import { validateVacancy } from "./jd-hiring.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -20,6 +23,55 @@ const roleAllowed = (context: AgentContext, roles: string[]) =>
   roles.includes("*") || roles.includes(context.role);
 
 const tools: ToolSpec[] = [
+  {
+    name: "get_jd_capability_inventory",
+    description: "Return JD's registered organisation capability inventory. Capability states remain unverified until trusted deployment and authenticated smoke-test evidence is recorded. Use this before promising that a module can be operated.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async () => ({ capabilities: buildCapabilityReport({}), policy: "Never infer deployment from source-code presence." }),
+  },
+  {
+    name: "preview_organisation_blueprint",
+    description: "Validate a proposed organisation blueprint from the user's business idea. This is a no-write preview: it does not create departments, accounts, permissions, integrations or workflows.",
+    risk: "low",
+    roles: ["admin"],
+    parameters: {
+      type: "object",
+      properties: {
+        blueprint: {
+          type: "object",
+          properties: {
+            name: { type: "string", minLength: 1, maxLength: 160 },
+            industry: { type: "string", minLength: 1, maxLength: 80 },
+            businessModel: { type: "string", minLength: 1, maxLength: 500 },
+            departments: { type: "array", minItems: 1, maxItems: 30, items: { type: "object", properties: { name: { type: "string" }, purpose: { type: "string" }, roles: { type: "array", items: { type: "string" } }, workflows: { type: "array", items: { type: "string" } }, kpis: { type: "array", items: { type: "string" } } }, required: ["name","purpose","roles","workflows","kpis"], additionalProperties: false } },
+            integrations: { type: "array", items: { type: "string" } },
+            risks: { type: "array", items: { type: "string" } },
+            gaps: { type: "array", items: { type: "string" } }
+          },
+          required: ["name","industry","businessModel","departments","integrations","risks","gaps"],
+          additionalProperties: false
+        }
+      },
+      required: ["blueprint"],
+      additionalProperties: false
+    },
+    execute: async (args) => {
+      const result = validateOrganisationBlueprint(args.blueprint);
+      if (!result.ok) return { valid: false, errors: result.errors, persisted: false };
+      return { valid: true, blueprint: result.blueprint, persisted: false, provisioning_requires_admin_review: true };
+    },
+  },
+  {
+    name: "preview_hiring_vacancy",
+    description: "Prepare and validate a vacancy draft with title, department, description and requirements. This tool does not publish a vacancy, contact candidates or make hiring decisions.",
+    risk: "low",
+    roles: ["admin","manager"],
+    parameters: { type: "object", properties: { title: { type: "string" }, department: { type: "string" }, description: { type: "string" }, requirements: { type: "array", items: { type: "string" } } }, required: ["title","department","description","requirements"], additionalProperties: false },
+    execute: async (args) => ({ vacancy: validateVacancy(args), persisted: false, published: false }),
+  },
+
   {
     name: "get_workspace_overview",
     description: "Read a high-level overview of the authenticated organisation workspace, including organisation name, member count, open hiring roles, applications and hires. Use this before answering broad questions about the organisation.",
