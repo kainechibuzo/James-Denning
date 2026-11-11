@@ -5,6 +5,7 @@ import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskSta
 import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
 import { summariseScores, summariseTaskStatuses } from "../_shared/jd-business-intelligence.ts";
 import { validateWorkflowDefinition } from "../_shared/jd-workflow-definition.ts";
+import { nextScheduleAt } from "../_shared/jd-scheduler.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 
@@ -224,7 +225,63 @@ Deno.serve(async (req) => {
   if(error) return json({error:"Could not load workspace team"},500);
   return json({members:data||[]});
  }
- if(payload.action==="operations.task.assign"){
+ if(payload.action==="operations.assignment.member.list"){
+   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect assignment pools"},403);
+   const {data,error}=await admin.from("jd_task_assignment_members").select("id,profile_id,department,max_open_tasks,active,last_assigned_at").eq("school_id",profile.school_id).order("department",{ascending:true}).limit(500);
+   if(error) return json({error:"Could not load assignment pools"},500);
+   return json({members:data||[]});
+  }
+  if(payload.action==="operations.assignment.member.set"){
+   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to configure assignment pools"},403);
+   const profileId=typeof payload.profileId==="string"?payload.profileId:"";
+   const department=typeof payload.department==="string"?payload.department.trim():"";
+   const maxOpenTasks=Number.isInteger(payload.maxOpenTasks)?payload.maxOpenTasks:10;
+   if(!profileId||!department) return json({error:"profileId and department are required"},400);
+   const {data:member,error}=await admin.rpc("jd_set_task_assignment_member",{p_actor_id:authData.user.id,p_profile_id:profileId,p_department:department,p_max_open_tasks:maxOpenTasks,p_active:payload.active!==false});
+   if(error)return json({error:"Could not update assignment pool",reason:error.message},error.code==="42501"?403:400);
+   return json({member});
+  }
+  if(payload.action==="operations.task.auto_assign"){
+   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to auto-assign tasks"},403);
+   const taskId=typeof payload.taskId==="string"?payload.taskId:"";
+   if(!taskId)return json({error:"taskId is required"},400);
+   const {data:assignment,error}=await admin.rpc("jd_auto_assign_operational_task",{p_actor_id:authData.user.id,p_task_id:taskId});
+   if(error)return json({error:"Could not auto-assign task",reason:error.message},error.code==="42501"?403:error.code==="P0002"?404:400);
+   return json({assignment});
+  }
+  if(payload.action==="operations.schedule.list"){
+   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to inspect recurring schedules"},403);
+   const {data,error}=await admin.from("jd_task_schedules").select("id,title,description,department,priority,frequency,local_time,timezone,weekdays,next_run_at,assigned_to,auto_assign,active,last_run_at,last_task_id,created_at").eq("school_id",profile.school_id).order("next_run_at",{ascending:true}).limit(200);
+   if(error)return json({error:"Could not load recurring schedules"},500);
+   return json({schedules:data||[]});
+  }
+  if(payload.action==="operations.schedule.create"){
+   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to create recurring schedules"},403);
+   const input=payload.schedule||{};
+   const frequency=input.frequency==="weekly"?"weekly":input.frequency==="daily"?"daily":null;
+   const timezone=typeof input.timezone==="string"?input.timezone:"";
+   const localTime=typeof input.localTime==="string"?input.localTime:"";
+   const weekdays=Array.isArray(input.weekdays)?[...new Set(input.weekdays.map(Number).filter((x:number)=>Number.isInteger(x)&&x>=1&&x<=7))]:[1,2,3,4,5];
+   if(!frequency||!/^\\d{2}:\\d{2}$/.test(localTime)||!timezone)return json({error:"Choose a frequency, HH:MM local time and IANA timezone"},400);
+   let nextRun:Date;try{nextRun=nextScheduleAt(new Date(),{frequency,localTime,timezone,weekdays});}catch(e){return json({error:e instanceof Error?e.message:"Invalid schedule"},400);}
+   const title=typeof input.title==="string"?input.title.trim():"";
+   const department=typeof input.department==="string"?input.department.trim():"";
+   const priority=["low","normal","high","urgent"].includes(String(input.priority))?String(input.priority):"normal";
+   const assignedTo=typeof input.assignedTo==="string"&&input.assignedTo?input.assignedTo:null;
+   const {data:schedule,error}=await admin.rpc("jd_create_task_schedule",{p_actor_id:authData.user.id,p_title:title,p_description:typeof input.description==="string"?input.description:"",p_department:department,p_priority:priority,p_frequency:frequency,p_local_time:localTime,p_timezone:timezone,p_weekdays:weekdays,p_next_run_at:nextRun.toISOString(),p_assigned_to:assignedTo,p_auto_assign:input.autoAssign===true});
+   if(error)return json({error:"Could not create recurring schedule",reason:error.message},error.code==="42501"?403:400);
+   return json({schedule},201);
+  }
+  if(payload.action==="operations.schedule.toggle"){
+   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to change recurring schedules"},403);
+   const id=typeof payload.scheduleId==="string"?payload.scheduleId:"";
+   if(!id||typeof payload.active!=="boolean")return json({error:"scheduleId and active are required"},400);
+   const {data:schedule,error}=await admin.from("jd_task_schedules").update({active:payload.active,updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",profile.school_id).select("id,active,next_run_at").maybeSingle();
+   if(error||!schedule)return json({error:"Could not update recurring schedule"},404);
+   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,event_type:payload.active?"task.schedule.resumed":"task.schedule.paused",event_json:{schedule_id:id}});
+   return json({schedule});
+  }
+  if(payload.action==="operations.task.assign"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to assign tasks"},403);
   const taskId=typeof payload.taskId==="string"?payload.taskId:"";
   const assigneeId=typeof payload.assigneeId==="string"?payload.assigneeId:"";
