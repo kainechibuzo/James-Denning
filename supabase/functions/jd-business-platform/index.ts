@@ -180,9 +180,30 @@ Deno.serve(async req=>{
    return send({import_id:batch.id,received:transactions.length,imported:accepted.length,notice:"Paystack transactions were imported as bank-statement rows. Reconcile them against cashflow records manually; no payment or refund action is exposed."});
   }
   if(b.action==="oauth.disconnect"){
-   const providerId=str(b.providerId,60);if(!["google-workspace","microsoft-365","linkedin"].includes(providerId))return send({error:"Local disconnect is not supported for this provider"},400);
-   const {data:connection,error}=await db.from("jd_business_oauth_connections").update({status:"revoked",encrypted_credentials:null,token_expires_at:null,key_version:null,last_error_code:"locally_disconnected",updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId).select("provider_id").maybeSingle();
-   if(error||!connection)return send({error:"Connected integration not found"},404);await audit("business.oauth.disconnected",{provider_id:providerId,mode:"local_credential_removal"});return send({provider_id:providerId,status:"revoked",notice:"JD credentials were erased locally. Revoke the app grant in the provider account as well to invalidate provider-side consent immediately."});
+   const providerId=str(b.providerId,60),encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   if(!["google-workspace","microsoft-365","linkedin","slack"].includes(providerId))return send({error:"OAuth disconnect is not supported for this provider"},400);
+   if(!encoded)return send({error:"OAuth encryption key is not configured"},503);
+   const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();
+   if(error||!connection?.encrypted_credentials)return send({error:"Connected integration not found"},404);
+   const stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,await importAesKey(encoded)));
+   let remoteRevoked=false,remoteDetail="";
+   if(providerId==="google-workspace"){
+    const token=stored.refresh_token||stored.access_token,form=new URLSearchParams({token});
+    const response=await fetch("https://oauth2.googleapis.com/revoke",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:form,signal:AbortSignal.timeout(10000),redirect:"error"});
+    if(!response.ok)return send({error:"Google rejected remote token revocation; local credentials were retained"},502);remoteRevoked=true;
+   }else if(providerId==="slack"){
+    const response=await fetch("https://slack.com/api/auth.revoke",{method:"POST",headers:{"Authorization":`Bearer ${stored.access_token}`,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({test:"false"}),signal:AbortSignal.timeout(10000),redirect:"error"});
+    const result:any=await response.json().catch(()=>null);if(!response.ok||result?.ok!==true)return send({error:"Slack rejected remote token revocation; local credentials were retained"},502);remoteRevoked=true;
+   }else if(providerId==="microsoft-365"){
+    if(!(connection.scopes||[]).includes("User.RevokeSessions.All"))return send({error:"Microsoft remote revocation requires the User.RevokeSessions.All permission. Grant it through the Microsoft admin consent flow first; local credentials were retained."},409);
+    const response=await fetch("https://graph.microsoft.com/v1.0/me/revokeSignInSessions",{method:"POST",headers:{Authorization:`Bearer ${stored.access_token}`,"Content-Type":"application/json"},body:"{}",signal:AbortSignal.timeout(10000),redirect:"error"});
+    if(!response.ok)return send({error:"Microsoft Graph rejected session revocation; local credentials were retained"},502);remoteRevoked=true;remoteDetail="Microsoft notes revocation may take several minutes to propagate.";
+   }else{
+    return send({error:"LinkedIn does not expose a verified remote revocation endpoint in this implementation. Revoke the app grant in LinkedIn account settings; local credentials were retained."},409);
+   }
+   const {error:saveError}=await db.from("jd_business_oauth_connections").update({status:"revoked",encrypted_credentials:null,token_expires_at:null,key_version:null,last_error_code:null,updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId);
+   if(saveError)throw saveError;await audit("business.oauth.disconnected",{provider_id:providerId,mode:"provider_revoked_then_local_erased"});
+   return send({provider_id:providerId,status:"revoked",provider_revoked:remoteRevoked,notice:remoteDetail||"Provider token revocation succeeded and the encrypted JD credential bundle was erased."});
   }
   if(b.action==="integration.catalog"){const [c,v,h,a]=await Promise.all([db.from("jd_business_integration_catalog").select("id,name,category,description,required_scopes,supported_capabilities").eq("enabled",true),db.from("jd_business_oauth_connections").select("provider_id,status,scopes,token_expires_at,last_checked_at,last_error_code").eq("school_id",school),db.from("jd_business_service_checks").select("provider_id,status,latency_ms,status_code,error_code,checked_at").eq("school_id",school).order("checked_at",{ascending:false}).limit(100),db.from("jd_business_service_alerts").select("id,provider_id,status,error_code,opened_at,resolved_at").eq("school_id",school).order("opened_at",{ascending:false}).limit(30)]);if(c.error||v.error||h.error||a.error)throw c.error||v.error||h.error||a.error;const latestChecks=Object.values((h.data||[]).reduce((a:any,x:any)=>{if(!a[x.provider_id])a[x.provider_id]=x;return a;},{}));return send({integrations:(c.data||[]).map((i:any)=>({...i,connection:v.data?.find((x:any)=>x.provider_id===i.id)||{status:"not_connected"}})),service_checks:latestChecks,service_alerts:a.data||[]});}
   if(b.action==="contract.version.create"){
