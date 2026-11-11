@@ -128,6 +128,11 @@ begin
       updated_at = now()
   where id = v_workflow.id;
 
+  update public.jd_approvals
+  set status = 'cancelled', execution_status = 'cancelled', updated_at = now()
+  where school_id = v_school_id and action_key = 'workflow.activate'
+    and status = 'pending' and proposal_json->>'workflow_id' = v_workflow.id::text;
+
   insert into public.jd_audit_events(school_id,actor_id,event_type,event_json)
   values(v_school_id,p_actor_id,'workflow.draft.saved',
     jsonb_build_object('workflow_id',v_workflow.id,'version_id',v_version_id,
@@ -155,6 +160,7 @@ declare
   v_approval_id uuid;
   v_proposal jsonb;
   v_proposal_hash text;
+  v_existing public.jd_approvals%rowtype;
 begin
   select p.school_id into v_school_id
   from public.profiles p
@@ -184,6 +190,14 @@ begin
     'definition',v_version.definition_json
   );
   v_proposal_hash := encode(public.digest(convert_to(v_proposal::text,'UTF8'),'sha256'),'hex');
+  select * into v_existing from public.jd_approvals
+  where school_id = v_school_id and proposal_hash = v_proposal_hash;
+  if found then
+    return jsonb_build_object('approval_id',v_existing.id,'run_id',v_existing.run_id,
+      'workflow_id',v_workflow.id,'version_id',v_version.id,'version_no',v_version.version_no,
+      'definition_hash',v_version.definition_hash,'status',v_existing.status,
+      'execution_status',v_existing.execution_status,'duplicate',true);
+  end if;
 
   insert into public.jd_automation_runs(
     school_id,requested_by,trigger_type,status,autonomy_mode,scope,
