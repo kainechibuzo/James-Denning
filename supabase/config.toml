@@ -31,3 +31,7 @@ verify_jwt = false
 
 [functions.jd-business-document-worker]
 verify_jwt = false
+
+[functions.jd-business-ops-worker]
+# This worker validates its own dedicated bearer secret.
+verify_jwt = false
