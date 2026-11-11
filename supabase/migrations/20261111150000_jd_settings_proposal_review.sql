@@ -11,8 +11,7 @@ create unique index if not exists jd_approvals_school_proposal_hash_uidx
 create or replace function public.jd_submit_settings_proposal(
   p_actor_id uuid,
   p_title text,
-  p_proposal_json jsonb,
-  p_proposal_hash text
+  p_proposal_json jsonb
 )
 returns jsonb
 language plpgsql
@@ -25,15 +24,12 @@ declare
   v_approval_id uuid;
   v_existing public.jd_approvals%rowtype;
   v_title text := left(trim(coalesce(p_title, 'Settings change proposal')), 160);
+  v_proposal_hash text;
 begin
   if p_proposal_json is null or jsonb_typeof(p_proposal_json) <> 'object' then
     raise exception 'A proposal object is required' using errcode = '22023';
   end if;
-  if length(coalesce(p_proposal_hash, '')) <> 64
-     or p_proposal_hash !~ '^[a-f0-9]{64}$'
-     or encode(digest(convert_to(p_proposal_json::text, 'UTF8'), 'sha256'), 'hex') <> p_proposal_hash then
-    raise exception 'Proposal hash does not match proposal content' using errcode = '22023';
-  end if;
+  v_proposal_hash := encode(digest(convert_to(p_proposal_json::text, 'UTF8'), 'sha256'), 'hex');
   if jsonb_typeof(p_proposal_json->'changes') <> 'array'
      or jsonb_array_length(p_proposal_json->'changes') < 1
      or jsonb_array_length(p_proposal_json->'changes') > 20 then
@@ -55,7 +51,7 @@ begin
 
   select * into v_existing
   from public.jd_approvals
-  where school_id = v_school_id and proposal_hash = p_proposal_hash
+  where school_id = v_school_id and proposal_hash = v_proposal_hash
   limit 1;
   if found then
     return jsonb_build_object('id', v_existing.id, 'run_id', v_existing.run_id,
@@ -68,7 +64,7 @@ begin
   ) values (
     v_school_id, p_actor_id, 'manual', 'awaiting_approval', 'assisted',
     'settings', v_title, jsonb_build_array(p_proposal_json),
-    'settings-proposal:' || p_proposal_hash
+    'settings-proposal:' || v_proposal_hash
   ) returning id into v_run_id;
 
   insert into public.jd_approvals (
@@ -80,14 +76,14 @@ begin
     v_title, 'settings.apply',
     'high', p_proposal_json,
     'Review the exact proposed settings diff before any changes are applied.',
-    'not_executed', p_proposal_hash
+    'not_executed', v_proposal_hash
   ) returning id into v_approval_id;
 
   insert into public.jd_audit_events (
     school_id, actor_id, run_id, event_type, event_json
   ) values (
     v_school_id, p_actor_id, v_run_id, 'settings.proposal_submitted',
-    jsonb_build_object('approval_id', v_approval_id, 'proposal_hash', p_proposal_hash)
+    jsonb_build_object('approval_id', v_approval_id, 'proposal_hash', v_proposal_hash)
   );
 
   return jsonb_build_object('id', v_approval_id, 'run_id', v_run_id,
@@ -96,6 +92,6 @@ begin
 end;
 $$;
 
-revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb, text) from public;
+revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb) from public;
 revoke all on function public.jd_submit_settings_proposal(uuid, text, jsonb, text) from anon, authenticated;
 grant execute on function public.jd_submit_settings_proposal(uuid, text, jsonb, text) to service_role;
