@@ -156,6 +156,8 @@ Deno.serve(async (req) => {
   return json({conversationId,run:{...run,status:"failed"},reply,configured:false},503);
  }
  const events:any[]=[];
+ let stepIndex=0;
+ const stepIds=new Map<string,string>();
  try{
   await admin.from("jd_automation_runs").update({status:"running",started_at:new Date().toISOString()}).eq("id",run.id);
   const result=await runAgent({
