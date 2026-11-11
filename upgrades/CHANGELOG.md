@@ -239,3 +239,18 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **Verified source head:** `52a8169b8ff8aa2cd60a9299b471118ba30ad2f7`.
 - **CI:** Web CI passed (production build, Deno helper/migration tests, Edge Function type-check); application verification passed (web navigation/build and default application build).
 - **Still not live:** no staging migration, production migration, or Edge Function deployment has been performed.
+
+
+### JD-BATCH-02 — Autonomous Business Platform
+- **Date:** 2026-11-11
+- **Status:** in_progress (planning baseline)
+- **Priority:** high
+- **Branch:** `feature/jd-batch-02-autonomous-business-platform`
+- **Base commit:** `81fd482f8e99ffcbd658a0a18133647d270189e1`
+- **Scope:** Define 20 upgrade tracks spanning workflow authoring, scheduling, collaboration, business intelligence, forecasting, financial visibility, document and contract handling, CRM, sales, support, integrations, monitoring and executive reporting.
+- **Evidence:** `upgrades/JD-BATCH-02-AUTONOMOUS-BUSINESS-PLATFORM.md`
+- **Validation:** Planning/acceptance contract only. No feature implementation or runtime tests claimed by this entry.
+- **Security:** Draft-first workflow design; tenant isolation, least privilege, exact-payload approval for consequential actions, secure OAuth and server-side secrets are mandatory.
+- **Deployment/migrations:** None performed.
+- **Token usage:** unknown; provider usage metadata unavailable.
+- **Next:** Implement and test the workflow-definition foundation (JD-B02-01), after verifying existing schema and durable execution contracts.
