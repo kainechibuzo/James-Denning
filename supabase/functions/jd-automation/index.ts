@@ -30,20 +30,9 @@ Deno.serve(async (req) => {
 
  if(payload.action==="capabilities.report"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation capabilities"},403);
-  const {data:tables,error:tableErr}=await admin.from("information_schema.tables").select("table_name").eq("table_schema","public").limit(500);
-  if(tableErr) return json({error:"Capability inventory could not be loaded"},500);
-  const knownTables=new Set((tables||[]).map((x:any)=>String(x.table_name)));
-  const evidence:Record<string,any>={
-   "execution.dispatcher":{code:true,migration:knownTables.has("jd_execution_jobs")},
-   "execution.recovery":{code:true,migration:knownTables.has("jd_execution_jobs")},
-   "execution.idempotency":{code:true,migration:knownTables.has("jd_execution_jobs")},
-   "execution.monitor":{code:true,migration:knownTables.has("jd_execution_jobs")},
-   "execution.controls":{code:true,migration:knownTables.has("jd_execution_jobs")},
-   "org.blueprint":{code:true,migration:knownTables.has("jd_organisation_blueprints")},
-   "operations.intelligence":{code:true,migration:knownTables.has("jd_operational_tasks")},
-   "hiring.vacancies":{code:true,migration:knownTables.has("jd_hiring_requisitions")},
-   "hiring.pipeline":{code:true,migration:knownTables.has("jd_hiring_candidates")}
-  };
+  // Capability status is intentionally unverified until migrations, deployment and smoke tests
+  // are observed by a trusted deployment inventory. Do not infer live status from source code.
+  const evidence:Record<string,any>={};
   return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:true,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
  }
 
