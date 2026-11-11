@@ -92,3 +92,18 @@ Tests cover score aggregation, task aggregation and existing workflow state mach
 - Finance is currently read-only aggregate intelligence; no payments, refunds or ledger writes are automated.
 - Performance intelligence is aggregate-only; KPI dashboards and trend history still need UI work.
 - Production migration and Edge Function deployment have not been performed.
+
+
+## Durable execution, monitoring and recovery integration
+
+Routine JD chat requests now create a durable execution job through `jd_enqueue_execution_job` and return immediately with a queued state. The background worker owns model execution, step persistence, checkpoints, lease heartbeats, retry scheduling and terminal state updates. High-impact requests remain paused in Review Centre and are not automatically enqueued.
+
+Added:
+- Business Operations execution monitor showing run state, attempts, recent tool steps and safe error summaries.
+- Admin cancellation for queued/retry-wait jobs only. Running jobs are deliberately not force-cancelled because a worker may hold a valid lease.
+- Admin retry of failed jobs through `jd_requeue_failed_execution_job`, which resets the failed job, emits a fresh queue message, resets the parent run and records an audit event.
+- Scheduled GitHub Actions worker poller at `.github/workflows/jd-worker-dispatch.yml`, polling every five minutes and processing one potentially long-running job per invocation.
+
+**Required GitHub repository secrets for the scheduled poller:** `SUPABASE_URL` and `JD_WORKER_SECRET`. The latter must exactly match the Supabase Edge Function secret `JD_WORKER_SECRET`. The worker function must be deployed, and the JD-004A/004B/004C migrations plus this batch's migrations must be applied in staging before live operation.
+
+This source change does not itself deploy functions or apply database migrations. Until those release steps are performed, the queue and monitor cannot be considered live.
