@@ -41,3 +41,19 @@ It will remove localhost and the obsolete `rgs-portal-master.vercel.app` URL fro
 ## Migration-history note
 
 The remote history has no version `014`; the repository has no corresponding `014` migration. Do not invent or replay one. The legacy files `999b_real_auth_rls.sql` and `999c_login_lookup_functions.sql` describe database objects that are already present; the new reconciliation checkpoint verifies representative objects without replaying those scripts. `supabase/migrations_v2/` is a separate legacy experiment and is not part of the production migration stream.
+
+
+## JD Business Platform — OAuth provider setup
+
+The repository now includes a PKCE OAuth start/callback flow for Google Workspace, Microsoft 365 and LinkedIn. The callback uses one-time 10-minute state, PKCE S256 and AES-GCM encryption for stored token bundles. **It is not live until provider credentials and the callback secrets are configured and the migration/functions are deployed.**
+
+Add these as Supabase Edge Function secrets for the target environment (do not put them in GitHub files or paste them into chat):
+
+- `JD_OAUTH_ENCRYPTION_KEY`: base64 encoding of exactly 32 random bytes. Generate locally with `openssl rand -base64 32`.
+- `JD_OAUTH_CALLBACK_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-oauth-callback` for the current production project, or the equivalent URL for staging.
+- `JD_OAUTH_SUCCESS_REDIRECT`: the HTTPS James Denning Business Platform integrations page.
+- `JD_OAUTH_GOOGLE_CLIENT_ID` and `JD_OAUTH_GOOGLE_CLIENT_SECRET`.
+- `JD_OAUTH_MICROSOFT_CLIENT_ID` and `JD_OAUTH_MICROSOFT_CLIENT_SECRET`.
+- `JD_OAUTH_LINKEDIN_CLIENT_ID` and `JD_OAUTH_LINKEDIN_CLIENT_SECRET`.
+
+Register the exact callback URL in each provider developer console. Deploy `jd-business-platform` and `jd-business-oauth-callback` only after applying the migration in a staging project and verifying the callback. Slack and Paystack are not enabled in this OAuth flow; they require separate provider-specific API credential handling. Token refresh and remote revocation are not implemented yet, so do not use these connections for unattended long-lived production automation.
