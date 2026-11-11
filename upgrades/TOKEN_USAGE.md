@@ -48,3 +48,8 @@ The JD server runtime should persist provider usage metadata per model request, 
 ### JD-004 design work — 2026-11-11
 
 Provider/model: unknown. Input/output/cached/reasoning/total tokens: unknown. Cost: unknown. Usage source: unavailable. No provider response metadata was supplied for this design session; no token or cost estimate is recorded.
+
+
+### JD-004A implementation work — 2026-11-11
+
+Provider/model: unknown. Input/output/cached/reasoning/total tokens: unknown. Cost: unknown. Usage source: unavailable. No provider response metadata was supplied for this implementation session; no token or cost estimate is recorded.

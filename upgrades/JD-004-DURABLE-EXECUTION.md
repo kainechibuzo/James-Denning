@@ -1,7 +1,7 @@
 # JD-004 — Durable Background Execution Design
 
 - **Created (UTC):** 2026-11-11
-- **Status:** proposed design; implementation not started
+- **Status:** architecture proposed; JD-004A primitives implemented on a review branch, database verification pending
 - **Priority:** critical
 - **Target:** Supabase Postgres + Supabase Queues (pgmq) + authenticated JD worker Edge Function
 
@@ -72,6 +72,10 @@ Do not treat a queue message as the source of truth for run state. Queue deliver
 - Do not retry validation errors, permission denials, rejected approvals, malformed plans or deterministic business-rule failures.
 - Set a maximum attempt count and maximum job age. Exhausted jobs become `failed` with a redacted diagnostic and an auditable event.
 - Keep terminal history in the ledger; archive queue messages after successful terminal handling. Retain enough metadata for support and reconciliation without retaining secrets.
+
+## Implementation progress
+
+- **JD-004A:** Job ledger, pgmq queue creation, restricted queue read/ack RPCs, atomic claim, lease fencing, heartbeat, checkpoint, bounded retry and terminal-state handling are implemented in a separate review branch. Static contract tests are included in CI. SQL execution and concurrency/RLS integration tests remain pending.
 
 ## Proposed implementation sequence
 
