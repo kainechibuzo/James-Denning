@@ -1350,11 +1350,14 @@ export function StudentsPage({ctx}){
                     ]}/>
                   );
                 })}
-                {!filtered.length&&<tr><td colSpan={11}><EmptyState icon={<AppIcon name="students" size={28} color={C.muted}/>} title="No members found" message="Try adjusting the search or filters, or add a new member."/></td></tr>}
               </tbody>
               )}
             </table>
           </div>
+        )}
+        {!filtered.length&&(
+          <EmptyState icon={<AppIcon name="students" size={28} color={C.muted}/>} title="No members found"
+            message="Try adjusting the search or filters, or add a new member."/>
         )}
         {/* ── Pagination ── */}
         {totalPages>1&&(

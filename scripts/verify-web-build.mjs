@@ -54,6 +54,60 @@ for (const method of ["signInWithPassword", "createSchoolSignup", "resetPassword
 assert.match(app, /onAuthenticated=\{onAuthenticated\}/, "Successful auth must hand off to the app");
 assert.match(app, /authListener\.subscription\.unsubscribe\(\)/, "Auth listener must be cleaned up");
 
+// ── Responsive layout foundation guard ───────────────────────────────────────
+// Regression guard for the "site is broken on mobile" class of bug.
+//
+// Components declare layout with inline styles (gridTemplateColumns:"1fr 1fr").
+// Inline declarations outrank normal CSS, so responsiveness depends on the
+// attribute selectors in src/styles/system.css. Those selectors were previously
+// written against the AUTHORED value ("repeat(3,1fr)"), but React serialises an
+// inline style through the CSSOM, which inserts a space after the colon and
+// after each comma ("repeat(3, 1fr)"). The rules therefore never matched and
+// every two-column page overflowed on a phone.
+//
+// These assertions fail the build if that mechanism is broken again.
+const systemCss = read("src/styles/system.css");
+
+assert.match(
+  systemCss,
+  /\[style\*="1fr 1fr"\]/,
+  "system.css must collapse inline two-column grids on phones ([style*=\"1fr 1fr\"])",
+);
+assert.match(
+  systemCss,
+  /\[style\*="repeat\(3,"\]|[\s\S]*repeat\(3, 1fr\)/,
+  "system.css must match React's serialised grid values (repeat(3, 1fr) keeps the space)",
+);
+assert.match(
+  systemCss,
+  /@media\(max-width:760px\)/,
+  "system.css must define a phone breakpoint for layout collapse",
+);
+assert.match(
+  systemCss,
+  /\*\{min-width:0\}|\*\s*\{\s*min-width:\s*0/,
+  "system.css must allow flex/grid children to shrink (min-width:0)",
+);
+// Guard against the specific trap: a selector that only matches the authored,
+// space-free form of a repeat() value can never match a React-rendered style.
+assert.doesNotMatch(
+  systemCss,
+  /\[style\*="grid-template-columns:repeat\(\d,1fr\)"\]/,
+  'Selector matches only the authored value; React emits "repeat(3, 1fr)" with a space — match a value fragment instead',
+);
+
+// No literal JavaScript unicode escapes may survive into rendered JSX text or
+// attributes: JSX attribute string literals do not process \uXXXX, so the
+// placeholder literally displayed "Search name or email\u2026" on screen.
+const jsxFiles = readdirSync(join(root, "src"), { recursive: true })
+  .filter((f) => String(f).endsWith(".jsx"))
+  .map((f) => join(root, "src", String(f)));
+for (const file of jsxFiles) {
+  const src = readFileSync(file, "utf8");
+  const badAttr = src.match(/\s[a-zA-Z-]+="[^"]*\\u[0-9a-fA-F]{4}[^"]*"/);
+  assert.ok(!badAttr, "Literal unicode escape in a JSX attribute will render as visible text: " + file + " -> " + String(badAttr?.[0] || "").slice(0, 80));
+}
+
 const dist = resolve(root, "dist");
 assert.ok(existsSync(join(dist, "index.html")), "Production build must emit dist/index.html");
 const html = readFileSync(join(dist, "index.html"), "utf8");

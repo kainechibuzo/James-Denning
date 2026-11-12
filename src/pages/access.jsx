@@ -63,7 +63,7 @@ export function TeacherAccessRequestPage({ctx}){
     if(error)notify(error.message,"error");
     else{
       notify("Access request submitted \u2713 \u2014 waiting for admin approval");
-      // Tier A alert \u2014 access request submitted
+      // Tier A alert — access request submitted
       const cls=classes?.find(c=>String(c.id)===String(selClass));
       db.sendAdminAlert({
         subject:`[Alert] Access Request \u2014 ${user?.full_name||user?.name||"Staff"}`,
@@ -88,7 +88,7 @@ export function TeacherAccessRequestPage({ctx}){
 
   // Import Th and TRow inline since access.jsx doesn't import from ui.jsx by default
   // (they are exported from ui.jsx — just need to add them to the import above)
-  if(loading)return <div style={{padding:32,textAlign:"center",color:C.muted}}>Loading\u2026</div>;
+  if(loading)return <div style={{padding:32,textAlign:"center",color:C.muted}}>Loading…</div>;
 
   return(
     <div style={{maxWidth:860,margin:"0 auto",padding:"24px 16px"}}>
@@ -107,7 +107,7 @@ export function TeacherAccessRequestPage({ctx}){
             <select value={selClass} onChange={e=>setSelClass(e.target.value)}
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:"inherit",
                 color:C.text,borderRadius:8,fontSize:13}}>
-              <option value="">\u2014 Select group \u2014</option>
+              <option value="">— Select group —</option>
               {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -275,7 +275,7 @@ export function AccessRequestsAdminPage({ctx}){
 
   const filtered=requests.filter(r=>filter==="all"||r.status===filter);
 
-  if(loading)return <div style={{padding:32,textAlign:"center",color:C.muted}}>Loading\u2026</div>;
+  if(loading)return <div style={{padding:32,textAlign:"center",color:C.muted}}>Loading…</div>;
 
   return(
     <div style={{maxWidth:960,margin:"0 auto",padding:"24px 16px"}}>
@@ -368,7 +368,7 @@ export function AccessRequestsAdminPage({ctx}){
 
       <div style={{background:C.bluePale,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.blue}}>
         <strong>Note:</strong> Approved requests permanently assign the categories to the staff in the Assignments page.
-        To remove access, go to <strong>Assignments \u2192 Category Staff</strong> and remove the assignment.
+        To remove access, go to <strong>Assignments → Category Staff</strong> and remove the assignment.
       </div>
 
       {noteModal&&(
@@ -388,7 +388,7 @@ export function AccessRequestsAdminPage({ctx}){
               Note to staff (optional)
             </label>
             <textarea value={adminNote} onChange={e=>setAdminNote(e.target.value)}
-              rows={3} placeholder="Add a note for the staff\u2026"
+              rows={3} placeholder="Add a note for the staff…"
               style={{width:"100%",padding:"8px 10px",border:`1px solid ${C.border}`,
                 borderRadius:8,fontSize:13,color:C.text,background:"inherit",resize:"vertical",
                 boxSizing:"border-box"}}/>

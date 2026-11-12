@@ -339,28 +339,28 @@ export function StatCard({ label, value, icon, color, sub, valueSize = 28 }) {
   const displayValue = isNum ? displayed : value;
 
   return (
-    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+    <div data-jd-stat="" onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{ background:C.white, borderRadius:18, padding:"18px 20px",
         boxShadow:h ? C.shadowMd : C.shadow, border:`1px solid ${h ? cardColor+"30" : C.border}`,
-        position:"relative", overflow:"hidden", minWidth:0,
+        position:"relative", overflow:"hidden", minWidth:0, containerType:"inline-size",
         transform:h ? "translateY(-2px)" : "none", transition:"all .2s ease" }}>
       <div style={{ position:"absolute", top:0, left:0, right:0, height:3,
         background:`linear-gradient(90deg,${cardColor},${cardColor}88)` }}/>
       <div style={{ position:"absolute", bottom:-16, right:-16, width:80, height:80,
         borderRadius:"50%", background:cardColor+"08", transition:"transform .3s",
         transform:h ? "scale(1.2)" : "scale(1)" }}/>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10, minWidth:0 }}>
         <div style={{ minWidth:0, overflow:"hidden" }}>
           <div style={{ fontSize:10.5, fontWeight:700, color:C.muted, textTransform:"uppercase",
-            letterSpacing:.9, marginBottom:8 }}>{label}</div>
+            letterSpacing:.9, marginBottom:8, overflowWrap:"anywhere" }}>{label}</div>
           <div style={{ fontSize:valueSize, fontWeight:900, color:C.text, lineHeight:1, marginBottom:sub?4:0,
             whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{displayValue}</div>
           {sub && <div style={{ fontSize:11.5, color:C.muted, marginTop:3 }}>{sub}</div>}
         </div>
-        <div style={{ width:46, height:46, borderRadius:13,
+        <div className="jd-stat-icon" style={{ width:46, height:46, borderRadius:13, flexShrink:0,
           background:`linear-gradient(135deg,${cardColor}22,${cardColor}10)`,
           border:`1.5px solid ${cardColor}20`,
-          display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0,
+          display:"flex", alignItems:"center", justifyContent:"center", fontSize:20,
           boxShadow:`0 4px 12px ${cardColor}20`, transition:"all .2s",
           transform:h ? "scale(1.08)" : "scale(1)" }}>
           {icon}
@@ -901,10 +901,16 @@ export function PageHeader({ icon, title, subtitle, action, gradient }) {
 }
 
 // ── Empty State ────────────────────────────────────────────────────────────────
+// EmptyState is used both as a page-level block and inside a table cell that
+// spans every column (colSpan). Inside a horizontally scrollable table the full
+// column span can be far wider than the phone, so a centred message renders
+// centred on the *scroll width* and lands off-screen. The wrapper clips to the
+// visible width and centres within that.
 export function EmptyState({ icon, title, message, action }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-      padding:"48px 24px", textAlign:"center", gap:10 }}>
+      padding:"48px 24px", textAlign:"center", gap:10,
+      position:"relative", maxWidth:"100%", marginInline:"auto" }}>
       <div style={{ width:68, height:68, borderRadius:20, background:C.offWhite,
         border:`1.5px solid ${C.border}`,
         display:"flex", alignItems:"center", justifyContent:"center", marginBottom:4 }}>

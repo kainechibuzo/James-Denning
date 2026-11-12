@@ -108,8 +108,20 @@ function DarkProvider({children}){
   return <DarkCtx.Provider value={{dark,toggle}}>{children}</DarkCtx.Provider>;
 }
 
-function DarkToggle(){
+function DarkToggle({compact=false}){
   const {dark,toggle}=useDark();
+  // Compact form for the phone header: the text label is what pushed the page
+  // title into an ellipsis and the sign-out control off-screen at 360–393px.
+  if(compact){
+    return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
+      aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
+      style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
+        border:`1px solid ${C.border}`,borderRadius:9,width:36,height:36,cursor:"pointer",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,lineHeight:1,
+        color:C.text,transition:"all .2s",flexShrink:0}}>
+      <span aria-hidden="true">{dark?"☀":"☾"}</span>
+    </button>;
+  }
   return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
     aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
     style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
@@ -2575,7 +2587,7 @@ function AppInner(){
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
             <button onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 color:C.muted,padding:"7px 9px",borderRadius:9,
@@ -2585,22 +2597,23 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
               <AppIcon name="menu" size={18} color={C.muted}/>
             </button>
-            <div style={{display:"flex",alignItems:"center",gap:7}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
               <div style={{width:28,height:28,borderRadius:8,background:C.blue+"14",
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <AppIcon name={NAV.find(n=>n.id===page)?.icon||""} size={14} color={C.blue}/>
               </div>
               <span style={{fontSize:isMobile?13:14,fontWeight:800,color:C.text,letterSpacing:"-.01em",
-                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:isMobile?140:260}}>
+                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
+                maxWidth:isMobile?"none":260,minWidth:0}}>
                 {NAV.find(n=>n.id===page)?.label||"Portal"}
               </span>
             </div>
           </div>
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
             {!isMobile&&<LiveClock/>}
             {!isMobile&&selectedSection&&<Badge color={selectedSection.color||C.blue}>{selectedSection.name}</Badge>}
             {!isMobile&&<SessionTermBadge/>}
-            <DarkToggle/>
+            <DarkToggle compact={isMobile}/>
             <button data-tour="tour-trigger"
               onClick={()=>setShowTour(true)}
               title="Help / Product Tour"
@@ -2625,7 +2638,7 @@ function AppInner(){
               </button>
             )}
             {isMobile&&role==="admin"&&(
-              <button onClick={()=>setPage("settings")} title="Settings"
+              <button onClick={()=>setPage("settings")} title="Settings" data-header-compact="hide"
                 style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,
                   width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",
                   justifyContent:"center",fontSize:16,color:C.muted}}>
@@ -2633,7 +2646,7 @@ function AppInner(){
               </button>
             )}
             <NotificationBell ctx={ctx}/>
-            <button onClick={()=>setShowProfile(true)}
+            <button onClick={()=>setShowProfile(true)} data-header-compact="hide"
               style={{width:34,height:34,borderRadius:10,
                 background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
                 color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer",
@@ -2642,7 +2655,7 @@ function AppInner(){
               title="My Profile">
               {(user.name||"?")[0].toUpperCase()}
             </button>
-            <button onClick={()=>setShowLogout(true)}
+            {!isMobile&&<button onClick={()=>setShowLogout(true)}
               title="Sign Out"
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 borderRadius:8,padding:"7px 9px",display:"flex",alignItems:"center",
@@ -2656,7 +2669,7 @@ function AppInner(){
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
               {!isMobile&&<span>Sign Out</span>}
-            </button>
+            </button>}
           </div>
         </header>
 
@@ -2799,7 +2812,12 @@ function AppInner(){
           button{min-height:40px;}
 
           /* Tables always scroll — :has() auto-wraps any parent div */
-          table{min-width:520px;}
+          /* Was a blanket 520px floor, which forced even a two-column table —
+             and every empty-state row — wider than the phone, so the message
+             sat off-screen and had to be scrolled to. The floor now belongs to
+             deliberately wide tables (.tbl-wrap) only; wide tables still
+             overflow and still scroll inside their wrapper. */
+          table{min-width:100%;}
           div:has(>table),div:has(>div>table){overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}
           .tbl-wrap{-webkit-overflow-scrolling:touch;}
 

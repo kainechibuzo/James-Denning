@@ -10,9 +10,12 @@ export default defineConfig({
     rollupOptions: {
       input: 'mobile.html',
       output: {
-        manualChunks: {
-          supabase: ['@supabase/supabase-js'],
-          lucide: ['lucide-react'],
+        // Vite 8 (rolldown) requires manualChunks to be a FUNCTION; the object
+        // form silently fails the build with "manualChunks is not a function".
+        manualChunks(id) {
+          if (!id.includes('/node_modules/')) return
+          if (id.includes('/node_modules/@supabase/')) return 'supabase'
+          if (id.includes('/node_modules/lucide-react/')) return 'lucide'
         },
       },
     },
