@@ -26,7 +26,17 @@
 
 const url = (process.env.SUPABASE_URL || "").replace(/\/+$/, "");
 const anon = process.env.SUPABASE_ANON_KEY || "";
-const workerSecret = process.env.JD_WORKER_SECRET || "";
+let secretsBundle = {};
+try {
+  const raw = process.env.JD_SECRETS_JSON || "";
+  if (raw) secretsBundle = JSON.parse(raw);
+} catch {
+  console.error("JD_SECRETS_JSON is not valid JSON.");
+  process.exit(2);
+}
+const workerSecret = typeof secretsBundle.JD_WORKER_SECRET === "string"
+  ? secretsBundle.JD_WORKER_SECRET
+  : "";
 
 // Default set: functions that must NOT be publicly callable without auth.
 // jd-automation / jd-task-collaboration verify a user JWT (verify_jwt=true).
@@ -50,7 +60,7 @@ if (!url) {
 // from the workflow context we want a red build, not a silently weaker probe.
 if (process.env.GITHUB_ACTIONS === "true" && !workerSecret) {
   console.error(
-    "JD_WORKER_SECRET is not available to this job, so the wrong-secret " +
+    "JD_SECRETS_JSON.JD_WORKER_SECRET is not available to this job, so the wrong-secret " +
     "assertion would be skipped. Add it under Settings → Secrets and variables " +
     "→ Actions so the probe verifies the full fail-closed contract.",
   );
@@ -124,7 +134,7 @@ for (const fn of functions) {
   } else {
     entry.checks.rejectsWrongWorkerSecret = {
       pass: null,
-      detail: "skipped — JD_WORKER_SECRET not set in this context",
+      detail: "skipped — JD_SECRETS_JSON.JD_WORKER_SECRET not set in this context",
     };
   }
 
