@@ -1,4 +1,5 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 const headers={"Content-Type":"application/json","Cache-Control":"no-store"};
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
 const probes:Record<string,{url:string;accepted:number[]}>={
@@ -11,7 +12,7 @@ const probes:Record<string,{url:string;accepted:number[]}>={
 const equalSecret=async(a:string,b:string)=>{const [x,y]=await Promise.all([crypto.subtle.digest("SHA-256",new TextEncoder().encode(a)),crypto.subtle.digest("SHA-256",new TextEncoder().encode(b))]);const aa=new Uint8Array(x),bb=new Uint8Array(y);let diff=0;for(let i=0;i<aa.length;i++)diff|=aa[i]^bb[i];return diff===0;};
 Deno.serve(async req=>{
  if(req.method!=="POST")return reply({error:"Method not allowed"},405);
- const expected=Deno.env.get("JD_BUSINESS_MONITOR_WORKER_SECRET")||"",authorization=req.headers.get("Authorization")||"",auth=authorization.toLowerCase().startsWith("bearer ")?authorization.slice(7).trim():"";
+ const expected=getJdSecret("JD_BUSINESS_MONITOR_WORKER_SECRET"),authorization=req.headers.get("Authorization")||"",auth=authorization.toLowerCase().startsWith("bearer ")?authorization.slice(7).trim():"";
  if(expected.length<32||!auth||!await equalSecret(auth,expected))return reply({error:"Unauthorized"},401);
  const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!url||!key)return reply({error:"Worker is not configured"},503);
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
