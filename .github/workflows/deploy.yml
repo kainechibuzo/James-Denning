@@ -181,5 +181,5 @@ jobs:
           # Written literally rather than via ${{ env.* }} because the env
           # context is not reliably resolvable inside a job-level `env:` block.
           SUPABASE_URL: https://thklwiybjuhrjqrrxyid.supabase.co
-          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+          JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: node scripts/probe-edge-functions.mjs
