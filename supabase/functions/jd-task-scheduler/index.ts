@@ -1,10 +1,11 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {nextScheduleAt,type LocalSchedule} from "../_shared/jd-scheduler.ts";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 function secretMatches(provided:string,expected:string){if(!provided||!expected||provided.length!==expected.length)return false;let diff=0;for(let i=0;i<expected.length;i++)diff|=provided.charCodeAt(i)^expected.charCodeAt(i);return diff===0;}
 Deno.serve(async(req)=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
- const expected=Deno.env.get("JD_WORKER_SECRET")||"",provided=(req.headers.get("x-jd-worker-secret")||"").trim();
+ const expected=getJdSecret("JD_WORKER_SECRET"),provided=(req.headers.get("x-jd-worker-secret")||"").trim();
  if(!secretMatches(provided,expected))return json({error:"Unauthorized"},401);
  const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!key)return json({error:"Scheduler is not configured"},503);
