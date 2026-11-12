@@ -9,30 +9,19 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate worker configuration
-        env:
-          FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
-          WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
-        run: |
-          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
-            echo "::notice::JD_BUSINESS_OPS_FUNCTION_URL / JD_BUSINESS_OPS_WORKER_SECRET are not configured; skipping SLA/notification processing."
-            exit 0
-          fi
-          if [ "${#WORKER_SECRET}" -lt 32 ]; then
-            echo "::error::JD_BUSINESS_OPS_WORKER_SECRET must be at least 32 characters (secret is set but invalid)."
-            exit 1
-          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Process SLA escalations and queued notifications
         env:
-          FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
-          WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
+          JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
-          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ] || [ "${#WORKER_SECRET}" -lt 32 ]; then
-            echo "::notice::Ops worker not configured; skipping."
-            exit 0
-          fi
+          set -euo pipefail
+          worker_secret="$(node scripts/read-jd-secret.mjs JD_BUSINESS_OPS_WORKER_SECRET)"
+          echo "::add-mask::$worker_secret"
           curl --fail-with-body --silent --show-error --max-time 90 \
-            -X POST "$FUNCTION_URL" \
-            -H "Authorization: Bearer $WORKER_SECRET" \
+            -X POST "https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-ops-worker" \
+            -H "Authorization: Bearer $worker_secret" \
             -H "Content-Type: application/json" \
             --data '{"limit":50}'
