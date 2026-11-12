@@ -1911,7 +1911,7 @@ function StudentProfileModal({student, classes, sections, onClose, notify}){
             <>
               {/* ══ OVERVIEW TAB ══ */}
               {tab==="overview"&&(
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                   {/* Personal Info */}
                   <div style={{background:C.offWhite,borderRadius:12,padding:18}}>
                     <div style={{fontWeight:800,color:C.blue,fontSize:12,textTransform:"uppercase",

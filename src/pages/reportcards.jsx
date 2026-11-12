@@ -1776,7 +1776,7 @@ export function ResultApprovalsPage({ctx}){
       </div>
 
       <Card style={{marginBottom:16}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
           <Sel label="Cycle" value={selSession} onChange={setSelSession}
             options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
           <Sel label="Period" value={selTerm} onChange={setSelTerm}
