@@ -34,9 +34,9 @@
 #   SUPABASE_DB_PASSWORD  — database password of project thklwiybjuhrjqrrxyid
 #       Needed ONLY when apply_migrations is set. Absent → migration runs fail
 #       early with a clear message instead of a confusing link error.
-#   JD_WORKER_SECRET      — the value already configured in Supabase secrets.
-#       Used by the post-deploy probe to prove the workers reject bad secrets.
-#       Absent → the probe exits 2 rather than silently skipping that assertion.
+#   JD_SECRETS_JSON       — JSON bundle containing the generated JD worker and
+#       OAuth encryption random strings. The post-deploy probe reads the worker
+#       value from this bundle; do not commit the bundle to source control.
 # The project ref itself is not secret (already committed in config.toml).
 
 name: Supabase Deploy
