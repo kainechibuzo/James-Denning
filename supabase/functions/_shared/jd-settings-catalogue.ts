@@ -26,7 +26,7 @@ export const JD_SETTING_DEFINITIONS: SettingDefinition[] = [
   { key: "recycle_bin_retention_days", label: "Recycle bin retention", category: "portal", description: "Number of days deleted items remain in the recycle bin.", displayValue: true },
 ];
 
-const SECRET_KEY_PATTERN = /(password|secret|token|api.?key|credential|private|smtp|webhook|service.?role|vapid|oauth)/i;
+export const SECRET_KEY_PATTERN = /(password|secret|token|api.?key|credential|private|smtp|webhook|service.?role|vapid|oauth)/i;
 
 export function buildSettingsCatalogue(rows: SettingRow[]) {
   const byKey = new Map(rows.map((row) => [row.key, row.value]));

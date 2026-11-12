@@ -16,14 +16,20 @@ jobs:
           FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
           WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
         run: |
-          test -n "$FUNCTION_URL" || { echo "::error::Missing JD_DOCUMENT_FUNCTION_URL"; exit 1; }
-          test -n "$WORKER_SECRET" || { echo "::error::Missing JD_DOCUMENT_WORKER_SECRET"; exit 1; }
+          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
+            echo "::notice::JD_DOCUMENT_FUNCTION_URL / JD_DOCUMENT_WORKER_SECRET are not configured; skipping document extraction batch."
+            exit 0
+          fi
       - name: Process a bounded document batch
         env:
           FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
           WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
         run: |
           set -euo pipefail
+          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
+            echo "::notice::Document worker not configured; skipping."
+            exit 0
+          fi
           curl --fail --silent --show-error --max-time 180 \
             -X POST "$FUNCTION_URL" \
             -H "Authorization: Bearer $WORKER_SECRET" \

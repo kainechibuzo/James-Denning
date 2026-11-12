@@ -14,14 +14,23 @@ jobs:
           FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
           WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
         run: |
-          test -n "$FUNCTION_URL" || { echo "Missing JD_BUSINESS_OPS_FUNCTION_URL"; exit 1; }
-          test -n "$WORKER_SECRET" || { echo "Missing JD_BUSINESS_OPS_WORKER_SECRET"; exit 1; }
-          test "${#WORKER_SECRET}" -ge 32 || { echo "Worker secret must be at least 32 characters"; exit 1; }
+          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
+            echo "::notice::JD_BUSINESS_OPS_FUNCTION_URL / JD_BUSINESS_OPS_WORKER_SECRET are not configured; skipping SLA/notification processing."
+            exit 0
+          fi
+          if [ "${#WORKER_SECRET}" -lt 32 ]; then
+            echo "::error::JD_BUSINESS_OPS_WORKER_SECRET must be at least 32 characters (secret is set but invalid)."
+            exit 1
+          fi
       - name: Process SLA escalations and queued notifications
         env:
           FUNCTION_URL: ${{ secrets.JD_BUSINESS_OPS_FUNCTION_URL }}
           WORKER_SECRET: ${{ secrets.JD_BUSINESS_OPS_WORKER_SECRET }}
         run: |
+          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ] || [ "${#WORKER_SECRET}" -lt 32 ]; then
+            echo "::notice::Ops worker not configured; skipping."
+            exit 0
+          fi
           curl --fail-with-body --silent --show-error --max-time 90 \
             -X POST "$FUNCTION_URL" \
             -H "Authorization: Bearer $WORKER_SECRET" \

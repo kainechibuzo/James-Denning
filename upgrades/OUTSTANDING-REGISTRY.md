@@ -25,11 +25,12 @@
 
 **Verified against production `thklwiybjuhrjqrrxyid` and Vercel `james-denning`:**
 
-- Vercel production deployment for master head `5232af9` (`docs(jd): record Batch 02 direct deployment and remaining gates`) is **READY/PROMOTED** (`dpl_F6dN7jU…`, 2026-11-12). Live at `https://james-denning-james-projects-57651351.vercel.app`.
+- Vercel **production** for master head `be77a55` (merge of PR #54) is **READY/PROMOTED** (`dpl_7FcmYTzNz1Dqo8L1FRThyhRXbpiK`, 2026-11-12T08:41Z). Live at `https://james-denning-james-projects-57651351.vercel.app` (aliases: `rgs-portal-master.vercel.app`, `james-denning-git-master-james-projects-57651351.vercel.app`). Preview deployments for PR #55 are READY.
 - Applied migrations include `20261111085143 jd_autonomous_automation`, `20261111085145 jd_review_centre_foundation`, `20261111085147 jd_atomic_approval_decisions`, `20261111085148 jd_private_conversation_rls`, `20261111085150 jd_durable_execution_jobs`, `20261111085151 jd_durable_execution_checkpoints`, `20261112073746 jd_business_platform`.
-- **Not applied on production:** `20261111150000 jd_settings_proposal_review`, `20261111160000 jd_approved_settings_executor`, `20261111180000 jd_batch01_organisation_operations_hiring`, `20261111184500 jd_task_collaboration`, `20261111190000 jd_execution_retry_controls`, `20261111193000 jd_recurring_tasks_and_assignment`, `20261111200000 jd_workflow_versioned_drafts`. Confirmed the matching tables (`jd_operational_tasks`, `jd_workflow_definitions`, `jd_settings_proposals`, collaboration/recurring tables) **do not exist** in `public`.
+- **Applied 2026-11-12 (direct, owner-authorised):** `20261112084412 jd_settings_proposal_review`, `20261112084459 jd_approved_settings_executor`, `20261112084532 jd_batch01_organisation_operations_hiring`, `20261112084602 jd_task_collaboration`, `20261112084629 jd_execution_retry_controls`, `20261112084732 jd_recurring_tasks_and_assignment`, `20261112084827 jd_workflow_versioned_drafts`. All 10 backing tables verified present in `public`; entries recorded in `supabase_migrations.schema_migrations`. Runtime behaviour remains unverified end-to-end.
+- **Deployed 2026-11-12 (owner-authorised):** `jd-business-document-worker` **v3** (adds pre-extraction `screenDocument` gate) and `jd-business-platform` **v3** (adds screen-on-confirm upload gate: rejected uploads are removed from storage and audited as `business.document.rejected`). Both report ACTIVE/version 3. Runtime smoke tests could not be executed from the authoring sandbox (no route to `*.supabase.co`); fail-closed behaviour must be confirmed by an authenticated caller (e.g. unauthenticated POST → 401; end-to-end test upload carrying an executable signature → 400 + object deleted).
 - All 35 audited core/`jd_*` public tables have **RLS enabled**; the business platform uses server-side `service_role` only.
-- **Deployed Edge Functions:** `manage-account` v6, `scheduled-digest` v2, `send-email` v2, `send-email-batch` v3, `verify-payment` v3, `jd-business-platform` v2, `jd-business-document-worker` v2, `jd-business-monitor-worker` v2, `jd-business-oauth-callback` v2, `jd-business-ops-worker` v2, `jd-business-report-share` v2.
+- **Deployed Edge Functions:** `manage-account` v6, `scheduled-digest` v2, `send-email` v2, `send-email-batch` v3, `verify-payment` v3, `jd-business-platform` **v3**, `jd-business-document-worker` **v3**, `jd-business-monitor-worker` v2, `jd-business-oauth-callback` v2, `jd-business-ops-worker` v2, `jd-business-report-share` v2.
 - **Not deployed:** `jd-automation` (the JD assistant/agent runtime), `jd-execution-worker`, `jd-task-scheduler`, `jd-task-collaboration`. The JD chat is therefore not production-live even though its migrations and source exist.
 - Vercel env vars present (values encrypted): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PAYSTACK_PUBLIC_KEY`.
 - npm audit was **29 vulnerabilities (3 critical / 18 high / 7 moderate / 1 low)** at branch base; this branch resolves it to **0** (see §R).
@@ -52,13 +53,13 @@
 | JD-UPG-010 | Durable queue recovery, worker leases, resumability, crash handling | partially_implemented | **Migrations applied; worker NOT deployed**; JD_WORKER_SECRET (GitHub + Supabase) | Two-worker lease test, crash/lease-expiry test, retry-exhaustion/dead-letter test, duplicate-delivery idempotency test — all green in staging |
 | JD-UPG-011 | pgmq queue compatibility verified in the actual database | implemented_unverified | Live DB access (done read-only); staging for writes | `pgmq.list_queues()` inspection; visibility/archive round-trip test |
 | JD-UPG-012 | Streaming responses and resumable long-running tasks (SSE/stream) | not_implemented | JD-UPG-001, JD-UPG-016 | Stream tokens to client; disconnect resumes or reports partial completion |
-| JD-UPG-013 | Read-after-write verification before JD reports success | partially_implemented | Executor code exists (JD-005E) but migration unapplied | Every consequential tool read-verifies and reports verification evidence |
+| JD-UPG-013 | Read-after-write verification before JD reports success | partially_implemented | Executor code exists (JD-005E); migration applied 2026-11-12, end-to-end live verification pending | Every consequential tool read-verifies and reports verification evidence |
 | JD-UPG-014 | Bounded provider retries, usage tracking, partial-completion reporting | resolved | — | Verified in JD-003; Deno tests in CI |
 | JD-UPG-015 | OpenRouter credentials configured for production/staging (`OPENROUTER_API_KEY`, `JD_MODEL_NAME`) | deployment_pending | Owner secrets (GitHub + Supabase) | Worker completes a real model call; usage rows recorded |
 | JD-UPG-016 | Deploy `jd-automation` and `jd-execution-worker` to production | deployment_pending | JD-UPG-015; staging validation; owner approval for prod deploy | Functions deployed; authenticated smoke test passes; runs visible in monitor UI |
 | JD-UPG-017 | Durable routing of routine JD requests (queued response) | implemented_unverified | JD-UPG-016 | Routine request returns queued response; worker picks up job; UI shows status |
 | JD-UPG-018 | Execution monitor UI for runs, attempts, steps, errors | partially_implemented | JD-UPG-016; live data | Monitor shows a real run end-to-end in staging |
-| JD-UPG-019 | Safe admin cancellation (queued/retry-wait) and audited retry | partially_implemented | Retry-controls migration `20261111190000` **not applied** | Migration applied; cancel/retry verified live; audit events recorded |
+| JD-UPG-019 | Safe admin cancellation (queued/retry-wait) and audited retry | partially_implemented | Retry-controls migration applied 2026-11-12 (`20261112084629`); cancel/retry live test pending | Cancel/retry verified live; audit events recorded |
 | JD-UPG-020 | Manager execution history scoped to own runs | implemented_unverified | JD-UPG-016 | Role-scoped query verified live |
 
 ## §B. Portal usability and settings intelligence (JD-005)
@@ -69,12 +70,12 @@
 | JD-UPG-022 | Mobile-first layouts portal-wide | partially_implemented | Design audit | No clipped controls at 360px; touch targets ≥44px; verified phone widths |
 | JD-UPG-023 | Responsive settings rows, tabs, tables, forms, dialogs | partially_implemented | Design audit | Settings page verified at 360/768/1440px |
 | JD-UPG-024 | Searchable organisation settings catalogue (workspace/identity/cycles/performance/security/portal/billing/people/communications/integrations) | partially_implemented | JD-005B code; settings UI | Catalogue UI searches/filters live; protected keys excluded (tested) |
-| JD-UPG-025 | JD explains each setting: value, dependencies, affected modules, permission boundary, save behaviour | not_implemented | JD-UPG-004 | Tool answers per-setting; answers match server catalogue semantics |
-| JD-UPG-026 | JD audits configuration completeness; missing/contradictory settings without changing them | not_implemented | JD-UPG-025 | Audit report with evidence; no writes performed |
+| JD-UPG-025 | JD explains each setting: value, dependencies, affected modules, permission boundary, save behaviour | partially_implemented | JD-UPG-004 (JD tool wiring); module + tests done 2026-11-12 | Tool answers per-setting; wiring into live JD runtime verified |
+| JD-UPG-026 | JD audits configuration completeness; missing/contradictory settings without changing them | partially_implemented | JD-UPG-025 (live wiring); `auditConfiguration()` is read-only and tested (missing/contradiction/invalid-value findings, secrets excluded) | Audit report with evidence; wired into live JD runtime |
 | JD-UPG-027 | JD proposes grouped configuration changes (preview/diff, dependency validation, confirmation) | resolved | JD-005C planner code | Planner validated (unit tests); diff semantics verified |
-| JD-UPG-028 | Hash-bound settings proposals persisted in Review Centre | implemented_unverified | Migration `20261111150000` **not applied in prod** | Migration applied; proposal round-trip verified live |
-| JD-UPG-029 | Approval-bound, hash-verified, idempotent per-setting execution with stale-value checks + read-after-write | implemented_unverified | Migration `20261111160000` **not applied in prod** | Migration applied; end-to-end approve→execute→verify against live DB |
-| JD-UPG-030 | JD explains save behaviour and refuses unsupported/invented settings | not_implemented | JD-UPG-025 | Refusal path tested |
+| JD-UPG-028 | Hash-bound settings proposals persisted in Review Centre | implemented_unverified | Migration applied 2026-11-12 (`20261112084412`); proposal round-trip verified live |
+| JD-UPG-029 | Approval-bound, hash-verified, idempotent per-setting execution with stale-value checks + read-after-write | implemented_unverified | Migration applied 2026-11-12 (`20261112084459`); approve→execute→verify pending | End-to-end approve→execute→verify against live DB |
+| JD-UPG-030 | JD explains save behaviour and refuses unsupported/invented settings | partially_implemented | JD-UPG-025 (live wiring); `explainSaveBehaviour()` + refusal taxonomy implemented and tested (unknown/invented/secret-like keys refused with supported-key list) | Refusal path verified live in JD runtime |
 | JD-UPG-031 | Blueprint connection to supported settings and workflows | partially_implemented | Blueprint + settings integration design | Approved blueprint item activates the linked setting path only |
 | JD-UPG-032 | Upgrade registry records coverage, test evidence, deployment state, token usage | partially_implemented | This registry; AgentUsage dashboard | Every release links registry items + CI evidence; token dashboard verified live |
 | JD-UPG-033 | Settings proposals: refusal/expiry preserved in decision history | partially_implemented | Review Centre §E | Expired proposals stay in history; UI reflects state |
@@ -90,8 +91,8 @@
 | JD-UPG-038 | Divisions, responsibilities, roles and reporting lines | partially_implemented | JD-UPG-035 | Blueprint contains validated org structure |
 | JD-UPG-039 | Permission matrices, workflows, SOPs, KPIs and dashboards | partially_implemented | JD-UPG-035 | Generated matrices pass role-permission linter |
 | JD-UPG-040 | Identify integrations, dependencies, regulatory requirements and new development | partially_implemented | JD-UPG-036 | Blueprint lists external dependencies with required credentials |
-| JD-UPG-041 | Blueprint presented in Review Centre before provisioning | partially_implemented | Review Centre §E; migration unapplied | Blueprint visible as review item; approve/refuse round-trip works |
-| JD-UPG-042 | Provision approved configuration with rollback/reconciliation | not_implemented | Migrations unapplied; provisioning engine missing | Idempotent provision; failure leaves no partial config; rollback restores prior state |
+| JD-UPG-041 | Blueprint presented in Review Centre before provisioning | partially_implemented | Review Centre §E; migration applied 2026-11-12 (`20261112084532`) | Blueprint visible as review item; approve/refuse round-trip works |
+| JD-UPG-042 | Provision approved configuration with rollback/reconciliation | not_implemented | Blueprint/executor migrations applied 2026-11-12; provisioning engine missing | Idempotent provision; failure leaves no partial config; rollback restores prior state |
 | JD-UPG-043 | Multi-department blueprint editor | resolved | — | Exists in `jd-operations`; saved drafts persist (admin-validated RPC) |
 | JD-UPG-044 | Capability evidence collectors for schema, source, deployment and smoke tests | not_implemented | Collector design | Collectors run in CI; classification report attached to releases |
 | JD-UPG-045 | Workforce planning tool | not_implemented | JD-UPG-004 | Headcount/role plan tool; exportable; reviewed before action |
@@ -110,7 +111,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-051 | Reports, report settings, scoring and rubrics | not_implemented | No report-config tools. |
 | JD-UPG-052 | Billing items, templates, bill generation, payments and analytics | partially_implemented | `get_billing_snapshot` (read). Generation/payment verification tools missing. |
 | JD-UPG-053 | Notices, notifications, email composition and email logs | partially_implemented | `get_email_delivery_logs` (read). Composition/publish tools missing. |
-| JD-UPG-054 | Hiring, administration, permissions and people approvals | partially_implemented | `get_hiring_pipeline` (read); vacancy drafts in Batch 01 code (unapplied). |
+| JD-UPG-054 | Hiring, administration, permissions and people approvals | partially_implemented | `get_hiring_pipeline` (read); vacancy drafts in Batch 01 code; migration applied 2026-11-12. |
 | JD-UPG-055 | Access requests | not_implemented | No JD tools. |
 | JD-UPG-056 | Industry-specific modules from organisation blueprint | not_implemented | Depends on Organisation Builder §C provisioning. |
 | JD-UPG-057 | Every listed module reachable and operable through JD tools (not just routes) | not_implemented | Requires JD-UPG-004 expansion + review-gated write tools + tests per module. |
@@ -126,8 +127,8 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-062 | Preview and edit artefacts before decision | partially_implemented | Editor design | Proposal artefact editable with version bump; approval binds new hash |
 | JD-UPG-063 | Approve / refuse / request-changes with reviewer notes | partially_implemented | `jd_decide_approval` RPC (applied) | UI supports notes on all three paths; notes persist |
 | JD-UPG-064 | Show recipients/audience, target service, source records, generated content and proposed effects | partially_implemented | Renderer per action_key | Each approval shows service, audience, sources and effects |
-| JD-UPG-065 | Version history, requester/reviewer identity and timestamps | partially_implemented | Version tables (workflow versions; settings proposals unapplied) | History panel complete for workflow + settings + artefact types |
-| JD-UPG-066 | Server-side approval checks immediately before execution | partially_implemented | Settings executor code (unapplied) | Execution re-checks approval state atomically (race-injection test) |
+| JD-UPG-065 | Version history, requester/reviewer identity and timestamps | partially_implemented | Version tables deployed (workflow versions + settings executor applied 2026-11-12) | History panel complete for workflow + settings + artefact types |
+| JD-UPG-066 | Server-side approval checks immediately before execution | partially_implemented | Settings executor applied 2026-11-12 (`20261112084459`) | Execution re-checks approval state atomically (race-injection test) |
 | JD-UPG-067 | Only the exact approved version and scope executes (hash-bound) | partially_implemented | Same as above | Tamper/replay tests rejected |
 | JD-UPG-068 | Execution results, delivery references and verification evidence stored | partially_implemented | Executor + audit events | `execution_result_json` populated; delivery IDs recorded where external |
 | JD-UPG-069 | Refusal and expiry handling; decision history preserved | partially_implemented | `expires_at` honoured in decide path (410) | Expiry sweep + UI state; history immutable after decision |
@@ -174,7 +175,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-098 | Vacancy and job-description management | partially_implemented | Batch 01 vacancy drafts + UI (admin-gated); migration unapplied. |
+| JD-UPG-098 | Vacancy and job-description management | partially_implemented | Batch 01 vacancy drafts + UI (admin-gated); migration applied 2026-11-12. |
 | JD-UPG-099 | Recruitment campaigns, post copy, hashtags, creative | not_implemented | — |
 | JD-UPG-100 | LinkedIn secure OAuth (never collect passwords) | partially_implemented | OAuth callback deployed; **provider credentials missing**; round-trip unverified. |
 | JD-UPG-101 | Personal-profile and Company Page publishing where permissions allow | not_implemented | Requires LinkedIn app review + publish tools. |
@@ -183,7 +184,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-104 | Analyse applications and recruitment pipelines | partially_implemented | `get_hiring_pipeline` (read). Analysis/scoring tools missing. |
 | JD-UPG-105 | Interview schedules and candidate communications | not_implemented | — |
 | JD-UPG-106 | Candidate personal data restricted by role and purpose | partially_implemented | Tenant RLS applied to hiring tables; role/purpose scoping beyond admin unverified. |
-| JD-UPG-107 | Candidate-stage transitions validated server-side | implemented_unverified | Batch 01 transition validator + UI; migration unapplied. |
+| JD-UPG-107 | Candidate-stage transitions validated server-side | implemented_unverified | Batch 01 transition validator + UI; migration applied 2026-11-12. |
 | JD-UPG-108 | Hiring UI (vacancies, intake, stages, approvals) | partially_implemented | UI exists on branch; migration/deploy pending. |
 | JD-UPG-109 | LinkedIn provider verification (state, refresh, revoke behaviour) | deployment_pending | Needs `JD_OAUTH_LINKEDIN_CLIENT_ID/SECRET`; revoke unsupported → manual app-grant revocation documented. |
 | JD-UPG-110 | Recruitment performance reporting | not_implemented | — |
@@ -201,8 +202,8 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-117 | Scheduled monitoring and alert delivery | deployment_pending | GitHub secrets `JD_MONITOR_FUNCTION_URL`, `JD_BUSINESS_MONITOR_WORKER_SECRET`; worker deployed but unverified live. |
 | JD-UPG-118 | End-to-end verification of monitoring and operations workers | deployment_pending | Requires secrets + seeded failure; alert email/SMS receipt proof. |
 | JD-UPG-119 | Business intelligence snapshot dashboard (workforce/finance/performance/operations/comms) | partially_implemented | Tenant-scoped snapshot API + dashboard exist; source verification incomplete. |
-| JD-UPG-120 | KPI trend dashboards | not_implemented | — |
-| JD-UPG-121 | Anomaly detection for expenses (thresholds/variance workflows) | partially_implemented | Budgets + alert thresholds exist; anomaly workflow incomplete. |
+| JD-UPG-120 | KPI trend dashboards | partially_implemented | `_shared/jd-kpi-trends.ts` (12-month UTC buckets: cleared cash in/out, approved expenses — always per currency; new/won opportunities, resolved support cases, new customers; trailing-3m vs prior-3m movement) + `kpi.trends` action in `jd-business-platform` + Business Platform → KPI trends tab (table view, no chart lib). Unit-tested (6 Deno tests, CI step added). Deployed in `jd-business-platform` v4 (2026-11-12, owner-authorised); live smoke NOT run; no trend thresholds/alerting. |
+| JD-UPG-121 | Anomaly detection for expenses (thresholds/variance workflows) | partially_implemented | `_shared/jd-expense-anomalies.ts` (deterministic, currency-isolated, approved/paid only, robust median outlier ≥3× with n≥5, trailing-90d trend spike ≥1.5×, budget utilisation/threshold findings) + `expense.anomalies` action in `jd-business-platform` + Business Platform → Expense budgets UI (advisory, no writes). Pure module unit-tested (7 Deno tests, CI step added). Deployed in `jd-business-platform` v4 (2026-11-12, owner-authorised); live smoke NOT run — actions unverified against live backend. |
 
 ## §J. External integrations and MCP
 
@@ -255,9 +256,9 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-154 | Scheduler/dispatcher integration and expired-worker-lease recovery | implemented_unverified | Lease recovery code in retry-controls migration `20261111190000` — **unapplied**; scheduler function `jd-task-scheduler` undeployed. |
+| JD-UPG-154 | Scheduler/dispatcher integration and expired-worker-lease recovery | implemented_unverified | Lease recovery code applied 2026-11-12 (`20261112084629`); scheduler function `jd-task-scheduler` still undeployed; recurring-tasks migration applied (`20261112084732`). |
 | JD-UPG-155 | Trusted capability evidence collectors (schema/source/deployment/smoke) | not_implemented | As JD-UPG-044. |
-| JD-UPG-156 | Live execution-monitor controls: safe cancellation and retry verification | partially_implemented | Cancel/retry implemented; retry migration unapplied; live tests pending. |
+| JD-UPG-156 | Live execution-monitor controls: safe cancellation and retry verification | partially_implemented | Cancel/retry implemented; retry migration applied 2026-11-12; live tests pending. |
 | JD-UPG-157 | Approval-gated, idempotent organisation provisioning | not_implemented | As JD-UPG-042. |
 | JD-UPG-158 | Division/department provisioning workflows | not_implemented | — |
 | JD-UPG-159 | People-management tools | partially_implemented | Tools surface missing (§D). |
@@ -265,31 +266,31 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-161 | Finance-module tools | partially_implemented | Server-side business API exists; JD tools missing. |
 | JD-UPG-162 | Communications-module tools | partially_implemented | Server-side exists; JD tools missing. |
 | JD-UPG-163 | Recruitment assistant and hiring-campaign integrations | partially_implemented | See §H. |
-| JD-UPG-164 | Blueprint, operations and hiring interfaces | partially_implemented | Implemented; migrations unapplied; not deployed. |
-| JD-UPG-165 | Complete KPI trend dashboards | not_implemented | — |
-| JD-UPG-166 | Apply Batch 01 migration in staging; authenticated cross-tenant tests | deployment_pending | Needs staging project + CI run. |
+| JD-UPG-164 | Blueprint, operations and hiring interfaces | partially_implemented | Implemented; migrations applied 2026-11-12; runtime verification pending. |
+| JD-UPG-165 | Complete KPI trend dashboards | partially_implemented | Slice shipped as code: trends API + tab (see JD-UPG-120). Not complete: no alerting/thresholds, no historical backfill validation, no workforce KPIs; deployed in v4 but unverified (no smoke). |
+| JD-UPG-166 | Apply Batch 01 migration in staging; authenticated cross-tenant tests | deployment_pending | Batch 01 applied **directly in production** 2026-11-12 (owner-authorised); staging project + CI run still missing. |
 | JD-UPG-167 | Concurrency and failure-injection tests | not_implemented | — |
-| JD-UPG-168 | Vacancy drafts and candidate-stage transitions | implemented_unverified | Code + UI; migration unapplied. |
+| JD-UPG-168 | Vacancy drafts and candidate-stage transitions | implemented_unverified | Code + UI; migration applied 2026-11-12. |
 | JD-UPG-169 | Business Operations route and live queue UI | partially_implemented | Route `src/pages/jd-operations.jsx`; unverified in production. |
 | JD-UPG-170 | Business intelligence unit tests in CI | resolved | CI runs `jd-business-intelligence.test.ts`. |
 | JD-UPG-171 | Blueprint validation, draft persistence and previews | resolved | Code + tests; admin RPC path. |
-| JD-UPG-172 | Operational task storage and idempotency helper | implemented_unverified | Migration `20261111180000` unapplied. |
-| JD-UPG-173 | Operational task creation action and state machine | implemented_unverified | Code + tests; migration unapplied. |
+| JD-UPG-172 | Operational task storage and idempotency helper | implemented_unverified | Migration applied 2026-11-12 (`20261112084532`). |
+| JD-UPG-173 | Operational task creation action and state machine | implemented_unverified | Code + tests; migration applied 2026-11-12. |
 
 ## §N. Durable execution and recovery
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-174 | Configure `SUPABASE_URL` and `JD_WORKER_SECRET` in GitHub Actions and Supabase | deployment_pending | Owner secrets action; workflows skip safely until set. |
-| JD-UPG-175 | Verify durable execution migrations against the actual database | partially_implemented | Migrations applied (jobs + checkpoints + retry? **retry `20261111190000` NOT applied**). pgmq functions exist; round-trip unverified. |
+| JD-UPG-174 | Configure `SUPABASE_URL` and `JD_WORKER_SECRET` in GitHub Actions and Supabase | deployment_pending | Owner secrets action; scheduled workflows now skip safely and consistently until set (parameter/queue guards fixed 2026-11-12; `jd-worker-dispatch` no longer hard-fails every 5 min). |
+| JD-UPG-175 | Verify durable execution migrations against the actual database | partially_implemented | Migrations applied (jobs + checkpoints + retry `20261112084629`). pgmq functions exist; round-trip unverified. |
 | JD-UPG-176 | Verify pgmq queue compatibility and operation | implemented_unverified | Extension present per migration; live round-trip pending. |
 | JD-UPG-177 | Deploy and verify `jd-automation` and `jd-execution-worker` | deployment_pending | As JD-UPG-016. |
 | JD-UPG-178 | Scheduled dispatcher execution | partially_implemented | `jd-task-scheduler` + `.github/workflows/jd-task-scheduler.yml` and `jd-worker-dispatch.yml` exist; secrets unset; unverified. |
-| JD-UPG-179 | Expired-lease recovery | implemented_unverified | Code in retry migration (unapplied) + worker claim logic. |
+| JD-UPG-179 | Expired-lease recovery | implemented_unverified | Code in retry migration (applied 2026-11-12) + worker claim logic; live recovery test pending. |
 | JD-UPG-180 | Deterministic per-tool resume and recovery | partially_implemented | Checkpoint model exists; per-tool resume semantics unverified. |
 | JD-UPG-181 | Duplicate-delivery and idempotency tests | not_implemented | — |
 | JD-UPG-182 | Worker-crash and lease-expiry tests | not_implemented | — |
-| JD-UPG-183 | Retry-exhaustion and dead-letter handling | implemented_unverified | `max_attempts` + archive path in code; untested live. |
+| JD-UPG-183 | Retry-exhaustion and dead-letter handling | implemented_unverified | `max_attempts` + archive path in code; retry migration applied 2026-11-12; untested live. |
 | JD-UPG-184 | Two workers cannot execute the same job under valid leases | not_implemented | Lease-claim race test required. |
 | JD-UPG-185 | Authenticated tenant-isolation tests for jobs, checkpoints, execution history | not_implemented | — |
 | JD-UPG-186 | Batch 02 business-platform workers must not be confused with JD runtime | resolved | Documented in changelog/NEEDS_YOU; registry §P. |
@@ -303,13 +304,13 @@ Substantial code foundations exist for all tracks (platform API, document/monito
 | --- | --- | --- | --- |
 | JD-UPG-188 | 01 Workflow Builder | partially_implemented | Validator + draft endpoints exist; activation path unwired to execution. |
 | JD-UPG-189 | 02 Visual Workflow Editor | partially_implemented | JSON-editor UI exists (`jd-workflow-studio`); **not a visual canvas**. Done when canvas authoring + validation + activation lifecycle works. |
-| JD-UPG-190 | 03 Recurring Operations Scheduler | partially_implemented | Code + UI (`jd-recurring-schedules`) + workflow; migration `20261111193000` unapplied; undeployed. |
-| JD-UPG-191 | 04 Automated Task Assignment | partially_implemented | Pool/auto-assign code exists; migration unapplied; unverified. |
-| JD-UPG-192 | 05 Department Collaboration | partially_implemented | Implementation merged; notifications/realtime/attachments/visibility unfinished; migration unapplied. |
+| JD-UPG-190 | 03 Recurring Operations Scheduler | partially_implemented | Code + UI (`jd-recurring-schedules`) + workflow; migration applied 2026-11-12 (`20261112084732`); dispatcher undeployed/unverified. |
+| JD-UPG-191 | 04 Automated Task Assignment | partially_implemented | Pool/auto-assign code exists; migration applied 2026-11-12; unverified. |
+| JD-UPG-192 | 05 Department Collaboration | partially_implemented | Implementation merged; notifications/realtime/attachments/visibility unfinished; migration applied 2026-11-12. |
 | JD-UPG-193 | 06 Business Intelligence Dashboard | partially_implemented | Snapshot API + dashboard exist; predictive/historical analysis, source verification, drill-down/export incomplete. |
 | JD-UPG-194 | 07 Predictive Performance Analysis | partially_implemented | Backtest + MAE/MAPE recorded; forecast validation and confidence reporting open. |
 | JD-UPG-195 | 08 Revenue Intelligence | partially_implemented | Paystack read-only sync exists; verification against real source records pending credentials. |
-| JD-UPG-196 | 09 Expense Monitoring | partially_implemented | Budgets + thresholds exist; anomaly detection and variance workflows incomplete. |
+| JD-UPG-196 | 09 Expense Monitoring | partially_implemented | Budgets + thresholds + anomaly review (see JD-UPG-121) exist as code; variance workflow escalation to a review queue is NOT built; deployed in v4; variance escalation queue still NOT built; smoke NOT run. |
 | JD-UPG-197 | 10 Cash-flow Reporting | partially_implemented | Statement import (this branch migrates it off `xlsx` to ExcelJS) + reconciliation function; reconciliation and validated projections incomplete. |
 | JD-UPG-198 | 11 Document Intelligence | partially_implemented | Embedded-text extraction works; malware screening added (§L); scanned OCR is opt-in and unapproved; end-to-end ingestion unverified. |
 | JD-UPG-199 | 12 Contract and Proposal Management | partially_implemented | Versioning + expiry fields exist; review lifecycle/reminders/execution handoff incomplete. |
@@ -375,7 +376,7 @@ Each item is an owner action on external systems. None can be completed from thi
 
 1. **Security:** JD-UPG-152 (AV decision) and keep JD-UPG-151 enforced; disable uploads entirely if rejected.
 2. **Durable JD runtime:** JD-UPG-174/175/177/178/181…185/187 (secrets → staging verification → deploy → failure-injection tests).
-3. **Migrations in staging first:** Batch 01 (`…180000`), task collaboration (`…184500`), retry controls (`…190000`), recurring (`…193000`), workflow versioning (`…200000`), settings proposals/executor (`…150000/…160000`) — then production with backups.
+3. ~~**Migrations in staging first:**~~ **Done directly in production 2026-11-12 (owner-authorised)** — Batch 01, collaboration, retry, recurring, workflow versioning, settings proposals/executor all applied and recorded; runtime verification pending. Staging-first discipline for future batches remains required (JD-UPG-230).
 4. **Organisation Builder provisioning:** JD-UPG-042/157/158 + JD-UPG-155 evidence collectors.
 5. **Workflow Builder to parity:** JD-UPG-188…191 (execution engine, scheduler, assignment).
 6. **Integrations:** JD-UPG-210/211/216/217/218/224/225/226 (real provider verification), then JD-UPG-204…205.

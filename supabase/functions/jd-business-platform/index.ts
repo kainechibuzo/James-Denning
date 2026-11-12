@@ -1,6 +1,8 @@
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {evaluateTrailingMean} from "../_shared/jd-business-forecast.ts";
+import {analyseExpenseAnomalies} from "../_shared/jd-expense-anomalies.ts";
+import {analyseKpiTrends} from "../_shared/jd-kpi-trends.ts";
 import {screenDocument} from "../_shared/jd-document-security.ts";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
@@ -91,6 +93,20 @@ Deno.serve(async req=>{
   }
   if(b.action==="pipeline.analytics"){const rows=await list("opportunities"),byCurrency:Record<string,any>={};for(const r of rows){const currency=r.currency||"NGN";byCurrency[currency]??={total:0,stages:{}};byCurrency[currency].total++;byCurrency[currency].stages[r.stage]??={count:0,amount:0,weighted:0};byCurrency[currency].stages[r.stage].count++;byCurrency[currency].stages[r.stage].amount+=Number(r.amount);byCurrency[currency].stages[r.stage].weighted+=Number(r.amount)*Number(r.probability)/100;}return send({by_currency:byCurrency,total:rows.length,caveat:"Pipeline values and weighted values are grouped by currency; do not add across currencies."});}
   if(b.action==="expense.analytics"){const {data:expenseRows,error}=await db.from("jd_business_expenses").select("category,amount,currency,status").eq("school_id",school).limit(200);if(error)throw error;const rows=(expenseRows||[]) as Array<{category:string;amount:number;currency:string;status:string}>;const approved=rows.filter(e=>["approved","paid"].includes(e.status)),byCategory:Record<string,number>={};for(const e of approved)byCategory[e.category]=(byCategory[e.category]||0)+Number(e.amount);const byCurrency:Record<string,number>={};for(const e of approved)byCurrency[e.currency]=(byCurrency[e.currency]||0)+Number(e.amount);return send({approved_total:approved.length===0?0:Object.keys(byCurrency).length===1?Object.values(byCurrency)[0]:null,byCurrency,byCategory,source_count:approved.length,caveat:"Approved and paid records only. Totals are split by currency; no mixed-currency sum is produced."});}
+  if(b.action==="expense.anomalies"){
+   const now=new Date().toISOString().slice(0,10);
+   const [budgetRows,expenseRows]=await Promise.all([db.from("jd_business_budgets").select("category,currency,period_start,period_end,budget_amount,alert_threshold_pct,status").eq("school_id",school).limit(200),db.from("jd_business_expenses").select("id,category,amount,currency,incurred_on,status").eq("school_id",school).order("incurred_on",{ascending:false}).limit(200)]);
+   if(budgetRows.error)throw budgetRows.error;if(expenseRows.error)throw expenseRows.error;
+   const analysis=analyseExpenseAnomalies((expenseRows.data||[]) as any[],(budgetRows.data||[]) as any[],now);
+   return send(analysis);
+  }
+  if(b.action==="kpi.trends"){
+   const monthsBack=num(b.months_back,1,24)??12;
+   const [cash,expenses,opps,support,customers]=await Promise.all([db.from("jd_business_cash_transactions").select("occurred_on,direction,amount,currency,status").eq("school_id",school).order("occurred_on",{ascending:false}).limit(500),db.from("jd_business_expenses").select("incurred_on,amount,currency,status").eq("school_id",school).order("incurred_on",{ascending:false}).limit(500),db.from("jd_business_opportunities").select("created_at,stage").eq("school_id",school).order("created_at",{ascending:false}).limit(500),db.from("jd_business_support_cases").select("created_at,resolved_at,status").eq("school_id",school).order("created_at",{ascending:false}).limit(500),db.from("jd_business_customers").select("created_at").eq("school_id",school).order("created_at",{ascending:false}).limit(500)]);
+   for(const r of [cash,expenses,opps,support,customers]){if(r.error)throw r.error;}
+   const trends=analyseKpiTrends({cash:(cash.data||[]) as any[],expenses:(expenses.data||[]) as any[],opportunities:(opps.data||[]) as any[],support:(support.data||[]) as any[],customers:(customers.data||[]) as any[]},new Date().toISOString().slice(0,10),monthsBack);
+   return send(trends);
+  }
   if(b.action==="monitor.run"){
    if(!["admin","manager"].includes(p.role))return send({error:"Manager permission required to run external service checks"},403);
    const probes:Record<string,{url:string;accepted:number[]}>={
