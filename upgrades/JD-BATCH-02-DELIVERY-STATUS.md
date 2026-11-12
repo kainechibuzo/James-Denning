@@ -157,3 +157,19 @@ Provider-reported token usage for this repository work is unavailable and is not
 - Observations are stored per workspace. Status transitions create incident/recovery records and are visible in the integration workspace.
 - Checks prove endpoint reachability only; they do not validate tenant credentials or provider SLAs. Incident transitions are queued for email/SMS by the operations worker when provider credentials and workspace recipients are configured.
 - CI verified the worker and migration contracts. Production migration, worker deployment and secret configuration remain release gates.
+
+
+## Direct deployment update — 2026-11-12
+
+The owner chose direct deployment to the connected Supabase project rather than a staging branch.
+
+- Master commit: `8184cd5afb02586b21690058cf63da9b994eb809`.
+- Supabase migration `20261112073746_jd_business_platform` applied.
+- 25 business tables created; RLS enabled; no direct `anon` or `authenticated` table grants.
+- Private document bucket confirmed.
+- Six Edge Functions deployed and active at version 2.
+- Master web build/default application build passed. The full Deno contract/unit suite and secured Edge Function type-check passed on the same source before the master integration.
+- Existing connected project contains one Auth account and three school records. New JD Business customer/document/report tables remain empty.
+- Two-tenant authenticated E2E verification is not complete. No test accounts or fixtures were created.
+- OAuth, OCR, monitoring, notifications and Paystack integrations are not declared live until their required secrets/provider credentials are configured and real authenticated/provider tests pass.
+- Existing npm dependency audit findings remain open: 3 critical, 18 high, 7 moderate and 1 low reported during dependency installation. These dependencies were not introduced by Batch 02.
