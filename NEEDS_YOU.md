@@ -62,7 +62,7 @@ The repository now includes a PKCE OAuth start/callback flow for Google Workspac
 
 Add these as Supabase Edge Function secrets for the target environment (do not put them in GitHub files or paste them into chat):
 
-- `JD_OAUTH_ENCRYPTION_KEY`: base64 encoding of exactly 32 random bytes. Generate locally with `openssl rand -base64 32`.
+- `JD_OAUTH_ENCRYPTION_KEY` is now supplied as a field inside the single `JD_SECRETS_JSON` bundle; do not configure it separately.
 - `JD_OAUTH_CALLBACK_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-oauth-callback` for the current production project, or the equivalent URL for staging.
 - `JD_OAUTH_SUCCESS_REDIRECT`: the HTTPS James Denning Business Platform integrations page.
 - `JD_OAUTH_GOOGLE_CLIENT_ID` and `JD_OAUTH_GOOGLE_CLIENT_SECRET`.
@@ -79,7 +79,7 @@ The repository now includes a bounded monitoring worker and a 15-minute GitHub A
 Configure these GitHub Actions repository secrets:
 
 - `JD_MONITOR_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-monitor-worker` for the current production project, or the equivalent staging function URL.
-- `JD_BUSINESS_MONITOR_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
+- The monitor worker reads `JD_BUSINESS_MONITOR_WORKER_SECRET` from `JD_SECRETS_JSON`; configure the complete JSON bundle as one Supabase and one GitHub Actions secret.
 
 The worker is configured with `verify_jwt = false` and protects itself with the dedicated bearer secret. The worker is deployed directly to the connected project. The scheduled workflow safely skips when secrets are absent; live monitoring remains unverified until the GitHub and Supabase secrets are configured.
 
@@ -91,9 +91,9 @@ The repository includes a server-secret protected document worker and a ten-minu
 Configure GitHub Actions repository secrets:
 
 - `JD_DOCUMENT_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-document-worker` for production, or the equivalent staging URL.
-- `JD_DOCUMENT_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
+- The document worker reads `JD_DOCUMENT_WORKER_SECRET` from `JD_SECRETS_JSON`; do not configure a separate secret.
 
-The scheduled workflow fails visibly when these secrets are absent. The worker is deployed directly to the connected project and the private bucket exists. The dispatcher still requires matching GitHub/Supabase secrets; external OCR remains opt-in.
+The scheduled workflow fails visibly when these secrets are absent. The worker is deployed directly to the connected project and the private bucket exists. The dispatcher requires the same `JD_SECRETS_JSON` bundle in GitHub Actions and Supabase; external OCR remains opt-in.
 
 
 ## JD Business Platform — document extraction worker
@@ -136,13 +136,13 @@ The current branch now includes these code paths. None are live until the correc
 ### SLA, notifications and integration incidents
 
 Configure the Supabase Edge Function secrets for jd-business-ops-worker:
-- JD_BUSINESS_OPS_WORKER_SECRET: random value of at least 32 characters.
+- The operations worker reads `JD_BUSINESS_OPS_WORKER_SECRET` from `JD_SECRETS_JSON`.
 - RESEND_API_KEY and JD_ALERT_EMAIL_FROM for email delivery.
 - JD_TWILIO_ACCOUNT_SID, JD_TWILIO_AUTH_TOKEN, and JD_TWILIO_FROM_NUMBER for SMS delivery.
 
 Configure the matching GitHub Actions repository secrets:
 - JD_BUSINESS_OPS_FUNCTION_URL: the target environment's jd-business-ops-worker URL.
-- JD_BUSINESS_OPS_WORKER_SECRET: the same value as the Edge Function secret.
+- Configure the same complete `JD_SECRETS_JSON` bundle in GitHub Actions.
 
 Workspace admins configure response/resolution/escalation thresholds and notification recipients in the SLA Policies panel. The scheduled worker queues deduplicated SLA and integration incident notifications. Messages remain queued until the relevant delivery provider credentials are configured.
 
