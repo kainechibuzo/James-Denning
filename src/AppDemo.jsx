@@ -1413,6 +1413,7 @@ export default function App(){
 // Wrapper forces re-render when dark mode changes so C is always current
 function AppInnerWrapper(){
   const {dark}=useDark();
+  const isMobile=useIsMobile();
   C = dark ? DARK : LIGHT;
 
   // ── Internet connectivity detection ─────────────────────────────────────────
@@ -1505,13 +1506,15 @@ html{-webkit-text-size-adjust:100%;}
         </div>
       )}
 
-      {/* ── Version indicator ─────────────────────────────────────────────── */}
-      <div style={{position:"fixed",top:8,right:12,zIndex:9000,
-        fontSize:10,fontWeight:500,letterSpacing:"0.04em",
-        color:dark?"rgba(255,255,255,0.18)":"rgba(0,0,0,0.18)",
-        pointerEvents:"none",userSelect:"none"}}>
-        {APP_VERSION}
-      </div>
+      {/* Decorative version marker stays out of the phone header controls. */}
+      {!isMobile&&(
+        <div style={{position:"fixed",bottom:6,right:10,zIndex:9000,
+          fontSize:10,fontWeight:500,letterSpacing:"0.04em",
+          color:dark?"rgba(255,255,255,0.22)":"rgba(0,0,0,0.2)",
+          pointerEvents:"none",userSelect:"none"}}>
+          {APP_VERSION}
+        </div>
+      )}
     </>
   );
 }
@@ -2597,14 +2600,14 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
               <AppIcon name="menu" size={18} color={C.muted}/>
             </button>
-            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,overflow:"hidden"}}>
               <div style={{width:28,height:28,borderRadius:8,background:C.blue+"14",
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <AppIcon name={NAV.find(n=>n.id===page)?.icon||""} size={14} color={C.blue}/>
               </div>
               <span style={{fontSize:isMobile?13:14,fontWeight:800,color:C.text,letterSpacing:"-.01em",
-                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
-                maxWidth:isMobile?"none":260,minWidth:0}}>
+                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,
+                maxWidth:isMobile?"46vw":260}}>
                 {NAV.find(n=>n.id===page)?.label||"Portal"}
               </span>
             </div>
@@ -2822,8 +2825,8 @@ function AppInner(){
           .tbl-wrap{-webkit-overflow-scrolling:touch;}
 
           /* Hard grids collapse to 1 col */
-          div[style*="repeat(3,1fr)"]{grid-template-columns:1fr!important;}
-          div[style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr!important;}
+          div[style*="repeat(3,"]{grid-template-columns:minmax(0,1fr)!important;}
+          div[style*="repeat(4,"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 
           /* Softer grids — raise minmax floor */
           div[style*="minmax(300px"]{grid-template-columns:1fr!important;}
@@ -4737,6 +4740,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
 // ─── NOTIFICATION BELL ────────────────────────────────────────────────────────
 function NotificationBell({ctx}){
   const{user,setPage}=ctx;
+  const isMobile=useIsMobile();
   const[open,setOpen]=useState(false);
   const[notifs,setNotifs]=useState([]);
   const[unread,setUnread]=useState(0);
@@ -4778,7 +4782,8 @@ function NotificationBell({ctx}){
         )}
       </button>
       {open&&(
-        <div style={{position:"absolute",top:44,right:0,width:340,maxHeight:480,
+        <div style={{position:"absolute",top:44,right:isMobile?-38:0,width:340,
+          maxWidth:"calc(100vw - 16px)",maxHeight:480,
           background:C.white,border:`1px solid ${C.border}`,borderRadius:14,
           boxShadow:"0 16px 48px rgba(0,0,0,.18)",zIndex:9000,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,

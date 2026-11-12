@@ -157,7 +157,7 @@ export function ClassesPage({ctx}){
         </div>
 
         {detailLoading?<Spinner/>:(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             {/* Members list */}
             <Card>
               <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:12}}>Members ({detailStudents.length})</div>
@@ -685,7 +685,7 @@ export function AssignmentsPage({ctx}){
           );
 
           return(
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,alignItems:"start"}}>
+            <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,alignItems:"start"}}>
 
               {/* ── Left: Assignment Panel ──────────────────────────────── */}
               <Card>

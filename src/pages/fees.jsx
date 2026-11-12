@@ -1220,9 +1220,9 @@ export function FeeGeneratePage({ctx}){
       </div>
 
       {loading?<Spinner/>:(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,alignItems:"start"}}>
           {/* Left: Config */}
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12,minWidth:0}}>
             <Card>
               <div style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:10}}>1. Select Template</div>
               {(()=>{
@@ -1238,7 +1238,7 @@ export function FeeGeneratePage({ctx}){
                 return(
                   <>
                     {/* Period selector */}
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+                    <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                       <div>
                         <label style={{fontSize:11,color:C.muted,fontWeight:600,display:"block",marginBottom:3}}>Cycle</label>
                         <select value={selBillSession} onChange={e=>{setSelBillSession(e.target.value);setSelBillTerm("");setSelectedTemplate("");}}
@@ -1268,7 +1268,10 @@ export function FeeGeneratePage({ctx}){
                       <div style={{padding:"14px 12px",background:C.orangePale,border:`1px solid ${C.orange}`,
                         borderRadius:8,fontSize:12,color:C.orange,display:"flex",gap:8,alignItems:"flex-start"}}>
                         <AlertCircle size={14} style={{flexShrink:0,marginTop:1}}/>
-                        <span>No templates found for <strong>{billingTerm} {billingYear}</strong>. Go to <strong>Billing Templates</strong> to create or copy templates for this period.</span>
+                        <span>No templates found{billingTerm||billingYear
+                          ? <> for <strong>{[billingTerm,billingYear].filter(Boolean).join(" · ")}</strong></>
+                          : " for any cycle or period yet"}.
+                          {" "}Go to <strong>Billing Templates</strong> to create or copy templates for this period.</span>
                       </div>
                     ):(
                       <Sel label="Billing Template *" value={selectedTemplate} onChange={v=>setSelectedTemplate(v)}
@@ -1292,9 +1295,9 @@ export function FeeGeneratePage({ctx}){
             </Card>
 
             <Card>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,gap:8,flexWrap:"wrap"}}>
                 <div style={{fontWeight:800,color:C.blue,fontSize:14}}>2. Select Groups</div>
-                <div style={{display:"flex",gap:6}}>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {selectedClasses.size>0&&<span style={{fontSize:12,color:C.orange,fontWeight:700}}>{selectedClasses.size} selected</span>}
                   <Btn xs onClick={()=>setSelectedClasses(new Set(classes.map(c=>c.id)))} color={C.blue} outline>All</Btn>
                   <Btn xs onClick={()=>setSelectedClasses(new Set())} color={C.muted} outline>Clear</Btn>
@@ -1355,21 +1358,21 @@ export function FeeGeneratePage({ctx}){
           </div>
 
           {/* Right: Summary + Generate */}
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12,minWidth:0}}>
             <Card style={{border:`2px solid ${C.orange}`}}>
               <div style={{fontWeight:800,color:C.orange,fontSize:14,marginBottom:14}}>Generation Summary</div>
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted,fontSize:13}}>Template</span>
-                  <strong style={{fontSize:13,color:C.text}}>{template?.name||"—"}</strong>
+                  <strong style={{fontSize:13,color:C.text,textAlign:"right",minWidth:0,overflowWrap:"anywhere"}}>{template?.name||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted,fontSize:13}}>Performance Year</span>
-                  <strong style={{fontSize:13,color:C.text}}>{template?.academic_year||"—"}</strong>
+                  <strong style={{fontSize:13,color:C.text,textAlign:"right",minWidth:0,overflowWrap:"anywhere"}}>{template?.academic_year||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted,fontSize:13}}>Period</span>
-                  <strong style={{fontSize:13,color:C.text}}>{template?.term||"—"}</strong>
+                  <strong style={{fontSize:13,color:C.text,textAlign:"right",minWidth:0,overflowWrap:"anywhere"}}>{template?.term||"—"}</strong>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted,fontSize:13}}>Groups Selected</span>
@@ -5417,7 +5420,7 @@ ${body}
             </div>
 
             {/* Top Defaulters + Recent */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+            <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
               <Card>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,gap:6,flexWrap:"wrap"}}>
                   <div style={{fontWeight:800,color:C.red,fontSize:14}}>Top Defaulters</div>
@@ -5587,7 +5590,7 @@ ${body}
             )}
 
             {/* ── AT RISK + REFUNDS/DISCOUNTS row ── */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+            <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
 
               {/* At-Risk Members */}
               <Card>
@@ -5687,7 +5690,7 @@ ${body}
                   </div>
                   <DlBtn onClick={dlDiscounts} label="Discounts PDF"/>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                   {/* Breakdown by label */}
                   <div>
                     <div style={{fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:.4,marginBottom:8}}>By Type</div>
