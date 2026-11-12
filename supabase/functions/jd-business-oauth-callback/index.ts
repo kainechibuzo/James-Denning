@@ -1,5 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 const headers={"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store","Referrer-Policy":"no-referrer"};
 const reply=(message:string,status=400)=>new Response(message,{status,headers});
 const providers:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={
@@ -12,7 +13,7 @@ Deno.serve(async req=>{
  if(req.method!=="GET")return reply("Method not allowed",405);
  const incoming=new URL(req.url),state=incoming.searchParams.get("state")||"",code=incoming.searchParams.get("code")||"";
  if(state.length<24||state.length>256)return reply("Invalid OAuth state",400);
- const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+ const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");
  if(!url||!key||!encoded)return reply("OAuth callback is not configured",503);
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  try{
