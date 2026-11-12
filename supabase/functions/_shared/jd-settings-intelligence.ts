@@ -66,14 +66,14 @@ const INTELLIGENCE: Record<string, SettingIntelligence> = {
     dependencies: ["result_exam_max"],
     affectedModules: ["grading", "report cards", "broadsheets"],
     permissionBoundary: "Workspace administrator only; executed exclusively through an approved settings proposal.",
-    saveBehaviour: "Numeric 0–100 enforced. The completeness audit flags ca + exam totals above 100; existing scored records are not re-scaled.",
+    saveBehaviour: "Numeric 0–100 enforced. Changes reach production only through an approved settings proposal; the completeness audit flags ca + exam totals above 100, and existing scored records are not re-scaled.",
     requiresApproval: true,
   },
   result_exam_max: {
     dependencies: ["result_ca_max"],
     affectedModules: ["grading", "report cards", "broadsheets"],
     permissionBoundary: "Workspace administrator only; executed exclusively through an approved settings proposal.",
-    saveBehaviour: "Numeric 0–100 enforced. The completeness audit flags ca + exam totals above 100; existing scored records are not re-scaled.",
+    saveBehaviour: "Numeric 0–100 enforced. Changes reach production only through an approved settings proposal; the completeness audit flags ca + exam totals above 100, and existing scored records are not re-scaled.",
     requiresApproval: true,
   },
   inactivity_timeout_minutes: {
