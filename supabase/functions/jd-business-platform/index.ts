@@ -372,7 +372,7 @@ Deno.serve(async req=>{
    const {data:share,error}=await db.from("jd_business_report_shares").insert({school_id:school,report_id:reportId,token_hash:hash,expires_at:expiresAt,created_by:actor}).select("id,expires_at").single();
    if(error)throw error;const base=Deno.env.get("JD_REPORT_SHARE_BASE_URL")||Deno.env.get("SUPABASE_URL");
    if(!base)return send({error:"Share URL is not configured"},503);
-   const shareUrl=`${base.replace(/\\/$/,"")}/functions/v1/jd-business-report-share?token=${token}`;
+   const shareUrl=`${base.replace(/\/$/,"")}/functions/v1/jd-business-report-share?token=${token}`;
    await audit("business.report.share_created",{report_id:reportId,share_id:share.id,expires_at:expiresAt});
    return send({share_id:share.id,share_url:shareUrl,expires_at:expiresAt});
   }
