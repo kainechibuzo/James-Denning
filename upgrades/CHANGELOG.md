@@ -424,3 +424,9 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **NOT done / not claimed:** no live smoke test against production; the Vercel deployment is unchanged; `MobileApp.jsx` (the separate Capacitor screen set) was not audited page by page for inline-grid overflow; toolbars that are genuinely tabular still scroll horizontally by design.
 - **Token usage:** none generated; none estimated.
 - **Files:** `src/styles/system.css`, `src/AppDemo.jsx`, `src/components/ui.jsx`, `src/pages/fees.jsx`, `src/pages/students.jsx`, `src/pages/comms.jsx`, `src/pages/access.jsx`, `vite.mobile.config.js`, `scripts/verify-web-build.mjs`, `upgrades/CHANGELOG.md`.
+
+### Release record — master `d163dcf` (2026-11-12)
+- **Source:** master commit `d163dcffb16af6dc1becb00a0d18ab73605a628a`.
+- **Application build:** GitHub Actions run `43288226728` passed.
+- **Vercel production:** deployment `dpl_Hr6VErUgvdgD1NHb5Xb29QMXK5fB` reached **READY** for this exact SHA; aliases include `rgs-portal-master.vercel.app` and `james-denning-james-projects-57651351.vercel.app`.
+- **Scope of verification:** deployment readiness and application build only. This does not claim authenticated production smoke tests, full role-isolation tests, or browser E2E against production data.
