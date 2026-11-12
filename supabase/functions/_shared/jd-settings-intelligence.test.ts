@@ -36,6 +36,7 @@ Deno.test("explainSetting refuses unknown, invented and secret-like keys", () =>
   for (const key of ["not_a_real_setting", "result_exam_max_override", "smtp_password", "school_name_secret", ""]) {
     const result = explainSetting(key, sampleRows);
     assert(result.status === "refused", `refused: ${key}`);
+    if (result.status !== "refused") return;
     assert(Array.isArray(result.supported_keys) && result.supported_keys.length === 15, "supported keys listed");
     assert(!JSON.stringify(result).includes("super-secret-value"), "secret value never leaked");
   }
