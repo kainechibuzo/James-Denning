@@ -200,7 +200,7 @@ Detailed delivery record: [JD Batch 01](./upgrades/JD-BATCH-01-OPERATIONAL-INTEL
 - [x] Add execution monitor UI for runs, attempts, steps and errors.
 - [x] Add safe admin cancellation for queued/retry-wait jobs.
 - [x] Add tenant-scoped, audited admin retry for failed jobs.
-- [ ] Configure GitHub repository secrets `SUPABASE_URL` and `JD_WORKER_SECRET`.
+- [ ] Configure the single GitHub Actions secret `JD_SECRETS_JSON` (the Supabase project URL is now non-secret workflow configuration).
 - [ ] Apply JD-004 and Batch 01 migrations in staging and verify queue/worker lifecycle.
 - [ ] Deploy `jd-automation` and `jd-execution-worker` only after staging validation.
 - [ ] Run failure-injection tests for worker crashes, lease expiry, duplicate deliveries and retry exhaustion.
