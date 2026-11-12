@@ -88,6 +88,28 @@ jobs:
             exit 1
           fi
 
+      # Turns an opaque failure deep inside `link`/`deploy` into a named step.
+      # Both of those fail with unhelpful messages (or none) when the token is
+      # expired, revoked or scoped to a different organisation, which is
+      # indistinguishable from a code problem without this check.
+      - name: Verify the access token and project access
+        run: |
+          code=$(curl -s -o /tmp/projects.json -w '%{http_code}' \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            https://api.supabase.com/v1/projects)
+          if [ "$code" != "200" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN was rejected by the Supabase API (HTTP $code)."
+            echo "Regenerate it at https://supabase.com/dashboard/account/tokens and update the repository secret."
+            head -c 300 /tmp/projects.json || true
+            exit 1
+          fi
+          if ! grep -q "$SUPABASE_PROJECT_ID" /tmp/projects.json; then
+            echo "::error::The token is valid but cannot see project $SUPABASE_PROJECT_ID."
+            echo "It probably belongs to a different organisation or account."
+            exit 1
+          fi
+          echo "Access token valid and project visible."
+
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v3
         with:
