@@ -3332,10 +3332,13 @@ export function FeeTrackerPage({ctx}){
                         ]}/>
                       );
                     })}
-                    {!filtered.length&&<tr><td colSpan={9}><EmptyState icon={<AppIcon name="receipt" size={28} color={C.muted}/>} title="No bills found" message="No invoices match the current filters. Generate bills or adjust the filters above."/></td></tr>}
                   </tbody>
                 </table>
               </div>
+              {!filtered.length&&(
+                <EmptyState icon={<AppIcon name="receipt" size={28} color={C.muted}/>} title="No bills found"
+                  message="No invoices match the current filters. Generate bills or adjust the filters above."/>
+              )}
             </Card>
           )}
 

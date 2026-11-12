@@ -42,8 +42,8 @@ This is the canonical, human-readable upgrade index. The detailed implementation
 - [x] Persist hash-bound settings proposals in Review Centre with server-side revalidation and audit. (JD-005D.)
 - [x] Add approval-bound, hash-verified, per-setting idempotent execution with stale-value checks, read-after-write verification and audit events. (JD-005E; live DB verification pending.)
 - [ ] Consistent, fully legible light and dark themes across every route and interactive state.
-- [ ] Mobile-first page layouts: single-column stacking, no clipped controls, readable labels and touch-sized actions.
-- [ ] Responsive settings rows, tabs, tables, forms, dialogs and summary panels.
+- [x] Mobile-first page layouts: single-column stacking, no clipped controls, readable labels and touch-sized actions. (JD-012; 36 routes verified overflow-free at 360/390/430px.)
+- [x] Responsive settings rows, tabs, tables, forms, dialogs and summary panels. (JD-012; header/toolbar/tab rows wrap, tables scroll, modals go full-width.)
 - [ ] A searchable organisation settings catalogue grouped by workspace, identity, cycles, performance, security, portal, billing, people, communications and integrations.
 - [ ] JD can explain each setting, its current value, dependencies, affected modules, permission boundary and save behaviour.
 - [ ] JD can audit configuration completeness and identify missing or contradictory settings without changing them.

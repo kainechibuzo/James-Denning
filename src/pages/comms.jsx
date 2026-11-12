@@ -100,7 +100,7 @@ export function AnnouncePage({ctx}){
             <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Body *</label>
             <textarea value={form.body} onChange={e=>f({body:e.target.value})} rows={4}
               style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,background:"inherit",color:C.text,borderRadius:8,fontSize:13,resize:"vertical",outline:"none"}}
-              placeholder="Write your announcement\u2026"
+              placeholder="Write your announcement…"
               onFocus={e=>e.target.style.borderColor=C.orange}
               onBlur={e=>e.target.style.borderColor=C.border}/>
           </div>
@@ -191,13 +191,13 @@ export function EmailProgressModal({emails,onClose,schoolId=""}){
           {phase==="queuing"&&(
             <div style={{textAlign:"center",padding:"24px 0"}}>
               <Spinner/>
-              <p style={{marginTop:12,color:C.muted,fontSize:13}}>Queuing emails\u2026</p>
+              <p style={{marginTop:12,color:C.muted,fontSize:13}}>Queuing emails…</p>
             </div>
           )}
           {phase==="running"&&(
             <>
               <div style={{background:C.greenPale,border:`1px solid ${C.green}40`,borderRadius:8,padding:"8px 14px",marginBottom:14,fontSize:12,color:C.green}}>
-                Sending in background \u2014 safe to close this modal or navigate away
+                Sending in background — safe to close this modal or navigate away
               </div>
               <div style={{height:12,background:C.offWhite,borderRadius:6,overflow:"hidden",marginBottom:14,border:`1px solid ${C.border}`}}>
                 <div style={{height:"100%",width:`${pct}%`,background:C.blue,borderRadius:6,transition:"width .6s ease"}}/>
@@ -205,7 +205,7 @@ export function EmailProgressModal({emails,onClose,schoolId=""}){
               <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:14,fontSize:13}}>
                 <span><strong style={{color:C.green}}>{prog.sent}</strong> sent</span>
                 <span><strong style={{color:C.red}}>{prog.failed}</strong> failed</span>
-                <span>\u23f3 <strong style={{color:C.muted}}>{remaining}</strong> remaining</span>
+                <span>⏳ <strong style={{color:C.muted}}>{remaining}</strong> remaining</span>
               </div>
               <div style={{fontSize:11,color:C.light,textAlign:"center",marginBottom:8}}>
                 {prog.total>0?`${prog.sent+prog.failed} / ${prog.total} processed`:"Waiting for server\u2026"}
@@ -495,7 +495,7 @@ export function MailComposePage({ctx}){
               )}
               {recipientType==="individual"&&(
                 <div>
-                  <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search name or email\u2026"
+                  <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search name or email…"
                     style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                       fontSize:13,marginBottom:6,boxSizing:"border-box",color:C.text,background:C.white}}/>
                   {filteredPeople.length>0&&(
@@ -533,7 +533,7 @@ export function MailComposePage({ctx}){
                   <div style={{display:"flex",gap:6,marginTop:4}}>
                     <input value={addManualQ} onChange={e=>setAddManualQ(e.target.value)}
                       onKeyDown={e=>e.key==="Enter"&&addManualRecipient()}
-                      placeholder="Add email manually\u2026" type="email"
+                      placeholder="Add email manually…" type="email"
                       style={{flex:1,padding:"7px 11px",border:`1px dashed ${C.border}`,borderRadius:7,
                         fontSize:12,color:C.text,background:C.offWhite,boxSizing:"border-box"}}/>
                     <button onClick={addManualRecipient}
@@ -569,7 +569,7 @@ export function MailComposePage({ctx}){
                     <div style={{position:"relative",marginBottom:8}}>
                       <Search size={14} style={{position:"absolute",left:10,top:9,color:C.muted}}/>
                       <input value={refineSearchQ} onChange={e=>setRefineSearchQ(e.target.value)}
-                        placeholder="Filter list\u2026"
+                        placeholder="Filter list…"
                         style={{width:"100%",padding:"7px 10px 7px 30px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,boxSizing:"border-box",outline:"none"}}/>
                     </div>
                     <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:2}}>
@@ -617,7 +617,7 @@ export function MailComposePage({ctx}){
               </div>
               <div style={{marginTop:10}}>
                 <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>SUBJECT</label>
-                <input key={`subj-${msgKey}`} defaultValue={subject} onChange={e=>setSubject(e.target.value)} placeholder="Email category\u2026"
+                <input key={`subj-${msgKey}`} defaultValue={subject} onChange={e=>setSubject(e.target.value)} placeholder="Email category…"
                   style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                     fontSize:13,color:C.text,background:C.white,boxSizing:"border-box"}}/>
               </div>
@@ -627,7 +627,7 @@ export function MailComposePage({ctx}){
                   Placeholders: {"{student_name}"} {"{class_name}"} {"{term}"} {"{session}"}
                 </div>
                 <textarea key={`body-${msgKey}`} defaultValue={body} onChange={e=>setBody(e.target.value)}
-                  placeholder="Write your message\u2026" rows={10}
+                  placeholder="Write your message…" rows={10}
                   style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                     fontSize:13,color:C.text,background:C.white,boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
               </div>
@@ -713,9 +713,9 @@ We trust you had a restful holiday.
 We are pleased to announce that the next cycle begins for the {term} of the {session} reporting cycle. We look forward to welcoming all students back for another term of learning, growth, and excellence.
 
 Please ensure your account/ward is:
-\u2022 In full and neat required attire
-\u2022 Equipped with all required textbooks and stationery
-\u2022 Present and punctual on the resumption date
+• In full and neat required attire
+• Equipped with all required textbooks and stationery
+• Present and punctual on the resumption date
 
 For any queries, please contact the organization office or reach us at the organization administration office.
 
@@ -818,7 +818,7 @@ ${_mailSN}`},
             <div>
               <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:4}}>BODY</label>
               <textarea value={tmplForm.body} onChange={e=>setTmplForm(p=>({...p,body:e.target.value}))}
-                placeholder="Email body\u2026 Use {student_name}, {class_name}, {period}, {cycle}" rows={8}
+                placeholder="Email body… Use {student_name}, {class_name}, {period}, {cycle}" rows={8}
                 style={{width:"100%",padding:"9px 12px",border:`2px solid ${C.border}`,borderRadius:8,
                   fontSize:13,color:C.text,background:C.white,boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
             </div>
@@ -1004,7 +1004,7 @@ export function MailLogsPage({ctx}){
       <Card style={{marginBottom:14,padding:"12px 16px"}}>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
           <input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}
-            placeholder="Search category or body\u2026"
+            placeholder="Search category or body…"
             style={{flex:2,minWidth:180,padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none"}}/>
           <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value);setPage(0);}}
             style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"#fff",outline:"none"}}>
@@ -1153,10 +1153,10 @@ export function MailLogsPage({ctx}){
               <button onClick={()=>setPage(0)} disabled={page===0}
                 style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"#fff",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:700}}>\u00ab</button>
               <button onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={page===0}
-                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"#fff",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:600}}>\u2039 Prev</button>
+                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"#fff",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:600}}>‹ Prev</button>
               <span style={{fontSize:12,color:C.muted,padding:"0 6px"}}>Page {page+1} of {totalPages}</span>
               <button onClick={()=>setPage(p=>Math.min(totalPages-1,p+1))} disabled={page===totalPages-1}
-                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"#fff",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:600}}>Next \u203a</button>
+                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"#fff",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:600}}>Next ›</button>
               <button onClick={()=>setPage(totalPages-1)} disabled={page===totalPages-1}
                 style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"#fff",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:700}}>\u00bb</button>
             </div>
