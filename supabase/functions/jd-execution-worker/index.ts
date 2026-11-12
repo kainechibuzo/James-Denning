@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { getJdSecret } from "../_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -271,7 +272,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok");
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const expectedSecret = Deno.env.get("JD_WORKER_SECRET") || "";
+  const expectedSecret = getJdSecret("JD_WORKER_SECRET");
   const providedSecret = (req.headers.get("x-jd-worker-secret") || "").trim();
   if (!secretMatches(providedSecret, expectedSecret)) return json({ error: "Unauthorized" }, 401);
 
