@@ -399,3 +399,12 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **NOT verified / not claimed:** no live invocation of the new actions; no 401/403/500 smoke; `_shared` module resolution inside the deployed bundle not directly observed (same relative-import pattern as v3); the UI panel/tab calls have not been exercised against the live backend; deployed ≠ smoke-tested.
 - **Token usage:** none generated; none estimated.
 - **Files:** `supabase/functions/jd-business-platform/index.ts`, `supabase/functions/_shared/jd-expense-anomalies.ts`, `supabase/functions/_shared/jd-kpi-trends.ts` (deployed as part of v4), `upgrades/CHANGELOG.md`, `upgrades/OUTSTANDING-REGISTRY.md`.
+
+### JD-012 — PR #55 merged; production at `a1a6e51` (CHANGE-RECORD ONLY)
+- **Date:** 2026-11-12
+- **Status:** merged; Vercel production READY; live verification NOT performed
+- **Merged:** PR #55 (`arena/7f9559a4-james-denning`) into master as **`a1a6e51fbf0576b65ac791bcae145265f15ca1a9`** (merge commit, 2026-11-12T10:31Z) after Web CI green (1m18s incl. Deno steps for settings-intelligence, expense-anomalies, kpi-trends), Docs CI green, Vercel READY, CodeRabbit neutral. Owner-authorised merge (2026-11-12).
+- **Production:** Vercel production deployment for `a1a6e51` is **READY/PROMOTED** (`dpl_BULHZioa3TVBtJbvBgentqekLEai`). Production site now serves the KPI trends tab and the expense anomaly-review panel.
+- **NOT verified / not claimed:** no live smoke of `jd-business-platform` v4 actions (`expense.anomalies`, `kpi.trends`), of the merged UI panels, or of the fail-safe scheduled workflows against production credentials; the UI was verified only by `npm run verify:web` (build/landing checks), not by browser E2E against the live backend; deployed ≠ verified.
+- **Token usage:** none generated; none estimated.
+- **Files:** `upgrades/OUTSTANDING-REGISTRY.md` (Vercel production line), `upgrades/CHANGELOG.md`.
