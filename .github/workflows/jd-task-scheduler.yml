@@ -11,28 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Validate scheduler secrets
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
-        run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$JD_WORKER_SECRET" ]; then
-            echo "::notice::SUPABASE_URL / JD_WORKER_SECRET are not configured; skipping recurring-task dispatch until secrets are set."
-            exit 0
-          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Dispatch due recurring operational tasks
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
+          SUPABASE_URL: https://thklwiybjuhrjqrrxyid.supabase.co
+          JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
           set -euo pipefail
-          if [ -z "$SUPABASE_URL" ] || [ -z "$JD_WORKER_SECRET" ]; then
-            echo "::notice::Secrets not configured; skipping scheduler dispatch."
-            exit 0
-          fi
+          worker_secret="$(node scripts/read-jd-secret.mjs JD_WORKER_SECRET)"
+          echo "::add-mask::$worker_secret"
           endpoint="${SUPABASE_URL%/}/functions/v1/jd-task-scheduler"
           curl --silent --show-error --fail-with-body --max-time 240 \
             -X POST "$endpoint" \
             -H "Content-Type: application/json" \
-            -H "x-jd-worker-secret: $JD_WORKER_SECRET" \
+            -H "x-jd-worker-secret: $worker_secret" \
             --data '{}'
