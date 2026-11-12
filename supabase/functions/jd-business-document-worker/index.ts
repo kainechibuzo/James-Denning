@@ -10,7 +10,7 @@ async function runOcr(bytes:Uint8Array,mime:string){
  const response=await fetch("https://api.ocr.space/parse/image",{method:"POST",body:form,signal:AbortSignal.timeout(60000),redirect:"error"});
  if(!response.ok)throw new Error("OCR provider request failed");
  const payload:any=await response.json();if(payload.IsErroredOnProcessing)throw new Error("OCR provider could not process the document");
- const text=(payload.ParsedResults||[]).map((x:any)=>String(x.ParsedText||"")).filter(Boolean).join("\\n").trim();
+ const text=(payload.ParsedResults||[]).map((x:any)=>String(x.ParsedText||"")).filter(Boolean).join("\n").trim();
  return text?{text,parser:"ocr-space",pages:(payload.ParsedResults||[]).length}:null;
 }
 Deno.serve(async req=>{
