@@ -22,3 +22,20 @@ verify_jwt = true
 
 [functions.jd-business-platform]
 verify_jwt = true
+
+[functions.jd-business-oauth-callback]
+verify_jwt = false
+
+[functions.jd-business-monitor-worker]
+verify_jwt = false
+
+[functions.jd-business-document-worker]
+verify_jwt = false
+
+[functions.jd-business-ops-worker]
+# This worker validates its own dedicated bearer secret.
+verify_jwt = false
+
+[functions.jd-business-report-share]
+# Public endpoint validates a high-entropy expiring share token itself.
+verify_jwt = false

@@ -1,0 +1,27 @@
+name: JD Business Service Monitoring
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: jd-business-service-monitor
+  cancel-in-progress: true
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Run bounded provider health checks
+        env:
+          FUNCTION_URL: ${{ secrets.JD_MONITOR_FUNCTION_URL }}
+          WORKER_SECRET: ${{ secrets.JD_BUSINESS_MONITOR_WORKER_SECRET }}
+        run: |
+          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
+            echo "Monitoring secrets are not configured; skipping scheduled checks."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 90 \
+            -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $WORKER_SECRET" \
+            -H "Content-Type: application/json" \
+            --data '{}'

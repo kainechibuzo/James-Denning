@@ -1,0 +1,5 @@
+import {assertEquals} from "jsr:@std/assert";
+import {evaluateTrailingMean} from "./jd-business-forecast.ts";
+Deno.test("requires at least one holdout after three training periods",()=>{const result=evaluateTrailingMean([{month:"2026-01",actual:10},{month:"2026-02",actual:20},{month:"2026-03",actual:30}]);assertEquals(result.holdoutPeriods,0);assertEquals(result.mae,null);});
+Deno.test("evaluates rolling forecasts against held-out actuals",()=>{const result=evaluateTrailingMean([{month:"2026-01",actual:10},{month:"2026-02",actual:20},{month:"2026-03",actual:30},{month:"2026-04",actual:40},{month:"2026-05",actual:50}]);assertEquals(result.holdoutPeriods,2);assertEquals(result.predictions[0].predicted,20);assertEquals(result.predictions[0].actual,40);assertEquals(result.mae,25);});
+Deno.test("MAPE excludes zero-valued actuals rather than dividing by zero",()=>{const result=evaluateTrailingMean([{month:"2026-01",actual:0},{month:"2026-02",actual:0},{month:"2026-03",actual:0},{month:"2026-04",actual:0}]);assertEquals(result.mae,0);assertEquals(result.mape,null);});

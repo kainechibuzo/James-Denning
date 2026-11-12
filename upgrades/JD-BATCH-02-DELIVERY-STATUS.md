@@ -15,9 +15,9 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 05 | Automated Task Assignment | in_progress | Explicit assignment policies, workload limits, role/department matching, deterministic fallback and audit. |
 | 06 | Department Collaboration | in_progress | Tenant-scoped department membership, shared task context, mentions/notes and role-safe visibility. |
 | 07 | Predictive Performance Analysis | in_progress | Evidence-backed trend and forecast outputs with sample size, confidence caveats and source freshness. |
-| 08 | Revenue Intelligence | in_progress | Revenue ledger aggregation, period comparisons, concentration and forecast caveats. |
-| 09 | Expense Monitoring | in_progress | Categorised expenses, budget thresholds, variance evidence and approval-bound edits. |
-| 10 | Cash-flow Reporting | proposed | Cash-in/out timeline, receivables/payables, scenario assumptions and reconciliation warnings. |
+| 08 | Revenue Intelligence | in_progress | Cleared cash-in by currency/category/month, pending inflows and customer-attributed receipts; invoice/recurring revenue recognition still requires a billing source. |
+| 09 | Expense Monitoring | in_progress | Categorised expense intake, admin approvals, period/category/currency budgets, utilisation thresholds and over-budget alerts. |
+| 10 | Cash-flow Reporting | in_progress | Manually recorded cash-in/out, pending/cleared/void reconciliation, period totals by currency; receivables/payables automation and scenarios remain open. |
 | 11 | Document Intelligence | in_progress | Secure upload metadata, extraction pipeline, untrusted-content handling and source-linked summaries. |
 | 12 | Contract and Proposal Management | in_progress | Versioned records, review lifecycle, renewal reminders and no e-signature without a separate provider/approval design. |
 | 13 | Customer Relationship Management | in_progress | Tenant-scoped customer records, contacts, activity timeline, consent and access boundaries. |
@@ -25,7 +25,7 @@ An upgrade is not complete merely because a page or schema exists. Mark it verif
 | 15 | Customer Support Workflows | in_progress | Case intake, assignment, priority, SLA clocks, internal notes and verified resolution. |
 | 16 | Integration Marketplace | in_progress | Provider catalogue, scopes, capabilities and truthful configured/connected/healthy states. |
 | 17 | Secure OAuth Integration Manager | in_progress | OAuth state/PKCE, encrypted server-side credentials, scope minimisation, refresh/revoke and audit. |
-| 18 | External Service Monitoring | in_progress | Scheduled health checks, bounded timeouts, latency/error history and alert deduplication. |
+| 18 | External Service Monitoring | in_progress | 15-minute scheduled fixed-endpoint probes, bounded timeouts, latency/error history and status-transition deduplication; notification delivery remains open. |
 | 19 | Business Health Monitoring | in_progress | Explainable scorecards with contributing evidence, freshness and missing-data caveats. |
 | 20 | Executive Intelligence Reports | in_progress | Date-scoped evidence-linked reports, source freshness, export and approval-bound sharing. |
 
@@ -116,9 +116,44 @@ Provider-reported token usage for this repository work is unavailable and is not
 
 - **Status:** implementation added; CI and staging verification pending.
 - **Data model:** tenant-scoped customer/CRM records, sales opportunities, activity timeline, expenses with admin decision controls, contracts with immutable content versions, secure document metadata, support cases/internal notes, integration catalogue, OAuth connection/state metadata, service-health observations and executive report snapshots.
-- **API:** authenticated `jd-business-platform` Edge Function derives workspace and role from the signed-in profile; browser-supplied tenant IDs are ignored; reads/writes are tenant-filtered; expense/contract/report decisions have role checks; record changes emit audit events.
-- **Delivered operational flows:** customer and opportunity CRUD; activity timeline API; opportunity stage/weighted pipeline; expense intake and admin approval/rejection; contract draft creation with SHA-256 version 1 and review/activation state controls; support case intake, priority/status/assignment and internal-note API; cash transaction intake and clear/void reconciliation; generated executive report snapshots saved as drafts.
-- **Analytics:** revenue won, pipeline and weighted pipeline; approved expense rollups; cash in/out/net split by currency; trailing-three-period performance baseline (only with at least three periods, explicitly low-confidence); explainable business health indicators with no unsupported single score; 30-day executive report generation with source/limitation metadata.
-- **Intentional gaps:** document upload/extraction is disabled until a private storage bucket, per-tenant object policies, malware scanning and extraction worker exist; OAuth is catalogue/schema-only (no PKCE callback, KMS-backed token encryption, refresh/revoke or connected providers); service monitoring has observation tables but no scheduled probe worker/alert delivery; report sharing/export and predictive validation are not enabled; cashflow entries must be entered and reconciled manually.
+- **API:** authenticated `jd-business-platform` Edge Function derives workspace and role from the signed-in profile; browser-supplied tenant IDs are ignored; reads/writes are tenant-filtered; expense/contract/report decisions have role checks; record changes emit audit events. OAuth now has PKCE S256 start, one-time expiring state consumption, a public callback with code exchange, and AES-GCM encrypted server-side token bundles.
+- **Delivered operational flows:** customer and opportunity CRUD with customer linking; activity timeline API; opportunity stage/weighted pipeline; expense intake and admin approval/rejection; contract draft creation with SHA-256 version 1 and review/activation state controls; support case intake, priority/status/assignment and internal-note API; cash transaction intake and clear/void reconciliation; private PDF/DOCX/TXT uploads through short-lived signed URLs with server-side size/MIME/object verification and signed downloads; generated executive report snapshots saved as drafts with expandable evidence in the workspace.
+- **Analytics:** revenue won, pipeline, weighted pipeline and approved expense totals grouped by currency; cash in/out/net split by currency; trailing-three-period performance baseline grouped by currency (only with at least three periods, explicitly low-confidence); explainable business health indicators with no unsupported single score; 30-day executive report generation with source/limitation metadata.
+- **Intentional gaps:** secure private document upload/download is implemented with tenant-prefixed paths and short-lived signed URLs; a protected extraction worker now claims documents idempotently, extracts/normalises plain text, DOCX and embedded PDF text with pinned parsers, computes SHA-256 and produces bounded extractive summaries. Scanned-image OCR remains unimplemented; PDFs without an embedded text layer fail with an explicit `ocr_required` status. OAuth PKCE and encrypted token persistence are implemented for Google Workspace, Microsoft 365, LinkedIn and Slack; live provider verification actions exist; Google and Slack provider-side token revocation are implemented, Microsoft remote session revocation requires User.RevokeSessions.All, and LinkedIn remote revocation remains unsupported by the verified implementation; Paystack has an encrypted read-only API-key flow and transaction import; external service monitoring has allowlisted manager-triggered probes and a scheduled worker, persisted observations, status-transition incident history and recovery records; incidents are visible in the integration workspace and can be queued for email/SMS delivery through the scheduled operations worker; executive reports support JSON/CSV export and expiring, revocable read-only share links; the descriptive baseline has rolling-origin backtesting with MAE/MAPE when sufficient history exists but is not a validated cash forecast; bank statement CSV/XLSX and Paystack transaction imports support manager-confirmed, atomic cashflow reconciliation. Predictive baselines are descriptive, low-confidence, currency-separated, and must not be described as cash forecasts.
 - **Production:** no migrations applied and no Edge Function deployed. No outbound sends, payments, refunds, contract signing or OAuth token exchange enabled.
 - **Token usage:** provider-reported usage unavailable; not estimated.
+
+
+## JD-B02-15 — Support SLA and resolution evidence
+
+- Support records now expose their SLA deadline and clearly flag overdue cases while they remain open.
+- A resolution summary is required in the workspace before the case can be marked resolved.
+- Resolution timestamp and summary are persisted through the existing manager-authorised update action.
+- Internal notes remain separate from the customer-facing resolution summary.
+- Configurable priority-based SLA response/resolution/escalation policies, a scheduled SLA worker and a deduplicated notification outbox are now implemented in code. Delivery remains queued until Resend/Twilio secrets and workspace recipients are configured; staging schedule verification is still required.
+
+
+## JD-B02-13 — Customer consent evidence
+
+- Customer records expose consent status, last recorded timestamp and evidence/source reference.
+- A consent grant or withdrawal cannot be saved without a source/evidence reference.
+- The server records the authenticated actor and timestamp and the existing audit event records the update.
+- Evidence source is a short reference/description; do not store sensitive document contents in this field.
+
+
+## JD-B02-11 — Document extraction worker
+
+- Added a server-secret protected worker with bounded batches and atomic pending-to-processing claims.
+- Plain text, DOCX and embedded-text PDF files are downloaded only from the private tenant bucket, parsed with pinned dependencies, normalised, SHA-256 hashed, truncated to the schema limit and given an extractive summary.
+- PDF embedded-text and DOCX parsing are supported. Scanned PDFs and PNG/JPEG/TIFF files can use OCR.space only when the administrator explicitly enables external processing with a server API key; otherwise they fail with ocr_required. OCR remains off by default.
+- CI tests cover text normalisation and source-grounded summary bounds.
+- Added a ten-minute GitHub Actions dispatcher with required worker URL/secret validation; production deployment and repository secret configuration remain required.
+
+
+## JD-B02-18 — Scheduled service monitoring and incident history
+
+- The protected monitoring worker runs on a 15-minute schedule for connected providers only. A separate ten-minute operations worker queues and dispatches SLA and integration incident email/SMS notifications when Resend/Twilio credentials and workspace recipients are configured.
+- It checks a fixed allowlist of public provider endpoints, with request timeouts and redirects disabled.
+- Observations are stored per workspace. Status transitions create incident/recovery records and are visible in the integration workspace.
+- Checks prove endpoint reachability only; they do not validate tenant credentials or provider SLAs. Incident transitions are queued for email/SMS by the operations worker when provider credentials and workspace recipients are configured.
+- CI verified the worker and migration contracts. Production migration, worker deployment and secret configuration remain release gates.

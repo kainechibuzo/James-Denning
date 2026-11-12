@@ -1,0 +1,31 @@
+name: JD Document Intelligence Worker
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: jd-document-intelligence-worker
+  cancel-in-progress: false
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate worker configuration
+        env:
+          FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
+          WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
+        run: |
+          test -n "$FUNCTION_URL" || { echo "::error::Missing JD_DOCUMENT_FUNCTION_URL"; exit 1; }
+          test -n "$WORKER_SECRET" || { echo "::error::Missing JD_DOCUMENT_WORKER_SECRET"; exit 1; }
+      - name: Process a bounded document batch
+        env:
+          FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
+          WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 180 \
+            -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $WORKER_SECRET" \
+            -H "Content-Type: application/json" \
+            --data '{"limit":10}'

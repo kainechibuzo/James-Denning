@@ -1,0 +1,23 @@
+name: JD Business Platform Staging Verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  authenticated-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run authenticated staging and tenant isolation checks
+        env:
+          SUPABASE_URL: ${{ secrets.JD_STAGING_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.JD_STAGING_SUPABASE_ANON_KEY }}
+          JD_E2E_TENANT_A_EMAIL: ${{ secrets.JD_STAGING_TENANT_A_EMAIL }}
+          JD_E2E_TENANT_A_PASSWORD: ${{ secrets.JD_STAGING_TENANT_A_PASSWORD }}
+          JD_E2E_TENANT_B_EMAIL: ${{ secrets.JD_STAGING_TENANT_B_EMAIL }}
+          JD_E2E_TENANT_B_PASSWORD: ${{ secrets.JD_STAGING_TENANT_B_PASSWORD }}
+          JD_E2E_CROSS_TENANT_CUSTOMER_ID: ${{ secrets.JD_STAGING_TENANT_A_FIXTURE_CUSTOMER_ID }}
+        run: node scripts/verify-jd-business-staging.mjs
