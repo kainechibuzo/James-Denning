@@ -70,8 +70,8 @@ Deno.serve(async req=>{
    const priority=str(b.priority,20),first=num(b.first_response_minutes,1,43200),resolution=num(b.resolution_minutes,1,129600),escalation=num(b.escalation_after_minutes,1,129600);
    if(!["low","normal","high","urgent"].includes(priority)||first===null||resolution===null||escalation===null||escalation<first)return send({error:"Valid priority and SLA minute thresholds are required"},400);
    const email=str(b.notify_email,254),phone=str(b.notify_phone,30);
-   if(email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))return send({error:"Notification email is invalid"},400);
-   if(phone&&!/^\\+[1-9]\\d{7,14}$/.test(phone))return send({error:"SMS destination must be E.164 format"},400);
+   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return send({error:"Notification email is invalid"},400);
+   if(phone&&!/^\+[1-9]\d{7,14}$/.test(phone))return send({error:"SMS destination must be E.164 format"},400);
    const {data,error}=await db.from("jd_business_sla_policies").upsert({school_id:school,priority,first_response_minutes:first,resolution_minutes:resolution,escalation_after_minutes:escalation,notify_email:email||null,notify_phone:phone||null,enabled:b.enabled!==false,created_by:actor,updated_at:new Date().toISOString()},{onConflict:"school_id,priority"}).select("id,priority,first_response_minutes,resolution_minutes,escalation_after_minutes,notify_email,notify_phone,enabled").single();
    if(error)throw error;await audit("business.sla.policy_updated",{priority});return send({policy:data});
   }
