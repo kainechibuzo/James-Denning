@@ -25,7 +25,7 @@
 
 **Verified against production `thklwiybjuhrjqrrxyid` and Vercel `james-denning`:**
 
-- Vercel production deployment for master head `5232af9` (`docs(jd): record Batch 02 direct deployment and remaining gates`) is **READY/PROMOTED** (`dpl_F6dN7jU…`, 2026-11-12). Live at `https://james-denning-james-projects-57651351.vercel.app`.
+- Vercel **production** for master head `be77a55` (merge of PR #54) is **READY/PROMOTED** (`dpl_7FcmYTzNz1Dqo8L1FRThyhRXbpiK`, 2026-11-12T08:41Z). Live at `https://james-denning-james-projects-57651351.vercel.app` (aliases: `rgs-portal-master.vercel.app`, `james-denning-git-master-james-projects-57651351.vercel.app`). Preview deployments for PR #55 are READY.
 - Applied migrations include `20261111085143 jd_autonomous_automation`, `20261111085145 jd_review_centre_foundation`, `20261111085147 jd_atomic_approval_decisions`, `20261111085148 jd_private_conversation_rls`, `20261111085150 jd_durable_execution_jobs`, `20261111085151 jd_durable_execution_checkpoints`, `20261112073746 jd_business_platform`.
 - **Applied 2026-11-12 (direct, owner-authorised):** `20261112084412 jd_settings_proposal_review`, `20261112084459 jd_approved_settings_executor`, `20261112084532 jd_batch01_organisation_operations_hiring`, `20261112084602 jd_task_collaboration`, `20261112084629 jd_execution_retry_controls`, `20261112084732 jd_recurring_tasks_and_assignment`, `20261112084827 jd_workflow_versioned_drafts`. All 10 backing tables verified present in `public`; entries recorded in `supabase_migrations.schema_migrations`. Runtime behaviour remains unverified end-to-end.
 - **Deployed 2026-11-12 (owner-authorised):** `jd-business-document-worker` **v3** (adds pre-extraction `screenDocument` gate) and `jd-business-platform` **v3** (adds screen-on-confirm upload gate: rejected uploads are removed from storage and audited as `business.document.rejected`). Both report ACTIVE/version 3. Runtime smoke tests could not be executed from the authoring sandbox (no route to `*.supabase.co`); fail-closed behaviour must be confirmed by an authenticated caller (e.g. unauthenticated POST → 401; end-to-end test upload carrying an executable signature → 400 + object deleted).
@@ -203,7 +203,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-118 | End-to-end verification of monitoring and operations workers | deployment_pending | Requires secrets + seeded failure; alert email/SMS receipt proof. |
 | JD-UPG-119 | Business intelligence snapshot dashboard (workforce/finance/performance/operations/comms) | partially_implemented | Tenant-scoped snapshot API + dashboard exist; source verification incomplete. |
 | JD-UPG-120 | KPI trend dashboards | not_implemented | — |
-| JD-UPG-121 | Anomaly detection for expenses (thresholds/variance workflows) | partially_implemented | Budgets + alert thresholds exist; anomaly workflow incomplete. |
+| JD-UPG-121 | Anomaly detection for expenses (thresholds/variance workflows) | partially_implemented | `_shared/jd-expense-anomalies.ts` (deterministic, currency-isolated, approved/paid only, robust median outlier ≥3× with n≥5, trailing-90d trend spike ≥1.5×, budget utilisation/threshold findings) + `expense.anomalies` action in `jd-business-platform` + Business Platform → Expense budgets UI (advisory, no writes). Pure module unit-tested (7 Deno tests, CI step added). NOT deployed: edge function not redeployed after wiring; live smoke never run. |
 
 ## §J. External integrations and MCP
 
@@ -310,7 +310,7 @@ Substantial code foundations exist for all tracks (platform API, document/monito
 | JD-UPG-193 | 06 Business Intelligence Dashboard | partially_implemented | Snapshot API + dashboard exist; predictive/historical analysis, source verification, drill-down/export incomplete. |
 | JD-UPG-194 | 07 Predictive Performance Analysis | partially_implemented | Backtest + MAE/MAPE recorded; forecast validation and confidence reporting open. |
 | JD-UPG-195 | 08 Revenue Intelligence | partially_implemented | Paystack read-only sync exists; verification against real source records pending credentials. |
-| JD-UPG-196 | 09 Expense Monitoring | partially_implemented | Budgets + thresholds exist; anomaly detection and variance workflows incomplete. |
+| JD-UPG-196 | 09 Expense Monitoring | partially_implemented | Budgets + thresholds + anomaly review (see JD-UPG-121) exist as code; variance workflow escalation to a review queue is NOT built; nothing deployed or smoke-tested. |
 | JD-UPG-197 | 10 Cash-flow Reporting | partially_implemented | Statement import (this branch migrates it off `xlsx` to ExcelJS) + reconciliation function; reconciliation and validated projections incomplete. |
 | JD-UPG-198 | 11 Document Intelligence | partially_implemented | Embedded-text extraction works; malware screening added (§L); scanned OCR is opt-in and unapproved; end-to-end ingestion unverified. |
 | JD-UPG-199 | 12 Contract and Proposal Management | partially_implemented | Versioning + expiry fields exist; review lifecycle/reminders/execution handoff incomplete. |
