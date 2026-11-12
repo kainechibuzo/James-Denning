@@ -45,7 +45,7 @@ The remote history has no version `014`; the repository has no corresponding `01
 
 ## JD Business Platform — OAuth provider setup
 
-The repository now includes a PKCE OAuth start/callback flow for Google Workspace, Microsoft 365, LinkedIn and Slack. The callback uses one-time 10-minute state, PKCE S256 and AES-GCM encryption for stored token bundles. **It is not live until provider credentials and the callback secrets are configured and the migration/functions are deployed.**
+The repository now includes a PKCE OAuth start/callback flow for Google Workspace, Microsoft 365, LinkedIn and Slack. The callback uses one-time 10-minute state, PKCE S256 and AES-GCM encryption for stored token bundles. **The migration and functions were deployed directly to the connected project on 2026-11-12. OAuth remains non-operational until provider credentials and callback secrets are configured and the provider round-trip is tested.**
 
 Add these as Supabase Edge Function secrets for the target environment (do not put them in GitHub files or paste them into chat):
 
@@ -68,7 +68,7 @@ Configure these GitHub Actions repository secrets:
 - `JD_MONITOR_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-monitor-worker` for the current production project, or the equivalent staging function URL.
 - `JD_BUSINESS_MONITOR_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
 
-The worker is configured with `verify_jwt = false` and protects itself with the dedicated bearer secret. Deploy it only after staging migration and smoke tests. The scheduled workflow safely skips when secrets are absent.
+The worker is configured with `verify_jwt = false` and protects itself with the dedicated bearer secret. The worker is deployed directly to the connected project. The scheduled workflow safely skips when secrets are absent; live monitoring remains unverified until the GitHub and Supabase secrets are configured.
 
 
 ## JD Business Platform — scheduled document extraction
@@ -80,7 +80,7 @@ Configure GitHub Actions repository secrets:
 - `JD_DOCUMENT_FUNCTION_URL`: `https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-document-worker` for production, or the equivalent staging URL.
 - `JD_DOCUMENT_WORKER_SECRET`: a random secret of at least 32 characters. Configure the same value as a Supabase Edge Function secret. Never commit it.
 
-The scheduled workflow fails visibly when these secrets are absent. Deploy the worker and verify private bucket access in staging before enabling the schedule in production.
+The scheduled workflow fails visibly when these secrets are absent. The worker is deployed directly to the connected project and the private bucket exists. The dispatcher still requires matching GitHub/Supabase secrets; external OCR remains opt-in.
 
 
 ## JD Business Platform — document extraction worker
@@ -159,6 +159,19 @@ Configure GitHub Actions secrets:
 
 The workflow checks authenticated Business Platform endpoints and verifies that a second tenant cannot read or update a known first-tenant fixture. Run it only against a disposable staging environment with two test tenants.
 
-### Deployment identity gate
+### Deployment and verification update — 2026-11-12
 
-The current supabase/config.toml and older deployment notes reference thklwiybjuhrjqrrxyid. The connected Supabase account currently labels that project RGS-PORTAL-master, and its live migration/function inventory does not show this Batch 02 deployment. Do not apply the migration or deploy functions until the project owner confirms the correct James Denning Supabase project reference. Production data must not be written to a project based only on a stale reference string.
+The repository owner instructed direct deployment to the connected project rather than creating a Supabase staging branch.
+
+- Target ref: `thklwiybjuhrjqrrxyid` (the connected Supabase account labels it `RGS-PORTAL-master`).
+- Applied migration: `20261112073746_jd_business_platform`.
+- Created 25 `jd_business_*` tables. All have RLS enabled; direct `anon`/`authenticated` table grants are absent, and server-side access uses `service_role`.
+- Confirmed private `jd-business-documents` storage bucket.
+- Deployed six Edge Functions at version 2: platform API, document worker, monitor worker, OAuth callback, operations worker and report-share.
+- Latest master CI build passed. The full Deno test/type-check suite passed on the same integrated source before direct master update.
+- Business customer, document and report tables are empty. The project currently has one Auth account and three school records; do not describe it as an empty database.
+- No authenticated two-tenant end-to-end test was run. Only one Auth account is present, and no disposable test accounts/tenant fixtures were created.
+- External provider workflows remain gated on secrets and provider-side configuration listed above. OCR must remain disabled until external document processing is explicitly approved.
+- Dependency installation previously reported 3 critical, 18 high, 7 moderate and 1 low npm vulnerabilities. This batch did not change package manifests; resolve and verify the existing dependency findings separately.
+
+Do not claim OAuth, OCR, email/SMS, live monitoring, Paystack sync or tenant-isolation E2E as fully verified until the required credentials and authenticated tests pass.
