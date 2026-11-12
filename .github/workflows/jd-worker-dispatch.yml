@@ -20,14 +20,20 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
         run: |
-          test -n "$SUPABASE_URL" || { echo "::error::Missing SUPABASE_URL repository secret"; exit 1; }
-          test -n "$JD_WORKER_SECRET" || { echo "::error::Missing JD_WORKER_SECRET repository secret"; exit 1; }
+          if [ -z "$SUPABASE_URL" ] || [ -z "$JD_WORKER_SECRET" ]; then
+            echo "::notice::SUPABASE_URL / JD_WORKER_SECRET are not configured; skipping durable-queue poll until secrets are set."
+            exit 0
+          fi
       - name: Poll worker and process available jobs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           JD_WORKER_SECRET: ${{ secrets.JD_WORKER_SECRET }}
         run: |
           set -euo pipefail
+          if [ -z "$SUPABASE_URL" ] || [ -z "$JD_WORKER_SECRET" ]; then
+            echo "::notice::Secrets not configured; skipping worker poll."
+            exit 0
+          fi
           endpoint="${SUPABASE_URL%/}/functions/v1/jd-execution-worker"
           response="$(curl --silent --show-error --fail-with-body --max-time 540 \
             -X POST "$endpoint" \

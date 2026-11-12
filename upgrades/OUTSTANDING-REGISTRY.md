@@ -70,12 +70,12 @@
 | JD-UPG-022 | Mobile-first layouts portal-wide | partially_implemented | Design audit | No clipped controls at 360px; touch targets ≥44px; verified phone widths |
 | JD-UPG-023 | Responsive settings rows, tabs, tables, forms, dialogs | partially_implemented | Design audit | Settings page verified at 360/768/1440px |
 | JD-UPG-024 | Searchable organisation settings catalogue (workspace/identity/cycles/performance/security/portal/billing/people/communications/integrations) | partially_implemented | JD-005B code; settings UI | Catalogue UI searches/filters live; protected keys excluded (tested) |
-| JD-UPG-025 | JD explains each setting: value, dependencies, affected modules, permission boundary, save behaviour | not_implemented | JD-UPG-004 | Tool answers per-setting; answers match server catalogue semantics |
-| JD-UPG-026 | JD audits configuration completeness; missing/contradictory settings without changing them | not_implemented | JD-UPG-025 | Audit report with evidence; no writes performed |
+| JD-UPG-025 | JD explains each setting: value, dependencies, affected modules, permission boundary, save behaviour | partially_implemented | JD-UPG-004 (JD tool wiring); module + tests done 2026-11-12 | Tool answers per-setting; wiring into live JD runtime verified |
+| JD-UPG-026 | JD audits configuration completeness; missing/contradictory settings without changing them | partially_implemented | JD-UPG-025 (live wiring); `auditConfiguration()` is read-only and tested (missing/contradiction/invalid-value findings, secrets excluded) | Audit report with evidence; wired into live JD runtime |
 | JD-UPG-027 | JD proposes grouped configuration changes (preview/diff, dependency validation, confirmation) | resolved | JD-005C planner code | Planner validated (unit tests); diff semantics verified |
 | JD-UPG-028 | Hash-bound settings proposals persisted in Review Centre | implemented_unverified | Migration applied 2026-11-12 (`20261112084412`); proposal round-trip verified live |
 | JD-UPG-029 | Approval-bound, hash-verified, idempotent per-setting execution with stale-value checks + read-after-write | implemented_unverified | Migration applied 2026-11-12 (`20261112084459`); approve→execute→verify pending | End-to-end approve→execute→verify against live DB |
-| JD-UPG-030 | JD explains save behaviour and refuses unsupported/invented settings | not_implemented | JD-UPG-025 | Refusal path tested |
+| JD-UPG-030 | JD explains save behaviour and refuses unsupported/invented settings | partially_implemented | JD-UPG-025 (live wiring); `explainSaveBehaviour()` + refusal taxonomy implemented and tested (unknown/invented/secret-like keys refused with supported-key list) | Refusal path verified live in JD runtime |
 | JD-UPG-031 | Blueprint connection to supported settings and workflows | partially_implemented | Blueprint + settings integration design | Approved blueprint item activates the linked setting path only |
 | JD-UPG-032 | Upgrade registry records coverage, test evidence, deployment state, token usage | partially_implemented | This registry; AgentUsage dashboard | Every release links registry items + CI evidence; token dashboard verified live |
 | JD-UPG-033 | Settings proposals: refusal/expiry preserved in decision history | partially_implemented | Review Centre §E | Expired proposals stay in history; UI reflects state |
@@ -281,7 +281,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-174 | Configure `SUPABASE_URL` and `JD_WORKER_SECRET` in GitHub Actions and Supabase | deployment_pending | Owner secrets action; workflows skip safely until set. |
+| JD-UPG-174 | Configure `SUPABASE_URL` and `JD_WORKER_SECRET` in GitHub Actions and Supabase | deployment_pending | Owner secrets action; scheduled workflows now skip safely and consistently until set (parameter/queue guards fixed 2026-11-12; `jd-worker-dispatch` no longer hard-fails every 5 min). |
 | JD-UPG-175 | Verify durable execution migrations against the actual database | partially_implemented | Migrations applied (jobs + checkpoints + retry `20261112084629`). pgmq functions exist; round-trip unverified. |
 | JD-UPG-176 | Verify pgmq queue compatibility and operation | implemented_unverified | Extension present per migration; live round-trip pending. |
 | JD-UPG-177 | Deploy and verify `jd-automation` and `jd-execution-worker` | deployment_pending | As JD-UPG-016. |
