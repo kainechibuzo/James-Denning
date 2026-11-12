@@ -11,27 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Validate worker configuration
-        env:
-          FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
-          WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
-        run: |
-          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
-            echo "::notice::JD_DOCUMENT_FUNCTION_URL / JD_DOCUMENT_WORKER_SECRET are not configured; skipping document extraction batch."
-            exit 0
-          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Process a bounded document batch
         env:
-          FUNCTION_URL: ${{ secrets.JD_DOCUMENT_FUNCTION_URL }}
-          WORKER_SECRET: ${{ secrets.JD_DOCUMENT_WORKER_SECRET }}
+          JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
           set -euo pipefail
-          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
-            echo "::notice::Document worker not configured; skipping."
-            exit 0
-          fi
+          worker_secret="$(node scripts/read-jd-secret.mjs JD_DOCUMENT_WORKER_SECRET)"
+          echo "::add-mask::$worker_secret"
           curl --fail --silent --show-error --max-time 180 \
-            -X POST "$FUNCTION_URL" \
-            -H "Authorization: Bearer $WORKER_SECRET" \
+            -X POST "https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-document-worker" \
+            -H "Authorization: Bearer $worker_secret" \
             -H "Content-Type: application/json" \
             --data '{"limit":10}'
