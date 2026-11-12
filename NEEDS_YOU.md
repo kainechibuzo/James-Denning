@@ -1,3 +1,16 @@
+## Bundled JD random secrets (single setting)
+
+The random worker-authentication strings and OAuth encryption key are now read from one Supabase Edge Function secret named `JD_SECRETS_JSON`. Set its value to the complete JSON object generated for this project. The same JSON object is used as the single JD credential secret in GitHub Actions. The code extracts each named value at runtime; do not commit the JSON file or individual values.
+
+This bundle covers only the generated random strings:
+- `JD_WORKER_SECRET`
+- `JD_BUSINESS_MONITOR_WORKER_SECRET`
+- `JD_DOCUMENT_WORKER_SECRET`
+- `JD_BUSINESS_OPS_WORKER_SECRET`
+- `JD_OAUTH_ENCRYPTION_KEY`
+
+External provider credentials (OpenRouter, OAuth client IDs/secrets, Resend, Twilio, OCR.space, Paystack) are separate integrations and are not part of this random-secret bundle. Supabase's built-in URL and service-role credentials remain provided by the Supabase runtime.
+
 # Remaining Supabase setup — JAMES-DENNING
 
 Project: **JAMES-DENNING**  
