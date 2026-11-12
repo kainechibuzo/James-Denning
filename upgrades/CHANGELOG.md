@@ -380,13 +380,22 @@ No new upgrade implementation is recorded by this registry initialisation commit
 
 ### JD-010 — KPI trend dashboards slice (JD-UPG-120 / JD-UPG-165)
 - **Date:** 2026-11-12
-- **Status:** code implemented; Deno unit tests pass locally under Node shim; `npm run verify:web` passes; **not deployed** — `jd-business-platform` was NOT redeployed after this wiring; no live smoke test or real-data validation exists
+- **Status:** deployed as `jd-business-platform` **v4** (owner-authorised 2026-11-12); smoke tests NOT run (sandbox has no route to `*.supabase.co`); Deno unit tests pass locally under Node shim; `npm run verify:web` passes; CI green on PR #55
 - **Priority:** medium (Batch 02 analytics track)
 - **Implemented:**
   1. **`supabase/functions/_shared/jd-kpi-trends.ts`** (new) — pure, deterministic, read-only 12-month (configurable 1–24) UTC monthly-bucket analysis: cleared cash in/out and approved/paid expenses always grouped per currency; new opportunities + won-by-creation-month (approximation, documented), resolved support cases (by `resolved_at` only), new customers; trailing-3m vs prior-3m movement for count metrics; explicit limitations array; never sums across currencies.
   2. **`jd-kpi-trends.test.ts`** (new, 6 assertion groups) wired into `.github/workflows/ci.yml` as "Test JD KPI trends".
   3. **`jd-business-platform` `kpi.trends` action** — admin/manager only (existing guard), `months_back` clamped to 1–24, workspace-scoped reads capped at 500 rows per table; throws on any table error (fail-closed, no partial mix silently returned).
   4. **Business Platform → KPI trends tab** — trailing 3-month movement cards + full month-by-month table (counts and per-currency money) + method/limitations disclosure. No new dependencies; plain table rendering.
-- **NOT done / not claimed:** edge function not redeployed (live `kpi.trends` does not exist in production); no live smoke; KPI alerting/thresholds NOT built; won-opportunity attribution is a creation-month approximation (no `closed_at` exists); workforce KPIs absent; JD-UPG-120/165 stay `partially_implemented`.
+- **Deployed:** `jd-business-platform` v4 ACTIVE (2026-11-12, owner-authorised) carrying the new `expense.anomalies` (JD-009) and `kpi.trends` (JD-010) actions; relative `../_shared/` imports match the v3 deployment pattern. **NOT smoke-tested:** live action invocations, 401-vs-500 behaviour, and `_shared/` resolution in the deployed bundle are unverified from this sandbox; no live smoke; KPI alerting/thresholds NOT built; won-opportunity attribution is a creation-month approximation (no `closed_at` exists); workforce KPIs absent; JD-UPG-120/165 stay `partially_implemented`.
 - **Token usage:** none generated; none estimated.
 - **Files:** `supabase/functions/_shared/jd-kpi-trends.ts` (new), `supabase/functions/_shared/jd-kpi-trends.test.ts` (new), `supabase/functions/jd-business-platform/index.ts` (import + `kpi.trends` action), `src/pages/jd-business-platform.jsx` (tab, state, load branch, panel), `.github/workflows/ci.yml` (new Deno step), `upgrades/OUTSTANDING-REGISTRY.md` (JD-UPG-120/165), `upgrades/CHANGELOG.md`.
+
+### JD-011 — Production deploy of jd-business-platform v4 (JD-009/JD-010 wiring)
+- **Date:** 2026-11-12
+- **Status:** deployed; smoke tests NOT run; CI green on PR #55
+- **Preconditions:** owner authorisation 2026-11-12 (redeploy yes; merge PR #55 yes); PR #55 head `5f24d50` green (Web CI 1m21s incl. Deno steps; Vercel READY).
+- **Deployed:** `jd-business-platform` **v4 ACTIVE** (version 4, updated 2026-11-12) — v3 body plus `expense.anomalies` and `kpi.trends` actions and their `_shared` imports (`jd-expense-anomalies.ts`, `jd-kpi-trends.ts`). `verify_jwt: false`, unchanged. No schema changes in this deploy.
+- **NOT verified / not claimed:** no live invocation of the new actions; no 401/403/500 smoke; `_shared` module resolution inside the deployed bundle not directly observed (same relative-import pattern as v3); the UI panel/tab calls have not been exercised against the live backend; deployed ≠ smoke-tested.
+- **Token usage:** none generated; none estimated.
+- **Files:** `supabase/functions/jd-business-platform/index.ts`, `supabase/functions/_shared/jd-expense-anomalies.ts`, `supabase/functions/_shared/jd-kpi-trends.ts` (deployed as part of v4), `upgrades/CHANGELOG.md`, `upgrades/OUTSTANDING-REGISTRY.md`.
