@@ -495,7 +495,7 @@ export function PermissionsPage({ctx}){
 
       {tab==="templates"&&(
         <div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+          <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
             <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:12,padding:16}}>
               <div style={{fontWeight:800,fontSize:13,color:C.blue,marginBottom:10}}>💾 Save Current as Template</div>
               <SaveTemplateForm roles={RBAC_ROLES} onSave={saveTemplate}/>
