@@ -12,6 +12,7 @@ on:
       - 'package-lock.json'
       - 'vite.config.*'
       - 'vercel.json'
+      - 'scripts/**'
       - 'supabase/**'
       - '.github/workflows/ci.yml'
 
@@ -43,6 +44,12 @@ jobs:
 
       - name: Production web build
         run: npm run verify:web
+
+      # The verification scripts are what stand between us and a green build
+      # that verified nothing. This test proves they fail closed, using a
+      # stubbed fetch — no network, no credentials, no writes.
+      - name: Test verification guards fail closed
+        run: node scripts/test-verification-guards.mjs
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2

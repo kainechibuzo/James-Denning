@@ -1,10 +1,66 @@
 name: JD Business Platform Staging Verification
+
+# Purpose: prove cross-tenant isolation on a STAGING project with real fixtures.
+#
+# History: this workflow existed but was `workflow_dispatch` only and had ZERO
+# runs, so the two-tenant isolation test it wraps was never executed. A test
+# that never runs provides no assurance, and the audit correctly flagged tenant
+# isolation as a top unknown. It now also runs on a schedule so the result is
+# continuously reported instead of being an untested claim.
+#
+# Required repository secrets (STAGING project — never production):
+#   JD_STAGING_SUPABASE_URL, JD_STAGING_SUPABASE_ANON_KEY
+#   JD_STAGING_TENANT_A_EMAIL / JD_STAGING_TENANT_A_PASSWORD
+#   JD_STAGING_TENANT_B_EMAIL / JD_STAGING_TENANT_B_PASSWORD
+#   JD_STAGING_TENANT_A_FIXTURE_CUSTOMER_ID   (a customer owned by tenant A)
+#
+# Until those exist this workflow FAILS with an explicit configuration error
+# rather than reporting a green tick. That is deliberate: a daily red run is the
+# honest signal for "tenant isolation is unverified". The run goes green by
+# itself once the secrets exist — there is no switch to flip.
+#
+# If a daily failure notification is unacceptable, delete the `schedule` block
+# rather than making this job pass without running the test. A green scheduled
+# run that skipped the test is worse than no workflow at all.
+
 on:
   workflow_dispatch:
+  schedule:
+    # Daily at 05:17 UTC — off the hour to avoid the GitHub Actions rush.
+    - cron: "17 5 * * *"
+
 permissions:
   contents: read
+
+concurrency:
+  group: jd-staging-verify
+  cancel-in-progress: false
+
 jobs:
+  configuration:
+    name: Check staging secrets are present
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          A: ${{ secrets.JD_STAGING_TENANT_A_EMAIL }}
+          B: ${{ secrets.JD_STAGING_TENANT_B_EMAIL }}
+          U: ${{ secrets.JD_STAGING_SUPABASE_URL }}
+        run: |
+          if [ -z "$A" ] || [ -z "$B" ] || [ -z "$U" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::error title=Cross-tenant isolation is UNVERIFIED::Staging credentials are not configured, so the tenant isolation test did not run. Add JD_STAGING_SUPABASE_URL, JD_STAGING_SUPABASE_ANON_KEY, JD_STAGING_TENANT_A_EMAIL/PASSWORD, JD_STAGING_TENANT_B_EMAIL/PASSWORD and JD_STAGING_TENANT_A_FIXTURE_CUSTOMER_ID under Settings > Secrets and variables > Actions."
+            echo "Failing deliberately: a skipped test must not report success."
+            exit 1
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
   authenticated-staging:
+    name: Cross-tenant isolation (staging)
+    needs: configuration
+    if: needs.configuration.outputs.configured == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
