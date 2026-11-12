@@ -1,5 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {extractDocumentText,extractiveSummary} from "../_shared/jd-document-intelligence.ts";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 import {screenDocument} from "../_shared/jd-document-security.ts";
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 const equalSecret=async(a:string,b:string)=>{const [x,y]=await Promise.all([crypto.subtle.digest("SHA-256",new TextEncoder().encode(a)),crypto.subtle.digest("SHA-256",new TextEncoder().encode(b))]);const aa=new Uint8Array(x),bb=new Uint8Array(y);let d=0;for(let i=0;i<aa.length;i++)d|=aa[i]^bb[i];return d===0;};
@@ -16,7 +17,7 @@ async function runOcr(bytes:Uint8Array,mime:string){
 }
 Deno.serve(async req=>{
  if(req.method!=="POST")return reply({error:"Method not allowed"},405);
- const expected=Deno.env.get("JD_DOCUMENT_WORKER_SECRET")||"",authorization=req.headers.get("Authorization")||"",auth=authorization.toLowerCase().startsWith("bearer ")?authorization.slice(7).trim():"";
+ const expected=getJdSecret("JD_DOCUMENT_WORKER_SECRET"),authorization=req.headers.get("Authorization")||"",auth=authorization.toLowerCase().startsWith("bearer ")?authorization.slice(7).trim():"";
  if(expected.length<32||!auth||!await equalSecret(auth,expected))return reply({error:"Unauthorized"},401);
  const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!url||!key)return reply({error:"Worker not configured"},503);
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
