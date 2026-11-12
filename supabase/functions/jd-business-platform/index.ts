@@ -114,7 +114,8 @@ Deno.serve(async req=>{
    const providerId=str(b.providerId,60),providerConfig:Record<string,{authUrl:string;clientIdEnv:string}>={
     "google-workspace":{authUrl:"https://accounts.google.com/o/oauth2/v2/auth",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID"},
     "microsoft-365":{authUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/authorize",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID"},
-    "linkedin":{authUrl:"https://www.linkedin.com/oauth/v2/authorization",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID"},\n    "slack":{authUrl:"https://slack.com/oauth/v2/authorize",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID"}
+    "linkedin":{authUrl:"https://www.linkedin.com/oauth/v2/authorization",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID"},
+    "slack":{authUrl:"https://slack.com/oauth/v2/authorize",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID"}
    };
    const config=providerConfig[providerId];if(!config)return send({error:"This provider requires a separate API-key or provider-specific connection flow"},400);
    const clientId=Deno.env.get(config.clientIdEnv),callback=Deno.env.get("JD_OAUTH_CALLBACK_URL"),encodedKey=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
@@ -132,7 +133,8 @@ Deno.serve(async req=>{
    const providerId=str(b.providerId,60),config:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={
     "google-workspace":{tokenUrl:"https://oauth2.googleapis.com/token",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID",clientSecretEnv:"JD_OAUTH_GOOGLE_CLIENT_SECRET"},
     "microsoft-365":{tokenUrl:"https://login.microsoftonline.com/common/oauth2/v2.0/token",clientIdEnv:"JD_OAUTH_MICROSOFT_CLIENT_ID",clientSecretEnv:"JD_OAUTH_MICROSOFT_CLIENT_SECRET"},
-    "linkedin":{tokenUrl:"https://www.linkedin.com/oauth/v2/accessToken",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID",clientSecretEnv:"JD_OAUTH_LINKEDIN_CLIENT_SECRET"},\n    "slack":{tokenUrl:"https://slack.com/api/oauth.v2.access",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID",clientSecretEnv:"JD_OAUTH_SLACK_CLIENT_SECRET"}
+    "linkedin":{tokenUrl:"https://www.linkedin.com/oauth/v2/accessToken",clientIdEnv:"JD_OAUTH_LINKEDIN_CLIENT_ID",clientSecretEnv:"JD_OAUTH_LINKEDIN_CLIENT_SECRET"},
+    "slack":{tokenUrl:"https://slack.com/api/oauth.v2.access",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID",clientSecretEnv:"JD_OAUTH_SLACK_CLIENT_SECRET"}
    };
    const provider=config[providerId];if(!provider)return send({error:"Refresh is not supported for this provider"},400);
    const {data:connectionData,error:connectionError}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();const connection:any=connectionData;
