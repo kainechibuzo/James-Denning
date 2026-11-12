@@ -1,11 +1,12 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 const secretMatch=async(a:string,b:string)=>{const [x,y]=await Promise.all([crypto.subtle.digest("SHA-256",new TextEncoder().encode(a)),crypto.subtle.digest("SHA-256",new TextEncoder().encode(b))]);const aa=new Uint8Array(x),bb=new Uint8Array(y);let d=0;for(let i=0;i<aa.length;i++)d|=aa[i]^bb[i];return d===0;};
 async function sendEmail(row:any){const key=Deno.env.get("RESEND_API_KEY"),from=Deno.env.get("JD_ALERT_EMAIL_FROM");if(!key||!from)throw new Error("Email delivery is not configured");const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({from,to:[row.recipient],subject:row.subject,text:row.body}),signal:AbortSignal.timeout(12000),redirect:"error"});if(!response.ok)throw new Error("Email provider rejected notification");return await response.json();}
 async function sendSms(row:any){const sid=Deno.env.get("JD_TWILIO_ACCOUNT_SID"),token=Deno.env.get("JD_TWILIO_AUTH_TOKEN"),from=Deno.env.get("JD_TWILIO_FROM_NUMBER");if(!sid||!token||!from)throw new Error("SMS delivery is not configured");const body=new URLSearchParams({To:row.recipient,From:from,Body:row.body});const auth=btoa(`${sid}:${token}`);const response=await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,{method:"POST",headers:{"Authorization":`Basic ${auth}`,"Content-Type":"application/x-www-form-urlencoded"},body,signal:AbortSignal.timeout(12000),redirect:"error"});if(!response.ok)throw new Error("SMS provider rejected notification");return await response.json();}
 Deno.serve(async req=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
- const expected=Deno.env.get("JD_BUSINESS_OPS_WORKER_SECRET")||"",auth=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+ const expected=getJdSecret("JD_BUSINESS_OPS_WORKER_SECRET"),auth=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
  if(expected.length<32||!auth||!await secretMatch(auth,expected))return json({error:"Unauthorized"},401);
  const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");if(!url||!key)return json({error:"Worker not configured"},503);
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}}),now=new Date();
