@@ -83,197 +83,28 @@ body[data-theme="dark"] [style*="color: black"]{color:#f3f4f5!important}
   main, [role="main"]{min-width:0;max-width:100%}
   table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
   input,select,textarea{min-width:0;max-width:100%}
+
+  /* ── Phone layout guards ──────────────────────────────────────────────
+     Pages declare their multi-column layouts inline (grid-template-columns
+     in a style attribute), which media queries cannot otherwise reach.
+     Tag the layout with data-jd-columns and it collapses here instead of
+     squeezing controls into unusable slivers on a phone. */
+  [data-jd-columns="3"]{grid-template-columns:minmax(0,1fr)!important}
+  [data-jd-columns="4"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  /* The app shell scrolls vertically only; no page may push the viewport
+     sideways (that was clipping the right-hand panel on phones). */
+  main, [role="main"]{overflow-x:hidden}
+
+  /* Grid children must be allowed to shrink, or a long word/label widens
+     the whole track and overflows the card. */
+  [data-jd-columns], .jd-mobile-grid{min-width:0}
+  [data-jd-columns] > *{min-width:0}
 }
 @media(max-width:420px){
   .jd-setting-row{gap:6px!important}
   .jd-setting-row__control{font-size:14px}
   button{max-width:100%}
+  [data-jd-columns="4"]{grid-template-columns:minmax(0,1fr)!important}
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   JD-006 — LAYOUT FOUNDATION (single source of truth for responsiveness)
-   ══════════════════════════════════════════════════════════════════════════
-
-   Why this layer exists
-   ---------------------
-   Components were written with inline grid styles such as
-   style={{gridTemplateColumns:"1fr 1fr"}}. Inline declarations cannot be
-   reached by a normal stylesheet rule, so page layouts kept their desktop
-   column counts on phones: content overflowed the viewport, cards were
-   clipped on the right edge, and form rows squeezed labels into slivers.
-
-   The previous workaround was a handful of attribute selectors living in a
-   page-scoped <style> block (div[style*="repeat(3,1fr)"]). That approach is
-   fragile — it only matched a few literal patterns, it depended on React's
-   exact serialisation of the style attribute, and it never saw the most
-   common pattern of all ("1fr 1fr").
-
-   This layer fixes the mechanism instead of the symptoms:
-
-   1. Fluid containers — any flex/grid child may shrink below its content
-      width, which is what actually prevents overflow.
-   2. Intrinsic column floors — multi-column grids receive a minmax() floor
-      so a 2-column layout can never demand more width than the viewport.
-   3. Collapse rules at phone widths using the selectors that DO reach inline
-      styles: attribute selectors on the serialised style attribute, plus
-      the page-scoped rules that already exist.
-   4. Structural patterns (page headers, card headers, toolbars, tables,
-      stat grids) get shared classes so they stay correct everywhere.
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/* ── 1. Fluid containers ──────────────────────────────────────────────────── */
-*{min-width:0}
-#root{min-width:0;max-width:100%}
-main,[role="main"]{min-width:0;max-width:100%;overflow-wrap:break-word}
-section,article,aside,header,footer,nav,form{min-width:0}
-/* Images and media never push a layout wider than its track. */
-img,svg,video,canvas,iframe{max-width:100%;height:auto}
-/* Long unbroken strings (emails, IDs, tokens) wrap instead of overflowing. */
-/* break-word (not anywhere) so a label breaks only when a single word genuinely
-   cannot fit — "anywhere" breaks words mid-syllable to fill the line, which
-   turned "OUTSTANDING" into "OUTSTANDI NG" in narrow stat cards. */
-p,h1,h2,h3,h4,h5,h6,span,b,strong,td,th,li,label,small,code{overflow-wrap:break-word}
-/* Controls and pills must never be squeezed below their own content.
-   Flex items default to flex-shrink:1, so a crowded row (a card header with
-   "Send Test" + "Save") shrank the buttons until their labels were clipped to
-   "Send" / "Sav". Pills and badges behaved the same way, breaking "CRITICAL"
-   across two lines. These keep their intrinsic size; the row wraps instead. */
-button,[role="button"],a[href]{flex-shrink:0}
-[style*="border-radius:999"],[style*="border-radius: 999"],
-[style*="border-radius:20px"],[style*="border-radius: 20px"]{flex-shrink:0}
-/* Toggle switches keep their geometry even inside tight label rows. */
-[style*="border-radius:11px"],[style*="border-radius: 11px"]{flex-shrink:0}
-
-/* A flex row must be allowed to shrink; without this, children keep their
-   intrinsic width and force horizontal overflow of the whole page. */
-[style*="display:flex"],[style*="display: flex"]{min-width:0}
-
-/* ── 2. Intrinsic column floors for inline multi-column grids ─────────────── */
-/* WHY THIS MATTERS — the bug this layer exists to kill.
-   Components declare layout inline, e.g.
-       style={{ display:"grid", gridTemplateColumns:"1fr 1fr" }}
-   Inline declarations outrank normal stylesheet rules, so a phone kept the
-   desktop column count and content spilled past the right edge of the card.
-
-   React writes those styles through the CSSOM, which NORMALISES the value.
-   The style ATTRIBUTE therefore reads `grid-template-columns: 1fr 1fr` and
-   `repeat(3, 1fr)` — colon followed by a SPACE, and a space after each comma.
-
-   So the selectors below deliberately match on a value fragment (`1fr 1fr`,
-   `repeat(3`) and never on the `grid-template-columns:` prefix. That form
-   matches both the serialised attribute React produces and the authored
-   strings used in raw HTML templates. Matching the authored spelling only
-   (no space after the colon/comma) silently matches nothing — which is
-   precisely why earlier attempts at this fix appeared to do nothing.
-
-   Order within each group matters: a 3-track value also contains the 2-track
-   substring, so the longer patterns are declared last and win. */
-
-/* Floors — allow every track to shrink below its content width. */
-[style*="1fr 1fr"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-[style*="1fr 1fr 1fr"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-[style*="1fr 1fr 1fr 1fr"]{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-[style*="2fr 1fr"]{grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important}
-[style*="3fr 2fr"]{grid-template-columns:minmax(0,3fr) minmax(0,2fr)!important}
-[style*="repeat(2,"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-[style*="repeat(3,"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-[style*="repeat(4,"]{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-[style*="repeat(5,"]{grid-template-columns:repeat(5,minmax(0,1fr))!important}
-/* Fixed pixel rails beside a fluid pane must never out-demand the viewport. */
-[style*="px 1fr"]{grid-template-columns:minmax(0,220px) minmax(0,1fr)!important}
-[style*="1fr 380px"],[style*="1fr 360px"],[style*="1fr 320px"],[style*="1fr 300px"]{grid-template-columns:minmax(0,1fr) minmax(0,300px)!important}
-[style*="auto 1fr"]{grid-template-columns:auto minmax(0,1fr)!important}
-[style*="1fr auto"]{grid-template-columns:minmax(0,1fr) auto!important}
-
-/* ── 3. Phone-width collapse (≤760px) ─────────────────────────────────────── */
-@media(max-width:760px){
-  /* Multi-column inline grids collapse to a single column. */
-  [style*="1fr 1fr"],
-  [style*="1fr 1fr 1fr"],
-  [style*="1fr 1fr 1fr 1fr"],
-  [style*="px 1fr"],
-  [style*="2fr 1fr"],
-  [style*="3fr 2fr"],
-  [style*="1fr 380px"],[style*="1fr 360px"],
-  [style*="1fr 320px"],[style*="1fr 300px"],
-  /* Remaining pixel-literal track lists (settings matrices, editor rows). */
-  [style*="1fr 110px"],[style*="1fr 120px"],[style*="1fr 150px"],
-  [style*="auto 1fr"],[style*="1fr auto"]{grid-template-columns:minmax(0,1fr)!important}
-
-  /* Stat rows keep a compact 2-up rhythm rather than a stack of tall cards.
-     A 2-up card on a phone is ~170px wide; labels wrap and numbers stay legible
-     because they are allowed to break rather than overflow. */
-  [style*="repeat(4,"],
-  [style*="repeat(3,"],
-  [style*="1fr 1fr 1fr 1fr"],
-  [style*="1fr 1fr 1fr"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-
-  /* Counter tiles (big icon over a number over a label) stay three across —
-     they are short, centred blocks, and stacking them produced three oversized
-     full-width bars. Only a leading '.jd-stat' card in the same grid gets to
-     span the trailing odd slot, because it is wide and detail-heavy. */
-  [style*="repeat(3,"] [data-jd-stat]:last-child:nth-child(odd),
-  [style*="repeat(4,"] [data-jd-stat]:last-child:nth-child(odd),
-  [style*="1fr 1fr 1fr"] [data-jd-stat]:last-child:nth-child(odd),
-  [style*="1fr 1fr 1fr 1fr"] [data-jd-stat]:last-child:nth-child(odd){grid-column:1/-1}
-
-  /* Segmented tab strips and action clusters are plain flex rows with button
-     children and no scroll container, so on a phone their trailing tabs were
-     simply cut off ("Pending / Approved / Rejected / All" clipped "All").
-     Wrapping only takes effect when the row genuinely cannot fit, so rows that
-     already fit are unaffected. */
-  main div:has(>button){flex-wrap:wrap!important;row-gap:8px}
-  main div:has(>button+button){flex-wrap:wrap!important;row-gap:8px}
-
-  /* Card headers, page headers and toolbars: allow the trailing action to drop
-     to its own line instead of being pushed outside the card. Opt-in classes
-     only — a blanket rule would also re-wrap inline icon+label clusters inside
-     stat cards and change the desktop header layout. */
-  .jd-card-head{flex-wrap:wrap!important;row-gap:8px}
-  .jd-card-head>*{min-width:0}
-  /* Card/page header rows written as inline space-between flex rows: let the
-     trailing action cluster drop below the title rather than squeezing both
-     halves. Scoped to main so the application header keeps its exact desktop
-     composition. Buttons, pills and text already keep their intrinsic size. */
-  main [style*="justify-content:space-between"],
-  main [style*="justify-content: space-between"]{flex-wrap:wrap!important;row-gap:10px}
-  main [style*="justify-content:space-between"]>*,
-  main [style*="justify-content: space-between"]>*{min-width:0}
-  .jd-toolbar,.jd-actions-row{flex-wrap:wrap!important;row-gap:8px}
-  .jd-toolbar>*,.jd-actions-row>*{min-width:0}
-
-  /* Empty-state rows inside a column-spanning <td>: keep the message pinned to
-     the visible area instead of centring across the full table scroll width.
-     position:sticky with left:0 is the standard fix — it resolves against the
-     nearest scrollport (the table wrapper) rather than the cell. */
-  td[colspan] > div{position:sticky!important;left:0}
-
-  /* Tables: body cells wrap, headers stay on one line, wrapper scrolls. */
-  .jd-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-  .jd-table-wrap table{min-width:100%}
-  .jd-table-wrap th{white-space:nowrap}
-
-  /* Modals become a full-width sheet. */
-  .jd-modal-card{max-width:100%!important;border-radius:18px 18px 0 0!important}
-}
-
-@media(max-width:430px){
-  /* Two-up stat cards stay two-up but tighten padding so numbers stay legible. */
-  .jd-stat-grid{gap:8px!important}
-  .jd-stat-grid>*{padding:12px!important}
-}
-
-/* On phones the header only has room for the menu, the page title and the
-   four primary controls. Settings and profile are both reachable from the
-   sidebar, so the header duplicates are hidden here rather than all five
-   controls squeezing the page title down to "Generate B...".
-   The sign-out control is already hidden on phones (sidebar footer has it). */
-@media(max-width:760px){
-  header [data-header-compact="hide"]{display:none!important}
-  header span[style*="nowrap"]{text-overflow:ellipsis}
-}
-
-/* Very narrow (≤360px): anything still side-by-side becomes a single column. */
-@media(max-width:360px){
-  .jd-stat-grid,[style*="grid-template-columns:repeat(2"]{grid-template-columns:minmax(0,1fr)!important}
-}

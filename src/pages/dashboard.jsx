@@ -1077,7 +1077,7 @@ export function TeacherDashboard({ctx,announcements}){
         ))}
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
         {/* Form Groups */}
         <Card>
           <div style={{fontWeight:800,color:C.blue,fontSize:13,marginBottom:10}}>My Form Group{formClasses.length!==1?"es":""}</div>

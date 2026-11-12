@@ -349,7 +349,7 @@ export function DataExportPage({ctx}){
         <h2 style={{margin:0,fontSize:20,fontWeight:900,color:C.text}}>Data Export</h2>
       </div>
       <p style={{margin:"0 0 24px",fontSize:12,color:C.muted}}>Download organization data as Excel spreadsheets for reporting, government returns, or archiving.</p>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
         <ExportCard icon={Users} title="Members" desc="Full member list with group, status, and contact info." btnLabel="Export Members (.xlsx)" onExport={exportStudents} loadKey="students"/>
         <ExportCard icon={UserCheck} title="Staff" desc="All staff and managers with roles and contact info." btnLabel="Export Staff (.xlsx)" onExport={exportTeachers} loadKey="teachers"/>
         <ExportCard icon={BarChart3} title="Results" desc="Member scores by category, group, period, and cycle." btnLabel="Export Results (.xlsx)" onExport={exportResults} loadKey="results"

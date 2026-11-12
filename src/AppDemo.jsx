@@ -1,5 +1,5 @@
 import React, { lazy, useState, useEffect, useMemo, useCallback, createContext, useContext, Component, useRef } from "react";
-import { LayoutDashboard, Users, GraduationCap, BookUser, School, BookOpen, Layers, Paperclip, BarChart3, FileText, ScrollText, ShieldCheck, Settings2, ListChecks, Tag, FileStack, Zap, CreditCard, TrendingUp, Megaphone, ClipboardCheck, Mail, Inbox, ArrowUpCircle, History, CheckCircle2, UserPlus, Upload, Wallet, MessageSquare, Settings, BadgeCheck, ReceiptText, Link2, Bell, ChevronRight, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, ChevronDown, ChevronUp, MoreHorizontal, Calendar, CalendarDays, CalendarCheck, Clock, Star, Heart, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, LineChart, Hash, AtSign, Link, ExternalLink, Copy, Share2, Printer, Save, RotateCcw, RotateCw, ZoomIn, ZoomOut, Maximize, Minimize, HelpCircle, BookMarked, FlaskConical, Award, Clipboard, ClipboardList, UserCircle, UserCheck, UserX, UserMinus, UsersRound, BriefcaseBusiness, Banknote, Receipt, PiggyBank, TrendingDown, DollarSign, Percent, Calculator, ListOrdered, ListTree, Grid2x2, Columns2, Rows2, AlignLeft, AlignCenter, CircleCheck, CircleX, CircleAlert, CircleDot, CheckSquare, Square, Circle, Triangle, Hexagon, Bookmark, BookmarkCheck, Flag, FlagOff, Target, Crosshair, Compass, Map as MapIcon, Navigation, Bus, Car, Plane, Train, Package, Box, Boxes, ShoppingCart, ShoppingBag, Store, Building, Hotel, Hospital, Church, Landmark, PenLine, Pen, Type, Bold, Italic, Underline, Strikethrough, Subscript, Superscript, AlignJustify, IndentIncrease, IndentDecrease, List, TableProperties, Table, LayoutGrid, LayoutList, LayoutPanelLeft, Sidebar, SidebarClose, SidebarOpen, PanelLeft, PanelRight, Columns, Rows, MoveHorizontal, MoveVertical, Move, Maximize2, Minimize2, SquarePlus, SquareMinus, SquareCheck, SquareX, PlusCircle, MinusCircle, XCircle, AlertCircle, CheckCircle, Loader2, WifiOff, Wifi, ArrowRight, ArrowLeft, KeyRound } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, BookUser, School, BookOpen, Layers, Paperclip, BarChart3, FileText, ScrollText, ShieldCheck, Settings2, ListChecks, Tag, FileStack, Zap, CreditCard, TrendingUp, Megaphone, ClipboardCheck, Mail, Inbox, ArrowUpCircle, History, CheckCircle2, UserPlus, Upload, Wallet, MessageSquare, Settings, BadgeCheck, ReceiptText, Link2, Bell, ChevronRight, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, ChevronDown, ChevronUp, MoreHorizontal, Calendar, CalendarDays, CalendarCheck, Clock, Star, Heart, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, LineChart, Hash, AtSign, Link, ExternalLink, Copy, Share2, Printer, Save, RotateCcw, RotateCw, ZoomIn, ZoomOut, Maximize, Minimize, HelpCircle, BookMarked, FlaskConical, Award, Clipboard, ClipboardList, UserCircle, UserCheck, UserX, UserMinus, UsersRound, BriefcaseBusiness, Banknote, Receipt, PiggyBank, TrendingDown, DollarSign, Percent, Calculator, ListOrdered, ListTree, Grid2x2, Columns2, Rows2, AlignLeft, AlignCenter, CircleCheck, CircleX, CircleAlert, CircleDot, CheckSquare, Square, Circle, Triangle, Hexagon, Bookmark, BookmarkCheck, Flag, FlagOff, Target, Crosshair, Compass, Map as MapIcon, Navigation, Bus, Car, Plane, Train, Package, Box, Boxes, ShoppingCart, ShoppingBag, Store, Building, Hotel, Hospital, Church, Landmark, PenLine, Pen, Type, Bold, Italic, Underline, Strikethrough, Subscript, Superscript, AlignJustify, IndentIncrease, IndentDecrease, List, TableProperties, Table, LayoutGrid, LayoutList, LayoutPanelLeft, Sidebar, SidebarClose, SidebarOpen, PanelLeft, PanelRight, Columns, Rows, MoveHorizontal, MoveVertical, Move, Maximize2, Minimize2, SquarePlus, SquareMinus, SquareCheck, SquareX, PlusCircle, MinusCircle, XCircle, AlertCircle, CheckCircle, Loader2, WifiOff, Wifi, ArrowRight, ArrowLeft, KeyRound, Moon, Sun } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
@@ -110,25 +110,20 @@ function DarkProvider({children}){
 
 function DarkToggle({compact=false}){
   const {dark,toggle}=useDark();
-  // Compact form for the phone header: the text label is what pushed the page
-  // title into an ellipsis and the sign-out control off-screen at 360–393px.
-  if(compact){
-    return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
-      aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
-      style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
-        border:`1px solid ${C.border}`,borderRadius:9,width:36,height:36,cursor:"pointer",
-        display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,lineHeight:1,
-        color:C.text,transition:"all .2s",flexShrink:0}}>
-      <span aria-hidden="true">{dark?"☀":"☾"}</span>
-    </button>;
-  }
-  return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
-    aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
+  const label=dark?"Switch to light mode":"Switch to dark mode";
+  return <button onClick={toggle} title={label} aria-label={label} aria-pressed={dark}
     style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
-      border:`1px solid ${C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",
+      border:`1px solid ${C.border}`,
+      borderRadius:compact?9:20,
+      padding:compact?0:"7px 14px",
+      width:compact?36:undefined,height:compact?36:undefined,
+      justifyContent:"center",
+      cursor:"pointer",
       display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,
       color:C.text,transition:"all .2s",flexShrink:0,backdropFilter:"blur(4px)"}}>
-    <span>{dark?"Light":"Dark"}</span>
+    {compact
+      ? (dark?<Sun size={16} aria-hidden="true"/>:<Moon size={16} aria-hidden="true"/>)
+      : <span>{dark?"Light":"Dark"}</span>}
   </button>;
 }
 
@@ -1413,6 +1408,7 @@ export default function App(){
 // Wrapper forces re-render when dark mode changes so C is always current
 function AppInnerWrapper(){
   const {dark}=useDark();
+  const isMobile=useIsMobile();
   C = dark ? DARK : LIGHT;
 
   // ── Internet connectivity detection ─────────────────────────────────────────
@@ -1505,13 +1501,19 @@ html{-webkit-text-size-adjust:100%;}
         </div>
       )}
 
-      {/* ── Version indicator ─────────────────────────────────────────────── */}
-      <div style={{position:"fixed",top:8,right:12,zIndex:9000,
-        fontSize:10,fontWeight:500,letterSpacing:"0.04em",
-        color:dark?"rgba(255,255,255,0.18)":"rgba(0,0,0,0.18)",
-        pointerEvents:"none",userSelect:"none"}}>
-        {APP_VERSION}
-      </div>
+      {/* ── Version indicator ─────────────────────────────────────────────────
+          Decorative only. It used to be pinned to top-right inside the header
+          band, where it sat on top of the avatar / sign-out controls and read
+          as a stray "V32.9.2" label on small screens. Tuck it into the
+          bottom-right corner and drop it entirely on phones. */}
+      {!isMobile&&(
+        <div style={{position:"fixed",bottom:6,right:10,zIndex:9000,
+          fontSize:10,fontWeight:500,letterSpacing:"0.04em",
+          color:dark?"rgba(255,255,255,0.22)":"rgba(0,0,0,0.2)",
+          pointerEvents:"none",userSelect:"none"}}>
+          {APP_VERSION}
+        </div>
+      )}
     </>
   );
 }
@@ -2597,19 +2599,19 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
               <AppIcon name="menu" size={18} color={C.muted}/>
             </button>
-            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,overflow:"hidden"}}>
               <div style={{width:28,height:28,borderRadius:8,background:C.blue+"14",
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <AppIcon name={NAV.find(n=>n.id===page)?.icon||""} size={14} color={C.blue}/>
               </div>
               <span style={{fontSize:isMobile?13:14,fontWeight:800,color:C.text,letterSpacing:"-.01em",
-                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
-                maxWidth:isMobile?"none":260,minWidth:0}}>
+                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,
+                maxWidth:isMobile?"46vw":260}}>
                 {NAV.find(n=>n.id===page)?.label||"Portal"}
               </span>
             </div>
           </div>
-          <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
+          <div style={{display:"flex",gap:isMobile?4:6,alignItems:"center",flexShrink:0}}>
             {!isMobile&&<LiveClock/>}
             {!isMobile&&selectedSection&&<Badge color={selectedSection.color||C.blue}>{selectedSection.name}</Badge>}
             {!isMobile&&<SessionTermBadge/>}
@@ -2638,7 +2640,7 @@ function AppInner(){
               </button>
             )}
             {isMobile&&role==="admin"&&(
-              <button onClick={()=>setPage("settings")} title="Settings" data-header-compact="hide"
+              <button onClick={()=>setPage("settings")} title="Settings"
                 style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,
                   width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",
                   justifyContent:"center",fontSize:16,color:C.muted}}>
@@ -2646,7 +2648,7 @@ function AppInner(){
               </button>
             )}
             <NotificationBell ctx={ctx}/>
-            <button onClick={()=>setShowProfile(true)} data-header-compact="hide"
+            <button onClick={()=>setShowProfile(true)}
               style={{width:34,height:34,borderRadius:10,
                 background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
                 color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer",
@@ -2655,10 +2657,10 @@ function AppInner(){
               title="My Profile">
               {(user.name||"?")[0].toUpperCase()}
             </button>
-            {!isMobile&&<button onClick={()=>setShowLogout(true)}
+            <button onClick={()=>setShowLogout(true)}
               title="Sign Out"
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
-                borderRadius:8,padding:"7px 9px",display:"flex",alignItems:"center",
+                borderRadius:8,padding:"7px 9px",display:isMobile?"none":"flex",alignItems:"center",
                 gap:5,fontSize:12,fontWeight:600,color:C.muted,transition:"all .15s",
                 minWidth:36,minHeight:36,justifyContent:"center"}}
               onMouseEnter={e=>{e.currentTarget.style.background=C.redPale;e.currentTarget.style.borderColor=C.red+"50";e.currentTarget.style.color=C.red;}}
@@ -2669,7 +2671,7 @@ function AppInner(){
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
               {!isMobile&&<span>Sign Out</span>}
-            </button>}
+            </button>
           </div>
         </header>
 
@@ -2812,18 +2814,16 @@ function AppInner(){
           button{min-height:40px;}
 
           /* Tables always scroll — :has() auto-wraps any parent div */
-          /* Was a blanket 520px floor, which forced even a two-column table —
-             and every empty-state row — wider than the phone, so the message
-             sat off-screen and had to be scrolled to. The floor now belongs to
-             deliberately wide tables (.tbl-wrap) only; wide tables still
-             overflow and still scroll inside their wrapper. */
-          table{min-width:100%;}
+          table{min-width:520px;}
           div:has(>table),div:has(>div>table){overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}
           .tbl-wrap{-webkit-overflow-scrolling:touch;}
 
-          /* Hard grids collapse to 1 col */
-          div[style*="repeat(3,1fr)"]{grid-template-columns:1fr!important;}
-          div[style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr!important;}
+          /* Hard grids collapse to 1 col.
+             The browser canonicalises inline grid values ("repeat(3,1fr)"
+             becomes "repeat(3, 1fr)"), so match on the track count only —
+             the previous no-space selectors never matched anything. */
+          div[style*="repeat(3,"]{grid-template-columns:minmax(0,1fr)!important;}
+          div[style*="repeat(4,"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 
           /* Softer grids — raise minmax floor */
           div[style*="minmax(300px"]{grid-template-columns:1fr!important;}
@@ -4737,6 +4737,7 @@ function openReportCardPrintWindow(students,allData,cls,term,session,
 // ─── NOTIFICATION BELL ────────────────────────────────────────────────────────
 function NotificationBell({ctx}){
   const{user,setPage}=ctx;
+  const isMobile=useIsMobile();
   const[open,setOpen]=useState(false);
   const[notifs,setNotifs]=useState([]);
   const[unread,setUnread]=useState(0);
@@ -4778,7 +4779,8 @@ function NotificationBell({ctx}){
         )}
       </button>
       {open&&(
-        <div style={{position:"absolute",top:44,right:0,width:340,maxHeight:480,
+        <div style={{position:"absolute",top:44,right:isMobile?-38:0,width:340,
+          maxWidth:"calc(100vw - 16px)",maxHeight:480,
           background:C.white,border:`1px solid ${C.border}`,borderRadius:14,
           boxShadow:"0 16px 48px rgba(0,0,0,.18)",zIndex:9000,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,
