@@ -5,6 +5,7 @@ This directory is the durable source of truth for JD and James-Denning upgrade w
 ## Files
 
 - [`../upgrades.md`](../upgrades.md) — complete product upgrade checklist.
+- [`OUTSTANDING-REGISTRY.md`](./OUTSTANDING-REGISTRY.md) — reconciled outstanding-upgrades registry (230 IDs, statuses, blockers, verification evidence, live-state audit).
 - [`AGENT_INSTRUCTIONS.md`](./AGENT_INSTRUCTIONS.md) — mandatory instructions for AI coding agents.
 - [`CHANGELOG.md`](./CHANGELOG.md) — append-only chronological log of upgrade work.
 - [`TOKEN_USAGE.md`](./TOKEN_USAGE.md) — token-usage accounting policy and ledger format.

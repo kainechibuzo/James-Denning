@@ -1,6 +1,7 @@
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {evaluateTrailingMean} from "../_shared/jd-business-forecast.ts";
+import {screenDocument} from "../_shared/jd-document-security.ts";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
 const uuid=(v:unknown):v is string=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -300,8 +301,13 @@ Deno.serve(async req=>{
    if(storageError)throw storageError;const object=(objects||[]).find((x:any)=>x.name===file);
    const actualSize=Number(object?.metadata?.size||0),actualMime=str(object?.metadata?.mimetype,120).toLowerCase();
    if(!object||actualSize<1||actualSize>20*1024*1024||actualMime!==mime)return send({error:"Uploaded file could not be verified"},400);
-   const {data,error}=await db.from("jd_business_documents").insert({school_id:school,title,storage_path:path,mime_type:mime,byte_size:actualSize,extraction_status:"pending",source_metadata:{uploaded_at:new Date().toISOString(),scan_status:"pending"},created_by:actor}).select(columns.documents).single();
-   if(error)throw error;const saved:any=data;await audit("business.document.uploaded",{document_id:saved.id,byte_size:actualSize,mime_type:mime});return send({item:saved,extraction_status:"pending",notice:"Upload verified. Text extraction remains pending until the document scanning/extraction worker is deployed."},201);
+   const {data:blob,error:downloadError}=await db.storage.from("jd-business-documents").download(path);
+   if(downloadError||!blob)return send({error:"Uploaded file could not be retrieved for security screening"},400);
+   const bytes=new Uint8Array(await blob.arrayBuffer());
+   const screen=screenDocument(bytes,mime);
+   if(screen.verdict!=="pass"){await db.storage.from("jd-business-documents").remove([path]);await audit("business.document.rejected",{path,reason:screen.reason,detected_type:screen.detected_type,mime_type:mime,byte_size:actualSize});return send({error:"The uploaded file failed security screening and was removed. "+(screen.reason||"")},400);}
+   const {data,error}=await db.from("jd_business_documents").insert({school_id:school,title,storage_path:path,mime_type:mime,byte_size:actualSize,extraction_status:"pending",source_metadata:{uploaded_at:new Date().toISOString(),scan_status:"signature_screen_passed",scan_engine:"signature_screen_v1",scanned_at:new Date().toISOString()},created_by:actor}).select(columns.documents).single();
+   if(error)throw error;const saved:any=data;await audit("business.document.uploaded",{document_id:saved.id,byte_size:actualSize,mime_type:mime});return send({item:saved,extraction_status:"pending",notice:"Upload verified. Upload passed security screening. Text extraction remains pending for the document worker."},201);
   }
   if(b.action==="document.download.url"){
    if(!uuid(b.documentId))return send({error:"Document ID required"},400);
