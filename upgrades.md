@@ -4,6 +4,8 @@
 
 This is the canonical, human-readable upgrade index. The detailed implementation contract, append-only upgrade history, AI-agent instructions and token-usage ledger live in [`/upgrades/`](./upgrades/README.md).
 
+> **2026-11-12 — Reconciled registry available.** [`upgrades/OUTSTANDING-REGISTRY.md`](./upgrades/OUTSTANDING-REGISTRY.md) is the single reconciled list of everything outstanding, with a unique ID, status, dependencies and the verification required for every item, plus a read-only live audit of production (migrations, Edge Functions, RLS, Vercel state). Check it before claiming any item below is started, finished or deployed.
+
 ## Operating principles
 
 1. **Conversation-first:** meaningful work across the product should be possible through JD without opening individual module pages.

@@ -1,5 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {extractDocumentText,extractiveSummary} from "../_shared/jd-document-intelligence.ts";
+import {screenDocument} from "../_shared/jd-document-security.ts";
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 const equalSecret=async(a:string,b:string)=>{const [x,y]=await Promise.all([crypto.subtle.digest("SHA-256",new TextEncoder().encode(a)),crypto.subtle.digest("SHA-256",new TextEncoder().encode(b))]);const aa=new Uint8Array(x),bb=new Uint8Array(y);let d=0;for(let i=0;i<aa.length;i++)d|=aa[i]^bb[i];return d===0;};
 const toBase64=(bytes:Uint8Array)=>{let binary="";for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+0x8000,bytes.length)));return btoa(binary);};
@@ -31,6 +32,12 @@ Deno.serve(async req=>{
    if(downloadError||!file)throw new Error("Private source file could not be downloaded");
    if(file.size<1||file.size>20*1024*1024)throw new Error("Source file size is outside the supported range");
    const bytes=new Uint8Array(await file.arrayBuffer());
+   const screen=screenDocument(bytes,doc.mime_type);
+   if(screen.verdict!=="pass"){
+    await db.from("jd_business_documents").update({extraction_status:"failed",source_metadata:{worker:"jd-document-worker",error_code:"malware_suspected",scan_status:"signature_screen_rejected",reason:screen.reason,detected_type:screen.detected_type,processed_at:new Date().toISOString()}}).eq("id",doc.id).eq("school_id",doc.school_id);
+    results.push({id:doc.id,status:"failed",error_code:"malware_suspected"});
+    continue;
+   }
    let parsed=await extractDocumentText(doc.mime_type,bytes);
    let ocrUsed=false;
    if(!parsed.text&&["application/pdf","image/png","image/jpeg","image/tiff"].includes(doc.mime_type)){

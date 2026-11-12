@@ -73,7 +73,7 @@ The worker is configured with `verify_jwt = false` and protects itself with the 
 
 ## JD Business Platform — scheduled document extraction
 
-The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text, computes a checksum and creates a bounded extractive summary. Scanned PDF/image OCR is opt-in through OCR.space and requires explicit external-processing approval plus a server API key. Malware scanning and AI-generated summaries are not implemented.
+The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text, computes a checksum and creates a bounded extractive summary. Scanned PDF/image OCR is opt-in through OCR.space and requires explicit external-processing approval plus a server API key. Since 2026-11-12 the upload path also runs a server-side signature screen (magic-byte match to the declared type, rejection of executables/scripts/OLE2/macro-enabled OOXML and embedded PE/ELF polyglots) at upload-confirm and again before extraction; files failing the screen are deleted or marked failed with error_code malware_suspected. This is a signature gate, not a commercial antivirus engine; no third-party AV integration exists yet. AI-generated summaries are not implemented.
 
 Configure GitHub Actions repository secrets:
 
@@ -85,7 +85,7 @@ The scheduled workflow fails visibly when these secrets are absent. The worker i
 
 ## JD Business Platform — document extraction worker
 
-The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text using pinned Deno npm parser dependencies, computes a checksum and creates a bounded extractive summary. Scanned-image OCR, malware scanning and AI-generated summaries are not implemented; PDFs without embedded text are marked `ocr_required`.
+The repository includes a server-secret protected document worker and a ten-minute GitHub Actions dispatcher. It atomically claims pending documents, extracts plain text, DOCX and embedded PDF text using pinned Deno npm parser dependencies, computes a checksum and creates a bounded extractive summary. Scanned-image OCR and AI-generated summaries are not implemented; PDFs without embedded text are marked `ocr_required`. A server-side signature screen now blocks executable/macro/polyglot uploads at upload-confirm and before extraction (see the previous section); it is not a commercial antivirus engine, and the upload feature must remain treated as untrusted until a real AV integration and staging verification exist.
 
 Configure GitHub Actions repository secrets:
 
@@ -172,6 +172,6 @@ The repository owner instructed direct deployment to the connected project rathe
 - Business customer, document and report tables are empty. The project currently has one Auth account and three school records; do not describe it as an empty database.
 - No authenticated two-tenant end-to-end test was run. Only one Auth account is present, and no disposable test accounts/tenant fixtures were created.
 - External provider workflows remain gated on secrets and provider-side configuration listed above. OCR must remain disabled until external document processing is explicitly approved.
-- Dependency installation previously reported 3 critical, 18 high, 7 moderate and 1 low npm vulnerabilities. This batch did not change package manifests; resolve and verify the existing dependency findings separately.
+- Dependency vulnerabilities previously reported as 3 critical, 18 high, 7 moderate and 1 low are RESOLVED on branch arena/e6cc942c-james-denning (2026-11-12): npm audit now reports 0 vulnerabilities. The npm `xlsx` package was removed (unpatched SheetJS advisories) and the statement import was migrated to a lazy-loaded ExcelJS/CSV parser that explicitly rejects legacy .xls files. Vite was upgraded 5 → 8.3.8 and sharp/@capacitor/assets/@vitejs/plugin-react/uuid were updated; `npm run verify:web` passes. CI should be re-run on the branch before merge; the production build still pins whatever master contains until it merges.
 
 Do not claim OAuth, OCR, email/SMS, live monitoring, Paystack sync or tenant-isolation E2E as fully verified until the required credentials and authenticated tests pass.

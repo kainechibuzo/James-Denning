@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
           if (!id.includes('/node_modules/')) return
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor'
           if (id.includes('/node_modules/@supabase/')) return 'supabase'
-          if (/\/node_modules\/(xlsx|xlsx-js-style)\//.test(id)) return 'spreadsheet-vendor'
+          if (/\/node_modules\/(xlsx|xlsx-js-style|exceljs)\//.test(id)) return 'spreadsheet-vendor'
         },
       },
     },
