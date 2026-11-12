@@ -124,6 +124,7 @@ begin
     -- platform_admins (cross-tenant by design) and anything without it.
     if exists (select 1 from information_schema.columns where table_name = tbl and column_name = 'school_id') then
       execute format('drop policy if exists "%s_all" on %I', tbl, tbl);
+      execute format('drop policy if exists "%s_school_scoped" on %I', tbl, tbl);
       execute format(
         'create policy "%s_school_scoped" on %I for all using (school_id = auth_school_id())',
         tbl, tbl
