@@ -377,3 +377,16 @@ No new upgrade implementation is recorded by this registry initialisation commit
 - **NOT done / not claimed:** the edge function was **not redeployed** with this change (live `expense.anomalies` does not exist in production); no live smoke test, no real anomaly data validated; variance *workflow* (escalate findings into a review queue) is NOT built — findings are advisory only; JD-UPG-196 variance escalation remains open; JD-UPG-121 stays `partially_implemented`.
 - **Token usage:** none generated; none estimated.
 - **Files:** `supabase/functions/_shared/jd-expense-anomalies.ts` (new), `supabase/functions/_shared/jd-expense-anomalies.test.ts` (new), `supabase/functions/jd-business-platform/index.ts` (import + `expense.anomalies` action), `src/pages/jd-business-platform.jsx` (state/handler/panel), `.github/workflows/ci.yml` (new Deno step), `upgrades/OUTSTANDING-REGISTRY.md` (JD-UPG-121/196 notes), `upgrades/CHANGELOG.md`.
+
+### JD-010 — KPI trend dashboards slice (JD-UPG-120 / JD-UPG-165)
+- **Date:** 2026-11-12
+- **Status:** code implemented; Deno unit tests pass locally under Node shim; `npm run verify:web` passes; **not deployed** — `jd-business-platform` was NOT redeployed after this wiring; no live smoke test or real-data validation exists
+- **Priority:** medium (Batch 02 analytics track)
+- **Implemented:**
+  1. **`supabase/functions/_shared/jd-kpi-trends.ts`** (new) — pure, deterministic, read-only 12-month (configurable 1–24) UTC monthly-bucket analysis: cleared cash in/out and approved/paid expenses always grouped per currency; new opportunities + won-by-creation-month (approximation, documented), resolved support cases (by `resolved_at` only), new customers; trailing-3m vs prior-3m movement for count metrics; explicit limitations array; never sums across currencies.
+  2. **`jd-kpi-trends.test.ts`** (new, 6 assertion groups) wired into `.github/workflows/ci.yml` as "Test JD KPI trends".
+  3. **`jd-business-platform` `kpi.trends` action** — admin/manager only (existing guard), `months_back` clamped to 1–24, workspace-scoped reads capped at 500 rows per table; throws on any table error (fail-closed, no partial mix silently returned).
+  4. **Business Platform → KPI trends tab** — trailing 3-month movement cards + full month-by-month table (counts and per-currency money) + method/limitations disclosure. No new dependencies; plain table rendering.
+- **NOT done / not claimed:** edge function not redeployed (live `kpi.trends` does not exist in production); no live smoke; KPI alerting/thresholds NOT built; won-opportunity attribution is a creation-month approximation (no `closed_at` exists); workforce KPIs absent; JD-UPG-120/165 stay `partially_implemented`.
+- **Token usage:** none generated; none estimated.
+- **Files:** `supabase/functions/_shared/jd-kpi-trends.ts` (new), `supabase/functions/_shared/jd-kpi-trends.test.ts` (new), `supabase/functions/jd-business-platform/index.ts` (import + `kpi.trends` action), `src/pages/jd-business-platform.jsx` (tab, state, load branch, panel), `.github/workflows/ci.yml` (new Deno step), `upgrades/OUTSTANDING-REGISTRY.md` (JD-UPG-120/165), `upgrades/CHANGELOG.md`.

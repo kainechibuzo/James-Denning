@@ -2,6 +2,7 @@ import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {evaluateTrailingMean} from "../_shared/jd-business-forecast.ts";
 import {analyseExpenseAnomalies} from "../_shared/jd-expense-anomalies.ts";
+import {analyseKpiTrends} from "../_shared/jd-kpi-trends.ts";
 import {screenDocument} from "../_shared/jd-document-security.ts";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(x:unknown,s=200)=>new Response(JSON.stringify(x),{status:s,headers:cors});
@@ -98,6 +99,13 @@ Deno.serve(async req=>{
    if(budgetRows.error)throw budgetRows.error;if(expenseRows.error)throw expenseRows.error;
    const analysis=analyseExpenseAnomalies((expenseRows.data||[]) as any[],(budgetRows.data||[]) as any[],now);
    return send(analysis);
+  }
+  if(b.action==="kpi.trends"){
+   const monthsBack=num(b.months_back,1,24)??12;
+   const [cash,expenses,opps,support,customers]=await Promise.all([db.from("jd_business_cash_transactions").select("occurred_on,direction,amount,currency,status").eq("school_id",school).order("occurred_on",{ascending:false}).limit(500),db.from("jd_business_expenses").select("incurred_on,amount,currency,status").eq("school_id",school).order("incurred_on",{ascending:false}).limit(500),db.from("jd_business_opportunities").select("created_at,stage").eq("school_id",school).order("created_at",{ascending:false}).limit(500),db.from("jd_business_support_cases").select("created_at,resolved_at,status").eq("school_id",school).order("created_at",{ascending:false}).limit(500),db.from("jd_business_customers").select("created_at").eq("school_id",school).order("created_at",{ascending:false}).limit(500)]);
+   for(const r of [cash,expenses,opps,support,customers]){if(r.error)throw r.error;}
+   const trends=analyseKpiTrends({cash:(cash.data||[]) as any[],expenses:(expenses.data||[]) as any[],opportunities:(opps.data||[]) as any[],support:(support.data||[]) as any[],customers:(customers.data||[]) as any[]},new Date().toISOString().slice(0,10),monthsBack);
+   return send(trends);
   }
   if(b.action==="monitor.run"){
    if(!["admin","manager"].includes(p.role))return send({error:"Manager permission required to run external service checks"},403);

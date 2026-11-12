@@ -100,6 +100,9 @@ jobs:
       - name: Test JD expense anomaly detection
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-expense-anomalies.test.ts
 
+      - name: Test JD KPI trends
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-kpi-trends.test.ts
+
       - name: Test JD settings change planner
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-settings-change-planner.test.ts
 

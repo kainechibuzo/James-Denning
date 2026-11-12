@@ -202,7 +202,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-117 | Scheduled monitoring and alert delivery | deployment_pending | GitHub secrets `JD_MONITOR_FUNCTION_URL`, `JD_BUSINESS_MONITOR_WORKER_SECRET`; worker deployed but unverified live. |
 | JD-UPG-118 | End-to-end verification of monitoring and operations workers | deployment_pending | Requires secrets + seeded failure; alert email/SMS receipt proof. |
 | JD-UPG-119 | Business intelligence snapshot dashboard (workforce/finance/performance/operations/comms) | partially_implemented | Tenant-scoped snapshot API + dashboard exist; source verification incomplete. |
-| JD-UPG-120 | KPI trend dashboards | not_implemented | — |
+| JD-UPG-120 | KPI trend dashboards | partially_implemented | `_shared/jd-kpi-trends.ts` (12-month UTC buckets: cleared cash in/out, approved expenses — always per currency; new/won opportunities, resolved support cases, new customers; trailing-3m vs prior-3m movement) + `kpi.trends` action in `jd-business-platform` + Business Platform → KPI trends tab (table view, no chart lib). Unit-tested (6 Deno tests, CI step added). NOT deployed; no live data validated; no trend thresholds/alerting. |
 | JD-UPG-121 | Anomaly detection for expenses (thresholds/variance workflows) | partially_implemented | `_shared/jd-expense-anomalies.ts` (deterministic, currency-isolated, approved/paid only, robust median outlier ≥3× with n≥5, trailing-90d trend spike ≥1.5×, budget utilisation/threshold findings) + `expense.anomalies` action in `jd-business-platform` + Business Platform → Expense budgets UI (advisory, no writes). Pure module unit-tested (7 Deno tests, CI step added). NOT deployed: edge function not redeployed after wiring; live smoke never run. |
 
 ## §J. External integrations and MCP
@@ -267,7 +267,7 @@ Capability audit of the live schema must accompany any checked item. Today JD ex
 | JD-UPG-162 | Communications-module tools | partially_implemented | Server-side exists; JD tools missing. |
 | JD-UPG-163 | Recruitment assistant and hiring-campaign integrations | partially_implemented | See §H. |
 | JD-UPG-164 | Blueprint, operations and hiring interfaces | partially_implemented | Implemented; migrations applied 2026-11-12; runtime verification pending. |
-| JD-UPG-165 | Complete KPI trend dashboards | not_implemented | — |
+| JD-UPG-165 | Complete KPI trend dashboards | partially_implemented | Slice shipped as code: trends API + tab (see JD-UPG-120). Not complete: no alerting/thresholds, no historical backfill validation, no workforce KPIs, no deployment, no live verification. |
 | JD-UPG-166 | Apply Batch 01 migration in staging; authenticated cross-tenant tests | deployment_pending | Batch 01 applied **directly in production** 2026-11-12 (owner-authorised); staging project + CI run still missing. |
 | JD-UPG-167 | Concurrency and failure-injection tests | not_implemented | — |
 | JD-UPG-168 | Vacancy drafts and candidate-stage transitions | implemented_unverified | Code + UI; migration applied 2026-11-12. |
