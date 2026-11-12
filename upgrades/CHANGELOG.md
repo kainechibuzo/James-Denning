@@ -302,10 +302,21 @@ No new upgrade implementation is recorded by this registry initialisation commit
 
 ## JD-B02-07–20 — Multi-industry Business Platform implementation foundation
 
-- **Status:** implementation added; CI and staging verification pending.
+- **Status:** implementation integrated into master and deployed to the connected Supabase project; authenticated multi-tenant and provider E2E verification remain pending.
 - **Data model:** tenant-scoped customer/CRM records, sales opportunities, activity timeline, expenses with admin decision controls, contracts with immutable content versions, secure document metadata, support cases/internal notes, integration catalogue, OAuth connection/state metadata, service-health observations and executive report snapshots.
 - **API:** authenticated `jd-business-platform` Edge Function derives workspace and role from the signed-in profile; rejects browser role escalation; reads/writes are tenant-filtered; expense/contract/report decisions have role checks; record changes emit audit events.
 - **Analytics:** pipeline weighted value, wins, approved spend, support volume and record coverage derive from saved JD records. Legacy school billing is not presumed corporate revenue. Currency aggregation is labelled and requires currency separation.
-- **Intentional gaps:** no document upload/extraction worker or storage bucket yet; no provider OAuth callback/token encryption implementation or connected integrations yet; monitoring tables exist but checks are not actively scheduled; forecasts/reports need historical source data and UI workflow completion.
-- **Production:** no migrations applied and no Edge Function deployed. No outbound sends, payments, refunds or signing actions enabled.
+- **Intentional gaps:** document extraction worker and private bucket are deployed; scanned OCR still requires approved external processing and an OCR key. OAuth callback and encrypted token storage are deployed but provider credentials and callback round-trips remain unverified. Monitoring/operations workers are deployed but schedules need GitHub/Supabase secrets. Forecast output is descriptive, not a validated cash forecast; report data requires real workspace history.
+- **Deployment (2026-11-12):** migration `20261112073746_jd_business_platform` applied to connected project `thklwiybjuhrjqrrxyid`; six Edge Functions deployed at version 2; private document bucket confirmed. No outbound sends, charges, refunds, transfers or contract signing were performed.
 - **Token usage:** provider-reported usage unavailable; not estimated.
+
+
+### JD-B02 deployment verification — 2026-11-12
+
+- Direct master integration commit: `8184cd5afb02586b21690058cf63da9b994eb809`.
+- Production web build and default application build passed on master.
+- Full Deno contract/unit tests and secured Edge Function type-check passed on the integrated source before the master commit.
+- Supabase migration applied; 25 business tables created with RLS enabled and no direct anon/authenticated grants.
+- Six Batch 02 Edge Functions active at version 2.
+- No business customer/document/report data was inserted. The connected project has one Auth account and three school records.
+- Still outstanding: authenticated two-tenant E2E verification, external OAuth provider checks, OCR credentials/approval, Resend/Twilio secrets and delivery tests, Paystack read-only key verification, scheduled worker secret configuration, and resolution of the existing npm dependency vulnerabilities.
