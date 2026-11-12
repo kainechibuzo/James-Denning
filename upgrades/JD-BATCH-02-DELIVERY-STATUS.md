@@ -1,3 +1,5 @@
+> **Update 2026-11-12 (JD-007):** The pending migrations are no longer pending — `20261111150000`, `20261111160000`, `20261111180000`, `20261111184500`, `20261111190000`, `20261111193000` and `20261111200000` were applied directly to production `thklwiybjuhrjqrrxyid` (owner-authorised) and are recorded in `supabase_migrations.schema_migrations`; `jd-business-document-worker` v3 and `jd-business-platform` v3 were deployed. Authenticated smoke tests have NOT passed (sandbox has no route to `*.supabase.co`), so nothing in this ledger is upgraded to "deployed/verified" until live callers confirm behaviour. See `upgrades/OUTSTANDING-REGISTRY.md` and the JD-007 entry in `upgrades/CHANGELOG.md`. The body below is the historical pre-deployment state.
+
 # JD Batch 02 — Remaining upgrade delivery status
 
 This ledger tracks the 18 upgrades remaining after JD-B02-01 (definition validation) and JD-B02-02 (versioned drafts and approval-bound activation).
