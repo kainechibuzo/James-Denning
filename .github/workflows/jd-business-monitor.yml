@@ -11,17 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Run bounded provider health checks
         env:
-          FUNCTION_URL: ${{ secrets.JD_MONITOR_FUNCTION_URL }}
-          WORKER_SECRET: ${{ secrets.JD_BUSINESS_MONITOR_WORKER_SECRET }}
+          JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
-          if [ -z "$FUNCTION_URL" ] || [ -z "$WORKER_SECRET" ]; then
-            echo "Monitoring secrets are not configured; skipping scheduled checks."
-            exit 0
-          fi
+          set -euo pipefail
+          worker_secret="$(node scripts/read-jd-secret.mjs JD_BUSINESS_MONITOR_WORKER_SECRET)"
+          echo "::add-mask::$worker_secret"
           curl --fail --silent --show-error --max-time 90 \
-            -X POST "$FUNCTION_URL" \
-            -H "Authorization: Bearer $WORKER_SECRET" \
+            -X POST "https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-business-monitor-worker" \
+            -H "Authorization: Bearer $worker_secret" \
             -H "Content-Type: application/json" \
             --data '{}'
