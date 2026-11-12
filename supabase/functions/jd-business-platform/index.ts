@@ -1,4 +1,5 @@
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
+import {getJdSecret} from "../_shared/jd-secrets.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 import {evaluateTrailingMean} from "../_shared/jd-business-forecast.ts";
 import {analyseExpenseAnomalies} from "../_shared/jd-expense-anomalies.ts";
@@ -135,7 +136,7 @@ Deno.serve(async req=>{
     "slack":{authUrl:"https://slack.com/oauth/v2/authorize",clientIdEnv:"JD_OAUTH_SLACK_CLIENT_ID"}
    };
    const config=providerConfig[providerId];if(!config)return send({error:"This provider requires a separate API-key or provider-specific connection flow"},400);
-   const clientId=Deno.env.get(config.clientIdEnv),callback=Deno.env.get("JD_OAUTH_CALLBACK_URL"),encodedKey=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   const clientId=Deno.env.get(config.clientIdEnv),callback=Deno.env.get("JD_OAUTH_CALLBACK_URL"),encodedKey=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");
    if(!clientId||!callback||!encodedKey)return send({error:"OAuth provider credentials, callback URL or encryption key are not configured"},503);
    const callbackUrl=new URL(callback);if(callbackUrl.protocol!=="https:"&&callbackUrl.hostname!=="localhost")return send({error:"OAuth callback URL must use HTTPS"},503);
    const {data:catalog,error:catalogError}=await db.from("jd_business_integration_catalog").select("required_scopes").eq("id",providerId).eq("enabled",true).maybeSingle();if(catalogError||!catalog)return send({error:"Integration is unavailable"},404);
@@ -156,7 +157,7 @@ Deno.serve(async req=>{
    const provider=config[providerId];if(!provider)return send({error:"Refresh is not supported for this provider"},400);
    const {data:connectionData,error:connectionError}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();const connection:any=connectionData;
    if(connectionError||!connection?.encrypted_credentials)return send({error:"No active encrypted connection was found"},404);
-   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY"),clientId=Deno.env.get(provider.clientIdEnv),clientSecret=Deno.env.get(provider.clientSecretEnv);if(!encoded||!clientId||!clientSecret)return send({error:"OAuth encryption key or provider credentials are not configured"},503);
+   const encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY"),clientId=Deno.env.get(provider.clientIdEnv),clientSecret=Deno.env.get(provider.clientSecretEnv);if(!encoded||!clientId||!clientSecret)return send({error:"OAuth encryption key or provider credentials are not configured"},503);
    const key=await importAesKey(encoded),stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,key));if(!stored.refresh_token)return send({error:"Provider did not issue a refresh token; reconnect with offline access"},409);
    const form=new URLSearchParams({grant_type:"refresh_token",refresh_token:stored.refresh_token,client_id:clientId,client_secret:clientSecret});
    const response=await fetch(provider.tokenUrl,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/json"},body:form,signal:AbortSignal.timeout(10000),redirect:"error"});const token:any=await response.json().catch(()=>null);
@@ -168,7 +169,7 @@ Deno.serve(async req=>{
   }
 
   if(b.action==="oauth.verify"){
-   const providerId=str(b.providerId,60),encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   const providerId=str(b.providerId,60),encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");
    if(!encoded)return send({error:"OAuth encryption key is not configured"},503);
    const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();
    if(error||!connection?.encrypted_credentials)return send({error:"No active connection found"},404);
@@ -187,7 +188,7 @@ Deno.serve(async req=>{
    const apiKey=str(b.apiKey,200);if(!/^(sk_test_|sk_live_|rk_test_|rk_live_)[A-Za-z0-9_]+$/.test(apiKey))return send({error:"A valid Paystack test, live or restricted secret key is required"},400);
    const response=await fetch("https://api.paystack.co/balance",{headers:{Authorization:`Bearer ${apiKey}`,Accept:"application/json"},signal:AbortSignal.timeout(10000),redirect:"error"});
    const verification:any=await response.json().catch(()=>null);if(!response.ok||verification?.status!==true)return send({error:"Paystack rejected this API key"},401);
-   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
+   const encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
    const encrypted=await encryptSecret(JSON.stringify({secret_key:apiKey,issued_at:new Date().toISOString()}),await importAesKey(encoded));
    const {error}=await db.from("jd_business_oauth_connections").upsert({school_id:school,provider_id:"paystack",status:"connected",scopes:["transaction:read"],connected_by:actor,connected_at:new Date().toISOString(),encrypted_credentials:encrypted,key_version:"aes-gcm-v1",last_checked_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()},{onConflict:"school_id,provider_id"});
    if(error)throw error;await audit("business.paystack.connected",{mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live"});return send({provider_id:"paystack",status:"connected",mode:apiKey.startsWith("sk_test_")||apiKey.startsWith("rk_test_")?"test":"live",verified:true});
@@ -199,7 +200,7 @@ Deno.serve(async req=>{
    return send({provider_id:"paystack",status:"revoked",notice:"The encrypted Paystack key was erased from JD. Rotate/revoke the key in Paystack if it may have been exposed."});
   }
   if(b.action==="paystack.transactions.sync"){
-   const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
+   const encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");if(!encoded)return send({error:"Server encryption key is not configured"},503);
    const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials").eq("school_id",school).eq("provider_id","paystack").eq("status","connected").maybeSingle();
    if(error||!connection?.encrypted_credentials)return send({error:"Paystack is not connected"},404);
    const stored:any=JSON.parse(await decryptSecret(connection.encrypted_credentials,await importAesKey(encoded))),from=date(b.from),to=date(b.to);
@@ -221,7 +222,7 @@ Deno.serve(async req=>{
    return send({import_id:batch.id,received:transactions.length,imported:accepted.length,notice:"Paystack transactions were imported as bank-statement rows. Reconcile them against cashflow records manually; no payment or refund action is exposed."});
   }
   if(b.action==="oauth.disconnect"){
-   const providerId=str(b.providerId,60),encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY");
+   const providerId=str(b.providerId,60),encoded=getJdSecret("JD_OAUTH_ENCRYPTION_KEY");
    if(!["google-workspace","microsoft-365","linkedin","slack"].includes(providerId))return send({error:"OAuth disconnect is not supported for this provider"},400);
    if(!encoded)return send({error:"OAuth encryption key is not configured"},503);
    const {data:connection,error}=await db.from("jd_business_oauth_connections").select("encrypted_credentials,scopes").eq("school_id",school).eq("provider_id",providerId).eq("status","connected").maybeSingle();
