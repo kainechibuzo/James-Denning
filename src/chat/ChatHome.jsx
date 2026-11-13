@@ -49,7 +49,9 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       if (data.conversationId) setConversationId(data.conversationId);
       setMessages((current) => [...current, { role: "assistant", content: data.reply || data.message || "The request was recorded.", run: data.run, toolEvents: data.toolEvents || [] }]);
     } catch (err) {
-      setError(err?.message || "JD could not complete the request. Please try again.");
+      const status = err?.context?.status || err?.status;
+      const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
+      setError(status === 404 ? "JD Assistant's Edge Function is not deployed to this Supabase project yet." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account is not authorised for this organisation's JD workspace." : status === 503 ? "JD Assistant is deployed but its server configuration is incomplete. Check the Edge Function secrets." : status >= 500 ? "JD Assistant's server returned an error. Check the Edge Function logs." : rawMessage || "JD could not reach its service. Check your connection and try again.");
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
     } finally { setSending(false); }
