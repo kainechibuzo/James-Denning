@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { buildJdVisualWorkspace } from "../_shared/jd-visual-workspace.ts";
 import { selectJdModel } from "../_shared/jd-agent-routing.ts";
 import { getJdSecret } from "../_shared/jd-secrets.ts";
 
@@ -209,7 +210,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
             status: event.status === "completed" ? "completed" : "failed",
-            output_json: { event: event.status },
+            output_json: { event: event.status, evidence: event.evidence && typeof event.evidence === "object" ? event.evidence : null },
             error_message: event.status === "failed" ? "Read-only tool execution failed" : null,
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
@@ -232,11 +233,25 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
     const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
+    // Visual workspace is derived from persisted tenant-scoped records only.
+    const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
+      admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000),
+      admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("actor_id", requestedBy).order("created_at", { ascending: false }).limit(20),
+      admin.from("jd_automation_steps").select("id,tool_key,status,error_message,output_json,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
+    ]);
+    const canViewOperationalTasks = ["admin", "manager"].includes(String(profile.role || ""));
+    const visualWorkspace = buildJdVisualWorkspace({
+      tasks: canViewOperationalTasks ? (visualTasks || []) : [],
+      tasksAvailable: canViewOperationalTasks && !visualTasksError,
+      audit: visualAudit || [], steps: visualSteps || [],
+      evidenceAvailable: !visualAuditError && !visualStepsError,
+    });
+
     const { data: existingReply, error: replyLookupError } = await admin.from("jd_messages")
       .select("id").eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
       .contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
     if (replyLookupError) throw new Error("Could not verify whether the job response was already saved");
-    const finalMessage = { content: result.text, content_json: { job_id: jobId, streaming: false, toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })), tokenUsage: result.tokenUsage, truncated: result.truncated === true } };
+    const finalMessage = { content: result.text, content_json: { job_id: jobId, streaming: false, toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })), tokenUsage: result.tokenUsage, truncated: result.truncated === true, visual_workspace: visualWorkspace } };
     if (existingReply?.id) {
       const { error: replyError } = await admin.from("jd_messages").update(finalMessage).eq("id", existingReply.id).eq("school_id", schoolId).eq("conversation_id", run.conversation_id);
       if (replyError) throw new Error("Agent response could not be finalised");
