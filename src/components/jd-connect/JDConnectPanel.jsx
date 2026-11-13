@@ -9,7 +9,7 @@ export function JDConnectPanel({notify=()=>{}}){
  const [servers,setServers]=useState([]),[tools,setTools]=useState([]),[approvals,setApprovals]=useState([]),[executions,setExecutions]=useState([]);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(""),[error,setError]=useState(""),[success,setSuccess]=useState("");
  const [name,setName]=useState(""),[endpoint,setEndpoint]=useState(""),[token,setToken]=useState("");
- const [showRegister,setShowRegister]=useState(false),[expanded,setExpanded]=useState("");
+ const [showRegister,setShowRegister]=useState(false),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({});
  const call=useCallback(async(action,extra={})=>{
   const {data,error}=await supabase.functions.invoke("jd-connect",{body:{action,...extra}});
   if(error)throw new Error(error.message||"JD Connect request failed");
@@ -35,7 +35,11 @@ export function JDConnectPanel({notify=()=>{}}){
  });
  const refresh=id=>run("refresh:"+id,()=>call("tools.refresh",{serverId:id}));
  const disconnect=id=>run("disconnect:"+id,()=>call("servers.disconnect",{serverId:id}));
- const invoke=id=>run("tool:"+id,()=>call("tools.call",{toolId:id,arguments:{}}));
+ const invoke=id=>run("tool:"+id,async()=>{
+  let args={};try{args=JSON.parse(toolArgs[id]||"{}");if(!args||typeof args!=="object"||Array.isArray(args))throw new Error("Arguments must be a JSON object");}
+  catch(e){setArgErrors(p=>({...p,[id]:e.message||"Invalid JSON"}));throw new Error(e.message||"Invalid JSON");}
+  setArgErrors(p=>({...p,[id]:""}));return call("tools.call",{toolId:id,arguments:args});
+ });
  const decide=(id,decision)=>run("approval:"+id,()=>call("approvals.resolve",{approvalId:id,decision}));
  const statusColor=s=>s==="succeeded"||s==="connected"||s==="executed"?"#15803d":s==="failed"||s==="error"||s==="denied"?"#b91c1c":"#b45309";
  if(loading)return <div style={{padding:28,textAlign:"center",color:"var(--jd-muted,#6b7280)"}}><Loader2 className="animate-spin" size={20}/> Loading JD Connect…</div>;
@@ -79,13 +83,15 @@ export function JDConnectPanel({notify=()=>{}}){
      {!list.length?<div style={{fontSize:11,color:"var(--jd-muted,#6b7280)"}}>No tools discovered.</div>:list.map(tool=><div key={tool.id} style={{padding:"10px 0",borderBottom:"1px solid var(--jd-border,#e5e7eb)"}}>
       <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}><strong style={{fontSize:12}}>{tool.name}</strong><span style={{fontSize:9,fontWeight:800,color:tool.read_only?"#15803d":"#b45309"}}>{tool.read_only?"READ ONLY":"APPROVAL REQUIRED"}</span></div>
       {tool.description&&<div style={{fontSize:11,color:"var(--jd-muted,#6b7280)",margin:"4px 0 8px"}}>{tool.description}</div>}
-      <button onClick={()=>invoke(tool.id)} disabled={!!busy} style={{...button,background:"#111827",color:"#fff"}}>{busy==="tool:"+tool.id?"Running…":tool.read_only?"Run with empty arguments":"Request approval"}</button>
+      <textarea aria-label={`Arguments for ${tool.name}`} value={toolArgs[tool.id]??"{}"} onChange={e=>setToolArgs(p=>({...p,[tool.id]:e.target.value}))} spellCheck={false} style={{...field,minHeight:68,marginBottom:6,fontFamily:"monospace",fontSize:11}}/>
+      {argErrors[tool.id]&&<div role="alert" style={{fontSize:10,color:"#b91c1c",marginBottom:5}}>{argErrors[tool.id]}</div>}
+      <button onClick={()=>invoke(tool.id)} disabled={!!busy} style={{...button,background:"#111827",color:"#fff"}}>{busy==="tool:"+tool.id?"Running…":tool.read_only?"Run read-only tool":"Request approval"}</button>
      </div>)}
     </div>}
    </div>;
   })}
   <div style={{display:"flex",gap:8,alignItems:"center",margin:"22px 0 10px"}}><ShieldCheck size={17}/><div style={{fontWeight:900,fontSize:14}}>Approval queue</div><span style={{fontSize:10,color:"var(--jd-muted,#6b7280)"}}>{approvals.length} pending</span></div>
-  {!approvals.length?<div style={{...card,fontSize:12,color:"var(--jd-muted,#6b7280)"}}>No actions awaiting approval.</div>:approvals.map(a=><div key={a.id} style={card}><div style={{fontWeight:800,fontSize:12}}>{a.tool_name}</div><div style={{fontSize:10,color:"var(--jd-muted,#6b7280)",margin:"4px 0 10px"}}>Expires {new Date(a.expires_at).toLocaleString()}</div><div style={{display:"flex",gap:8}}><button onClick={()=>decide(a.id,"approve")} disabled={!!busy} style={{...button,background:"#166534",color:"#fff"}}>Approve and execute</button><button onClick={()=>decide(a.id,"deny")} disabled={!!busy} style={{...button,background:"#fef2f2",color:"#991b1b"}}>Decline</button></div></div>)}
+  {!approvals.length?<div style={{...card,fontSize:12,color:"var(--jd-muted,#6b7280)"}}>No actions awaiting approval.</div>:approvals.map(a=><div key={a.id} style={card}><div style={{fontWeight:800,fontSize:12}}>{a.tool_name}</div><div style={{fontSize:10,color:"var(--jd-muted,#6b7280)",margin:"4px 0 8px"}}>Requested by {a.requested_by} · Expires {new Date(a.expires_at).toLocaleString()}</div><pre style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere",fontSize:10,background:"var(--jd-soft,#f3f4f6)",padding:9,borderRadius:7,maxHeight:180,overflow:"auto"}}>{JSON.stringify(a.arguments||{},null,2)}</pre><div style={{display:"flex",gap:8}}><button onClick={()=>decide(a.id,"approve")} disabled={!!busy} style={{...button,background:"#166534",color:"#fff"}}>Approve and execute</button><button onClick={()=>decide(a.id,"deny")} disabled={!!busy} style={{...button,background:"#fef2f2",color:"#991b1b"}}>Decline</button></div></div>)}
   <div style={{display:"flex",gap:8,alignItems:"center",margin:"22px 0 10px"}}><Activity size={17}/><div style={{fontWeight:900,fontSize:14}}>Recent executions</div></div>
   <div style={card}>{executions.length===0?<div style={{fontSize:12,color:"var(--jd-muted,#6b7280)"}}>No connector executions yet.</div>:executions.slice(0,20).map(e=><div key={e.id} style={{display:"flex",gap:8,alignItems:"center",padding:"9px 0",borderBottom:"1px solid var(--jd-border,#e5e7eb)"}}><span style={{color:statusColor(e.status)}}>{e.status==="succeeded"?<CheckCircle2 size={15}/>:e.status==="failed"?<XCircle size={15}/>:<Clock size={15}/>}</span><div style={{flex:1,minWidth:0}}><div style={{fontWeight:700,fontSize:11}}>{e.tool_name}</div><div style={{fontSize:10,color:"var(--jd-muted,#6b7280)"}}>{new Date(e.created_at).toLocaleString()} · {e.duration_ms??"—"} ms</div></div><span style={{fontSize:9,fontWeight:800,color:statusColor(e.status)}}>{e.status}</span></div>)}</div>
   <div style={{fontSize:10,color:"var(--jd-muted,#6b7280)",lineHeight:1.6,marginTop:12}}>MCP tool discovery and read-only execution are supported over remote HTTPS Streamable HTTP. This panel does not grant providers access to other workspace data. Approval-required calls are stored as encrypted arguments and are executed only after an authorized manager approves.</div>
