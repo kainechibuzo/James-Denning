@@ -18,7 +18,7 @@
 - `jd-execution-worker` writes partial text into a job-linked `jd_messages` row, throttled to 800 ms. The authenticated job-status action returns that row while active; ChatHome already polls each active job every three seconds and now displays the partial text.
 - The runtime checkpoints continuation text/count and the active model. It continues at most twice. Incomplete function-call output is never executed.
 - `jd-agent-routing.ts` classifies quick, balanced and reasoning work. Optional `JD_MODEL_FAST_NAME` and `JD_MODEL_REASONING_NAME` secrets are used only when configured; otherwise `JD_MODEL_NAME` (default `openrouter/free`) remains in effect.
-- `create_business_document_draft` saves private TXT, Markdown, CSV, JSON, DOCX, XLSX or PPTX drafts to the existing `jd-business-documents` bucket and records them in `jd_business_documents`. The tool is limited to admins, managers and bursars. Input content is capped at 95 KB and generated output at 10 MB. XLSX uses bounded sheets/rows JSON; PPTX uses slides/bullets JSON; DOCX accepts Markdown. Storage paths are generated and tenant-scoped.
+- `create_business_document_draft` saves private TXT, Markdown, CSV, JSON, HTML, CSS, JS, TS, Python, SQL, XML, YAML, DOCX, XLSX or PPTX drafts to the existing `jd-business-documents` bucket and records them in `jd_business_documents`. The tool is limited to admins, managers and bursars. Input content is capped at 95 KB and generated output at 10 MB. XLSX uses bounded sheets/rows JSON; PPTX uses slides/bullets JSON; DOCX accepts Markdown. Storage paths are generated and tenant-scoped.
 - The run monitor shows average first-token latency when provider requests report text deltas.
 
 ## Deliberately not copied
@@ -29,7 +29,7 @@ Socrates' tool loop handles one detected tool call per round. JD already support
 
 - No queue, lease, retry, checkpoint RPC, tenant scope or approval semantics were removed.
 - The document tool creates a private draft only; it does not send, publish, delete or modify business records.
-- DOCX/XLSX/PPTX generation adopts Socrates' structured-content and Office-generation pattern. Multi-file source-code workspace editing, PDF export and chat file uploads are not included.
+- DOCX/XLSX/PPTX generation adopts Socrates' structured-content and Office-generation pattern. Source-code files can be staged as separate private artifacts using validated relative paths, one file per tool round; this is not a full IDE workspace. PDF export and chat file uploads are not included.
 - No database migration, production secret change or production deployment was performed.
 
 ## Verification still required
