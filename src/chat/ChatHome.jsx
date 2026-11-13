@@ -124,6 +124,31 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     } finally { setSending(false); }
   };
 
+  const updateOperationalTask = async (taskId, status) => {
+    if (!taskId || !["in_progress", "completed"].includes(status)) return;
+    setError("");
+    const { data, error: taskError } = await supabase.functions.invoke("jd-automation", {
+      body: { action: "operations.task.transition", taskId, status },
+    });
+    if (taskError || !data?.task) {
+      setError(data?.error || "JD could not update this task. Refresh the workspace and try again.");
+      return;
+    }
+    setMessages((current) => current.map((message) => {
+      if (!message.visualWorkspace?.blocks) return message;
+      return {
+        ...message,
+        visualWorkspace: {
+          ...message.visualWorkspace,
+          blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
+            ...block,
+            items: (block.items || []).map((item) => item.id === taskId ? { ...item, status } : item),
+          })),
+        },
+      };
+    }));
+  };
+
   const newConversation = () => {
     if (sending) return;
     setConversationId(null); setMessages([]); setDraft(""); setError("");
