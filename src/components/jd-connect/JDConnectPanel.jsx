@@ -9,7 +9,7 @@ export function JDConnectPanel({notify=()=>{}}){
  const [servers,setServers]=useState([]),[tools,setTools]=useState([]),[approvals,setApprovals]=useState([]),[executions,setExecutions]=useState([]);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(""),[error,setError]=useState(""),[success,setSuccess]=useState("");
  const [name,setName]=useState(""),[endpoint,setEndpoint]=useState(""),[token,setToken]=useState("");
- const [showRegister,setShowRegister]=useState(false),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({});
+ const [showRegister,setShowRegister]=useState(false),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({}),[reconnectTokens,setReconnectTokens]=useState({});
  const call=useCallback(async(action,extra={})=>{
   const {data,error}=await supabase.functions.invoke("jd-connect",{body:{action,...extra}});
   if(error)throw new Error(error.message||"JD Connect request failed");
@@ -35,6 +35,7 @@ export function JDConnectPanel({notify=()=>{}}){
  });
  const refresh=id=>run("refresh:"+id,()=>call("tools.refresh",{serverId:id}));
  const disconnect=id=>run("disconnect:"+id,()=>call("servers.disconnect",{serverId:id}));
+ const reconnect=id=>run("reconnect:"+id,()=>call("servers.reconnect",{serverId:id,bearerToken:reconnectTokens[id]||""}));
  const invoke=id=>run("tool:"+id,async()=>{
   let args={};try{args=JSON.parse(toolArgs[id]||"{}");if(!args||typeof args!=="object"||Array.isArray(args))throw new Error("Arguments must be a JSON object");}
   catch(e){setArgErrors(p=>({...p,[id]:e.message||"Invalid JSON"}));throw new Error(e.message||"Invalid JSON");}
@@ -77,8 +78,9 @@ export function JDConnectPanel({notify=()=>{}}){
     </div>
     <div style={{display:"flex",gap:7,marginTop:12,flexWrap:"wrap"}}>
      <button onClick={()=>setExpanded(expanded===server.id?"":server.id)} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>{list.length} tools {expanded===server.id?"Hide":"View"}</button>
-     <button onClick={()=>refresh(server.id)} disabled={!!busy} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>{busy==="refresh:"+server.id?"Refreshing…":"Refresh tools"}</button>
-     <button onClick={()=>disconnect(server.id)} disabled={!!busy} style={{...button,background:"#fef2f2",color:"#991b1b"}}>{busy==="disconnect:"+server.id?"Disconnecting…":"Disconnect"}</button>
+     {server.status==="connected"&&<><button onClick={()=>refresh(server.id)} disabled={!!busy} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>{busy==="refresh:"+server.id?"Refreshing…":"Refresh tools"}</button>
+     <button onClick={()=>disconnect(server.id)} disabled={!!busy} style={{...button,background:"#fef2f2",color:"#991b1b"}}>{busy==="disconnect:"+server.id?"Disconnecting…":"Disconnect"}</button></>}
+     {server.status!=="connected"&&<div style={{display:"flex",gap:6,flexBasis:"100%"}}><input type="password" autoComplete="new-password" style={{...field,flex:1}} value={reconnectTokens[server.id]||""} onChange={e=>setReconnectTokens(p=>({...p,[server.id]:e.target.value}))} placeholder="New bearer token"/><button onClick={()=>reconnect(server.id)} disabled={!!busy||!(reconnectTokens[server.id]||"").trim()} style={{...button,background:"#166534",color:"#fff"}}>{busy==="reconnect:"+server.id?"Connecting…":"Reconnect"}</button></div>}
     </div>
     {expanded===server.id&&<div style={{marginTop:12,borderTop:"1px solid var(--jd-border,#e5e7eb)",paddingTop:10}}>
      {!list.length?<div style={{fontSize:11,color:"var(--jd-muted,#6b7280)"}}>No tools discovered.</div>:list.map(tool=><div key={tool.id} style={{padding:"10px 0",borderBottom:"1px solid var(--jd-border,#e5e7eb)"}}>
