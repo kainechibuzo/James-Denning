@@ -1,4 +1,4 @@
-const migration = Deno.readTextFileSync("supabase/migrations/20261111200000_jd_workflow_versioned_drafts.sql");
+const migration = Deno.readTextFileSync("supabase/migrations/20261112084827_jd_workflow_versioned_drafts.sql");
 
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
