@@ -100,7 +100,7 @@
 
 ## §D. Sidebar and module coverage (JD can *operate*, not just open pages)
 
-Capability audit of the live schema must accompany any checked item. JD currently exposes 17 read-only, low-risk tools (people/performance/operations/billing/activity/email logs/attendance/announcements/settings catalogue/overview/hiring pipeline). Write operations outside the settings executor path do not exist.
+Capability audit of the live schema must accompany any checked item. Today JD exposes 15 read-only, low-risk tools (people/performance/operations/billing/activity/email logs/attendance/announcements/settings catalogue/overview/hiring pipeline). Write operations outside the settings executor path do not exist.
 
 | ID | Module area | Status | Notes / done when |
 | --- | --- | --- | --- |
@@ -115,7 +115,7 @@ Capability audit of the live schema must accompany any checked item. JD currentl
 | JD-UPG-055 | Access requests | not_implemented | No JD tools. |
 | JD-UPG-056 | Industry-specific modules from organisation blueprint | not_implemented | Depends on Organisation Builder §C provisioning. |
 | JD-UPG-057 | Every listed module reachable and operable through JD tools (not just routes) | not_implemented | Requires JD-UPG-004 expansion + review-gated write tools + tests per module. |
-| JD-UPG-058 | Finance-module tools (expenses, budgets, cash-flow, reconciliation) | partially_implemented | JD agent now has read-only `get_business_expense_anomalies` and `get_business_kpi_trends` tools wired to tenant-scoped business tables. Create/update/reconciliation actions remain outside the agent tool surface; CI passed on PR #73, but production runtime deployment and authenticated smoke tests remain pending. |
+| JD-UPG-058 | Finance-module tools (expenses, budgets, cash-flow, reconciliation) | partially_implemented | Business-platform tools exist server-side (read + approved-match writes) but **not wired into JD agent tools**. |
 | JD-UPG-059 | Communications-module tools (notices, campaigns, logs, alerts) | partially_implemented | Same split: UI/backend exist; JD tool surface missing. |
 | JD-UPG-060 | People-management tools with admin gating | partially_implemented | Backend/UI exist; JD tool surface missing. |
 
@@ -144,7 +144,7 @@ Capability audit of the live schema must accompany any checked item. JD currentl
 | JD-UPG-074 | Draft complete emails (subject, recipients, body) in context | partially_implemented | Compose UI exists; JD drafting tool not wired. |
 | JD-UPG-075 | Draft notices and announcements | partially_implemented | Announcements read tool exists; drafting tool missing. |
 | JD-UPG-076 | Business / operational / hiring / finance / performance reports | partially_implemented | Executive report generation exists in business platform (draft status, JSON export); not JD-agent-invoked. |
-| JD-UPG-077 | Evidence-based analysis, comparisons and trends | partially_implemented | JD can now invoke read-only expense anomaly and monthly KPI trend analysis with source counts, date windows, truncation flags and disclosed limitations. Source helpers have Deno tests; runtime deployment and authenticated evidence checks remain pending. |
+| JD-UPG-077 | Evidence-based analysis, comparisons and trends | partially_implemented | Business intelligence aggregations + snapshot API exist with tests; JD narration missing. |
 | JD-UPG-078 | Clearly labelled and validated forecasts | partially_implemented | Trailing-mean baseline with rolling-origin backtest + MAE/MAPE recorded; still not a validated cash forecast; insufficient-history labelling implemented. |
 | JD-UPG-079 | Spreadsheets, CSVs, PDFs, presentations, charts, datasets | not_implemented | XLSX export via xlsx-js-style in legacy pages; no chat-generated artefacts. |
 | JD-UPG-080 | Store, preview, export, version and reference artefacts | partially_implemented | Reports stored; versioning exists for contracts/workflows; no unified artefact store. |
@@ -407,3 +407,9 @@ Each item is an owner action on external systems. None can be completed from thi
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
 | JD-UPG-232 | Streamed responses, bounded continuation, task-based model routing and private document drafts | implemented_unverified | Source implementation added on `perf/jd-model-latency`. SSE deltas persist into the tenant-scoped assistant message and are returned by the existing job-status poll; long outputs continue at most twice with checkpointed state; model rungs are opt-in secrets; admins/managers/bursars can save private TXT/MD/CSV/JSON/HTML/CSS/JS/TS/PY/SQL/XML/YAML/DOCX/XLSX/PPTX drafts and staged source files, one per tool round. CI and application verification passed in PR #70; staging stream visibility, continuation/resume, private storage/download, tenant isolation and production deployment remain outstanding. |
+
+## §U. JD visual workspace
+
+| ID | Item | Status | Notes / done when |
+| --- | --- | --- | --- |
+| JD-UPG-234 | Structured visual task/workflow workspace in JD chat | implemented_unverified | Chat renders bounded checklist, workflow, decision-question, execution timeline, department workload and evidence blocks from worker-generated `content_json.visual_workspace`. Checklists call the authenticated `operations.task.transition` action (queued → in_progress → completed); server enforces manager/admin role, tenant scope and valid transitions, and writes an audit event. Department workload is grouped from persisted `jd_operational_tasks.department` values, not invented directory data. Evidence references persisted execution-step and actor audit-event IDs; empty evidence remains pending. Worker suppresses task/department data for non-manager roles. Deno tests and CI coverage added; staging and production worker verification remain outstanding. |
