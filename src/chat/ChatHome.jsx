@@ -150,7 +150,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <button className="jd-new" type="button" onClick={()=>{setShowRuns(true);setShowUsage(false);setShowReview(false);}}><Activity size={15}/> Automation runs</button>
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
-      </aside>}
+      </aside></>}
       {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : showReview ? <ReviewCentre onClose={()=>setShowReview(false)}/> : <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
