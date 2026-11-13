@@ -32,3 +32,10 @@ Deno.test("evidence is only rendered from persisted steps and audit records", ()
 Deno.test("does not manufacture visual blocks when source reads are unavailable", () => {
   assertEquals(buildJdVisualWorkspace({ tasksAvailable: false, evidenceAvailable: false }).blocks, []);
 });
+
+Deno.test("does not label an empty evidence source as verified", () => {
+  const ui = buildJdVisualWorkspace({ evidenceAvailable: true, steps: [], audit: [] });
+  const evidence = ui.blocks.find((block: any) => block.type === "evidence") as any;
+  assertEquals(evidence.status, "pending");
+  assertEquals(evidence.items, []);
+});
