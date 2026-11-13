@@ -22,6 +22,10 @@ jobs:
           JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
           set -euo pipefail
+          if [ -z "${JD_SECRETS_JSON:-}" ]; then
+            echo "::notice title=JD worker not dispatched::Add the JD_SECRETS_JSON repository Actions secret containing JD_WORKER_SECRET. The queue will remain pending until configured."
+            exit 0
+          fi
           worker_secret="$(node scripts/read-jd-secret.mjs JD_WORKER_SECRET)"
           echo "::add-mask::$worker_secret"
           endpoint="${SUPABASE_URL%/}/functions/v1/jd-execution-worker"
