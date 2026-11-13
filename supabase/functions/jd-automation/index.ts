@@ -134,6 +134,29 @@ Deno.serve(async (req) => {
    communications:{recent_announcements:announcements||[],recent_email_batches:(emails||[]).map((e:any)=>({subject:e.subject,recipients:e.recipient_count,status:e.status,error:e.error_message,sent_at:e.sent_at}))}
   });
  }
+ if(payload.action==="execution.job.status"){
+  const jobId=typeof payload.jobId==="string"?payload.jobId.trim():"";
+  if(!jobId) return json({error:"jobId is required"},400);
+  const {data:job,error:jobErr}=await admin.from("jd_execution_jobs")
+   .select("id,run_id,status,attempt_count,max_attempts,last_error_code,last_error_message,updated_at,completed_at")
+   .eq("id",jobId).eq("school_id",profile.school_id).maybeSingle();
+  if(jobErr||!job) return json({error:"Execution job not found"},404);
+  const {data:run,error:runErr}=await admin.from("jd_automation_runs")
+   .select("id,conversation_id,requested_by,status,result_json,started_at,completed_at")
+   .eq("id",job.run_id).eq("school_id",profile.school_id).maybeSingle();
+  if(runErr||!run||(run.requested_by!==authData.user.id&&profile.role!=="admin"))
+   return json({error:"Execution job not found"},404);
+  let assistantMessage=null;
+  if(["completed","partially_completed","failed","cancelled"].includes(String(run.status))){
+   const {data:message}=await admin.from("jd_messages")
+    .select("id,role,content,content_json,created_at")
+    .eq("school_id",profile.school_id).eq("conversation_id",run.conversation_id)
+    .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
+    .order("created_at",{ascending:false}).limit(1).maybeSingle();
+   assistantMessage=message||null;
+  }
+  return json({job,run,assistantMessage});
+ }
  if(payload.action==="execution.monitor.list"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
   let runQuery=admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id);
