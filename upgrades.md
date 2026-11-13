@@ -30,6 +30,7 @@ This is the canonical, human-readable upgrade index. The detailed implementation
   - [x] Bounded retries for transient provider/network failures.
   - [x] Provider-reported usage retained per successful model request without inventing missing totals.
   - [x] Explicit partial-completion status when the eight-round tool limit is exhausted.
+  - [x] Batch independent read-only tool calls, pin the selected free model across tool rounds and record per-request latency (JD-231; CI/staging verification pending).
   - [ ] Durable queue, worker leases, resumability, idempotent recovery and crash handling. (Design: [JD-004](./upgrades/JD-004-DURABLE-EXECUTION.md); JD-004A job ledger/queue primitives implemented in PR #40; database integration verification pending.)
 - [ ] Streaming responses and resumable long-running tasks.
 - [ ] File attachments and ingestion for CSV, XLSX, PDF and supported documents.
@@ -271,3 +272,12 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [ ] Implement scheduler and execution separately; activation does not execute workflow nodes.
 
 **Status:** code and migration authored; verification and deployment remain pending. No migration has been applied and no Edge Function deployed.
+
+## JD-232 — Socrates-inspired response architecture
+- [x] Stream Responses API text deltas into the durable assistant message; expose active partial content through the existing job-status poll.
+- [x] Continue output-token-truncated answers up to two times and checkpoint continuation state; reject incomplete tool-call arguments.
+- [x] Add opt-in fast/balanced/reasoning model routing with the configured default preserved when optional model secrets are absent.
+- [x] Add role-scoped private TXT/MD/CSV/JSON/HTML/CSS/JS/TS/PY/SQL/XML/YAML/DOCX/XLSX/PPTX drafts and staged source files using the existing document bucket and document table.
+- [x] Record first-token latency and expose average first-token time in the run monitor.
+- [ ] CI, staging stream visibility, checkpoint-resume, private file storage/download and tenant-isolation verification.
+- [ ] Production deployment after all release gates pass.

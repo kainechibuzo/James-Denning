@@ -10,6 +10,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 import { getJdSecret } from "../_shared/jd-secrets.ts";
 
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+
 const cors = { "Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods":"POST, OPTIONS", "Content-Type":"application/json" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status, headers:cors});
 const highImpact = [/\b(pay|payment|transfer|refund|purchase|withdraw|charge)\b/i,/\b(send|email|message|notify|publish|announce)\b/i,/\b(delete|remove|erase|purge|terminate)\b/i,/\b(permission|role|access|invite|disable account)\b/i,/\b(sign|submit|file|approve contract|legal)\b/i];
@@ -148,15 +150,16 @@ Deno.serve(async (req) => {
   if(runErr||!run||(run.requested_by!==authData.user.id&&profile.role!=="admin"))
    return json({error:"Execution job not found"},404);
   let assistantMessage=null;
-  if(["completed","partially_completed","failed","cancelled"].includes(String(run.status))){
-   const {data:message}=await admin.from("jd_messages")
-    .select("id,role,content,content_json,created_at")
-    .eq("school_id",profile.school_id).eq("conversation_id",run.conversation_id)
-    .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
-    .order("created_at",{ascending:false}).limit(1).maybeSingle();
-   assistantMessage=message||null;
-  }
-  return json({job,run,assistantMessage});
+  const {data:message}=await admin.from("jd_messages")
+   .select("id,role,content,content_json,created_at")
+   .eq("school_id",profile.school_id).eq("conversation_id",run.conversation_id)
+   .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
+   .order("created_at",{ascending:false}).limit(1).maybeSingle();
+  assistantMessage=message||null;
+  const {data:steps}=await admin.from("jd_automation_steps")
+   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
+   .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true}).limit(50);
+  return json({job,run,assistantMessage,steps:steps||[]});
  }
  if(payload.action==="execution.monitor.list"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);

@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -37,4 +37,30 @@ Deno.test("retry delay is bounded and respects Retry-After seconds", () => {
   assertEqual(retryDelayMs(null, 2), 1000, "second backoff");
   assertEqual(retryDelayMs("1.5", 1), 1500, "Retry-After");
   assertEqual(retryDelayMs("99", 1), 8000, "maximum delay");
+});
+
+Deno.test("free router follow-up requests stay on the first selected model", () => {
+  assertEqual(
+    resolveFollowupModel("openrouter/free", "openrouter/free", "particle-ai/particle-1:free"),
+    "particle-ai/particle-1:free",
+    "pin selected free model",
+  );
+  assertEqual(
+    resolveFollowupModel("openrouter/free", "particle-ai/particle-1:free", null),
+    "particle-ai/particle-1:free",
+    "retain pinned model when response omits model",
+  );
+});
+
+Deno.test("configured model choices are never replaced by provider response metadata", () => {
+  assertEqual(
+    resolveFollowupModel("vendor/model:free", "vendor/model:free", "other/model:free"),
+    "vendor/model:free",
+    "preserve configured model",
+  );
+  assertEqual(
+    resolveFollowupModel("openrouter/free", "openrouter/free", "invalid model slug"),
+    "openrouter/free",
+    "reject malformed selected model",
+  );
 });

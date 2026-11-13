@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { selectJdModel } from "../_shared/jd-agent-routing.ts";
 import { getJdSecret } from "../_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
@@ -53,6 +54,35 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
 
   let leaseLost = false;
   let heartbeatBusy = false;
+  let streamMessageId: string | null = null;
+  let streamConversationId: string | null = null;
+  let partialText = "";
+  let lastPartialWriteAt = 0;
+  let partialWriteChain: Promise<void> = Promise.resolve();
+  const persistPartial = (force = false) => {
+    if (!partialText || !streamConversationId) return;
+    const now = Date.now();
+    if (!force && now - lastPartialWriteAt < 800) return;
+    lastPartialWriteAt = now;
+    const snapshot = partialText;
+    partialWriteChain = partialWriteChain.then(async () => {
+      if (!streamMessageId) {
+        const { data: existing, error: lookupError } = await admin.from("jd_messages").select("id")
+          .eq("school_id", schoolId).eq("conversation_id", streamConversationId)
+          .contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (existing?.id) streamMessageId = String(existing.id);
+        else {
+          const { data: created, error } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: snapshot, content_json: { job_id: jobId, streaming: true, stream_protocol: "responses_sse" } }).select("id").single();
+          if (error || !created) throw error || new Error("Could not create streamed assistant message");
+          streamMessageId = String(created.id);
+          return;
+        }
+      }
+      const { error } = await admin.from("jd_messages").update({ content: snapshot, content_json: { job_id: jobId, streaming: true, stream_protocol: "responses_sse", updated_at: new Date().toISOString() } }).eq("id", streamMessageId).eq("school_id", schoolId);
+      if (error) throw error;
+    }).catch((error) => { console.error("JD partial response persistence failed", String(error).slice(0, 160)); });
+  };
   const heartbeat = setInterval(async () => {
     if (heartbeatBusy || leaseLost) return;
     heartbeatBusy = true;
@@ -86,6 +116,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     if (!run.conversation_id || typeof run.request_text !== "string" || !run.request_text.trim()) {
       throw new Error("Queued run is missing its conversation or request");
     }
+    streamConversationId = String(run.conversation_id);
     if (run.status === "awaiting_approval" || run.status === "cancelled") {
       const { data: finished } = await admin.rpc("jd_finish_execution_job", {
         p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "cancelled",
@@ -116,7 +147,8 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const apiKey = Deno.env.get("OPENROUTER_API_KEY");
     // Default to OpenRouter's free-only router, which selects an available
     // free model compatible with the request's tool-calling requirements.
-    const model = Deno.env.get("JD_MODEL_NAME") || "openrouter/free";
+    const configuredModel = Deno.env.get("JD_MODEL_NAME") || "openrouter/free";
+    const model = selectJdModel(run.request_text, configuredModel, { fast: Deno.env.get("JD_MODEL_FAST_NAME"), reasoning: Deno.env.get("JD_MODEL_REASONING_NAME") });
     if (!apiKey) throw new Error("OpenRouter API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
@@ -156,6 +188,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
           throw new Error("Runtime checkpoint could not be saved under the current lease");
         }
       },
+      onTextDelta: (delta) => { partialText += delta; persistPartial(false); },
       onToolEvent: async (event) => {
         if (leaseLost) throw new Error("Execution lease was lost");
         events.push(event);
@@ -195,22 +228,20 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       },
     });
 
+    persistPartial(true);
+    await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
     const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
     const { data: existingReply, error: replyLookupError } = await admin.from("jd_messages")
       .select("id").eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
       .contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
     if (replyLookupError) throw new Error("Could not verify whether the job response was already saved");
-    if (!existingReply) {
-      const { error: replyError } = await admin.from("jd_messages").insert({
-        school_id: schoolId, conversation_id: run.conversation_id, role: "assistant",
-        content: result.text,
-        content_json: {
-          job_id: jobId,
-          toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })),
-          tokenUsage: result.tokenUsage,
-        },
-      });
+    const finalMessage = { content: result.text, content_json: { job_id: jobId, streaming: false, toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })), tokenUsage: result.tokenUsage, truncated: result.truncated === true } };
+    if (existingReply?.id) {
+      const { error: replyError } = await admin.from("jd_messages").update(finalMessage).eq("id", existingReply.id).eq("school_id", schoolId).eq("conversation_id", run.conversation_id);
+      if (replyError) throw new Error("Agent response could not be finalised");
+    } else {
+      const { error: replyError } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: run.conversation_id, role: "assistant", ...finalMessage });
       if (replyError) throw new Error("Agent response could not be saved");
     }
 
@@ -253,16 +284,22 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       p_safe_error_message: detail.slice(0, MAX_ERROR_LENGTH),
     });
     if (retryError) throw new Error("Execution failed and retry could not be scheduled");
+    const { data: pendingMessage } = await admin.from("jd_messages").select("id")
+      .eq("school_id", schoolId).contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
     if (retryResult?.status === "failed") {
-      await admin.from("jd_messages").insert({
-        school_id: schoolId, conversation_id: (await admin.from("jd_automation_runs")
-          .select("conversation_id").eq("id", runId).maybeSingle()).data?.conversation_id,
-        role: "assistant",
-        content: "I couldn't complete this background task after the permitted attempts. The run is marked failed; please review its execution history before retrying.",
-        content_json: { job_id: jobId, status: "failed" },
-      });
+      const failureMessage = "JD could not complete this background task after the permitted attempts. The run is marked failed; review its execution history before retrying.";
+      if (pendingMessage?.id) {
+        await admin.from("jd_messages").update({ content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } })
+          .eq("id", pendingMessage.id).eq("school_id", schoolId);
+      } else {
+        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } });
+      }
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
       return { job_id: jobId, status: "failed" };
+    }
+    if (pendingMessage?.id) {
+      await admin.from("jd_messages").update({ content_json: { job_id: jobId, streaming: false, retrying: true } })
+        .eq("id", pendingMessage.id).eq("school_id", schoolId);
     }
     return { job_id: jobId, status: retryResult?.status || "retry_scheduled" };
   } finally {
