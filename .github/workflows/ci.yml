@@ -69,10 +69,10 @@ jobs:
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112073746_jd_business_platform.sql,supabase/functions/jd-business-platform/index.ts,supabase/functions/jd-business-monitor-worker/index.ts,supabase/functions/jd-business-ops-worker/index.ts,supabase/functions/jd-business-document-worker/index.ts,supabase/functions/jd-business-report-share/index.ts,supabase/functions/_shared/jd-business-forecast.ts supabase/functions/_shared/jd-business-platform-migration.test.ts
 
       - name: Test JD task collaboration migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111184500_jd_task_collaboration.sql supabase/functions/_shared/jd-task-collaboration-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084602_jd_task_collaboration.sql supabase/functions/_shared/jd-task-collaboration-migration.test.ts
 
       - name: Test JD scheduler and assignment migration contracts
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111193000_jd_recurring_tasks_and_assignment.sql supabase/functions/_shared/jd-scheduler-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084732_jd_recurring_tasks_and_assignment.sql supabase/functions/_shared/jd-scheduler-migration.test.ts
 
       - name: Test JD timezone-aware recurring schedule calculation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-scheduler.test.ts
@@ -84,16 +84,16 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-workflow-definition.test.ts
 
       - name: Test JD workflow versioning and approval contracts
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111200000_jd_workflow_versioned_drafts.sql supabase/functions/_shared/jd-workflow-versioning.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084827_jd_workflow_versioned_drafts.sql supabase/functions/_shared/jd-workflow-versioning.test.ts
 
       - name: Test JD Batch 01 operational intelligence foundations
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql supabase/functions/_shared/jd-batch01.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084532_jd_batch01_organisation_operations_hiring.sql supabase/functions/_shared/jd-batch01.test.ts
 
       - name: Test JD business intelligence aggregations
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-business-intelligence.test.ts
 
       - name: Test JD durable execution migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111130000_jd_durable_execution_jobs.sql supabase/functions/_shared/jd-execution-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111085150_jd_durable_execution_jobs.sql supabase/functions/_shared/jd-execution-migration.test.ts
 
       - name: Test JD execution worker helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-execution-worker.test.ts
@@ -114,16 +114,16 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-settings-change-planner.test.ts
 
       - name: Test JD settings proposal review migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111150000_jd_settings_proposal_review.sql supabase/functions/_shared/jd-settings-proposal-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084412_jd_settings_proposal_review.sql supabase/functions/_shared/jd-settings-proposal-migration.test.ts
 
       - name: Test JD approved settings executor migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111160000_jd_approved_settings_executor.sql supabase/functions/_shared/jd-settings-executor-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084459_jd_approved_settings_executor.sql supabase/functions/_shared/jd-settings-executor-migration.test.ts
 
       - name: Test JD private checkpoint migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111140000_jd_durable_execution_checkpoints.sql supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111085151_jd_durable_execution_checkpoints.sql supabase/functions/_shared/jd-execution-checkpoint-migration.test.ts
 
       - name: Test JD manual execution retry migration contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111190000_jd_execution_retry_controls.sql supabase/functions/_shared/jd-execution-retry-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084629_jd_execution_retry_controls.sql supabase/functions/_shared/jd-execution-retry-migration.test.ts
 
       - name: Type-check secured Edge Functions
         run: |
