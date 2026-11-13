@@ -394,7 +394,7 @@ const tools: ToolSpec[] = [  {
     execute: async (args,ctx) => {
       const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if(!base||!service)throw new Error("JD Connect internal gateway is not configured");
-      const response=await fetch(base.replace(/\//$/,"")+"/functions/v1/jd-connect",{method:"POST",headers:{"Authorization":"Bearer "+service,"Content-Type":"application/json"},redirect:"error",signal:AbortSignal.timeout(20000),body:JSON.stringify({action:"tools.call",toolId:String(args.tool_id||""),arguments:args.arguments&&typeof args.arguments==="object"&&!Array.isArray(args.arguments)?args.arguments:{},internalActorId:ctx.userId})});
+      const response=await fetch(base.replace(/\$/,"")+"/functions/v1/jd-connect",{method:"POST",headers:{"Authorization":"Bearer "+service,"Content-Type":"application/json"},redirect:"error",signal:AbortSignal.timeout(20000),body:JSON.stringify({action:"tools.call",toolId:String(args.tool_id||""),arguments:args.arguments&&typeof args.arguments==="object"&&!Array.isArray(args.arguments)?args.arguments:{},internalActorId:ctx.userId})});
       const result=await response.json().catch(()=>null);
       if(!response.ok||!result||result.error)throw new Error(String(result?.error||"JD Connect tool call failed").slice(0,240));
       return {...result,external_content_is_untrusted:true};
