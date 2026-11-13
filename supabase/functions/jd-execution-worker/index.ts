@@ -114,8 +114,10 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
 
     const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-    const model = Deno.env.get("JD_MODEL_NAME");
-    if (!apiKey || !model) throw new Error("JD model provider is not configured");
+    // Default to OpenRouter's free-only router, which selects an available
+    // free model compatible with the request's tool-calling requirements.
+    const model = Deno.env.get("JD_MODEL_NAME") || "openrouter/free";
+    if (!apiKey) throw new Error("OpenRouter API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
       .from("jd_execution_checkpoints")
