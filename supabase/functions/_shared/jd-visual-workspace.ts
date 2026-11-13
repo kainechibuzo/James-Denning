@@ -9,7 +9,7 @@ export type JdVisualStep = {
 export type JdVisualAudit = { id: string; event_type: string; created_at: string; event_json?: Record<string, unknown> | null };
 
 const taskStatus = (status: string) => status === "completed" ? "completed" :
-  status === "in_progress" ? "running" : status === "blocked" ? "blocked" :
+  status === "in_progress" ? "in_progress" : status === "blocked" ? "blocked" :
   status === "cancelled" ? "failed" : "pending";
 
 /** Build assistant UI only from tenant-filtered persisted operational and audit records. */
