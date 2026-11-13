@@ -65,6 +65,11 @@ jobs:
       - name: Test JD OAuth cryptography helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-oauth-crypto.test.ts
 
+      - name: Test JD Connect MCP protocol and migration contracts
+        run: |
+          deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-core.test.ts
+          deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113190000_jd_connect_mcp_platform.sql supabase/functions/_shared/jd-connect-migration.test.ts
+
       - name: Test JD business platform migration contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112073746_jd_business_platform.sql,supabase/functions/jd-business-platform/index.ts,supabase/functions/jd-business-monitor-worker/index.ts,supabase/functions/jd-business-ops-worker/index.ts,supabase/functions/jd-business-document-worker/index.ts,supabase/functions/jd-business-report-share/index.ts,supabase/functions/_shared/jd-business-forecast.ts supabase/functions/_shared/jd-business-platform-migration.test.ts
 
@@ -146,6 +151,7 @@ jobs:
           deno check --node-modules-dir=auto supabase/functions/jd-task-scheduler/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-task-collaboration/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-document-worker/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-monitor-worker/index.ts

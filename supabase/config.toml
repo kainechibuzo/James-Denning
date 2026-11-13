@@ -39,3 +39,6 @@ verify_jwt = false
 [functions.jd-business-report-share]
 # Public endpoint validates a high-entropy expiring share token itself.
 verify_jwt = false
+
+[functions.jd-connect]
+verify_jwt = true
