@@ -83,6 +83,9 @@ jobs:
       - name: Test JD streamed response parsing and continuation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-stream.test.ts
 
+      - name: Test JD document file generation validation
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-file-generator.test.ts
+
       - name: Test JD task-based model routing
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-routing.test.ts
 
