@@ -252,7 +252,8 @@ const tools: ToolSpec[] = [  {
       additionalProperties: false,
     },
     execute: async (args, ctx) => {
-      const monthsBack = Math.min(24, Math.max(3, Math.trunc(Number(args.months_back || 12))));
+      const requestedMonths = Number(args.months_back ?? 12);
+      const monthsBack = Number.isFinite(requestedMonths) ? Math.min(24, Math.max(3, Math.trunc(requestedMonths))) : 12;
       const now = new Date();
       const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack + 1, 1));
       const sinceDate = start.toISOString().slice(0, 10);
@@ -478,7 +479,9 @@ const tools: ToolSpec[] = [  {
       return {...result,external_content_is_untrusted:true};
     },
   },
-]; 
+];
+
+export const JD_AGENT_TOOL_NAMES = tools.map((tool) => tool.name);
 
 const modelTools = (context: AgentContext) => tools
   .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
