@@ -60,7 +60,7 @@ export function buildJdVisualWorkspace(input: {
     });
     blocks.push({
       type: "evidence", id: "persisted-evidence", title: "Execution evidence",
-      status: steps.some((step) => step.status === "failed") ? "blocked" : "completed",
+      status: steps.some((step) => step.status === "failed") ? "blocked" : (steps.length || audit.length) ? "completed" : "pending",
       summary: "Derived from persisted JD execution steps and audit events. This is execution evidence, not proof of an external business outcome.",
       items: [
         ...steps.map((step) => ({ label: step.tool_key + " · " + step.status, reference: step.id })),
