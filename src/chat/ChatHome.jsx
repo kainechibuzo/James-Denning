@@ -270,6 +270,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD</div>}
               {item.content ? renderMessageContent(item.content) : null}
+              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
