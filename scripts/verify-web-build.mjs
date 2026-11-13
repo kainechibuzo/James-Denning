@@ -119,8 +119,8 @@ for (const blockType of ["checklist", "workflow", "question", "timeline", "depar
 }
 assert.match(jdVisual, /setChecked/, "Checklist interactions must be wired");
 assert.match(jdVisual, /onAnswer/, "Decision choices must be wired back to JD chat");
-assert.match(jdVisual, /slice\(0, 12\)/, "Visual block count must be bounded");
-assert.match(jdVisual, /slice\(0, 40\)/, "Checklist item count must be bounded");
+assert.match(jdVisual, /list\(ui\?\.blocks,\s*12\)/, "Visual block count must be bounded");
+assert.match(jdVisual, /list\(block\.items,\s*40\)/, "Checklist item count must be bounded");
 assert.match(jdVisual, /React text|aria-label/, "Visual renderer must use accessible, non-HTML content rendering");
 
 const dist = resolve(root, "dist");
