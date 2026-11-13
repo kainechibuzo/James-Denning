@@ -12,7 +12,7 @@ function rejects(fn: () => unknown, label: string) {
 Deno.test("JD document drafts accept text formats without rewriting content", () => {
   const markdown = "# Quarterly report\n\nA useful and complete report body.";
   equal(validateDocumentContent("md", markdown), markdown, "markdown retained");
-  equal(validateDocumentContent("csv", "name,total\nNorth,42"), "name,total\nNorth,42", "csv retained");
+  equal(validateDocumentContent("csv", "name,total\nNorth,42\nSouth,38"), "name,total\nNorth,42\nSouth,38", "csv retained");
 });
 
 Deno.test("JD XLSX drafts validate bounded sheet and cell structures", () => {
