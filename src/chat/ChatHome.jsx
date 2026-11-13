@@ -83,7 +83,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
-            toolEvents: finalMessage?.content_json?.toolEvents || (update.steps || []).map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) || message.toolEvents || [],
+            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
           };
@@ -111,7 +111,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       if (invokeError) throw invokeError;
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) setConversationId(data.conversationId);
-      setMessages((current) => [...current, { role: "assistant", content: data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [] }]);
+      const queued = data.queued === true && Boolean(data.job?.id);
+      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [] }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
       const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
@@ -131,7 +132,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       <style>{`
         .jd-command{height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#737982;background:rgba(255,255,255,.92);border:1px solid #e8eaed;border-radius:20px;padding:7px 10px}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
+        .jd-history-scrim{display:none}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-utility-status.is-working{color:#343941;border-color:#dfe3e8}
+        .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite}
+        @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
         .jd-brand{display:flex;align-items:center;gap:10px;padding:4px 7px 12px;font-size:14px;font-weight:700;letter-spacing:-.3px}
         .jd-brand-mark{width:32px;height:32px;border-radius:11px;background:#15171a;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
         .jd-new{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #d9dce1;background:#fff;border-radius:11px;padding:11px 12px;color:#202328;font-size:12px;font-weight:650;cursor:pointer}
@@ -168,6 +172,13 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
         .jd-tool{border:1px solid #e3e5e9;background:#fafbfc;border-radius:7px;padding:5px 8px;color:#737984;font-size:9px}
         .jd-run{font-size:10px;color:#858b94;margin-top:8px}
+        .jd-activity{display:flex;flex-direction:column;gap:7px;margin:2px 0 3px;padding:10px 12px;border:1px solid #e8eaee;border-radius:12px;background:rgba(255,255,255,.72);max-width:100%}
+        .jd-activity-title{display:flex;align-items:center;gap:8px;color:#424852;font-size:11px;font-weight:650}
+        .jd-activity-dot{width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite;flex:0 0 auto}
+        .jd-activity-detail{font-size:10px;color:#818791;line-height:1.5;padding-left:15px}
+        .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
+        .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:#747b85}
+        .jd-activity-step.done{color:#5e786b}
         .jd-compose-wrap{width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid #dfe2e7;background:#fff;border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:#202329;font:inherit;font-size:13px;line-height:1.65}
@@ -222,7 +233,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "Sending to JD…" : backgroundWorking ? (messages.some(item => item.run?.status === "running") ? "JD is running…" : "JD is queued…") : "Free AI model · Workspace connected"}</span></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")}>{sending || backgroundWorking ? "JD is cooking…" : "Workspace connected"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-spark"><Sparkles size={20}/></div>
             <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
@@ -231,12 +242,21 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD</div>}
-              {renderMessageContent(item.content)}
-              {item.streaming&&<div className="jd-run">JD is streaming its response…</div>}
-              {item.toolEvents?.length>0&&<div className="jd-tools">{item.toolEvents.map((event,i)=><span className="jd-tool" key={i}>{event.name?.replaceAll("_"," ")} · {event.status}</span>)}</div>}
-              {item.run?.status&&<div className="jd-run">Run · {item.run.status}</div>}
+              {item.content ? renderMessageContent(item.content) : null}
+              {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
+                <div className="jd-activity" role="status" aria-live="polite">
+                  <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
+                  {item.toolEvents?.length ? <div className="jd-activity-steps">{item.toolEvents.slice(-4).map((event,i) => {
+                    const label = String(event.name || "workspace task").replaceAll("_"," ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+                    const done = event.status === "completed";
+                    return <div className={"jd-activity-step" + (done ? " done" : "")} key={String(event.name)+"-"+i}><span>{done ? "✓" : "·"}</span>{label}</div>;
+                  })}</div> : <div className="jd-activity-detail">JD is organising the work and checking what it needs.</div>}
+                </div>
+              )}
+              {item.streaming&&<div className="jd-run">JD is writing its response…</div>}
+              {item.role === "assistant" && item.content && item.toolEvents?.length>0 && <div className="jd-tools">{item.toolEvents.slice(-4).map((event,i)=><span className="jd-tool" key={i}>{event.name?.replaceAll("_"," ")} · {event.status}</span>)}</div>}
             </div>)}
-            {sending&&<div className="jd-message assistant"><div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD is working</div><LoaderCircle size={15}/></div>}
+            {sending&&<div className="jd-message assistant"><div className="jd-activity" role="status" aria-live="polite"><div className="jd-activity-title"><span className="jd-activity-dot"/>JD is cooking…</div><div className="jd-activity-detail">Getting the request ready.</div></div></div>}
           </div>}
         </div>
         <div className="jd-compose-wrap">
