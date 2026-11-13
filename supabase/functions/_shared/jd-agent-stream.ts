@@ -62,6 +62,7 @@ export async function readResponsesStream(
         if (streamError) throw streamError;
       }
     }
+    buffer += decoder.decode();
     if (buffer.trim()) consumeLine(buffer);
     if (streamError) throw streamError;
     if (!finalResponse) throw new Error("Model stream ended without a terminal response event");
