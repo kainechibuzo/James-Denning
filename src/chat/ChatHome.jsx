@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
+import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -84,6 +85,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
+            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || message.visualWorkspace || null,
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
           };
@@ -112,7 +114,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) setConversationId(data.conversationId);
       const queued = data.queued === true && Boolean(data.job?.id);
-      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [] }]);
+      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
       const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
