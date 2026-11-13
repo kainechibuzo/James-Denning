@@ -42,3 +42,15 @@ verify_jwt = false
 
 [functions.jd-connect]
 verify_jwt = true
+
+# OAuth 2.1 identity provider for ChatGPT and other MCP clients.
+# Dynamic client registration is required by MCP clients; each grant still
+# requires an authenticated user to review and approve the requested access.
+[auth.oauth_server]
+enabled = true
+authorization_url_path = "/oauth/consent"
+allow_dynamic_registration = true
+
+[functions.jd-mcp]
+# OAuth discovery and token verification are handled by @supabase/server.
+verify_jwt = false
