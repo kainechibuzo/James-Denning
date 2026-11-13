@@ -624,7 +624,7 @@ export async function runAgent(input: {
         response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
         continue;
       }
-      const fullText = [continuationText, text].filter(Boolean).join("\\n\\n");
+      const fullText = [continuationText, text].filter(Boolean).join("\n\n");
       if (!fullText) throw new Error("The model response contained no readable assistant message");
       const truncated = response.status === "incomplete";
       return {
