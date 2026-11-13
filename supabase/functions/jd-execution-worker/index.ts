@@ -284,16 +284,22 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       p_safe_error_message: detail.slice(0, MAX_ERROR_LENGTH),
     });
     if (retryError) throw new Error("Execution failed and retry could not be scheduled");
+    const { data: pendingMessage } = await admin.from("jd_messages").select("id")
+      .eq("school_id", schoolId).contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
     if (retryResult?.status === "failed") {
-      await admin.from("jd_messages").insert({
-        school_id: schoolId, conversation_id: (await admin.from("jd_automation_runs")
-          .select("conversation_id").eq("id", runId).maybeSingle()).data?.conversation_id,
-        role: "assistant",
-        content: "I couldn't complete this background task after the permitted attempts. The run is marked failed; please review its execution history before retrying.",
-        content_json: { job_id: jobId, status: "failed" },
-      });
+      const failureMessage = "JD could not complete this background task after the permitted attempts. The run is marked failed; review its execution history before retrying.";
+      if (pendingMessage?.id) {
+        await admin.from("jd_messages").update({ content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } })
+          .eq("id", pendingMessage.id).eq("school_id", schoolId);
+      } else {
+        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } });
+      }
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
       return { job_id: jobId, status: "failed" };
+    }
+    if (pendingMessage?.id) {
+      await admin.from("jd_messages").update({ content_json: { job_id: jobId, streaming: false, retrying: true } })
+        .eq("id", pendingMessage.id).eq("school_id", schoolId);
     }
     return { job_id: jobId, status: retryResult?.status || "retry_scheduled" };
   } finally {
