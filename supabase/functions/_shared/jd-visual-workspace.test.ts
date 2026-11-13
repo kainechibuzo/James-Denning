@@ -11,6 +11,7 @@ Deno.test("builds checklist and department metrics from persisted tenant tasks",
   const checklist = ui.blocks[0] as any;
   assertEquals(checklist.items[0].status, "completed");
   assertEquals(checklist.items[1].id, "2");
+  assertEquals(checklist.items[2].status, "in_progress");
   const departments = ui.blocks[1] as any;
   assertEquals(departments.items[0].name, "Finance");
   assertEquals(departments.items[0].metric, "0 open");
