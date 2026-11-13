@@ -41,7 +41,7 @@ JD chat supports a versioned, bounded structured-UI payload stored on the assist
 - `question`: bounded choice buttons. Selecting an option submits the selected value as a new chat turn; it does not silently approve a consequential action.
 - `timeline`: execution events with status and optional details.
 - `departments`: workload metrics grouped from the authoritative `department` field on persisted `jd_operational_tasks`. This is a workload summary, not a separate department directory or headcount system.
-- `evidence`: execution-step and audit-event IDs from persisted `jd_automation_steps` and `jd_audit_events`. An empty evidence source is shown as pending, never as verified.
+- `evidence`: execution-step and audit-event IDs from persisted `jd_automation_steps` and `jd_audit_events`, plus privacy-safe numeric/boolean result summaries persisted from tool outputs. Raw tool results and personal records are not copied into evidence. An empty evidence source is shown as pending, never as verified.
 
 ## Status vocabulary
 
@@ -53,7 +53,7 @@ JD chat supports a versioned, bounded structured-UI payload stored on the assist
 - Text is rendered as React text, never injected as HTML.
 - URLs are not accepted as executable actions or navigation targets in visual blocks.
 - Tenant and permission checks remain server-side; a visual payload is not an authorization grant.
-- The renderer does not claim a task is complete because a user ticked a local checkbox.
+- A task is shown as completed only after the authenticated task-transition endpoint confirms the database update; the UI does not optimistically mark a failed request as complete.
 - Backend producers must derive statuses from persisted job/task/evidence records. Never synthesize completed states from model prose.
 - Decision choices are sent back to JD as user input. Existing approval gates remain authoritative.
 
