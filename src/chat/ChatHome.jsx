@@ -19,7 +19,7 @@ const actions = [
 
 export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [draft, setDraft] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 760);
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
@@ -65,7 +65,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       <style>{`
         .jd-command{height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
+        .jd-history-scrim{display:none}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#737982;background:rgba(255,255,255,.92);border:1px solid #e8eaed;border-radius:20px;padding:7px 10px}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
         .jd-brand{display:flex;align-items:center;gap:10px;padding:4px 7px 12px;font-size:14px;font-weight:700;letter-spacing:-.3px}
         .jd-brand-mark{width:32px;height:32px;border-radius:11px;background:#15171a;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
         .jd-new{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #d9dce1;background:#fff;border-radius:11px;padding:11px 12px;color:#202328;font-size:12px;font-weight:650;cursor:pointer}
@@ -77,13 +77,13 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-rail-foot{margin-top:auto;border-top:1px solid #dfe1e5;padding:13px 5px 0;display:flex;align-items:center;gap:9px;color:#555b64;font-size:11px}
         .jd-avatar{width:29px;height:29px;border-radius:9px;background:#22252a;color:#fff;display:grid;place-items:center;font-weight:700}
         .jd-main{min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;position:relative}
-        .jd-top{height:57px;flex:0 0 57px;border-bottom:1px solid #e8eaed;background:rgba(255,255,255,.84);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+        .jd-top{display:none}
         .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
         .jd-icon-btn{border:0;background:transparent;color:#707680;padding:7px;border-radius:8px;cursor:pointer}
         .jd-top-title{font-size:12px;font-weight:700;color:#25282d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:#969ba3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#737982;flex-shrink:0;white-space:nowrap}
         .jd-dot{width:7px;height:7px;border-radius:50%;background:#28956b}
-        .jd-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:24px 20px 12px}
+        .jd-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:58px 20px 12px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:#17191d;color:#fff;display:grid;place-items:center;margin-bottom:20px}
         .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
@@ -113,7 +113,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-disclaimer{text-align:center;font-size:9px;color:#a0a5ad;margin-top:9px}
         @media(max-width:760px){
           .jd-command{height:calc(100dvh - 57px);min-height:0}
-          .jd-rail{display:none}
+          .jd-rail{position:absolute;z-index:8;inset:0 auto 0 0;width:min(300px,86vw);max-width:86vw;box-shadow:16px 0 40px rgba(20,24,30,.16);overflow:auto}
           .jd-top{padding:0 12px;height:52px;flex:0 0 52px}
           .jd-top-sub{font-size:9.5px}
           .jd-scroll{padding:16px 14px 8px}
@@ -139,7 +139,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           .jd-heading{font-size:23px}
         }
       `}</style>
-      {sidebarOpen && <aside className="jd-rail">
+      {sidebarOpen && <><button className="jd-history-scrim" type="button" aria-label="Close chat history" onClick={()=>setSidebarOpen(false)}/><aside className="jd-rail">
         <div className="jd-brand"><span className="jd-brand-mark">JD</span><span>James-Denning</span></div>
         <button className="jd-new" type="button" onClick={newConversation}><Plus size={15}/> New conversation</button>
         <button className="jd-new" type="button" onClick={()=>{setShowReview(false);setShowUsage(false);}}><Plus size={15}/> Chat</button>
@@ -157,7 +157,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "JD is working…" : "Workspace connected"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-spark"><Sparkles size={20}/></div>
             <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
