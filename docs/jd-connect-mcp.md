@@ -66,3 +66,34 @@ A code merge alone does not create provider credentials, enable third-party OAut
 - Tool results are not trusted as instructions.
 - The browser never receives stored bearer tokens.
 - The service-role key is used only by the server-side agent runtime to call the authenticated JD Connect Edge Function; never expose it in frontend code.
+
+
+## Inbound MCP — ChatGPT and coding agents
+
+JD now also exposes an authenticated MCP server at:
+
+`https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-mcp`
+
+The endpoint uses Supabase OAuth 2.1 discovery and user-bound tokens. Users authenticate with their existing JD account and approve the OAuth request on the first connection. The consent screen is hosted at `/oauth/consent`.
+
+Initial tools:
+- `jd_get_workspace_overview`: privacy-conscious organisation and operational aggregates.
+- `jd_list_operational_tasks`: tenant-scoped operational task records.
+- `jd_list_execution_activity`: persisted execution-step evidence.
+- `jd_list_connected_mcp_tools`: connected provider tools and their approval policy.
+- `jd_call_connected_mcp_tool`: invokes a JD Connect tool; untrusted/write-capable actions create a manager approval request and do not run before approval.
+
+All MCP calls require an authenticated workspace admin or manager. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data.
+
+### OAuth rollout requirements
+
+- Enable Supabase Auth OAuth 2.1 on the existing main project and configure the asymmetric JWT signing key required by Supabase's MCP server middleware.
+- Deploy the `jd-mcp` Edge Function with JWT gateway verification disabled; the function's OAuth middleware validates user tokens and publishes protected-resource metadata.
+- Deploy the web build containing `/oauth/consent`.
+- Verify OAuth discovery, sign-in, consent approval/denial, token refresh, role denial and cross-tenant isolation before treating the endpoint as production-ready.
+
+### Lovable and other app-building MCP providers
+
+Lovable's official MCP endpoint is `https://mcp.lovable.dev` and it requires OAuth 2.1; it does not accept a personal API key. JD Connect's current outbound gateway stores optional bearer tokens but does not yet perform the OAuth authorization-code/PKCE flow. Therefore Lovable is **not connected by this change**. The next outbound-connector slice must add OAuth discovery, PKCE login/callback, encrypted refresh-token storage and refresh handling before the Lovable endpoint can be registered. Do not paste an OAuth token into the bearer-token field as a substitute for that flow.
+
+Lovable actions that create projects, send build prompts or deploy consume the connected workspace's credits or publish changes. JD must retain approval gates for those operations. Other vibe-coding clients can be added through the same standards-based outbound OAuth/MCP adapter once their OAuth requirements are verified.
