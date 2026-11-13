@@ -83,7 +83,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
-            toolEvents: finalMessage?.content_json?.toolEvents || message.toolEvents || [],
+            toolEvents: finalMessage?.content_json?.toolEvents || (update.steps || []).map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) || message.toolEvents || [],
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
           };
