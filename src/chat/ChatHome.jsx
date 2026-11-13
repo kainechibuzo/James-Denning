@@ -18,7 +18,7 @@ const actions = [
 ];
 
 function renderMessageContent(content) {
-  const parts = String(content || "").split(/(https:\/\/[^\\s<>"')]+)/g);
+  const parts = String(content || "").split(/(https:\/\/[^\s<>"')]+)/g);
   return parts.map((part, index) => /^https:\/\//i.test(part)
     ? <a key={index} href={part} target="_blank" rel="noopener noreferrer" style={{ color: "#245f9e", textDecoration: "underline", overflowWrap: "anywhere" }}>{part}</a>
     : part);
