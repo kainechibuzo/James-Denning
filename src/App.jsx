@@ -7,6 +7,7 @@ import {loadSession,loadSelectedSchool,saveSession,saveSelectedSchool} from "./u
 const AppDemo=lazy(()=>import("./AppDemo.jsx"));
 const EmailAuthPage=lazy(()=>import("./pages/saas-entry.jsx").then(m=>({default:m.EmailAuthPage})));
 const PublicLanding=lazy(()=>import("./pages/public-landing.jsx").then(m=>({default:m.PublicLanding})));
+const OAuthConsentPage=lazy(()=>import("./pages/oauth-consent.jsx").then(m=>({default:m.OAuthConsentPage})));
 
 function RouteLoading({label="Loading workspace…"}){
  return <div role="status" aria-live="polite" style={{minHeight:"100vh",background:"#090a0c",color:"#d8dce2",display:"grid",placeItems:"center",fontFamily:"system-ui",fontSize:14}}>{label}</div>;
@@ -27,6 +28,7 @@ export default function App(){
  const [authMode,setAuthMode]=useState("signin");
  const [bootError,setBootError]=useState("");
  const isApply=typeof window!=="undefined"&&window.location.pathname.startsWith("/apply/");
+ const isOAuthConsent=typeof window!=="undefined"&&window.location.pathname==="/oauth/consent";
  const activate=async({user:authUser,profile,school})=>{
   if(!authUser?.id||!profile?.id||!school?.id)throw new Error("Your account is missing a valid workspace association. Please contact your administrator.");
   db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");
@@ -40,7 +42,7 @@ export default function App(){
    const link=await supabase.from("student_profiles").select("student_id").eq("profile_id",authUser.id).maybeSingle();
    if(link.data){const st=await supabase.from("students").select("*").eq("id",link.data.student_id).maybeSingle();if(st.data){user.student_id=st.data.id;user.class_id=st.data.class_id;user.name=st.data.display_name||st.data.name||user.name;user._userType="student";}}
   }
-  saveSession(user);setScreen("app");
+  saveSession(user);setScreen(isOAuthConsent?"oauth-consent":"app");
  };
  useEffect(()=>{
   if(isApply){setScreen("app");return}
@@ -67,14 +69,15 @@ export default function App(){
     }
     const legacy=loadSession(),school=loadSelectedSchool();
     if(legacy&&school){db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");setScreen("app");return}
-    setScreen("landing");
-   }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen("landing")}}
+    setScreen(isOAuthConsent?"auth":"landing");
+   }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen(isOAuthConsent?"auth":"landing")}}
   };
   boot();
   return()=>{alive=false;authListener.subscription.unsubscribe()};
  },[]);
  const onAuthenticated=payload=>activate(payload);
  if(screen==="loading")return <RouteLoading label="Loading James-Denning…"/>;
+ if(screen==="oauth-consent")return <LazyRoute label="Loading secure authorisation…"><OAuthConsentPage/></LazyRoute>;
  if(screen==="app"||isApply)return <LazyRoute label="Opening your workspace…"><AppDemo/></LazyRoute>;
  if(screen==="legacy")return <LazyRoute label="Opening school portal…"><AppDemo/></LazyRoute>;
  if(screen==="auth")return <LazyRoute label="Loading secure account access…"><EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated} onLegacy={()=>setScreen("legacy")}/></LazyRoute>;
