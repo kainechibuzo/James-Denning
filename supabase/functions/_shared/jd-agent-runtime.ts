@@ -348,7 +348,7 @@ const tools: ToolSpec[] = [  {
     description: "Create a private downloadable organisation document when explicitly requested. Supports txt, md, csv, json, html, css, js, ts, py, sql, xml, yaml, docx, xlsx and pptx. For source projects, provide a relative filename such as src/main.ts and create one file per tool round so later files can build on earlier results. For xlsx, content must be JSON shaped as {sheets:[{name,rows:[[cell,...]]}]}; for pptx, {slides:[{title,bullets:[...]}]}; for docx, provide Markdown content. Saves a new private draft only; never publishes, emails or changes existing documents.",
     risk: "medium",
     roles: ["admin", "manager", "bursar"],
-    parameters: { type: "object", properties: { title: { type: "string", minLength: 1, maxLength: 180 }, filename: { type: "string", minLength: 1, maxLength: 160 }, format: { type: "string", enum: ["txt", "md", "csv", "json", "html", "css", "js", "ts", "py", "sql", "xml", "yaml", "docx", "xlsx", "pptx"] }, content: { type: "string", minLength: 20, maxLength: 95000 } }, required: ["title", "format", "content"], additionalProperties: false },
+    parameters: { type: "object", properties: { title: { type: "string", minLength: 1, maxLength: 180 }, filename: { type: ["string", "null"], maxLength: 160 }, format: { type: "string", enum: ["txt", "md", "csv", "json", "html", "css", "js", "ts", "py", "sql", "xml", "yaml", "docx", "xlsx", "pptx"] }, content: { type: "string", minLength: 20, maxLength: 95000 } }, required: ["title", "filename", "format", "content"], additionalProperties: false },
     execute: async (args, ctx) => {
       const title = String(args.title || "").trim().slice(0, 180);
       const format = String(args.format || "") as JdDocumentFormat;
