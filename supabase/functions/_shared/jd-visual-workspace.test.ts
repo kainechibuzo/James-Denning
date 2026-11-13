@@ -19,7 +19,7 @@ Deno.test("builds checklist and department metrics from persisted tenant tasks",
 
 Deno.test("evidence is only rendered from persisted steps and audit records", () => {
   const ui = buildJdVisualWorkspace({ evidenceAvailable: true, steps: [
-    { id: "step-1", tool_key: "get_workspace_overview", status: "completed" },
+    { id: "step-1", tool_key: "get_workspace_overview", status: "completed", output_json: { evidence: { total_members: 18, sample_truncated: false } } },
     { id: "step-2", tool_key: "get_billing_snapshot", status: "failed", error_message: "Source unavailable" },
   ], audit: [{ id: "audit-1", event_type: "automation.completed", created_at: "2026-11-13T00:00:00Z" }] });
   assertEquals(ui.blocks.length, 2);
@@ -27,6 +27,7 @@ Deno.test("evidence is only rendered from persisted steps and audit records", ()
   assertEquals(evidence.status, "blocked");
   assertEquals(evidence.items.length, 3);
   assertEquals(evidence.items[2].reference, "audit-1");
+  assertEquals(String(evidence.items[0].label).includes("total_members: 18"), true);
 });
 
 Deno.test("does not manufacture visual blocks when source reads are unavailable", () => {
