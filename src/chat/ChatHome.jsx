@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
+import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -84,6 +85,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
+            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: String(step.tool_key || "Workspace task").replaceAll("_", " "), status: step.status, detail: step.error_message || (step.risk_level ? "Risk: " + step.risk_level : "") })) }] } : message.visualWorkspace || null),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
           };
@@ -112,7 +114,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) setConversationId(data.conversationId);
       const queued = data.queued === true && Boolean(data.job?.id);
-      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [] }]);
+      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
       const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
@@ -120,6 +122,35 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
     } finally { setSending(false); }
+  };
+
+  const updateOperationalTask = async (taskId, status) => {
+    if (!taskId || !["in_progress", "completed"].includes(status)) return;
+    setError("");
+    const { data, error: taskError } = await supabase.functions.invoke("jd-automation", {
+      body: { action: "operations.task.transition", taskId, status },
+    });
+    if (taskError || !data?.task) {
+      setError(data?.error || "JD could not update this task. Refresh the workspace and try again.");
+      return;
+    }
+    setError(data.auditRecorded === false
+      ? "Task status changed, but JD could not record its audit event. This transition needs administrator review."
+      : "");
+    const confirmedStatus = data.task.status || status;
+    setMessages((current) => current.map((message) => {
+      if (!message.visualWorkspace?.blocks) return message;
+      return {
+        ...message,
+        visualWorkspace: {
+          ...message.visualWorkspace,
+          blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
+            ...block,
+            items: (block.items || []).map((item) => item.id === taskId ? { ...item, status: confirmedStatus } : item),
+          })),
+        },
+      };
+    }));
   };
 
   const newConversation = () => {
@@ -243,6 +274,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD</div>}
               {item.content ? renderMessageContent(item.content) : null}
+              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>

@@ -12,6 +12,8 @@ const product = read("src/config/product.js");
 const grading = read("src/pages/grading.jsx");
 const reportCards = read("src/pages/reportcards.jsx");
 const tour = read("src/AppDemo.jsx");
+const jdChat = read("src/chat/ChatHome.jsx");
+const jdVisual = read("src/chat/JDVisualWorkspace.jsx");
 
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/AppDemo\.jsx["']\)\)/, "Workspace must be lazy-loaded");
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/saas-entry\.jsx["']\)/, "Authentication must be lazy-loaded");
@@ -107,6 +109,19 @@ for (const file of jsxFiles) {
   const badAttr = src.match(/\s[a-zA-Z-]+="[^"]*\\u[0-9a-fA-F]{4}[^"]*"/);
   assert.ok(!badAttr, "Literal unicode escape in a JSX attribute will render as visible text: " + file + " -> " + String(badAttr?.[0] || "").slice(0, 80));
 }
+
+// JD structured visual workspace contract: all supported block renderers must
+// exist and be wired to real assistant-message metadata, not fabricated state.
+assert.match(jdChat, /JDVisualWorkspace/, "JD chat must mount the structured visual workspace renderer");
+assert.match(jdChat, /content_json\?\.visual_workspace/, "JD chat must read persisted visual workspace metadata");
+for (const blockType of ["checklist", "workflow", "question", "timeline", "departments", "evidence"]) {
+  assert.ok(jdVisual.includes('"'+blockType+'"'), "Missing JD visual block renderer: " + blockType);
+}
+assert.match(jdVisual, /setChecked/, "Checklist interactions must be wired");
+assert.match(jdVisual, /onAnswer/, "Decision choices must be wired back to JD chat");
+assert.match(jdVisual, /list\(ui\?\.blocks,\s*12\)/, "Visual block count must be bounded");
+assert.match(jdVisual, /list\(block\.items,\s*40\)/, "Checklist item count must be bounded");
+assert.match(jdVisual, /React text|aria-label/, "Visual renderer must use accessible, non-HTML content rendering");
 
 const dist = resolve(root, "dist");
 assert.ok(existsSync(join(dist, "index.html")), "Production build must emit dist/index.html");
