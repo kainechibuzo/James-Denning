@@ -19,6 +19,7 @@ import { buildAlertEmail } from "../services/email/index.js";
 import { _applyNameCase } from "../utils/grades.js";
 import { PRODUCT, INDUSTRIES, MODULES, getIndustryLabel, storeWorkspaceType } from "../config/product.js";
 import { PermissionsPage } from "./permissions.jsx";
+import { JDConnectPanel } from "../components/jd-connect/JDConnectPanel.jsx";
 
 const APP_VERSION = PRODUCT.version;
 
@@ -286,6 +287,7 @@ export function SettingsPage({ctx,inPanel}){
     {id:"sessions",      label:"Cycles & Periods"},
     {id:"academic",      label:"Performance"},
     {id:"security",      label:"Security"},
+    {id:"integrations",   label:"JD Connect"},
     {id:"portal",        label:"Portal"},
   ];
 
@@ -503,6 +505,9 @@ export function SettingsPage({ctx,inPanel}){
           </div>
         </Card>
       )}
+
+      {/* ── JD CONNECT ── */}
+      {tab==="integrations"&&<JDConnectPanel notify={notify}/>}
 
       {/* ── SECURITY ── */}
       {tab==="security"&&(
