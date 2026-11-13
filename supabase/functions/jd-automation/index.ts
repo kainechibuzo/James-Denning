@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
   assistantMessage=message||null;
   const {data:steps}=await admin.from("jd_automation_steps")
    .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
-   .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true});
+   .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true}).limit(50);
   return json({job,run,assistantMessage,steps:steps||[]});
  }
  if(payload.action==="execution.monitor.list"){
