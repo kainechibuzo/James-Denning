@@ -93,7 +93,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       }
     };
     void poll();
-    const timer = setInterval(poll, 3000);
+    const timer = setInterval(poll, 1200);
     return () => { stopped = true; clearInterval(timer); };
   }, [pendingJobKey]);
 
