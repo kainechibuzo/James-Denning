@@ -34,43 +34,60 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
   const backgroundWorking = messages.some((item) => item.role === "assistant" && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
 
-  // The submit endpoint only enqueues routine work. Keep the chat bubble in sync
-  // with the durable run ledger, then replace the queued notice with the saved reply.
+  // Poll only the specific active jobs in this conversation. The job-id key
+  // stays stable while messages update, so renders do not restart the timer.
+  const pendingJobKey = messages
+    .filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status))
+    .map((item) => item.jobId)
+    .filter(Boolean)
+    .join(",");
+
   useEffect(() => {
-    const pending = messages.filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
-    if (!pending.length || !conversationId) return undefined;
+    if (!pendingJobKey) return undefined;
+    const jobIds = [...new Set(pendingJobKey.split(",").filter(Boolean))];
     let stopped = false;
+    let inFlight = false;
     const poll = async () => {
-      const { data, error: pollError } = await supabase.functions.invoke("jd-automation", { body: { action: "execution.monitor.list" } });
-      if (stopped || pollError || !Array.isArray(data?.runs)) return;
-      const byId = new Map(data.runs.map((run) => [run.id, run]));
-      const updates = pending.map(async (item) => {
-        const current = byId.get(item.run.id);
-        if (!current) return;
-        const status = current.status || item.run.status;
-        if (status === item.run.status && !["completed", "partially_completed", "failed", "cancelled"].includes(status)) return;
-        let finalMessage = null;
-        if (["completed", "partially_completed", "failed", "cancelled"].includes(status)) {
-          const { data: history } = await supabase.functions.invoke("jd-automation", { body: { action: "history", conversationId } });
-          finalMessage = (history?.messages || []).find((message) => message.role === "assistant" && message.content_json?.job_id === item.jobId) || null;
-        }
+      if (inFlight || stopped) return;
+      inFlight = true;
+      try {
+        const results = await Promise.all(jobIds.map(async (jobId) => {
+          const { data, error: pollError } = await supabase.functions.invoke("jd-automation", {
+            body: { action: "execution.job.status", jobId },
+          });
+          if (pollError || !data?.run) return null;
+          return { jobId, ...data };
+        }));
         if (stopped) return;
+        const updates = results.filter(Boolean);
+        if (!updates.length) return;
         setMessages((currentMessages) => currentMessages.map((message) => {
-          if (message.jobId !== item.jobId) return message;
+          const update = updates.find((item) => item.jobId === message.jobId);
+          if (!update) return message;
+          const status = update.run.status || message.run?.status;
+          const terminal = ["completed", "partially_completed", "failed", "cancelled"].includes(status);
+          const finalMessage = update.assistantMessage;
+          const fallback = status === "failed"
+            ? "JD couldn't complete this request. Open Automation runs for the error details."
+            : status === "cancelled"
+              ? "This request was cancelled."
+              : message.content;
           return {
             ...message,
-            content: finalMessage?.content || message.content,
+            content: finalMessage?.content || (terminal ? fallback : message.content),
             toolEvents: finalMessage?.content_json?.toolEvents || message.toolEvents || [],
-            run: { ...message.run, ...current, status },
+            run: { ...message.run, ...update.run, status },
+            jobStatus: update.job.status,
           };
         }));
-      });
-      await Promise.all(updates);
+      } finally {
+        inFlight = false;
+      }
     };
     void poll();
-    const timer = setInterval(poll, 2500);
+    const timer = setInterval(poll, 3000);
     return () => { stopped = true; clearInterval(timer); };
-  }, [messages, conversationId]);
+  }, [pendingJobKey]);
 
   const send = async (override) => {
     const message = (override ?? draft).trim();
