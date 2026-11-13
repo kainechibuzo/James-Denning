@@ -3,7 +3,7 @@ export type JdVisualTask = {
   priority?: string | null; status: string; due_at?: string | null; updated_at?: string | null;
 };
 export type JdVisualStep = {
-  id: string; tool_key: string; status: string; error_message?: string | null;
+  id: string; tool_key: string; status: string; error_message?: string | null; output_json?: { evidence?: Record<string, unknown> | null } | null;
   started_at?: string | null; completed_at?: string | null;
 };
 export type JdVisualAudit = { id: string; event_type: string; created_at: string; event_json?: Record<string, unknown> | null };
@@ -63,7 +63,7 @@ export function buildJdVisualWorkspace(input: {
       status: steps.some((step) => step.status === "failed") ? "blocked" : (steps.length || audit.length) ? "completed" : "pending",
       summary: "Derived from persisted JD execution steps and audit events. This is execution evidence, not proof of an external business outcome.",
       items: [
-        ...steps.map((step) => ({ label: step.tool_key + " · " + step.status, reference: step.id })),
+        ...steps.map((step) => ({ label: step.tool_key + " · " + step.status + (step.output_json?.evidence && Object.keys(step.output_json.evidence).length ? " · " + Object.entries(step.output_json.evidence).slice(0, 3).map(([key, value]) => key + ": " + String(value)).join(", ") : ""), reference: step.id })),
         ...audit.map((event) => ({ label: event.event_type, reference: event.id })),
       ].slice(0, 30),
       details: audit.slice(0, 10).map((event) => event.event_type + " · " + event.created_at),
