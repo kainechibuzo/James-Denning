@@ -362,8 +362,7 @@ const tools: ToolSpec[] = [  {
       const inserted = await ctx.admin.from("jd_business_documents").insert({ school_id: ctx.schoolId, title, storage_path: storagePath, mime_type: "text/plain", byte_size: bytes.length, checksum_sha256: checksum, extraction_status: "completed", extracted_text: content, summary: content.slice(0, 10000), source_metadata: { source: "jd_generated_draft", generated_at: new Date().toISOString(), format: "text/plain" }, created_by: ctx.userId }).select("id").single();
       if (inserted.error || !inserted.data) { await storage.remove([storagePath]); throw new Error("Generated draft could not be registered in the organisation document library"); }
       const signed = await storage.createSignedUrl(storagePath, 3600);
-      if (signed.error || !signed.data?.signedUrl) throw new Error("Draft was saved, but a temporary download link could not be created");
-      return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data.signedUrl, download_url_expires_in_seconds: 3600 };
+      return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data?.signedUrl || null, download_link_status: signed.error ? "temporarily_unavailable" : "ready", download_url_expires_in_seconds: signed.error ? 0 : 3600 };
     },
   },
 ];
@@ -593,6 +592,22 @@ export async function runAgent(input: {
   for (let turn = 0; turn <= maxToolRounds; turn += 1) {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
+    if (response.status === "incomplete" && calls.length) {
+      if (shouldContinueResponse(response, continuationCount)) {
+        continuationCount += 1;
+        conversationInput.push(...output, { role: "user", content: "The previous response ended before its tool call was complete. Continue the unfinished call with valid complete arguments, or provide a direct final answer if no tool is needed." });
+        await persistCheckpoint();
+        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
+        continue;
+      }
+      const partial = [continuationText, responseOutputText(response)].filter(Boolean).join("\n\n");
+      return {
+        text: partial || "I could not finish the requested operation because the model response was cut off before its tool request was complete.",
+        status: "partially_completed", truncated: true,
+        toolEvents: [...completedCalls], responseId: response.id || null,
+        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "openrouter",
+      };
+    }
     if (!calls.length) {
       const text = responseOutputText(response);
       if (!text && response.status !== "incomplete") throw new Error("The model response contained no readable assistant message");
