@@ -6,6 +6,7 @@ on:
       - ".github/workflows/jd-worker-dispatch.yml"
       - "scripts/read-jd-secret.mjs"
       - "supabase/functions/jd-execution-worker/**"
+      - "supabase/functions/_shared/**"
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
