@@ -562,7 +562,11 @@ export async function runAgent(input: {
 
   const requestModel = async (payload: Record<string, unknown>) => {
     const startedAt = performance.now();
-    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, input.onTextDelta);
+    let firstTokenMs: number | null = null;
+    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, (delta) => {
+      if (firstTokenMs === null) firstTokenMs = Math.max(0, Math.round(performance.now() - startedAt));
+      input.onTextDelta?.(delta);
+    });
     const latencyMs = Math.max(0, Math.round(performance.now() - startedAt));
     requestIndex += 1;
     addUsage(tokenUsage, result.response.usage);
@@ -572,6 +576,7 @@ export async function runAgent(input: {
       request_index: requestIndex,
       attempts: result.attempts,
       latency_ms: latencyMs,
+      first_token_ms: firstTokenMs,
       usage: normaliseUsage(result.response.usage),
       model: selectedModel,
     });
