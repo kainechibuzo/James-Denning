@@ -272,3 +272,12 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [ ] Implement scheduler and execution separately; activation does not execute workflow nodes.
 
 **Status:** code and migration authored; verification and deployment remain pending. No migration has been applied and no Edge Function deployed.
+
+## JD-232 — Socrates-inspired response architecture
+- [x] Stream Responses API text deltas into the durable assistant message; expose active partial content through the existing job-status poll.
+- [x] Continue output-token-truncated answers up to two times and checkpoint continuation state; reject incomplete tool-call arguments.
+- [x] Add opt-in fast/balanced/reasoning model routing with the configured default preserved when optional model secrets are absent.
+- [x] Add a role-scoped private text-document draft tool using the existing document bucket and document table.
+- [x] Record first-token latency and expose average first-token time in the run monitor.
+- [ ] CI, staging stream visibility, checkpoint-resume, private file storage/download and tenant-isolation verification.
+- [ ] Production deployment after all release gates pass.
