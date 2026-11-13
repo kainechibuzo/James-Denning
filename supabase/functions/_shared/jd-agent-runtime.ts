@@ -524,6 +524,7 @@ export async function runAgent(input: {
       request_index: requestIndex,
       attempts: result.attempts,
       usage: normaliseUsage(result.response.usage),
+      model: typeof result.response.model === "string" ? result.response.model : input.model,
     });
     return result.response;
   };
@@ -543,12 +544,21 @@ export async function runAgent(input: {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
     if (!calls.length) {
-      const text = typeof response.output_text === "string" ? response.output_text : "";
-      if (!text.trim()) throw new Error("The model returned no final answer");
+      const messageText = output
+        .filter((item: any) => item?.type === "message" && Array.isArray(item.content))
+        .flatMap((item: any) => item.content)
+        .filter((part: any) => part?.type === "output_text" || part?.type === "text")
+        .map((part: any) => typeof part.text === "string" ? part.text : "")
+        .join("\\n")
+        .trim();
+      const text = (typeof response.output_text === "string" && response.output_text.trim())
+        ? response.output_text
+        : messageText;
+      if (!text) throw new Error("The model response contained no readable assistant message");
       return {
         text, status: "completed", truncated: false,
         toolEvents: [...completedCalls], responseId: response.id || null,
-        tokenUsage, modelRequests, model: input.model, provider: "openrouter",
+        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "openrouter",
       };
     }
     if (turn === maxToolRounds) break;
@@ -595,7 +605,7 @@ export async function runAgent(input: {
     responseId: response.id || null,
     tokenUsage,
     modelRequests,
-    model: input.model,
+    model: typeof response.model === "string" ? response.model : input.model,
     provider: "openrouter",
   };
 }
