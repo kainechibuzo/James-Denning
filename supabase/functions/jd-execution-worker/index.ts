@@ -239,8 +239,10 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("run_id", runId).order("created_at", { ascending: false }).limit(20),
       admin.from("jd_automation_steps").select("id,tool_key,status,error_message,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
     ]);
+    const canViewOperationalTasks = ["admin", "manager"].includes(String(profile.role || ""));
     const visualWorkspace = buildJdVisualWorkspace({
-      tasks: visualTasks || [], tasksAvailable: !visualTasksError,
+      tasks: canViewOperationalTasks ? (visualTasks || []) : [],
+      tasksAvailable: canViewOperationalTasks && !visualTasksError,
       audit: visualAudit || [], steps: visualSteps || [],
       evidenceAvailable: !visualAuditError && !visualStepsError,
     });
