@@ -393,3 +393,10 @@ Each item is an owner action on external systems. None can be completed from thi
 4. Production deployment of `jd-automation`/`jd-execution-worker` — approve only after staging gates pass.
 5. Microsoft Graph `User.RevokeSessions.All` consent — broad-scope permission; grant only after admin review.
 6. Whether to keep `xlsx-js-style` (write-only) during the ExcelJS migration of report cards.
+
+
+## §S. JD response latency
+
+| ID | Item | Status | Notes / done when |
+| --- | --- | --- | --- |
+| JD-UPG-231 | Reduce JD model round trips and instrument latency | in_progress | Independent read-only tools are requested together; free-router follow-up rounds are pinned to the first selected model; per-request latency is recorded. CI, staging checkpoint-resume verification and a five-run latency comparison remain outstanding. Production worker has not been redeployed. |
