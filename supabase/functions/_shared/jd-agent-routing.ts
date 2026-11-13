@@ -5,7 +5,7 @@ export function classifyJdTask(prompt: string): JdTaskClass {
   if (/\b(strategy|strategic plan|business plan|forecast|scenario analysis|policy|standard operating procedure|sop|proposal|evaluate options|root cause|deep analysis|comprehensive report)\b/i.test(text)) {
     return "reasoning";
   }
-  if (text.length <= 100 || /\b(quick|briefly|status|count|how many|what time|simple summary)\b/i.test(text)) {
+  if (text.length <= 60 || /\b(quick|briefly|status|count|how many|what time|simple summary)\b/i.test(text)) {
     return "fast";
   }
   return "balanced";
