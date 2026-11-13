@@ -2,6 +2,7 @@ export type JdVisualTask = {
   id: string; title: string; description?: string | null; department?: string | null;
   priority?: string | null; status: string; due_at?: string | null; updated_at?: string | null;
 };
+export type JdVisualDepartment = { name: string; purpose?: string | null };
 export type JdVisualStep = {
   id: string; tool_key: string; status: string; error_message?: string | null; output_json?: { evidence?: Record<string, unknown> | null } | null;
   started_at?: string | null; completed_at?: string | null;
@@ -28,7 +29,11 @@ export function buildJdVisualWorkspace(input: {
         department: task.department || "Unassigned", due_at: task.due_at || null,
       })),
     });
-    const departments = new Map<string, { total: number; open: number; completed: number; blocked: number }>();
+    const departments = new Map<string, { total: number; open: number; completed: number; blocked: number; purpose?: string }>();
+    for (const definition of input.departments || []) {
+      const name = String(definition.name || "").trim().slice(0, 120);
+      if (name) departments.set(name, { total: 0, open: 0, completed: 0, blocked: 0, purpose: definition.purpose || undefined });
+    }
     for (const task of input.tasks || []) {
       const name = String(task.department || "Unassigned").trim().slice(0, 120) || "Unassigned";
       const row = departments.get(name) || { total: 0, open: 0, completed: 0, blocked: 0 };
@@ -40,9 +45,12 @@ export function buildJdVisualWorkspace(input: {
     }
     blocks.push({
       type: "departments", id: "department-task-summary", title: "Department workload",
-      source: "jd_operational_tasks", sample_truncated: (input.tasksTotal ?? (input.tasks || []).length) > (input.tasks || []).length, items: [...departments.entries()].slice(0, 20).map(([name, counts]) => ({
+      source: input.departmentDefinitionsAvailable ? "approved_organisation_blueprint + jd_operational_tasks" : "jd_operational_tasks",
+      source_label: input.departmentDefinitionsAvailable ? "Approved organisation blueprint" : "Departments inferred only from task assignments",
+      sample_truncated: (input.tasksTotal ?? (input.tasks || []).length) > (input.tasks || []).length,
+      items: [...departments.entries()].slice(0, 20).map(([name, counts]) => ({
         name, metric: String(counts.open) + " open",
-        detail: counts.total + " total · " + counts.completed + " completed · " + counts.blocked + " blocked",
+        detail: [counts.purpose, counts.total + " total · " + counts.completed + " completed · " + counts.blocked + " blocked"].filter(Boolean).join(" · "),
         status: counts.blocked > 0 ? "blocked" : counts.open > 0 ? "running" : "completed",
       })),
     });
