@@ -36,12 +36,12 @@ JD chat supports a versioned, bounded structured-UI payload stored on the assist
 
 ## Supported blocks
 
-- `checklist`: interactive local check marks and completion ratio. These are explicitly local presentation state; they do not mutate task records.
+- `checklist`: task rows are built from tenant-scoped `jd_operational_tasks`. For rows with a persisted task ID, the UI calls the authenticated `operations.task.transition` action. Queued tasks move to `in_progress`; in-progress tasks can move to `completed`. The server enforces manager/admin access, legal state transitions, tenant scope and optimistic concurrency. Completed/cancelled tasks are not reopened by the visual checkbox.
 - `workflow`: ordered workflow stages with status and optional owner/description.
 - `question`: bounded choice buttons. Selecting an option submits the selected value as a new chat turn; it does not silently approve a consequential action.
 - `timeline`: execution events with status and optional details.
-- `departments`: compact department metrics and status.
-- `evidence`: evidence labels/references and expandable detail.
+- `departments`: workload metrics grouped from the authoritative `department` field on persisted `jd_operational_tasks`. This is a workload summary, not a separate department directory or headcount system.
+- `evidence`: execution-step and audit-event IDs from persisted `jd_automation_steps` and `jd_audit_events`. An empty evidence source is shown as pending, never as verified.
 
 ## Status vocabulary
 
@@ -59,4 +59,4 @@ JD chat supports a versioned, bounded structured-UI payload stored on the assist
 
 ## Current integration boundary
 
-ChatHome reads `visual_workspace` or `ui` from the assistant message's `content_json`, including streamed message updates returned by the existing authenticated job-status action. The renderer and transport are implemented. The agent runtime does not yet automatically produce these payloads from every tool result; backend block production and live staging verification remain separate follow-up work.
+ChatHome reads `visual_workspace` or `ui` from the assistant message's `content_json`, including streamed message updates returned by the existing authenticated job-status action. The execution worker assembles visual blocks after each completed agent run from tenant-filtered persisted tasks, execution steps and audit events, then stores the payload in the assistant message `content_json.visual_workspace`. Operational tasks and department workload are only returned to admin/manager roles. The existing authenticated task-transition endpoint is used for persistent checklist actions. If a source query fails, that source block is omitted rather than fabricated. Staging and production runtime verification remain deployment gates.
