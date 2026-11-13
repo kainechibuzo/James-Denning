@@ -234,7 +234,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     if (leaseLost) throw new Error("Execution lease was lost before completion");
     const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
-    const [{ data: visualTasks, error: visualTasksError }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
+    const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
       admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000),
       admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("actor_id", requestedBy).gte("created_at", run.created_at).order("created_at", { ascending: false }).limit(20),
       admin.from("jd_automation_steps").select("id,tool_key,status,error_message,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
