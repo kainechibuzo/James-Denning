@@ -4,11 +4,10 @@ on:
     branches: [master]
     paths:
       - ".github/workflows/jd-worker-dispatch.yml"
+      - ".github/workflows/jd-business-monitor.yml"
       - "scripts/read-jd-secret.mjs"
       - "supabase/functions/jd-execution-worker/**"
       - "supabase/functions/_shared/**"
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 concurrency:
   group: jd-background-execution-dispatch
