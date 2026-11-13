@@ -156,7 +156,10 @@ Deno.serve(async (req) => {
    .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
    .order("created_at",{ascending:false}).limit(1).maybeSingle();
   assistantMessage=message||null;
-  return json({job,run,assistantMessage});
+  const {data:steps}=await admin.from("jd_automation_steps")
+   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
+   .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true});
+  return json({job,run,assistantMessage,steps:steps||[]});
  }
  if(payload.action==="execution.monitor.list"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
