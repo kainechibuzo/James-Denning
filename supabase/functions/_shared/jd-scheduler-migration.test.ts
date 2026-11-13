@@ -1,5 +1,5 @@
 import {assertEquals} from "https://deno.land/std@0.224.0/assert/mod.ts";
-const migration=await Deno.readTextFile(new URL("../../migrations/20261111193000_jd_recurring_tasks_and_assignment.sql",import.meta.url));
+const migration=await Deno.readTextFile(new URL("../../migrations/20261112084732_jd_recurring_tasks_and_assignment.sql",import.meta.url));
 Deno.test("recurring schedule schema is tenant-scoped and browser-inaccessible",()=>{
  for(const table of ["jd_task_schedules","jd_task_assignment_members"]){
   assertEquals(migration.includes(`alter table public.${table} enable row level security`),true);
