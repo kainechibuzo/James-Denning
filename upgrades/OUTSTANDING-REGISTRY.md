@@ -399,11 +399,11 @@ Each item is an owner action on external systems. None can be completed from thi
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-231 | Reduce JD model round trips and instrument latency | in_progress | Independent read-only tools are requested together; free-router follow-up rounds are pinned to the first selected model; per-request latency is recorded. CI, staging checkpoint-resume verification and a five-run latency comparison remain outstanding. Production worker has not been redeployed. |
+| JD-UPG-231 | Reduce JD model round trips and instrument latency | implemented_unverified | Independent read-only tools are requested together; free-router follow-up rounds are pinned to the first selected model; per-request latency is recorded. CI and application verification passed in PR #70; staging checkpoint-resume verification and a five-run latency comparison remain outstanding. Production worker has not been redeployed. |
 
 
 ## §T. Socrates-inspired JD response architecture
 
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
-| JD-UPG-232 | Streamed responses, bounded continuation, task-based model routing and private document drafts | implemented_unverified | Source implementation added on `perf/jd-model-latency`. SSE deltas persist into the tenant-scoped assistant message and are returned by the existing job-status poll; long outputs continue at most twice with checkpointed state; model rungs are opt-in secrets; admins/managers/bursars can save private TXT/MD/CSV/JSON/HTML/CSS/JS/TS/PY/SQL/XML/YAML/DOCX/XLSX/PPTX drafts and staged source files, one per tool round. CI, staging stream visibility, continuation/resume, private storage/download, tenant isolation and production deployment remain outstanding. |
+| JD-UPG-232 | Streamed responses, bounded continuation, task-based model routing and private document drafts | implemented_unverified | Source implementation added on `perf/jd-model-latency`. SSE deltas persist into the tenant-scoped assistant message and are returned by the existing job-status poll; long outputs continue at most twice with checkpointed state; model rungs are opt-in secrets; admins/managers/bursars can save private TXT/MD/CSV/JSON/HTML/CSS/JS/TS/PY/SQL/XML/YAML/DOCX/XLSX/PPTX drafts and staged source files, one per tool round. CI and application verification passed in PR #70; staging stream visibility, continuation/resume, private storage/download, tenant isolation and production deployment remain outstanding. |
