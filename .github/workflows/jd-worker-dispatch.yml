@@ -1,5 +1,11 @@
 name: JD Background Execution Dispatcher
 on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/jd-worker-dispatch.yml"
+      - "scripts/read-jd-secret.mjs"
+      - "supabase/functions/jd-execution-worker/**"
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
@@ -16,15 +22,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Poll worker and process available jobs
+      - name: Validate JD secret bundle and poll worker
         env:
           SUPABASE_URL: https://thklwiybjuhrjqrrxyid.supabase.co
           JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
         run: |
           set -euo pipefail
           if [ -z "${JD_SECRETS_JSON:-}" ]; then
-            echo "::notice title=JD worker not dispatched::Add the JD_SECRETS_JSON repository Actions secret containing JD_WORKER_SECRET. The queue will remain pending until configured."
-            exit 0
+            echo "::error title=JD worker secret missing::JD_SECRETS_JSON is not configured in GitHub Actions."
+            exit 1
           fi
           worker_secret="$(node scripts/read-jd-secret.mjs JD_WORKER_SECRET)"
           echo "::add-mask::$worker_secret"
@@ -35,3 +41,4 @@ jobs:
             -H "x-jd-worker-secret: $worker_secret" \
             --data '{}')"
           echo "$response"
+          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.processed !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD worker response validated:", x.processed, "message(s) processed")' "$response"
