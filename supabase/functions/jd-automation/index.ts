@@ -610,7 +610,7 @@ Deno.serve(async (req) => {
    await response.text();
   }).catch((error)=>console.error("JD immediate worker dispatch failed",String(error).slice(0,160))));
  }
- const queuedReply="Your request is safely queued. JD will process it in the background and preserve progress if a worker needs to retry.";
- await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:queuedReply,content_json:{execution_job_id:job.job_id,execution_status:"queued"}});
- return json({conversationId,run:{...run,status:"queued"},job:{id:job.job_id,status:job.status},reply:queuedReply,queued:true});
+ // The chat UI shows a compact live activity pill while the durable worker runs.
+ // Do not add a conversational "queued" assistant message to the transcript.
+ return json({conversationId,run:{...run,status:"queued"},job:{id:job.job_id,status:job.status},queued:true});
 });
