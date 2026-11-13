@@ -1,5 +1,3 @@
-declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
-
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
@@ -11,6 +9,8 @@ import { nextScheduleAt } from "../_shared/jd-scheduler.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 import { getJdSecret } from "../_shared/jd-secrets.ts";
+
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
 const cors = { "Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods":"POST, OPTIONS", "Content-Type":"application/json" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status, headers:cors});
