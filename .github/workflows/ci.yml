@@ -106,6 +106,9 @@ jobs:
       - name: Test JD business intelligence aggregations
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-business-intelligence.test.ts
 
+      - name: Test JD persisted visual workspace assembly
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-visual-workspace.test.ts
+
       - name: Test JD durable execution migration contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261111085150_jd_durable_execution_jobs.sql supabase/functions/_shared/jd-execution-migration.test.ts
 
