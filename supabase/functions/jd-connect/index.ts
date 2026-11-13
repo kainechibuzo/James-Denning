@@ -71,7 +71,7 @@ Deno.serve(async req=>{
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
   const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
-   return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:isReadOnlyTool({name,annotations})};
+   return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:false};
   });
   const {error:deleteError}=await db.from("jd_connector_tools").delete().eq("server_id",server.id).eq("school_id",school);
   if(deleteError)throw new Error("Could not replace connector tool catalogue");
@@ -126,6 +126,16 @@ Deno.serve(async req=>{
   if(body.action==="tools.refresh"){
    const server=await getServer(clip(body.serverId,64)),token=await getToken(server.id);
    const tools=await refreshTools(server,token);await audit("connector.tools.refreshed",{server_id:server.id,tool_count:tools.length});return send({tools});
+  }
+  if(body.action==="tools.set_read_only"){
+   const id=clip(body.toolId,64),enabled=body.enabled===true;
+   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,annotations").eq("id",id).eq("school_id",school).maybeSingle();
+   if(error||!tool)return send({error:"MCP tool not found"},404);
+   if(enabled&&!isReadOnlyTool({name:tool.name,annotations:asObject(tool.annotations)}))return send({error:"This MCP tool is not explicitly annotated as read-only and cannot be trusted for automatic execution"},400);
+   const {error:updateError}=await db.from("jd_connector_tools").update({read_only:enabled}).eq("id",id).eq("school_id",school);
+   if(updateError)throw new Error("Could not update tool permission");
+   await audit("connector.tool.permission_changed",{tool_id:id,tool_name:tool.name,automatic_read_only:enabled});
+   return send({toolId:id,automaticReadOnly:enabled});
   }
   if(body.action==="tools.list"){
    const query=db.from("jd_connector_tools").select("id,server_id,name,description,input_schema,annotations,read_only,discovered_at").eq("school_id",school).order("name");
