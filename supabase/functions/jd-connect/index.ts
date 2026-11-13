@@ -119,9 +119,22 @@ Deno.serve(async req=>{
   }
   if(body.action==="servers.disconnect"){
    const id=clip(body.serverId,64);const server=await getServer(id);
-   const {error}=await db.from("jd_connector_servers").delete().eq("id",id).eq("school_id",school);
-   if(error)throw new Error("Could not disconnect MCP server");
-   await audit("connector.server.disconnected",{server_id:id,host:server.host});return send({disconnected:true});
+   const [{error:credentialError},{error:toolError},{error:approvalError},{error:serverError}]=await Promise.all([
+    db.from("jd_connector_credentials").delete().eq("server_id",id).eq("school_id",school),
+    db.from("jd_connector_tools").delete().eq("server_id",id).eq("school_id",school),
+    db.from("jd_connector_approvals").update({status:"expired"}).eq("server_id",id).eq("school_id",school).eq("status","pending"),
+    db.from("jd_connector_servers").update({status:"disabled",last_error_code:null,updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",school)
+   ]);
+   if(credentialError||toolError||approvalError||serverError)throw new Error("Could not disconnect MCP server safely");
+   await audit("connector.server.disconnected",{server_id:id,host:server.host,credentials_deleted:true});return send({disconnected:true,history_preserved:true});
+  }
+  if(body.action==="servers.reconnect"){
+   const id=clip(body.serverId,64),token=clip(body.bearerToken,8000);if(token.length<12)return send({error:"A new bearer token is required to reconnect"},400);
+   const server=await getServer(id),encrypted=await encryptSecret(token,key);
+   const {error:credentialError}=await db.from("jd_connector_credentials").upsert({server_id:id,school_id:school,encrypted_bearer_token:encrypted,key_version:"aes-gcm-v1",updated_at:new Date().toISOString()},{onConflict:"server_id"});
+   if(credentialError)throw new Error("Could not securely store the replacement connector credential");
+   await db.from("jd_connector_servers").update({status:"connected",last_error_code:null,updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",school);
+   const tools=await refreshTools(server,token);await audit("connector.server.reconnected",{server_id:id,host:server.host,tool_count:tools.length});return send({reconnected:true,tools});
   }
   if(body.action==="tools.refresh"){
    const server=await getServer(clip(body.serverId,64)),token=await getToken(server.id);
