@@ -59,3 +59,24 @@ This is the first working agent-runtime slice, not yet full ChatGPT-level parity
 - `{ action: "history", conversationId }` returns up to 100 messages in that conversation.
 
 A valid Supabase user JWT is required. No service key is exposed to the client.
+
+## Socrates-inspired response architecture (JD-232)
+
+JD now uses the OpenRouter Responses API in streaming mode. The shared SSE reader consumes response events, forwards only user-visible text deltas to the worker, and retains the terminal response for tool handling and usage accounting. The execution worker writes partial assistant text into the same tenant-scoped jd_messages row, throttled to at most one persistence update per 800 ms; the authenticated execution.job.status action returns that message while the run is active, and ChatHome refreshes it on its existing three-second job poll. Queue, lease, checkpoint, retry and terminal-state RPCs remain unchanged.
+
+The runtime continues responses cut off specifically by max_output_tokens, for at most two continuations. It checkpoints conversation input, continuation text/count and active model. Incomplete function-call output is never executed; JD asks the model to finish the call or returns a partial-completion result when the continuation budget is exhausted. Per-request telemetry includes first_token_ms and latency_ms.
+
+Optional task-routing secrets can be set in Supabase Edge Function secrets:
+- JD_MODEL_NAME: default model (defaults to openrouter/free).
+- JD_MODEL_FAST_NAME: optional model for short/simple requests.
+- JD_MODEL_REASONING_NAME: optional model for strategy, forecasts, policies and other deep work.
+
+Routing only selects a rung when its secret is explicitly configured; otherwise the configured default is retained. Model IDs must support the OpenRouter Responses API and function calling.
+
+For explicitly requested document creation, admins, managers and bursars can use create_business_document_draft. It writes a new private .txt draft to the existing jd-business-documents bucket and registers it in jd_business_documents with extraction_status=completed. Drafts are capped at 95 KB and return a one-hour signed download URL when signing succeeds. A draft is not sent, published or applied to organisation records. Other file formats and source-code project workspaces are not part of this tool.
+
+The runtime already executes independent tool calls in parallel. JD retains that behaviour rather than copying Socrates' single-call-per-round loop. Existing read tools remain tenant-scoped and role-filtered; the new file tool is a narrowly scoped private-draft write and is not a general-purpose record mutation tool.
+
+## Validation and deployment status
+
+These changes are source-level implementation only until the PR's CI, staging streaming check, private-draft storage test, continuation/resume test and tenant-isolation checks pass. No production Edge Function deployment or database migration is included in JD-232.
