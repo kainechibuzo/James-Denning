@@ -5,6 +5,38 @@ _Last updated: 1 Sep 2026 (v32.92 — Hiring Phases 2–3: postings, landing pag
 
 ---
 
+## Mobile layout repair (12 Nov 2026)
+
+Phone screenshots showed the workspace rendering desktop two-column layouts inside a
+~390–500px viewport: the Generate Bills panels were squeezed to ~230px, the Cycle/Period
+selects clipped to "— An", the right-hand panel overflowed past the viewport edge, and the
+shell header's fixed "v32.92" badge sat on top of the sign-out button.
+
+Root causes and fixes:
+
+- **Inline grids cannot be reached by media queries.** Pages declare
+  `gridTemplateColumns:"1fr 1fr"` in a style attribute, so nothing could collapse them.
+  `src/styles/system.css` now collapses `[data-jd-columns="2"|"3"]` to one column and
+  `[data-jd-columns="4"]` to two under `max-width:760px`, plus `min-width:0` on the grid
+  and its children so a control's intrinsic width can no longer widen a track and push the
+  neighbouring panel off-screen. Page-level layouts in fees, dashboard, members, students,
+  classes, results, report cards, analytics, permissions, teachers, tools and access are
+  tagged with the attribute.
+- **Broken attribute selectors.** The shell's mobile override used
+  `div[style*="repeat(3,1fr)"]`, but the browser canonicalises inline grid values to
+  `repeat(3, 1fr)`, so those rules never matched. They now match on the track count.
+- **Header overflow.** Compact icon-only theme toggle on phones, sign-out removed from the
+  phone header (it stays in the sidebar), title truncates instead of pushing the icon
+  cluster, and the decorative version badge moved to the bottom-right on desktop and is
+  hidden on phones.
+- **JD Assistant.** Height now matches the shell chrome exactly (`100dvh - 57px`) instead of
+  `-62px`, flex children get `min-height:0` so the message area scrolls, safe-area insets on
+  the composer, and the ninth quick action spans both columns instead of leaving an orphan
+  card and a large dead gap.
+
+Rule of thumb: tag every page-level multi-column layout with `data-jd-columns`, and give
+grid/flex children `min-width:0` when they contain native controls.
+
 ## CI/CD (1 Sep 2026)
 
 `.github/workflows/deploy.yml` — "Supabase Deploy": on push to `master` touching

@@ -13,7 +13,7 @@ Deno.test("idempotency keys require stable operation identity",()=>assertEquals(
 Deno.test("hiring stage machine validates allowed progression",()=>{candidateStageTransition("applied","screening");assertThrows(()=>candidateStageTransition("applied","hired"));});
 Deno.test("vacancy generator creates drafts, never published vacancies",()=>assertEquals(validateVacancy({title:"Dispatcher",department:"Operations",description:"Manage fleet"}).status,"draft"));
 
-const schema = await Deno.readTextFile(new URL("../../migrations/20261111180000_jd_batch01_organisation_operations_hiring.sql", import.meta.url));
+const schema = await Deno.readTextFile(new URL("../../migrations/20261112084532_jd_batch01_organisation_operations_hiring.sql", import.meta.url));
 Deno.test("batch 01 schema is tenant-scoped and browser-inaccessible",()=>{
  for(const table of ["jd_organisation_blueprints","jd_operational_tasks","jd_hiring_requisitions","jd_hiring_candidates"]) {
   assertEquals(schema.includes(`alter table public.${table} enable row level security`),true);

@@ -98,7 +98,7 @@ export function TeacherAccessRequestPage({ctx}){
         Admin will review and approve or reject your request.
       </p>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
+      <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
         {/* Request form */}
         <Card>
           <h3 style={{fontWeight:800,color:C.blue,fontSize:14,marginBottom:14}}>New Request</h3>

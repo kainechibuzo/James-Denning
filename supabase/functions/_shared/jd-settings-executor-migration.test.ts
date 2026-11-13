@@ -1,4 +1,4 @@
-const migration = await Deno.readTextFile(new URL("../../migrations/20261111160000_jd_approved_settings_executor.sql", import.meta.url));
+const migration = await Deno.readTextFile(new URL("../../migrations/20261112084459_jd_approved_settings_executor.sql", import.meta.url));
 function assert(condition: unknown, message: string) { if (!condition) throw new Error(message); }
 
 Deno.test("executor requires an approved hash-bound settings proposal", () => {

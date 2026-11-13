@@ -63,7 +63,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   return (
     <div className="jd-command">
       <style>{`
-        .jd-command{height:calc(100dvh - 62px);min-height:520px;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .jd-command{height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
         .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
         .jd-brand{display:flex;align-items:center;gap:10px;padding:4px 7px 12px;font-size:14px;font-weight:700;letter-spacing:-.3px}
@@ -76,14 +76,14 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-nav svg{flex:0 0 auto}
         .jd-rail-foot{margin-top:auto;border-top:1px solid #dfe1e5;padding:13px 5px 0;display:flex;align-items:center;gap:9px;color:#555b64;font-size:11px}
         .jd-avatar{width:29px;height:29px;border-radius:9px;background:#22252a;color:#fff;display:grid;place-items:center;font-weight:700}
-        .jd-main{min-width:0;flex:1;display:flex;flex-direction:column;position:relative}
+        .jd-main{min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;position:relative}
         .jd-top{height:57px;flex:0 0 57px;border-bottom:1px solid #e8eaed;background:rgba(255,255,255,.84);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
-        .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0}
+        .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
         .jd-icon-btn{border:0;background:transparent;color:#707680;padding:7px;border-radius:8px;cursor:pointer}
-        .jd-top-title{font-size:12px;font-weight:700;color:#25282d}.jd-top-sub{font-size:10px;color:#969ba3;margin-top:2px}
-        .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#737982}
+        .jd-top-title{font-size:12px;font-weight:700;color:#25282d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:#969ba3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#737982;flex-shrink:0;white-space:nowrap}
         .jd-dot{width:7px;height:7px;border-radius:50%;background:#28956b}
-        .jd-scroll{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:30px 20px 18px}
+        .jd-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:24px 20px 12px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:#17191d;color:#fff;display:grid;place-items:center;margin-bottom:20px}
         .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
@@ -102,7 +102,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
         .jd-tool{border:1px solid #e3e5e9;background:#fafbfc;border-radius:7px;padding:5px 8px;color:#737984;font-size:9px}
         .jd-run{font-size:10px;color:#858b94;margin-top:8px}
-        .jd-compose-wrap{width:min(780px,calc(100% - 40px));margin:0 auto 16px}
+        .jd-compose-wrap{width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid #dfe2e7;background:#fff;border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:#202329;font:inherit;font-size:13px;line-height:1.65}
         .jd-compose-bottom{display:flex;align-items:center;justify-content:space-between}
@@ -111,8 +111,33 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-send:disabled{opacity:.35;cursor:not-allowed}
         .jd-error{color:#b3261e;font-size:11px;margin:0 0 7px 5px}
         .jd-disclaimer{text-align:center;font-size:9px;color:#a0a5ad;margin-top:9px}
-        @media(max-width:760px){.jd-command{height:calc(100dvh - 62px);min-height:480px}.jd-rail{display:none}.jd-top{padding:0 13px}.jd-scroll{padding:20px 14px 10px}.jd-welcome{padding:12px 0 18px}.jd-heading{font-size:27px}.jd-subtitle{font-size:12px;margin-bottom:20px}.jd-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.jd-action{min-height:53px;padding:10px 9px}.jd-action span:last-child{font-size:10px}.jd-compose-wrap{width:calc(100% - 24px);margin-bottom:10px}.jd-message.user{max-width:94%}.jd-status{font-size:0}.jd-status .jd-dot{width:8px;height:8px}}
-        @media(max-width:360px){.jd-actions{grid-template-columns:1fr 1fr}.jd-action{gap:7px}}
+        @media(max-width:760px){
+          .jd-command{height:calc(100dvh - 57px);min-height:0}
+          .jd-rail{display:none}
+          .jd-top{padding:0 12px;height:52px;flex:0 0 52px}
+          .jd-top-sub{font-size:9.5px}
+          .jd-scroll{padding:16px 14px 8px}
+          .jd-welcome{width:100%;padding:8px 0 12px}
+          .jd-spark{width:38px;height:38px;border-radius:12px;margin-bottom:14px}
+          .jd-heading{font-size:25px;letter-spacing:-.9px;margin-bottom:7px}
+          .jd-subtitle{font-size:12px;line-height:1.6;margin-bottom:18px}
+          .jd-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+          .jd-action{min-height:52px;padding:10px 9px;gap:9px}
+          .jd-action span:last-child{font-size:11px}
+          .jd-actions>.jd-action:last-child:nth-child(odd){grid-column:1/-1}
+          .jd-compose-wrap{width:calc(100% - 24px);margin-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+          .jd-compose{padding:10px 11px 8px;border-radius:16px}
+          .jd-compose textarea{min-height:42px;max-height:140px}
+          .jd-message.user{max-width:94%}
+          .jd-status{font-size:10px;gap:5px}
+          .jd-status .jd-dot{width:8px;height:8px}
+        }
+        @media(max-width:360px){
+          .jd-actions{grid-template-columns:1fr 1fr}
+          .jd-action{gap:7px;padding:9px 8px}
+          .jd-action span:last-child{font-size:10px}
+          .jd-heading{font-size:23px}
+        }
       `}</style>
       {sidebarOpen && <aside className="jd-rail">
         <div className="jd-brand"><span className="jd-brand-mark">JD</span><span>James-Denning</span></div>

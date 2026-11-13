@@ -1,4 +1,4 @@
-const migration = await Deno.readTextFile(new URL("../../migrations/20261111150000_jd_settings_proposal_review.sql", import.meta.url));
+const migration = await Deno.readTextFile(new URL("../../migrations/20261112084412_jd_settings_proposal_review.sql", import.meta.url));
 function assert(condition: unknown, message: string) { if (!condition) throw new Error(message); }
 
 Deno.test("settings proposal migration binds approvals to immutable content hashes", () => {

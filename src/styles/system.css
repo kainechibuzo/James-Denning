@@ -83,12 +83,31 @@ body[data-theme="dark"] [style*="color: black"]{color:#f3f4f5!important}
   main, [role="main"]{min-width:0;max-width:100%}
   table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
   input,select,textarea{min-width:0;max-width:100%}
+
+  /* ── Phone layout guards ──────────────────────────────────────────────
+     Pages declare their multi-column layouts inline (grid-template-columns
+     in a style attribute), which media queries cannot otherwise reach.
+     Tag the layout with data-jd-columns and it collapses here instead of
+     squeezing controls into unusable slivers on a phone. */
+  [data-jd-columns="3"]{grid-template-columns:minmax(0,1fr)!important}
+  [data-jd-columns="4"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  /* The app shell scrolls vertically only; no page may push the viewport
+     sideways (that was clipping the right-hand panel on phones). */
+  main, [role="main"]{overflow-x:hidden}
+
+  /* Grid children must be allowed to shrink, or a long word/label widens
+     the whole track and overflows the card. */
+  [data-jd-columns], .jd-mobile-grid{min-width:0}
+  [data-jd-columns] > *{min-width:0}
 }
 @media(max-width:420px){
   .jd-setting-row{gap:6px!important}
   .jd-setting-row__control{font-size:14px}
   button{max-width:100%}
+  [data-jd-columns="4"]{grid-template-columns:minmax(0,1fr)!important}
 }
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    JD-006 — LAYOUT FOUNDATION (single source of truth for responsiveness)

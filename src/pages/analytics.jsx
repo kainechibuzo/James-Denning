@@ -714,7 +714,7 @@ export function AcademicSummaryPage({ ctx }) {
 
             {/* ════════════════════════════════ GRADE DISTRIBUTION ════════════════════════════════ */}
             {view==="grades" && (
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
 
                 {/* Visual bars */}
                 <Card>

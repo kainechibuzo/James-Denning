@@ -468,7 +468,7 @@ function TeacherSubjectAssignModal({teacher,onClose,notify}){
                 <div style={{textAlign:"center",padding:40,color:C.muted,fontSize:13}}>No categories or groups configured for this section.</div>
               ):(
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                  <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                     {/* Categories column */}
                     <div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>

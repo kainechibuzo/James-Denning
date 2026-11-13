@@ -1687,7 +1687,7 @@ export function MyResultsPage({ctx}){
         )}
       </div>
       <Card style={{marginBottom:16}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <Sel label="Cycle" value={selSession} onChange={v=>{setSelSession(v);setSelTerm("");}}
             options={sessions.map(s=>({value:s.id,label:s.name}))}/>
           <Sel label="Period" value={selTerm} onChange={setSelTerm} disabled={!selSession}
@@ -2123,7 +2123,7 @@ export function ResultApprovalsPage({ctx}){
         ))}
       </div>
       <Card style={{marginBottom:16}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div data-jd-columns="2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
           <Sel label="Cycle" value={selSession} onChange={setSelSession} options={[{value:"",label:"— Select Cycle —"},...sessions.map(s=>({value:String(s.id),label:s.name}))]}/>
           <Sel label="Period" value={selTerm} onChange={setSelTerm} options={[{value:"",label:"— Select Period —"},...filterTerms.map(t=>({value:String(t.id),label:t.name}))]}/>
         </div>
