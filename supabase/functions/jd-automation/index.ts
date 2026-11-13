@@ -347,16 +347,21 @@ Deno.serve(async (req) => {
   const {data:task,error:lookupErr}=await admin.from("jd_operational_tasks").select("id,status").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
   if(lookupErr||!task) return json({error:"Operational task not found"},404);
   if(!canTransitionTask(task.status as TaskStatus,next)) return json({error:"Invalid operational task transition"},409);
-  const updates:any={status:next,updated_at:new Date().toISOString()};
-  if(next==="completed") updates.completed_at=new Date().toISOString();
-  const {data:updated,error}=await admin.from("jd_operational_tasks").update(updates).eq("id",id).eq("school_id",profile.school_id).eq("status",task.status).select("id,status,completed_at,updated_at").maybeSingle();
-  if(error||!updated) return json({error:"Task changed concurrently; reload before retrying"},409);
-  const {error:auditError}=await admin.from("jd_audit_events").insert({
-   school_id:profile.school_id,actor_id:authData.user.id,event_type:"operational_task.status_changed",
-   event_json:{task_id:id,from_status:task.status,to_status:next}
+  // The RPC commits the task update and audit insert in one PostgreSQL transaction.
+  // If either write fails, PostgreSQL rolls both back; no unaudited transition is acknowledged.
+  const {data:transition,error:transitionError}=await admin.rpc("jd_transition_operational_task",{
+   p_actor_id:authData.user.id,p_task_id:id,p_expected_status:task.status,p_next_status:next
   });
-  if(auditError) console.error("JD operational task audit write failed",String(auditError.message||"unknown").slice(0,160));
-  return json({task:updated,auditRecorded:!auditError});
+  if(transitionError||!transition?.task||transition.auditRecorded!==true){
+   const code=String(transitionError?.code||"");
+   if(code==="P0002") return json({error:"Operational task not found"},404);
+   if(code==="42501") return json({error:"Manager permission required to update operational tasks"},403);
+   if(code==="40001") return json({error:"Task changed concurrently; reload before retrying"},409);
+   if(code==="22023") return json({error:"Invalid operational task transition"},409);
+   console.error("JD operational task transition transaction failed",code||"unknown");
+   return json({error:"Task transition and audit event could not be committed"},500);
+  }
+  return json({task:transition.task,auditRecorded:true,auditId:transition.auditId});
  }
  if(payload.action==="hiring.vacancy.draft"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can prepare vacancy drafts"},403);
