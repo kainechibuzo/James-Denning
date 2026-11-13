@@ -8,7 +8,7 @@ export function responseOutputText(response: any): string {
     .flatMap((item: any) => item.content)
     .filter((part: any) => part?.type === "output_text" || part?.type === "text")
     .map((part: any) => typeof part.text === "string" ? part.text : "")
-    .join("\\n")
+    .join("\n")
     .trim();
 }
 
@@ -30,7 +30,7 @@ export async function readResponsesStream(
   let streamError: Error | null = null;
 
   const consumeLine = (raw: string) => {
-    const line = raw.endsWith("\\r") ? raw.slice(0, -1) : raw;
+    const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
     if (!line.startsWith("data:")) return;
     const payload = line.slice(5).trim();
     if (!payload || payload === "[DONE]") return;
@@ -44,12 +44,8 @@ export async function readResponsesStream(
       finalResponse = event.response || null;
       return;
     }
-    if (event?.type === "response.failed") {
-      streamError = new Error("Model provider reported a failed streamed response");
-      return;
-    }
-    if (event?.type === "error") {
-      streamError = new Error("Model provider reported a streamed error");
+    if (event?.type === "response.failed" || event?.type === "error") {
+      streamError = new Error("Model provider reported a streamed response error");
     }
   };
 
@@ -59,7 +55,7 @@ export async function readResponsesStream(
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
       let newline = -1;
-      while ((newline = buffer.indexOf("\\n")) !== -1) {
+      while ((newline = buffer.indexOf("\n")) !== -1) {
         const line = buffer.slice(0, newline);
         buffer = buffer.slice(newline + 1);
         consumeLine(line);
