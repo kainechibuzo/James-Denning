@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
-const migration = await Deno.readTextFile(new URL("../../migrations/20261111184500_jd_task_collaboration.sql", import.meta.url));
+const migration = await Deno.readTextFile(new URL("../../migrations/20261112084602_jd_task_collaboration.sql", import.meta.url));
 
 Deno.test("task discussion records are tenant-scoped and inaccessible to browser roles", () => {
   assertEquals(migration.includes("alter table public.jd_task_comments enable row level security"), true);
