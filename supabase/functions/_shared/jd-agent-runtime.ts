@@ -536,6 +536,24 @@ export type AgentRuntimeCheckpoint = {
   continuationCount?: number;
 };
 
+function summariseToolEvidence(result: Record<string, unknown>) {
+  const summary: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(result).slice(0, 30)) {
+    if (/count|total|available|truncated|status|valid|persisted|review_required|months_back|sample/i.test(key) &&
+      (typeof value === "number" || typeof value === "boolean" || (typeof value === "string" && value.length <= 80))) {
+      summary[key] = value as string | number | boolean;
+    } else if (Array.isArray(value)) {
+      summary[key + "_count"] = value.length;
+    } else if (value && typeof value === "object" && !Array.isArray(value)) {
+      const nested = Object.entries(value as Record<string, unknown>).filter(([, nestedValue]) =>
+        typeof nestedValue === "number" || typeof nestedValue === "boolean"
+      ).slice(0, 12);
+      for (const [nestedKey, nestedValue] of nested) summary[key + "." + nestedKey] = nestedValue as number | boolean;
+    }
+  }
+  return summary;
+}
+
 export async function runAgent(input: {
   message: string;
   history: Array<{ role: string; content: string }>;
@@ -693,7 +711,7 @@ export async function runAgent(input: {
       try {
         await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "started", risk: tool.risk });
         const result = await tool.execute(args, input.context);
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence: summariseToolEvidence(result) });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: true, result }) };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
