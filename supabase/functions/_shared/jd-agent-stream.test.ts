@@ -7,10 +7,10 @@ function equal(actual: unknown, expected: unknown, label: string) {
 Deno.test("Responses stream forwards text deltas and returns the completed response", async () => {
   const encoder = new TextEncoder();
   const chunks = [
-    'data: {"type":"response.output_text.delta","delta":"Hello "}\\n\\n',
-    'data: {"type":"response.output_text.delta","delta":"world"}\\n\\n',
-    'data: {"type":"response.completed","response":{"status":"completed","output_text":"Hello world","usage":{"output_tokens":2}}}\\n\\n',
-    "data: [DONE]\\n\\n",
+    'data: {"type":"response.output_text.delta","delta":"Hello "}\n\n',
+    'data: {"type":"response.output_text.delta","delta":"world"}\n\n',
+    'data: {"type":"response.completed","response":{"status":"completed","output_text":"Hello world","usage":{"output_tokens":2}}}\n\n',
+    "data: [DONE]\n\n",
   ];
   const body = new ReadableStream<Uint8Array>({
     start(controller) { for (const chunk of chunks) controller.enqueue(encoder.encode(chunk)); controller.close(); },
@@ -24,8 +24,8 @@ Deno.test("Responses stream forwards text deltas and returns the completed respo
 
 Deno.test("Responses stream handles chunk boundaries and incomplete output", async () => {
   const encoder = new TextEncoder();
-  const first = 'data: {"type":"response.output_text.delta","delta":"Partial"}\\n';
-  const second = 'data: {"type":"response.incomplete","response":{"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[]}}\\n';
+  const first = 'data: {"type":"response.output_text.delta","delta":"Partial"}\n';
+  const second = 'data: {"type":"response.incomplete","response":{"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[]}}\n';
   const body = new ReadableStream<Uint8Array>({
     start(controller) { controller.enqueue(encoder.encode(first.slice(0, 17))); controller.enqueue(encoder.encode(first.slice(17) + second)); controller.close(); },
   });
@@ -38,7 +38,7 @@ Deno.test("Responses stream handles chunk boundaries and incomplete output", asy
 
 Deno.test("Responses stream fails closed when no terminal event arrives", async () => {
   const body = new ReadableStream<Uint8Array>({
-    start(controller) { controller.enqueue(new TextEncoder().encode('data: {"type":"response.output_text.delta","delta":"partial"}\\n')); controller.close(); },
+    start(controller) { controller.enqueue(new TextEncoder().encode('data: {"type":"response.output_text.delta","delta":"partial"}\n')); controller.close(); },
   });
   let failed = false;
   try { await readResponsesStream(body); } catch { failed = true; }
