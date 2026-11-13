@@ -238,11 +238,18 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const visualTasksQuery = canViewOperationalTasks
       ? admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000)
       : Promise.resolve({ data: [] as any[], error: null, count: 0 });
-    const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
+    const visualBlueprintQuery = canViewOperationalTasks
+      ? admin.from("jd_organisation_blueprints").select("blueprint_json,status,updated_at").eq("school_id", schoolId).in("status", ["approved", "provisioned"]).order("updated_at", { ascending: false }).limit(1).maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+    const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualBlueprint, error: visualBlueprintError }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
       visualTasksQuery,
+      visualBlueprintQuery,
       admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("actor_id", requestedBy).order("created_at", { ascending: false }).limit(20),
       admin.from("jd_automation_steps").select("id,tool_key,status,error_message,output_json,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
     ]);
+    const blueprintDepartments = Array.isArray(visualBlueprint?.blueprint_json?.departments)
+      ? visualBlueprint.blueprint_json.departments.filter((item: any) => item && typeof item.name === "string").map((item: any) => ({ name: item.name, purpose: typeof item.purpose === "string" ? item.purpose : null }))
+      : [];
     const visualWorkspace = buildJdVisualWorkspace({
       tasks: canViewOperationalTasks ? (visualTasks || []) : [],
       tasksAvailable: canViewOperationalTasks && !visualTasksError,
