@@ -15,8 +15,8 @@
 ## JD-specific implementation
 
 - `jd-agent-stream.ts` parses Responses API SSE and exposes only user-visible text deltas. It also returns the terminal response for usage accounting and tool calls.
-- `jd-execution-worker` writes partial text into a job-linked `jd_messages` row, throttled to 800 ms. The authenticated job-status action returns that row while active; ChatHome already polls each active job every three seconds and now displays the partial text.
-- The runtime checkpoints continuation text/count and the active model. It continues at most twice. Incomplete function-call output is never executed.
+- `jd-execution-worker` writes partial text into a job-linked `jd_messages` row, throttled to 800 ms. The authenticated job-status action returns that row while active; ChatHome polls each active job every 1.2 seconds and now displays the partial text.
+- The runtime requests up to 6,144 output tokens per model round, checkpoints continuation text/count and the active model, and continues at most twice. Incomplete function-call output is never executed.
 - `jd-agent-routing.ts` classifies quick, balanced and reasoning work. Optional `JD_MODEL_FAST_NAME` and `JD_MODEL_REASONING_NAME` secrets are used only when configured; otherwise `JD_MODEL_NAME` (default `openrouter/free`) remains in effect.
 - `create_business_document_draft` saves private TXT, Markdown, CSV, JSON, HTML, CSS, JS, TS, Python, SQL, XML, YAML, DOCX, XLSX or PPTX drafts to the existing `jd-business-documents` bucket and records them in `jd_business_documents`. The tool is limited to admins, managers and bursars. Input content is capped at 95 KB and generated output at 10 MB. XLSX uses bounded sheets/rows JSON; PPTX uses slides/bullets JSON; DOCX accepts Markdown. Storage paths are generated and tenant-scoped.
 - The run monitor shows average first-token latency when provider requests report text deltas.
