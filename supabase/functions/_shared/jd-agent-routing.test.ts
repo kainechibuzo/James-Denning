@@ -14,5 +14,5 @@ Deno.test("JD routing uses configured model rungs and safely preserves the defau
   equal(selectJdModel("How many staff?", "openrouter/free", { fast: "google/gemini-fast" }), "google/gemini-fast", "fast override");
   equal(selectJdModel("Prepare a strategic plan", "openrouter/free", { reasoning: "google/gemini-pro" }), "google/gemini-pro", "reasoning override");
   equal(selectJdModel("Prepare a strategic plan", "openrouter/free", { reasoning: "bad model slug" }), "openrouter/free", "invalid override");
-  equal(selectJdModel("A normal update", "fixed/model", { fast: "google/gemini-fast" }), "fixed/model", "balanced keeps configured model");
+  equal(selectJdModel("Please review the current department activity and summarise the key changes for the management team.", "fixed/model", { fast: "google/gemini-fast" }), "fixed/model", "balanced keeps configured model");
 });
