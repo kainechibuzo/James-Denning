@@ -277,7 +277,7 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [x] Stream Responses API text deltas into the durable assistant message; expose active partial content through the existing job-status poll.
 - [x] Continue output-token-truncated answers up to two times and checkpoint continuation state; reject incomplete tool-call arguments.
 - [x] Add opt-in fast/balanced/reasoning model routing with the configured default preserved when optional model secrets are absent.
-- [x] Add role-scoped private TXT/MD/CSV/JSON/DOCX/XLSX/PPTX drafts using the existing document bucket and document table.
+- [x] Add role-scoped private TXT/MD/CSV/JSON/HTML/CSS/JS/TS/PY/SQL/XML/YAML/DOCX/XLSX/PPTX drafts and staged source files using the existing document bucket and document table.
 - [x] Record first-token latency and expose average first-token time in the run monitor.
 - [ ] CI, staging stream visibility, checkpoint-resume, private file storage/download and tenant-isolation verification.
 - [ ] Production deployment after all release gates pass.
