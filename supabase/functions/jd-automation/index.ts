@@ -1,3 +1,5 @@
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
