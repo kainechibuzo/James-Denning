@@ -1,4 +1,4 @@
-import { sanitizeGeneratedFilename, validateDocumentContent } from "./jd-agent-file-generator.ts";
+import { generateJdDocument, sanitizeGeneratedFilename, validateDocumentContent } from "./jd-agent-file-generator.ts";
 
 function equal(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) throw new Error(label + ": expected " + String(expected) + ", received " + String(actual));
@@ -45,4 +45,19 @@ Deno.test("JD generated filenames remain relative and cannot traverse directorie
   let rejected = false;
   try { sanitizeGeneratedFilename("../secrets", "txt"); } catch { rejected = true; }
   equal(rejected, true, "path traversal rejected");
+});
+Deno.test("JD Office generators produce real ZIP-based Office files", async () => {
+  const cases = [
+    { format: "docx" as const, content: "# Report\n\nA complete generated report body with useful details." },
+    { format: "xlsx" as const, content: JSON.stringify({ sheets: [{ name: "Summary", rows: [["Metric", "Value"], ["Revenue", 4200]] }] }) },
+    { format: "pptx" as const, content: JSON.stringify({ slides: [{ title: "Overview", bullets: ["First point", "Second point"] }] }) },
+  ];
+  for (const item of cases) {
+    const generated = await generateJdDocument(item.format, item.content, "JD Test Document");
+    equal(generated.bytes[0], 0x50, item.format + " ZIP signature byte 1");
+    equal(generated.bytes[1], 0x4b, item.format + " ZIP signature byte 2");
+    equal(generated.bytes[2], 0x03, item.format + " ZIP signature byte 3");
+    equal(generated.bytes[3], 0x04, item.format + " ZIP signature byte 4");
+    if (generated.bytes.byteLength < 500) throw new Error(item.format + " output is unexpectedly small");
+  }
 });
