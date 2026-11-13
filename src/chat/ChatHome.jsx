@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
@@ -32,6 +32,45 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   }, []);
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
+  const backgroundWorking = messages.some((item) => item.role === "assistant" && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
+
+  // The submit endpoint only enqueues routine work. Keep the chat bubble in sync
+  // with the durable run ledger, then replace the queued notice with the saved reply.
+  useEffect(() => {
+    const pending = messages.filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
+    if (!pending.length || !conversationId) return undefined;
+    let stopped = false;
+    const poll = async () => {
+      const { data, error: pollError } = await supabase.functions.invoke("jd-automation", { body: { action: "execution.monitor.list" } });
+      if (stopped || pollError || !Array.isArray(data?.runs)) return;
+      const byId = new Map(data.runs.map((run) => [run.id, run]));
+      const updates = pending.map(async (item) => {
+        const current = byId.get(item.run.id);
+        if (!current) return;
+        const status = current.status || item.run.status;
+        if (status === item.run.status && !["completed", "partially_completed", "failed", "cancelled"].includes(status)) return;
+        let finalMessage = null;
+        if (["completed", "partially_completed", "failed", "cancelled"].includes(status)) {
+          const { data: history } = await supabase.functions.invoke("jd-automation", { body: { action: "history", conversationId } });
+          finalMessage = (history?.messages || []).find((message) => message.role === "assistant" && message.content_json?.job_id === item.jobId) || null;
+        }
+        if (stopped) return;
+        setMessages((currentMessages) => currentMessages.map((message) => {
+          if (message.jobId !== item.jobId) return message;
+          return {
+            ...message,
+            content: finalMessage?.content || message.content,
+            toolEvents: finalMessage?.content_json?.toolEvents || message.toolEvents || [],
+            run: { ...message.run, ...current, status },
+          };
+        }));
+      });
+      await Promise.all(updates);
+    };
+    void poll();
+    const timer = setInterval(poll, 2500);
+    return () => { stopped = true; clearInterval(timer); };
+  }, [messages, conversationId]);
 
   const send = async (override) => {
     const message = (override ?? draft).trim();
@@ -47,7 +86,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       if (invokeError) throw invokeError;
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) setConversationId(data.conversationId);
-      setMessages((current) => [...current, { role: "assistant", content: data.reply || data.message || "The request was recorded.", run: data.run, toolEvents: data.toolEvents || [] }]);
+      setMessages((current) => [...current, { role: "assistant", content: data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [] }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
       const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
@@ -158,7 +197,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "JD is working…" : "Free AI model · Workspace connected"}</span></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "Sending to JD…" : backgroundWorking ? (messages.some(item => item.run?.status === "running") ? "JD is running…" : "JD is queued…") : "Free AI model · Workspace connected"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-spark"><Sparkles size={20}/></div>
             <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
