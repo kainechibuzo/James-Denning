@@ -41,3 +41,22 @@ Deno.test("does not label an empty evidence source as verified", () => {
   assertEquals(evidence.status, "pending");
   assertEquals(evidence.items, []);
 });
+
+Deno.test("uses approved organisation blueprint departments including zero-task departments", () => {
+  const ui = buildJdVisualWorkspace({
+    tasksAvailable: true,
+    departmentDefinitionsAvailable: true,
+    departments: [
+      { name: "Finance", purpose: "Financial control" },
+      { name: "Operations", purpose: "Service delivery" },
+    ],
+    tasks: [{ id: "t1", title: "Reconcile ledger", department: "Finance", status: "in_progress" }],
+  });
+  const dashboard = ui.blocks[1] as any;
+  assertEquals(dashboard.source, "approved_organisation_blueprint + jd_operational_tasks");
+  assertEquals(dashboard.items.length, 2);
+  assertEquals(dashboard.items[0].name, "Finance");
+  assertEquals(dashboard.items[0].metric, "1 open");
+  assertEquals(dashboard.items[1].name, "Operations");
+  assertEquals(dashboard.items[1].metric, "0 open");
+});
