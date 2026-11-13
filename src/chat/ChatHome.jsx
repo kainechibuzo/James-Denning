@@ -134,6 +134,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       setError(data?.error || "JD could not update this task. Refresh the workspace and try again.");
       return;
     }
+    setError(data.auditRecorded === false
+      ? "Task status changed, but JD could not record its audit event. This transition needs administrator review."
+      : "");
+    const confirmedStatus = data.task.status || status;
     setMessages((current) => current.map((message) => {
       if (!message.visualWorkspace?.blocks) return message;
       return {
@@ -142,7 +146,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           ...message.visualWorkspace,
           blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
             ...block,
-            items: (block.items || []).map((item) => item.id === taskId ? { ...item, status } : item),
+            items: (block.items || []).map((item) => item.id === taskId ? { ...item, status: confirmedStatus } : item),
           })),
         },
       };

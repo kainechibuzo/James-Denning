@@ -17,6 +17,8 @@ const taskStatus = (status: string) => status === "completed" ? "completed" :
 export function buildJdVisualWorkspace(input: {
   tasks?: JdVisualTask[]; steps?: JdVisualStep[]; audit?: JdVisualAudit[];
   tasksAvailable?: boolean; evidenceAvailable?: boolean;
+  departments?: JdVisualDepartment[]; departmentDefinitionsAvailable?: boolean;
+  tasksTotal?: number | null;
 }) {
   const blocks: Record<string, unknown>[] = [];
   if (input.tasksAvailable) {

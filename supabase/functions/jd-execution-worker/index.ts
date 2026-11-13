@@ -253,6 +253,9 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const visualWorkspace = buildJdVisualWorkspace({
       tasks: canViewOperationalTasks ? (visualTasks || []) : [],
       tasksAvailable: canViewOperationalTasks && !visualTasksError,
+      departments: blueprintDepartments,
+      departmentDefinitionsAvailable: !visualBlueprintError && blueprintDepartments.length > 0,
+      tasksTotal: visualTasksCount ?? (visualTasks || []).length,
       audit: visualAudit || [], steps: visualSteps || [],
       evidenceAvailable: !visualAuditError && !visualStepsError,
     });
