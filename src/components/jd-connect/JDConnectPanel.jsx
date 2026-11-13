@@ -41,6 +41,7 @@ export function JDConnectPanel({notify=()=>{}}){
   setArgErrors(p=>({...p,[id]:""}));return call("tools.call",{toolId:id,arguments:args});
  });
  const decide=(id,decision)=>run("approval:"+id,()=>call("approvals.resolve",{approvalId:id,decision}));
+ const trustTool=(id,enabled)=>run("trust:"+id,()=>call("tools.set_read_only",{toolId:id,enabled}));
  const statusColor=s=>s==="succeeded"||s==="connected"||s==="executed"?"#15803d":s==="failed"||s==="error"||s==="denied"?"#b91c1c":"#b45309";
  if(loading)return <div style={{padding:28,textAlign:"center",color:"var(--jd-muted,#6b7280)"}}><Loader2 className="animate-spin" size={20}/> Loading JD Connect…</div>;
  return <div style={{color:"var(--jd-text,#111827)"}}>
@@ -81,11 +82,12 @@ export function JDConnectPanel({notify=()=>{}}){
     </div>
     {expanded===server.id&&<div style={{marginTop:12,borderTop:"1px solid var(--jd-border,#e5e7eb)",paddingTop:10}}>
      {!list.length?<div style={{fontSize:11,color:"var(--jd-muted,#6b7280)"}}>No tools discovered.</div>:list.map(tool=><div key={tool.id} style={{padding:"10px 0",borderBottom:"1px solid var(--jd-border,#e5e7eb)"}}>
-      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}><strong style={{fontSize:12}}>{tool.name}</strong><span style={{fontSize:9,fontWeight:800,color:tool.read_only?"#15803d":"#b45309"}}>{tool.read_only?"READ ONLY":"APPROVAL REQUIRED"}</span></div>
+      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}><strong style={{fontSize:12}}>{tool.name}</strong><span style={{fontSize:9,fontWeight:800,color:tool.read_only?"#15803d":"#b45309"}}>{tool.read_only?"AUTO READ-ONLY":tool.annotations?.readOnlyHint===true?"READ-ONLY CANDIDATE · APPROVAL":"APPROVAL REQUIRED"}</span></div>
       {tool.description&&<div style={{fontSize:11,color:"var(--jd-muted,#6b7280)",margin:"4px 0 8px"}}>{tool.description}</div>}
       <textarea aria-label={`Arguments for ${tool.name}`} value={toolArgs[tool.id]??"{}"} onChange={e=>setToolArgs(p=>({...p,[tool.id]:e.target.value}))} spellCheck={false} style={{...field,minHeight:68,marginBottom:6,fontFamily:"monospace",fontSize:11}}/>
       {argErrors[tool.id]&&<div role="alert" style={{fontSize:10,color:"#b91c1c",marginBottom:5}}>{argErrors[tool.id]}</div>}
-      <button onClick={()=>invoke(tool.id)} disabled={!!busy} style={{...button,background:"#111827",color:"#fff"}}>{busy==="tool:"+tool.id?"Running…":tool.read_only?"Run read-only tool":"Request approval"}</button>
+      {tool.annotations?.readOnlyHint===true&&<button onClick={()=>trustTool(tool.id,!tool.read_only)} disabled={!!busy} style={{...button,background:tool.read_only?"#fef2f2":"#ecfdf5",color:tool.read_only?"#991b1b":"#166534",marginRight:6}}>{tool.read_only?"Require approval":"Trust read-only"}</button>}
+      <button onClick={()=>invoke(tool.id)} disabled={!!busy} style={{...button,background:"#111827",color:"#fff"}}>{busy==="tool:"+tool.id?"Running…":tool.read_only?"Run trusted read-only tool":"Request approval"}</button>
      </div>)}
     </div>}
    </div>;
