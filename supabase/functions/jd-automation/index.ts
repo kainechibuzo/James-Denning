@@ -150,14 +150,12 @@ Deno.serve(async (req) => {
   if(runErr||!run||(run.requested_by!==authData.user.id&&profile.role!=="admin"))
    return json({error:"Execution job not found"},404);
   let assistantMessage=null;
-  if(["completed","partially_completed","failed","cancelled"].includes(String(run.status))){
-   const {data:message}=await admin.from("jd_messages")
-    .select("id,role,content,content_json,created_at")
-    .eq("school_id",profile.school_id).eq("conversation_id",run.conversation_id)
-    .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
-    .order("created_at",{ascending:false}).limit(1).maybeSingle();
-   assistantMessage=message||null;
-  }
+  const {data:message}=await admin.from("jd_messages")
+   .select("id,role,content,content_json,created_at")
+   .eq("school_id",profile.school_id).eq("conversation_id",run.conversation_id)
+   .eq("role","assistant").filter("content_json->>job_id","eq",jobId)
+   .order("created_at",{ascending:false}).limit(1).maybeSingle();
+  assistantMessage=message||null;
   return json({job,run,assistantMessage});
  }
  if(payload.action==="execution.monitor.list"){
