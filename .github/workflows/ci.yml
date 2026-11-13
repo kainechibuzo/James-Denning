@@ -65,6 +65,9 @@ jobs:
       - name: Test JD OAuth cryptography helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-oauth-crypto.test.ts
 
+      - name: Test JD inbound MCP server security contract
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-server.test.ts
+
       - name: Test JD Connect MCP protocol and migration contracts
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-core.test.ts
