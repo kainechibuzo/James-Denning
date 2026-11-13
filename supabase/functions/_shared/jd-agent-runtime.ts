@@ -4,6 +4,8 @@ import { summariseScores, summariseTaskStatuses } from "./jd-business-intelligen
 import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
 import { validateVacancy } from "./jd-hiring.ts";
+import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
+import { analyseKpiTrends } from "./jd-kpi-trends.ts";
 import { readResponsesStream, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
 export type AgentContext = {
@@ -206,6 +208,82 @@ const tools: ToolSpec[] = [  {
     },
   },
 
+  {
+    name: "get_business_expense_anomalies",
+    description: "Analyse approved and paid business expenses against active budgets and historical patterns. Returns advisory findings with evidence, keeps currencies separate, and never changes expenses or budgets. Use for finance reviews and unusual-spend questions.",
+    risk: "low",
+    roles: ["admin", "manager"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async (_args, ctx) => {
+      const now = new Date();
+      const since = new Date(now.getTime() - 180 * 86400000).toISOString().slice(0, 10);
+      const [expenses, budgets] = await Promise.all([
+        ctx.admin.from("jd_business_expenses")
+          .select("id,category,amount,currency,incurred_on,status", { count: "exact" })
+          .eq("school_id", ctx.schoolId).gte("incurred_on", since)
+          .order("incurred_on", { ascending: false }).limit(5000),
+        ctx.admin.from("jd_business_budgets")
+          .select("category,currency,period_start,period_end,budget_amount,alert_threshold_pct,status", { count: "exact" })
+          .eq("school_id", ctx.schoolId).eq("status", "active")
+          .order("period_end", { ascending: false }).limit(1000),
+      ]);
+      if (expenses.error || budgets.error) throw new Error("Could not load the complete finance data required for expense analysis");
+      const report = analyseExpenseAnomalies(expenses.data || [], budgets.data || [], now.toISOString().slice(0, 10));
+      return {
+        ...report,
+        source_counts: { expenses: expenses.data?.length || 0, budgets: budgets.data?.length || 0 },
+        sample_truncated: {
+          expenses: (expenses.count ?? 0) > (expenses.data?.length || 0),
+          budgets: (budgets.count ?? 0) > (budgets.data?.length || 0),
+        },
+        date_window: { from: since, through: now.toISOString().slice(0, 10) },
+      };
+    },
+  },
+  {
+    name: "get_business_kpi_trends",
+    description: "Analyse monthly business KPIs for the authenticated organisation: cleared cash in/out by currency, approved expenses by currency, new and won opportunities, resolved support cases and new customers. Includes trailing-versus-prior movement and limitations. Read-only; never combines currencies.",
+    risk: "low",
+    roles: ["admin", "manager"],
+    parameters: {
+      type: "object",
+      properties: { months_back: { type: "integer", minimum: 3, maximum: 24 } },
+      required: [],
+      additionalProperties: false,
+    },
+    execute: async (args, ctx) => {
+      const monthsBack = Math.min(24, Math.max(3, Math.trunc(Number(args.months_back || 12))));
+      const now = new Date();
+      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack + 1, 1));
+      const sinceDate = start.toISOString().slice(0, 10);
+      const sinceTimestamp = start.toISOString();
+      const specs = await Promise.all([
+        ctx.admin.from("jd_business_cash_transactions").select("occurred_on,direction,amount,currency,status", { count: "exact" }).eq("school_id", ctx.schoolId).gte("occurred_on", sinceDate).order("occurred_on", { ascending: true }).limit(5000),
+        ctx.admin.from("jd_business_expenses").select("incurred_on,amount,currency,status", { count: "exact" }).eq("school_id", ctx.schoolId).gte("incurred_on", sinceDate).order("incurred_on", { ascending: true }).limit(5000),
+        ctx.admin.from("jd_business_opportunities").select("created_at,stage", { count: "exact" }).eq("school_id", ctx.schoolId).gte("created_at", sinceTimestamp).order("created_at", { ascending: true }).limit(5000),
+        ctx.admin.from("jd_business_support_cases").select("created_at,resolved_at,status", { count: "exact" }).eq("school_id", ctx.schoolId).gte("resolved_at", sinceTimestamp).order("resolved_at", { ascending: true }).limit(5000),
+        ctx.admin.from("jd_business_customers").select("created_at", { count: "exact" }).eq("school_id", ctx.schoolId).gte("created_at", sinceTimestamp).order("created_at", { ascending: true }).limit(5000),
+      ]);
+      if (specs.some((result: any) => result.error)) throw new Error("Could not load the complete business KPI data required for trend analysis");
+      const [cash, expenses, opportunities, support, customers] = specs;
+      const report = analyseKpiTrends({
+        cash: cash.data || [],
+        expenses: expenses.data || [],
+        opportunities: opportunities.data || [],
+        support: support.data || [],
+        customers: customers.data || [],
+      }, now.toISOString().slice(0, 10), monthsBack);
+      const names = ["cash_transactions", "expenses", "opportunities", "support_cases", "customers"];
+      const counts = specs.map((result: any) => ({ rows: result.data?.length || 0, total: result.count ?? result.data?.length ?? 0 }));
+      return {
+        ...report,
+        months_back: monthsBack,
+        source_counts: Object.fromEntries(names.map((name, index) => [name, counts[index]])),
+        sample_truncated: Object.fromEntries(names.map((name, index) => [name, counts[index].total > counts[index].rows])),
+        date_window: { from: sinceDate, through: now.toISOString() },
+      };
+    },
+  },
   {
     name: "get_recent_activity_logs",
     description: "Inspect recent organisation admin audit activity. Returns a bounded, privacy-conscious list of recent actions, entity types, timestamps and actor labels. Use when asked to inspect logs, investigate recent changes, or explain what happened.",
