@@ -116,9 +116,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         @media(max-width:760px){
           .jd-command{height:calc(100dvh - 57px);min-height:0}
           .jd-rail{position:absolute;z-index:8;inset:0 auto 0 0;width:min(300px,86vw);max-width:86vw;box-shadow:16px 0 40px rgba(20,24,30,.16);overflow:auto}
-          .jd-top{padding:0 12px;height:52px;flex:0 0 52px}
-          .jd-top-sub{font-size:9.5px}
-          .jd-scroll{padding:16px 14px 8px}
+          .jd-history-scrim{display:block;position:absolute;z-index:7;inset:0;background:rgba(18,22,28,.28);border:0;padding:0}
+          .jd-scroll{padding:54px 14px 8px}
           .jd-welcome{width:100%;padding:8px 0 12px}
           .jd-spark{width:38px;height:38px;border-radius:12px;margin-bottom:14px}
           .jd-heading{font-size:25px;letter-spacing:-.9px;margin-bottom:7px}
