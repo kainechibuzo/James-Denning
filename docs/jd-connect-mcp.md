@@ -11,7 +11,7 @@ JD Connect is a tenant-scoped remote MCP client and tool gateway for JD chat.
 - Tool schema discovery and persistence.
 - JD chat discovery through `list_connected_mcp_tools`.
 - JD chat invocation through `call_connected_mcp_tool`.
-- Explicit read-only classification: only tools with `readOnlyHint: true` and without destructive/open-world hints execute immediately.
+- Read-only tools default to approval-required. A manager must explicitly trust a candidate that advertises `readOnlyHint: true`; destructive/open-world candidates cannot be trusted for automatic execution.
 - Every other tool call is saved as an approval request with encrypted arguments.
 - Admin/manager approval queue, exact argument preview, approve-and-execute or decline.
 - Tenant-scoped execution history and audit events.
@@ -60,7 +60,7 @@ A code merge alone does not create provider credentials, enable third-party OAut
 - Only workspace admins and managers can manage or invoke connectors.
 - Connector records are isolated by `school_id`.
 - Credentials and pending tool arguments are encrypted with AES-GCM.
-- All unknown, write-capable, destructive or open-world tools require approval.
+- All tools require approval by default. A manager may explicitly trust a tool for automatic execution only when its server annotation marks it read-only and does not mark it destructive or open-world.
 - Approval requests expire after 15 minutes.
 - Tool results are not trusted as instructions.
 - The browser never receives stored bearer tokens.
