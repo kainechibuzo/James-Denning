@@ -1,7 +1,7 @@
 # JD-232 — Socrates-inspired response architecture
 
 - **Created:** 2026-11-13
-- **Status:** implemented in source; CI/staging verification pending; not deployed.
+- **Status:** implemented in source; CI and application verification passed; staging verification pending; not deployed.
 - **Reference project:** `kainechibuzo/socratesintelligence`.
 
 ## Adopted patterns
@@ -34,7 +34,8 @@ Socrates' tool loop handles one detected tool call per round. JD already support
 
 ## Verification still required
 
-- CI green, including Deno SSE, routing, filename-safety and Office binary-generation tests.
+- [x] CI green, including Deno SSE, routing, filename-safety and Office binary-generation tests (PR #70 Web CI run `43445279845`).
+- [x] Application verification/build passed (PR #70 run `43445280108`).
 - Staging test that sees partial assistant text before run completion.
 - Long-response test that reaches the output limit, continues, and resumes after a checkpoint.
 - Staging private-draft upload, DB registration, signed download and cross-tenant access denial.
