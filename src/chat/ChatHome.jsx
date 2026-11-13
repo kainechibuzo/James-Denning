@@ -158,7 +158,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "JD is working…" : "Workspace connected"}</span></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className="jd-utility-status">{sending ? "JD is working…" : "Free AI model · Workspace connected"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-spark"><Sparkles size={20}/></div>
             <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
@@ -180,7 +180,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask JD to do something in your organisation…" disabled={sending} rows={2}/>
             <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><button className="jd-send" type="button" disabled={!draft.trim()||sending} onClick={()=>send()} aria-label="Send message">{sending?<LoaderCircle size={16}/>:<ArrowUp size={17}/>}</button></div>
           </div>
-          <div className="jd-disclaimer">JD verifies available records and reports what it could and could not complete.</div>
+          <div className="jd-disclaimer">Free model routing · JD verifies available records and reports what it could and could not complete.</div>
         </div>
       </section>}
     </div>
