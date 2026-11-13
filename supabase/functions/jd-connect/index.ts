@@ -40,13 +40,13 @@ Deno.serve(async req=>{
   return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,key):"";
  };
  const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string)=>{
-  const id=crypto.randomUUID();
+  const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
   const headers:Record<string,string>={"Content-Type":"application/json","Accept":"application/json, text/event-stream","MCP-Protocol-Version":"2025-06-18"};
   if(token)headers.Authorization=`Bearer ${token}`;if(sessionId)headers["Mcp-Session-Id"]=sessionId;
-  const response=await fetch(endpoint,{method:"POST",headers,redirect:"error",signal:AbortSignal.timeout(15000),body:JSON.stringify({jsonrpc:"2.0",id,method,params})});
+  const response=await fetch(endpoint,{method:"POST",headers,redirect:"error",signal:AbortSignal.timeout(15000),body:JSON.stringify(notification?{jsonrpc:"2.0",method,params}:{jsonrpc:"2.0",id,method,params})});
   const newSession=response.headers.get("Mcp-Session-Id")||sessionId||"";
   if(response.status===202)return {result:{},sessionId:newSession};
-  const raw=await response.text();if(!response.ok)throw new Error(`MCP server returned HTTP ${response.status}`);
+  const raw=await response.text();if(!response.ok)throw new Error(`MCP server returned HTTP ${response.status}`);if(notification)return {result:{},sessionId:newSession};
   const payload=parseMcpPayload(raw,response.headers.get("Content-Type")||"application/json");
   if(payload.error)throw new Error(clip(payload.error.message,300)||"MCP protocol error");
   if(!("result" in payload))throw new Error("MCP server omitted the JSON-RPC result");
@@ -140,8 +140,10 @@ Deno.serve(async req=>{
    const result=await execute(server,tool.name,args,null);return send({requiresApproval:false,...result});
   }
   if(body.action==="approvals.list"){
-   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).eq("status","pending").order("created_at",{ascending:false}).limit(100);
-   if(error)throw error;return send({approvals:data||[]});
+   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).eq("status","pending").order("created_at",{ascending:false}).limit(100);
+   if(error)throw error;
+   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,key)))})));
+   return send({approvals});
   }
   if(body.action==="approvals.resolve"){
    const id=clip(body.approvalId,64),decision=body.decision==="approve"?"approved":body.decision==="deny"?"denied":"";
