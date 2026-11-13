@@ -4,6 +4,7 @@ import { summariseScores, summariseTaskStatuses } from "./jd-business-intelligen
 import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
 import { validateVacancy } from "./jd-hiring.ts";
+import { readResponsesStream, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -341,10 +342,34 @@ const tools: ToolSpec[] = [  {
       })));
     },
   },
+  {
+    name: "create_business_document_draft",
+    description: "Create a private, downloadable plain-text document draft for the authenticated organisation. Use only when the user explicitly asks to create a report, plan, policy, SOP, proposal or other document file. This saves a new draft; it never publishes, emails or changes an existing document.",
+    risk: "medium",
+    roles: ["admin", "manager", "bursar"],
+    parameters: { type: "object", properties: { title: { type: "string", minLength: 1, maxLength: 180 }, content: { type: "string", minLength: 40, maxLength: 95000 } }, required: ["title", "content"], additionalProperties: false },
+    execute: async (args, ctx) => {
+      const title = String(args.title || "").trim().slice(0, 180);
+      const content = String(args.content || "");
+      const bytes = new TextEncoder().encode(content);
+      if (!title || bytes.length < 40 || bytes.length > 95000) throw new Error("Document draft is empty or exceeds the supported 95 KB limit");
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "document";
+      const storagePath = ctx.schoolId + "/generated/" + crypto.randomUUID() + "-" + slug + ".txt";
+      const storage = ctx.admin.storage.from("jd-business-documents");
+      const uploaded = await storage.upload(storagePath, new Blob([bytes], { type: "text/plain" }), { contentType: "text/plain", upsert: false });
+      if (uploaded.error) throw new Error("Private document storage rejected the generated draft");
+      const checksum = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))).map((value) => value.toString(16).padStart(2, "0")).join("");
+      const inserted = await ctx.admin.from("jd_business_documents").insert({ school_id: ctx.schoolId, title, storage_path: storagePath, mime_type: "text/plain", byte_size: bytes.length, checksum_sha256: checksum, extraction_status: "completed", extracted_text: content, summary: content.slice(0, 10000), source_metadata: { source: "jd_generated_draft", generated_at: new Date().toISOString(), format: "text/plain" }, created_by: ctx.userId }).select("id").single();
+      if (inserted.error || !inserted.data) { await storage.remove([storagePath]); throw new Error("Generated draft could not be registered in the organisation document library"); }
+      const signed = await storage.createSignedUrl(storagePath, 3600);
+      if (signed.error || !signed.data?.signedUrl) throw new Error("Draft was saved, but a temporary download link could not be created");
+      return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data.signedUrl, download_url_expires_in_seconds: 3600 };
+    },
+  },
 ];
 
 const modelTools = (context: AgentContext) => tools
-  .filter((tool) => tool.risk === "low" && roleAllowed(context, tool.roles))
+  .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
   .map((tool) => ({
     type: "function",
     name: tool.name,
@@ -416,7 +441,7 @@ export function resolveFollowupModel(configuredModel: string, currentModel: stri
   return selected;
 }
 
-async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string) {
+async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
   const endpoint = `${baseUrl.replace(/\/$/, "")}/responses`;
   const maxAttempts = 3;
   let lastNetworkError: unknown = null;
@@ -432,7 +457,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
           "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com",
           "X-OpenRouter-Title": "James Denning JD",
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, stream: true }),
         signal: AbortSignal.timeout(45000),
       });
     } catch (error) {
@@ -446,11 +471,9 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
     }
 
     if (response.ok) {
-      try {
-        return { response: await response.json(), attempts: attempt };
-      } catch {
-        throw new Error("Model provider returned an invalid JSON response");
-      }
+      if (!response.body) throw new Error("Model provider returned an empty response stream");
+      const streamed = await readResponsesStream(response.body, onTextDelta);
+      return { response: streamed, attempts: attempt };
     }
 
     const status = response.status;
@@ -475,6 +498,8 @@ export type AgentRuntimeCheckpoint = {
   modelRequests: Array<Record<string, unknown>>;
   requestIndex: number;
   activeModel?: string;
+  continuationText?: string;
+  continuationCount?: number;
 };
 
 export async function runAgent(input: {
@@ -487,6 +512,7 @@ export async function runAgent(input: {
   resumeState?: AgentRuntimeCheckpoint | null;
   onCheckpoint?: (state: AgentRuntimeCheckpoint) => Promise<void>;
   onToolEvent?: (event: Record<string, unknown>) => Promise<void>;
+  onTextDelta?: (delta: string) => void;
 }) {
   const baseUrl = input.baseUrl || "https://openrouter.ai/api/v1";
   const available = tools.filter((tool) => tool.risk === "low" && roleAllowed(input.context, tool.roles));
@@ -516,6 +542,9 @@ export async function runAgent(input: {
   const modelRequests: Array<Record<string, unknown>> = restored?.modelRequests || [];
   let requestIndex = restored?.requestIndex || 0;
   const completedCalls = new Set<string>(restored?.completedCalls || []);
+  let continuationText = restored?.continuationText || "";
+  let continuationCount = Number(restored?.continuationCount || 0);
+  if (continuationText) input.onTextDelta?.(continuationText);
   const persistCheckpoint = async () => {
     await input.onCheckpoint?.({
       version: 1,
@@ -525,6 +554,8 @@ export async function runAgent(input: {
       modelRequests,
       requestIndex,
       activeModel,
+      continuationText,
+      continuationCount,
     });
   };
   let activeModel = restored?.activeModel ||
@@ -532,7 +563,7 @@ export async function runAgent(input: {
 
   const requestModel = async (payload: Record<string, unknown>) => {
     const startedAt = performance.now();
-    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl);
+    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, input.onTextDelta);
     const latencyMs = Math.max(0, Math.round(performance.now() - startedAt));
     requestIndex += 1;
     addUsage(tokenUsage, result.response.usage);
@@ -563,19 +594,21 @@ export async function runAgent(input: {
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item: any) => item.type === "function_call");
     if (!calls.length) {
-      const messageText = output
-        .filter((item: any) => item?.type === "message" && Array.isArray(item.content))
-        .flatMap((item: any) => item.content)
-        .filter((part: any) => part?.type === "output_text" || part?.type === "text")
-        .map((part: any) => typeof part.text === "string" ? part.text : "")
-        .join("\\n")
-        .trim();
-      const text = (typeof response.output_text === "string" && response.output_text.trim())
-        ? response.output_text
-        : messageText;
-      if (!text) throw new Error("The model response contained no readable assistant message");
+      const text = responseOutputText(response);
+      if (!text && response.status !== "incomplete") throw new Error("The model response contained no readable assistant message");
+      if (shouldContinueResponse(response, continuationCount)) {
+        continuationText = [continuationText, text].filter(Boolean).join("\\n\\n");
+        continuationCount += 1;
+        conversationInput.push(...output, { role: "user", content: "Continue the previous response from exactly where it stopped. Do not repeat earlier paragraphs, headings or list items. Finish the remaining requested content and provide a clear ending." });
+        await persistCheckpoint();
+        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
+        continue;
+      }
+      const fullText = [continuationText, text].filter(Boolean).join("\\n\\n");
+      if (!fullText) throw new Error("The model response contained no readable assistant message");
+      const truncated = response.status === "incomplete";
       return {
-        text, status: "completed", truncated: false,
+        text: fullText, status: truncated ? "partially_completed" : "completed", truncated,
         toolEvents: [...completedCalls], responseId: response.id || null,
         tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "openrouter",
       };
