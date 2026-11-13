@@ -12,7 +12,7 @@ const MAX_RESULT=90000;
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return send({error:"Method not allowed"},405);
- const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\\s+/i,"");
+ const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
  if(!bearer)return send({error:"Authentication required"},401);
  const declaredLength=Number(req.headers.get("Content-Length")||0);if(declaredLength>120000)return send({error:"Request body exceeds the 120 KB limit"},413);
  let body:any;try{body=await req.json();}catch{return send({error:"Invalid JSON"},400);}
