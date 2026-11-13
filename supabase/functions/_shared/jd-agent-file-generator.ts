@@ -102,7 +102,7 @@ export async function generateJdDocument(format: JdDocumentFormat, rawContent: s
       slide.background = { color: "FFFFFF" };
       slide.addText(String(item.title).slice(0, 180), { x: 0.55, y: 0.35, w: 12.1, h: 0.75, fontSize: 26, bold: true, color: "20242B", breakLine: false });
       const bullets = item.bullets.map((bullet: string) => ({ text: bullet.slice(0, 500), options: { bullet: { indent: 18 }, hanging: 4 } }));
-      slide.addText(bullets, { x: 0.7, y: 1.35, w: 11.8, h: 5.5, fontSize: 17, color: "333942", breakLine: false, valign: "top", paraSpaceAfterPt: 12 });
+      slide.addText(bullets, { x: 0.7, y: 1.35, w: 11.8, h: 5.5, fontSize: 17, color: "333942", breakLine: false, valign: "top", paraSpaceAfter: 12 });
     }
     const output = await presentation.write({ outputType: "uint8array" });
     return { bytes: new Uint8Array(output as Uint8Array), mimeType: JD_DOCUMENT_MIME.pptx, extension: "pptx", textContent: content };
