@@ -21,6 +21,8 @@ The Responses API function-calling loop is implemented in `supabase/functions/_s
 - `get_workspace_overview`: aggregate workspace identity and member/hiring counts; admin, manager and bursar roles.
 - `get_hiring_pipeline`: role titles and application counts by status, without applicant contact details; admin and manager roles.
 - `get_billing_snapshot`: aggregate billing totals and counts, without individual records; admin, manager and bursar roles.
+- `get_business_expense_anomalies`: advisory budget-utilisation, category-outlier and spend-spike analysis over approved/paid business expenses; admin and manager roles. Currency is isolated and no records are changed.
+- `get_business_kpi_trends`: monthly cleared cash, approved expenses, opportunities, resolved support cases and customer trends; admin and manager roles. Money is grouped by currency and the response includes source counts, truncation flags and known limitations.
 
 These are read-only tools. The model cannot execute arbitrary SQL, arbitrary HTTP requests, shell commands, or unregistered functions.
 
@@ -39,7 +41,7 @@ The control-plane migration creates conversations, messages, runs, steps, approv
 
 ## Current limits — do not overclaim
 
-This is the first working agent-runtime slice, not yet full ChatGPT-level parity. The runtime currently supports bounded tool-calling with three read-only tools and a synchronous response. It does not yet support uploaded files, image/PDF understanding, spreadsheet imports, write actions, scheduled/background tasks, web research, streaming, durable retries, or an approval decision UI. Do not tell users these capabilities are live until the relevant tool, UI, policy and integration tests exist.
+This is not full ChatGPT-level parity. The source now includes bounded tool calling, tenant-scoped read tools, streamed responses, durable background execution, retries/checkpoints, and private generated-document drafts. Those source capabilities are not automatically production-live: the JD automation runtime and execution worker must be deployed and authenticated smoke tests must pass. Remaining gaps include user-uploaded file ingestion, image/PDF understanding in chat, spreadsheet imports, broad department write tools, scheduled workflow execution, web research, and complete end-to-end approval UX. Do not claim a capability is live until its deployment, UI, policy and integration tests are verified.
 
 ## Next build milestones
 

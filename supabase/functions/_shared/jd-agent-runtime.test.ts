@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -63,4 +63,9 @@ Deno.test("configured model choices are never replaced by provider response meta
     "openrouter/free",
     "reject malformed selected model",
   );
+});
+
+Deno.test("business finance intelligence tools are registered in JD", () => {
+  assertEqual(JD_AGENT_TOOL_NAMES.includes("get_business_expense_anomalies"), true, "expense anomaly tool registered");
+  assertEqual(JD_AGENT_TOOL_NAMES.includes("get_business_kpi_trends"), true, "business KPI trends tool registered");
 });
