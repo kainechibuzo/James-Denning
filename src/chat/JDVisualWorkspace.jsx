@@ -72,7 +72,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
             const taskAction = taskStatus === "queued" || taskStatus === "pending" ? "in_progress" : taskStatus === "in_progress" ? "completed" : null;
             return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(isDone ? "Uncheck " : "Check ") + text(item?.title, "task")} aria-pressed={isDone} disabled={canPersist ? !taskAction : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
           })}
-          <small style={{ color: "#8a919a", fontSize: 9 }}>Tasks with IDs update through the authenticated JD task endpoint. Queued tasks start first; in-progress tasks can then be completed.</small>
+          {block.sample_truncated && <small style={{ color: "#8a5d18", fontSize: 9 }}>Showing the latest 30 tasks; the department summary may be sampled if the workspace has more than 5,000 tasks.</small>}<small style={{ color: "#8a919a", fontSize: 9 }}>Tasks with IDs update through the authenticated JD task endpoint. Queued tasks start first; in-progress tasks can then be completed.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
