@@ -210,7 +210,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
             status: event.status === "completed" ? "completed" : "failed",
-            output_json: { event: event.status },
+            output_json: { event: event.status, evidence: event.evidence && typeof event.evidence === "object" ? event.evidence : null },
             error_message: event.status === "failed" ? "Read-only tool execution failed" : null,
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
@@ -237,7 +237,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
       admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000),
       admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("actor_id", requestedBy).order("created_at", { ascending: false }).limit(20),
-      admin.from("jd_automation_steps").select("id,tool_key,status,error_message,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
+      admin.from("jd_automation_steps").select("id,tool_key,status,error_message,output_json,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
     ]);
     const canViewOperationalTasks = ["admin", "manager"].includes(String(profile.role || ""));
     const visualWorkspace = buildJdVisualWorkspace({
