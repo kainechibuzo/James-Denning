@@ -20,7 +20,7 @@ function Panel({ title, icon: Icon, children, aside }) {
  * Supported blocks: checklist, workflow, question, timeline, departments, evidence.
  * The UI is advisory: check states are local until a real backend action persists them.
  */
-export function JDVisualWorkspace({ ui, onAnswer }) {
+export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const blocks = useMemo(() => list(ui?.blocks, 12).filter((block) =>
@@ -67,9 +67,12 @@ export function JDVisualWorkspace({ ui, onAnswer }) {
           <div className="jd-viz-progress"><span style={{ width: pct + "%" }}/></div>
           {items.map((item, i) => {
             const isDone = item?.status === "completed" || Boolean(checked[key + "-" + i]);
-            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(isDone ? "Uncheck " : "Check ") + text(item?.title, "task")} aria-pressed={isDone} onClick={() => setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
+            const taskStatus = item?.status || "pending";
+            const canPersist = typeof item?.id === "string" && typeof onTaskToggle === "function";
+            const taskAction = taskStatus === "queued" || taskStatus === "pending" ? "in_progress" : taskStatus === "in_progress" ? "completed" : taskStatus === "completed" ? "in_progress" : null;
+            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(isDone ? "Uncheck " : "Check ") + text(item?.title, "task")} aria-pressed={isDone} disabled={canPersist ? !taskAction : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
           })}
-          <small style={{ color: "#8a919a", fontSize: 9 }}>Checklist ticks are local until JD saves a task update.</small>
+          <small style={{ color: "#8a919a", fontSize: 9 }}>Tasks with IDs update through the authenticated JD task endpoint. Queued tasks start first; in-progress tasks can then be completed.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
