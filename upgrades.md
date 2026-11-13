@@ -30,6 +30,7 @@ This is the canonical, human-readable upgrade index. The detailed implementation
   - [x] Bounded retries for transient provider/network failures.
   - [x] Provider-reported usage retained per successful model request without inventing missing totals.
   - [x] Explicit partial-completion status when the eight-round tool limit is exhausted.
+  - [x] Batch independent read-only tool calls, pin the selected free model across tool rounds and record per-request latency (JD-231; CI/staging verification pending).
   - [ ] Durable queue, worker leases, resumability, idempotent recovery and crash handling. (Design: [JD-004](./upgrades/JD-004-DURABLE-EXECUTION.md); JD-004A job ledger/queue primitives implemented in PR #40; database integration verification pending.)
 - [ ] Streaming responses and resumable long-running tasks.
 - [ ] File attachments and ingestion for CSV, XLSX, PDF and supported documents.
