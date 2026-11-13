@@ -68,7 +68,7 @@ export default function App(){
      }
     }
     const legacy=loadSession(),school=loadSelectedSchool();
-    if(legacy&&school){db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");setScreen("app");return}
+    if(legacy&&school&&!isOAuthConsent){db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");setScreen("app");return}
     setScreen(isOAuthConsent?"auth":"landing");
    }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen(isOAuthConsent?"auth":"landing")}}
   };
