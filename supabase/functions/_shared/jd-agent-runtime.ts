@@ -368,7 +368,7 @@ const tools: ToolSpec[] = [  {
       });
       if (auditError) console.error("JD generated-document audit write failed", String(auditError.message || "unknown").slice(0, 160));
       const signed = await storage.createSignedUrl(storagePath, 3600);
-      return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data?.signedUrl || null, download_link_status: signed.error ? "temporarily_unavailable" : "ready", download_url_expires_in_seconds: signed.error ? 0 : 3600 };
+      return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data?.signedUrl || null, download_link_status: signed.data?.signedUrl ? "ready" : "temporarily_unavailable", download_url_expires_in_seconds: signed.data?.signedUrl ? 3600 : 0 };
     },
   },
 ];
