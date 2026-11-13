@@ -641,9 +641,16 @@ export async function runAgent(input: {
     }
     if (turn === maxToolRounds) break;
 
+    let fileDraftClaimedThisRound = false;
     const outputs = await Promise.all(calls.map(async (call: any) => {
       const tool = available.find((candidate) => candidate.name === call.name);
       if (!tool) return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ error: "Tool is not available for this user" }) };
+      if (tool.name === "create_business_document_draft") {
+        if (fileDraftClaimedThisRound) {
+          return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: false, deferred: true, error: "Only one file may be created per tool round. Create this file in the next round after reviewing the previous file result." }) };
+        }
+        fileDraftClaimedThisRound = true;
+      }
       if (completedCalls.has(call.call_id)) return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ error: "Duplicate tool call rejected" }) };
       completedCalls.add(call.call_id);
       let args: Record<string, unknown>;
