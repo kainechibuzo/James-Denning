@@ -62,6 +62,7 @@ A code merge alone does not create provider credentials, enable third-party OAut
 - Credentials and pending tool arguments are encrypted with AES-GCM.
 - All tools require approval by default. A manager may explicitly trust a tool for automatic execution only when its server annotation marks it read-only and does not mark it destructive or open-world.
 - Approval requests expire after 15 minutes.
+- Disconnect revokes the stored bearer token, removes the tool catalogue, expires pending approvals and preserves execution history. Reconnect requires a new token for protected servers.
 - Tool results are not trusted as instructions.
 - The browser never receives stored bearer tokens.
 - The service-role key is used only by the server-side agent runtime to call the authenticated JD Connect Edge Function; never expose it in frontend code.
