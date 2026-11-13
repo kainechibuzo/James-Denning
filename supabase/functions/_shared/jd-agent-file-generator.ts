@@ -1,15 +1,34 @@
-export type JdDocumentFormat = "txt" | "md" | "csv" | "json" | "docx" | "xlsx" | "pptx";
+export type JdDocumentFormat = "txt" | "md" | "csv" | "json" | "html" | "css" | "js" | "ts" | "py" | "sql" | "xml" | "yaml" | "docx" | "xlsx" | "pptx";
 
 export const JD_DOCUMENT_MIME: Record<JdDocumentFormat, string> = {
   txt: "text/plain",
   md: "text/markdown",
   csv: "text/csv",
   json: "application/json",
+  html: "text/html",
+  css: "text/css",
+  js: "text/javascript",
+  ts: "text/plain",
+  py: "text/x-python",
+  sql: "application/sql",
+  xml: "application/xml",
+  yaml: "text/yaml",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 };
 
+export function sanitizeGeneratedFilename(value: unknown, format: JdDocumentFormat): string {
+  const raw = typeof value === "string" ? value.trim().replace(/\\/g, "/") : "";
+  if (!raw || raw.startsWith("/") || raw.length > 160) throw new Error("A relative filename of at most 160 characters is required");
+  const segments = raw.split("/");
+  if (segments.some((part) => !part || part === "." || part === "..")) throw new Error("Filename path traversal is not allowed");
+  const clean = segments.map((part) => part.replace(/[^a-z0-9._-]/gi, "-")).join("/");
+  const extension = format;
+  const leaf = clean.split("/").pop() || "";
+  const safeLeaf = leaf.toLowerCase().endsWith("." + extension) ? leaf : leaf + "." + extension;
+  return [...clean.split("/").slice(0, -1), safeLeaf].join("/");
+}
 export function validateDocumentContent(format: JdDocumentFormat, content: string): string {
   if (typeof content !== "string" || content.trim().length < 20 || new TextEncoder().encode(content).length > 95000) {
     throw new Error("Document content must be between 20 bytes and 95 KB");
@@ -55,7 +74,7 @@ export async function generateJdDocument(format: JdDocumentFormat, rawContent: s
   textContent: string;
 }> {
   const content = validateDocumentContent(format, rawContent);
-  if (format === "txt" || format === "md" || format === "csv" || format === "json") {
+  if (["txt", "md", "csv", "json", "html", "css", "js", "ts", "py", "sql", "xml", "yaml"].includes(format)) {
     return { bytes: new TextEncoder().encode(content), mimeType: JD_DOCUMENT_MIME[format], extension: format, textContent: content };
   }
 
