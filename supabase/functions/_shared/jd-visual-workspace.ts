@@ -22,7 +22,7 @@ export function buildJdVisualWorkspace(input: {
     const tasks = (input.tasks || []).slice(0, 30);
     blocks.push({
       type: "checklist", id: "operational-tasks", title: "Operational tasks",
-      items: tasks.map((task) => ({
+      items: tasks.slice(0, 30).map((task) => ({
         id: task.id, title: task.title, description: task.description || "",
         status: taskStatus(task.status), priority: task.priority || "normal",
         department: task.department || "Unassigned", due_at: task.due_at || null,
@@ -40,7 +40,7 @@ export function buildJdVisualWorkspace(input: {
     }
     blocks.push({
       type: "departments", id: "department-task-summary", title: "Department workload",
-      source: "jd_operational_tasks", items: [...departments.entries()].slice(0, 20).map(([name, counts]) => ({
+      source: "jd_operational_tasks", sample_truncated: (input.tasksTotal ?? (input.tasks || []).length) > (input.tasks || []).length, items: [...departments.entries()].slice(0, 20).map(([name, counts]) => ({
         name, metric: String(counts.open) + " open",
         detail: counts.total + " total · " + counts.completed + " completed · " + counts.blocked + " blocked",
         status: counts.blocked > 0 ? "blocked" : counts.open > 0 ? "running" : "completed",
