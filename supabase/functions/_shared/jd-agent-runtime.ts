@@ -356,11 +356,16 @@ const tools: ToolSpec[] = [  {
       const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "document";
       const storagePath = ctx.schoolId + "/generated/" + crypto.randomUUID() + "-" + slug + ".txt";
       const storage = ctx.admin.storage.from("jd-business-documents");
-      const uploaded = await storage.upload(storagePath, new Blob([bytes], { type: "text/plain" }), { contentType: "text/plain", upsert: false });
+      const uploaded = await storage.upload(storagePath, new Blob([content], { type: "text/plain" }), { contentType: "text/plain", upsert: false });
       if (uploaded.error) throw new Error("Private document storage rejected the generated draft");
       const checksum = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))).map((value) => value.toString(16).padStart(2, "0")).join("");
       const inserted = await ctx.admin.from("jd_business_documents").insert({ school_id: ctx.schoolId, title, storage_path: storagePath, mime_type: "text/plain", byte_size: bytes.length, checksum_sha256: checksum, extraction_status: "completed", extracted_text: content, summary: null, source_metadata: { source: "jd_generated_draft", generated_at: new Date().toISOString(), format: "text/plain" }, created_by: ctx.userId }).select("id").single();
       if (inserted.error || !inserted.data) { await storage.remove([storagePath]); throw new Error("Generated draft could not be registered in the organisation document library"); }
+      const { error: auditError } = await ctx.admin.from("jd_audit_events").insert({
+        school_id: ctx.schoolId, actor_id: ctx.userId, event_type: "business.document.generated",
+        event_json: { document_id: inserted.data.id, byte_size: bytes.length, mime_type: "text/plain", source: "jd_generated_draft" },
+      });
+      if (auditError) console.error("JD generated-document audit write failed", String(auditError.message || "unknown").slice(0, 160));
       const signed = await storage.createSignedUrl(storagePath, 3600);
       return { document_id: inserted.data.id, title, filename: slug + ".txt", format: "text/plain", bytes: bytes.length, status: "saved_as_private_draft", review_required: true, download_url: signed.data?.signedUrl || null, download_link_status: signed.error ? "temporarily_unavailable" : "ready", download_url_expires_in_seconds: signed.error ? 0 : 3600 };
     },
@@ -619,7 +624,7 @@ export async function runAgent(input: {
       if (shouldContinueResponse(response, continuationCount)) {
         continuationText = [continuationText, text].filter(Boolean).join("\n\n");
         continuationCount += 1;
-        conversationInput.push(...output, { role: "user", content: "Continue the previous response from exactly where it stopped. Do not repeat earlier paragraphs, headings or list items. Finish the remaining requested content and provide a clear ending." });
+        conversationInput.push(...output, { role: "user", content: "Continue the previous response from exactly where it stopped. Do not repeat earlier paragraphs, headings or list items. Previous partial response:\n" + continuationText + "\nFinish the remaining requested content and provide a clear ending." });
         await persistCheckpoint();
         response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
         continue;
