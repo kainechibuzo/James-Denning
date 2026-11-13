@@ -594,6 +594,7 @@ export async function runAgent(input: {
     instructions,
     input: conversationInput,
     tools: modelTools(input.context),
+    max_output_tokens: 6144,
     tool_choice: "auto",
     parallel_tool_calls: true,
     store: false,
@@ -608,7 +609,8 @@ export async function runAgent(input: {
         continuationCount += 1;
         conversationInput.push(...output, { role: "user", content: "The previous response ended before its tool call was complete. Continue the unfinished call with valid complete arguments, or provide a direct final answer if no tool is needed." });
         await persistCheckpoint();
-        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
+        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), max_output_tokens: 6144,
+    tool_choice: "auto", parallel_tool_calls: true, store: false });
         continue;
       }
       const partial = [continuationText, responseOutputText(response)].filter(Boolean).join("\n\n");
@@ -627,7 +629,8 @@ export async function runAgent(input: {
         continuationCount += 1;
         conversationInput.push(...output, { role: "user", content: "Continue the previous response from exactly where it stopped. Do not repeat earlier paragraphs, headings or list items. Previous partial response:\n" + continuationText + "\nFinish the remaining requested content and provide a clear ending." });
         await persistCheckpoint();
-        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), tool_choice: "auto", parallel_tool_calls: true, store: false });
+        response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), max_output_tokens: 6144,
+    tool_choice: "auto", parallel_tool_calls: true, store: false });
         continue;
       }
       const fullText = [continuationText, text].filter(Boolean).join("\n\n");
@@ -676,7 +679,8 @@ export async function runAgent(input: {
       instructions,
       input: conversationInput,
       tools: modelTools(input.context),
-      tool_choice: "auto",
+      max_output_tokens: 6144,
+    tool_choice: "auto",
       parallel_tool_calls: true,
       store: false,
     });
