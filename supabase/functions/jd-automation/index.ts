@@ -351,7 +351,12 @@ Deno.serve(async (req) => {
   if(next==="completed") updates.completed_at=new Date().toISOString();
   const {data:updated,error}=await admin.from("jd_operational_tasks").update(updates).eq("id",id).eq("school_id",profile.school_id).eq("status",task.status).select("id,status,completed_at,updated_at").maybeSingle();
   if(error||!updated) return json({error:"Task changed concurrently; reload before retrying"},409);
-  return json({task:updated});
+  const {error:auditError}=await admin.from("jd_audit_events").insert({
+   school_id:profile.school_id,actor_id:authData.user.id,event_type:"operational_task.status_changed",
+   event_json:{task_id:id,from_status:task.status,to_status:next}
+  });
+  if(auditError) console.error("JD operational task audit write failed",String(auditError.message||"unknown").slice(0,160));
+  return json({task:updated,auditRecorded:!auditError});
  }
  if(payload.action==="hiring.vacancy.draft"){
   if(profile.role!=="admin") return json({error:"Only workspace admins can prepare vacancy drafts"},403);
