@@ -17,6 +17,13 @@ const actions = [
   { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
 ];
 
+function renderMessageContent(content) {
+  const parts = String(content || "").split(/(https:\/\/[^\\s<>"')]+)/g);
+  return parts.map((part, index) => /^https:\/\//i.test(part)
+    ? <a key={index} href={part} target="_blank" rel="noopener noreferrer" style={{ color: "#245f9e", textDecoration: "underline", overflowWrap: "anywhere" }}>{part}</a>
+    : part);
+}
+
 export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [draft, setDraft] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 760);
@@ -224,7 +231,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD</div>}
-              {item.content}
+              {renderMessageContent(item.content)}
               {item.streaming&&<div className="jd-run">JD is streaming its response…</div>}
               {item.toolEvents?.length>0&&<div className="jd-tools">{item.toolEvents.map((event,i)=><span className="jd-tool" key={i}>{event.name?.replaceAll("_"," ")} · {event.status}</span>)}</div>}
               {item.run?.status&&<div className="jd-run">Run · {item.run.status}</div>}
