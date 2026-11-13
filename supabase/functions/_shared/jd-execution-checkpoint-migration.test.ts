@@ -1,4 +1,4 @@
-const migrationUrl = new URL("../../migrations/20261111140000_jd_durable_execution_checkpoints.sql", import.meta.url);
+const migrationUrl = new URL("../../migrations/20261111085151_jd_durable_execution_checkpoints.sql", import.meta.url);
 const migration = await Deno.readTextFile(migrationUrl);
 
 function assert(condition: unknown, message: string) {
