@@ -34,7 +34,7 @@ Socrates' tool loop handles one detected tool call per round. JD already support
 
 ## Verification still required
 
-- CI green, including the new Deno SSE and routing tests.
+- CI green, including Deno SSE, routing, filename-safety and Office binary-generation tests.
 - Staging test that sees partial assistant text before run completion.
 - Long-response test that reaches the output limit, continues, and resumes after a checkpoint.
 - Staging private-draft upload, DB registration, signed download and cross-tenant access denial.
