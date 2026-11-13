@@ -85,7 +85,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
-            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || message.visualWorkspace || null,
+            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: String(step.tool_key || "Workspace task").replaceAll("_", " "), status: step.status, detail: step.error_message || (step.risk_level ? "Risk: " + step.risk_level : "") })) }] } : message.visualWorkspace || null),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
           };
