@@ -15,7 +15,7 @@ Deno.serve(async req=>{
  const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
  if(!bearer)return send({error:"Authentication required"},401);
  const declaredLength=Number(req.headers.get("Content-Length")||0);if(declaredLength>120000)return send({error:"Request body exceeds the 120 KB limit"},413);
- let body:any;try{body=await req.json();}catch{return send({error:"Invalid JSON"},400);}
+ let body:any;try{body=await req.json();}catch{return send({error:"Invalid JSON"},400);}if(JSON.stringify(body).length>120000)return send({error:"Request body exceeds the 120 KB limit"},413);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!anon||!service)return send({error:"JD Connect is not configured"},503);
  const internal=bearer===service;
@@ -148,7 +148,7 @@ Deno.serve(async req=>{
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
    if(!tool.read_only){
-    const encrypted=await encryptSecret(JSON.stringify(args),key);
+    const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,key);
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
     if(approvalError||!approval)return send({error:"Could not create approval request"},500);
     await audit("connector.approval.requested",{server_id:server.id,tool_name:tool.name,approval_id:approval.id});
