@@ -3,11 +3,11 @@ import { CheckCircle2, Circle, Clock3, AlertCircle, GitBranch, ClipboardList, Me
 
 const text = (value, fallback = "") => typeof value === "string" ? value.slice(0, 500) : fallback;
 const list = (value, max = 30) => Array.isArray(value) ? value.slice(0, max) : [];
-const statusLabel = (status) => ({ completed: "Complete", running: "Running", blocked: "Blocked", failed: "Failed", pending: "Not started", awaiting_approval: "Awaiting approval", queued: "Queued" }[status] || "Pending");
+const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", awaiting_approval: "Awaiting approval", queued: "Queued" }[status] || "Pending");
 
 function Status({ value }) {
   const status = String(value || "pending");
-  const tone = status === "completed" ? "good" : ["failed", "blocked"].includes(status) ? "bad" : ["running", "awaiting_approval"].includes(status) ? "active" : "muted";
+  const tone = status === "completed" ? "good" : ["failed", "blocked"].includes(status) ? "bad" : ["running", "in_progress", "awaiting_approval"].includes(status) ? "active" : "muted";
   return <span className={"jd-viz-status " + tone}>{statusLabel(status)}</span>;
 }
 
