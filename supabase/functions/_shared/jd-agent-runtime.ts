@@ -358,7 +358,8 @@ const tools: ToolSpec[] = [  {
       const storage = ctx.admin.storage.from("jd-business-documents");
       const uploaded = await storage.upload(storagePath, new Blob([content], { type: "text/plain" }), { contentType: "text/plain", upsert: false });
       if (uploaded.error) throw new Error("Private document storage rejected the generated draft");
-      const checksum = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))).map((value) => value.toString(16).padStart(2, "0")).join("");
+      const digestBytes = new Uint8Array(bytes.length); digestBytes.set(bytes);
+      const checksum = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", digestBytes.buffer))).map((value) => value.toString(16).padStart(2, "0")).join("");
       const inserted = await ctx.admin.from("jd_business_documents").insert({ school_id: ctx.schoolId, title, storage_path: storagePath, mime_type: "text/plain", byte_size: bytes.length, checksum_sha256: checksum, extraction_status: "completed", extracted_text: content, summary: null, source_metadata: { source: "jd_generated_draft", generated_at: new Date().toISOString(), format: "text/plain" }, created_by: ctx.userId }).select("id").single();
       if (inserted.error || !inserted.data) { await storage.remove([storagePath]); throw new Error("Generated draft could not be registered in the organisation document library"); }
       const { error: auditError } = await ctx.admin.from("jd_audit_events").insert({
