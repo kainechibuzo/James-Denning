@@ -8,6 +8,7 @@ import { validateWorkflowDefinition } from "../_shared/jd-workflow-definition.ts
 import { nextScheduleAt } from "../_shared/jd-scheduler.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { getJdSecret } from "../_shared/jd-secrets.ts";
 
 const cors = { "Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods":"POST, OPTIONS", "Content-Type":"application/json" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status, headers:cors});
@@ -592,6 +593,19 @@ Deno.serve(async (req) => {
  if(enqueueError||!job?.job_id){
   await admin.from("jd_automation_runs").update({status:"failed",result_json:{error:"execution_enqueue_failed"},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
   return json({conversationId,run:{...run,status:"failed"},error:"JD could not queue this request. No execution was started."},503);
+ }
+ // Wake the execution worker immediately; the scheduled GitHub poll remains a recovery fallback.
+ const workerSecret=getJdSecret("JD_WORKER_SECRET");
+ const workerUrl=Deno.env.get("SUPABASE_URL");
+ if(workerSecret&&workerUrl){
+  EdgeRuntime.waitUntil(fetch(`${workerUrl.replace(/\/$/,"")}/functions/v1/jd-execution-worker`,{
+   method:"POST",
+   headers:{"Content-Type":"application/json","x-jd-worker-secret":workerSecret},
+   body:"{}"
+  }).then(async(response)=>{
+   if(!response.ok) console.error("JD immediate worker dispatch returned",response.status);
+   await response.text();
+  }).catch((error)=>console.error("JD immediate worker dispatch failed",String(error).slice(0,160))));
  }
  const queuedReply="Your request is safely queued. JD will process it in the background and preserve progress if a worker needs to retry.";
  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:queuedReply,content_json:{execution_job_id:job.job_id,execution_status:"queued"}});
