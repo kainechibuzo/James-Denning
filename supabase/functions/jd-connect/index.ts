@@ -12,19 +12,26 @@ const MAX_RESULT=90000;
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return send({error:"Method not allowed"},405);
- const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+ const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\\s+/i,"");
  if(!bearer)return send({error:"Authentication required"},401);
+ const declaredLength=Number(req.headers.get("Content-Length")||0);if(declaredLength>120000)return send({error:"Request body exceeds the 120 KB limit"},413);
+ let body:any;try{body=await req.json();}catch{return send({error:"Invalid JSON"},400);}
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!anon||!service)return send({error:"JD Connect is not configured"},503);
- const auth=createClient(url,anon,{global:{headers:{Authorization:`Bearer ${bearer}`}},auth:{persistSession:false,autoRefreshToken:false}});
- const {data:authData,error:authError}=await auth.auth.getUser(bearer);
- if(authError||!authData.user)return send({error:"Invalid session"},401);
+ const internal=bearer===service;
+ let actorId="";
+ if(internal){actorId=clip(body.internalActorId,64);if(!actorId)return send({error:"Internal actor context is required"},401);}
+ else{
+  const auth=createClient(url,anon,{global:{headers:{Authorization:`Bearer ${bearer}`}},auth:{persistSession:false,autoRefreshToken:false}});
+  const {data:authData,error:authError}=await auth.auth.getUser(bearer);
+  if(authError||!authData.user)return send({error:"Invalid session"},401);
+  actorId=authData.user.id;
+ }
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
- const {data:profile,error:profileError}=await db.from("profiles").select("id,school_id,role").eq("id",authData.user.id).maybeSingle();
+ const {data:profile,error:profileError}=await db.from("profiles").select("id,school_id,role").eq("id",actorId).maybeSingle();
  if(profileError||!profile?.school_id)return send({error:"Workspace membership required"},403);
  if(!["admin","manager"].includes(String(profile.role)))return send({error:"Manager permission required for JD Connect"},403);
- let body:any;try{body=await req.json();}catch{return send({error:"Invalid JSON"},400);}
- const school=profile.school_id,actor=authData.user.id;
+ const school=profile.school_id,actor=actorId;
  const allowed=(Deno.env.get("JD_MCP_ALLOWED_HOSTS")||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
  const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY")||"";
  const key=encoded?await importAesKey(encoded).catch(()=>null):null;
