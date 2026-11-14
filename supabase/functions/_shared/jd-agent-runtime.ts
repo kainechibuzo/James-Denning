@@ -92,7 +92,7 @@ const tools: ToolSpec[] = [  {
   },
   {
     name: "preview_organisation_blueprint",
-    description: "Create a complete starter organisation blueprint from a short plain-language business idea, such as 'a clothing store' or 'a trucking company'. Infer sensible departments, job roles, workflows, KPIs, likely integrations, risks and capability gaps. Do not ask the user to design the departments. This is a no-write preview only; it does not create departments, accounts, permissions, integrations or workflows.",
+    description: "Create a complete starter organisation blueprint from a short plain-language business idea. Infer industry-specific departments, job positions, workflows, KPIs, integrations, risks and capability gaps. For business types without a built-in template, use your own business knowledge to provide a tailored departments array. Do not ask the user to design the departments. This is a no-write preview only.",
     risk: "low",
     roles: ["owner","admin"],
     parameters: {
@@ -100,7 +100,16 @@ const tools: ToolSpec[] = [  {
       properties: {
         business_idea: { type: "string", minLength: 2, maxLength: 500, description: "A short description of the business the user wants to start." },
         business_name: { type: "string", minLength: 1, maxLength: 160 },
-        business_model: { type: "string", maxLength: 500 }
+        business_model: { type: "string", maxLength: 500 },
+        departments: { type: "array", maxItems: 30, items: { type: "object", properties: {
+          name: { type: "string", maxLength: 120 }, purpose: { type: "string", maxLength: 500 },
+          roles: { type: "array", items: { type: "string", maxLength: 120 }, maxItems: 30 },
+          workflows: { type: "array", items: { type: "string", maxLength: 160 }, maxItems: 30 },
+          kpis: { type: "array", items: { type: "string", maxLength: 120 }, maxItems: 30 }
+        }, required: ["name","purpose","roles","workflows","kpis"], additionalProperties: false } },
+        integrations: { type: "array", items: { type: "string", maxLength: 240 }, maxItems: 40 },
+        risks: { type: "array", items: { type: "string", maxLength: 240 }, maxItems: 40 },
+        gaps: { type: "array", items: { type: "string", maxLength: 240 }, maxItems: 40 }
       },
       required: ["business_idea"],
       additionalProperties: false
@@ -111,6 +120,10 @@ const tools: ToolSpec[] = [  {
         name: typeof args.business_name === "string" ? args.business_name : undefined,
         businessModel: typeof args.business_model === "string" ? args.business_model : undefined
       });
+      if (Array.isArray(args.departments)) draft.departments = args.departments as any;
+      if (Array.isArray(args.integrations)) draft.integrations = args.integrations as any;
+      if (Array.isArray(args.risks)) draft.risks = args.risks as any;
+      if (Array.isArray(args.gaps)) draft.gaps = args.gaps as any;
       const result = validateOrganisationBlueprint(draft);
       if (!result.ok) return { valid: false, errors: result.errors, persisted: false };
       return {
@@ -752,7 +765,7 @@ export async function runAgent(input: {
     "Always read shared organisation memory before making business recommendations or continuing an earlier setup. Save stable, confirmed business decisions and preferences to shared memory when useful; never store secrets or sensitive personal information.",
     "When the user asks to create or set up departments, generate the structure from their business idea, then call submit_organisation_blueprint_for_review. Explain that it is awaiting their administrator review. Do not claim departments exist until the approval is accepted and the provisioner confirms creation.",
     "Write for an ordinary business owner, not a software engineer. Never show internal tool names, raw JSON, database table names, API details, UUIDs, SQL, HTTP status codes, stack traces or developer jargon. Translate failures into clear, calm, actionable everyday language. Use headings and short lists.",
-    "When a user says they want to start a business (for example, a clothing store, trucking company, restaurant or agency), do not respond with a long questionnaire asking them to invent departments, roles, workflows or KPIs. Start with the business idea they gave you and call preview_organisation_blueprint to generate a sensible complete starter structure. Ask at most one essential follow-up only when the business idea itself is unclear; otherwise make reasonable assumptions, label them as assumptions, and invite the user to customise the generated plan. Clearly state that this tool creates a preview only and does not provision live departments, users, permissions or workflows.",
+    "When a user says they want to start a business, do not ask them to invent departments, roles, workflows or KPIs. Use preview_organisation_blueprint. For a recognised business type, use the built-in structure; for any other type, use your own business knowledge to generate a tailored departments array with practical job positions, workflows and KPIs. Ask at most one essential follow-up only when the business idea itself is unclear. Clearly state that the preview is not live until approved.",
     "Use tools to inspect live organisation data whenever it materially improves the answer.",
     "When multiple independent read-only tools are relevant, request them together in one parallel tool-call round. Avoid optional or redundant calls, and never call a tool again when its result is already present in the conversation.",
     "You may only use the tools provided. Never invent tool results or claim an action occurred unless a tool confirms it.",
