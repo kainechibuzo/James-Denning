@@ -35,7 +35,7 @@ Deno.serve(async req=>{
  const allowed=(Deno.env.get("JD_MCP_ALLOWED_HOSTS")||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
  const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY")||"";
  const key=encoded?await importAesKey(encoded).catch(()=>null):null;
- if(!key)return send({error:"JD_OAUTH_ENCRYPTION_KEY is missing or invalid"},503);
+ const requireEncryptionKey=()=>{if(!key)throw new Error("JD_OAUTH_ENCRYPTION_KEY is missing or invalid; configure the 32-byte base64 encryption key before storing credentials or approving write-capable connector calls");return key;};
  const audit=async(type:string,meta:Record<string,unknown>)=>await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});
  const getServer=async(id:string)=>{
   const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info").eq("id",id).eq("school_id",school).maybeSingle();
@@ -44,7 +44,7 @@ Deno.serve(async req=>{
  const getToken=async(id:string)=>{
   const {data,error}=await db.from("jd_connector_credentials").select("encrypted_bearer_token").eq("server_id",id).eq("school_id",school).maybeSingle();
   if(error)throw new Error("Could not load connector credentials");
-  return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,key):"";
+  return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,requireEncryptionKey()):"";
  };
  const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string)=>{
   const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
@@ -138,7 +138,7 @@ Deno.serve(async req=>{
    if(token&&token.length<12)return send({error:"Bearer token is too short"},400);
    const {data:server,error}=await db.from("jd_connector_servers").insert({school_id:school,name,endpoint_url:endpoint.toString(),host:endpoint.hostname,status:"connected",created_by:actor}).select("id,name,endpoint_url,host").single();
    if(error||!server)throw new Error("Could not register MCP server");
-   if(token){const encrypted=await encryptSecret(token,key);const {error:credentialError}=await db.from("jd_connector_credentials").insert({server_id:server.id,school_id:school,encrypted_bearer_token:encrypted,key_version:"aes-gcm-v1"});if(credentialError)throw new Error("Could not securely store connector credentials");}
+   if(token){const encrypted=await encryptSecret(token,requireEncryptionKey());const {error:credentialError}=await db.from("jd_connector_credentials").insert({server_id:server.id,school_id:school,encrypted_bearer_token:encrypted,key_version:"aes-gcm-v1"});if(credentialError)throw new Error("Could not securely store connector credentials");}
    try{const tools=await refreshTools(server,token);await audit("connector.server.registered",{server_id:server.id,host:endpoint.hostname,tool_count:tools.length});return send({server,tools,notice:"MCP server connected and tools discovered"},201);}
    catch(e){await db.from("jd_connector_servers").update({status:"error",last_error_code:"INITIALIZATION_FAILED"}).eq("id",server.id);throw e;}
   }
@@ -189,7 +189,7 @@ Deno.serve(async req=>{
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
    if(!tool.read_only){
-    const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,key);
+    const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
     if(approvalError||!approval)return send({error:"Could not create approval request"},500);
     await audit("connector.approval.requested",{server_id:server.id,tool_name:tool.name,approval_id:approval.id});
@@ -200,7 +200,7 @@ Deno.serve(async req=>{
   if(body.action==="approvals.list"){
    const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).eq("status","pending").order("created_at",{ascending:false}).limit(100);
    if(error)throw error;
-   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,key)))})));
+   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey())))})));
    return send({approvals});
   }
   if(body.action==="approvals.get"){
@@ -230,7 +230,7 @@ Deno.serve(async req=>{
    if(claimError||!claimed)return send({error:"Approval was already resolved"},409);
    if(decision==="denied"){await audit("connector.approval.denied",{approval_id:id,tool_name:approval.tool_name});return send({approved:false,denied:true});}
    try{
-    const server=await getServer(approval.server_id),raw=await decryptSecret(approval.arguments_ciphertext,key),args=asObject(JSON.parse(raw));
+    const server=await getServer(approval.server_id),raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
    }catch(e){await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school);throw e;}
   }
