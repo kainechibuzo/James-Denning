@@ -11,7 +11,7 @@ JD Connect is a tenant-scoped remote MCP client and tool gateway for JD chat.
 - Tool schema discovery and persistence.
 - JD chat discovery through `list_connected_mcp_tools`.
 - JD chat invocation through `call_connected_mcp_tool`.
-- Read-only tools default to approval-required. A manager must explicitly trust a candidate that advertises `readOnlyHint: true`; destructive/open-world candidates cannot be trusted for automatic execution.
+- Discovered tools default to approval-required. A manager may explicitly trust a candidate that advertises `readOnlyHint: true`; destructive/open-world candidates cannot be trusted for automatic execution.
 - Every other tool call is saved as an approval request with encrypted arguments.
 - Admin/manager approval queue, exact argument preview, approve-and-execute or decline.
 - Tenant-scoped execution history and audit events.
@@ -43,8 +43,8 @@ The migration creates service-role-only tables for servers, encrypted credential
 
 1. Review the migration and apply it through the normal reviewed Supabase migration workflow.
 2. Set the two secrets above in the Supabase project.
-3. Deploy `jd-connect` with JWT verification enabled.
-4. Deploy the updated `jd-execution-worker` and shared runtime code together so JD chat can discover and call connected tools.
+3. Deploy `jd-connect` with gateway JWT verification disabled only because the function validates the bearer token itself and accepts the service-role internal call only with a verified workspace actor id.
+4. Deploy the updated `jd-mcp` and `jd-connect` functions together. The inbound MCP runtime forwards user-authenticated operational actions to the existing `jd-automation` task engine; it does not bypass its role checks or atomic audit RPC.
 5. Open Settings → JD Connect, register an allowlisted HTTPS MCP endpoint and optionally provide its bearer token.
 6. Refresh tools and verify the discovered schemas.
 7. Ask JD to list connected MCP tools, then test a read-only tool.
@@ -76,14 +76,20 @@ JD now also exposes an authenticated MCP server at:
 
 The endpoint uses Supabase OAuth 2.1 discovery and user-bound tokens. Users authenticate with their existing JD account and approve the OAuth request on the first connection. The consent screen is hosted at `/oauth/consent`.
 
-Initial tools:
+Core read/connector tools:
 - `jd_get_workspace_overview`: privacy-conscious organisation and operational aggregates.
 - `jd_list_operational_tasks`: tenant-scoped operational task records.
 - `jd_list_execution_activity`: persisted execution-step evidence.
 - `jd_list_connected_mcp_tools`: connected provider tools and their approval policy.
 - `jd_call_connected_mcp_tool`: invokes a JD Connect tool; untrusted/write-capable actions create a manager approval request and do not run before approval. Pass the returned `approval_id` back to this same tool to retrieve its current approval state and persisted execution result after a manager approves it.
 
-All MCP calls require an authenticated workspace admin or manager. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data.
+Additional action/evidence tools:
+- `jd_get_connector_approval_status`: retrieves approval state and the persisted execution result after approval; it never approves or executes an action.
+- `jd_list_connector_execution_evidence`: lists persisted external connector execution outcomes, including failures and error codes.
+- `jd_create_operational_task`: creates a real task in `jd_operational_tasks` through the existing idempotent `jd-automation` action. Invoke only after the user explicitly confirms the task details.
+- `jd_transition_operational_task`: moves a real task through the existing state machine and atomic task/audit RPC. Invoke only after the user explicitly confirms the requested transition.
+
+All MCP calls require an authenticated workspace admin or manager. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data. Successful connector calls return the persisted execution id, result and evidence flags; failed calls return a non-success MCP error and persist failure evidence when the database permits it. A pending approval is explicitly not an executed action.
 
 ### OAuth rollout requirements
 
