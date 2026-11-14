@@ -1841,77 +1841,22 @@ export function MobileApp(){
   };
 
   const login=async(staffId,password)=>{
-    setLoginLoading(true);
-    setLoginError("");
+    setLoginLoading(true);setLoginError("");
     try{
-      const id=(staffId||"").trim();
-      const pw=(password||"").trim();
+      const id=(staffId||"").trim(),pw=(password||"").trim(),schoolId=school?.id||db._schoolId||null;
       if(!id||!pw){setLoginError("Enter your ID and password.");setLoginLoading(false);return;}
-      // Determine schoolId: from saved school or from db context
-      const schoolId=school?.id||db._schoolId||null;
-      // 1. Staff/Manager
-      const{data:teacher}=await db.loginFindTeacher(id,schoolId);
-      if(teacher){
-        const expected=teacher.password_hash||teacher.staff_id;
-        if(pw!==expected){setLoginError("Wrong password. Default is your Staff ID.");setLoginLoading(false);return;}
-        db.recordLogin?.("teacher",teacher.id);
-        const tRole=teacher.role||"teacher";
-        const u={id:String(teacher.id),role:tRole,name:teacher.display_name||teacher.full_name,
-          staff_id:teacher.staff_id,teacher_db_id:teacher.id,email:teacher.email,
-          school_id:teacher.school_id||schoolId,_userType:"teacher"};
-        if(teacher.school_id) db.setSchool(teacher.school_id,null,null);
-        saveSession(u);
-        setUser(u);
-        setScreen("dashboard");
-        setScreenHistory([]);
-        setLoginLoading(false);
-        return;
+      if(!schoolId){setLoginError("Select an organization first.");setLoginLoading(false);return;}
+      const {data,error}=await db.loginAuthenticate(id,pw,schoolId);
+      if(error||!data?.user){
+        setLoginError(data?.error==="account_inactive"?"This account is not active.":data?.error==="rate_limited"?"Too many attempts. Please wait and try again.":"Incorrect ID or password.");
+        setLoginLoading(false);return;
       }
-      // 2. Member
-      const{data:student}=await db.loginFindStudent(id,schoolId);
-      if(student){
-        const st=student.status||"active";
-        if(st!=="active"){
-          const msgs={inactive:"Your account is inactive.",suspended:"Your account is suspended.",
-            graduated:"This account is no longer active.",withdrawn:"This account is no longer active.",
-            left:"This account is no longer active."};
-          setLoginError(msgs[st]||"Your account is not active.");setLoginLoading(false);return;
-        }
-        const expected=student.password_hash||student.id;
-        if(String(pw)!==String(expected)){setLoginError("Wrong password. Default is your Member ID.");setLoginLoading(false);return;}
-        db.recordLogin?.("student",student.id);
-        const u={id:student.id,role:"student",name:student.display_name||fullName(student),
-          student_id:student.id,class_id:student.class_id,email:student.email,
-          school_id:student.school_id||schoolId,_userType:"student"};
-        if(student.school_id) db.setSchool(student.school_id,null,null);
-        saveSession(u);
-        setUser(u);
-        setScreen("dashboard");
-        setScreenHistory([]);
-        setLoginLoading(false);
-        return;
-      }
-      // 3. Admin (login as "admin" with admin_password)
-      if(schoolId){
-        const{data:sa}=await db.loginGetSchoolAdmin(schoolId);
-        if(sa&&(id.toLowerCase()==="admin"||id===sa.admin_email)){
-          if(pw===sa.admin_password){
-            db.setSchool(schoolId,null,sa.admin_name||"Administrator");
-            const u={id:"admin",role:"admin",name:sa.admin_name||"Administrator",
-              school_id:schoolId,_userType:"admin"};
-            saveSession(u);
-            setUser(u);
-            setScreen("dashboard");
-            setScreenHistory([]);
-            setLoginLoading(false);
-            return;
-          } else {setLoginError("Wrong admin password.");setLoginLoading(false);return;}
-        }
-      }
-      setLoginError("No account found. Check your ID and try again.");
-    }catch(e){
-      setLoginError(e.message||"Login failed. Please try again.");
-    }
+      const u=data.user;
+      if(u.school_id)db.setSchool(u.school_id,null,u.name||null);
+      if(u._userType==="teacher")db.recordLogin?.("teacher",u.teacher_db_id);
+      if(u._userType==="student")db.recordLogin?.("student",u.student_id);
+      saveSession(u);setUser(u);setScreen("dashboard");setScreenHistory([]);
+    }catch(e){setLoginError("Login failed. Please try again.");}
     setLoginLoading(false);
   };
 
