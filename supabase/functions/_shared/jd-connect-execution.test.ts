@@ -39,3 +39,20 @@ Deno.test("JD Connect records an execution before connecting to the remote serve
   const token = source.indexOf("getToken(server.id)", start);
   assertEquals(start >= 0 && insert > start && token > insert, true);
 });
+
+Deno.test("JD Connect supports per-provider read-only, read-write and full-control grants", () => {
+  assertMatch(source, /body\.action==="grants\.set"/);
+  assertMatch(source, /body\.action==="grants\.revoke"/);
+  assertMatch(source, /\["read_only","read_write","full_control"\]/);
+  assertMatch(source, /from\("jd_connector_grants"\)/);
+});
+Deno.test("JD Connect enforces granted write scopes and preserves destructive approval gates", () => {
+  assertMatch(source, /const elevated=level==="read_write"\|\|level==="full_control"/);
+  assertMatch(source, /const unrestricted=level==="full_control"/);
+  assertMatch(source, /const requiresApproval=!readOnly&&\(!elevated\|\|\(!unrestricted&&\(asObject\(tool\.annotations\)\.destructiveHint===true\|\|asObject\(tool\.annotations\)\.openWorldHint===true\)\)\)/);
+  assertMatch(source, /permissionLevel:level/);
+});
+Deno.test("JD Connect returns to read-only when a provider grant is missing or expired", () => {
+  assertMatch(source, /grant&&\(!grant\.expires_at\|\|new Date\(grant\.expires_at\)\.getTime\(\)>Date\.now\(\)\)\?grant:null/);
+  assertMatch(source, /activeGrant\?\.access_level\|\|"read_only"/);
+});
