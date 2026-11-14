@@ -68,7 +68,8 @@ Deno.serve(async (req) => {
    const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:400;
    return json({error:code==="40001"?"Workflow changed or is stale; reload before saving":"Could not save workflow draft",reason:error.message},status);
   }
-  return json({workflow:saved,execution_enabled:false,notice:"Saved as an immutable draft version. It is not active or executable."},201);
+  if(saved?.id) await admin.from("jd_workflows").update({created_by_agent:true}).eq("id",saved.id).eq("school_id",profile.school_id);
+  return json({workflow:saved,created_by_agent:true,label:"Created by JD",execution_enabled:false,notice:"Saved as an immutable draft version. It is not active or executable."},201);
  }
  if(payload.action==="workflow.review.submit"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to submit workflows for review"},403);
@@ -344,7 +345,8 @@ Deno.serve(async (req) => {
    const assignedTo=typeof input.assignedTo==="string"&&input.assignedTo?input.assignedTo:null;
    const {data:schedule,error}=await admin.rpc("jd_create_task_schedule",{p_actor_id:authData.user.id,p_title:title,p_description:typeof input.description==="string"?input.description:"",p_department:department,p_priority:priority,p_frequency:frequency,p_local_time:localTime,p_timezone:timezone,p_weekdays:weekdays,p_next_run_at:nextRun.toISOString(),p_assigned_to:assignedTo,p_auto_assign:input.autoAssign===true});
    if(error)return json({error:"Could not create recurring schedule",reason:error.message},error.code==="42501"?403:400);
-   return json({schedule},201);
+   if(schedule?.id) await admin.from("jd_task_schedules").update({created_by_agent:true}).eq("id",schedule.id).eq("school_id",profile.school_id);
+   return json({schedule,created_by_agent:true,label:"Created by JD"},201);
   }
   if(payload.action==="operations.schedule.toggle"){
    if(!hasRole(MANAGER_ROLES,profile.role))return json({error:"Manager permission required to change recurring schedules"},403);
@@ -394,6 +396,7 @@ Deno.serve(async (req) => {
   }
   if(!created?.task||created.auditRecorded!==true&&created.reused!==true)
    return json({error:"Task creation did not return persisted evidence"},500);
+  if(created.task?.id&&!created.reused) await admin.from("jd_operational_tasks").update({created_by_agent:true}).eq("id",created.task.id).eq("school_id",profile.school_id);
   return json({
    task:created.task,
    reused:created.reused===true,
