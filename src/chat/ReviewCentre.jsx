@@ -32,7 +32,8 @@ export function ReviewCentre({ onClose, onDecision }) {
     else {
       setNotice(data?.execution?.message || "Decision recorded.");
       await load();
-      onDecision?.(decision, item, data);
+      onDecision?.(decision, item, data, decisionNote);
+      setDecisionNote("");
     }
     setBusyId("");
   };
