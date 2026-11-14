@@ -80,11 +80,12 @@ Deno.serve(async req=>{
   return tools;
  };
  const execute=async(server:any,toolName:string,args:Record<string,unknown>,approvalId:string|null)=>{
-  const token=await getToken(server.id),session=await connect(server,token),started=Date.now();
+  const started=Date.now();
   const {data:run,error:insertError}=await db.from("jd_connector_executions").insert({school_id:school,server_id:server.id,approval_id:approvalId,requested_by:actor,tool_name:toolName,status:"running"}).select("id").single();
   if(insertError||!run)throw new Error("Could not create connector execution record");
   let remoteResult:unknown=null;
   try{
+   const token=await getToken(server.id),session=await connect(server,token);
    const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
