@@ -365,7 +365,7 @@ Deno.serve(async (req) => {
    admin.from("profiles").select("id,role").eq("id",assigneeId).eq("school_id",profile.school_id).maybeSingle()
   ]);
   if(taskErr||!task) return json({error:"Operational task not found"},404);
-  if(memberErr||!member||!ASSIGNEE_ROLES.includes(String(member.role))) return json({error:"Assignee is not an eligible member of this workspace"},400);
+  if(memberErr||!member||!hasRole(ASSIGNEE_ROLES,member.role)) return json({error:"Assignee is not an eligible member of this workspace"},400);
   const {data:updated,error}=await admin.from("jd_operational_tasks").update({assigned_to:assigneeId,updated_at:new Date().toISOString()}).eq("id",taskId).eq("school_id",profile.school_id).select("id,assigned_to,status").single();
   if(error) return json({error:"Could not assign operational task"},500);
   return json({task:updated});
