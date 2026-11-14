@@ -11,7 +11,9 @@ JD Connect is a tenant-scoped remote MCP client and tool gateway for JD chat.
 - Tool schema discovery and persistence.
 - JD chat discovery through `list_connected_mcp_tools`.
 - JD chat invocation through `call_connected_mcp_tool`.
-- Discovered tools default to approval-required. A manager may explicitly trust a candidate that advertises `readOnlyHint: true`; destructive/open-world candidates cannot be trusted for automatic execution.
+- Per-provider permission grants: `read_only`, `read_write` and `full_control`, with optional expiry and immediate revocation.
+- `read_only` is the default when no active grant exists. `read_write` permits ordinary write-capable tools while destructive/open-world tools still require approval. `full_control` permits all discovered tools to execute directly under the workspace owner's explicit grant.
+- Grant changes and revocations are audited; an expired grant automatically falls back to read-only.
 - Every other tool call is saved as an approval request with encrypted arguments.
 - Admin/manager approval queue, exact argument preview, approve-and-execute or decline.
 - Tenant-scoped execution history and audit events.
@@ -60,7 +62,7 @@ A code merge alone does not create provider credentials, enable third-party OAut
 - Only workspace admins and managers can manage or invoke connectors.
 - Connector records are isolated by `school_id`.
 - Credentials and pending tool arguments are encrypted with AES-GCM.
-- All tools require approval by default. A manager may explicitly trust a tool for automatic execution only when its server annotation marks it read-only and does not mark it destructive or open-world.
+- Each provider has an independent access grant: read-only, read/write or full control. No grant means read-only. Read/write permits ordinary writes; destructive and open-world tools remain approval-gated. Full control permits all discovered tools to execute directly. Grants can be revoked and optionally expire.
 - Approval requests expire after 15 minutes.
 - Disconnect revokes the stored bearer token, removes the tool catalogue, expires pending approvals and preserves execution history. Reconnect requires a new token for protected servers.
 - Tool results are not trusted as instructions.
@@ -103,3 +105,16 @@ All MCP calls require an authenticated workspace admin or manager. Queries are t
 Lovable's official MCP endpoint is `https://mcp.lovable.dev` and it requires OAuth 2.1; it does not accept a personal API key. JD Connect's current outbound gateway stores optional bearer tokens but does not yet perform the OAuth authorization-code/PKCE flow. Therefore Lovable is **not connected by this change**. The next outbound-connector slice must add OAuth discovery, PKCE login/callback, encrypted refresh-token storage and refresh handling before the Lovable endpoint can be registered. Do not paste an OAuth token into the bearer-token field as a substitute for that flow.
 
 Lovable actions that create projects, send build prompts or deploy consume the connected workspace's credits or publish changes. JD must retain approval gates for those operations. Other vibe-coding clients can be added through the same standards-based outbound OAuth/MCP adapter once their OAuth requirements are verified.
+
+
+## Per-provider permission grants
+
+The JD Connect settings panel exposes three independently managed permission levels for each connected MCP server:
+
+| Grant | Runtime behaviour |
+| --- | --- |
+| `read_only` | Default. Read-only tools may run only when the provider marks them read-only; writes require approval. |
+| `read_write` | Read and ordinary write tools may execute. Destructive or open-world tools still require an explicit approval. |
+| `full_control` | All discovered tools may execute under the explicit provider grant, including destructive/open-world tools. |
+
+Managers can revoke elevated access at any time. Grants may have an expiry timestamp; expired or missing grants are treated as read-only. The grant table is service-role-only and tenant-scoped. The MCP tool caller delegates to JD Connect, so the same server-side grant enforcement applies to both the settings UI and inbound MCP clients.
