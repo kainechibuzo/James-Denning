@@ -25,7 +25,7 @@ function renderInlineMarkdown(value, keyPrefix = "inline") {
     const key = keyPrefix + "-" + index;
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={key}>{part.slice(2, -2)}</strong>;
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={key}>{part.slice(1, -1)}</em>;
-    if (part.startsWith("`") && part.endsWith("`")) return <code className="jd-inline-code" key={key}>{part.slice(1, -1)}</code>;
+    if (part.startsWith("`") && part.endsWith("`")) return part.slice(1, -1);
     const markdownLink = part.match(/^\[([^\]]+)\]\((https:\/\/[^\s)]+)\)$/);
     const href = markdownLink?.[2] || (/^https:\/\//i.test(part) ? part : null);
     if (href) return <a key={key} href={href} target="_blank" rel="noopener noreferrer">{markdownLink?.[1] || part}</a>;
@@ -34,7 +34,8 @@ function renderInlineMarkdown(value, keyPrefix = "inline") {
 }
 
 function renderMessageContent(content) {
-  const lines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
+  const readable = String(content || "").replace(/```[\\s\\S]*?```/g, "Technical details are hidden so you can focus on the business decision.").replace(/`([^`]+)`/g, "$1");
+  const lines = readable.replace(/\r\n?/g, "\n").split("\n");
   const nodes = [];
   let paragraph = [];
   const flushParagraph = () => {
@@ -242,7 +243,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     } catch (err) {
       const status = err?.context?.status || err?.status;
       const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
-      setError(status === 404 ? "JD Assistant's Edge Function is not deployed to this Supabase project yet." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account is not authorised for this organisation's JD workspace." : status === 503 ? "JD Assistant is deployed but its server configuration is incomplete. Check the Edge Function secrets." : status >= 500 ? "JD Assistant's server returned an error. Check the Edge Function logs." : rawMessage || "JD could not reach its service. Check your connection and try again.");
+      setError(status === 404 ? "JD Assistant's Edge Function is not deployed to this Supabase project yet." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account is not authorised for this organisation's JD workspace." : status === 503 ? "JD Assistant is deployed but its server configuration is incomplete. Check the Edge Function secrets." : status >= 500 ? "JD Assistant's server returned an error. Check the Edge Function logs." : "JD could not complete that request. Please try again in a moment.");
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
     } finally { setSending(false); }
