@@ -48,7 +48,7 @@ Deno.serve(
       const schoolId = String(profile.school_id);
       const actorId = authData.user.id;
       const callConnect = async (action: string, payload: Record<string, unknown> = {}) => {
-        const response = await fetch(projectUrl.replace(/\\/$/, "") + "/functions/v1/jd-connect", {
+        const response = await fetch(projectUrl.replace(/\/$/, "") + "/functions/v1/jd-connect", {
           method: "POST",
           headers: { Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
           redirect: "error",
