@@ -289,7 +289,7 @@ Deno.serve(async (req) => {
   const ids=(departments||[]).map((item:any)=>item.id);
   let positions:any[]=[];
   if(ids.length){
-   const {data,error:roleError}=await admin.from("jd_department_roles")
+   const {data:roleData,error:roleError}=await admin.from("jd_department_roles")
     .select("id,department_id,title,created_by_agent,created_at")
     .eq("school_id",profile.school_id).in("department_id",ids).order("title").limit(500);
    if(roleError) return json({error:"Could not load department positions"},500);
