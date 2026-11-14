@@ -329,15 +329,30 @@ Deno.serve(async (req) => {
   const stableId=typeof payload.idempotencyId==="string"?payload.idempotencyId:"";
   if(!stableId) return json({error:"idempotencyId is required"},400);
   const key=makeIdempotencyKey(profile.school_id,"task.create",stableId);
-  const {data:existing}=await admin.from("jd_operational_tasks").select("id,status,title").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
-  if(existing) return json({task:existing,reused:true});
-  const {data:created,error}=await admin.from("jd_operational_tasks").insert({school_id:profile.school_id,created_by:authData.user.id,title:task.title,description:task.description,department:task.department,due_at:task.due_at,priority:task.priority,idempotency_key:key}).select("id,status,title,description,priority,created_at").single();
-  if(error?.code==="23505"){
-   const {data:duplicate}=await admin.from("jd_operational_tasks").select("id,status,title,description,priority,created_at").eq("school_id",profile.school_id).eq("idempotency_key",key).maybeSingle();
-   if(duplicate) return json({task:duplicate,reused:true});
+  const {data:created,error}=await admin.rpc("jd_create_operational_task",{
+   p_actor_id:authData.user.id,
+   p_title:task.title,
+   p_description:task.description,
+   p_department:task.department||null,
+   p_due_at:task.due_at,
+   p_priority:task.priority,
+   p_idempotency_key:key
+  });
+  if(error){
+   const code=String(error.code||"");
+   if(code==="42501") return json({error:"Manager permission required to create operational tasks"},403);
+   if(code==="22023") return json({error:error.message||"Operational task request is invalid or conflicts with an existing idempotency key"},409);
+   console.error("JD operational task creation transaction failed",code||"unknown");
+   return json({error:"Task creation and audit event could not be committed"},500);
   }
-  if(error||!created) return json({error:"Could not create operational task"},500);
-  return json({task:created,reused:false},201);
+  if(!created?.task||created.auditRecorded!==true&&created.reused!==true)
+   return json({error:"Task creation did not return persisted evidence"},500);
+  return json({
+   task:created.task,
+   reused:created.reused===true,
+   auditRecorded:created.auditRecorded===true,
+   auditId:created.auditId||null
+  },created.reused===true?200:201);
  }
  if(payload.action==="operations.task.transition"){
   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to update operational tasks"},403);
