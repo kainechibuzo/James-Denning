@@ -584,6 +584,13 @@ Deno.serve(async (req) => {
     await admin.from("jd_approvals").update({execution_status:"failed",execution_result_json:{error:"department_provisioning_failed"}}).eq("id",approvalId).eq("school_id",profile.school_id);
     return json({approval:result,execution:{status:"failed",message:"JD recorded your approval, but couldn't finish creating the departments. Nothing else was changed. Please try again or contact your administrator."},conversationId:before.proposal_json?.conversation_id||null},500);
    }
+   const approvedBlueprint=before.proposal_json?.blueprint||{};
+   const departmentNames=Array.isArray(approvedBlueprint.departments)?approvedBlueprint.departments.map((item:any)=>String(item.name||"")).filter(Boolean):[];
+   await admin.from("jd_business_memory").upsert({
+    school_id:profile.school_id,memory_key:"organisation.business_setup",category:"organisation_setup",
+    content:"Business: "+String(approvedBlueprint.name||"Organisation")+". Industry: "+String(approvedBlueprint.industry||"Not specified")+". Business model: "+String(approvedBlueprint.businessModel||"Not specified")+". JD-created departments: "+departmentNames.join(", ")+". This structure was approved and created in the workspace.",
+    created_by:authData.user.id,created_by_agent:true,source_conversation_id:before.proposal_json?.conversation_id||null,confidence:"confirmed",updated_at:new Date().toISOString()
+   },{onConflict:"school_id,memory_key"});
    execution={status:"completed",message:"The departments have been created in your organisation.",result:provisioned};
   }
   const {data:run}=await admin.from("jd_automation_runs").select("conversation_id").eq("id",before.run_id).eq("school_id",profile.school_id).maybeSingle();
