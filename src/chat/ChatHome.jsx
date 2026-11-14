@@ -89,6 +89,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -98,6 +100,48 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   }, []);
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
   const backgroundWorking = messages.some((item) => item.role === "assistant" && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
+
+  useEffect(() => {
+    let active = true;
+    const loadHistory = async () => {
+      setHistoryLoading(true);
+      const { data } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
+      if (active) setConversations(data?.conversations || []);
+      if (active) setHistoryLoading(false);
+    };
+    void loadHistory();
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (backgroundWorking) return;
+    let active = true;
+    const checkApprovals = async () => {
+      const { data } = await supabase.functions.invoke("jd-automation", { body: { action: "approvals.list" } });
+      if (active && (data?.approvals || []).some((item) => item.status === "pending")) setShowReview(true);
+    };
+    void checkApprovals();
+    return () => { active = false; };
+  }, [backgroundWorking]);
+
+  const loadConversation = async (id) => {
+    if (!id || sending) return;
+    setError("");
+    const { data, error: loadError } = await supabase.functions.invoke("jd-automation", { body: { action: "history", conversationId: id } });
+    if (loadError || !data) {
+      setError("JD couldn't open that conversation. Please try again.");
+      return;
+    }
+    setConversationId(id);
+    setMessages((data.messages || []).map((item) => ({
+      role: item.role, content: item.content || "",
+      visualWorkspace: item.content_json?.visual_workspace || item.content_json?.ui || null,
+      toolEvents: item.content_json?.toolEvents || [],
+      run: item.content_json?.run || null
+    })).filter((item) => item.role === "user" || item.role === "assistant"));
+    setSidebarOpen(false);
+    setShowReview(false);
+  };
 
   // Poll only the specific active jobs in this conversation. The job-id key
   // stays stable while messages update, so renders do not restart the timer.
@@ -156,7 +200,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     return () => { stopped = true; clearInterval(timer); };
   }, [pendingJobKey]);
 
-  const send = async (override) => {
+  const send = async (override, targetConversationId = null) => {
     const message = (override ?? draft).trim();
     if (!message || sending) return;
     setDraft("");
@@ -165,11 +209,13 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     setSending(true);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId },
+        body: { action: "submit", message, conversationId: targetConversationId || conversationId },
       });
       if (invokeError) throw invokeError;
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) setConversationId(data.conversationId);
+      const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
+      if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
       setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
     } catch (err) {
@@ -212,7 +258,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
 
   const newConversation = () => {
     if (sending) return;
-    setConversationId(null); setMessages([]); setDraft(""); setError("");
+    setConversationId(null); setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
   };
 
   return (
@@ -232,6 +278,13 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-nav button{min-width:0;border:1px solid transparent;background:transparent;border-radius:9px;padding:10px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#5e646d;font-size:11px;cursor:pointer}
         .jd-nav button:hover{background:#fff;border-color:#e1e3e7;color:#202328}
         .jd-nav svg{flex:0 0 auto}
+        .jd-history-list{min-height:0;flex:1;overflow:auto;border-top:1px solid #e0e2e6;padding-top:9px}
+        .jd-history-empty{padding:8px 9px;color:#969ca5;font-size:10px;line-height:1.5}
+        .jd-history-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#555c66;text-align:left;font-size:10px;cursor:pointer}
+        .jd-history-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+        .jd-history-item small{flex:0 0 auto;color:#969ca5;font-size:9px}
+        .jd-history-item:hover,.jd-history-item.active{background:#fff;border-color:#e1e4e8;color:#202329}
+
         .jd-rail-foot{margin-top:auto;border-top:1px solid #dfe1e5;padding:13px 5px 0;display:flex;align-items:center;gap:9px;color:#555b64;font-size:11px}
         .jd-avatar{width:29px;height:29px;border-radius:9px;background:#22252a;color:#fff;display:grid;place-items:center;font-weight:700}
         .jd-main{min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;position:relative}
@@ -322,6 +375,15 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <button className="jd-new" type="button" onClick={()=>{setShowReview(true);setShowUsage(false);}}><ShieldCheck size={15}/> Review Centre</button>
         <button className="jd-new" type="button" onClick={()=>{setShowUsage(true);setShowReview(false);setShowRuns(false);}}><Activity size={15}/> AI usage</button>
         <button className="jd-new" type="button" onClick={()=>{setShowRuns(true);setShowUsage(false);setShowReview(false);}}><Activity size={15}/> Automation runs</button>
+        <div className="jd-history-list">
+          <div className="jd-rail-label">Recent conversations</div>
+          {historyLoading ? <div className="jd-history-empty">Loading chats…</div> : conversations.length === 0 ? <div className="jd-history-empty">Your saved chats will appear here.</div> : conversations.map((chat) => (
+            <button type="button" key={chat.id} className={"jd-history-item" + (conversationId === chat.id ? " active" : "")} onClick={() => loadConversation(chat.id)}>
+              <span>{chat.title || "New conversation"}</span>
+              <small>{chat.updated_at ? new Date(chat.updated_at).toLocaleDateString() : ""}</small>
+            </button>
+          ))}
+        </div>
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
       </aside></>}
