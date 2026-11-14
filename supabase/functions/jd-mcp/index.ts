@@ -61,6 +61,29 @@ Deno.serve(
         }
         return result as Record<string, unknown>;
       };
+
+      const invokeAutomation = async (action: string, payload: Record<string, unknown>) => {
+        const authorization = req.headers.get("Authorization");
+        if (!authorization) throw new Error("Authenticated user token is required for operational actions");
+        const headers: Record<string, string> = {
+          Authorization: authorization,
+          "Content-Type": "application/json",
+        };
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+        if (anonKey) headers.apikey = anonKey;
+        const response = await fetch(projectUrl.replace(/\\/$/, "") + "/functions/v1/jd-automation", {
+          method: "POST",
+          headers,
+          redirect: "error",
+          signal: AbortSignal.timeout(20000),
+          body: JSON.stringify({ action, ...payload }),
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result || result.error) {
+          throw new Error(clip(result?.error, 400) || `JD operational action ${action} failed with HTTP ${response.status}`);
+        }
+        return result as Record<string, unknown>;
+      };
       const mcp = createMcpHandler(() => {
         const server = new McpServer({ name: "james-denning", version: "1.0.0" });
 
@@ -243,6 +266,60 @@ Deno.serve(
               source: "jd_connector_executions",
               external_content_is_untrusted: true,
               evidence_policy: "A succeeded status requires a successful MCP tools/call response and persisted result. Failed calls are returned with error codes and any available failure result.",
+            });
+          },
+        );
+
+        server.registerTool(
+          "jd_create_operational_task",
+          {
+            description: "Create a real persisted operational task in the authenticated organisation using JD's existing idempotent task engine. Requires an explicit idempotency_id so retries do not create duplicates.",
+            inputSchema: z.object({
+              title: z.string().trim().min(1).max(180),
+              description: z.string().max(5000).optional(),
+              department: z.string().max(120).optional(),
+              priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+              due_at: z.string().datetime().nullable().optional(),
+              idempotency_id: z.string().trim().min(8).max(120),
+            }),
+            annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+          },
+          async ({ title, description, department, priority, due_at, idempotency_id }) => {
+            const result = await invokeAutomation("operations.task.create", {
+              task: { title, description, department, priority, dueAt: due_at },
+              idempotencyId: idempotency_id,
+            });
+            return jsonText({
+              ...result,
+              persisted: Boolean(result.task?.id),
+              source: "jd_operational_tasks",
+              evidence: { task_id: result.task?.id || null, idempotent_replay: result.reused === true },
+            });
+          },
+        );
+
+        server.registerTool(
+          "jd_transition_operational_task",
+          {
+            description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically. Supply the task's current expected status to prevent stale updates.",
+            inputSchema: z.object({
+              task_id: z.string().uuid(),
+              expected_status: z.enum(["queued", "in_progress", "blocked", "completed", "cancelled"]),
+              next_status: z.enum(["queued", "in_progress", "blocked", "completed", "cancelled"]),
+            }),
+            annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+          },
+          async ({ task_id, expected_status, next_status }) => {
+            const result = await invokeAutomation("operations.task.transition", {
+              taskId: task_id,
+              status: next_status,
+              expectedStatus: expected_status,
+            });
+            return jsonText({
+              ...result,
+              persisted: Boolean(result.task?.id) && result.auditRecorded === true,
+              evidence: { audit_recorded: result.auditRecorded === true, audit_id: result.auditId || null },
+              source: "jd_transition_operational_task",
             });
           },
         );
