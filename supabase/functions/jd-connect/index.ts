@@ -36,7 +36,7 @@ Deno.serve(async req=>{
  const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY")||"";
  const key=encoded?await importAesKey(encoded).catch(()=>null):null;
  if(!key)return send({error:"JD_OAUTH_ENCRYPTION_KEY is missing or invalid"},503);
- const audit=async(type:string,meta:Record<string,unknown>)=>{await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});};
+ const audit=async(type:string,meta:Record<string,unknown>)=>await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});
  const getServer=async(id:string)=>{
   const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info").eq("id",id).eq("school_id",school).maybeSingle();
   if(error||!data)throw new Error("Connector not found");return data as any;
@@ -99,13 +99,15 @@ Deno.serve(async req=>{
    if(serialized.length>MAX_RESULT)throw new Error("Connector result exceeds the 90 KB limit");
    const {error:updateError}=await db.from("jd_connector_executions").update({status:"succeeded",result_json:remoteResult,error_code:null,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
    if(updateError)throw new Error("Remote tool returned success, but execution evidence could not be persisted");
+   const warnings:string[]=[];
+   let approvalStatusPersisted=true;
    if(approvalId){
     const {error:approvalUpdateError}=await db.from("jd_connector_approvals").update({status:"executed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
-    if(approvalUpdateError)throw new Error("Remote tool succeeded and execution evidence was saved, but approval status could not be updated");
+    if(approvalUpdateError){approvalStatusPersisted=false;warnings.push("Execution succeeded and evidence was saved, but approval status could not be updated.");}
    }
    const {error:auditError}=await audit("connector.tool.executed",{server_id:server.id,tool_name:toolName,execution_id:run.id,approval_id:approvalId});
-   if(auditError)throw new Error("Remote tool succeeded and execution evidence was saved, but audit event persistence failed");
-   return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:true}};
+   if(auditError)warnings.push("Execution succeeded and evidence was saved, but the audit event could not be recorded.");
+   return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:!auditError,approval_status_persisted:approvalStatusPersisted},warnings};
   }catch(e){
    const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
    const failureMessage=e instanceof Error?e.message:"Connector operation failed";
