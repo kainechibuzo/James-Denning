@@ -174,7 +174,7 @@ Deno.serve(
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
           },
           async ({ tool_id, arguments: toolArguments, approval_id }) => {
-            const base = projectUrl.replace(/\\/$/, "");
+            const base = projectUrl.replace(/\/$/, "");
             const response = await fetch(base + "/functions/v1/jd-connect", {
               method: "POST",
               headers: { Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
