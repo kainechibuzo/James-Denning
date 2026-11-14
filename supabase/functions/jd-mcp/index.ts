@@ -273,7 +273,7 @@ Deno.serve(
         server.registerTool(
           "jd_create_operational_task",
           {
-            description: "Create a real persisted operational task in the authenticated organisation using JD's existing idempotent task engine. Requires an explicit idempotency_id so retries do not create duplicates.",
+            description: "Create a real persisted operational task in the authenticated organisation using JD's existing idempotent task engine. Requires an explicit idempotency_id so retries do not create duplicates. Only invoke after the user explicitly confirms the task details.",
             inputSchema: z.object({
               title: z.string().trim().min(1).max(180),
               description: z.string().max(5000).optional(),
@@ -303,12 +303,12 @@ Deno.serve(
         server.registerTool(
           "jd_transition_operational_task",
           {
-            description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically and rejects stale concurrent transitions.",
+            description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically and rejects stale concurrent transitions. Only invoke after the user explicitly confirms the requested transition.",
             inputSchema: z.object({
               task_id: z.string().uuid(),
               next_status: z.enum(["queued", "in_progress", "blocked", "completed", "cancelled"]),
             }),
-            annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+            annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
           },
           async ({ task_id, next_status }) => {
             const result = await invokeAutomation("operations.task.transition", {
