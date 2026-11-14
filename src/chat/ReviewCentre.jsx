@@ -75,7 +75,7 @@ export function ReviewCentre({ onClose, onDecision }) {
             </div>}
             <div className="jd-review-meta"><span>Risk: {item.risk_level}</span><span>Execution: {item.execution_status?.replaceAll("_"," ")||"not executed"}</span></div>
             {item.status==="pending"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
-            {item.status==="approved"&&<div className="jd-review-safe-note">Approved decision recorded. No action has been executed.</div>}
+            {item.status==="approved"&&<div className="jd-review-safe-note">{item.execution_status==="completed"?"JD completed the approved setup. Created items are tagged as created by JD.":item.execution_status==="failed"?"Your approval was recorded, but JD could not complete the setup. Ask JD to review the issue before retrying.":"Your approval was recorded. The requested change has not been confirmed as complete."}</div>}
           </article>
         ))}
       </div>}
