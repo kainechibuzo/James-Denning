@@ -289,11 +289,13 @@ Deno.serve(
               task: { title, description, department, priority, dueAt: due_at },
               idempotencyId: idempotency_id,
             });
+            const task = asObject(result.task);
+            const taskId = typeof task.id === "string" ? task.id : null;
             return jsonText({
               ...result,
-              persisted: Boolean(result.task?.id),
+              persisted: Boolean(taskId),
               source: "jd_operational_tasks",
-              evidence: { task_id: result.task?.id || null, idempotent_replay: result.reused === true },
+              evidence: { task_id: taskId, idempotent_replay: result.reused === true },
             });
           },
         );
@@ -313,9 +315,11 @@ Deno.serve(
               taskId: task_id,
               status: next_status,
             });
+            const task = asObject(result.task);
+            const taskId = typeof task.id === "string" ? task.id : null;
             return jsonText({
               ...result,
-              persisted: Boolean(result.task?.id) && result.auditRecorded === true,
+              persisted: Boolean(taskId) && result.auditRecorded === true,
               evidence: { audit_recorded: result.auditRecorded === true, audit_id: result.auditId || null },
               source: "jd_transition_operational_task",
             });
