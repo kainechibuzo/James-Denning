@@ -685,7 +685,7 @@ Deno.serve(async (req) => {
  const {data:run,error:runErr}=await admin.from("jd_automation_runs").insert({
   school_id:profile.school_id,conversation_id:conversationId,requested_by:authData.user.id,
   trigger_type:payload.triggerType==="upload"?"upload":"chat",status:risk==="approval_required"?"awaiting_approval":"planning",
-  autonomy_mode:"autonomous",scope:"organisation",request_text:message,
+  autonomy_mode:"autonomous",scope:"organisation",request_text:message,created_by_agent:true,
   plan_json:[],idempotency_key:typeof payload.idempotencyKey==="string"?payload.idempotencyKey.slice(0,120):crypto.randomUUID()
  }).select("id,status,created_at").single();
  if(runErr||!run){if(runErr?.code==="23505")return json({error:"Duplicate request",duplicate:true},409);return json({error:"Could not create automation run"},500)}
@@ -695,11 +695,11 @@ Deno.serve(async (req) => {
   const {data:approval,error:approvalErr}=await admin.from("jd_approvals").insert({
    school_id:profile.school_id,run_id:run.id,requested_by:authData.user.id,status:"pending",
    reason,title:"Review JD action request",action_key:"unclassified_request",risk_level:"high",
-   proposal_json:{request_text:message,execution_enabled:false},audience_text:null,execution_status:"not_executed"
+   proposal_json:{request_text:message,execution_enabled:false},audience_text:null,execution_status:"not_executed",created_by_agent:true
   }).select("id,status,expires_at").single();
   if(approvalErr||!approval) return json({error:"The request was paused but its approval record could not be created"},500);
   const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. Approval records the decision only; execution remains disabled until a separately verified action handler is available.";
-  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id}});
+  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id},created_by_agent:true});
   await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true,approval});
  }
