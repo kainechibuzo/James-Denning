@@ -41,7 +41,8 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.jd-connect]
-verify_jwt = true
+# The function validates user JWTs and internal service-role calls itself.
+verify_jwt = false
 
 # OAuth 2.1 identity provider for ChatGPT and other MCP clients.
 # Dynamic client registration is required by MCP clients; each grant still
