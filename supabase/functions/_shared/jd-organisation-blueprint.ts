@@ -33,7 +33,8 @@ export function buildOrganisationBlueprintDraft(input: { businessIdea: string; n
  const isClothing=/\b(clothing|fashion|apparel|garment|boutique|cloth(?:es|ing)? store)\b/.test(lower);
  const isTrucking=/\b(truck(?:ing)?|haulage|freight|logistics|transport(?:ation)? company|fleet)\b/.test(lower);
  const industry=isClothing?"Clothing retail":isTrucking?"Trucking and logistics":"Business operations";
- const departments=isClothing?clothingDepartments.map((d)=>({...d,roles:[...d.roles],workflows:[...d.workflows],kpis:[...d.kpis]})):isTrucking?truckingDepartments.map((d)=>({...d,roles:[...d.roles],workflows:[...d.workflows],kpis:[...d.kpis]}):generalDepartments.map((d)=>({...d,roles:[...d.roles],workflows:[...d.workflows],kpis:[...d.kpis]}));
+ const cloneDepartments=(source:BlueprintDepartment[])=>source.map((d)=>({...d,roles:[...d.roles],workflows:[...d.workflows],kpis:[...d.kpis]}));
+ const departments=cloneDepartments(isClothing?clothingDepartments:isTrucking?truckingDepartments:generalDepartments);
  const defaultName=isClothing?"New Clothing Store":isTrucking?"New Trucking Company":"New Business";
  const model=text(input.businessModel,500)|| (isClothing?"Retail sales of clothing and accessories through a physical store and, where appropriate, online channels.":isTrucking?"Commercial transport and haulage services for business and individual customers, with fleet, dispatch and delivery operations.":"A customer-focused business delivering products or services through coordinated operations, sales and support.");
  const name=text(input.name,160)||defaultName;
