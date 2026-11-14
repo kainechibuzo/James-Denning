@@ -541,11 +541,11 @@ Deno.serve(async (req) => {
   const decision=payload.decision==="approve"?"approved":payload.decision==="reject"?"rejected":null;
   const note=typeof payload.note==="string"?payload.note.trim().slice(0,2000):null;
   if(!approvalId||!decision) return json({error:"approvalId and a valid decision are required"},400);
+  const {data:before,error:beforeError}=await admin.from("jd_approvals")
+   .select("id,run_id,action_key,proposal_json,school_id").eq("id",approvalId).eq("school_id",profile.school_id).maybeSingle();
+  if(beforeError||!before) return json({error:"Approval request not found"},404);
   const {data:result,error:decisionErr}=await admin.rpc("jd_decide_approval",{
-   p_approval_id:approvalId,
-   p_actor_id:authData.user.id,
-   p_decision:decision,
-   p_note:note
+   p_approval_id:approvalId,p_actor_id:authData.user.id,p_decision:decision,p_note:note
   });
   if(decisionErr){
    const code=String(decisionErr.code||"");
@@ -555,7 +555,17 @@ Deno.serve(async (req) => {
    return json({error:"Could not record the approval decision and audit event"},500);
   }
   if(result?.status==="expired") return json({error:"This approval request has expired",approval:result},410);
-  return json({approval:result,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
+  let execution:any={status:"not_executed",message:decision==="approved"?"Approved. The requested change is not yet available for automatic completion.":"Rejected. No changes were made."};
+  if(decision==="approved"&&before.action_key==="organisation.provision_departments"){
+   const {data:provisioned,error:provisionError}=await admin.rpc("jd_provision_approved_departments",{p_approval_id:approvalId,p_actor_id:authData.user.id});
+   if(provisionError){
+    await admin.from("jd_approvals").update({execution_status:"failed",execution_result_json:{error:"department_provisioning_failed"}}).eq("id",approvalId).eq("school_id",profile.school_id);
+    return json({approval:result,execution:{status:"failed",message:"JD recorded your approval, but couldn't finish creating the departments. Nothing else was changed. Please try again or contact your administrator."},conversationId:before.proposal_json?.conversation_id||null},500);
+   }
+   execution={status:"completed",message:"The departments have been created in your organisation.",result:provisioned};
+  }
+  const {data:run}=await admin.from("jd_automation_runs").select("conversation_id").eq("id",before.run_id).eq("school_id",profile.school_id).maybeSingle();
+  return json({approval:result,execution,conversationId:before.proposal_json?.conversation_id||run?.conversation_id||null});
  }
  if(payload.action==="runs.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can view automation runs"},403);
@@ -612,6 +622,14 @@ Deno.serve(async (req) => {
    if(total!==null){byModel[model].tokens+=total;byModel[model].reported_runs++;}
   }
   return json({summary,byDay:Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),byModel:Object.entries(byModel).sort((a,b)=>b[1].tokens-a[1].tokens),note:"Token totals include only provider-reported usage. Costs are not estimated."});
+ }
+ if(payload.action==="history.list"){
+  const {data,error}=await admin.from("jd_conversations")
+   .select("id,title,updated_at,created_at").eq("school_id",profile.school_id)
+   .eq("created_by",authData.user.id).eq("status","active")
+   .order("updated_at",{ascending:false}).limit(60);
+  if(error) return json({error:"Could not load chat history"},500);
+  return json({conversations:data||[]});
  }
  if(payload.action==="history"){
   const id=String(payload.conversationId||"");
