@@ -90,7 +90,8 @@ Deno.serve(
       const mcp = createMcpHandler(() => {
         const server = new McpServer({ name: "james-denning", version: "1.0.0" });
         const registerTool = (name: string, config: any, handler: any) => {
-          const allowed = (managerRole && name !== "jd_transition_my_task")
+          const allowed = (managerRole && name !== "jd_transition_my_task" && name !== "jd_list_audit_events")
+            || (["owner", "admin"].includes(role) && name === "jd_list_audit_events")
             || name === "jd_list_operational_tasks"
             || (role === "viewer" && ["jd_get_workspace_overview","jd_list_audit_events"].includes(name))
             || (role === "staff" && name === "jd_transition_my_task");
@@ -140,19 +141,25 @@ Deno.serve(
             annotations: { readOnlyHint: true },
           },
           async ({ limit }) => {
-            if (restrictedReadRole) {
-              const action = role === "viewer" ? "operations.task.list_readonly" : "operations.task.list_mine";
-              const result = await invokeAutomation(action, { limit: limit || 20 });
-              return jsonText({ tasks: Array.isArray(result.tasks) ? result.tasks : [], source: "persisted jd_operational_tasks" });
+            if (!["owner", "admin", "manager", "viewer", "staff", "contractor"].includes(role)) {
+              throw new Error("This workspace role cannot list operational tasks");
             }
-            const { data, error } = await admin
+            let query = admin
               .from("jd_operational_tasks")
               .select("id,title,description,department,priority,status,due_at,updated_at")
-              .eq("school_id", schoolId)
+              .eq("school_id", schoolId);
+            if (role === "staff" || role === "contractor") {
+              query = query.eq("assigned_to", actorId);
+            }
+            const { data, error } = await query
               .order("updated_at", { ascending: false })
               .limit(limit || 20);
             if (error) throw new Error("Could not read operational tasks");
-            return jsonText({ tasks: data || [], source: "persisted jd_operational_tasks" });
+            return jsonText({
+              tasks: data || [],
+              source: "persisted jd_operational_tasks",
+              scope: role === "staff" || role === "contractor" ? "assigned_to_authenticated_user" : "authenticated_business",
+            });
           },
         );
 
@@ -184,11 +191,14 @@ Deno.serve(
         registerTool(
           "jd_list_audit_events",
           {
-            description: "Read a bounded list of audit events for the authenticated organisation. Viewer access is read-only and tenant-scoped.",
+            description: "Read a bounded list of audit events for the authenticated organisation. Available only to owner, admin and viewer; viewer access is read-only and tenant-scoped.",
             inputSchema: z.object({ limit: z.number().int().min(1).max(100).optional() }),
             annotations: { readOnlyHint: true },
           },
           async ({ limit }) => {
+            if (!["owner", "admin", "viewer"].includes(role)) {
+              throw new Error("Audit-event access is not enabled for this workspace role");
+            }
             if (role === "viewer") {
               const result = await invokeAutomation("operations.audit.list_readonly", { limit: limit || 50 });
               return jsonText({ events: Array.isArray(result.events) ? result.events : [], source: "persisted jd_audit_events" });
