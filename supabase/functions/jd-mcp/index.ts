@@ -94,7 +94,7 @@ Deno.serve(
             || name === "jd_list_operational_tasks"
             || (role === "viewer" && ["jd_get_workspace_overview","jd_list_audit_events"].includes(name))
             || (role === "staff" && name === "jd_transition_my_task");
-          if (allowed) registerTool(name, config, handler);
+          if (allowed) server.registerTool(name, config, handler);
         };
 
         registerTool(
