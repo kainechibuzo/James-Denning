@@ -14,6 +14,10 @@ declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
 const cors = { "Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods":"POST, OPTIONS", "Content-Type":"application/json" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status, headers:cors});
+const MANAGER_ROLES = ["owner","admin","manager"] as const;
+const ADMIN_ROLES = ["owner","admin"] as const;
+const ASSIGNEE_ROLES = ["owner","admin","manager","staff","finance","hr","contractor"] as const;
+const hasRole = (roles: readonly string[], role: unknown) => roles.includes(String(role));
 const highImpact = [/\b(pay|payment|transfer|refund|purchase|withdraw|charge)\b/i,/\b(send|email|message|notify|publish|announce)\b/i,/\b(delete|remove|erase|purge|terminate)\b/i,/\b(permission|role|access|invite|disable account)\b/i,/\b(sign|submit|file|approve contract|legal)\b/i];
 const needsApproval = (text:string) => highImpact.some((p)=>p.test(text));
 
@@ -35,7 +39,7 @@ Deno.serve(async (req) => {
 
 
  if(payload.action==="workflow.draft.list"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect workflow drafts"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect workflow drafts"},403);
   const {data:workflows,error}=await admin.from("jd_workflows")
    .select("id,title,description,status,latest_version_no,active_version_id,created_at,updated_at")
    .eq("school_id",profile.school_id).order("updated_at",{ascending:false}).limit(100);
@@ -50,7 +54,7 @@ Deno.serve(async (req) => {
   return json({workflows:workflows||[],versions:versions||[],execution_enabled:false});
  }
  if(payload.action==="workflow.draft.save"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to save workflow drafts"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to save workflow drafts"},403);
   const result=validateWorkflowDefinition(payload.definition);
   if(!result.valid||!result.definition) return json({error:"Workflow definition failed validation",validation_errors:result.errors},400);
   const workflowId=typeof payload.workflowId==="string"?payload.workflowId:null;
@@ -67,7 +71,7 @@ Deno.serve(async (req) => {
   return json({workflow:saved,execution_enabled:false,notice:"Saved as an immutable draft version. It is not active or executable."},201);
  }
  if(payload.action==="workflow.review.submit"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to submit workflows for review"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to submit workflows for review"},403);
   const workflowId=typeof payload.workflowId==="string"?payload.workflowId:"";
   const versionId=typeof payload.versionId==="string"?payload.versionId:"";
   if(!workflowId||!versionId) return json({error:"workflowId and versionId are required"},400);
@@ -82,7 +86,7 @@ Deno.serve(async (req) => {
   return json({approval,execution_enabled:false,notice:"The exact immutable workflow version was submitted to the Review Centre. No workflow action has run."},201);
  }
  if(payload.action==="workflow.activate"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can activate an approved workflow"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can activate an approved workflow"},403);
   const approvalId=typeof payload.approvalId==="string"?payload.approvalId:"";
   if(!approvalId) return json({error:"approvalId is required"},400);
   const {data:activated,error}=await admin.rpc("jd_activate_approved_workflow",{
@@ -96,12 +100,12 @@ Deno.serve(async (req) => {
   return json({workflow:activated,execution_enabled:false,notice:"The approved workflow version is active, but workflow execution is not enabled."});
  }
  if(payload.action==="workflow.definition.validate"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to design workflows"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to design workflows"},403);
   const result=validateWorkflowDefinition(payload.definition);
   return json({valid:result.valid,errors:result.errors,definition:result.definition,execution_enabled:false,notice:"This is a validated draft preview only. It is not saved, scheduled or executable."});
  }
  if(payload.action==="intelligence.snapshot"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect business intelligence"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect business intelligence"},403);
   const [{data:people,error:peopleErr},{data:bills,error:billsErr},{data:announcements,error:annErr},{data:emails,error:emailErr},{data:tasks,error:tasksErr},{data:session,error:sessionErr},{data:terms,error:termsErr}]=await Promise.all([
    admin.from("profiles").select("role").eq("school_id",profile.school_id).limit(5000),
    admin.from("fee_bills").select("total_amount,amount_paid,balance,status").eq("school_id",profile.school_id).limit(5000),
@@ -147,7 +151,7 @@ Deno.serve(async (req) => {
   const {data:run,error:runErr}=await admin.from("jd_automation_runs")
    .select("id,conversation_id,requested_by,status,result_json,started_at,completed_at")
    .eq("id",job.run_id).eq("school_id",profile.school_id).maybeSingle();
-  if(runErr||!run||(run.requested_by!==authData.user.id&&profile.role!=="admin"))
+  if(runErr||!run||(run.requested_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
    return json({error:"Execution job not found"},404);
   let assistantMessage=null;
   const {data:message}=await admin.from("jd_messages")
@@ -162,9 +166,9 @@ Deno.serve(async (req) => {
   return json({job,run,assistantMessage,steps:steps||[]});
  }
  if(payload.action==="execution.monitor.list"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect execution history"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect execution history"},403);
   let runQuery=admin.from("jd_automation_runs").select("id,conversation_id,requested_by,request_text,status,result_json,created_at,started_at,completed_at").eq("school_id",profile.school_id);
-  if(profile.role!=="admin") runQuery=runQuery.eq("requested_by",authData.user.id);
+  if(!hasRole(ADMIN_ROLES,profile.role)) runQuery=runQuery.eq("requested_by",authData.user.id);
   const {data:runs,error:runErr}=await runQuery.order("created_at",{ascending:false}).limit(100);
   if(runErr) return json({error:"Could not load JD execution history"},500);
   const ids=(runs||[]).map((r:any)=>r.id);
@@ -177,7 +181,7 @@ Deno.serve(async (req) => {
   return json({runs:runs||[],jobs:jobs||[],steps:steps||[]});
  }
  if(payload.action==="execution.job.retry"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can retry failed JD jobs"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can retry failed JD jobs"},403);
   const jobId=typeof payload.jobId==="string"?payload.jobId:"";
   if(!jobId) return json({error:"jobId is required"},400);
   const {data:retry,error}=await admin.rpc("jd_requeue_failed_execution_job",{p_job_id:jobId,p_actor_id:authData.user.id});
@@ -190,7 +194,7 @@ Deno.serve(async (req) => {
   return json({job:retry});
  }
  if(payload.action==="execution.job.cancel"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can cancel queued JD jobs"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can cancel queued JD jobs"},403);
   const jobId=typeof payload.jobId==="string"?payload.jobId:"";
   if(!jobId) return json({error:"jobId is required"},400);
   const {data:job,error:jobErr}=await admin.from("jd_execution_jobs").select("id,run_id,status").eq("id",jobId).eq("school_id",profile.school_id).maybeSingle();
@@ -204,19 +208,62 @@ Deno.serve(async (req) => {
   return json({job:updated});
  }
  if(payload.action==="organisation.blueprints.list"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation blueprints"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can inspect organisation blueprints"},403);
   const {data,error}=await admin.from("jd_organisation_blueprints").select("id,title,industry,status,blueprint_json,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
   if(error) return json({error:"Could not load organisation blueprints"},500);
   return json({blueprints:data||[]});
  }
  if(payload.action==="operations.task.list"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect operational tasks"},403);
-  const {data,error}=await admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,assigned_to,due_at,completed_at,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(250);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect operational tasks"},403);
+  const limit=Number.isInteger(payload.limit)?Math.min(250,Math.max(1,Number(payload.limit))):250;
+  const {data,error}=await admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,assigned_to,due_at,completed_at,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(limit);
   if(error) return json({error:"Could not load operational tasks"},500);
   return json({tasks:data||[]});
  }
+ if(payload.action==="operations.task.list_mine"){
+  if(!["staff","contractor"].includes(String(profile.role))) return json({error:"Assigned-task read access is limited to staff and contractors"},403);
+  const limit=Number.isInteger(payload.limit)?Math.min(100,Math.max(1,Number(payload.limit))):50;
+  const {data,error}=await admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,completed_at,created_at,updated_at").eq("school_id",profile.school_id).eq("assigned_to",authData.user.id).order("created_at",{ascending:false}).limit(limit);
+  if(error) return json({error:"Could not load assigned operational tasks"},500);
+  return json({tasks:data||[]});
+ }
+ if(payload.action==="operations.task.list_readonly"){
+  if(profile.role!=="viewer") return json({error:"Workspace overview task access is limited to viewers"},403);
+  const limit=Number.isInteger(payload.limit)?Math.min(250,Math.max(1,Number(payload.limit))):100;
+  const {data,error}=await admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,completed_at,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(limit);
+  if(error) return json({error:"Could not load workspace tasks"},500);
+  return json({tasks:data||[]});
+ }
+ if(payload.action==="operations.audit.list_readonly"){
+  if(profile.role!=="viewer") return json({error:"Workspace audit read access is limited to viewers"},403);
+  const limit=Number.isInteger(payload.limit)?Math.min(100,Math.max(1,Number(payload.limit))):50;
+  const {data,error}=await admin.from("jd_audit_events").select("id,event_type,event_json,created_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(limit);
+  if(error) return json({error:"Could not load workspace audit events"},500);
+  return json({events:data||[]});
+ }
+ if(payload.action==="operations.task.transition_own"){
+  if(profile.role!=="staff") return json({error:"Own-task transitions are limited to staff"},403);
+  const id=typeof payload.taskId==="string"?payload.taskId:"";
+  const next=typeof payload.status==="string"?payload.status as TaskStatus:null;
+  if(!id||!next) return json({error:"taskId and status are required"},400);
+  if(!["in_progress","blocked","completed"].includes(String(next))) return json({error:"Staff may only move assigned tasks to in_progress, blocked or completed"},403);
+  const {data:task,error:lookupErr}=await admin.from("jd_operational_tasks").select("id,status,assigned_to").eq("id",id).eq("school_id",profile.school_id).eq("assigned_to",authData.user.id).maybeSingle();
+  if(lookupErr||!task) return json({error:"Assigned operational task not found"},404);
+  if(!canTransitionTask(task.status as TaskStatus,next)) return json({error:"Invalid operational task transition"},409);
+  const {data:transition,error:transitionError}=await admin.rpc("jd_transition_operational_task",{p_actor_id:authData.user.id,p_task_id:id,p_expected_status:task.status,p_next_status:next});
+  if(transitionError||!transition?.task||transition.auditRecorded!==true){
+   const code=String(transitionError?.code||"");
+   if(code==="42501") return json({error:"Staff may only transition their own assigned task"},403);
+   if(code==="P0002") return json({error:"Assigned operational task not found"},404);
+   if(code==="40001") return json({error:"Task changed concurrently; reload before retrying"},409);
+   if(code==="22023") return json({error:"Invalid operational task transition"},409);
+   console.error("JD staff task transition transaction failed",code||"unknown");
+   return json({error:"Task transition and audit event could not be committed"},500);
+  }
+  return json({task:transition.task,auditRecorded:true,auditId:transition.auditId});
+ }
  if(payload.action==="hiring.pipeline.list"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect the recruitment pipeline"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can inspect the recruitment pipeline"},403);
   const [{data:requisitions,error:reqErr},{data:candidates,error:candidateErr}]=await Promise.all([
    admin.from("jd_hiring_requisitions").select("id,title,department,description,requirements,status,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(150),
    admin.from("jd_hiring_candidates").select("id,requisition_id,full_name,stage,created_at,updated_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500)
@@ -225,7 +272,7 @@ Deno.serve(async (req) => {
   return json({requisitions:requisitions||[],candidates:candidates||[]});
  }
  if(payload.action==="capabilities.report"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can inspect organisation capabilities"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can inspect organisation capabilities"},403);
   // Capability status is intentionally unverified until migrations, deployment and smoke tests
   // are observed by a trusted deployment inventory. Do not infer live status from source code.
   const evidence:Record<string,any>={};
@@ -233,13 +280,13 @@ Deno.serve(async (req) => {
  }
 
  if(payload.action==="organisation.blueprint.preview"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can prepare organisation blueprints"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can prepare organisation blueprints"},403);
   const result=validateOrganisationBlueprint(payload.blueprint);
   if(!result.ok) return json({error:"Organisation blueprint needs correction",validation_errors:result.errors},400);
   return json({blueprint:result.blueprint,status:"draft",provisioning:{performed:false,requires_review:true},message:"Blueprint validated. No organisation configuration has been changed."});
  }
  if(payload.action==="organisation.blueprint.submit"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can submit organisation blueprints"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can submit organisation blueprints"},403);
   const result=validateOrganisationBlueprint(payload.blueprint);
   if(!result.ok) return json({error:"Organisation blueprint needs correction",validation_errors:result.errors},400);
   const {data:saved,error}=await admin.rpc("jd_create_organisation_blueprint",{p_actor_id:authData.user.id,p_title:result.blueprint.name,p_industry:result.blueprint.industry,p_description:result.blueprint.businessModel,p_blueprint:result.blueprint});
@@ -247,19 +294,19 @@ Deno.serve(async (req) => {
   return json({blueprint:saved,status:"draft",provisioning:{performed:false,requires_review:true}});
  }
  if(payload.action==="operations.team.list"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect the team directory"},403);
-  const {data,error}=await admin.from("profiles").select("id,full_name,role").eq("school_id",profile.school_id).in("role",["admin","manager","teacher","bursar"]).order("full_name",{ascending:true}).limit(250);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect the team directory"},403);
+  const {data,error}=await admin.from("profiles").select("id,full_name,role").eq("school_id",profile.school_id).in("role",ASSIGNEE_ROLES).order("full_name",{ascending:true}).limit(250);
   if(error) return json({error:"Could not load workspace team"},500);
   return json({members:data||[]});
  }
  if(payload.action==="operations.assignment.member.list"){
-   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to inspect assignment pools"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect assignment pools"},403);
    const {data,error}=await admin.from("jd_task_assignment_members").select("id,profile_id,department,max_open_tasks,active,last_assigned_at").eq("school_id",profile.school_id).order("department",{ascending:true}).limit(500);
    if(error) return json({error:"Could not load assignment pools"},500);
    return json({members:data||[]});
   }
   if(payload.action==="operations.assignment.member.set"){
-   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to configure assignment pools"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to configure assignment pools"},403);
    const profileId=typeof payload.profileId==="string"?payload.profileId:"";
    const department=typeof payload.department==="string"?payload.department.trim():"";
    const maxOpenTasks=Number.isInteger(payload.maxOpenTasks)?payload.maxOpenTasks:10;
@@ -269,7 +316,7 @@ Deno.serve(async (req) => {
    return json({member});
   }
   if(payload.action==="operations.task.auto_assign"){
-   if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to auto-assign tasks"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to auto-assign tasks"},403);
    const taskId=typeof payload.taskId==="string"?payload.taskId:"";
    if(!taskId)return json({error:"taskId is required"},400);
    const {data:assignment,error}=await admin.rpc("jd_auto_assign_operational_task",{p_actor_id:authData.user.id,p_task_id:taskId});
@@ -277,13 +324,13 @@ Deno.serve(async (req) => {
    return json({assignment});
   }
   if(payload.action==="operations.schedule.list"){
-   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to inspect recurring schedules"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role))return json({error:"Manager permission required to inspect recurring schedules"},403);
    const {data,error}=await admin.from("jd_task_schedules").select("id,title,description,department,priority,frequency,local_time,timezone,weekdays,next_run_at,assigned_to,auto_assign,active,last_run_at,last_task_id,created_at").eq("school_id",profile.school_id).order("next_run_at",{ascending:true}).limit(200);
    if(error)return json({error:"Could not load recurring schedules"},500);
    return json({schedules:data||[]});
   }
   if(payload.action==="operations.schedule.create"){
-   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to create recurring schedules"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role))return json({error:"Manager permission required to create recurring schedules"},403);
    const input=payload.schedule||{};
    const frequency=input.frequency==="weekly"?"weekly":input.frequency==="daily"?"daily":null;
    const timezone=typeof input.timezone==="string"?input.timezone:"";
@@ -300,7 +347,7 @@ Deno.serve(async (req) => {
    return json({schedule},201);
   }
   if(payload.action==="operations.schedule.toggle"){
-   if(!["admin","manager"].includes(String(profile.role)))return json({error:"Manager permission required to change recurring schedules"},403);
+   if(!hasRole(MANAGER_ROLES,profile.role))return json({error:"Manager permission required to change recurring schedules"},403);
    const id=typeof payload.scheduleId==="string"?payload.scheduleId:"";
    if(!id||typeof payload.active!=="boolean")return json({error:"scheduleId and active are required"},400);
    const {data:schedule,error}=await admin.from("jd_task_schedules").update({active:payload.active,updated_at:new Date().toISOString()}).eq("id",id).eq("school_id",profile.school_id).select("id,active,next_run_at").maybeSingle();
@@ -309,7 +356,7 @@ Deno.serve(async (req) => {
    return json({schedule});
   }
   if(payload.action==="operations.task.assign"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to assign tasks"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to assign tasks"},403);
   const taskId=typeof payload.taskId==="string"?payload.taskId:"";
   const assigneeId=typeof payload.assigneeId==="string"?payload.assigneeId:"";
   if(!taskId||!assigneeId) return json({error:"taskId and assigneeId are required"},400);
@@ -318,13 +365,13 @@ Deno.serve(async (req) => {
    admin.from("profiles").select("id,role").eq("id",assigneeId).eq("school_id",profile.school_id).maybeSingle()
   ]);
   if(taskErr||!task) return json({error:"Operational task not found"},404);
-  if(memberErr||!member||!["admin","manager","teacher","bursar"].includes(String(member.role))) return json({error:"Assignee is not an eligible member of this workspace"},400);
+  if(memberErr||!member||!ASSIGNEE_ROLES.includes(String(member.role))) return json({error:"Assignee is not an eligible member of this workspace"},400);
   const {data:updated,error}=await admin.from("jd_operational_tasks").update({assigned_to:assigneeId,updated_at:new Date().toISOString()}).eq("id",taskId).eq("school_id",profile.school_id).select("id,assigned_to,status").single();
   if(error) return json({error:"Could not assign operational task"},500);
   return json({task:updated});
  }
  if(payload.action==="operations.task.create"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to create operational tasks"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to create operational tasks"},403);
   let task:any;try{task=normaliseTaskInput(payload.task||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid task"},400);}
   const stableId=typeof payload.idempotencyId==="string"?payload.idempotencyId:"";
   if(!stableId) return json({error:"idempotencyId is required"},400);
@@ -355,7 +402,7 @@ Deno.serve(async (req) => {
   },created.reused===true?200:201);
  }
  if(payload.action==="operations.task.transition"){
-  if(!["admin","manager"].includes(String(profile.role))) return json({error:"Manager permission required to update operational tasks"},403);
+  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to update operational tasks"},403);
   const id=typeof payload.taskId==="string"?payload.taskId:"";
   const next=typeof payload.status==="string"?payload.status as TaskStatus:null;
   if(!id||!next) return json({error:"taskId and status are required"},400);
@@ -379,14 +426,14 @@ Deno.serve(async (req) => {
   return json({task:transition.task,auditRecorded:true,auditId:transition.auditId});
  }
  if(payload.action==="hiring.vacancy.draft"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can prepare vacancy drafts"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can prepare vacancy drafts"},403);
   let vacancy:any;try{vacancy=validateVacancy(payload.vacancy||{});}catch(e){return json({error:e instanceof Error?e.message:"Invalid vacancy"},400);}
   const {data:created,error}=await admin.from("jd_hiring_requisitions").insert({school_id:profile.school_id,created_by:authData.user.id,...vacancy}).select("id,title,department,status,created_at").single();
   if(error) return json({error:"Could not save vacancy draft"},500);
   return json({vacancy:created,published:false,approval_required:true},201);
  }
  if(payload.action==="hiring.vacancy.approve"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can approve vacancy publication"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can approve vacancy publication"},403);
   const id=typeof payload.vacancyId==="string"?payload.vacancyId:"";
   if(!id) return json({error:"vacancyId is required"},400);
   const {data:vacancy,error:lookupErr}=await admin.from("jd_hiring_requisitions").select("id,status").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
@@ -397,7 +444,7 @@ Deno.serve(async (req) => {
   return json({vacancy:updated,public_publishing:false});
  }
  if(payload.action==="hiring.candidate.create"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can register candidates"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can register candidates"},403);
   const requisitionId=typeof payload.requisitionId==="string"?payload.requisitionId:"";
   const fullName=typeof payload.fullName==="string"?payload.fullName.trim().slice(0,160):"";
   const email=typeof payload.email==="string"&&payload.email.trim()?payload.email.trim().slice(0,254):null;
@@ -410,7 +457,7 @@ Deno.serve(async (req) => {
   return json({candidate:created},201);
  }
  if(payload.action==="hiring.candidate.transition"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can change recruitment stages"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can change recruitment stages"},403);
   const id=typeof payload.candidateId==="string"?payload.candidateId:"";
   const next=typeof payload.stage==="string"?payload.stage as HiringStage:null;
   if(!id||!next) return json({error:"candidateId and stage are required"},400);
@@ -422,7 +469,7 @@ Deno.serve(async (req) => {
   return json({candidate:updated});
  }
  if(payload.action==="settings.proposal.submit"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can submit settings proposals"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can submit settings proposals"},403);
   const changes=Array.isArray(payload.changes)?payload.changes:[];
   if(changes.length<1||changes.length>20) return json({error:"Submit between 1 and 20 setting changes"},400);
   const keys=[...new Set(changes.map((item:any)=>typeof item?.key==="string"?item.key:"").filter(Boolean))];
@@ -448,7 +495,7 @@ Deno.serve(async (req) => {
  }
 
  if(payload.action==="settings.proposal.execute"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can execute approved settings proposals"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can execute approved settings proposals"},403);
   const approvalId=typeof payload.approvalId==="string"?payload.approvalId:"";
   if(!approvalId) return json({error:"approvalId is required"},400);
   const {data:approval,error:approvalErr}=await admin.from("jd_approvals")
@@ -481,7 +528,7 @@ Deno.serve(async (req) => {
   return json({approvalId,execution_status:finalApproval.execution_status,results,partial:finalApproval.execution_status!=="completed",message:finalApproval.execution_status==="completed"?"All approved settings changes were applied and verified.":"Some approved settings changes remain; retry resumes only unfinished steps."});
  }
  if(payload.action==="approvals.list"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can review approval requests"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can review approval requests"},403);
   const {data,error}=await admin.from("jd_approvals")
    .select("id,run_id,requested_by,status,reason,title,action_key,risk_level,proposal_json,audience_text,execution_status,execution_result_json,decision_note,decided_by,decided_at,expires_at,created_at")
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
@@ -489,7 +536,7 @@ Deno.serve(async (req) => {
   return json({approvals:data||[]});
  }
  if(payload.action==="approvals.decide"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can decide approval requests"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can decide approval requests"},403);
   const approvalId=typeof payload.approvalId==="string"?payload.approvalId:"";
   const decision=payload.decision==="approve"?"approved":payload.decision==="reject"?"rejected":null;
   const note=typeof payload.note==="string"?payload.note.trim().slice(0,2000):null;
@@ -511,7 +558,7 @@ Deno.serve(async (req) => {
   return json({approval:result,execution:{status:"not_executed",message:decision==="approved"?"Approved. Execution is not enabled yet; no external action has been performed.":"Rejected. No action was performed."}});
  }
  if(payload.action==="runs.list"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can view automation runs"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can view automation runs"},403);
   const {data,error}=await admin.from("jd_automation_runs")
    .select("id,requested_by,trigger_type,status,request_text,result_json,created_at,started_at,completed_at")
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(50);
@@ -537,7 +584,7 @@ Deno.serve(async (req) => {
   }))});
  }
  if(payload.action==="usage.summary"){
-  if(profile.role!=="admin") return json({error:"Only workspace admins can view agent usage"},403);
+  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can view agent usage"},403);
   const {data,error}=await admin.from("jd_automation_runs")
    .select("id,status,result_json,created_at")
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500);
@@ -571,7 +618,7 @@ Deno.serve(async (req) => {
   if(!id) return json({error:"conversationId is required"},400);
   const {data:conversation,error:conversationErr}=await admin.from("jd_conversations")
    .select("id,created_by").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
-  if(conversationErr||!conversation||(conversation.created_by!==authData.user.id&&profile.role!=="admin"))
+  if(conversationErr||!conversation||(conversation.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
    return json({error:"Conversation not found"},404);
   const {data,error}=await admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id).order("created_at").limit(100);
   if(error) return json({error:"Could not load conversation"},500);
@@ -583,7 +630,7 @@ Deno.serve(async (req) => {
  let conversationId=typeof payload.conversationId==="string"?payload.conversationId:null;
  if(conversationId){
   const {data}=await admin.from("jd_conversations").select("id,created_by").eq("id",conversationId).eq("school_id",profile.school_id).maybeSingle();
-  if(!data||(data.created_by!==authData.user.id&&profile.role!=="admin"))
+  if(!data||(data.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
    return json({error:"Conversation not found"},404);
  }else{
   const {data,error}=await admin.from("jd_conversations").insert({school_id:profile.school_id,created_by:authData.user.id,title:message.replace(/\s+/g," ").slice(0,72)}).select("id").single();
