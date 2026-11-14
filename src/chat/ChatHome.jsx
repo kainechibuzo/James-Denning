@@ -387,7 +387,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
       </aside></>}
-      {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : showReview ? <ReviewCentre onClose={()=>setShowReview(false)}/> : <section className="jd-main">
+      {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setSidebarOpen(v=>!v)}>{sidebarOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
@@ -431,6 +431,17 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           <div className="jd-disclaimer">Free model routing · JD verifies available records and reports what it could and could not complete.</div>
         </div>
       </section>}
+      {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data)=>{
+        setShowReview(false);
+        const targetConversationId=data?.conversationId||conversationId;
+        if(targetConversationId){
+          setConversationId(targetConversationId);
+          const followup=decision==="approve"
+            ? "I accepted the proposed business departments. JD has completed the approved setup. Please check the departments that now exist and explain what was created in plain English."
+            : "I rejected the proposed business departments. Please revise the business structure using my feedback and show me an updated proposal.";
+          void send(followup,targetConversationId);
+        }
+      }}/>}
     </div>
   );
 }
