@@ -2,7 +2,7 @@ import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
 import { summariseScores, summariseTaskStatuses } from "./jd-business-intelligence.ts";
 import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
-import { validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
+import { buildOrganisationBlueprintDraft, validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
 import { validateVacancy } from "./jd-hiring.ts";
 import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
 import { analyseKpiTrends } from "./jd-kpi-trends.ts";
@@ -90,34 +90,36 @@ const tools: ToolSpec[] = [  {
   },
   {
     name: "preview_organisation_blueprint",
-    description: "Validate a proposed organisation blueprint from the user's business idea. This is a no-write preview: it does not create departments, accounts, permissions, integrations or workflows.",
+    description: "Create a complete starter organisation blueprint from a short plain-language business idea, such as 'a clothing store' or 'a trucking company'. Infer sensible departments, job roles, workflows, KPIs, likely integrations, risks and capability gaps. Do not ask the user to design the departments. This is a no-write preview only; it does not create departments, accounts, permissions, integrations or workflows.",
     risk: "low",
     roles: ["owner","admin"],
     parameters: {
       type: "object",
       properties: {
-        blueprint: {
-          type: "object",
-          properties: {
-            name: { type: "string", minLength: 1, maxLength: 160 },
-            industry: { type: "string", minLength: 1, maxLength: 80 },
-            businessModel: { type: "string", minLength: 1, maxLength: 500 },
-            departments: { type: "array", minItems: 1, maxItems: 30, items: { type: "object", properties: { name: { type: "string" }, purpose: { type: "string" }, roles: { type: "array", items: { type: "string" } }, workflows: { type: "array", items: { type: "string" } }, kpis: { type: "array", items: { type: "string" } } }, required: ["name","purpose","roles","workflows","kpis"], additionalProperties: false } },
-            integrations: { type: "array", items: { type: "string" } },
-            risks: { type: "array", items: { type: "string" } },
-            gaps: { type: "array", items: { type: "string" } }
-          },
-          required: ["name","industry","businessModel","departments","integrations","risks","gaps"],
-          additionalProperties: false
-        }
+        business_idea: { type: "string", minLength: 2, maxLength: 500, description: "A short description of the business the user wants to start." },
+        business_name: { type: "string", minLength: 1, maxLength: 160 },
+        business_model: { type: "string", maxLength: 500 }
       },
-      required: ["blueprint"],
+      required: ["business_idea"],
       additionalProperties: false
     },
     execute: async (args) => {
-      const result = validateOrganisationBlueprint(args.blueprint);
+      const draft = buildOrganisationBlueprintDraft({
+        businessIdea: String(args.business_idea || ""),
+        name: typeof args.business_name === "string" ? args.business_name : undefined,
+        businessModel: typeof args.business_model === "string" ? args.business_model : undefined
+      });
+      const result = validateOrganisationBlueprint(draft);
       if (!result.ok) return { valid: false, errors: result.errors, persisted: false };
-      return { valid: true, blueprint: result.blueprint, persisted: false, provisioning_requires_admin_review: true };
+      return {
+        valid: true,
+        blueprint: result.blueprint,
+        department_count: result.blueprint.departments.length,
+        role_count: result.blueprint.departments.reduce((total, department) => total + department.roles.length, 0),
+        persisted: false,
+        provisioning_requires_admin_review: true,
+        notice: "Starter blueprint generated from the business idea. Review and customise it before any real provisioning."
+      };
     },
   },
   {
@@ -652,6 +654,7 @@ export async function runAgent(input: {
   const instructions = [
     "You are JD, the autonomous organisation operations agent.",
     "Work toward the user's objective rather than merely giving them instructions.",
+    "When a user says they want to start a business (for example, a clothing store, trucking company, restaurant or agency), do not respond with a long questionnaire asking them to invent departments, roles, workflows or KPIs. Start with the business idea they gave you and call preview_organisation_blueprint to generate a sensible complete starter structure. Ask at most one essential follow-up only when the business idea itself is unclear; otherwise make reasonable assumptions, label them as assumptions, and invite the user to customise the generated plan. Clearly state that this tool creates a preview only and does not provision live departments, users, permissions or workflows.",
     "Use tools to inspect live organisation data whenever it materially improves the answer.",
     "When multiple independent read-only tools are relevant, request them together in one parallel tool-call round. Avoid optional or redundant calls, and never call a tool again when its result is already present in the conversation.",
     "You may only use the tools provided. Never invent tool results or claim an action occurred unless a tool confirms it.",
