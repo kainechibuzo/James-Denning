@@ -32,7 +32,7 @@ const tools: ToolSpec[] = [  {
     name: "get_people_intelligence",
     description: "Return a privacy-conscious workforce snapshot for the authenticated organisation: total members grouped by role. Does not expose names, emails or personal records.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args,ctx) => {
       const {data,error,count}=await ctx.admin.from("profiles").select("role",{count:"exact"}).eq("school_id",ctx.schoolId).limit(5000);
@@ -46,7 +46,7 @@ const tools: ToolSpec[] = [  {
     name: "get_performance_intelligence",
     description: "Summarise the active academic period's organisation-wide performance using score aggregates only. Returns average, pass rate, grade distribution and sample size; never returns individual learner records.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args,ctx) => {
       const [{data:session,error:sessionError},{data:terms,error:termError}]=await Promise.all([
@@ -71,7 +71,7 @@ const tools: ToolSpec[] = [  {
     name: "get_operations_intelligence",
     description: "Summarise operational task volume by status and priority for the authenticated organisation. Does not return task descriptions or employee details.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args,ctx) => {
       const {data,error}=await ctx.admin.from("jd_operational_tasks").select("status,priority").eq("school_id",ctx.schoolId).limit(5000);
@@ -84,7 +84,7 @@ const tools: ToolSpec[] = [  {
     name: "get_jd_capability_inventory",
     description: "Return JD's registered organisation capability inventory. Capability states remain unverified until trusted deployment and authenticated smoke-test evidence is recorded. Use this before promising that a module can be operated.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async () => ({ capabilities: buildCapabilityReport({}), policy: "Never infer deployment from source-code presence." }),
   },
@@ -92,7 +92,7 @@ const tools: ToolSpec[] = [  {
     name: "preview_organisation_blueprint",
     description: "Validate a proposed organisation blueprint from the user's business idea. This is a no-write preview: it does not create departments, accounts, permissions, integrations or workflows.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: {
       type: "object",
       properties: {
@@ -124,7 +124,7 @@ const tools: ToolSpec[] = [  {
     name: "preview_hiring_vacancy",
     description: "Prepare and validate a vacancy draft with title, department, description and requirements. This tool does not publish a vacancy, contact candidates or make hiring decisions.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     parameters: { type: "object", properties: { title: { type: "string" }, department: { type: "string" }, description: { type: "string" }, requirements: { type: "array", items: { type: "string" } } }, required: ["title","department","description","requirements"], additionalProperties: false },
     execute: async (args) => ({ vacancy: validateVacancy(args), persisted: false, published: false }),
   },
@@ -133,7 +133,7 @@ const tools: ToolSpec[] = [  {
     name: "get_workspace_overview",
     description: "Read a high-level overview of the authenticated organisation workspace, including organisation name, member count, open hiring roles, applications and hires. Use this before answering broad questions about the organisation.",
     risk: "low",
-    roles: ["admin", "manager", "bursar"],
+    roles: ["owner", "admin", "manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args, ctx) => {
       const [school, members, roles, applications, hires] = await Promise.all([
@@ -160,7 +160,7 @@ const tools: ToolSpec[] = [  {
     name: "get_hiring_pipeline",
     description: "Read the organisation hiring pipeline. Returns role titles and application counts grouped by application status. Does not return applicant contact details.",
     risk: "low",
-    roles: ["admin", "manager"],
+    roles: ["owner", "admin", "manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args, ctx) => {
       const [roles, applications] = await Promise.all([
@@ -188,7 +188,7 @@ const tools: ToolSpec[] = [  {
     name: "get_billing_snapshot",
     description: "Read an aggregate snapshot of organisation billing records: total billed, paid, outstanding, and bill counts by status. Never exposes individual student or customer details.",
     risk: "low",
-    roles: ["admin", "manager", "bursar"],
+    roles: ["owner", "admin", "manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args, ctx) => {
       const { data, error } = await ctx.admin.from("fee_bills")
@@ -212,7 +212,7 @@ const tools: ToolSpec[] = [  {
     name: "get_business_expense_anomalies",
     description: "Analyse approved and paid business expenses against active budgets and historical patterns. Returns advisory findings with evidence, keeps currencies separate, and never changes expenses or budgets. Use for finance reviews and unusual-spend questions.",
     risk: "low",
-    roles: ["admin", "manager"],
+    roles: ["owner", "admin", "manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args, ctx) => {
       const now = new Date();
@@ -244,7 +244,7 @@ const tools: ToolSpec[] = [  {
     name: "get_business_kpi_trends",
     description: "Analyse monthly business KPIs for the authenticated organisation: cleared cash in/out by currency, approved expenses by currency, new and won opportunities, resolved support cases and new customers. Includes trailing-versus-prior movement and limitations. Read-only; never combines currencies.",
     risk: "low",
-    roles: ["admin", "manager"],
+    roles: ["owner", "admin", "manager"],
     parameters: {
       type: "object",
       properties: { months_back: { type: "integer", minimum: 3, maximum: 24 } },
@@ -289,7 +289,7 @@ const tools: ToolSpec[] = [  {
     name: "get_recent_activity_logs",
     description: "Inspect recent organisation admin audit activity. Returns a bounded, privacy-conscious list of recent actions, entity types, timestamps and actor labels. Use when asked to inspect logs, investigate recent changes, or explain what happened.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 50 } }, required: [], additionalProperties: false },
     execute: async (args, ctx) => {
       const limit = Math.min(50, Math.max(1, Number(args.limit || 20)));
@@ -307,7 +307,7 @@ const tools: ToolSpec[] = [  {
     name: "get_email_delivery_logs",
     description: "Inspect recent email delivery logs and report sent, failed and partial batches. Never returns recipient email addresses or message bodies.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 50 } }, required: [], additionalProperties: false },
     execute: async (args, ctx) => {
       const limit = Math.min(50, Math.max(1, Number(args.limit || 20)));
@@ -324,7 +324,7 @@ const tools: ToolSpec[] = [  {
     name: "get_attendance_snapshot",
     description: "Summarise recent attendance records by status and date for the authenticated organisation. Use for attendance reviews and exception reports.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: { type: "object", properties: { days: { type: "integer", minimum: 1, maximum: 31 } }, required: [], additionalProperties: false },
     execute: async (args, ctx) => {
       const days = Math.min(31, Math.max(1, Number(args.days || 7)));
@@ -347,7 +347,7 @@ const tools: ToolSpec[] = [  {
     name: "get_recent_announcements",
     description: "Read recent organisation announcements, including title, audience and publication date. Use to answer questions about notices and communications.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 30 } }, required: [], additionalProperties: false },
     execute: async (args, ctx) => {
       const limit = Math.min(30, Math.max(1, Number(args.limit || 10)));
@@ -365,7 +365,7 @@ const tools: ToolSpec[] = [  {
     name: "get_workspace_settings_catalogue",
     description: "Read and audit the authenticated organisation's registered portal settings. Reports configured and missing values, categories and known limitations. Secret-like setting values are excluded. This tool is read-only and cannot change settings.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: {
       type: "object",
       properties: {
@@ -389,7 +389,7 @@ const tools: ToolSpec[] = [  {
     name: "plan_workspace_settings_changes",
     description: "Prepare a validated, read-only before-and-after proposal for up to 20 registered organisation settings. Marks identity, workspace, security and billing changes as requiring Review Centre approval; ordinary portal/performance changes require explicit confirmation. Never applies changes.",
     risk: "low",
-    roles: ["admin"],
+    roles: ["owner","admin"],
     parameters: {
       type: "object",
       properties: {
@@ -427,7 +427,7 @@ const tools: ToolSpec[] = [  {
     name: "create_business_document_draft",
     description: "Create a private downloadable organisation document when explicitly requested. Supports txt, md, csv, json, html, css, js, ts, py, sql, xml, yaml, docx, xlsx and pptx. For source projects, provide a relative filename such as src/main.ts and create one file per tool round so later files can build on earlier results. For xlsx, content must be JSON shaped as {sheets:[{name,rows:[[cell,...]]}]}; for pptx, {slides:[{title,bullets:[...]}]}; for docx, provide Markdown content. Saves a new private draft only; never publishes, emails or changes existing documents.",
     risk: "medium",
-    roles: ["admin", "manager", "bursar"],
+    roles: ["owner", "admin", "manager"],
     parameters: { type: "object", properties: { title: { type: "string", minLength: 1, maxLength: 180 }, filename: { type: ["string", "null"], maxLength: 160 }, format: { type: "string", enum: ["txt", "md", "csv", "json", "html", "css", "js", "ts", "py", "sql", "xml", "yaml", "docx", "xlsx", "pptx"] }, content: { type: "string", minLength: 20, maxLength: 95000 } }, required: ["title", "filename", "format", "content"], additionalProperties: false },
     execute: async (args, ctx) => {
       const title = String(args.title || "").trim().slice(0, 180);
@@ -455,7 +455,7 @@ const tools: ToolSpec[] = [  {
     name: "list_connected_mcp_tools",
     description: "List tools available from this organisation's connected JD Connect MCP servers, including each tool's schema and whether approval is required. Use this before calling an external connector.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args,ctx) => {
       const {data,error}=await ctx.admin.from("jd_connector_tools").select("id,server_id,name,description,input_schema,read_only,server:jd_connector_servers!inner(name,status)").eq("school_id",ctx.schoolId).eq("server.status","connected").order("name").limit(100);
@@ -467,7 +467,7 @@ const tools: ToolSpec[] = [  {
     name: "call_connected_mcp_tool",
     description: "Call a discovered JD Connect MCP tool by tool_id using its JSON arguments. Read-only tools execute immediately. Write-capable tools create an approval request and do not execute until an authorized manager approves.",
     risk: "low",
-    roles: ["admin","manager"],
+    roles: ["owner","admin","manager"],
     strict: false,
     parameters: { type: "object", properties: { tool_id: { type: "string" }, arguments: { type: "object" } }, required: ["tool_id","arguments"] },
     execute: async (args,ctx) => {
