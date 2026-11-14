@@ -17,8 +17,13 @@ Deno.test("JD MCP exposes tenant-scoped read tools and approval-gated connector 
     "jd_list_execution_activity",
     "jd_list_connected_mcp_tools",
     "jd_call_connected_mcp_tool",
+    "jd_get_connector_approval_status",
+    "jd_list_connector_execution_evidence",
   ]) assertEquals(source.includes(name), true);
   assertMatch(source, /internalActorId: actorId/);
+  assertMatch(source, /callConnect\("approvals\.get"/);
+  assertMatch(source, /callConnect\("executions\.list"/);
+  assertMatch(source, /Only treat the action as completed when approval\.status is executed/);
   assertMatch(source, /Approval requested\. The external action has not been executed\./);
   assertMatch(source, /\.eq\("school_id", schoolId\)/);
 });
