@@ -451,17 +451,20 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           <div className="jd-disclaimer">Free model routing · JD verifies available records and reports what it could and could not complete.</div>
         </div>
       </section>}
-      {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data)=>{
+      {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
         setShowReview(false);
         const targetConversationId=data?.conversationId||conversationId;
         if(targetConversationId){
           setConversationId(targetConversationId);
+          const feedback=note?.trim()? " My feedback: "+note.trim() : "";
           const followup=decision==="approve"
-            ? "I accepted the proposed business departments. JD has completed the approved setup. Please check the departments that now exist and explain what was created in plain English."
-            : "I rejected the proposed business departments. Please revise the business structure using my feedback and show me an updated proposal.";
+            ? data?.execution?.status==="completed"
+              ? "I accepted the proposed business departments and JD completed the approved setup. Please check what now exists and explain the result in plain English."
+              : "I accepted this request, but the system has not confirmed that the change was completed. Check what is available and tell me honestly what happened. Do not claim anything changed without confirmation."
+            : "I rejected the proposed change."+feedback+" Please respond to my feedback, revise the proposal if appropriate, and send the revised version for review.";
           void send(followup,targetConversationId);
         }
-      }}/>}
+      }}/ >
     </div>
   );
 }
