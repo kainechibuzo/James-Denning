@@ -90,7 +90,7 @@ Deno.serve(
       const mcp = createMcpHandler(() => {
         const server = new McpServer({ name: "james-denning", version: "1.0.0" });
         const registerTool = (name: string, config: any, handler: any) => {
-          const allowed = managerRole
+          const allowed = (managerRole && name !== "jd_transition_my_task")
             || name === "jd_list_operational_tasks"
             || (role === "viewer" && ["jd_get_workspace_overview","jd_list_audit_events"].includes(name))
             || (role === "staff" && name === "jd_transition_my_task");
