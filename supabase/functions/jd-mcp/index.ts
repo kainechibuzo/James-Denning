@@ -135,7 +135,7 @@ Deno.serve(
         registerTool(
           "jd_list_operational_tasks",
           {
-            description: "List recent operational tasks belonging only to the authenticated organisation. Returns task records, not employee personal profiles.",
+            description: "List operational tasks within the authenticated role scope: assigned tasks only for staff and contractors, workspace tasks for viewers, and organisation tasks for managers. Never returns employee personal profiles.",
             inputSchema: z.object({ limit: z.number().int().min(1).max(50).optional() }),
             annotations: { readOnlyHint: true },
           },
