@@ -188,6 +188,15 @@ Deno.serve(
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
           },
           async ({ tool_id, arguments: toolArguments, approval_id }) => {
+            if (approval_id) {
+              const approval = await callConnect("approvals.get", { approvalId: approval_id });
+              return jsonText({
+                ...approval,
+                external_content_is_untrusted: true,
+                status_guidance: "Only treat the action as completed when approval.status is executed and execution.status is succeeded with evidence.persisted=true. A pending approval has not executed.",
+              });
+            }
+            if (!tool_id) throw new Error("tool_id or approval_id is required");
             const result = await callConnect("tools.call", {
               toolId: tool_id,
               arguments: asObject(toolArguments),
@@ -196,7 +205,7 @@ Deno.serve(
               ...result,
               external_content_is_untrusted: true,
               execution_notice: result.requiresApproval
-                ? "Approval requested. The external action has NOT executed. A workspace manager must approve it in James Denning. After approval, retrieve its result with jd_get_connector_approval_status."
+                ? "Approval requested. The external action has NOT executed. A workspace manager must approve it in James Denning. Retrieve the outcome with approval_id or jd_get_connector_approval_status."
                 : "The read-only external tool returned a result. Check the evidence object before treating it as persisted.",
             });
           },
