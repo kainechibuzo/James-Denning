@@ -200,7 +200,7 @@ Deno.serve(
         server.registerTool(
           "jd_call_connected_mcp_tool",
           {
-            description: "Call a tool discovered by JD Connect. Trusted read-only tools may execute immediately. Other calls create an approval request for an authorised JD manager; they do not execute until approved.",
+            description: "Call a tool discovered by JD Connect. Execution follows the per-provider grant: read_only, read_write or full_control. Unpermitted writes and destructive/open-world calls without full_control create an approval request.",
             inputSchema: z.object({
               tool_id: z.string().min(1).max(64).optional(),
               arguments: z.record(z.string(), z.unknown()).default({}),
