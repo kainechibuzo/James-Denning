@@ -464,7 +464,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             : "I rejected the proposed change."+feedback+" Please respond to my feedback, revise the proposal if appropriate, and send the revised version for review.";
           void send(followup,targetConversationId);
         }
-      }}/ >
+      }}/>}
     </div>
   );
 }
