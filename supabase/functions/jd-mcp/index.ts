@@ -140,7 +140,7 @@ Deno.serve(
             inputSchema: z.object({ limit: z.number().int().min(1).max(50).optional() }),
             annotations: { readOnlyHint: true },
           },
-          async ({ limit }) => {
+          async ({ limit }: any) => {
             if (!["owner", "admin", "manager", "viewer", "staff", "contractor"].includes(role)) {
               throw new Error("This workspace role cannot list operational tasks");
             }
@@ -170,7 +170,7 @@ Deno.serve(
             inputSchema: z.object({ limit: z.number().int().min(1).max(50).optional() }),
             annotations: { readOnlyHint: true },
           },
-          async ({ limit }) => {
+          async ({ limit }: any) => {
             const { data, error } = await admin
               .from("jd_automation_steps")
               .select("id,tool_key,status,error_message,started_at,completed_at")
@@ -195,7 +195,7 @@ Deno.serve(
             inputSchema: z.object({ limit: z.number().int().min(1).max(100).optional() }),
             annotations: { readOnlyHint: true },
           },
-          async ({ limit }) => {
+          async ({ limit }: any) => {
             if (!["owner", "admin", "viewer"].includes(role)) {
               throw new Error("Audit-event access is not enabled for this workspace role");
             }
@@ -257,7 +257,7 @@ Deno.serve(
             }),
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
           },
-          async ({ tool_id, arguments: toolArguments, approval_id }) => {
+          async ({ tool_id, arguments: toolArguments, approval_id }: any) => {
             if (approval_id) {
               const approval = await callConnect("approvals.get", { approvalId: approval_id });
               return jsonText({
@@ -288,7 +288,7 @@ Deno.serve(
             inputSchema: z.object({ approval_id: z.string().uuid() }),
             annotations: { readOnlyHint: true },
           },
-          async ({ approval_id }) => {
+          async ({ approval_id }: any) => {
             const result = await callConnect("approvals.get", { approvalId: approval_id });
             return jsonText({
               ...result,
@@ -305,7 +305,7 @@ Deno.serve(
             inputSchema: z.object({ limit: z.number().int().min(1).max(50).optional() }),
             annotations: { readOnlyHint: true },
           },
-          async ({ limit }) => {
+          async ({ limit }: any) => {
             const result = await callConnect("executions.list");
             const executions = Array.isArray(result.executions) ? result.executions.slice(0, limit || 20) : [];
             return jsonText({
@@ -331,7 +331,7 @@ Deno.serve(
             }),
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
           },
-          async ({ title, description, department, priority, due_at, idempotency_id }) => {
+          async ({ title, description, department, priority, due_at, idempotency_id }: any) => {
             const result = await invokeAutomation("operations.task.create", {
               task: { title, description, department, priority, dueAt: due_at },
               idempotencyId: idempotency_id,
@@ -365,7 +365,7 @@ Deno.serve(
             }),
             annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
           },
-          async ({ task_id, next_status }) => {
+          async ({ task_id, next_status }: any) => {
             const result = await invokeAutomation("operations.task.transition", {
               taskId: task_id,
               status: next_status,
@@ -391,7 +391,7 @@ Deno.serve(
             }),
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
           },
-          async ({ task_id, next_status }) => {
+          async ({ task_id, next_status }: any) => {
             const result = await invokeAutomation("operations.task.transition_own", {
               taskId: task_id,
               status: next_status,
