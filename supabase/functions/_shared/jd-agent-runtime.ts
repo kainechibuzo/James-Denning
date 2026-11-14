@@ -13,6 +13,8 @@ export type AgentContext = {
   schoolId: string;
   userId: string;
   role: string;
+  conversationId?: string;
+  runId?: string;
 };
 
 type ToolSpec = {
@@ -120,6 +122,98 @@ const tools: ToolSpec[] = [  {
         provisioning_requires_admin_review: true,
         notice: "Starter blueprint generated from the business idea. Review and customise it before any real provisioning."
       };
+    },
+  },
+  {
+    name: "get_organisation_departments",
+    description: "Read the real departments already created in this organisation, including their responsibilities, roles, workflows and KPIs. Explain the result in plain language.",
+    risk: "low",
+    roles: ["owner","admin","manager","staff","contractor","viewer","finance","hr"],
+    parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+    execute: async (_args, ctx) => {
+      const { data, error } = await ctx.admin.from("jd_departments")
+        .select("id,name,purpose,roles,workflows,kpis,created_by_agent,created_via,status,created_at")
+        .eq("school_id", ctx.schoolId).eq("status", "active").order("name").limit(100);
+      if (error) throw new Error("Could not load the organisation departments");
+      return { departments: data || [], count: (data || []).length };
+    },
+  },
+  {
+    name: "get_business_memory",
+    description: "Read the shared memory for this organisation. Use it to remember the business model, decisions, priorities, preferences and setup progress across separate chats.",
+    risk: "low",
+    roles: ["owner","admin","manager","staff","contractor","viewer","finance","hr"],
+    parameters: { type: "object", properties: { category: { type: "string", maxLength: 80 } }, required: [], additionalProperties: false },
+    execute: async (args, ctx) => {
+      let query = ctx.admin.from("jd_business_memory").select("memory_key,category,content,confidence,updated_at").eq("school_id", ctx.schoolId).order("updated_at", { ascending: false }).limit(80);
+      if (typeof args.category === "string" && args.category.trim()) query = query.eq("category", args.category.trim().slice(0,80));
+      const { data, error } = await query;
+      if (error) throw new Error("Could not read the organisation's shared business memory");
+      return { memories: data || [] };
+    },
+  },
+  {
+    name: "remember_business_fact",
+    description: "Save a stable, useful business fact or decision to shared organisation memory so JD can use it in future conversations. Save only business context, confirmed decisions and user preferences. Never save passwords, API keys, payment credentials, private personal details or sensitive information.",
+    risk: "low",
+    roles: ["owner","admin","manager"],
+    parameters: {
+      type: "object",
+      properties: {
+        memory_key: { type: "string", minLength: 2, maxLength: 120 },
+        category: { type: "string", maxLength: 80 },
+        content: { type: "string", minLength: 2, maxLength: 4000 },
+        confidence: { type: "string", enum: ["confirmed","assumption","preference"] }
+      },
+      required: ["memory_key","content"],
+      additionalProperties: false
+    },
+    execute: async (args, ctx) => {
+      const key = String(args.memory_key || "").trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "_").slice(0,120);
+      const content = String(args.content || "").trim().slice(0,4000);
+      if (key.length < 2 || content.length < 2) throw new Error("A memory title and useful business detail are required");
+      const { data, error } = await ctx.admin.from("jd_business_memory").upsert({
+        school_id: ctx.schoolId, memory_key: key,
+        category: String(args.category || "business_context").trim().slice(0,80),
+        content, confidence: ["confirmed","assumption","preference"].includes(String(args.confidence)) ? args.confidence : "confirmed",
+        created_by: ctx.userId, created_by_agent: true, source_conversation_id: ctx.conversationId || null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "school_id,memory_key" }).select("memory_key,category,content,confidence,created_by_agent").single();
+      if (error || !data) throw new Error("Could not save this business detail to shared memory");
+      return { saved: true, memory: data, label: "Remembered by JD" };
+    },
+  },
+  {
+    name: "submit_organisation_blueprint_for_review",
+    description: "Save a complete proposed business structure and place it in the administrator's Review Centre. This creates no departments yet. Use this after generating a blueprint and when the user has asked to build or set up the business. The administrator must accept before departments are created.",
+    risk: "low",
+    roles: ["owner","admin"],
+    parameters: {
+      type: "object",
+      properties: { blueprint: { type: "object" } },
+      required: ["blueprint"],
+      additionalProperties: false
+    },
+    execute: async (args, ctx) => {
+      if (!ctx.runId || !ctx.conversationId) throw new Error("This request is not linked to an active conversation");
+      const result = validateOrganisationBlueprint(args.blueprint);
+      if (!result.ok) return { submitted: false, errors: result.errors };
+      const blueprint = result.blueprint;
+      const { data: saved, error: saveError } = await ctx.admin.rpc("jd_create_organisation_blueprint", {
+        p_actor_id: ctx.userId, p_title: blueprint.name, p_industry: blueprint.industry,
+        p_description: blueprint.businessModel, p_blueprint: blueprint
+      });
+      if (saveError || !saved?.id) throw new Error("Could not save the proposed business structure");
+      const { data: approval, error: approvalError } = await ctx.admin.from("jd_approvals").insert({
+        school_id: ctx.schoolId, run_id: ctx.runId, requested_by: ctx.userId,
+        status: "pending", reason: "Review the proposed departments and responsibilities before JD creates them.",
+        title: "Approve business departments",
+        action_key: "organisation.provision_departments", risk_level: "medium",
+        proposal_json: { blueprint, blueprint_id: saved.id, conversation_id: ctx.conversationId, execution_enabled: true },
+        audience_text: "Organisation setup"
+      }).select("id,status,title,created_at").single();
+      if (approvalError || !approval) throw new Error("The proposal was saved, but JD could not place it in the Review Centre");
+      return { submitted: true, approval, blueprint_id: saved.id, department_count: blueprint.departments.length, persisted: true, requires_review: true, message: "The proposed departments are waiting in the Review Centre. Nothing has been created yet." };
     },
   },
   {
@@ -654,6 +748,9 @@ export async function runAgent(input: {
   const instructions = [
     "You are JD, the autonomous organisation operations agent.",
     "Work toward the user's objective rather than merely giving them instructions.",
+    "Always read shared organisation memory before making business recommendations or continuing an earlier setup. Save stable, confirmed business decisions and preferences to shared memory when useful; never store secrets or sensitive personal information.",
+    "When the user asks to create or set up departments, generate the structure from their business idea, then call submit_organisation_blueprint_for_review. Explain that it is awaiting their administrator review. Do not claim departments exist until the approval is accepted and the provisioner confirms creation.",
+    "Write for an ordinary business owner, not a software engineer. Never show internal tool names, raw JSON, database table names, API details, UUIDs, SQL, HTTP status codes, stack traces or developer jargon. Translate failures into clear, calm, actionable everyday language. Use headings and short lists.",
     "When a user says they want to start a business (for example, a clothing store, trucking company, restaurant or agency), do not respond with a long questionnaire asking them to invent departments, roles, workflows or KPIs. Start with the business idea they gave you and call preview_organisation_blueprint to generate a sensible complete starter structure. Ask at most one essential follow-up only when the business idea itself is unclear; otherwise make reasonable assumptions, label them as assumptions, and invite the user to customise the generated plan. Clearly state that this tool creates a preview only and does not provision live departments, users, permissions or workflows.",
     "Use tools to inspect live organisation data whenever it materially improves the answer.",
     "When multiple independent read-only tools are relevant, request them together in one parallel tool-call round. Avoid optional or redundant calls, and never call a tool again when its result is already present in the conversation.",
