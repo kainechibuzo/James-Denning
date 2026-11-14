@@ -81,7 +81,7 @@ Initial tools:
 - `jd_list_operational_tasks`: tenant-scoped operational task records.
 - `jd_list_execution_activity`: persisted execution-step evidence.
 - `jd_list_connected_mcp_tools`: connected provider tools and their approval policy.
-- `jd_call_connected_mcp_tool`: invokes a JD Connect tool; untrusted/write-capable actions create a manager approval request and do not run before approval.
+- `jd_call_connected_mcp_tool`: invokes a JD Connect tool; untrusted/write-capable actions create a manager approval request and do not run before approval. Pass the returned `approval_id` back to this same tool to retrieve its current approval state and persisted execution result after a manager approves it.
 
 All MCP calls require an authenticated workspace admin or manager. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data.
 
