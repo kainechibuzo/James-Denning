@@ -18,11 +18,68 @@ const actions = [
   { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
 ];
 
+function renderInlineMarkdown(value, keyPrefix = "inline") {
+  const tokenPattern = /(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|\x60[^\x60]+\x60|\[[^\]]+\]\(https:\/\/[^\s)]+\)|https:\/\/[^\s<>"')]+)/g;
+  return String(value || "").split(tokenPattern).filter(Boolean).map((part, index) => {
+    const key = keyPrefix + "-" + index;
+    if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={key}>{part.slice(2, -2)}</strong>;
+    if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={key}>{part.slice(1, -1)}</em>;
+    if (part.startsWith("`") && part.endsWith("`")) return <code className="jd-inline-code" key={key}>{part.slice(1, -1)}</code>;
+    const markdownLink = part.match(/^\[([^\]]+)\]\((https:\/\/[^\s)]+)\)$/);
+    const href = markdownLink?.[2] || (/^https:\/\//i.test(part) ? part : null);
+    if (href) return <a key={key} href={href} target="_blank" rel="noopener noreferrer">{markdownLink?.[1] || part}</a>;
+    return part;
+  });
+}
+
 function renderMessageContent(content) {
-  const parts = String(content || "").split(/(https:\/\/[^\s<>"')]+)/g);
-  return parts.map((part, index) => /^https:\/\//i.test(part)
-    ? <a key={index} href={part} target="_blank" rel="noopener noreferrer" style={{ color: "#245f9e", textDecoration: "underline", overflowWrap: "anywhere" }}>{part}</a>
-    : part);
+  const lines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
+  const nodes = [];
+  let paragraph = [];
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    nodes.push(<p key={"p-" + nodes.length}>{renderInlineMarkdown(paragraph.join(" "), "p-" + nodes.length)}</p>);
+    paragraph = [];
+  };
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const trimmed = line.trim();
+    if (!trimmed) { flushParagraph(); continue; }
+    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      const Tag = heading[1].length === 1 ? "h2" : heading[1].length === 2 ? "h3" : "h4";
+      nodes.push(<Tag key={"h-" + index}>{renderInlineMarkdown(heading[2], "h-" + index)}</Tag>);
+      continue;
+    }
+    const bullet = trimmed.match(/^[-*•]\s+(.+)$/);
+    const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+    const quote = trimmed.match(/^>\s?(.+)$/);
+    if (bullet || numbered) {
+      flushParagraph();
+      const ordered = Boolean(numbered);
+      const items = [];
+      while (index < lines.length) {
+        const candidate = lines[index].trim();
+        const match = ordered ? candidate.match(/^\d+[.)]\s+(.+)$/) : candidate.match(/^[-*•]\s+(.+)$/);
+        if (!match) break;
+        items.push(match[1]);
+        index += 1;
+      }
+      index -= 1;
+      const ListTag = ordered ? "ol" : "ul";
+      nodes.push(<ListTag key={"list-" + index}>{items.map((item, itemIndex) => <li key={itemIndex}>{renderInlineMarkdown(item, "li-" + index + "-" + itemIndex)}</li>)}</ListTag>);
+      continue;
+    }
+    if (quote) {
+      flushParagraph();
+      nodes.push(<blockquote key={"q-" + index}>{renderInlineMarkdown(quote[1], "q-" + index)}</blockquote>);
+      continue;
+    }
+    paragraph.push(trimmed);
+  }
+  flushParagraph();
+  return <div className="jd-markdown">{nodes}</div>;
 }
 
 export function ChatHome({ user, organizationName = "Your organisation" }) {
@@ -198,6 +255,18 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-message{font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
         .jd-message.user{align-self:flex-end;max-width:85%;background:#e9ebef;border:1px solid #e2e4e8;border-radius:18px 18px 5px 18px;padding:11px 15px;color:#202329}
         .jd-message.assistant{align-self:stretch;color:#292d33;padding:2px 2px}
+        .jd-markdown{font-size:14px;line-height:1.75;color:#292d33;overflow-wrap:anywhere}
+        .jd-markdown>*:first-child{margin-top:0}
+        .jd-markdown>*:last-child{margin-bottom:0}
+        .jd-markdown p{margin:0 0 12px}
+        .jd-markdown h2,.jd-markdown h3,.jd-markdown h4{font-weight:720;letter-spacing:-.35px;line-height:1.35;color:#20242a;margin:18px 0 8px}
+        .jd-markdown h2{font-size:18px}.jd-markdown h3{font-size:16px}.jd-markdown h4{font-size:14px}
+        .jd-markdown ul,.jd-markdown ol{margin:7px 0 14px;padding-left:22px}
+        .jd-markdown li{padding-left:3px;margin:4px 0}
+        .jd-markdown strong{font-weight:750;color:#20242a}
+        .jd-markdown a{color:#245f9e;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+        .jd-markdown blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid #cbd1d9;background:#f0f2f5;color:#626a75;border-radius:0 8px 8px 0}
+        .jd-inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:#eef0f3;border:1px solid #e2e5e9;border-radius:5px;padding:1px 5px}
         .jd-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#818791;font-weight:650}
         .jd-mini-mark{width:20px;height:20px;border-radius:7px;background:#191b1f;color:white;display:grid;place-items:center;font-size:8px}
         .jd-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
