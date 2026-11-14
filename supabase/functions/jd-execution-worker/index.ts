@@ -74,7 +74,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         if (lookupError) throw lookupError;
         if (existing?.id) streamMessageId = String(existing.id);
         else {
-          const { data: created, error } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: snapshot, content_json: { job_id: jobId, streaming: true, stream_protocol: "responses_sse" } }).select("id").single();
+          const { data: created, error } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: snapshot, content_json: { job_id: jobId, streaming: true, stream_protocol: "responses_sse" }, created_by_agent: true }).select("id").single();
           if (error || !created) throw error || new Error("Could not create streamed assistant message");
           streamMessageId = String(created.id);
           return;
@@ -199,7 +199,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
             school_id: schoolId, run_id: runId, step_index: ++stepIndex,
             tool_key: String(event.name || "unknown"),
             risk_level: String(event.risk || "low"), status: "running",
-            input_json: { call_id: callId }, started_at: new Date().toISOString(),
+            input_json: { call_id: callId }, started_at: new Date().toISOString(), created_by_agent: true,
           }).select("id").single();
           if (error || !data) throw new Error("Could not persist execution step");
           if (callId) stepIds.set(callId, data.id);
@@ -269,7 +269,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       const { error: replyError } = await admin.from("jd_messages").update(finalMessage).eq("id", existingReply.id).eq("school_id", schoolId).eq("conversation_id", run.conversation_id);
       if (replyError) throw new Error("Agent response could not be finalised");
     } else {
-      const { error: replyError } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: run.conversation_id, role: "assistant", ...finalMessage });
+      const { error: replyError } = await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: run.conversation_id, role: "assistant", ...finalMessage, created_by_agent: true });
       if (replyError) throw new Error("Agent response could not be saved");
     }
 
@@ -320,7 +320,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         await admin.from("jd_messages").update({ content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } })
           .eq("id", pendingMessage.id).eq("school_id", schoolId);
       } else {
-        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false } });
+        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: failureMessage, content_json: { job_id: jobId, status: "failed", streaming: false }, created_by_agent: true });
       }
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
       return { job_id: jobId, status: "failed" };
