@@ -1,4 +1,4 @@
-import { assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 const source = await Deno.readTextFile(new URL("../jd-connect/index.ts", import.meta.url));
 
