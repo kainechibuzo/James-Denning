@@ -25,3 +25,10 @@ Deno.test("JD Connect exposes tenant-scoped approval status and execution eviden
   assertMatch(source, /body\.action==="executions\.list"/);
   assertMatch(source, /\.eq\("school_id",school\)/);
 });
+
+Deno.test("JD Connect read and evidence endpoints do not require encryption material", () => {
+  assertMatch(source, /const requireEncryptionKey=\(\)=>\{if\(!key\)/);
+  assertMatch(source, /decryptSecret\(data\.encrypted_bearer_token,requireEncryptionKey\(\)\)/);
+  assertMatch(source, /encryptSecret\(serializedArgs,requireEncryptionKey\(\)\)/);
+  assertEquals(source.includes('if(!key)return send({error:"JD_OAUTH_ENCRYPTION_KEY is missing or invalid"},503)'), false);
+});
