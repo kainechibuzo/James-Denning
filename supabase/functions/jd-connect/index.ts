@@ -178,6 +178,23 @@ Deno.serve(async req=>{
    const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,key)))})));
    return send({approvals});
   }
+  if(body.action==="approvals.get"){
+   const id=clip(body.approvalId,64);
+   if(!id)return send({error:"approvalId is required"},400);
+   const {data:approval,error}=await db.from("jd_connector_approvals")
+    .select("id,server_id,requested_by,tool_name,status,resolved_by,resolved_at,expires_at,execution_id,created_at")
+    .eq("id",id).eq("school_id",school).maybeSingle();
+   if(error||!approval)return send({error:"Approval request not found"},404);
+   let execution=null;
+   if(approval.execution_id){
+    const {data,error:executionError}=await db.from("jd_connector_executions")
+     .select("id,tool_name,status,result_json,error_code,duration_ms,created_at,completed_at")
+     .eq("id",approval.execution_id).eq("school_id",school).maybeSingle();
+    if(executionError)return send({error:"Approval status was found but execution evidence could not be loaded"},500);
+    execution=data||null;
+   }
+   return send({approval,execution,evidence:{persisted:!!execution,source:"jd_connector_executions"}});
+  }
   if(body.action==="approvals.resolve"){
    const id=clip(body.approvalId,64),decision=body.decision==="approve"?"approved":body.decision==="deny"?"denied":"";
    if(!decision)return send({error:"Decision must be approve or deny"},400);
