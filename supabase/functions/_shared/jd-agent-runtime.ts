@@ -94,6 +94,7 @@ const tools: ToolSpec[] = [  {
     name: "preview_organisation_blueprint",
     description: "Create a complete starter organisation blueprint from a short plain-language business idea. Infer industry-specific departments, job positions, workflows, KPIs, integrations, risks and capability gaps. For business types without a built-in template, use your own business knowledge to provide a tailored departments array. Do not ask the user to design the departments. This is a no-write preview only.",
     risk: "low",
+    strict: false,
     roles: ["owner","admin"],
     parameters: {
       type: "object",
@@ -155,6 +156,7 @@ const tools: ToolSpec[] = [  {
     name: "get_business_memory",
     description: "Read the shared memory for this organisation. Use it to remember the business model, decisions, priorities, preferences and setup progress across separate chats.",
     risk: "low",
+    strict: false,
     roles: ["owner","admin","manager","staff","contractor","viewer","finance","hr"],
     parameters: { type: "object", properties: { category: { type: "string", maxLength: 80 } }, required: [], additionalProperties: false },
     execute: async (args, ctx) => {
@@ -169,6 +171,7 @@ const tools: ToolSpec[] = [  {
     name: "remember_business_fact",
     description: "Save a stable, useful business fact or decision to shared organisation memory so JD can use it in future conversations. Save only business context, confirmed decisions and user preferences. Never save passwords, API keys, payment credentials, private personal details or sensitive information.",
     risk: "low",
+    strict: false,
     roles: ["owner","admin","manager"],
     parameters: {
       type: "object",
