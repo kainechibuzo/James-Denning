@@ -71,7 +71,7 @@ Deno.serve(
         };
         const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
         if (anonKey) headers.apikey = anonKey;
-        const response = await fetch(projectUrl.replace(/\\/$/, "") + "/functions/v1/jd-automation", {
+        const response = await fetch(projectUrl.replace(/\/$/, "") + "/functions/v1/jd-automation", {
           method: "POST",
           headers,
           redirect: "error",
