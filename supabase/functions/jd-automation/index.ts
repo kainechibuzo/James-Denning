@@ -661,6 +661,7 @@ Deno.serve(async (req) => {
  const {data:history}=await admin.from("jd_messages").select("role,content").eq("school_id",profile.school_id).eq("conversation_id",conversationId).order("created_at").limit(20);
  const {error:saveError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,sender_id:authData.user.id,role:"user",content:message});
  if(saveError) return json({error:"Could not save message"},500);
+ await admin.from("jd_conversations").update({updated_at:new Date().toISOString()}).eq("id",conversationId).eq("school_id",profile.school_id);
  const risk=needsApproval(message)?"approval_required":"routine";
  const {data:run,error:runErr}=await admin.from("jd_automation_runs").insert({
   school_id:profile.school_id,conversation_id:conversationId,requested_by:authData.user.id,
