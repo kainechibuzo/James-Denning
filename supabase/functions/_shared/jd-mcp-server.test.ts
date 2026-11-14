@@ -29,7 +29,7 @@ Deno.test("JD MCP exposes tenant-scoped read tools and approval-gated connector 
   assertMatch(source, /invokeAutomation\("operations\.task\.create"/);
   assertMatch(source, /invokeAutomation\("operations\.task\.transition"/);
   assertMatch(source, /idempotencyId: idempotency_id/);
-  assertMatch(source, /expectedStatus: expected_status/);
+  assertMatch(source, /status: next_status/);
   assertMatch(source, /Approval requested\. The external action has NOT executed\./);
   assertMatch(source, /\.eq\("school_id", schoolId\)/);
 });
