@@ -34,7 +34,7 @@ function renderInlineMarkdown(value, keyPrefix = "inline") {
 }
 
 function renderMessageContent(content) {
-  const readable = String(content || "").replace(/```[\\s\\S]*?```/g, "Technical details are hidden so you can focus on the business decision.").replace(/`([^`]+)`/g, "$1");
+  const readable = String(content || "").replace(/```[\s\S]*?```/g, "Technical details are hidden so you can focus on the business decision.").replace(/`([^`]+)`/g, "$1");
   const lines = readable.replace(/\r\n?/g, "\n").split("\n");
   const nodes = [];
   let paragraph = [];
