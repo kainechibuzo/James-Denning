@@ -32,3 +32,10 @@ Deno.test("JD Connect read and evidence endpoints do not require encryption mate
   assertMatch(source, /encryptSecret\(serializedArgs,requireEncryptionKey\(\)\)/);
   assertEquals(source.includes('if(!key)return send({error:"JD_OAUTH_ENCRYPTION_KEY is missing or invalid"},503)'), false);
 });
+
+Deno.test("JD Connect records an execution before connecting to the remote server", () => {
+  const start = source.indexOf("const execute=");
+  const insert = source.indexOf('from("jd_connector_executions").insert', start);
+  const token = source.indexOf("getToken(server.id)", start);
+  assertEquals(start >= 0 && insert > start && token > insert, true);
+});
