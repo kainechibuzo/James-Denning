@@ -172,7 +172,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const result = await runAgent({
       message: run.request_text,
       history,
-      context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member") },
+      context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
       model,
       baseUrl: Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1",
