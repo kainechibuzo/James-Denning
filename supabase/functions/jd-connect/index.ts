@@ -83,19 +83,40 @@ Deno.serve(async req=>{
   const token=await getToken(server.id),session=await connect(server,token),started=Date.now();
   const {data:run,error:insertError}=await db.from("jd_connector_executions").insert({school_id:school,server_id:server.id,approval_id:approvalId,requested_by:actor,tool_name:toolName,status:"running"}).select("id").single();
   if(insertError||!run)throw new Error("Could not create connector execution record");
+  let remoteResult:unknown=null;
   try{
-   const result=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
-   const serialized=JSON.stringify(result.result);
+   const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
+   remoteResult=response.result;
+   const resultObject=asObject(remoteResult);
+   if(resultObject.isError===true){
+    const content=Array.isArray(resultObject.content)?resultObject.content:[];
+    const detail=content.map((item:any)=>clip(item?.text,500)).filter(Boolean).join("\\n");
+    const remoteFailure=new Error(detail||"Remote MCP tool returned isError=true");
+    (remoteFailure as Error & {code?:string}).code="MCP_TOOL_ERROR";
+    throw remoteFailure;
+   }
+   const serialized=JSON.stringify(remoteResult);
    if(serialized.length>MAX_RESULT)throw new Error("Connector result exceeds the 90 KB limit");
-   const {error:updateError}=await db.from("jd_connector_executions").update({status:"succeeded",result_json:result.result,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
-   if(updateError)throw new Error("Result could not be persisted");
-   if(approvalId)await db.from("jd_connector_approvals").update({status:"executed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
-   await audit("connector.tool.executed",{server_id:server.id,tool_name:toolName,execution_id:run.id,approval_id:approvalId});
-   return {executionId:run.id,result:result.result};
+   const {error:updateError}=await db.from("jd_connector_executions").update({status:"succeeded",result_json:remoteResult,error_code:null,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
+   if(updateError)throw new Error("Remote tool returned success, but execution evidence could not be persisted");
+   if(approvalId){
+    const {error:approvalUpdateError}=await db.from("jd_connector_approvals").update({status:"executed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
+    if(approvalUpdateError)throw new Error("Remote tool succeeded and execution evidence was saved, but approval status could not be updated");
+   }
+   const {error:auditError}=await audit("connector.tool.executed",{server_id:server.id,tool_name:toolName,execution_id:run.id,approval_id:approvalId});
+   if(auditError)throw new Error("Remote tool succeeded and execution evidence was saved, but audit event persistence failed");
+   return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:true}};
   }catch(e){
-   await db.from("jd_connector_executions").update({status:"failed",error_code:"MCP_CALL_FAILED",duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
-   if(approvalId)await db.from("jd_connector_approvals").update({status:"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
-   await audit("connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id});
+   const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
+   const failureMessage=e instanceof Error?e.message:"Connector operation failed";
+   const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:"failed",result_json:remoteResult,error_code:code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
+   if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
+   if(approvalId){
+    const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
+    if(approvalFailureError)throw new Error(failureMessage+"; approval failure status could not be persisted");
+   }
+   const {error:auditFailureError}=await audit("connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:code});
+   if(auditFailureError)throw new Error(failureMessage+"; failure audit event could not be persisted");
    throw e;
   }
  };
