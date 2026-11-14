@@ -26,3 +26,15 @@ jobs:
         run: npm run verify:web
       - name: Build default application
         run: npm run build
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Test JD Connect execution truthfulness and MCP evidence tools
+        run: |
+          deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-connect/index.ts supabase/functions/_shared/jd-connect-execution.test.ts
+          deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
+      - name: Type-check JD MCP functions
+        run: |
+          deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-mcp/index.ts
