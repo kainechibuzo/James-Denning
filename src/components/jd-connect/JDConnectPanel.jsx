@@ -48,7 +48,7 @@ export function JDConnectPanel({notify=()=>{}}){
  return <div style={{color:"var(--jd-text,#111827)"}}>
   <div style={{...card,background:"linear-gradient(135deg,#101820,#243747)",color:"#fff",border:0}}>
    <div style={{display:"flex",alignItems:"center",gap:10}}><Link2 size={22}/><div style={{fontSize:17,fontWeight:900}}>JD Connect</div><span style={{marginLeft:"auto",fontSize:10,opacity:.75}}>MCP GATEWAY</span></div>
-   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Connect remote MCP servers, discover their tools and let JD invoke approved capabilities. Only explicitly annotated read-only tools run immediately; all other tools require approval.</p>
+   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Connect remote MCP servers and grant JD read-only, read/write or full-control access separately for each service. Write access is enabled only after an authorized manager grants it.</p>
   </div>
   {error&&<div role="alert" style={{...card,borderColor:"#fecaca",background:"#fef2f2",color:"#991b1b",fontSize:12}}>{error}</div>}
   {success&&<div role="status" style={{...card,borderColor:"#bbf7d0",background:"#f0fdf4",color:"#166534",fontSize:12}}>{success}</div>}
