@@ -291,11 +291,19 @@ Deno.serve(
             });
             const task = asObject(result.task);
             const taskId = typeof task.id === "string" ? task.id : null;
+            const auditRecorded = result.auditRecorded === true;
+            const auditId = typeof result.auditId === "string" ? result.auditId : null;
             return jsonText({
-              ...result,
-              persisted: Boolean(taskId),
+              task,
+              reused: result.reused === true,
+              persisted: Boolean(taskId) && (auditRecorded || result.reused === true),
               source: "jd_operational_tasks",
-              evidence: { task_id: taskId, idempotent_replay: result.reused === true },
+              evidence: {
+                task_id: taskId,
+                audit_recorded: auditRecorded,
+                audit_id: auditId,
+                idempotent_replay: result.reused === true,
+              },
             });
           },
         );
