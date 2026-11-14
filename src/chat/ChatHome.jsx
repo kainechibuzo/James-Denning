@@ -242,8 +242,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
-      const rawMessage = err?.context?.body?.message || err?.context?.body?.error || err?.message || "";
-      setError(status === 404 ? "JD Assistant's Edge Function is not deployed to this Supabase project yet." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account is not authorised for this organisation's JD workspace." : status === 503 ? "JD Assistant is deployed but its server configuration is incomplete. Check the Edge Function secrets." : status >= 500 ? "JD Assistant's server returned an error. Check the Edge Function logs." : "JD could not complete that request. Please try again in a moment.");
+      setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not complete that request. Please try again in a moment.");
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
     } finally { setSending(false); }
