@@ -203,7 +203,7 @@ Deno.serve(
                   ? "Approval requested. The external action has not been executed."
                   : "The connected read-only tool executed and its result was persisted.",
             });
-          },          },
+          },
         );
 
         return server;
