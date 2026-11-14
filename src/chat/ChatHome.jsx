@@ -134,6 +134,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
 
   useEffect(() => {
     if (backgroundWorking) return;
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role !== "assistant" && messages.length > 0) return;
     let active = true;
     const checkApprovals = async () => {
       const { data } = await supabase.functions.invoke("jd-automation", { body: { action: "approvals.list" } });
@@ -141,7 +143,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     };
     void checkApprovals();
     return () => { active = false; };
-  }, [backgroundWorking]);
+  }, [backgroundWorking, messages.length]);
 
   const loadConversation = async (id) => {
     if (!id || sending) return;
