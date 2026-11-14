@@ -47,6 +47,20 @@ Deno.serve(
 
       const schoolId = String(profile.school_id);
       const actorId = authData.user.id;
+      const callConnect = async (action: string, payload: Record<string, unknown> = {}) => {
+        const response = await fetch(projectUrl.replace(/\\/$/, "") + "/functions/v1/jd-connect", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
+          redirect: "error",
+          signal: AbortSignal.timeout(20000),
+          body: JSON.stringify({ action, ...payload, internalActorId: actorId }),
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result || result.error) {
+          throw new Error(clip(result?.error, 400) || `JD Connect ${action} failed with HTTP ${response.status}`);
+        }
+        return result as Record<string, unknown>;
+      };
       const mcp = createMcpHandler(() => {
         const server = new McpServer({ name: "james-denning", version: "1.0.0" });
 
@@ -174,34 +188,52 @@ Deno.serve(
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
           },
           async ({ tool_id, arguments: toolArguments, approval_id }) => {
-            const base = projectUrl.replace(/\/$/, "");
-            const response = await fetch(base + "/functions/v1/jd-connect", {
-              method: "POST",
-              headers: { Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
-              redirect: "error",
-              signal: AbortSignal.timeout(20000),
-              body: JSON.stringify({
-                action: approval_id ? "approvals.get" : "tools.call",
-                ...(approval_id ? { approvalId: approval_id } : { toolId: tool_id, arguments: asObject(toolArguments) }),
-                internalActorId: actorId,
-              }),
+            const result = await callConnect("tools.call", {
+              toolId: tool_id,
+              arguments: asObject(toolArguments),
             });
-            const result = await response.json().catch(() => null);
-            if (!response.ok || !result || result.error) {
-              throw new Error(clip(result?.error, 240) || "JD Connect tool call failed");
-            }
             return jsonText({
               ...result,
               external_content_is_untrusted: true,
-              execution_notice: approval_id
-                ? result.approval?.status === "executed"
-                  ? "Approved action executed. Persisted execution result and evidence are included."
-                  : result.approval?.status === "failed"
-                    ? "Approved action failed. The persisted failure status is included."
-                    : "Approval is not yet executed. No success is claimed."
-                : result.requiresApproval
-                  ? "Approval requested. The external action has not been executed."
-                  : "The connected read-only tool executed and its result was persisted.",
+              execution_notice: result.requiresApproval
+                ? "Approval requested. The external action has NOT executed. A workspace manager must approve it in James Denning. After approval, retrieve its result with jd_get_connector_approval_status."
+                : "The read-only external tool returned a result. Check the evidence object before treating it as persisted.",
+            });
+          },
+        );
+
+        server.registerTool(
+          "jd_get_connector_approval_status",
+          {
+            description: "Retrieve the current state of a previously requested connector action, including its persisted execution result or failure evidence after a manager approves it. This tool never approves or executes an action.",
+            inputSchema: z.object({ approval_id: z.string().uuid() }),
+            annotations: { readOnlyHint: true },
+          },
+          async ({ approval_id }) => {
+            const result = await callConnect("approvals.get", { approvalId: approval_id });
+            return jsonText({
+              ...result,
+              external_content_is_untrusted: true,
+              status_guidance: "Only treat the action as completed when approval.status is executed and execution.status is succeeded with evidence.persisted=true. A pending approval has not executed.",
+            });
+          },
+        );
+
+        server.registerTool(
+          "jd_list_connector_execution_evidence",
+          {
+            description: "List persisted executions of connected external MCP tools for the authenticated organisation, including success/failure state, returned result, duration and timestamps.",
+            inputSchema: z.object({ limit: z.number().int().min(1).max(50).optional() }),
+            annotations: { readOnlyHint: true },
+          },
+          async ({ limit }) => {
+            const result = await callConnect("executions.list");
+            const executions = Array.isArray(result.executions) ? result.executions.slice(0, limit || 20) : [];
+            return jsonText({
+              executions,
+              source: "jd_connector_executions",
+              external_content_is_untrusted: true,
+              evidence_policy: "A succeeded status requires a successful MCP tools/call response and persisted result. Failed calls are returned with error codes and any available failure result.",
             });
           },
         );
