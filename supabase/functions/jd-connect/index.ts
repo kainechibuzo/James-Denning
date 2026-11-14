@@ -158,7 +158,7 @@ Deno.serve(async req=>{
    const id=clip(body.serverId,64),token=clip(body.bearerToken,8000);if(token&&token.length<12)return send({error:"Bearer token is too short"},400);
    const server=await getServer(id);
    const credentialResult=token
-    ?await db.from("jd_connector_credentials").upsert({server_id:id,school_id:school,encrypted_bearer_token:await encryptSecret(token,key),key_version:"aes-gcm-v1",updated_at:new Date().toISOString()},{onConflict:"server_id"})
+    ?await db.from("jd_connector_credentials").upsert({server_id:id,school_id:school,encrypted_bearer_token:await encryptSecret(token,requireEncryptionKey()),key_version:"aes-gcm-v1",updated_at:new Date().toISOString()},{onConflict:"server_id"})
     :await db.from("jd_connector_credentials").delete().eq("server_id",id).eq("school_id",school);
    const credentialError=credentialResult.error;
    if(credentialError)throw new Error("Could not securely update connector credentials");
