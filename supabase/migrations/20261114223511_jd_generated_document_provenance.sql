@@ -1,0 +1,1 @@
+alter table public.jd_business_documents add column if not exists created_by_agent boolean not null default false;
