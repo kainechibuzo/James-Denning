@@ -209,7 +209,7 @@ const tools: ToolSpec[] = [  {
         school_id: ctx.schoolId, run_id: ctx.runId, requested_by: ctx.userId,
         status: "pending", reason: "Review the proposed departments and responsibilities before JD creates them.",
         title: "Approve business departments",
-        action_key: "organisation.provision_departments", risk_level: "medium",
+        action_key: "organisation.provision_departments", risk_level: "medium", created_by_agent: true,
         proposal_json: { blueprint, blueprint_id: saved.id, conversation_id: ctx.conversationId, execution_enabled: true },
         audience_text: "Organisation setup"
       }).select("id,status,title,created_at").single();
