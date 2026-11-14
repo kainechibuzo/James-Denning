@@ -391,12 +391,12 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       `}</style>
       {sidebarOpen && <><button className="jd-history-scrim" type="button" aria-label="Close chat history" onClick={()=>setSidebarOpen(false)}/><aside className="jd-rail">
         <div className="jd-brand"><span className="jd-brand-mark">JD</span><span>James-Denning</span></div>
-        <button className="jd-new" type="button" onClick={newConversation}><Plus size={15}/> New conversation</button>
-        <button className="jd-new" type="button" onClick={()=>{setShowReview(false);setShowUsage(false);}}><Plus size={15}/> Chat</button>
-        <button className="jd-new" type="button" onClick={()=>{setShowReview(true);setShowUsage(false);}}><ShieldCheck size={15}/> Review Centre</button>
-        <button className="jd-new" type="button" onClick={()=>{setShowDepartments(true);setShowUsage(false);setShowRuns(false);}}><Building2 size={15}/> Departments</button>
-        <button className="jd-new" type="button" onClick={()=>{setShowUsage(true);setShowReview(false);setShowRuns(false);}}><Activity size={15}/> AI usage</button>
-        <button className="jd-new" type="button" onClick={()=>{setShowRuns(true);setShowUsage(false);setShowReview(false);}}><Activity size={15}/> Automation runs</button>
+        <button className="jd-new" type="button" onClick={()=>{newConversation();setShowDepartments(false);setShowRuns(false);setShowUsage(false);setShowReview(false);}}><Plus size={15}/> New conversation</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowReview(false);setShowUsage(false);setShowDepartments(false);setShowRuns(false);}}><Plus size={15}/> Chat</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowReview(true);setShowUsage(false);setShowDepartments(false);setShowRuns(false);}}><ShieldCheck size={15}/> Review Centre</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowDepartments(true);setShowUsage(false);setShowRuns(false);setShowReview(false);}}><Building2 size={15}/> Departments</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowUsage(true);setShowReview(false);setShowRuns(false);setShowDepartments(false);}}><Activity size={15}/> AI usage</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowRuns(true);setShowUsage(false);setShowReview(false);setShowDepartments(false);}}><Activity size={15}/> Automation runs</button>
         <div className="jd-history-list">
           <div className="jd-rail-label">Recent conversations</div>
           {historyLoading ? <div className="jd-history-empty">Loading chats…</div> : conversations.length === 0 ? <div className="jd-history-empty">Your saved chats will appear here.</div> : conversations.map((chat) => (
