@@ -56,6 +56,22 @@ export function ReviewCentre({ onClose, onDecision }) {
             {item.action_key==="organisation.provision_departments"&&<div className="jd-review-jd-tag">✦ Prepared by JD · {item.proposal_json?.blueprint?.departments?.length||0} proposed departments</div> }
             <p>{item.reason}</p>
             <div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>
+            {Array.isArray(item.proposal_json?.blueprint?.departments)&&<div className="jd-review-blueprint">
+              <div className="jd-review-blueprint-head">
+                <strong>{item.proposal_json.blueprint.name||"Proposed organisation"}</strong>
+                <span>{item.proposal_json.blueprint.industry||"Business"} · {item.proposal_json.blueprint.departments.length} departments</span>
+              </div>
+              <p>{item.proposal_json.blueprint.businessModel}</p>
+              {item.proposal_json.blueprint.departments.map((department,index)=>(
+                <div className="jd-review-department" key={department.name||index}>
+                  <strong>{department.name}</strong>
+                  <p>{department.purpose}</p>
+                  {Array.isArray(department.roles)&&<div><small>Positions</small><span>{department.roles.join(" · ")}</span></div>}
+                  {Array.isArray(department.workflows)&&<div><small>Daily work</small><span>{department.workflows.join(" · ")}</span></div>}
+                  {Array.isArray(department.kpis)&&<div><small>How success is measured</small><span>{department.kpis.join(" · ")}</span></div>}
+                </div>
+              ))}
+            </div>}
             <div className="jd-review-meta"><span>Risk: {item.risk_level}</span><span>Execution: {item.execution_status?.replaceAll("_"," ")||"not executed"}</span></div>
             {item.status==="pending"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
             {item.status==="approved"&&<div className="jd-review-safe-note">Approved decision recorded. No action has been executed.</div>}
@@ -74,6 +90,17 @@ export function ReviewCentre({ onClose, onDecision }) {
         .jd-review-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.jd-review-status{font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:#737982}.jd-review-status.pending{color:#9a6715}.jd-review-status.approved{color:#267653}.jd-review-status.rejected,.jd-review-status.expired{color:#a34444}
         .jd-review-date{display:flex;align-items:center;gap:5px;color:#989ea7;font-size:9px}
         .jd-review-jd-tag{display:inline-flex;margin:2px 0 10px;padding:5px 8px;border:1px solid #dce8e1;border-radius:20px;background:#f0f7f2;color:#367451;font-size:9px;font-weight:700}
+        .jd-review-blueprint{margin-top:12px;padding:13px;background:#fff;border:1px solid #e6e8ec;border-radius:12px}
+        .jd-review-blueprint-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        .jd-review-blueprint-head strong{font-size:13px;color:#242a31}
+        .jd-review-blueprint-head span{font-size:10px;color:#828994}
+        .jd-review-blueprint>p{font-size:11px;color:#747c86;line-height:1.5;margin:7px 0 12px}
+        .jd-review-department{padding:10px 0;border-top:1px solid #edf0f3}
+        .jd-review-department>strong{font-size:11px;color:#333a43}
+        .jd-review-department p{font-size:10px;color:#747c86;margin:4px 0 7px}
+        .jd-review-department div{display:grid;grid-template-columns:110px 1fr;gap:8px;margin:4px 0;font-size:9px;line-height:1.45}
+        .jd-review-department small{color:#9299a2}.jd-review-department span{color:#5f6772}
+
         .jd-review-note-label{display:block;margin-top:12px;color:#6d747e;font-size:10px;font-weight:650}
         .jd-review-note{width:100%;margin-top:6px;resize:vertical;border:1px solid #dfe3e8;border-radius:9px;padding:9px 10px;background:#fff;color:#303640;font:inherit;font-size:11px;line-height:1.5;outline:none}
         .jd-review-note:focus{border-color:#aeb8c4;box-shadow:0 0 0 3px rgba(120,140,160,.12)}
