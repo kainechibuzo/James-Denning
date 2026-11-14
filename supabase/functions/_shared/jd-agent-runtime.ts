@@ -204,6 +204,7 @@ const tools: ToolSpec[] = [  {
         p_description: blueprint.businessModel, p_blueprint: blueprint
       });
       if (saveError || !saved?.id) throw new Error("Could not save the proposed business structure");
+      await ctx.admin.from("jd_organisation_blueprints").update({ created_by_agent: true }).eq("id", saved.id).eq("school_id", ctx.schoolId);
       const { data: approval, error: approvalError } = await ctx.admin.from("jd_approvals").insert({
         school_id: ctx.schoolId, run_id: ctx.runId, requested_by: ctx.userId,
         status: "pending", reason: "Review the proposed departments and responsibilities before JD creates them.",
