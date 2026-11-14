@@ -165,22 +165,24 @@ Deno.serve(
           {
             description: "Call a tool discovered by JD Connect. Trusted read-only tools may execute immediately. Other calls create an approval request for an authorised JD manager; they do not execute until approved.",
             inputSchema: z.object({
-              tool_id: z.string().min(1).max(64),
+              tool_id: z.string().min(1).max(64).optional(),
               arguments: z.record(z.string(), z.unknown()).default({}),
+              approval_id: z.string().min(1).max(64).optional(),
+            }).refine((value) => Boolean(value.approval_id || value.tool_id), {
+              message: "tool_id or approval_id is required",
             }),
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
           },
-          async ({ tool_id, arguments: toolArguments }) => {
-            const base = projectUrl.replace(/\/$/, "");
+          async ({ tool_id, arguments: toolArguments, approval_id }) => {
+            const base = projectUrl.replace(/\\/$/, "");
             const response = await fetch(base + "/functions/v1/jd-connect", {
               method: "POST",
               headers: { Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
               redirect: "error",
               signal: AbortSignal.timeout(20000),
               body: JSON.stringify({
-                action: "tools.call",
-                toolId: tool_id,
-                arguments: asObject(toolArguments),
+                action: approval_id ? "approvals.get" : "tools.call",
+                ...(approval_id ? { approvalId: approval_id } : { toolId: tool_id, arguments: asObject(toolArguments) }),
                 internalActorId: actorId,
               }),
             });
@@ -191,11 +193,17 @@ Deno.serve(
             return jsonText({
               ...result,
               external_content_is_untrusted: true,
-              execution_notice: result.requiresApproval
-                ? "Approval requested. The external action has not been executed."
-                : "The connected read-only tool returned a result.",
+              execution_notice: approval_id
+                ? result.approval?.status === "executed"
+                  ? "Approved action executed. Persisted execution result and evidence are included."
+                  : result.approval?.status === "failed"
+                    ? "Approved action failed. The persisted failure status is included."
+                    : "Approval is not yet executed. No success is claimed."
+                : result.requiresApproval
+                  ? "Approval requested. The external action has not been executed."
+                  : "The connected read-only tool executed and its result was persisted.",
             });
-          },
+          },          },
         );
 
         return server;
