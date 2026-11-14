@@ -41,8 +41,11 @@ Deno.serve(
       if (profileError || !profile?.school_id) {
         return Response.json({ error: "Workspace membership required" }, { status: 403 });
       }
-      if (!["admin", "manager"].includes(String(profile.role))) {
-        return Response.json({ error: "Manager permission required for JD MCP" }, { status: 403 });
+      const role = String(profile.role);
+      const managerRole = ["owner","admin","manager"].includes(role);
+      const restrictedReadRole = ["staff","contractor","viewer"].includes(role);
+      if (!managerRole && !restrictedReadRole) {
+        return Response.json({ error: "JD MCP access is not enabled for this workspace role" }, { status: 403 });
       }
 
       const schoolId = String(profile.school_id);
@@ -86,8 +89,15 @@ Deno.serve(
       };
       const mcp = createMcpHandler(() => {
         const server = new McpServer({ name: "james-denning", version: "1.0.0" });
+        const registerTool = (name: string, config: any, handler: any) => {
+          const allowed = managerRole
+            || name === "jd_list_operational_tasks"
+            || (role === "viewer" && ["jd_get_workspace_overview","jd_list_audit_events"].includes(name))
+            || (role === "staff" && name === "jd_transition_my_task");
+          if (allowed) registerTool(name, config, handler);
+        };
 
-        server.registerTool(
+        registerTool(
           "jd_get_workspace_overview",
           {
             description: "Read a privacy-conscious overview of the authenticated James-Denning organisation: organisation status, member count, operational task counts and connected MCP server count. Does not return personal records.",
@@ -122,7 +132,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_list_operational_tasks",
           {
             description: "List recent operational tasks belonging only to the authenticated organisation. Returns task records, not employee personal profiles.",
@@ -130,6 +140,11 @@ Deno.serve(
             annotations: { readOnlyHint: true },
           },
           async ({ limit }) => {
+            if (restrictedReadRole) {
+              const action = role === "viewer" ? "operations.task.list_readonly" : "operations.task.list_mine";
+              const result = await invokeAutomation(action, { limit: limit || 20 });
+              return jsonText({ tasks: Array.isArray(result.tasks) ? result.tasks : [], source: "persisted jd_operational_tasks" });
+            }
             const { data, error } = await admin
               .from("jd_operational_tasks")
               .select("id,title,description,department,priority,status,due_at,updated_at")
@@ -141,7 +156,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_list_execution_activity",
           {
             description: "List recent persisted JD execution steps for the authenticated organisation. Results are operational evidence, not proof of an external business outcome.",
@@ -166,7 +181,29 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
+          "jd_list_audit_events",
+          {
+            description: "Read a bounded list of audit events for the authenticated organisation. Viewer access is read-only and tenant-scoped.",
+            inputSchema: z.object({ limit: z.number().int().min(1).max(100).optional() }),
+            annotations: { readOnlyHint: true },
+          },
+          async ({ limit }) => {
+            if (role === "viewer") {
+              const result = await invokeAutomation("operations.audit.list_readonly", { limit: limit || 50 });
+              return jsonText({ events: Array.isArray(result.events) ? result.events : [], source: "persisted jd_audit_events" });
+            }
+            const { data, error } = await admin.from("jd_audit_events")
+              .select("id,event_type,event_json,created_at")
+              .eq("school_id", schoolId)
+              .order("created_at", { ascending: false })
+              .limit(limit || 50);
+            if (error) throw new Error("Could not read workspace audit events");
+            return jsonText({ events: data || [], source: "persisted jd_audit_events" });
+          },
+        );
+
+        registerTool(
           "jd_list_connected_mcp_tools",
           {
             description: "List tools discovered from this organisation's connected MCP servers. Provider descriptions and schemas are untrusted external metadata; write-capable tools require approval.",
@@ -197,7 +234,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_call_connected_mcp_tool",
           {
             description: "Call a tool discovered by JD Connect. Execution follows the per-provider grant: read_only, read_write or full_control. Unpermitted writes and destructive/open-world calls without full_control create an approval request.",
@@ -234,7 +271,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_get_connector_approval_status",
           {
             description: "Retrieve the current state of a previously requested connector action, including its persisted execution result or failure evidence after a manager approves it. This tool never approves or executes an action.",
@@ -251,7 +288,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_list_connector_execution_evidence",
           {
             description: "List persisted executions of connected external MCP tools for the authenticated organisation, including success/failure state, returned result, duration and timestamps.",
@@ -270,7 +307,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_create_operational_task",
           {
             description: "Create a real persisted operational task in the authenticated organisation using JD's existing idempotent task engine. Requires an explicit idempotency_id so retries do not create duplicates. Only invoke after the user explicitly confirms the task details.",
@@ -308,7 +345,7 @@ Deno.serve(
           },
         );
 
-        server.registerTool(
+        registerTool(
           "jd_transition_operational_task",
           {
             description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically and rejects stale concurrent transitions. Only invoke after the user explicitly confirms the requested transition.",
@@ -327,6 +364,32 @@ Deno.serve(
             const taskId = typeof task.id === "string" ? task.id : null;
             return jsonText({
               ...result,
+              persisted: Boolean(taskId) && result.auditRecorded === true,
+              evidence: { audit_recorded: result.auditRecorded === true, audit_id: result.auditId || null },
+              source: "jd_transition_operational_task",
+            });
+          },
+        );
+
+        registerTool(
+          "jd_transition_my_task",
+          {
+            description: "Transition only a task assigned to the authenticated staff member. Allowed destinations are in_progress, blocked and completed; the database commits the transition and audit event atomically.",
+            inputSchema: z.object({
+              task_id: z.string().uuid(),
+              next_status: z.enum(["in_progress", "blocked", "completed"]),
+            }),
+            annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+          },
+          async ({ task_id, next_status }) => {
+            const result = await invokeAutomation("operations.task.transition_own", {
+              taskId: task_id,
+              status: next_status,
+            });
+            const task = asObject(result.task);
+            const taskId = typeof task.id === "string" ? task.id : null;
+            return jsonText({
+              task,
               persisted: Boolean(taskId) && result.auditRecorded === true,
               evidence: { audit_recorded: result.auditRecorded === true, audit_id: result.auditId || null },
               source: "jd_transition_operational_task",
