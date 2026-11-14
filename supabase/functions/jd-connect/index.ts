@@ -126,10 +126,35 @@ Deno.serve(async req=>{
   }
  };
  try{
-  if(body.action==="catalog")return send({protocol:"MCP Streamable HTTP",transport:"HTTPS",approvalPolicy:"Only explicitly annotated read-only tools execute immediately; all other tools require approval",providers:["Google Workspace","Microsoft 365","Slack","Notion","GitHub","Paystack","Custom allowlisted MCP servers"],hostAllowlistConfigured:allowed.length>0});
+  if(body.action==="catalog")return send({protocol:"MCP Streamable HTTP",transport:"HTTPS",approvalPolicy:"Per-server read_only, read_write and full_control grants; destructive/open-world calls remain approval-gated unless full_control is explicitly granted",providers:["Google Workspace","Microsoft 365","Slack","Notion","GitHub","Paystack","Custom allowlisted MCP servers"],hostAllowlistConfigured:allowed.length>0});
   if(body.action==="servers.list"){
    const {data,error}=await db.from("jd_connector_servers").select("id,name,host,endpoint_url,status,protocol_version,server_info,last_connected_at,last_error_code,created_at").eq("school_id",school).order("created_at",{ascending:false});
-   if(error)throw error;return send({servers:data||[]});
+   if(error)throw error;
+   const ids=(data||[]).map((s:any)=>s.id);
+   const {data:grants, error:grantError}=ids.length?await db.from("jd_connector_grants").select("server_id,access_level,granted_by,granted_at,expires_at").eq("school_id",school).in("server_id",ids):{data:[],error:null};
+   if(grantError)throw grantError;
+   const byServer=new Map((grants||[]).map((g:any)=>[g.server_id,g]));
+   return send({servers:(data||[]).map((server:any)=>({...server,grant:byServer.get(server.id)||{access_level:"read_only",granted_at:null,expires_at:null}}))});
+  }
+  if(body.action==="grants.set"){
+   const server=await getServer(clip(body.serverId,64));
+   const level=body.accessLevel;
+   if(!["read_only","read_write","full_control"].includes(level))return send({error:"Access level must be read_only, read_write or full_control"},400);
+   const expiresAt=body.expiresAt?new Date(body.expiresAt):null;
+   if(expiresAt&&(!Number.isFinite(expiresAt.getTime())||expiresAt.getTime()<=Date.now()))return send({error:"Grant expiry must be a future date"},400);
+   const {data:grant,error}=await db.from("jd_connector_grants").upsert({school_id:school,server_id:server.id,access_level:level,granted_by:actor,granted_at:new Date().toISOString(),expires_at:expiresAt?.toISOString()||null},{onConflict:"server_id"}).select("server_id,access_level,granted_by,granted_at,expires_at").single();
+   if(error||!grant)throw new Error("Could not persist connector permissions");
+   const auditResult=await audit("connector.permissions.granted",{server_id:server.id,access_level:level,expires_at:grant.expires_at});
+   if(auditResult.error)throw new Error("Permission was saved but its audit event could not be recorded");
+   return send({grant});
+  }
+  if(body.action==="grants.revoke"){
+   const server=await getServer(clip(body.serverId,64));
+   const {error}=await db.from("jd_connector_grants").delete().eq("server_id",server.id).eq("school_id",school);
+   if(error)throw new Error("Could not revoke connector permissions");
+   const auditResult=await audit("connector.permissions.revoked",{server_id:server.id});
+   if(auditResult.error)throw new Error("Permission was revoked but its audit event could not be recorded");
+   return send({revoked:true,serverId:server.id});
   }
   if(body.action==="servers.register"){
    if(!allowed.length)return send({error:"No MCP hosts are enabled. Configure JD_MCP_ALLOWED_HOSTS before registering a server."},503);
@@ -186,17 +211,25 @@ Deno.serve(async req=>{
   }
   if(body.action==="tools.call"){
    const toolId=clip(body.toolId,64),args=asObject(body.arguments);
-   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only").eq("id",toolId).eq("school_id",school).maybeSingle();
+   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations").eq("id",toolId).eq("school_id",school).maybeSingle();
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
-   if(!tool.read_only){
+   const {data:grant,error:grantError}=await db.from("jd_connector_grants").select("access_level,expires_at").eq("server_id",server.id).eq("school_id",school).maybeSingle();
+   if(grantError)throw new Error("Could not verify connector permissions");
+   const activeGrant=grant&&(!grant.expires_at||new Date(grant.expires_at).getTime()>Date.now())?grant:null;
+   const level=activeGrant?.access_level||"read_only";
+   const readOnly=isReadOnlyTool({name:tool.name,annotations:asObject(tool.annotations)});
+   const elevated=level==="read_write"||level==="full_control";
+   const unrestricted=level==="full_control";
+   const requiresApproval=!readOnly&&(!elevated||(!unrestricted&&(asObject(tool.annotations).destructiveHint===true||asObject(tool.annotations).openWorldHint===true)));
+   if(requiresApproval){
     const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
     if(approvalError||!approval)return send({error:"Could not create approval request"},500);
     await audit("connector.approval.requested",{server_id:server.id,tool_name:tool.name,approval_id:approval.id});
     return send({requiresApproval:true,approval});
    }
-   const result=await execute(server,tool.name,args,null);return send({requiresApproval:false,...result});
+   const result=await execute(server,tool.name,args,null);return send({requiresApproval:false,permissionLevel:level,...result});
   }
   if(body.action==="approvals.list"){
    const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).eq("status","pending").order("created_at",{ascending:false}).limit(100);
