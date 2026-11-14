@@ -301,19 +301,17 @@ Deno.serve(
         server.registerTool(
           "jd_transition_operational_task",
           {
-            description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically. Supply the task's current expected status to prevent stale updates.",
+            description: "Move a persisted operational task through JD's allowed state machine. The existing database RPC commits the state change and audit event atomically and rejects stale concurrent transitions.",
             inputSchema: z.object({
               task_id: z.string().uuid(),
-              expected_status: z.enum(["queued", "in_progress", "blocked", "completed", "cancelled"]),
               next_status: z.enum(["queued", "in_progress", "blocked", "completed", "cancelled"]),
             }),
             annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
           },
-          async ({ task_id, expected_status, next_status }) => {
+          async ({ task_id, next_status }) => {
             const result = await invokeAutomation("operations.task.transition", {
               taskId: task_id,
               status: next_status,
-              expectedStatus: expected_status,
             });
             return jsonText({
               ...result,
