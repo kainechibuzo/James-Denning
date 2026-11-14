@@ -105,7 +105,9 @@ Deno.serve(async req=>{
     const {error:approvalUpdateError}=await db.from("jd_connector_approvals").update({status:"executed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
     if(approvalUpdateError){approvalStatusPersisted=false;warnings.push("Execution succeeded and evidence was saved, but approval status could not be updated.");}
    }
-   const {error:auditError}=await audit("connector.tool.executed",{server_id:server.id,tool_name:toolName,execution_id:run.id,approval_id:approvalId});
+   let auditError:unknown=null;
+   try{const auditResult=await audit("connector.tool.executed",{server_id:server.id,tool_name:toolName,execution_id:run.id,approval_id:approvalId});auditError=auditResult.error;}
+   catch(error){auditError=error;}
    if(auditError)warnings.push("Execution succeeded and evidence was saved, but the audit event could not be recorded.");
    return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:!auditError,approval_status_persisted:approvalStatusPersisted},warnings};
   }catch(e){
