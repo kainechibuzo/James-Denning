@@ -14,6 +14,15 @@ if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+const edgePost = async (name, body) => {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":`Bearer ${SUPABASE_ANON_KEY}`},body:JSON.stringify(body)});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)return {data:null,error:{message:data.error||`Request failed (${response.status})`,status:response.status}};
+    return {data,error:null};
+  } catch(error){return {data:null,error:{message:error?.message||"Network error"}};}
+};
+
 // All browser database access uses the anon/publishable client and is governed by Supabase RLS.
 // — the service role bypasses RLS entirely, and anything VITE_-prefixed gets
 // bundled into the browser JS, meaning the key would be readable by anyone
@@ -54,15 +63,7 @@ export const db = {
 
   // ── Schools management ────────────────────────────────────────────────────
 
-  async getSchools(){
-
-    // Pre-auth picker (no session yet) — uses a narrow RPC that excludes
-    // admin_email/admin_name/settings_password rather than the raw table,
-    // since RLS now correctly blocks anonymous full-table reads. See
-    // supabase/migrations/999c_login_lookup_functions.sql.
-    return supabase.rpc('login_list_schools')
-
-  },
+  async getSchools(){const {data,error}=await edgePost("preauth-lookup",{action:"schools"});return {data:data?.data||null,error};},
 
   async getSchool(id){
 
@@ -365,41 +366,10 @@ export const db = {
   // Public landing-page RPCs (anon — narrow SECURITY DEFINER functions, no
   // table grants to anon; see 017_hiring_roles.sql)
 
-  async publicGetRoleBySlug(slug){
-
-    const {data,error}=await supabase.rpc('hiring_public_role',{p_slug:slug})
-
-    return {data:(data&&data.length)?data[0]:null,error}
-
-  },
-
-  async publicSubmitApplication({slug,name,email,phone,qualifications,askingPrice,priceNote}){
-
-    return supabase.rpc('hiring_public_submit_application',{
-
-      p_slug:slug, p_name:name, p_email:email, p_phone:phone||'',
-
-      p_qualifications:qualifications||'', p_asking_price:askingPrice||null,
-
-      p_price_note:priceNote||'',
-
-    })
-
-  },
-
-  async publicGetThread(token){
-
-    return supabase.rpc('hiring_get_thread',{p_token:token})
-
-  },
-
-  async publicPostMessage(token,senderName,body){
-
-    return supabase.rpc('hiring_post_message',{p_token:token,p_sender_name:senderName,p_body:body})
-
-  },
-
-
+  async publicGetRoleBySlug(slug){const {data,error}=await edgePost("public-careers",{action:"role",slug});return {data:(data?.data&&data.data.length)?data.data[0]:null,error};},
+  async publicSubmitApplication({slug,name,email,phone,qualifications,askingPrice,priceNote}){return edgePost("public-careers",{action:"submit",slug,name,email,phone:phone||"",qualifications:qualifications||"",asking_price:askingPrice??null,price_note:priceNote||""});},
+  async publicGetThread(token){return edgePost("public-careers",{action:"thread",token});},
+  async publicPostMessage(token,senderName,body){return edgePost("public-careers",{action:"message",token,sender_name:senderName,body});},
 
   async getSections(activeOnly=true){
 
@@ -917,29 +887,9 @@ export const db = {
   // can't be used to enumerate/list anyone. See
   // supabase/migrations/999c_login_lookup_functions.sql.
 
-  async loginFindTeacher(staffId, schoolId=null){
-
-    if(!schoolId) return {data:null,error:null};
-
-    const {data,error}=await supabase.rpc('login_lookup_teacher',{p_school_id:schoolId,p_staff_id:staffId});
-
-    if(error)return{data:null,error}
-
-    return{data:(data&&data.length>0)?data[0]:null,error:null}
-
-  },
-
-  async loginFindStudent(studentId, schoolId=null){
-
-    if(!schoolId) return {data:null,error:null};
-
-    const {data,error}=await supabase.rpc('login_lookup_student',{p_school_id:schoolId,p_student_id:studentId});
-
-    if(error)return{data:null,error}
-
-    return{data:(data&&data.length>0)?data[0]:null,error:null}
-
-  },
+  async loginFindTeacher(staffId,schoolId=null){if(!schoolId)return {data:null,error:null};const {data,error}=await edgePost("preauth-lookup",{action:"teacher",school_id:schoolId,identifier:staffId});return {data:data?.data||null,error};},
+  async loginFindStudent(studentId,schoolId=null){if(!schoolId)return {data:null,error:null};const {data,error}=await edgePost("preauth-lookup",{action:"student",school_id:schoolId,identifier:String(studentId)});return {data:data?.data||null,error};},
+  async loginAuthenticate(identifier,password,schoolId){if(!schoolId)return {data:null,error:{message:"Select an organization first."}};return edgePost("preauth-lookup",{action:"authenticate",school_id:schoolId,identifier,password});},
 
   async loginGetSettings(){
 
@@ -949,17 +899,7 @@ export const db = {
 
   // Fetch admin credentials for a specific school
 
-  async loginGetSchoolAdmin(schoolId){
-
-    if(!schoolId) return {data:null,error:null};
-
-    const {data,error}=await supabase.rpc('login_lookup_school_admin',{p_school_id:schoolId});
-
-    if(error) return {data:null,error};
-
-    return {data:(data&&data.length>0)?data[0]:null,error:null};
-
-  },
+  async loginGetSchoolAdmin(schoolId){if(!schoolId)return {data:null,error:null};const {data,error}=await edgePost("preauth-lookup",{action:"admin",school_id:schoolId});return {data:data?.data||null,error};},
 
   // Update admin credentials for a school
 
@@ -2158,21 +2098,7 @@ export const db = {
 
   // Login access control — fetch only the three access keys (fast, used every login attempt)
 
-  async getLoginAccessSettings(schoolId){
-
-    const {data,error}=await supabase.rpc('login_lookup_access_settings',{p_school_id:schoolId})
-
-    if(error) return {}
-
-    const out={}
-
-    ;(data||[]).forEach(r=>{ out[r.key]=r.value })
-
-    return out
-
-  },
-
-
+  async getLoginAccessSettings(schoolId){const {data,error}=await edgePost("preauth-lookup",{action:"access_settings",school_id:schoolId});if(error)return {};const out={};(data?.data||[]).forEach(r=>{out[r.key]=r.value});return out;},
 
   // ── CAE SCORE STRUCTURES ──────────────────────────────────────────────────
 
