@@ -82,6 +82,23 @@ function renderMessageContent(content) {
   return <div className="jd-markdown">{nodes}</div>;
 }
 
+function friendlyActivityLabel(name) {
+  const labels = {
+    get_workspace_overview: "Checking your organisation",
+    get_organisation_departments: "Checking your departments",
+    get_business_memory: "Checking what JD remembers",
+    remember_business_fact: "Remembering a business decision",
+    preview_organisation_blueprint: "Designing your business structure",
+    submit_organisation_blueprint_for_review: "Sending the business plan for your approval",
+    preview_hiring_vacancy: "Preparing a hiring plan",
+    get_people_intelligence: "Reviewing team information",
+    get_operations_intelligence: "Reviewing daily operations",
+    get_hiring_pipeline: "Checking recruitment progress",
+    create_business_document_draft: "Preparing your document"
+  };
+  return labels[String(name || "")] || "Working on your request";
+}
+
 export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [draft, setDraft] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 760);
@@ -410,14 +427,14 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
                   {item.toolEvents?.length ? <div className="jd-activity-steps">{item.toolEvents.slice(-4).map((event,i) => {
-                    const label = String(event.name || "workspace task").replaceAll("_"," ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+                    const label = friendlyActivityLabel(event.name);
                     const done = event.status === "completed";
                     return <div className={"jd-activity-step" + (done ? " done" : "")} key={String(event.name)+"-"+i}><span>{done ? "✓" : "·"}</span>{label}</div>;
                   })}</div> : <div className="jd-activity-detail">JD is organising the work and checking what it needs.</div>}
                 </div>
               )}
               {item.streaming&&<div className="jd-run">JD is writing its response…</div>}
-              {item.role === "assistant" && item.content && item.toolEvents?.length>0 && <div className="jd-tools">{item.toolEvents.slice(-4).map((event,i)=><span className="jd-tool" key={i}>{event.name?.replaceAll("_"," ")} · {event.status}</span>)}</div>}
+
             </div>)}
             {sending&&<div className="jd-message assistant"><div className="jd-activity" role="status" aria-live="polite"><div className="jd-activity-title"><span className="jd-activity-dot"/>JD is cooking…</div><div className="jd-activity-detail">Getting the request ready.</div></div></div>}
           </div>}
