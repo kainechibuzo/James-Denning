@@ -280,6 +280,25 @@ Deno.serve(async (req) => {
   return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:false,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
  }
 
+ if(payload.action==="organisation.departments.list"){
+  if(!hasRole(["owner","admin","manager","staff","contractor","viewer","finance","hr"],profile.role)) return json({error:"You do not have access to the organisation directory"},403);
+  const {data:departments,error}=await admin.from("jd_departments")
+   .select("id,name,purpose,roles,workflows,kpis,status,created_by_agent,created_via,created_at")
+   .eq("school_id",profile.school_id).eq("status","active").order("name").limit(100);
+  if(error) return json({error:"Could not load organisation departments"},500);
+  const ids=(departments||[]).map((item:any)=>item.id);
+  let positions:any[]=[];
+  if(ids.length){
+   const {data,error:roleError}=await admin.from("jd_department_roles")
+    .select("id,department_id,title,created_by_agent,created_at")
+    .eq("school_id",profile.school_id).in("department_id",ids).order("title").limit(500);
+   if(roleError) return json({error:"Could not load department positions"},500);
+   positions=roleData||[];
+  }
+  const byDepartment=new Map<string,any[]>();
+  for(const position of positions){const list=byDepartment.get(position.department_id)||[];list.push(position);byDepartment.set(position.department_id,list);}
+  return json({departments:(departments||[]).map((item:any)=>({...item,positions:byDepartment.get(item.id)||[]}))});
+ }
  if(payload.action==="organisation.blueprint.preview"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can prepare organisation blueprints"},403);
   const result=validateOrganisationBlueprint(payload.blueprint);
