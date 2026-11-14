@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command } from "lucide-react";
+import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
+import { JDDepartments } from "./JDDepartments.jsx";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -105,6 +106,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
+  const [showDepartments, setShowDepartments] = useState(false);
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -390,6 +392,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <button className="jd-new" type="button" onClick={newConversation}><Plus size={15}/> New conversation</button>
         <button className="jd-new" type="button" onClick={()=>{setShowReview(false);setShowUsage(false);}}><Plus size={15}/> Chat</button>
         <button className="jd-new" type="button" onClick={()=>{setShowReview(true);setShowUsage(false);}}><ShieldCheck size={15}/> Review Centre</button>
+        <button className="jd-new" type="button" onClick={()=>{setShowDepartments(true);setShowUsage(false);setShowRuns(false);}}><Building2 size={15}/> Departments</button>
         <button className="jd-new" type="button" onClick={()=>{setShowUsage(true);setShowReview(false);setShowRuns(false);}}><Activity size={15}/> AI usage</button>
         <button className="jd-new" type="button" onClick={()=>{setShowRuns(true);setShowUsage(false);setShowReview(false);}}><Activity size={15}/> Automation runs</button>
         <div className="jd-history-list">
@@ -404,7 +407,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
       </aside></>}
-      {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : <section className="jd-main">
+      {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : showDepartments ? <JDDepartments onClose={()=>setShowDepartments(false)}/> : <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setSidebarOpen(v=>!v)}>{sidebarOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
