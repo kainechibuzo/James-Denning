@@ -9,10 +9,9 @@ const client = await read("../../../src/supabaseClient.js");
 const preauth = await read("../preauth-lookup/index.ts");
 const revokeMigration = await read("../../migrations/20261115164500_revoke_legacy_public_rpcs.sql");
 
-Deno.test("mobile ID sign-in verifies credentials only through Supabase Auth", () => {
-  assertStringIncludes(mobile, "supabase.auth.signInWithPassword({email:authEmail,password:pw})");
-  assertStringIncludes(mobile, "staff-${clean}--${schoolId}@login.internal");
-  assertStringIncludes(mobile, "student-${clean}--${schoolId}@login.internal");
+Deno.test("mobile sign-in verifies email credentials only through Supabase Auth", () => {
+  assertStringIncludes(mobile, "supabase.auth.signInWithPassword({email:address,password:pw})");
+  assertStringIncludes(mobile, "Mobile access is not enabled for this account role");
   assertStringIncludes(mobile, "profile.school_id!==schoolId");
   assertEquals(mobile.includes("db.loginAuthenticate("), false);
   assertEquals(mobile.includes("loadSession()"), false);
