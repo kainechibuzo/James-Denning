@@ -243,6 +243,79 @@ const tools: ToolSpec[] = [  {
   },
 
   {
+    name: "create_operational_setup_tasks",
+    description: "Persist an industry-specific launch-readiness checklist as real organisation tasks. Use this for business setup work such as fleet sourcing criteria, driver recruitment preparation, customer acquisition, quotation templates, contract review, operating-cost modelling, dispatch procedures and compliance tracking. Create tasks only; do not buy vehicles, hire people, contact customers, issue binding quotations, sign contracts, spend money, or claim regulatory compliance. Include an accountable role, dependency titles and whether owner approval is required before the later action.",
+    risk: "low",
+    roles: ["owner","admin","manager"],
+    strict: false,
+    parameters: {
+      type: "object",
+      properties: {
+        tasks: { type: "array", minItems: 1, maxItems: 80, items: { type: "object", properties: {
+          title: { type: "string", minLength: 3, maxLength: 180 },
+          description: { type: "string", minLength: 10, maxLength: 5000 },
+          department: { type: "string", maxLength: 120 },
+          priority: { type: "string", enum: ["low","normal","high","urgent"] },
+          owner_role: { type: "string", maxLength: 120 },
+          dependencies: { type: "array", maxItems: 20, items: { type: "string", maxLength: 180 } },
+          approval_required: { type: "boolean" },
+          approval_reason: { type: "string", maxLength: 500 }
+        }, required: ["title","description","department","priority","owner_role","dependencies","approval_required","approval_reason"], additionalProperties: false } }
+      },
+      required: ["tasks"],
+      additionalProperties: false
+    },
+    execute: async (args, ctx) => {
+      const requested = Array.isArray(args.tasks) ? args.tasks : [];
+      if (!requested.length || requested.length > 80) throw new Error("Provide between 1 and 80 launch tasks");
+      const rows = requested.map((raw: any) => {
+        const title = String(raw.title || "").trim().slice(0,180);
+        const department = String(raw.department || "Operations").trim().slice(0,120);
+        const slug = title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,110);
+        if (title.length < 3 || !slug) throw new Error("Every launch task needs a meaningful title");
+        const dependencies = Array.isArray(raw.dependencies) ? raw.dependencies.map((v: unknown) => String(v).trim().slice(0,180)).filter(Boolean).slice(0,20) : [];
+        const approvalRequired = raw.approval_required === true;
+        return {
+          school_id: ctx.schoolId,
+          created_by: ctx.userId,
+          title,
+          description: String(raw.description || "").trim().slice(0,5000),
+          department,
+          priority: ["low","normal","high","urgent"].includes(String(raw.priority)) ? String(raw.priority) : "normal",
+          status: "queued",
+          idempotency_key: "jd-launch:" + slug,
+          metadata: {
+            source: "jd_business_launch_setup",
+            owner_role: String(raw.owner_role || "Owner").trim().slice(0,120),
+            dependencies,
+            approval_required: approvalRequired,
+            approval_reason: approvalRequired ? String(raw.approval_reason || "Owner approval is required before this action is taken.").trim().slice(0,500) : "",
+            execution_state: "task_created_not_actioned"
+          },
+          created_by_agent: true,
+          updated_at: new Date().toISOString()
+        };
+      });
+      const { data, error } = await ctx.admin.from("jd_operational_tasks")
+        .upsert(rows, { onConflict: "school_id,idempotency_key", ignoreDuplicates: true })
+        .select("id,title,department,priority,status,metadata");
+      if (error) throw new Error("Could not save the launch-readiness checklist");
+      const { data: all, error: readError } = await ctx.admin.from("jd_operational_tasks")
+        .select("id,title,department,priority,status,metadata")
+        .eq("school_id",ctx.schoolId).eq("created_by_agent",true)
+        .contains("metadata",{source:"jd_business_launch_setup"})
+        .order("created_at",{ascending:true}).limit(100);
+      if (readError) throw new Error("Checklist tasks were saved, but JD could not verify the saved records");
+      return {
+        persisted: true,
+        created_count: (data || []).length,
+        checklist_count: (all || []).length,
+        tasks: all || [],
+        note: "These are saved launch-readiness tasks, not completed business activities. Approval requirements are recorded on each task."
+      };
+    },
+  },
+  {
     name: "get_workspace_overview",
     description: "Read a high-level overview of the authenticated organisation workspace, including organisation name, member count, open hiring roles, applications and hires. Use this before answering broad questions about the organisation.",
     risk: "low",
@@ -785,6 +858,11 @@ export async function runAgent(input: {
     "You are JD, the autonomous organisation operations agent.",
     memoryInstruction,
     "Work toward the user's objective rather than merely giving them instructions.",
+    "For business launch/setup requests, audit current records first, then create a practical persisted launch-readiness checklist with create_operational_setup_tasks. Cover fleet requirements and sourcing, driver recruitment, customer acquisition, quotations, contract review, operating costs, dispatch procedures and compliance tracking where relevant. Give each task an accountable role, explicit dependencies and approval requirements. Do not invent named staff, vehicles, customers, prices, budgets, registrations, licences or completed work.",
+    "Clearly distinguish: preview = not saved; draft = saved but not approved/published; approved = authorised but not necessarily executed; completed = only after verified records or external evidence confirm completion. A saved task is not a completed activity. Never imply that a task being created means the real-world action occurred.",
+    "Do not take irreversible or external actions. No vehicle purchases, hiring decisions, customer outreach, binding quotations, contract signing, payments, legal filings or licence applications without explicit owner approval and appropriate evidence. Prepare drafts and task records only.",
+    "Use the organisation's confirmed business identity from shared memory, but do not rename the workspace or make legal-registration claims unless an authorised owner confirms and evidence supports it.",
+    "Use the current server timestamp for report dates; do not invent future dates.";
     "Always read shared organisation memory before making business recommendations or continuing an earlier setup. Save stable, confirmed business decisions and preferences to shared memory when useful; never store secrets or sensitive personal information.",
     "When the user asks to create or set up departments, generate the structure from their business idea, then call submit_organisation_blueprint_for_review. Explain that it is awaiting their administrator review. Do not claim departments exist until the approval is accepted and the provisioner confirms creation.",
     "Write for an ordinary business owner, not a software engineer. Never show internal tool names, raw JSON, database table names, API details, UUIDs, SQL, HTTP status codes, stack traces or developer jargon. Translate failures into clear, calm, actionable everyday language. Use headings and short lists.",
