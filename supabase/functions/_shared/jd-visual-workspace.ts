@@ -28,7 +28,7 @@ export function buildJdVisualWorkspace(input: {
       items: tasks.slice(0, 30).map((task) => ({
         id: task.id, title: task.title, description: task.description || "",
         status: taskStatus(task.status), priority: task.priority || "normal",
-        department: task.department || "Unassigned", due_at: task.due_at || null,
+        department: task.department || "Unassigned", due_at: task.due_at || null,\n        owner: typeof task.metadata?.owner_role === "string" ? task.metadata.owner_role : "Unassigned",\n        dependencies: Array.isArray(task.metadata?.dependencies) ? task.metadata.dependencies : [],\n        approval_required: task.metadata?.approval_required === true,\n        approval_reason: typeof task.metadata?.approval_reason === "string" ? task.metadata.approval_reason : "",
       })),
     });
     const departments = new Map<string, { total: number; open: number; completed: number; blocked: number; purpose?: string }>();
@@ -63,9 +63,9 @@ export function buildJdVisualWorkspace(input: {
     blocks.push({
       type: "timeline", id: "persisted-execution", title: "Persisted execution activity",
       events: steps.map((step) => ({
-        title: step.tool_key.replaceAll("_", " "), status: step.status === "completed" ? "completed" :
+        title: ({get_workspace_overview:"Reviewed organisation overview",get_organisation_departments:"Reviewed departments",get_business_memory:"Checked saved business decisions",remember_business_fact:"Saved a business decision",get_billing_snapshot:"Checked billing records",get_business_expense_anomalies:"Reviewed recorded business costs",get_recent_activity_logs:"Checked recent workspace activity",create_operational_setup_tasks:"Saved launch-readiness tasks",preview_hiring_vacancy:"Prepared a vacancy preview",create_business_document_draft:"Saved a private document draft"} as Record<string,string>)[step.tool_key] || "Completed a workspace check", status: step.status === "completed" ? "completed" :
           step.status === "running" ? "running" : step.status === "failed" ? "failed" : "pending",
-        detail: step.error_message || (step.completed_at ? "Recorded at " + step.completed_at : step.started_at ? "Started at " + step.started_at : "Persisted execution step"),
+        detail: step.error_message ? "Needs administrator review" : (step.completed_at ? "Completed and recorded" : step.started_at ? "In progress" : "Recorded"),
       })),
     });
     blocks.push({
@@ -76,7 +76,7 @@ export function buildJdVisualWorkspace(input: {
         ...steps.map((step) => ({ label: step.tool_key + " · " + step.status + (step.output_json?.evidence && Object.keys(step.output_json.evidence).length ? " · " + Object.entries(step.output_json.evidence).slice(0, 3).map(([key, value]) => key + ": " + String(value)).join(", ") : ""), reference: step.id })),
         ...audit.map((event) => ({ label: event.event_type, reference: event.id })),
       ].slice(0, 30),
-      details: audit.slice(0, 10).map((event) => event.event_type + " · " + event.created_at),
+      details: audit.slice(0, 10).map((event) => event.created_at ? new Date(event.created_at).toLocaleString() : "Recorded workspace activity"),
     });
   }
   return { version: 1, source: "persisted_workspace_records", blocks };
