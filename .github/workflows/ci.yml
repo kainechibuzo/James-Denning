@@ -148,6 +148,13 @@ jobs:
       - name: Test JD manual execution retry migration contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084629_jd_execution_retry_controls.sql supabase/functions/_shared/jd-execution-retry-migration.test.ts
 
+      # Supabase deploys the worker with shared modules nested beside index.ts.
+      # Stage the same bundle layout in CI before type-checking that entrypoint.
+      - name: Stage JD execution worker shared modules
+        run: |
+          mkdir -p supabase/functions/jd-execution-worker/_shared
+          cp supabase/functions/_shared/*.ts supabase/functions/jd-execution-worker/_shared/
+
       - name: Type-check secured Edge Functions
         run: |
           deno check --node-modules-dir=auto supabase/functions/verify-payment/index.ts
