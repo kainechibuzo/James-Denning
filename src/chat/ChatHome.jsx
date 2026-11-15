@@ -262,7 +262,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
-            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: String(step.tool_key || "Workspace task").replaceAll("_", " "), status: step.status, detail: step.error_message || (step.risk_level ? "Risk: " + step.risk_level : "") })) }] } : message.visualWorkspace || null),
+            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: friendlyActivityLabel(step.tool_key), status: step.status, detail: step.error_message ? "Needs administrator review" : "" })) }] } : message.visualWorkspace || null),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
             job: update.job,
@@ -306,7 +306,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
       if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
-      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
+      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, jobStatus: data.job?.status || (queued ? "queued" : null), job: data.job || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
     } catch (err) {
       const status = err?.context?.status || err?.status;
       setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not complete that request. Please try again in a moment.");
