@@ -52,7 +52,7 @@ function isTableDivider(line) {
 }
 
 function renderMessageContent(content) {
-  const lines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
+  const normalized = String(content || "").replace(/\r\n?/g, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/\u00a0/g, " ");\n  const lines = normalized.replace(/\|\|\s*(?=\|?\s*:?-{3,})/g, "|\\n|").split("\n");
   const nodes = [];
   let paragraph = [];
   const flushParagraph = () => {
@@ -133,7 +133,7 @@ function friendlyActivityLabel(name) {
     preview_hiring_vacancy: "Preparing a hiring plan",
     get_people_intelligence: "Reviewing team information",
     get_operations_intelligence: "Reviewing daily operations",
-    get_hiring_pipeline: "Checking recruitment progress",
+    get_hiring_pipeline: "Checking recruitment progress",\n    create_operational_setup_tasks: "Saving your business launch checklist",\n    get_billing_snapshot: "Checking billing records",\n    get_business_expense_anomalies: "Reviewing recorded business costs",\n    get_recent_activity_logs: "Checking recent workspace activity",
     create_business_document_draft: "Preparing your document"
   };
   return labels[String(name || "")] || "Working on your request";
