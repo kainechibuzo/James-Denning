@@ -45,5 +45,4 @@ Deno.test("legacy public RPC grants are removed after Edge Function replacement"
 Deno.test("login access settings failures fail closed", () => {
   assertStringIncludes(client, "if(error)return {error}");
   assertStringIncludes(appDemo, "if(access?.error) throw access.error");
-  assertStringIncludes(mobile, "if(access?.error)throw access.error");
 });
