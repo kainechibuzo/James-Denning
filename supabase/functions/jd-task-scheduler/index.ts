@@ -40,7 +40,7 @@ Deno.serve(async(req)=>{
  let workerWakeRequested=false;
  if(Number(pendingCount||0)>0){
   workerWakeRequested=true;
-  EdgeRuntime.waitUntil(fetch(`${url.replace(/\\/$/,"")}/functions/v1/jd-execution-worker`,{
+  EdgeRuntime.waitUntil(fetch(`${url.replace(/\/$/,"")}/functions/v1/jd-execution-worker`,{
    method:"POST",headers:{"Content-Type":"application/json","x-jd-worker-secret":expected},
    body:"{}"
   }).then(async(response)=>{if(!response.ok)console.error("JD scheduled worker wake returned",response.status);await response.text();})
