@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
   const jobId=typeof payload.jobId==="string"?payload.jobId.trim():"";
   if(!jobId) return json({error:"jobId is required"},400);
   const {data:job,error:jobErr}=await admin.from("jd_execution_jobs")
-   .select("id,run_id,status,attempt_count,max_attempts,last_error_code,last_error_message,updated_at,completed_at")
+   .select("id,run_id,status,attempt_count,max_attempts,last_error_code,last_error_message,created_at,available_at,started_at,updated_at,completed_at,lease_owner,lease_expires_at,heartbeat_at,dispatch_recovery_count")
    .eq("id",jobId).eq("school_id",profile.school_id).maybeSingle();
   if(jobErr||!job) return json({error:"Execution job not found"},404);
   const {data:run,error:runErr}=await admin.from("jd_automation_runs")
@@ -667,9 +667,41 @@ Deno.serve(async (req) => {
    .select("id,created_by").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
   if(conversationErr||!conversation||(conversation.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
    return json({error:"Conversation not found"},404);
-  const {data,error}=await admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id).order("created_at").limit(100);
+  const {data:messageRows,error}=await admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id).order("created_at").limit(100);
   if(error) return json({error:"Could not load conversation"},500);
-  return json({messages:data||[]});
+  const {data:runs,error:runError}=await admin.from("jd_automation_runs")
+   .select("id,status,created_at,started_at,completed_at").eq("school_id",profile.school_id)
+   .eq("conversation_id",id).order("created_at",{ascending:true}).limit(100);
+  if(runError) return json({error:"Could not load conversation execution states"},500);
+  const runRows=runs||[];
+  const runIds=runRows.map((item:any)=>item.id);
+  const {data:jobs,error:jobError}=runIds.length
+   ? await admin.from("jd_execution_jobs").select("id,run_id,status,attempt_count,max_attempts,available_at,created_at,updated_at,started_at,completed_at,last_error_code,last_error_message,dispatch_recovery_count")
+      .eq("school_id",profile.school_id).in("run_id",runIds)
+   : {data:[],error:null};
+  if(jobError) return json({error:"Could not load conversation job states"},500);
+  const jobRows=jobs||[];
+  const jobById=new Map(jobRows.map((job:any)=>[job.id,job]));
+  const runById=new Map(runRows.map((run:any)=>[run.id,run]));
+  const enriched=(messageRows||[]).map((item:any)=>{
+   const jobId=item.content_json?.job_id||null;
+   const job=jobId?jobById.get(jobId):null;
+   const run=job?runById.get(job.run_id):null;
+   return {...item,content_json:{
+    ...(item.content_json||{}),
+    ...(job?{job_id:job.id,run_id:job.run_id,status:job.status,job_status:job.status,run:run?{id:run.id,status:run.status,created_at:run.created_at,started_at:run.started_at,completed_at:run.completed_at}:null,job}: {})
+   }};
+  });
+  for(const job of jobRows){
+   if(enriched.some((item:any)=>item.content_json?.job_id===job.id)) continue;
+   const run=runById.get(job.run_id);
+   enriched.push({id:"job-"+job.id,role:"assistant",content:"",created_at:job.created_at,content_json:{
+    job_id:job.id,run_id:job.run_id,status:job.status,job_status:job.status,job,
+    run:run?{id:run.id,status:run.status,created_at:run.created_at,started_at:run.started_at,completed_at:run.completed_at}:null
+   }});
+  }
+  enriched.sort((a:any,b:any)=>String(a.created_at).localeCompare(String(b.created_at)));
+  return json({messages:enriched});
  }
  if(payload.action!=="submit") return json({error:"Unsupported action"},400);
  const message=typeof payload.message==="string"?payload.message.trim():"";
