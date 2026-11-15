@@ -83,9 +83,9 @@ const tools: ToolSpec[] = [  {
 
   {
     name: "get_jd_capability_inventory",
-    description: "Return JD's registered organisation capability inventory. Capability states remain unverified until trusted deployment and authenticated smoke-test evidence is recorded. Use this before promising that a module can be operated.",
+    description: "Return JD's registered organisation capability inventory for the current user's role. Shows which capabilities are available, which are restricted, and which are not exposed for automatic execution. Use this before promising that a module can be operated.",
     risk: "low",
-    roles: ["owner","admin"],
+    roles: ["owner","admin","manager","staff","contractor","viewer","finance","hr"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
     execute: async (_args, ctx) => {
       const registeredTools = tools
