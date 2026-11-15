@@ -3,6 +3,8 @@ import { createMcpHandler, McpServer } from "npm:@modelcontextprotocol/server@^2
 import { pipeline } from "npm:@supabase/middleware@1";
 import { withOAuthProtectedResource, withSupabase } from "npm:@supabase/server@1";
 import { z } from "npm:zod@^4.3.6";
+import { executeJdMcpTool, getJdMcpToolDefinitions, type AgentContext } from "../_shared/jd-agent-runtime.ts";
+import { jsonSchemaToZod } from "../_shared/jd-mcp-schema.ts";
 
 const jsonText = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value) }],
@@ -43,13 +45,14 @@ Deno.serve(
       }
       const role = String(profile.role);
       const managerRole = ["owner","admin","manager"].includes(role);
-      const restrictedReadRole = ["staff","contractor","viewer"].includes(role);
-      if (!managerRole && !restrictedReadRole) {
+      const mcpEnabledRoles = ["owner","admin","manager","staff","contractor","viewer","finance","hr"];
+      if (!mcpEnabledRoles.includes(role)) {
         return Response.json({ error: "JD MCP access is not enabled for this workspace role" }, { status: 403 });
       }
 
       const schoolId = String(profile.school_id);
       const actorId = authData.user.id;
+      const agentContext: AgentContext = { admin, schoolId, userId: actorId, role };
       const callConnect = async (action: string, payload: Record<string, unknown> = {}) => {
         const response = await fetch(projectUrl.replace(/\/$/, "") + "/functions/v1/jd-connect", {
           method: "POST",
@@ -406,6 +409,82 @@ Deno.serve(
             });
           },
         );
+
+        // Expose the same role-filtered, low-risk native registry used by JD chat.
+        // High-risk tools remain unavailable here exactly as they are in JD's model tool list.
+        for (const capability of getJdMcpToolDefinitions(agentContext)) {
+          const toolName = "jd_native_" + capability.name;
+          const readOnly = /^(get_|list_|preview_|plan_)/.test(capability.name);
+          server.registerTool(
+            toolName,
+            {
+              description: "Native James Denning capability. " + capability.description,
+              inputSchema: jsonSchemaToZod(capability.parameters),
+              annotations: {
+                readOnlyHint: readOnly,
+                destructiveHint: false,
+                openWorldHint: capability.name === "call_connected_mcp_tool",
+              },
+            },
+            async (rawArgs: any) => {
+              const context: AgentContext = { ...agentContext };
+              let createdRunId: string | null = null;
+              let createdConversationId: string | null = null;
+              if (capability.name === "submit_organisation_blueprint_for_review") {
+                const { data: conversation, error: conversationError } = await admin
+                  .from("jd_conversations")
+                  .insert({ school_id: schoolId, created_by: actorId, title: "Claude MCP — organisation setup" })
+                  .select("id").single();
+                if (conversationError || !conversation?.id) throw new Error("Could not create the secure review context for this organisation setup");
+                createdConversationId = String(conversation.id);
+                const { data: run, error: runError } = await admin
+                  .from("jd_automation_runs")
+                  .insert({
+                    school_id: schoolId,
+                    conversation_id: createdConversationId,
+                    requested_by: actorId,
+                    trigger_type: "manual",
+                    status: "planning",
+                    autonomy_mode: "assisted",
+                    scope: "organisation",
+                    request_text: "Claude MCP requested organisation blueprint review",
+                    plan_json: [{ source: "claude_mcp", capability: capability.name }],
+                  })
+                  .select("id").single();
+                if (runError || !run?.id) {
+                  await admin.from("jd_conversations").delete().eq("id", createdConversationId).eq("school_id", schoolId);
+                  throw new Error("Could not create the secure approval record for this organisation setup");
+                }
+                createdRunId = String(run.id);
+                context.conversationId = createdConversationId;
+                context.runId = createdRunId;
+              }
+              try {
+                const result = await executeJdMcpTool(capability.name, asObject(rawArgs), context);
+                if (createdRunId) {
+                  const awaitingApproval = asObject(result).submitted === true;
+                  await admin.from("jd_automation_runs").update({
+                    status: awaitingApproval ? "awaiting_approval" : "failed",
+                    result_json: result,
+                    completed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }).eq("id", createdRunId).eq("school_id", schoolId);
+                }
+                return jsonText({ capability: capability.name, result });
+              } catch (error) {
+                if (createdRunId) {
+                  await admin.from("jd_automation_runs").update({
+                    status: "failed",
+                    result_json: { error: clip(error instanceof Error ? error.message : "Capability failed", 300) },
+                    completed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }).eq("id", createdRunId).eq("school_id", schoolId);
+                }
+                throw error;
+              }
+            },
+          );
+        }
 
         return server;
       });

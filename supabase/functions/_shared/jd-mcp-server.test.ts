@@ -2,6 +2,7 @@ import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/
 
 const source = await Deno.readTextFile(new URL("../jd-mcp/index.ts", import.meta.url));
 const config = await Deno.readTextFile(new URL("../../config.toml", import.meta.url));
+const runtime = await Deno.readTextFile(new URL("./jd-agent-runtime.ts", import.meta.url));
 
 Deno.test("JD MCP is protected by OAuth discovery and authenticated Supabase user middleware", () => {
   assertMatch(source, /withOAuthProtectedResource\(\)/);
@@ -79,4 +80,22 @@ Deno.test("jd_call_connected_mcp_tool gates writes and retrieves approval result
   assertMatch(block, /callConnect\("tools\.call"/);
   assertMatch(block, /result\.requiresApproval/);
   assertMatch(block, /The external action has NOT executed/);
+});
+
+Deno.test("inbound MCP dynamically exposes JD's same role-filtered native tool registry", () => {
+  assertMatch(source, /getJdMcpToolDefinitions\(agentContext\)/);
+  assertMatch(source, /executeJdMcpTool\(capability\.name, asObject\(rawArgs\), context\)/);
+  assertMatch(source, /"jd_native_"\s*\+\s*capability\.name/);
+  assertMatch(runtime, /export function getJdMcpToolDefinitions/);
+  assertMatch(runtime, /export async function executeJdMcpTool/);
+  assertMatch(runtime, /tool\.risk !== "low"/);
+  assertMatch(source, /const mcpEnabledRoles = \["owner","admin","manager","staff","contractor","viewer","finance","hr"\]/);
+});
+
+Deno.test("native MCP blueprint submissions create a reviewable run and preserve approval state", () => {
+  assertMatch(source, /from\("jd_conversations"\)/);
+  assertMatch(source, /from\("jd_automation_runs"\)/);
+  assertMatch(source, /status: awaitingApproval \? "awaiting_approval" : "failed"/);
+  assertMatch(source, /context\.runId = createdRunId/);
+  assertMatch(source, /context\.conversationId = createdConversationId/);
 });

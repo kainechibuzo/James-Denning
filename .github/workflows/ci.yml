@@ -2,7 +2,7 @@ name: Web CI
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, fix/verify-web-build-module-entry, feat/jd-assistant-first-workspace]
   push:
     branches-ignore: [master]
     paths:
@@ -71,7 +71,10 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-oauth-crypto.test.ts
 
       - name: Test JD inbound MCP server security contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/functions/_shared/jd-agent-runtime.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
+
+      - name: Test JD MCP JSON Schema conversion
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-schema.test.ts
 
       - name: Test JD Connect MCP protocol and migration contracts
         run: |
