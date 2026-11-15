@@ -2099,7 +2099,7 @@ export const db = {
 
   // Login access control — fetch only the three access keys (fast, used every login attempt)
 
-  async getLoginAccessSettings(schoolId){const {data,error}=await edgePost("preauth-lookup",{action:"access_settings",school_id:schoolId});if(error)return {};const out={};(data?.data||[]).forEach(r=>{out[r.key]=r.value});return out;},
+  async getLoginAccessSettings(schoolId){const {data,error}=await edgePost("preauth-lookup",{action:"access_settings",school_id:schoolId});if(error)return {error};const out={};(data?.data||[]).forEach(r=>{out[r.key]=r.value});return out;},
 
   // ── CAE SCORE STRUCTURES ──────────────────────────────────────────────────
 
