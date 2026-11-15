@@ -1,6 +1,6 @@
 import {createClient} from "npm:@supabase/supabase-js@2";
-import {nextScheduleAt,type LocalSchedule} from "../_shared/jd-scheduler.ts";
-import {getJdSecret} from "../_shared/jd-secrets.ts";
+import {nextScheduleAt,type LocalSchedule} from "./_shared/jd-scheduler.ts";
+import {getJdSecret} from "./_shared/jd-secrets.ts";
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
 function secretMatches(provided:string,expected:string){if(!provided||!expected||provided.length!==expected.length)return false;let diff=0;for(let i=0;i<expected.length;i++)diff|=provided.charCodeAt(i)^expected.charCodeAt(i);return diff===0;}
