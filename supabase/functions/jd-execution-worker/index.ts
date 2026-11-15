@@ -1,8 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { runAgent } from "./_shared/jd-agent-runtime.ts";
-import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
-import { selectJdModel } from "./_shared/jd-agent-routing.ts";
-import { getJdSecret } from "./_shared/jd-secrets.ts";
+import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { buildJdVisualWorkspace } from "../_shared/jd-visual-workspace.ts";
+import { selectJdModel } from "../_shared/jd-agent-routing.ts";
+import { getJdSecret } from "../_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -10,7 +10,7 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 
-import { isQueueMessage, retryDelaySeconds, safeWorkerId, type QueueMessage } from "./_shared/jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, type QueueMessage } from "../_shared/jd-execution-worker-helpers.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
