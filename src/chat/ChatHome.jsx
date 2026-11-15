@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
+import { ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
@@ -115,6 +115,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [activeSends, setActiveSends] = useState(0);
   const [queuePaused, setQueuePaused] = useState(false);
   const conversationIdRef = useRef(null);
+  const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const [error, setError] = useState("");
   const greeting = useMemo(() => {
@@ -240,12 +241,23 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     setMessages((current) => [...current, { role: "user", content: message }]);
     setActiveSends((count) => count + 1);
     try {
+      let requestConversationId = targetConversationId || conversationIdRef.current || conversationId;
+      if (!requestConversationId && conversationCreationRef.current) {
+        await conversationCreationRef.current;
+        requestConversationId = conversationIdRef.current;
+      }
+      if (!requestConversationId && !targetConversationId) {
+        let unlock;
+        conversationCreationRef.current = new Promise((resolve) => { unlock = resolve; });
+        conversationCreationRef.current.unlock = unlock;
+      }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId: targetConversationId || conversationIdRef.current || conversationId },
+        body: { action: "submit", message, conversationId: requestConversationId || conversationIdRef.current || conversationId },
       });
       if (invokeError) throw invokeError;
       if (!data) throw new Error("JD returned an empty response.");
       if (data.conversationId) { conversationIdRef.current = data.conversationId; setConversationId(data.conversationId); }
+      if (conversationCreationRef.current?.unlock) { conversationCreationRef.current.unlock(); conversationCreationRef.current = null; }
       const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
       if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
@@ -255,7 +267,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not complete that request. Please try again in a moment.");
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
-    } finally { setActiveSends((count) => Math.max(0, count - 1)); }
+    } finally {
+      if (conversationCreationRef.current?.unlock) { conversationCreationRef.current.unlock(); conversationCreationRef.current = null; }
+      setActiveSends((count) => Math.max(0, count - 1));
+    }
   };
 
   const updateOperationalTask = async (taskId, status) => {
@@ -289,7 +304,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
 
   const newConversation = () => {
     if (sending) return;
-    setConversationId(null); conversationIdRef.current = null; setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
+    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
   };
 
   return (
@@ -462,8 +477,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
             <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={sending ? "Queue another question for JD…" : "Ask JD to do something in your organisation…"} rows={2}/>
-            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><button className="jd-send" type="button" disabled={!draft.trim()||queuePaused} onClick={()=>send()} aria-label="Send message"><ArrowUp size={17}/></button></div>
-            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · Multiple requests supported</span><button type="button" className="jd-pause" disabled={activeSends===0 && !queuePaused} onClick={()=>setQueuePaused(value=>!value)}>{queuePaused ? "Resume sending" : "Pause new requests"}</button></div>
+            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{sending && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Queue question</button>}<button className="jd-send" type="button" disabled={sending ? false : (!draft.trim() || queuePaused)} onClick={()=>sending ? setQueuePaused(value=>!value) : send()} aria-label={sending ? (queuePaused ? "Resume queued requests" : "Pause new requests") : "Send message"}>{sending ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <ArrowUp size={17}/>}</button></div></div>
+            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
           </div>
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
         </div>
