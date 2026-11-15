@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { db, supabase } from "./supabaseClient.js";
 import { fmt, fullName } from "./utils/grades.js";
-import { saveSession, loadSession, clearSession, saveSelectedSchool, loadSelectedSchool } from "./utils/session.js";
+import { saveSession, clearSession, saveSelectedSchool, loadSelectedSchool } from "./utils/session.js";
 import { PRODUCT } from "./config/product.js";
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
@@ -460,9 +460,9 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
         {/* ID field */}
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,color:t.sft,marginBottom:5,
-            textTransform:"uppercase",letterSpacing:.5}}>Email address</div>
-          <input type="email" autoComplete="email" value={id} onChange={e=>setId(e.target.value)}
-            placeholder="you@company.com"
+            textTransform:"uppercase",letterSpacing:.5}}>Staff / Member ID</div>
+          <input value={id} onChange={e=>setId(e.target.value)}
+            placeholder="e.g. TCH/0023 or JD/0847"
             onKeyDown={e=>e.key==="Enter"&&document.getElementById("mpw")?.focus()}
             style={{width:"100%",height:46,borderRadius:12,border:`1.5px solid ${t.brd}`,
               background:t.bg,padding:"0 14px",fontSize:15,color:t.txt,
@@ -1872,33 +1872,63 @@ export function MobileApp(){
     setLoginError("");
   };
 
-  const login=async(email,password)=>{
+  const login=async(identifier,password)=>{
     setLoginLoading(true);setLoginError("");
     try{
-      const address=(email||"").trim().toLowerCase(),pw=password||"",schoolId=school?.id||db._schoolId||null;
-      if(!address||!pw){setLoginError("Enter your email and password.");setLoginLoading(false);return;}
+      const id=(identifier||"").trim(),pw=password||"",schoolId=school?.id||db._schoolId||null;
+      if(!id||!pw){setLoginError("Enter your ID and password.");setLoginLoading(false);return;}
       if(!schoolId){setLoginError("Select an organization first.");setLoginLoading(false);return;}
-      const {data:authData,error:authError}=await supabase.auth.signInWithPassword({email:address,password:pw});
-      if(authError||!authData?.user){setLoginError("Incorrect email or password.");setLoginLoading(false);return;}
+      const access=await db.getLoginAccessSettings(schoolId);
+      if(access?.error)throw access.error;
+      let authEmail="",expectedRole="",teacher=null,student=null,admin=null;
+      if(id.toLowerCase()==="admin"){
+        const result=await db.loginGetSchoolAdmin(schoolId);
+        if(result.error)throw result.error;
+        admin=result.data;
+        if(!admin?.admin_email){setLoginError("Administrator sign-in is not configured for this organization.");setLoginLoading(false);return;}
+        authEmail=String(admin.admin_email).trim().toLowerCase();expectedRole="admin";
+      }else{
+        const teacherResult=await db.loginFindTeacher(id,schoolId);
+        if(teacherResult.error)throw teacherResult.error;
+        teacher=teacherResult.data;
+        if(teacher){
+          if(access.login_teachers_disabled==="true"){setLoginError((access.login_disabled_message||"Staff logins are currently disabled.").trim());setLoginLoading(false);return;}
+          if(teacher.status&&teacher.status!=="active"){setLoginError("This staff account is not active.");setLoginLoading(false);return;}
+          const clean=id.toLowerCase().replace(/[^a-z0-9]/g,"");
+          authEmail=`staff-${clean}--${schoolId}@login.internal`;expectedRole="teacher";
+        }else{
+          const studentResult=await db.loginFindStudent(id,schoolId);
+          if(studentResult.error)throw studentResult.error;
+          student=studentResult.data;
+          if(!student){setLoginError("ID not recognised. Check your organization and ID.");setLoginLoading(false);return;}
+          const status=student.status||"active";
+          if(status!=="active"){setLoginError("This member account is not active.");setLoginLoading(false);return;}
+          if(access.login_students_disabled==="true"){setLoginError((access.login_disabled_message||"Member logins are currently disabled.").trim());setLoginLoading(false);return;}
+          const clean=id.toLowerCase().replace(/[^a-z0-9]/g,"");
+          authEmail=`student-${clean}--${schoolId}@login.internal`;expectedRole="student";
+        }
+      }
+      const {data:authData,error:authError}=await supabase.auth.signInWithPassword({email:authEmail,password:pw});
+      if(authError||!authData?.user){setLoginError(expectedRole==="admin"?"Wrong administrator password.":"Incorrect ID or password.");setLoginLoading(false);return;}
       const authUser=authData.user;
       const {data:profile,error:profileError}=await supabase.from("profiles").select("*").eq("id",authUser.id).maybeSingle();
-      if(profileError||!profile?.school_id||profile.school_id!==schoolId){
+      const allowedRoles=expectedRole==="teacher"?["teacher","manager","bursar"]:[expectedRole];
+      if(profileError||!profile?.school_id||profile.school_id!==schoolId||!allowedRoles.includes(profile.role)){
         await supabase.auth.signOut();
-        setLoginError("This account is not linked to the selected organization.");
+        setLoginError("This account is not linked to the selected organization or role.");
         setLoginLoading(false);return;
       }
-      const u={id:profile.id,role:profile.role||"admin",name:profile.full_name||authUser.email,email:authUser.email,school_id:schoolId,_authUserId:authUser.id};
-      if(["teacher","manager","bursar"].includes(u.role)){
-        const t=await supabase.from("teachers").select("*").eq("profile_id",authUser.id).maybeSingle();
-        if(t.data){u.staff_id=t.data.staff_id;u.teacher_db_id=t.data.id;u.name=t.data.display_name||t.data.full_name||u.name;u._userType="teacher";}
-      }
-      if(u.role==="student"){
-        const link=await supabase.from("student_profiles").select("student_id").eq("profile_id",authUser.id).maybeSingle();
-        if(link.data){const st=await supabase.from("students").select("*").eq("id",link.data.student_id).maybeSingle();if(st.data){u.student_id=st.data.id;u.class_id=st.data.class_id;u.name=st.data.display_name||st.data.name||u.name;u._userType="student";}}
+      let u;
+      if(expectedRole==="admin"){
+        u={id:"admin",role:"admin",name:admin.admin_name||profile.full_name||"Administrator",email:authUser.email,is_admin:true,school_id:schoolId,_authUserId:authUser.id};
+      }else if(expectedRole==="teacher"){
+        u={id:String(teacher.id),role:teacher.role||profile.role||"teacher",name:teacher.display_name||teacher.full_name||profile.full_name,staff_id:teacher.staff_id,teacher_db_id:teacher.id,email:teacher.email||authUser.email,school_id:schoolId,_authUserId:authUser.id,_userType:"teacher"};
+        db.recordLogin?.("teacher",teacher.id);
+      }else{
+        u={id:student.id,role:"student",name:student.display_name||fullName(student)||profile.full_name,student_id:student.id,class_id:student.class_id,email:student.email||authUser.email,school_id:schoolId,_authUserId:authUser.id,_userType:"student"};
+        db.recordLogin?.("student",student.id);
       }
       db.setSchool(schoolId,school?.student_id_prefix||"SCH",school?.name||"");
-      if(u._userType==="teacher")db.recordLogin?.("teacher",u.teacher_db_id);
-      if(u._userType==="student")db.recordLogin?.("student",u.student_id);
       saveSession(u);setUser(u);setScreen("dashboard");setScreenHistory([]);
     }catch(e){await supabase.auth.signOut();setLoginError("Login failed. Please try again.");}
     setLoginLoading(false);
