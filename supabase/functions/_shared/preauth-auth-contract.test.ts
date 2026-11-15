@@ -9,6 +9,7 @@ const client = await read("../../../src/supabaseClient.js");
 const preauth = await read("../preauth-lookup/index.ts");
 const careers = await read("../public-careers/index.ts");
 const revokeMigration = await read("../../migrations/20261115164500_revoke_legacy_public_rpcs.sql");
+const revokeRollback = await read("../../rollback/20261115164500_revoke_legacy_public_rpcs.rollback.sql");
 
 Deno.test("mobile sign-in verifies email credentials only through Supabase Auth", () => {
   assertStringIncludes(mobile, "supabase.auth.signInWithPassword({email:address,password:pw})");
@@ -50,6 +51,8 @@ Deno.test("legacy public RPC grants are removed after Edge Function replacement"
     assertStringIncludes(revokeMigration, `revoke all on function public.${rpc}`);
     assertStringIncludes(revokeMigration, `to service_role`);
   }
+  assertStringIncludes(revokeRollback, "login_list_schools() to anon;");
+  assertEquals(revokeRollback.includes("login_list_schools() to anon, authenticated"), false);
 });
 
 Deno.test("login access settings failures fail closed", () => {
