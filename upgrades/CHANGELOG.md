@@ -1,5 +1,15 @@
 # Change log
 
+## 2026-11-15 — Claude MCP native JD capability parity
+
+- **Status:** implemented in source on `feat/claude-mcp-native-capability-parity`; CI and live OAuth/runtime verification pending.
+- **Scope:** expose the same role-filtered, low-risk native tool registry used by JD chat through the authenticated inbound MCP server.
+- **Shared execution:** MCP tool discovery and invocation now use `getJdMcpToolDefinitions` and `executeJdMcpTool` from the existing JD runtime. No second business-logic implementation is introduced.
+- **Coverage:** organisation, department, workforce, performance, hiring, billing, expense/KPI intelligence, operational setup, shared memory, settings, audit/activity, email delivery, document drafts and connected MCP operations.
+- **Security:** the authenticated user's workspace and role are server-derived; runtime role checks are repeated at execution; medium/high/critical-risk tools are not exposed for automatic MCP execution. Blueprint submissions create a conversation/run context and remain pending administrator review.
+- **Schemas:** JSON Schema tool parameters are converted into Zod schemas and covered by unit tests.
+- **Verification:** CI checks/tests were updated. Actual CI results, OAuth login/consent, live Claude tool discovery, role-by-role access, cross-tenant denial and deployed endpoint verification remain pending. No production deployment or migration was performed.
+
 ## 2026-11-15 — JD assistant-first workspace and runtime capability awareness
 
 - **Status:** implemented in source on `feat/jd-assistant-first-workspace`; CI and live deployment verification pending.
