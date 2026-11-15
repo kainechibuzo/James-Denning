@@ -218,7 +218,7 @@ Capability audit of the live schema must accompany any checked item. JD currentl
 | JD-UPG-128 | Paystack read-only integration verified against real API | deployment_pending | Key entry + verify + transaction sync implemented; restricted key + real verification pending. |
 | JD-UPG-129 | Provider callback round-trips and remote revocation verified | deployment_pending | Requires real client credentials per provider + smoke tests. |
 | JD-UPG-130 | OAuth encryption key configured (`JD_OAUTH_ENCRYPTION_KEY`) in target environments | deployment_pending | Owner action per NEEDS_YOU.md; callback URL registered per provider. |
-| JD-UPG-131 | MCP server/registry for JD tool exposure | not_implemented | — |
+| JD-UPG-131 | MCP server/registry for JD tool exposure | partially_implemented | Inbound OAuth MCP now exposes the same role-filtered low-risk native tool registry as JD chat; high-risk approval workflows, live OAuth/deployment verification and full end-to-end tests remain. |
 
 ## §K. UX and product presentation
 
@@ -263,9 +263,9 @@ Capability audit of the live schema must accompany any checked item. JD currentl
 | JD-UPG-158 | Division/department provisioning workflows | not_implemented | — |
 | JD-UPG-159 | People-management tools | partially_implemented | Tools surface missing (§D). |
 | JD-UPG-160 | Performance-management tools | partially_implemented | Tools surface missing (§D). |
-| JD-UPG-161 | Finance-module tools | partially_implemented | Server-side business API exists; JD tools missing. |
-| JD-UPG-162 | Communications-module tools | partially_implemented | Server-side exists; JD tools missing. |
-| JD-UPG-163 | Recruitment assistant and hiring-campaign integrations | partially_implemented | See §H. |
+| JD-UPG-161 | Finance-module tools | partially_implemented | Native JD finance intelligence tools (billing snapshot, expense anomalies and KPI trends) are exposed through the shared MCP registry; transactional finance workflows and live verification remain. |
+| JD-UPG-162 | Communications-module tools | partially_implemented | Recent announcements and email-delivery reporting are exposed through the shared native MCP registry; message composition, sending and campaign workflows remain limited/approval-gated. |
+| JD-UPG-163 | Recruitment assistant and hiring-campaign integrations | partially_implemented | Hiring pipeline intelligence and vacancy drafting are exposed through the shared native MCP registry; candidate outreach, campaign automation and hiring decisions remain approval-gated or unavailable. |
 | JD-UPG-164 | Blueprint, operations and hiring interfaces | partially_implemented | Implemented; migrations applied 2026-11-12; runtime verification pending. |
 | JD-UPG-165 | Complete KPI trend dashboards | partially_implemented | Slice shipped as code: trends API + tab (see JD-UPG-120). Not complete: no alerting/thresholds, no historical backfill validation, no workforce KPIs; deployed in v4 but unverified (no smoke). |
 | JD-UPG-166 | Apply Batch 01 migration in staging; authenticated cross-tenant tests | deployment_pending | Batch 01 applied **directly in production** 2026-11-12 (owner-authorised); staging project + CI run still missing. |
