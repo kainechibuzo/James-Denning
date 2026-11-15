@@ -20,22 +20,39 @@ const actions = [
 ];
 
 function renderInlineMarkdown(value, keyPrefix = "inline") {
-  const tokenPattern = /(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|\x60[^\x60]+\x60|\[[^\]]+\]\(https:\/\/[^\s)]+\)|https:\/\/[^\s<>"')]+)/g;
+  const tokenPattern = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|\x60[^\x60]+\x60|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"')]+)/g;
   return String(value || "").split(tokenPattern).filter(Boolean).map((part, index) => {
     const key = keyPrefix + "-" + index;
+    if (part.startsWith("$$") && part.endsWith("$$")) return <MathBlock key={key} display value={part.slice(2, -2)} />;
+    if (part.startsWith("$") && part.endsWith("$") && part.length > 2) return <MathBlock key={key} value={part.slice(1, -1)} />;
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={key}>{part.slice(2, -2)}</strong>;
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={key}>{part.slice(1, -1)}</em>;
-    if (part.startsWith("`") && part.endsWith("`")) return part.slice(1, -1);
-    const markdownLink = part.match(/^\[([^\]]+)\]\((https:\/\/[^\s)]+)\)$/);
-    const href = markdownLink?.[2] || (/^https:\/\//i.test(part) ? part : null);
+    if (part.startsWith("~~") && part.endsWith("~~")) return <del key={key}>{part.slice(2, -2)}</del>;
+    if (part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96) return <code key={key} className="jd-inline-code">{part.slice(1, -1)}</code>;
+    const markdownLink = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    const href = markdownLink?.[2] || (/^https?:\/\//i.test(part) ? part : null);
     if (href) return <a key={key} href={href} target="_blank" rel="noopener noreferrer">{markdownLink?.[1] || part}</a>;
     return part;
   });
 }
 
+function MathBlock({ value, display = false }) {
+  const rendered = typeof window !== "undefined" && window.katex
+    ? window.katex.renderToString(String(value || ""), { throwOnError: false, strict: "ignore", trust: false, displayMode: display })
+    : null;
+  const content = rendered ? <span dangerouslySetInnerHTML={{ __html: rendered }} /> : <code>{value}</code>;
+  return display ? <div className="jd-math-display" aria-label={"Mathematical expression: " + value}>{content}</div> : <span className="jd-math-inline" aria-label={"Mathematical expression: " + value}>{content}</span>;
+}
+
+function splitTableRow(line) {
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, "|").trim());
+}
+function isTableDivider(line) {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
 function renderMessageContent(content) {
-  const readable = String(content || "").replace(/```[\s\S]*?```/g, "Technical details are hidden so you can focus on the business decision.").replace(/`([^`]+)`/g, "$1");
-  const lines = readable.replace(/\r\n?/g, "\n").split("\n");
+  const lines = String(content || "").replace(/\r\n?/g, "\n").split("\n");
   const nodes = [];
   let paragraph = [];
   const flushParagraph = () => {
@@ -44,40 +61,61 @@ function renderMessageContent(content) {
     paragraph = [];
   };
   for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const trimmed = line.trim();
+    const trimmed = lines[index].trim();
     if (!trimmed) { flushParagraph(); continue; }
-    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    const fence = trimmed.match(/^(\x60{3,}|~~~)\s*([\w.+-]*)\s*$/);
+    if (fence) {
+      flushParagraph();
+      const codeLines = [];
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith(fence[1])) codeLines.push(lines[index++]);
+      nodes.push(<pre className="jd-code-block" key={"code-" + index}><code data-language={fence[2] || undefined}>{codeLines.join("\n")}</code></pre>);
+      continue;
+    }
+    if (trimmed === "$$") {
+      flushParagraph();
+      const mathLines = [];
+      index += 1;
+      while (index < lines.length && lines[index].trim() !== "$$") mathLines.push(lines[index++]);
+      nodes.push(<MathBlock key={"math-" + index} display value={mathLines.join("\n")} />);
+      continue;
+    }
+    const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph();
-      const Tag = heading[1].length === 1 ? "h2" : heading[1].length === 2 ? "h3" : "h4";
+      const Tag = heading[1].length <= 2 ? "h2" : heading[1].length <= 4 ? "h3" : "h4";
       nodes.push(<Tag key={"h-" + index}>{renderInlineMarkdown(heading[2], "h-" + index)}</Tag>);
       continue;
     }
-    const bullet = trimmed.match(/^[-*•]\s+(.+)$/);
+    if (/^\s*\|?.+\|.+\|?\s*$/.test(trimmed) && index + 1 < lines.length && isTableDivider(lines[index + 1])) {
+      flushParagraph();
+      const headers = splitTableRow(trimmed);
+      const rows = [];
+      index += 2;
+      while (index < lines.length && lines[index].trim().includes("|") && lines[index].trim()) rows.push(splitTableRow(lines[index++]));
+      index -= 1;
+      nodes.push(<div className="jd-table-wrap" key={"table-" + index}><table className="jd-table"><thead><tr>{headers.map((cell, i) => <th key={i}>{renderInlineMarkdown(cell, "th-" + index + "-" + i)}</th>)}</tr></thead><tbody>{rows.map((row, ri) => <tr key={ri}>{headers.map((_, ci) => <td key={ci}>{renderInlineMarkdown(row[ci] || "", "td-" + index + "-" + ri + "-" + ci)}</td>)}</tr>)}</tbody></table></div>);
+      continue;
+    }
+    const bullet = trimmed.match(/^[-*+•]\s+(.+)$/);
     const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
     const quote = trimmed.match(/^>\s?(.+)$/);
     if (bullet || numbered) {
       flushParagraph();
-      const ordered = Boolean(numbered);
-      const items = [];
+      const ordered = Boolean(numbered), items = [];
       while (index < lines.length) {
         const candidate = lines[index].trim();
-        const match = ordered ? candidate.match(/^\d+[.)]\s+(.+)$/) : candidate.match(/^[-*•]\s+(.+)$/);
+        const match = ordered ? candidate.match(/^\d+[.)]\s+(.+)$/) : candidate.match(/^[-*+•]\s+(.+)$/);
         if (!match) break;
-        items.push(match[1]);
-        index += 1;
+        items.push(match[1]); index += 1;
       }
       index -= 1;
       const ListTag = ordered ? "ol" : "ul";
       nodes.push(<ListTag key={"list-" + index}>{items.map((item, itemIndex) => <li key={itemIndex}>{renderInlineMarkdown(item, "li-" + index + "-" + itemIndex)}</li>)}</ListTag>);
       continue;
     }
-    if (quote) {
-      flushParagraph();
-      nodes.push(<blockquote key={"q-" + index}>{renderInlineMarkdown(quote[1], "q-" + index)}</blockquote>);
-      continue;
-    }
+    if (quote) { flushParagraph(); nodes.push(<blockquote key={"q-" + index}>{renderInlineMarkdown(quote[1], "q-" + index)}</blockquote>); continue; }
+    if (/^---+$|^\*\*\*+$|^___+$/.test(trimmed)) { flushParagraph(); nodes.push(<hr key={"hr-" + index}/>); continue; }
     paragraph.push(trimmed);
   }
   flushParagraph();
@@ -371,6 +409,17 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-markdown li{padding-left:3px;margin:4px 0}
         .jd-markdown strong{font-weight:750;color:#20242a}
         .jd-markdown a{color:#245f9e;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+        .jd-markdown del{text-decoration:line-through;color:#747b85}
+        .jd-markdown hr{border:0;border-top:1px solid #e5e8ec;margin:16px 0}
+        .jd-code-block{max-width:100%;overflow:auto;background:#171a20;color:#edf0f4;border-radius:10px;padding:12px 14px;margin:10px 0 14px;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
+        .jd-code-block code{font:inherit}
+        .jd-table-wrap{max-width:100%;overflow-x:auto;margin:12px 0 16px;border:1px solid #e1e5ea;border-radius:10px;background:#fff}
+        .jd-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;line-height:1.5;min-width:420px}
+        .jd-table th{background:#f1f3f6;color:#424a55;font-weight:750;text-align:left}
+        .jd-table th,.jd-table td{padding:9px 11px;border-bottom:1px solid #edf0f3;border-right:1px solid #edf0f3;vertical-align:top}
+        .jd-table tr:last-child td{border-bottom:0}.jd-table th:last-child,.jd-table td:last-child{border-right:0}
+        .jd-table td{color:#4d5661}.jd-math-display{overflow-x:auto;text-align:center;margin:14px 0;padding:9px 4px}
+        .jd-math-inline{white-space:normal}.jd-math-display .katex-display{margin:0}
         .jd-markdown blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid #cbd1d9;background:#f0f2f5;color:#626a75;border-radius:0 8px 8px 0}
         .jd-inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:#eef0f3;border:1px solid #e2e5e9;border-radius:5px;padding:1px 5px}
         .jd-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#818791;font-weight:650}
