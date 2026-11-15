@@ -85,7 +85,7 @@ Deno.test("jd_call_connected_mcp_tool gates writes and retrieves approval result
 Deno.test("inbound MCP dynamically exposes JD's same role-filtered native tool registry", () => {
   assertMatch(source, /getJdMcpToolDefinitions\(agentContext\)/);
   assertMatch(source, /executeJdMcpTool\(capability\.name, asObject\(rawArgs\), context\)/);
-  assertMatch(source, /jd_native_\s*\+\s*capability\.name/);
+  assertMatch(source, /"jd_native_"\s*\+\s*capability\.name/);
   assertMatch(runtime, /export function getJdMcpToolDefinitions/);
   assertMatch(runtime, /export async function executeJdMcpTool/);
   assertMatch(runtime, /tool\.risk !== "low"/);
