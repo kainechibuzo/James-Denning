@@ -80,7 +80,7 @@ jobs:
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084602_jd_task_collaboration.sql supabase/functions/_shared/jd-task-collaboration-migration.test.ts
 
       - name: Test atomic operational task transition audit contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113201500_jd_atomic_operational_task_transition.sql supabase/functions/_shared/jd-atomic-operational-task-transition.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113200345_jd_atomic_operational_task_transition.sql supabase/functions/_shared/jd-atomic-operational-task-transition.test.ts
 
       - name: Test JD scheduler and assignment migration contracts
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084732_jd_recurring_tasks_and_assignment.sql supabase/functions/_shared/jd-scheduler-migration.test.ts
