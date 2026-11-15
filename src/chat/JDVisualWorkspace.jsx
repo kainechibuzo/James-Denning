@@ -53,7 +53,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
       .jd-viz-option:hover{border-color:#aeb7c2;background:#f5f7f9}
       .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:#7d8792;padding-top:1px}.jd-viz-event strong{font-size:10px;color:#414852}.jd-viz-event small{display:block;font-size:9px;color:#858d97;margin-top:3px;line-height:1.45}
       .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid #eceef0;background:#fafbfc;border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:#838b96}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:#303640;margin-top:4px}
-      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{border:1px solid #e6e9ed;border-radius:8px;padding:7px 9px;font-size:9px;color:#626c78;background:#fafbfc;overflow-wrap:anywhere}
+      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid #e6e9ed;border-radius:8px;padding:7px 9px;font-size:9px;color:#626c78;background:#fafbfc;overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:#87909a}
       .jd-viz-expand{border:0;background:transparent;color:#68727e;font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
       @media(max-width:420px){.jd-viz-panel{padding:11px}.jd-viz-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
     `}</style>
@@ -90,7 +90,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
       </Panel>;
       const evidence = list(block.items, 30);
       return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
-        <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}>{text(item?.label, "Evidence")}{item?.reference ? " · " + text(item.reference, "") : ""}</span>)}</div>
+        <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}{item?.reference ? " · " + text(item.reference, "") : ""}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
         {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "#77808b", margin: "9px 0 0" }}>{text(block.summary)}</p>}
         {list(block.details, 12).length > 0 && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#737d88", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}</ul>}</>}
       </Panel>;
