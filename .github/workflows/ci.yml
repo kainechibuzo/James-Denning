@@ -56,6 +56,9 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Test Supabase Auth and pre-authentication contract
+        run: deno test --node-modules-dir=auto --allow-read=src/MobileApp.jsx,src/App.jsx,src/AppDemo.jsx,src/pages/saas-entry.jsx,src/supabaseClient.js,supabase/functions/preauth-lookup/index.ts supabase/functions/_shared/preauth-auth-contract.test.ts
+
       - name: Test JD document intelligence helpers
         run: deno test --node-modules-dir=auto --allow-env supabase/functions/_shared/jd-document-intelligence.test.ts
 
