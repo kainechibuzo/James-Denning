@@ -21,6 +21,9 @@ Deno.test("pre-authentication endpoint exposes bounded lookups but never verifie
   assertStringIncludes(preauth, 'const allowed = ["schools","access_settings","admin","student","teacher"]');
   assertStringIncludes(preauth, 'if (action === "authenticate") return reply({ error: "legacy_login_retired"');
   assertStringIncludes(preauth, "rateLimit(req, action)");
+  assertStringIncludes(preauth, 'if (action === "teacher")');
+  assertStringIncludes(preauth, 'if (action === "student")');
+  assertStringIncludes(preauth, 'req.headers.get("cf-connecting-ip")');
   assertEquals(preauth.includes("password_hash"), false);
   assertEquals(preauth.includes("admin_password"), false);
 });
