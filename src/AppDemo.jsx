@@ -2255,7 +2255,12 @@ function AppInner(){
       const {data:authData, error:authErr} = await supabase.auth.signInWithPassword({email:authEmail, password:pw});
       if(authErr) return {error: expectedRole==="admin" ? "Wrong admin password." : "Wrong password."};
 
-      const {data:profile} = await supabase.from('profiles').select('*').eq('id',authData.user.id).single();
+      const {data:profile, error:profileError} = await supabase.from('profiles').select('*').eq('id',authData.user.id).single();
+      const allowedRoles=expectedRole==="teacher"?["teacher","manager","bursar"]:[expectedRole];
+      if(profileError||!profile?.school_id||profile.school_id!==schoolId||!allowedRoles.includes(profile.role)){
+        await supabase.auth.signOut();
+        return {error:"This account is not linked to the selected organization or role."};
+      }
 
       if(expectedRole==="teacher"){
         const {data:teacher} = await db.loginFindTeacher(id, schoolId);
