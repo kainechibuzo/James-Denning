@@ -2202,6 +2202,7 @@ function AppInner(){
 
     try {
       const access = await db.getLoginAccessSettings(schoolId);
+      if(access?.error) throw access.error;
       const _accessMsg = (role)=>{
         const custom = (access.login_disabled_message||"").trim();
         const defaults = {
