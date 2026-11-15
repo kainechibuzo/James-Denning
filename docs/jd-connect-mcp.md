@@ -91,7 +91,30 @@ Additional action/evidence tools:
 - `jd_create_operational_task`: creates a real task in `jd_operational_tasks` through the existing idempotent `jd-automation` action. Invoke only after the user explicitly confirms the task details.
 - `jd_transition_operational_task`: moves a real task through the existing state machine and atomic task/audit RPC. Invoke only after the user explicitly confirms the requested transition.
 
-All MCP calls require an authenticated workspace admin or manager. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data. Successful connector calls return the persisted execution id, result and evidence flags; failed calls return a non-success MCP error and persist failure evidence when the database permits it. A pending approval is explicitly not an executed action.
+The inbound endpoint requires an authenticated workspace member. Native tools are filtered using the same role allowlist and low-risk execution boundary as JD chat. Existing connector-management and external-tool actions retain their narrower manager/admin permissions. Queries are tenant-scoped using the signed-in user's profile. The endpoint never exposes service-role credentials to the client. External MCP descriptions/results are untrusted data. Successful connector calls return the persisted execution id, result and evidence flags; failed calls return a non-success MCP error and persist failure evidence when the database permits it. A pending approval is explicitly not an executed action.
+
+### Native JD capability parity
+
+The inbound MCP server now imports the same native tool registry used by JD chat instead of maintaining a second hand-written list of business capabilities. It dynamically publishes each tool available to the authenticated user's role under the `jd_native_*` namespace.
+
+This includes the registered JD capabilities for:
+- Organisation and department intelligence.
+- Workforce and academic performance summaries.
+- Hiring pipeline and vacancy drafting.
+- Billing, business KPI and expense anomaly analysis.
+- Operational task intelligence and launch-readiness planning.
+- Shared business memory.
+- Workspace settings catalogue and settings-change planning.
+- Audit/activity and email-delivery reporting.
+- Private business document drafts.
+- Connected MCP tool discovery and approval-aware invocation.
+- Organisation setup blueprint previews and submission for administrator review.
+
+The MCP adapter converts the registered JSON Schema argument definitions into Zod schemas, so Claude receives the real parameter contract rather than a generic untyped argument object. Each invocation calls the existing server-side tool handler with a server-derived workspace, user and role context. It does not duplicate the business operation in a second implementation.
+
+The native MCP surface deliberately exposes only the same low-risk tools that JD chat is allowed to call automatically. Medium-, high- and critical-risk tools are not exposed for automatic MCP execution. Tool-level role checks remain enforced again at execution time. Blueprint submission creates a JD conversation/run record so its existing approval workflow can be used; department provisioning still requires administrator review. Tool registration does not prove that an underlying integration is configured or that a deployment has passed live verification.
+
+MCP tool names use the `jd_native_` prefix to distinguish the shared JD assistant capabilities from the existing operational evidence and task-management tools.
 
 ### OAuth rollout requirements
 
