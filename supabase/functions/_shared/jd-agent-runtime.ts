@@ -703,6 +703,34 @@ const modelTools = (context: AgentContext) => tools
     parameters: tool.parameters,
   }));
 
+/** Native tools exposed to authenticated MCP clients use the same registry,
+ * role checks, risk boundary, schemas and execute handlers as JD chat. */
+export function getJdMcpToolDefinitions(context: AgentContext) {
+  return tools
+    .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
+    .map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+      risk: tool.risk,
+      strict: tool.strict !== false,
+    }));
+}
+
+export async function executeJdMcpTool(
+  name: string,
+  args: Record<string, unknown>,
+  context: AgentContext,
+): Promise<Record<string, unknown>> {
+  const tool = tools.find((candidate) => candidate.name === name);
+  if (!tool) throw new Error("This JD capability is not registered");
+  if (!roleAllowed(context, tool.roles)) throw new Error("This JD capability is not available to your workspace role");
+  if (tool.risk !== "low" && tool.name !== "create_business_document_draft") {
+    throw new Error("This capability is not available through automatic MCP execution");
+  }
+  return await tool.execute(args, context);
+}
+
 type TokenUsage = {
   input_tokens: number;
   output_tokens: number;
