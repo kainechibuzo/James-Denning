@@ -8,8 +8,8 @@ const authPage = await read("../../../src/pages/saas-entry.jsx");
 const client = await read("../../../src/supabaseClient.js");
 const preauth = await read("../preauth-lookup/index.ts");
 const careers = await read("../public-careers/index.ts");
-const revokeMigration = await read("../../migrations/20261115164500_revoke_legacy_public_rpcs.sql");
-const revokeRollback = await read("../../rollback/20261115164500_revoke_legacy_public_rpcs.rollback.sql");
+const revokeMigration = await read("../../migrations/20261115164436_jd_revoke_legacy_public_rpcs.sql");
+const revokeRollback = await read("../../rollback/20261115164436_jd_revoke_legacy_public_rpcs.rollback.sql");
 
 Deno.test("mobile sign-in verifies email credentials only through Supabase Auth", () => {
   assertStringIncludes(mobile, "supabase.auth.signInWithPassword({email:address,password:pw})");
