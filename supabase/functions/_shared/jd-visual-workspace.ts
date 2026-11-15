@@ -77,8 +77,30 @@ export function buildJdVisualWorkspace(input: {
       status: steps.some((step) => step.status === "failed") ? "blocked" : (steps.length || audit.length) ? "completed" : "pending",
       summary: "Derived from persisted JD execution steps and audit events. This is execution evidence, not proof of an external business outcome.",
       items: [
-        ...steps.map((step) => ({ label: step.tool_key + " · " + step.status + (step.output_json?.evidence && Object.keys(step.output_json.evidence).length ? " · " + Object.entries(step.output_json.evidence).slice(0, 3).map(([key, value]) => key + ": " + String(value)).join(", ") : ""), reference: step.id })),
-        ...audit.map((event) => ({ label: event.event_type, reference: event.id })),
+        ...steps.map((step) => ({
+          label: ({
+            get_workspace_overview: "Organisation overview reviewed",
+            get_organisation_departments: "Department structure reviewed",
+            get_business_memory: "Saved business decisions reviewed",
+            remember_business_fact: "Business decision saved",
+            create_operational_setup_tasks: "Launch-readiness tasks saved",
+            preview_hiring_vacancy: "Recruitment draft preview prepared",
+            create_business_document_draft: "Private business document draft saved",
+            get_billing_snapshot: "Billing records reviewed",
+            get_business_expense_anomalies: "Recorded expenses reviewed",
+            get_recent_activity_logs: "Workspace activity reviewed",
+          } as Record<string,string>)[step.tool_key] || "Workspace activity recorded",
+          status: step.status === "completed" ? "Completed" : step.status === "failed" ? "Needs review" : step.status === "running" ? "In progress" : "Pending",
+        })),
+        ...audit.map((event) => ({
+          label: ({
+            "automation.completed": "JD request completed",
+            "automation.requested": "JD request submitted",
+            "execution.queued": "Work added to the queue",
+            "execution.completed": "Background work completed",
+            "approval.decided": "Approval decision recorded",
+          } as Record<string,string>)[event.event_type] || "Workspace activity recorded",
+        })),
       ].slice(0, 30),
       details: audit.slice(0, 10).map((event) => event.created_at ? new Date(event.created_at).toLocaleString() : "Recorded workspace activity"),
     });
