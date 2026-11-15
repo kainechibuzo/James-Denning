@@ -86,7 +86,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
         <div className="jd-viz-timeline">{list(block.events, 30).map((event, i) => <div className="jd-viz-event" key={i}><span>{event?.status === "completed" ? <CheckCircle2 size={14}/> : event?.status === "failed" ? <AlertCircle size={14}/> : event?.status === "running" ? <Activity size={14}/> : <Clock3 size={14}/>}</span><div><strong>{text(event?.title, "Activity")}</strong>{event?.detail && <small>{text(event.detail)}</small>}</div><Status value={event?.status}/></div>)}</div>
       </Panel>;
       if (block.type === "departments") return <Panel key={key} title={text(block.title, "Departments")} icon={Building2}>
-        <div className="jd-viz-metrics">{list(block.items, 20).map((item, i) => <div className="jd-viz-metric" key={i}><small>{text(item?.name, "Department")}</small><strong>{text(item?.metric, "—")}</strong>{item?.detail && <small>{text(item.detail)}</small>}<Status value={item?.status}/></div>)}</div>
+        <div className="jd-viz-metrics">{list(block.items, 20).map((item, i) => <div className="jd-viz-metric" key={i}><small>{text(item?.name, "Department")}</small><strong>{text(item?.metric, "—")}</strong>{item?.detail && <small>{text(item.detail)}</small>}{Number(item?.total ?? item?.total_tasks ?? item?.task_count ?? (String(item?.detail || "").match(/(\d+) total/i)?.[1])) === 0 ? <span className="jd-viz-status">No tasks assigned</span> : <Status value={item?.status}/>}</div>)}</div>
       </Panel>;
       const evidence = list(block.items, 30);
       return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
