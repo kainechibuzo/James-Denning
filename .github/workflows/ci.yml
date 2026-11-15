@@ -2,7 +2,7 @@ name: Web CI
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, fix/verify-web-build-module-entry, feat/jd-assistant-first-workspace]
   push:
     branches-ignore: [master]
     paths:
