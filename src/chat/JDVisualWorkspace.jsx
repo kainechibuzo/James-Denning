@@ -3,7 +3,7 @@ import { CheckCircle2, Circle, Clock3, AlertCircle, GitBranch, ClipboardList, Me
 
 const text = (value, fallback = "") => typeof value === "string" ? value.slice(0, 500) : fallback;
 const list = (value, max = 30) => Array.isArray(value) ? value.slice(0, max) : [];
-const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", awaiting_approval: "Awaiting approval", queued: "Queued" }[status] || "Pending");
+const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", queued: "Queued", awaiting_approval: "Awaiting approval", queued: "Queued" }[status] || "Pending");
 
 function Status({ value }) {
   const status = String(value || "pending");
@@ -70,9 +70,9 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
             const taskStatus = item?.status || "pending";
             const canPersist = typeof item?.id === "string" && typeof onTaskToggle === "function";
             const taskAction = taskStatus === "queued" || taskStatus === "pending" || taskStatus === "blocked" ? "in_progress" : taskStatus === "in_progress" ? "completed" : null;
-            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(taskStatus === "in_progress" ? "Complete " : "Start ") + text(item?.title, "task")} aria-pressed={isDone} disabled={canPersist ? !taskAction : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
+            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(taskStatus === "in_progress" ? "Complete " : "Start ") + text(item?.title, "task")} aria-pressed={isDone} disabled={canPersist ? !taskAction : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}<small>Accountable role: {text(item?.owner, "Unassigned")}</small>{list(item?.dependencies, 8).length > 0 && <small>Depends on: {list(item.dependencies, 8).map((dependency) => text(dependency)).join(", ")}</small>}{item?.approval_required && <small style={{ color: "#94621b" }}>Owner approval required before action: {text(item.approval_reason, "Approval required")}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
           })}
-          {block.sample_truncated && <small style={{ color: "#8a5d18", fontSize: 9 }}>Showing the latest 30 tasks; the department summary may be sampled if the workspace has more than 5,000 tasks.</small>}<small style={{ color: "#8a919a", fontSize: 9 }}>Tasks with IDs update through the authenticated JD task endpoint. Queued tasks start first; in-progress tasks can then be completed.</small>
+          {block.sample_truncated && <small style={{ color: "#8a5d18", fontSize: 9 }}>Showing the latest 30 tasks; the department summary may be sampled if the workspace has more than 5,000 tasks.</small>}<small style={{ color: "#8a919a", fontSize: 9 }}>Saved tasks are real workspace records. Marking a task complete records checklist progress; it does not prove an external business activity occurred.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
