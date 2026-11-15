@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
@@ -112,7 +112,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
-  const [sending, setSending] = useState(false);
+  const [activeSends, setActiveSends] = useState(0);
+  const [queuePaused, setQueuePaused] = useState(false);
+  const conversationIdRef = useRef(null);
+  const sending = activeSends > 0;
   const [error, setError] = useState("");
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -155,6 +158,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       return;
     }
     setConversationId(id);
+    conversationIdRef.current = id;
     setMessages((data.messages || []).map((item) => ({
       role: item.role, content: item.content || "",
       visualWorkspace: item.content_json?.visual_workspace || item.content_json?.ui || null,
@@ -230,18 +234,18 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
 
   const send = async (override, targetConversationId = null) => {
     const message = (override ?? draft).trim();
-    if (!message || sending) return;
+    if (!message || queuePaused) return;
     setDraft("");
     setError("");
     setMessages((current) => [...current, { role: "user", content: message }]);
-    setSending(true);
+    setActiveSends((count) => count + 1);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId: targetConversationId || conversationId },
+        body: { action: "submit", message, conversationId: targetConversationId || conversationIdRef.current || conversationId },
       });
       if (invokeError) throw invokeError;
       if (!data) throw new Error("JD returned an empty response.");
-      if (data.conversationId) setConversationId(data.conversationId);
+      if (data.conversationId) { conversationIdRef.current = data.conversationId; setConversationId(data.conversationId); }
       const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
       if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
@@ -251,7 +255,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not complete that request. Please try again in a moment.");
       setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
       setDraft(message);
-    } finally { setSending(false); }
+    } finally { setActiveSends((count) => Math.max(0, count - 1)); }
   };
 
   const updateOperationalTask = async (taskId, status) => {
@@ -285,7 +289,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
 
   const newConversation = () => {
     if (sending) return;
-    setConversationId(null); setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
+    setConversationId(null); conversationIdRef.current = null; setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
   };
 
   return (
@@ -362,6 +366,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-compose-wrap{width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid #dfe2e7;background:#fff;border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:#202329;font:inherit;font-size:13px;line-height:1.65}
+        .jd-queue-note{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px 2px;font-size:10px;color:#818791}
+        .jd-queue-note strong{color:#454b54;font-weight:650}
+        .jd-pause{border:1px solid #e0e3e8;background:#f5f6f8;color:#414750;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:650;cursor:pointer}
+        .jd-pause:disabled{opacity:.4;cursor:not-allowed}
         .jd-compose-bottom{display:flex;align-items:center;justify-content:space-between}
         .jd-compose-hint{font-size:9px;color:#a0a5ad}
         .jd-send{width:34px;height:34px;border:0;border-radius:11px;background:#17191d;color:white;display:grid;place-items:center;cursor:pointer}
@@ -453,10 +461,11 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
-            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Ask JD to do something in your organisation…" disabled={sending} rows={2}/>
-            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><button className="jd-send" type="button" disabled={!draft.trim()||sending} onClick={()=>send()} aria-label="Send message">{sending?<LoaderCircle size={16}/>:<ArrowUp size={17}/>}</button></div>
+            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={sending ? "Queue another question for JD…" : "Ask JD to do something in your organisation…"} rows={2}/>
+            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><button className="jd-send" type="button" disabled={!draft.trim()||queuePaused} onClick={()=>send()} aria-label="Send message"><ArrowUp size={17}/></button></div>
+            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · Multiple requests supported</span><button type="button" className="jd-pause" disabled={activeSends===0 && !queuePaused} onClick={()=>setQueuePaused(value=>!value)}>{queuePaused ? "Resume sending" : "Pause new requests"}</button></div>
           </div>
-          <div className="jd-disclaimer">Free model routing · JD verifies available records and reports what it could and could not complete.</div>
+          <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
         </div>
       </section>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
