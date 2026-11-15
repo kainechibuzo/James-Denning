@@ -10,7 +10,7 @@ export type JdVisualStep = {
 export type JdVisualAudit = { id: string; event_type: string; created_at: string; event_json?: Record<string, unknown> | null };
 
 const taskStatus = (status: string) => status === "completed" ? "completed" :
-  status === "in_progress" ? "in_progress" : status === "blocked" ? "blocked" :
+  status === "in_progress" ? "in_progress" : status === "queued" ? "queued" : status === "blocked" ? "blocked" :
   status === "cancelled" ? "failed" : "pending";
 
 /** Build assistant UI only from tenant-filtered persisted operational and audit records. */
@@ -28,7 +28,10 @@ export function buildJdVisualWorkspace(input: {
       items: tasks.slice(0, 30).map((task) => ({
         id: task.id, title: task.title, description: task.description || "",
         status: taskStatus(task.status), priority: task.priority || "normal",
-        department: task.department || "Unassigned", due_at: task.due_at || null,\n        owner: typeof task.metadata?.owner_role === "string" ? task.metadata.owner_role : "Unassigned",\n        dependencies: Array.isArray(task.metadata?.dependencies) ? task.metadata.dependencies : [],\n        approval_required: task.metadata?.approval_required === true,\n        approval_reason: typeof task.metadata?.approval_reason === "string" ? task.metadata.approval_reason : "",
+        department: task.department || "Unassigned", due_at: task.due_at || null,
+        owner: typeof task.metadata?.owner_role === "string" ? task.metadata.owner_role : "Unassigned",\n        dependencies: Array.isArray(task.metadata?.dependencies) ? task.metadata.dependencies : [],
+        approval_required: task.metadata?.approval_required === true,
+        approval_reason: typeof task.metadata?.approval_reason === "string" ? task.metadata.approval_reason : "",
       })),
     });
     const departments = new Map<string, { total: number; open: number; completed: number; blocked: number; purpose?: string }>();
