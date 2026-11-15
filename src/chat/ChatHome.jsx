@@ -52,7 +52,8 @@ function isTableDivider(line) {
 }
 
 function renderMessageContent(content) {
-  const normalized = String(content || "").replace(/\r\n?/g, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/\u00a0/g, " ");\n  const lines = normalized.replace(/\|\|\s*(?=\|?\s*:?-{3,})/g, "|\n|").split("\n");
+  const normalized = String(content || "").replace(/\r\n?/g, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/\u00a0/g, " ");
+  const lines = normalized.replace(/\|\|\s*(?=\|?\s*:?-{3,})/g, "|\n|").split("\n");
   const nodes = [];
   let paragraph = [];
   const flushParagraph = () => {
