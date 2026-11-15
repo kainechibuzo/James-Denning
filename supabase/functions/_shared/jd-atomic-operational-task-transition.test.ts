@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
-const migration = await Deno.readTextFile(new URL("../../migrations/20261113201500_jd_atomic_operational_task_transition.sql", import.meta.url));
+const migration = await Deno.readTextFile(new URL("../../migrations/20261113200345_jd_atomic_operational_task_transition.sql", import.meta.url));
 
 Deno.test("operational task status and audit writes share one transaction", () => {
   assertEquals(migration.includes("for update"), true);
