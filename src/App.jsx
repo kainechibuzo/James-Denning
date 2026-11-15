@@ -1,6 +1,6 @@
 import React,{lazy,Suspense,useEffect,useState} from "react";
 import {supabase,db} from "./supabaseClient.js";
-import {loadSession,loadSelectedSchool,saveSession,saveSelectedSchool} from "./utils/session.js";
+import {saveSession,saveSelectedSchool} from "./utils/session.js";
 
 // Keep the public entry lightweight. The full operations workspace, auth UI and
 // marketing page are downloaded only when their route is actually needed.
@@ -67,8 +67,6 @@ export default function App(){
       if(s.data){await activate({user:data.session.user,profile:p.data,school:s.data});return}
      }
     }
-    const legacy=loadSession(),school=loadSelectedSchool();
-    if(legacy&&school&&!isOAuthConsent){db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");setScreen("app");return}
     setScreen(isOAuthConsent?"auth":"landing");
    }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen(isOAuthConsent?"auth":"landing")}}
   };
@@ -80,6 +78,6 @@ export default function App(){
  if(screen==="oauth-consent")return <LazyRoute label="Loading secure authorisation…"><OAuthConsentPage/></LazyRoute>;
  if(screen==="app"||isApply)return <LazyRoute label="Opening your workspace…"><AppDemo/></LazyRoute>;
  if(screen==="legacy")return <LazyRoute label="Opening school portal…"><AppDemo/></LazyRoute>;
- if(screen==="auth")return <LazyRoute label="Loading secure account access…"><EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated} onLegacy={()=>setScreen("legacy")}/></LazyRoute>;
+ if(screen==="auth")return <LazyRoute label="Loading secure account access…"><EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated}/></LazyRoute>;
  return <><LazyRoute label="Loading James-Denning…"><PublicLanding onSignIn={()=>{setAuthMode("signin");setScreen("auth")}} onGetStarted={()=>{setAuthMode("signup");setScreen("auth")}}/></LazyRoute>{bootError&&<div role="status" style={{position:"fixed",bottom:12,left:12,right:12,background:"#351b1b",color:"#ffb3b3",padding:10,borderRadius:8,fontSize:12}}>{bootError}</div>}</>;
 }
