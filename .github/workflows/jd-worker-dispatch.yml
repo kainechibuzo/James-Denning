@@ -45,12 +45,12 @@ jobs:
             -H "x-jd-worker-secret: $worker_secret" \
             --data '{}')"
           echo "JD scheduler response: $scheduler_response"
-          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.checked !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD scheduler validated:", x.checked, "schedule(s) checked")' "$scheduler_response"
+          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.checked !== "number" || !Array.isArray(x.outcomes) || !x.recovery || !x.queue) process.exit(1); console.log("JD scheduler validated:", x.checked, "schedule(s) checked; recovered:", x.recovery.recovered, "failed:", x.recovery.failed, "queued:", x.queue.queued)' "$scheduler_response"
 
-          worker_response="$(curl --silent --show-error --fail-with-body --max-time 540 \
+          worker_response="$(curl --silent --show-error --fail-with-body --max-time 150 \
             -X POST "$base/jd-execution-worker" \
             -H "Content-Type: application/json" \
             -H "x-jd-worker-secret: $worker_secret" \
             --data '{}')"
           echo "JD worker response: $worker_response"
-          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.processed !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD worker validated:", x.processed, "message(s) processed")' "$worker_response"
+          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.processed !== "number" || !Array.isArray(x.outcomes) || !x.recovery || !x.queue) process.exit(1); console.log("JD worker validated:", x.processed, "job(s) drained; remaining:", x.pending_count, "continuation:", x.continuation_dispatched, "oldest queued age:", x.queue.oldest_queued_age_seconds, "seconds")' "$worker_response"
