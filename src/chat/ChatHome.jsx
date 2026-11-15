@@ -123,7 +123,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   }, []);
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
-  const activeJobCount = messages.filter((item) => item.role === "assistant" && item.jobId && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status)).length;
+  const activeJobCount = messages.filter((item) => item.role === "assistant" && item.jobId && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status)).length;
   const backgroundWorking = activeJobCount > 0;
   const isWorking = sending || backgroundWorking;
   const visibleRequestCount = activeSends + activeJobCount;
@@ -167,7 +167,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
       role: item.role, content: item.content || "",
       visualWorkspace: item.content_json?.visual_workspace || item.content_json?.ui || null,
       toolEvents: item.content_json?.toolEvents || [],
-      run: item.content_json?.run || null
+      run: item.content_json?.run || (item.content_json?.run_id ? { id: item.content_json.run_id, status: item.content_json?.status } : null),
+      jobId: item.content_json?.job_id || null,
+      jobStatus: item.content_json?.job_status || item.content_json?.status || null,
+      job: item.content_json?.job || null
     })).filter((item) => item.role === "user" || item.role === "assistant"));
     setSidebarOpen(false);
     setShowReview(false);
@@ -176,7 +179,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   // Poll durable jobs with bounded backoff. Job execution is server-side and
   // continues independently of this view; this loop only refreshes the UI.
   const pendingJobKey = messages
-    .filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status))
+    .filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status))
     .map((item) => item.jobId)
     .filter(Boolean)
     .join(",");
@@ -210,7 +213,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         setMessages((currentMessages) => currentMessages.map((message) => {
           const update = updates.find((item) => item.jobId === message.jobId);
           if (!update) return message;
-          const status = update.run.status || message.run?.status;
+          const status = update.job?.status || update.run.status || message.jobStatus || message.run?.status;
           const terminal = ["completed", "partially_completed", "failed", "cancelled"].includes(status);
           const finalMessage = update.assistantMessage;
           const fallback = status === "failed"
@@ -224,6 +227,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: String(step.tool_key || "Workspace task").replaceAll("_", " "), status: step.status, detail: step.error_message || (step.risk_level ? "Risk: " + step.risk_level : "") })) }] } : message.visualWorkspace || null),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
+            job: update.job,
           };
         }));
         delay = hadError ? Math.min(15000, Math.round(delay * 1.8)) : 2500;
@@ -370,6 +374,14 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         .jd-markdown blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid #cbd1d9;background:#f0f2f5;color:#626a75;border-radius:0 8px 8px 0}
         .jd-inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:#eef0f3;border:1px solid #e2e5e9;border-radius:5px;padding:1px 5px}
         .jd-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#818791;font-weight:650}
+        .jd-job-state{display:inline-flex;align-items:center;border:1px solid #e1e4e8;background:#f7f8fa;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:700;color:#737984}
+        .jd-job-state.queued{color:#87621b;background:#fffaf0;border-color:#f0e3c8}
+        .jd-job-state.running,.jd-job-state.planning{color:#246c52;background:#f0f8f4;border-color:#d9ebe1}
+        .jd-job-state.retry_wait{color:#8a641f;background:#fff9ed;border-color:#f1e3c7}
+        .jd-job-state.completed{color:#27684f;background:#f0f8f4;border-color:#d9ebe1}
+        .jd-job-state.partially_completed{color:#6e5b27;background:#fbf8ed;border-color:#ece4c8}
+        .jd-job-state.failed{color:#a13d3d;background:#fff3f3;border-color:#f0dada}
+        .jd-job-state.cancelled{color:#747982;background:#f4f5f6;border-color:#e2e4e7}
         .jd-mini-mark{width:20px;height:20px;border-radius:7px;background:#191b1f;color:white;display:grid;place-items:center;font-size:8px}
         .jd-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
         .jd-tool{border:1px solid #e3e5e9;background:#fafbfc;border-radius:7px;padding:5px 8px;color:#737984;font-size:9px}
@@ -457,7 +469,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             <div className="jd-actions">{actions.map(({icon:Icon,label,prompt})=><button className="jd-action" type="button" key={label} onClick={()=>setDraft(prompt)}><span className="jd-action-icon"><Icon size={15}/></span><span>{label}</span></button>)}</div>
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
-              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD</div>}
+              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.content ? renderMessageContent(item.content) : null}
               {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
