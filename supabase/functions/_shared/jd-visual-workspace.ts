@@ -7,6 +7,13 @@ export type JdVisualStep = {
   id: string; tool_key: string; status: string; error_message?: string | null; output_json?: { evidence?: Record<string, unknown> | null } | null;
   started_at?: string | null; completed_at?: string | null;
 };
+
+const evidenceSummary = (evidence?: Record<string, unknown> | null) =>
+  Object.entries(evidence || {})
+    .filter(([, value]) => typeof value === "string" || typeof value === "number" || typeof value === "boolean")
+    .slice(0, 8)
+    .map(([key, value]) => key.slice(0, 80) + ": " + String(value).slice(0, 120))
+    .join(" · ");
 export type JdVisualAudit = { id: string; event_type: string; created_at: string; event_json?: Record<string, unknown> | null };
 
 const taskStatus = (status: string) => status === "completed" ? "completed" :
@@ -69,7 +76,8 @@ export function buildJdVisualWorkspace(input: {
       events: steps.map((step) => ({
         title: ({get_workspace_overview:"Reviewed organisation overview",get_organisation_departments:"Reviewed departments",get_business_memory:"Checked saved business decisions",remember_business_fact:"Saved a business decision",get_billing_snapshot:"Checked billing records",get_business_expense_anomalies:"Reviewed recorded business costs",get_recent_activity_logs:"Checked recent workspace activity",create_operational_setup_tasks:"Saved launch-readiness tasks",preview_hiring_vacancy:"Prepared a vacancy preview",create_business_document_draft:"Saved a private document draft"} as Record<string,string>)[step.tool_key] || "Completed a workspace check", status: step.status === "completed" ? "completed" :
           step.status === "running" ? "running" : step.status === "failed" ? "failed" : "pending",
-        detail: step.error_message ? "Needs administrator review" : (step.completed_at ? "Completed and recorded" : step.started_at ? "In progress" : "Recorded"),
+        reference: step.id,
+        detail: step.error_message ? "Needs administrator review" : evidenceSummary(step.output_json?.evidence) || (step.completed_at ? "Completed and recorded" : step.started_at ? "In progress" : "Recorded"),
       })),
     });
     blocks.push({
@@ -77,8 +85,8 @@ export function buildJdVisualWorkspace(input: {
       status: steps.some((step) => step.status === "failed") ? "blocked" : (steps.length || audit.length) ? "completed" : "pending",
       summary: "Derived from persisted JD execution steps and audit events. This is execution evidence, not proof of an external business outcome.",
       items: [
-        ...steps.map((step) => ({
-          label: ({
+        ...steps.map((step) => {
+          const label = ({
             get_workspace_overview: "Organisation overview reviewed",
             get_organisation_departments: "Department structure reviewed",
             get_business_memory: "Saved business decisions reviewed",
@@ -89,9 +97,15 @@ export function buildJdVisualWorkspace(input: {
             get_billing_snapshot: "Billing records reviewed",
             get_business_expense_anomalies: "Recorded expenses reviewed",
             get_recent_activity_logs: "Workspace activity reviewed",
-          } as Record<string,string>)[step.tool_key] || "Workspace activity recorded",
-          status: step.status === "completed" ? "Completed" : step.status === "failed" ? "Needs review" : step.status === "running" ? "In progress" : "Pending",
-        })),
+          } as Record<string,string>)[step.tool_key] || "Workspace activity recorded";
+          const summary = evidenceSummary(step.output_json?.evidence);
+          return {
+            label: summary ? label + " · " + summary : label,
+            reference: step.id,
+            detail: step.error_message ? "Failure details recorded" : summary || undefined,
+            status: step.status === "completed" ? "Completed" : step.status === "failed" ? "Needs review" : step.status === "running" ? "In progress" : "Pending",
+          };
+        }),
         ...audit.map((event) => ({
           label: ({
             "automation.completed": "JD request completed",
@@ -100,6 +114,8 @@ export function buildJdVisualWorkspace(input: {
             "execution.completed": "Background work completed",
             "approval.decided": "Approval decision recorded",
           } as Record<string,string>)[event.event_type] || "Workspace activity recorded",
+          reference: event.id,
+          detail: event.created_at ? "Recorded " + event.created_at : undefined,
         })),
       ].slice(0, 30),
       details: audit.slice(0, 10).map((event) => event.created_at ? new Date(event.created_at).toLocaleString() : "Recorded workspace activity"),
