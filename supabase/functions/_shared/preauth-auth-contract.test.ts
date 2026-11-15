@@ -7,6 +7,7 @@ const appDemo = await read("../../../src/AppDemo.jsx");
 const authPage = await read("../../../src/pages/saas-entry.jsx");
 const client = await read("../../../src/supabaseClient.js");
 const preauth = await read("../preauth-lookup/index.ts");
+const careers = await read("../public-careers/index.ts");
 const revokeMigration = await read("../../migrations/20261115164500_revoke_legacy_public_rpcs.sql");
 
 Deno.test("mobile sign-in verifies email credentials only through Supabase Auth", () => {
@@ -33,6 +34,15 @@ Deno.test("web workspace cannot restore a local-only session or expose retired l
   assertEquals(authPage.includes("Legacy portal sign in"), false);
   assertStringIncludes(appDemo, "profile.school_id!==schoolId");
   assertStringIncludes(appDemo, "allowedRoles.includes(profile.role)");
+});
+
+Deno.test("public careers endpoint replaces legacy hiring RPCs with bounded token access", () => {
+  assertStringIncludes(careers, '["role","submit","thread","message"]');
+  assertStringIncludes(careers, "limit(req,String(action)");
+  assertStringIncludes(careers, 'req.headers.get("cf-connecting-ip")');
+  assertStringIncludes(careers, "new Uint8Array(24)");
+  assertStringIncludes(careers, 'sender:"applicant"');
+  assertEquals(careers.includes("hiring_get_thread"), false);
 });
 
 Deno.test("legacy public RPC grants are removed after Edge Function replacement", () => {
