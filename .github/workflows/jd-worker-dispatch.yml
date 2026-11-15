@@ -7,14 +7,17 @@ on:
       - ".github/workflows/jd-business-monitor.yml"
       - "scripts/read-jd-secret.mjs"
       - "supabase/functions/jd-execution-worker/**"
+      - "supabase/functions/jd-task-scheduler/**"
       - "supabase/functions/_shared/**"
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 concurrency:
   group: jd-background-execution-dispatch
   cancel-in-progress: false
 jobs:
   dispatch:
-    name: Poll durable JD queue
+    name: Dispatch recurring schedules and durable JD jobs
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -22,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate JD secret bundle and poll worker
+      - name: Validate JD secret bundle and dispatch due work
         env:
           SUPABASE_URL: https://thklwiybjuhrjqrrxyid.supabase.co
           JD_SECRETS_JSON: ${{ secrets.JD_SECRETS_JSON }}
@@ -34,11 +37,20 @@ jobs:
           fi
           worker_secret="$(node scripts/read-jd-secret.mjs JD_WORKER_SECRET)"
           echo "::add-mask::$worker_secret"
-          endpoint="${SUPABASE_URL%/}/functions/v1/jd-execution-worker"
-          response="$(curl --silent --show-error --fail-with-body --max-time 540 \
-            -X POST "$endpoint" \
+          base="${SUPABASE_URL%/}/functions/v1"
+
+          scheduler_response="$(curl --silent --show-error --fail-with-body --max-time 60 \
+            -X POST "$base/jd-task-scheduler" \
             -H "Content-Type: application/json" \
             -H "x-jd-worker-secret: $worker_secret" \
             --data '{}')"
-          echo "$response"
-          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.processed !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD worker response validated:", x.processed, "message(s) processed")' "$response"
+          echo "JD scheduler response: $scheduler_response"
+          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.checked !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD scheduler validated:", x.checked, "schedule(s) checked")' "$scheduler_response"
+
+          worker_response="$(curl --silent --show-error --fail-with-body --max-time 540 \
+            -X POST "$base/jd-execution-worker" \
+            -H "Content-Type: application/json" \
+            -H "x-jd-worker-secret: $worker_secret" \
+            --data '{}')"
+          echo "JD worker response: $worker_response"
+          node -e 'const x=JSON.parse(process.argv[1]); if (!x || typeof x.processed !== "number" || !Array.isArray(x.outcomes)) process.exit(1); console.log("JD worker validated:", x.processed, "message(s) processed")' "$worker_response"
