@@ -73,6 +73,9 @@ jobs:
       - name: Test JD inbound MCP server security contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
 
+      - name: Test JD MCP JSON Schema conversion
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-schema.test.ts
+
       - name: Test JD Connect MCP protocol and migration contracts
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-core.test.ts
