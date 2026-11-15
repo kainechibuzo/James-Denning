@@ -1,3 +1,14 @@
+# Change log
+
+## 2026-11-15 — JD assistant-first workspace and runtime capability awareness
+
+- **Status:** implemented in source on `feat/jd-assistant-first-workspace`; CI and live deployment verification pending.
+- **Assistant experience:** keep the JD Assistant conversation mounted as the primary workspace while opening Departments, AI Usage and Automation Runs as contextual overlays instead of replacing the assistant page. Add a one-tap capability overview prompt.
+- **Capability awareness:** make `get_jd_capability_inventory` enumerate the actual runtime tool registry, including descriptions, risk levels, role availability and whether each tool is exposed for assistant execution.
+- **Model behaviour:** instruct JD to consult its live registered capability inventory before answering capability questions; distinguish source registration from deployment, configuration, migrations and authenticated smoke-test evidence; do not promise unsupported actions.
+- **Scope and safety:** no production deployment, migration, external action or approval bypass. High-risk tools remain unavailable for automatic model execution; role checks and existing server-side execution policies remain authoritative.
+- **Validation:** source-level structural checks completed. Full web build, Deno type-check/tests, authenticated runtime tests and deployment verification remain pending.
+
 # Upgrade Changelog
 
 Append-only record of work on JD and James-Denning upgrades. Newest entries go at the bottom. Use `UPGRADE_TEMPLATE.md` for full records.
