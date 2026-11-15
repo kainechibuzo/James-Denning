@@ -15,6 +15,7 @@ const actions = [
   { icon: Wallet, label: "Billing", prompt: "Summarise billing, payments and outstanding balances." },
   { icon: Mail, label: "Email", prompt: "Help me draft a clear professional email. Ask for any missing details." },
   { icon: FileText, label: "Reports", prompt: "Prepare an organisation report using the latest available records." },
+  { icon: Command, label: "Capabilities", prompt: "Show me what you can currently do in this workspace. Check your live registered capability inventory, explain what is available to my role, and clearly identify anything that is only registered in source but not verified live." },
   { icon: Activity, label: "Logs", prompt: "Inspect recent activity and audit logs. Highlight failures and unusual activity." },
   { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
 ];
@@ -360,9 +361,9 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   return (
     <div className="jd-command">
       <style>{`
-        .jd-command{height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
         .jd-utility-status.is-working{color:#343941;border-color:#dfe3e8}
         .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite}
         @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
@@ -507,7 +508,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
         <div><div className="jd-rail-label">Ask JD to work with</div><div className="jd-nav">{actions.map(({icon:Icon,label,prompt})=><button key={label} type="button" onClick={()=>send(prompt)}><Icon size={14}/>{label}</button>)}</div></div>
         <div className="jd-rail-foot"><span className="jd-avatar">{(firstName||"U")[0].toUpperCase()}</span><span>{user?.name || "Workspace member"}</span></div>
       </aside></>}
-      {showRuns ? <RunMonitor onClose={()=>setShowRuns(false)}/> : showUsage ? <AgentUsage onClose={()=>setShowUsage(false)}/> : showDepartments ? <JDDepartments onClose={()=>setShowDepartments(false)}/> : <section className="jd-main">
+      <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setSidebarOpen(v=>!v)}>{sidebarOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
@@ -551,7 +552,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
         </div>
-      </section>}
+      </section>
+      {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
+      {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
+      {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
         setShowReview(false);
         const targetConversationId=data?.conversationId||conversationId;
