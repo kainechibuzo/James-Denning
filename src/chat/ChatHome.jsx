@@ -165,8 +165,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     setShowReview(false);
   };
 
-  // Poll only the specific active jobs in this conversation. The job-id key
-  // stays stable while messages update, so renders do not restart the timer.
+  // Poll durable jobs with bounded backoff. Job execution is server-side and
+  // continues independently of this view; this loop only refreshes the UI.
   const pendingJobKey = messages
     .filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status))
     .map((item) => item.jobId)
@@ -177,21 +177,28 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     if (!pendingJobKey) return undefined;
     const jobIds = [...new Set(pendingJobKey.split(",").filter(Boolean))];
     let stopped = false;
+    let timer = null;
     let inFlight = false;
+    let delay = 2500;
     const poll = async () => {
-      if (inFlight || stopped) return;
+      if (stopped || inFlight) return;
+      if (document.visibilityState === "hidden") {
+        timer = setTimeout(poll, 8000);
+        return;
+      }
       inFlight = true;
+      let hadError = false;
       try {
         const results = await Promise.all(jobIds.map(async (jobId) => {
           const { data, error: pollError } = await supabase.functions.invoke("jd-automation", {
             body: { action: "execution.job.status", jobId },
           });
-          if (pollError || !data?.run) return null;
+          if (pollError || !data?.run) { hadError = true; return null; }
           return { jobId, ...data };
         }));
         if (stopped) return;
         const updates = results.filter(Boolean);
-        if (!updates.length) return;
+        if (!updates.length) hadError = true;
         setMessages((currentMessages) => currentMessages.map((message) => {
           const update = updates.find((item) => item.jobId === message.jobId);
           if (!update) return message;
@@ -200,9 +207,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           const finalMessage = update.assistantMessage;
           const fallback = status === "failed"
             ? "JD couldn't complete this request. Open Automation runs for the error details."
-            : status === "cancelled"
-              ? "This request was cancelled."
-              : message.content;
+            : status === "cancelled" ? "This request was cancelled." : message.content;
           return {
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
@@ -213,13 +218,14 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             jobStatus: update.job.status,
           };
         }));
+        delay = hadError ? Math.min(15000, Math.round(delay * 1.8)) : 2500;
       } finally {
         inFlight = false;
+        if (!stopped) timer = setTimeout(poll, delay);
       }
     };
     void poll();
-    const timer = setInterval(poll, 1200);
-    return () => { stopped = true; clearInterval(timer); };
+    return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [pendingJobKey]);
 
   const send = async (override, targetConversationId = null) => {
