@@ -1,7 +1,6 @@
 import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
 import { summariseScores, summariseTaskStatuses } from "./jd-business-intelligence.ts";
-import { buildCapabilityReport } from "./jd-capability-intelligence.ts";
 import { buildOrganisationBlueprintDraft, validateOrganisationBlueprint } from "./jd-organisation-blueprint.ts";
 import { validateVacancy } from "./jd-hiring.ts";
 import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
@@ -88,7 +87,32 @@ const tools: ToolSpec[] = [  {
     risk: "low",
     roles: ["owner","admin"],
     parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
-    execute: async () => ({ capabilities: buildCapabilityReport({}), policy: "Never infer deployment from source-code presence." }),
+    execute: async (_args, ctx) => {
+      const registeredTools = tools
+        .filter((tool) => tool.name !== "get_jd_capability_inventory")
+        .map((tool) => {
+          const roleAllowedHere = roleAllowed(ctx, tool.roles);
+          const callableByAssistant = roleAllowedHere && (tool.risk === "low" || tool.name === "create_business_document_draft");
+          return {
+            name: tool.name,
+            description: tool.description,
+            risk: tool.risk,
+            roles: tool.roles,
+            available_to_current_role: roleAllowedHere,
+            callable_by_assistant: callableByAssistant,
+            status: "registered_in_runtime",
+            limitation: callableByAssistant ? null : roleAllowedHere ? "Not exposed for automatic assistant execution; requires a separately approved and verified path." : "Not available to the current role."
+          };
+        });
+      return {
+        registered_tool_count: registeredTools.length,
+        available_to_current_role: registeredTools.filter((tool) => tool.available_to_current_role).length,
+        callable_by_assistant: registeredTools.filter((tool) => tool.callable_by_assistant).length,
+        tools: registeredTools,
+        evidence_policy: "Runtime registration proves that source code declares a tool. It does not prove that the Edge Function is deployed, its integrations are configured, required database migrations are applied, or the action passed an authenticated live test.",
+        external_integrations: "Connected JD Connect tools are discovered separately at request time. Use the connected-integration discovery capability before promising an external action."
+      };
+    },
   },
   {
     name: "preview_organisation_blueprint",
@@ -856,6 +880,11 @@ export async function runAgent(input: {
 
   const instructions = [
     "You are JD, the autonomous organisation operations agent.",
+    "Treat the registered tools supplied to you in this request as the definitive list of actions you can currently call. When asked what you can do, what features are available, or whether you can perform a task, call get_jd_capability_inventory first and explain the relevant capabilities in plain language. Do not infer capabilities from old conversation memory, documentation, UI labels or assumptions.",
+    "The capability inventory reports source-level runtime registration and role availability only. It does not prove deployment, integration configuration, database migration state or successful live operation. State these limits clearly and never describe a registered tool as production-ready without trusted deployment and authenticated verification evidence.",
+    "Keep the user inside the assistant experience: understand the requested outcome, choose the relevant registered tools, perform supported steps, and show progress, decisions, checklists and evidence in the conversation. Do not tell users to navigate to another page when the assistant can complete the supported task. If a separate approval or account-management screen is genuinely required, explain exactly why and what the user needs to do.",
+    "For requests spanning multiple capabilities, plan the steps yourself and execute the safe, supported parts. Ask only for essential missing information; do not ask users to understand internal modules, departments, tools, integrations or technical setup.",
+    "If a requested capability is unavailable to the current role or is not registered, say so plainly, explain the closest supported alternative, and do not pretend to have completed it.",
     memoryInstruction,
     "Work toward the user's objective rather than merely giving them instructions.",
     "For business launch/setup requests, audit current records first, then create a practical persisted launch-readiness checklist with create_operational_setup_tasks. Cover fleet requirements and sourcing, driver recruitment, customer acquisition, quotations, contract review, operating costs, dispatch procedures and compliance tracking where relevant. Give each task an accountable role, explicit dependencies and approval requirements. Do not invent named staff, vehicles, customers, prices, budgets, registrations, licences or completed work.",
