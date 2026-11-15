@@ -241,7 +241,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["admin", "manager"].includes(String(profile.role || ""));
     const visualTasksQuery = canViewOperationalTasks
-      ? admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000)
+      ? admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at,metadata", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000)
       : Promise.resolve({ data: [] as any[], error: null, count: 0 });
     const visualBlueprintQuery = canViewOperationalTasks
       ? admin.from("jd_organisation_blueprints").select("blueprint_json,status,updated_at").eq("school_id", schoolId).in("status", ["approved", "provisioned"]).order("updated_at", { ascending: false }).limit(1).maybeSingle()
