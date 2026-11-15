@@ -1,6 +1,6 @@
 export type JdVisualTask = {
   id: string; title: string; description?: string | null; department?: string | null;
-  priority?: string | null; status: string; due_at?: string | null; updated_at?: string | null;
+  priority?: string | null; status: string; due_at?: string | null; updated_at?: string | null; metadata?: Record<string, unknown> | null;
 };
 export type JdVisualDepartment = { name: string; purpose?: string | null };
 export type JdVisualStep = {
