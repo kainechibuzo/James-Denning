@@ -12,10 +12,15 @@ const json = (body: unknown, status = 200) =>
 
 import { isQueueMessage, retryDelaySeconds, safeWorkerId, type QueueMessage } from "./_shared/jd-execution-worker-helpers.ts";
 
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+
 const LEASE_SECONDS = 90;
 const HEARTBEAT_INTERVAL_MS = 25_000;
 const QUEUE_VISIBILITY_SECONDS = 120;
 const MAX_ERROR_LENGTH = 240;
+const MAX_JOBS_PER_INVOCATION = 4;
+const MAX_INVOCATION_WORK_MS = 105_000;
+const MAX_DISPATCH_HANDOFF_DEPTH = 8;
 
 function secretMatches(provided: string, expected: string): boolean {
   if (!provided || !expected || provided.length !== expected.length) return false;
@@ -359,19 +364,33 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const workerId = safeWorkerId(Deno.env.get("JD_WORKER_ID"));
-  const { data: messages, error } = await admin.rpc("jd_read_execution_messages", {
-    p_visibility_seconds: QUEUE_VISIBILITY_SECONDS,
-    p_batch_size: 1,
-  });
-  if (error) return json({ error: "Could not read the execution queue" }, 503);
-
-  const queueMessages = Array.isArray(messages) ? messages : [];
+  const startedAt = Date.now();
   const outcomes: Record<string, unknown>[] = [];
-  for (const candidate of queueMessages) {
+
+  // Repair old deliveries before reading. Recovery is lease-fenced in SQL:
+  // an expired worker loses its token before a replacement message is issued.
+  const { data: recovery, error: recoveryError } = await admin.rpc("jd_recover_stale_execution_jobs", {
+    p_stale_after_seconds: 60,
+    p_batch_size: 25,
+  });
+  if (recoveryError) return json({ error: "Could not recover stale execution jobs" }, 503);
+
+  for (let index = 0; index < MAX_JOBS_PER_INVOCATION; index += 1) {
+    if (Date.now() - startedAt >= MAX_INVOCATION_WORK_MS) break;
+
+    const { data: messages, error } = await admin.rpc("jd_read_execution_messages", {
+      p_visibility_seconds: QUEUE_VISIBILITY_SECONDS,
+      p_batch_size: 1,
+    });
+    if (error) return json({ error: "Could not read the execution queue", outcomes, recovery }, 503);
+
+    const candidate = Array.isArray(messages) ? messages[0] : null;
+    if (!candidate) break;
     if (!isQueueMessage(candidate)) {
       outcomes.push({ status: "invalid_message" });
       continue;
     }
+
     try {
       outcomes.push(await processMessage(admin, candidate, workerId));
     } catch {
@@ -380,5 +399,47 @@ Deno.serve(async (req) => {
     }
   }
 
-  return json({ worker_id: workerId, processed: outcomes.length, outcomes });
+  const [{ count: pendingCount, error: pendingError }, { data: queueHealth }] = await Promise.all([
+    admin.from("jd_execution_jobs").select("id", { count: "exact", head: true })
+      .in("status", ["queued", "retry_wait"]).lte("available_at", new Date().toISOString()),
+    admin.rpc("jd_execution_queue_health"),
+  ]);
+  if (pendingError) console.error("JD queue pending count could not be read");
+
+  const dispatchDepth = Math.max(0, Math.min(
+    MAX_DISPATCH_HANDOFF_DEPTH,
+    Number.parseInt(String(req.headers.get("x-jd-dispatch-depth") || "0"), 10) || 0,
+  ));
+  const hasMore = Number(pendingCount || 0) > 0;
+  let continuationDispatched = false;
+  if (hasMore && dispatchDepth < MAX_DISPATCH_HANDOFF_DEPTH) {
+    continuationDispatched = true;
+    EdgeRuntime.waitUntil((async () => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const response = await fetch(`${url.replace(/\/$/, "")}/functions/v1/jd-execution-worker`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-jd-worker-secret": expectedSecret,
+          "x-jd-dispatch-depth": String(dispatchDepth + 1),
+        },
+        body: "{}",
+      });
+      if (!response.ok) console.error("JD continuation dispatch returned", response.status);
+      await response.text();
+    })().catch((error) => console.error("JD continuation dispatch failed", String(error).slice(0, 160))));
+  }
+
+  return json({
+    worker_id: workerId,
+    processed: outcomes.length,
+    outcomes,
+    recovery,
+    queue: queueHealth || null,
+    pending_count: Number(pendingCount || 0),
+    continuation_dispatched: continuationDispatched,
+    handoff_depth: dispatchDepth,
+    elapsed_ms: Date.now() - startedAt,
+    work_budget_ms: MAX_INVOCATION_WORK_MS,
+  });
 });
