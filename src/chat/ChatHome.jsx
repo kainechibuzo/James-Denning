@@ -123,7 +123,10 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   }, []);
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
-  const backgroundWorking = messages.some((item) => item.role === "assistant" && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status));
+  const activeJobCount = messages.filter((item) => item.role === "assistant" && item.jobId && ["queued", "running", "retry_wait", "planning"].includes(item.run?.status)).length;
+  const backgroundWorking = activeJobCount > 0;
+  const isWorking = sending || backgroundWorking;
+  const visibleRequestCount = activeSends + activeJobCount;
 
   useEffect(() => {
     let active = true;
@@ -446,7 +449,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")}>{sending || backgroundWorking ? "JD is cooking…" : "Workspace connected"}</span></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")}>{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace connected"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-spark"><Sparkles size={20}/></div>
             <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
@@ -470,14 +473,14 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
               {item.streaming&&<div className="jd-run">JD is writing its response…</div>}
 
             </div>)}
-            {sending&&<div className="jd-message assistant"><div className="jd-activity" role="status" aria-live="polite"><div className="jd-activity-title"><span className="jd-activity-dot"/>JD is cooking…</div><div className="jd-activity-detail">Getting the request ready.</div></div></div>}
+            {isWorking&&<div className="jd-message assistant"><div className="jd-activity" role="status" aria-live="polite"><div className="jd-activity-title"><span className="jd-activity-dot"/>JD is cooking…</div><div className="jd-activity-detail">Getting the request ready.</div></div></div>}
           </div>}
         </div>
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
-            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={sending ? "Queue another question for JD…" : "Ask JD to do something in your organisation…"} rows={2}/>
-            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{sending && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Queue question</button>}<button className="jd-send" type="button" disabled={sending ? false : (!draft.trim() || queuePaused)} onClick={()=>sending ? setQueuePaused(value=>!value) : send()} aria-label={sending ? (queuePaused ? "Resume queued requests" : "Pause new requests") : "Send message"}>{sending ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <ArrowUp size={17}/>}</button></div></div>
+            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={isWorking ? "Send another request while JD works…" : "Ask JD to do something in your organisation…"} rows={2}/>
+            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <ArrowUp size={17}/>}</button></div></div>
             <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
           </div>
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
