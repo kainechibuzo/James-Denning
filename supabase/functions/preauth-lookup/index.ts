@@ -10,7 +10,7 @@ const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body)
 const validId = (v: unknown) => typeof v === "string" && v.trim().length > 0 && v.trim().length <= 80 && !/[%_]/.test(v);
 const validUuid = (v: unknown) => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 async function rateLimit(req: Request, action: string) {
-  const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown").split(",")[0].trim().slice(0, 80);
+  const ip = (req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || "unknown").split(",")[0].trim().slice(0, 80);
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip + "|" + action));
   const key = Array.from(new Uint8Array(digest)).map(x => x.toString(16).padStart(2,"0")).join("");
   const { data, error } = await db.rpc("consume_public_endpoint_rate_limit", { p_bucket_key: key, p_limit: 20, p_window_seconds: 300 });
@@ -50,7 +50,10 @@ Deno.serve(async (req: Request) => {
     if (error) return reply({ error: "lookup_failed" }, 500);
     return reply({ data: data || null });
   }
-  const { data, error } = await db.from("students").select("id,name,first_name,middle_name,last_name,display_name,class_id,email,status,school_id").eq("school_id",schoolId).eq("id",identifier).limit(1).maybeSingle();
-  if (error) return reply({ error: "lookup_failed" }, 500);
-  return reply({ data: data || null });
+  if (action === "student") {
+    const { data, error } = await db.from("students").select("id,name,first_name,middle_name,last_name,display_name,class_id,email,status,school_id").eq("school_id",schoolId).eq("id",identifier).limit(1).maybeSingle();
+    if (error) return reply({ error: "lookup_failed" }, 500);
+    return reply({ data: data || null });
+  }
+  return reply({ error: "invalid_action" }, 400);
 });
