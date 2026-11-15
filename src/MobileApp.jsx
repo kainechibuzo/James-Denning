@@ -16,9 +16,9 @@ import {
   CreditCard, ReceiptText, X, Check, BookOpen,
   BarChart2, ClipboardList, UserCheck,
 } from "lucide-react";
-import { db } from "./supabaseClient.js";
+import { db, supabase } from "./supabaseClient.js";
 import { fmt, fullName } from "./utils/grades.js";
-import { saveSession, loadSession, clearSession, saveSelectedSchool, loadSelectedSchool } from "./utils/session.js";
+import { saveSession, clearSession, saveSelectedSchool, loadSelectedSchool } from "./utils/session.js";
 import { PRODUCT } from "./config/product.js";
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
@@ -345,7 +345,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
   const [showPw,setShowPw]=useState(false);
   // If no school selected yet and multiple schools exist — show picker first
   const [picking,setPicking]=useState(!school && schools.length>1);
-  const submit=()=>{ if(id.trim()&&pw.trim()) onLogin(id.trim(),pw.trim()); };
+  const submit=()=>{ if(id.trim()&&pw) onLogin(id.trim(),pw); };
 
   // Organization picker view
   if(picking || (!school && schools.length>1)){
@@ -460,9 +460,9 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
         {/* ID field */}
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,color:t.sft,marginBottom:5,
-            textTransform:"uppercase",letterSpacing:.5}}>Staff / Member ID</div>
-          <input value={id} onChange={e=>setId(e.target.value)}
-            placeholder="e.g. TCH/0023 or JD/0847"
+            textTransform:"uppercase",letterSpacing:.5}}>Email address</div>
+          <input type="email" autoComplete="email" value={id} onChange={e=>setId(e.target.value)}
+            placeholder="you@company.com"
             onKeyDown={e=>e.key==="Enter"&&document.getElementById("mpw")?.focus()}
             style={{width:"100%",height:46,borderRadius:12,border:`1.5px solid ${t.brd}`,
               background:t.bg,padding:"0 14px",fontSize:15,color:t.txt,
@@ -476,7 +476,7 @@ function MLoginScreen({t, onLogin, loading, error, school, schools=[], onSelectS
             <input id="mpw" type={showPw?"text":"password"} value={pw}
               onChange={e=>setPw(e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&submit()}
-              placeholder="••••••••"
+              placeholder="Your password"
               style={{width:"100%",height:46,borderRadius:12,border:`1.5px solid ${t.brd}`,
                 background:t.bg,padding:"0 44px 0 14px",fontSize:15,color:t.txt,
                 fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}/>
@@ -1734,7 +1734,7 @@ export function MobileApp(){
     localStorage.setItem("rgs_mobile_theme",next);
   };
 
-  const [user,setUser]=useState(()=>loadSession());
+  const [user,setUser]=useState(null);
   const [school,setSchool]=useState(()=>loadSelectedSchool());
   const [schools,setSchools]=useState([]); // all available schools
   const [loginLoading,setLoginLoading]=useState(false);
@@ -1806,30 +1806,60 @@ export function MobileApp(){
     }
   },[user]);
 
-  // Load schools on startup — fetch all, then set db context
+  // Restore only a real Supabase Auth session. Legacy local-only sessions are not trusted.
+  useEffect(()=>{
+    let active=true;
+    const restore=async()=>{
+      const {data:{session},error:sessionError}=await supabase.auth.getSession();
+      if(!active)return;
+      if(sessionError||!session?.user){clearSession();setUser(null);return;}
+      const {data:profile,error:profileError}=await supabase.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
+      if(!active)return;
+      if(profileError||!profile?.school_id){
+        await supabase.auth.signOut();
+        if(active){clearSession();setUser(null);setLoginError("Your account is not linked to an organization. Contact your administrator.");}
+        return;
+      }
+      const {data:org,error:orgError}=await db.getSchool(profile.school_id);
+      if(!active)return;
+      if(orgError||!org){
+        await supabase.auth.signOut();
+        if(active){clearSession();setUser(null);setLoginError("We couldn't load your organization. Please sign in again.");}
+        return;
+      }
+      db.setSchool(org.id,org.student_id_prefix||"SCH",org.name||"");
+      saveSelectedSchool(org);setSchool(org);
+      const mobileRole=profile.role==="owner"?"admin":profile.role==="finance"?"manager":profile.role;
+      if(!["admin","manager"].includes(mobileRole)){
+        await supabase.auth.signOut();
+        if(active){clearSession();setUser(null);setLoginError("Mobile access is not enabled for this account role. Use the web workspace.");}
+        return;
+      }
+      const u={id:profile.id,role:mobileRole,name:profile.full_name||session.user.email,email:session.user.email,school_id:org.id,_authUserId:session.user.id};
+      if(!active)return;
+      saveSession(u);setUser(u);
+    };
+    restore().catch(async()=>{
+      if(active){clearSession();setUser(null);setLoginError("Unable to restore your secure session. Please sign in again.");}
+    });
+    return()=>{active=false;};
+  },[]);
+
+  // Load organizations for the pre-authentication picker.
   useEffect(()=>{
     const saved=loadSelectedSchool();
     db.getSchools?.().then(({data})=>{
       const list=data||[];
       setSchools(list);
       if(saved?.id){
-        // Already chosen — just ensure db context
         db.setSchool(saved.id,saved.student_id_prefix||null,saved.name||null);
-        setSchool(saved);
-      } else if(list.length===1){
-        // Only one school — auto-select it silently
+        setSchool(current=>current?.id?current:saved);
+      }else if(list.length===1){
         const s=list[0];
         db.setSchool(s.id,s.student_id_prefix||null,s.name||null);
-        saveSelectedSchool(s);
-        setSchool(s);
+        saveSelectedSchool(s);setSchool(current=>current?.id?current:s);
       }
-      // Multiple schools + no saved → picker will show automatically
-    }).catch(()=>{
-      if(saved?.id){
-        db.setSchool(saved.id,saved.student_id_prefix||null,saved.name||null);
-        setSchool(saved);
-      }
-    });
+    }).catch(()=>{});
   },[]);
 
   // Handler for school picker selection
@@ -1840,32 +1870,35 @@ export function MobileApp(){
     setLoginError("");
   };
 
-  const login=async(staffId,password)=>{
+  const login=async(email,password)=>{
     setLoginLoading(true);setLoginError("");
     try{
-      const id=(staffId||"").trim(),pw=(password||"").trim(),schoolId=school?.id||db._schoolId||null;
-      if(!id||!pw){setLoginError("Enter your ID and password.");setLoginLoading(false);return;}
+      const address=(email||"").trim().toLowerCase(),pw=password||"",schoolId=school?.id||db._schoolId||null;
+      if(!address||!pw){setLoginError("Enter your email and password.");setLoginLoading(false);return;}
       if(!schoolId){setLoginError("Select an organization first.");setLoginLoading(false);return;}
-      const {data,error}=await db.loginAuthenticate(id,pw,schoolId);
-      if(error||!data?.user){
-        setLoginError(data?.error==="account_inactive"?"This account is not active.":data?.error==="rate_limited"?"Too many attempts. Please wait and try again.":"Incorrect ID or password.");
+      const {data:authData,error:authError}=await supabase.auth.signInWithPassword({email:address,password:pw});
+      if(authError||!authData?.user){setLoginError("Incorrect email or password.");setLoginLoading(false);return;}
+      const authUser=authData.user;
+      const {data:profile,error:profileError}=await supabase.from("profiles").select("*").eq("id",authUser.id).maybeSingle();
+      const mobileRole=profile?.role==="owner"?"admin":profile?.role==="finance"?"manager":profile?.role;
+      if(profileError||!profile?.school_id||profile.school_id!==schoolId||!["admin","manager"].includes(mobileRole)){
+        await supabase.auth.signOut();
+        setLoginError("This account is not linked to the selected organization or is not enabled for mobile access.");
         setLoginLoading(false);return;
       }
-      const u=data.user;
-      if(u.school_id)db.setSchool(u.school_id,null,u.name||null);
-      if(u._userType==="teacher")db.recordLogin?.("teacher",u.teacher_db_id);
-      if(u._userType==="student")db.recordLogin?.("student",u.student_id);
+      const u={id:profile.id,role:mobileRole,name:profile.full_name||authUser.email,email:authUser.email,school_id:schoolId,_authUserId:authUser.id};
+      db.setSchool(schoolId,school?.student_id_prefix||"SCH",school?.name||"");
       saveSession(u);setUser(u);setScreen("dashboard");setScreenHistory([]);
-    }catch(e){setLoginError("Login failed. Please try again.");}
+    }catch(e){await supabase.auth.signOut();setLoginError("Login failed. Please try again.");}
     setLoginLoading(false);
   };
 
-  const logout=()=>{
+  const logout=async()=>{
+    await supabase.auth.signOut();
     clearSession();
     setUser(null);
     setScreen("dashboard");
     setScreenHistory([]);
-    // Re-set db school context so login screen queries still work
     const saved=loadSelectedSchool();
     if(saved?.id) db.setSchool(saved.id,saved.student_id_prefix||null,saved.name||null);
   };

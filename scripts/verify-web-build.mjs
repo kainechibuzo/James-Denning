@@ -126,8 +126,16 @@ assert.match(jdVisual, /React text|aria-label/, "Visual renderer must use access
 const dist = resolve(root, "dist");
 assert.ok(existsSync(join(dist, "index.html")), "Production build must emit dist/index.html");
 const html = readFileSync(join(dist, "index.html"), "utf8");
-const entryMatch = html.match(/<script[^>]+src=["']([^"']+\.js)["']/);
-assert.ok(entryMatch, "Built HTML must reference an entry JavaScript asset");
+// Ignore deferred third-party scripts (for example KaTeX). Only the local
+// module entry is part of the initial application bundle and its size budget.
+const scriptAttributes = [...html.matchAll(/<script\b([^>]*)>/g)].map((match) => match[1]);
+const moduleScript = scriptAttributes.find((attributes) =>
+  /\btype=["']module["']/.test(attributes) &&
+  /\bsrc=["'][^"']+\.js["']/.test(attributes)
+);
+assert.ok(moduleScript, "Built HTML must reference a module JavaScript entry asset");
+const entryMatch = moduleScript.match(/\bsrc=["']([^"']+\.js)["']/);
+assert.ok(entryMatch, "Module entry must have a JavaScript source");
 const entryPath = resolve(dist, entryMatch[1].replace(/^\//, ""));
 assert.ok(existsSync(entryPath), "Entry JavaScript asset must exist");
 const entry = readFileSync(entryPath);

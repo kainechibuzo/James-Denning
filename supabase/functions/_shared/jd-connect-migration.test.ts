@@ -1,5 +1,5 @@
 import {assertEquals} from "https://deno.land/std@0.224.0/assert/mod.ts";
-const sql=await Deno.readTextFile(new URL("../../migrations/20261113190000_jd_connect_mcp_platform.sql",import.meta.url));
+const sql=await Deno.readTextFile(new URL("../../migrations/20261114091134_jd_connect_mcp_platform.sql",import.meta.url));
 Deno.test("JD Connect persists isolated server, credential, tool, approval and execution records",()=>{
  for(const table of ["jd_connector_servers","jd_connector_credentials","jd_connector_tools","jd_connector_approvals","jd_connector_executions"])
   assertEquals(sql.includes(`create table if not exists public.${table}`),true);

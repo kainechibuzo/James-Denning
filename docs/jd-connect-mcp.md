@@ -37,7 +37,7 @@ Do not put tokens or secrets in source control. Do not use wildcard host allowli
 
 ## Database
 
-Migration: `supabase/migrations/20261113190000_jd_connect_mcp_platform.sql`.
+Migration: `supabase/migrations/20261114091134_jd_connect_mcp_platform.sql`.
 
 The migration creates service-role-only tables for servers, encrypted credentials, discovered tools, approval requests and execution history. RLS is enabled and client roles receive no direct table grants. The authenticated Edge Function performs tenant and role checks before using the service role.
 

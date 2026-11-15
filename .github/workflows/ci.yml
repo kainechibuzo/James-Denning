@@ -44,6 +44,8 @@ jobs:
 
       - name: Production web build
         run: npm run verify:web
+      - name: Production mobile build
+        run: npm run build:mobile
 
       # The verification scripts are what stand between us and a green build
       # that verified nothing. This test proves they fail closed, using a
@@ -55,6 +57,9 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
+      - name: Test Supabase Auth and pre-authentication contract
+        run: deno test --node-modules-dir=auto --allow-read=src/MobileApp.jsx,src/App.jsx,src/AppDemo.jsx,src/pages/saas-entry.jsx,src/supabaseClient.js,supabase/functions/preauth-lookup/index.ts,supabase/functions/public-careers/index.ts,supabase/migrations/20261115164436_jd_revoke_legacy_public_rpcs.sql,supabase/rollback/20261115164436_jd_revoke_legacy_public_rpcs.rollback.sql supabase/functions/_shared/preauth-auth-contract.test.ts
 
       - name: Test JD document intelligence helpers
         run: deno test --node-modules-dir=auto --allow-env supabase/functions/_shared/jd-document-intelligence.test.ts
@@ -71,7 +76,7 @@ jobs:
       - name: Test JD Connect MCP protocol and migration contracts
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-mcp-core.test.ts
-          deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113190000_jd_connect_mcp_platform.sql supabase/functions/_shared/jd-connect-migration.test.ts
+          deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261114091134_jd_connect_mcp_platform.sql supabase/functions/_shared/jd-connect-migration.test.ts
 
       - name: Test JD business platform migration contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112073746_jd_business_platform.sql,supabase/functions/jd-business-platform/index.ts,supabase/functions/jd-business-monitor-worker/index.ts,supabase/functions/jd-business-ops-worker/index.ts,supabase/functions/jd-business-document-worker/index.ts,supabase/functions/jd-business-report-share/index.ts,supabase/functions/_shared/jd-business-forecast.ts supabase/functions/_shared/jd-business-platform-migration.test.ts
@@ -80,7 +85,7 @@ jobs:
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084602_jd_task_collaboration.sql supabase/functions/_shared/jd-task-collaboration-migration.test.ts
 
       - name: Test atomic operational task transition audit contract
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113201500_jd_atomic_operational_task_transition.sql supabase/functions/_shared/jd-atomic-operational-task-transition.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261113200345_jd_atomic_operational_task_transition.sql supabase/functions/_shared/jd-atomic-operational-task-transition.test.ts
 
       - name: Test JD scheduler and assignment migration contracts
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084732_jd_recurring_tasks_and_assignment.sql supabase/functions/_shared/jd-scheduler-migration.test.ts
@@ -148,10 +153,24 @@ jobs:
       - name: Test JD manual execution retry migration contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261112084629_jd_execution_retry_controls.sql supabase/functions/_shared/jd-execution-retry-migration.test.ts
 
+      # Supabase deploys selected functions with shared modules nested beside index.ts.
+      # Stage that same layout for every entrypoint that imports ./_shared/*.
+      - name: Stage nested Edge Function shared modules
+        run: |
+          for entrypoint in supabase/functions/*/index.ts; do
+            if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint"; then
+              function_dir="${entrypoint%/index.ts}"
+              mkdir -p "$function_dir/_shared"
+              cp supabase/functions/_shared/*.ts "$function_dir/_shared/"
+            fi
+          done
+
       - name: Type-check secured Edge Functions
         run: |
           deno check --node-modules-dir=auto supabase/functions/verify-payment/index.ts
           deno check --node-modules-dir=auto supabase/functions/send-email/index.ts
+          deno check --node-modules-dir=auto supabase/functions/preauth-lookup/index.ts
+          deno check --node-modules-dir=auto supabase/functions/public-careers/index.ts
           deno check --node-modules-dir=auto supabase/functions/send-email-batch/index.ts
           deno check --node-modules-dir=auto supabase/functions/scheduled-digest/index.ts
           deno check --node-modules-dir=auto supabase/functions/manage-account/index.ts

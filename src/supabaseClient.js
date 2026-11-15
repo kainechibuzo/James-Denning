@@ -889,7 +889,8 @@ export const db = {
 
   async loginFindTeacher(staffId,schoolId=null){if(!schoolId)return {data:null,error:null};const {data,error}=await edgePost("preauth-lookup",{action:"teacher",school_id:schoolId,identifier:staffId});return {data:data?.data||null,error};},
   async loginFindStudent(studentId,schoolId=null){if(!schoolId)return {data:null,error:null};const {data,error}=await edgePost("preauth-lookup",{action:"student",school_id:schoolId,identifier:String(studentId)});return {data:data?.data||null,error};},
-  async loginAuthenticate(identifier,password,schoolId){if(!schoolId)return {data:null,error:{message:"Select an organization first."}};return edgePost("preauth-lookup",{action:"authenticate",school_id:schoolId,identifier,password});},
+  // Legacy ID/password login was retired. All sign-in now uses Supabase Auth directly.
+  async loginAuthenticate(){return {data:null,error:{message:"Legacy ID/password sign-in has been retired. Sign in with your account email and password."}};},
 
   async loginGetSettings(){
 
@@ -2098,7 +2099,7 @@ export const db = {
 
   // Login access control — fetch only the three access keys (fast, used every login attempt)
 
-  async getLoginAccessSettings(schoolId){const {data,error}=await edgePost("preauth-lookup",{action:"access_settings",school_id:schoolId});if(error)return {};const out={};(data?.data||[]).forEach(r=>{out[r.key]=r.value});return out;},
+  async getLoginAccessSettings(schoolId){const {data,error}=await edgePost("preauth-lookup",{action:"access_settings",school_id:schoolId});if(error)return {error};const out={};(data?.data||[]).forEach(r=>{out[r.key]=r.value});return out;},
 
   // ── CAE SCORE STRUCTURES ──────────────────────────────────────────────────
 
