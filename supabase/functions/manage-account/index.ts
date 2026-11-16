@@ -56,10 +56,12 @@ serve(async (req) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return json({ error: "Enter a valid email address" }, 400);
       }
+      const defaultOrigin = "https://james-denning-james-projects-57651351.vercel.app";
       const allowedRedirects = new Set([
-        "https://rgs-portal-master.vercel.app",
+        defaultOrigin,
+        ...(Deno.env.get("JD_APP_ORIGINS") || "").split(",").map((x) => x.trim().replace(/\/$/, "")).filter(Boolean),
       ]);
-      let inviteRedirect = "https://rgs-portal-master.vercel.app/?invite=1";
+      let inviteRedirect = `${defaultOrigin}/?invite=1`;
       if (redirectTo) {
         try {
           const parsed = new URL(redirectTo);
