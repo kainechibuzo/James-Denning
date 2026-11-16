@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: reproduces pre-fix NULL result_json violation without changing the persisted job, run, audit or synthetic queue
+ok 1 - reproduces pre-fix NULL result_json violation without changing the persisted job, run, audit or synthetic queue
+  ---
+  duration_ms: 1446.460843
+  type: 'test'
+  ...
+# Subtest: owner: retry atomically resets valid run JSON and creates one queue message and audit
+ok 2 - owner: retry atomically resets valid run JSON and creates one queue message and audit
+  ---
+  duration_ms: 19.413368
+  type: 'test'
+  ...
+# Subtest: admin: retry atomically resets valid run JSON and creates one queue message and audit
+ok 3 - admin: retry atomically resets valid run JSON and creates one queue message and audit
+  ---
+  duration_ms: 15.118696
+  type: 'test'
+  ...
+# Subtest: manager: SQL retry denies authority
+ok 4 - manager: SQL retry denies authority
+  ---
+  duration_ms: 24.807628
+  type: 'test'
+  ...
+# Subtest: staff: SQL retry denies authority
+ok 5 - staff: SQL retry denies authority
+  ---
+  duration_ms: 25.894344
+  type: 'test'
+  ...
+# Subtest: viewer: SQL retry denies authority
+ok 6 - viewer: SQL retry denies authority
+  ---
+  duration_ms: 17.104729
+  type: 'test'
+  ...
+# Subtest: finance: SQL retry denies authority
+ok 7 - finance: SQL retry denies authority
+  ---
+  duration_ms: 13.692183
+  type: 'test'
+  ...
+# Subtest: hr: SQL retry denies authority
+ok 8 - hr: SQL retry denies authority
+  ---
+  duration_ms: 12.174137
+  type: 'test'
+  ...
+# Subtest: contractor: SQL retry denies authority
+ok 9 - contractor: SQL retry denies authority
+  ---
+  duration_ms: 13.630977
+  type: 'test'
+  ...
+# Subtest: unknown actor denied by SQL
+ok 10 - unknown actor denied by SQL
+  ---
+  duration_ms: 11.412447
+  type: 'test'
+  ...
+# Subtest: other-tenant owner cannot retry job
+ok 11 - other-tenant owner cannot retry job
+  ---
+  duration_ms: 11.717117
+  type: 'test'
+  ...
+# Subtest: anon: forged service RPC actor denied
+ok 12 - anon: forged service RPC actor denied
+  ---
+  duration_ms: 13.845311
+  type: 'test'
+  ...
+# Subtest: authenticated: forged service RPC actor denied
+ok 13 - authenticated: forged service RPC actor denied
+  ---
+  duration_ms: 11.907529
+  type: 'test'
+  ...
+# Subtest: lost-response replay cannot enqueue duplicate retry or audit
+ok 14 - lost-response replay cannot enqueue duplicate retry or audit
+  ---
+  duration_ms: 16.144115
+  type: 'test'
+  ...
+# Subtest: queued: cannot manually retry
+ok 15 - queued: cannot manually retry
+  ---
+  duration_ms: 12.297368
+  type: 'test'
+  ...
+# Subtest: retry_wait: cannot manually retry
+ok 16 - retry_wait: cannot manually retry
+  ---
+  duration_ms: 16.994029
+  type: 'test'
+  ...
+# Subtest: completed: cannot manually retry
+ok 17 - completed: cannot manually retry
+  ---
+  duration_ms: 12.287472
+  type: 'test'
+  ...
+# Subtest: cancelled: cannot manually retry
+ok 18 - cancelled: cannot manually retry
+  ---
+  duration_ms: 14.485667
+  type: 'test'
+  ...
+# Subtest: job with mismatched run tenant is rejected before queue delivery or audit
+ok 19 - job with mismatched run tenant is rejected before queue delivery or audit
+  ---
+  duration_ms: 12.609245
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back run, job and transactional queue test double
+ok 20 - audit failure rolls back run, job and transactional queue test double
+  ---
+  duration_ms: 17.114832
+  type: 'test'
+  ...
+# Subtest: queue failure rolls back run/job state
+ok 21 - queue failure rolls back run/job state
+  ---
+  duration_ms: 13.213289
+  type: 'test'
+  ...
+# Subtest: service-only grants and empty search path survive new definition
+ok 22 - service-only grants and empty search path survive new definition
+  ---
+  duration_ms: 8.211195
+  type: 'test'
+  ...
+# Subtest: emergency rollback disables retry without deleting evidence; reviewed reapply restores service access
+ok 23 - emergency rollback disables retry without deleting evidence; reviewed reapply restores service access
+  ---
+  duration_ms: 23.986034
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1889.558224

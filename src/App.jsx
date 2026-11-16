@@ -1,5 +1,6 @@
 import React,{lazy,Suspense,useEffect,useState} from "react";
 import {supabase,db} from "./supabaseClient.js";
+import {workspaceIdentity} from "./auth/workspace-identity.mjs";
 import {saveSession,saveSelectedSchool} from "./utils/session.js";
 
 // Keep the public entry lightweight. The full operations workspace, auth UI and
@@ -30,17 +31,16 @@ export default function App(){
  const isApply=typeof window!=="undefined"&&window.location.pathname.startsWith("/apply/");
  const isOAuthConsent=typeof window!=="undefined"&&window.location.pathname==="/oauth/consent";
  const activate=async({user:authUser,profile,school})=>{
-  if(!authUser?.id||!profile?.id||!school?.id)throw new Error("Your account is missing a valid workspace association. Please contact your administrator.");
+  const user=workspaceIdentity({user:authUser,profile,school});
   db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");
   saveSelectedSchool(school);
-  const user={id:profile.id,role:profile.role||"admin",name:profile.full_name||authUser.email,email:authUser.email,school_id:school.id,_authUserId:authUser.id};
   if(["teacher","manager","bursar"].includes(user.role)){
-   const t=await supabase.from("teachers").select("*").eq("profile_id",authUser.id).maybeSingle();
+   const t=await supabase.from("teachers").select("*").eq("profile_id",authUser.id).eq("school_id",school.id).maybeSingle();
    if(t.data){user.staff_id=t.data.staff_id;user.teacher_db_id=t.data.id;user.name=t.data.display_name||t.data.full_name||user.name;user._userType="teacher";}
   }
   if(user.role==="student"){
    const link=await supabase.from("student_profiles").select("student_id").eq("profile_id",authUser.id).maybeSingle();
-   if(link.data){const st=await supabase.from("students").select("*").eq("id",link.data.student_id).maybeSingle();if(st.data){user.student_id=st.data.id;user.class_id=st.data.class_id;user.name=st.data.display_name||st.data.name||user.name;user._userType="student";}}
+   if(link.data){const st=await supabase.from("students").select("*").eq("id",link.data.student_id).eq("school_id",school.id).maybeSingle();if(st.data){user.student_id=st.data.id;user.class_id=st.data.class_id;user.name=st.data.display_name||st.data.name||user.name;user._userType="student";}}
   }
   saveSession(user);setScreen(isOAuthConsent?"oauth-consent":"app");
  };
@@ -59,16 +59,21 @@ export default function App(){
     if(error)throw error;
     if(recoveryMode){setAuthMode("update");setScreen("auth");return}
     if(data.session?.user){
-     const p=await supabase.from("profiles").select("*").eq("id",data.session.user.id).maybeSingle();
+     const verified=await supabase.auth.getUser();
+     if(verified.error||!verified.data?.user||verified.data.user.id!==data.session.user.id)throw new Error("Your session could not be verified. Sign in again.");
+     const p=await supabase.from("profiles").select("*").eq("id",verified.data.user.id).maybeSingle();
      if(p.error)throw p.error;
      if(p.data?.school_id){
       const s=await db.getSchool(p.data.school_id);
       if(s.error)throw s.error;
-      if(s.data){await activate({user:data.session.user,profile:p.data,school:s.data});return}
+      if(s.data){await activate({user:verified.data.user,profile:p.data,school:s.data});return}
      }
     }
     setScreen(isOAuthConsent?"auth":"landing");
-   }catch(e){if(alive){setBootError(e?.message||"Unable to load account.");setScreen(isOAuthConsent?"auth":"landing")}}
+   }catch(e){if(alive){
+    const safeMessages=["Your session could not be verified. Sign in again.","Your account is missing a valid workspace association. Please contact your administrator.","Your account role is missing or unsupported. Please contact your administrator."];
+    setBootError(safeMessages.includes(e?.message)?e.message:"Unable to verify your account. Please sign in again.");setScreen(isOAuthConsent?"auth":"landing");
+   }}
   };
   boot();
   return()=>{alive=false;authListener.subscription.unsubscribe()};

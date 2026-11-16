@@ -6,7 +6,7 @@
 
 JD must understand business objectives, coordinate departments, execute permitted work, track real progress, verify outcomes and request human approval when necessary.
 
-**Baseline:** 2026-11-16 · **8 phases** · **9 confirmed merged changes** · **0/9 final acceptance criteria verified**.
+**Baseline:** 2026-11-16 · **8 phases** · **10 confirmed merged changes** · **0/9 final acceptance criteria verified**.
 
 This is the master planning checklist, not an application task ledger. Checking a box does not execute work, approve an action or verify the application. Existing code is a starting point to inspect and reuse, not proof that a requirement passes. Unchecked means **not accepted**, not necessarily **not implemented**.
 
@@ -39,6 +39,8 @@ This is the master planning checklist, not an application task ledger. Checking 
 
 - [Assignment release gate](evidence/2026-11-16-assignment-release-gate/REPORT.md): user-approved safe merge keeps the existing production assignment endpoints active, tests both modes and never falls back after a checked write. Backend deployment and checked-mode activation remain separate approval gates.
 
+- [Owner identity and execution reliability](evidence/2026-11-16-owner-execution/REPORT.md): owner-only JD route additions, fail-closed identity/session checks, deliberate retry/cancel controls, direct handler authority tests and a reproduced retry SQL constraint failure with staged repair. No deployment or final acceptance is inferred.
+
 ## Execution order and phase gates
 
 Phases 1–4 form one foundation programme, delivered sequentially in small, testable slices rather than as four simultaneous rewrites. Security and isolation are prerequisites throughout; Phase 7 is not permission to defer them.
@@ -69,7 +71,7 @@ Do not start a replacement queue, permission system or approval system until exi
 | [#87](https://github.com/kainechibuzo/James-Denning/pull/87) | JD-first navigation and mobile drawer | `7d38797d3bdf4988ccbb56cae1e5f528be7d200c` |
 | [#88](https://github.com/kainechibuzo/James-Denning/pull/88) | Department/account navigation and persisted chat task reconciliation | `45e01d48edd06a3fbf258094067bdcd560939a6d` |
 | [#89](https://github.com/kainechibuzo/James-Denning/pull/89) | Creation recovery, assignment read-back and queue write safeguards | `15a3d1b0b76edffa0c935e0807e8b554ffe72bbb` |
-
+| [#90](https://github.com/kainechibuzo/James-Denning/pull/90) | Checklist reconciliation, truthful run history and gated atomic assignment | `f37ee68e4443cca3e194537c0914f20d73aac688` |
 
 ## Phase 1 — Stabilise the existing platform
 
@@ -411,7 +413,7 @@ These are release acceptance criteria, not a confidence estimate or feature coun
 1. Owner to approve genuinely isolated staging, synthetic fixtures and named independent reviewers. No production tenant or reused preview backend may substitute.
 2. Review the checked-assignment migration/endpoint/frontend as one release unit. Rehearse migration, denial tests, concurrent writers, rollback and authenticated browser lifecycle in staging before promotion.
 3. Obtain the original failed request time, endpoint/action and sanitised correlation reference; investigate persisted effects before retrying.
-4. Resolve the mapped owner-route and department-scoped permission gaps against the existing role architecture, with direct API/RLS tests rather than menu changes alone.
+4. Review the new owner-route, identity and execution-monitor fixes; rehearse the retry SQL repair in staging. Continue department-scoped permission gaps with direct API/RLS tests rather than menu changes alone.
 5. Continue the sequential foundation programme using the reconciled ledger. Preserve department/business/legal/recruitment sign-off gates; do not treat this inventory as permission to launch NaijaHaul.
 
 **One rule for every future implementation:** do not accept a task as complete just because code was written or an assistant reported success. Require tests, persisted records and evidence of the actual result.

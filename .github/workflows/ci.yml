@@ -48,6 +48,9 @@ jobs:
       - name: Validate checklist coverage and evidence integrity
         run: npm run test:checklist
 
+      - name: Test execution monitor, endpoint authority and retry SQL
+        run: npm run test:execution
+
       - name: Test run history truthfulness and mounted monitor
         run: npm run test:history
 

@@ -1,5 +1,8 @@
 // Legacy route/role catalogue retained for permission fallbacks and education layouts.
 // Layout changes must not silently widen route access or rename database records.
+// Owner additions are explicit JD-only grants, not aliases for legacy admin.
+export const canOpenOperations = role => ["owner","admin","manager"].includes(role);
+export const canAdministerOperations = role => ["owner","admin"].includes(role);
 const legacyEntries = [
     {id:"jd-chat",          label:"JD Assistant",    icon:"dashboard", roles:["admin","teacher","student","bursar","manager"]},
     {id:"jd-operations", label:"Business Operations", icon:"activity", roles:["admin","manager"]},
@@ -60,7 +63,7 @@ export const LEGACY_NAVIGATION = Object.freeze(legacyEntries.map((entry) => Obje
 // Settings already exists as an admin header action. Give business workspaces one
 // searchable destination rather than duplicated mobile/desktop header actions.
 export const WORKSPACE_NAVIGATION = Object.freeze([
-  ...LEGACY_NAVIGATION,
+  ...LEGACY_NAVIGATION.map(entry=>["jd-chat","jd-operations"].includes(entry.id)?Object.freeze({...entry,roles:Object.freeze(["owner",...entry.roles])}):entry),
   Object.freeze({id:"settings",label:"Organisation Settings",icon:"settings",roles:Object.freeze(["admin"])}),
 ]);
 
@@ -98,7 +101,7 @@ export function defaultCollapsedGroups(workspaceType, educationModuleEnabled, pa
 // Derive groups from permitted children: never leave an orphan or empty header.
 export function buildWorkspaceNavigation({role, canAccess = () => false, workspaceType, educationModuleEnabled, educationLabels = {}}) {
   const education = usesEducationNavigation(workspaceType, educationModuleEnabled);
-  const source = education ? LEGACY_NAVIGATION : WORKSPACE_NAVIGATION;
+  const source = education ? WORKSPACE_NAVIGATION.filter(entry=>entry.id!=="settings") : WORKSPACE_NAVIGATION;
   const permitted = new Map();
   for (const entry of source) {
     if (entry.group || !entry.roles.includes(role) || permitted.has(entry.id)) continue;

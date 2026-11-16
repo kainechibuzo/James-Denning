@@ -1,3 +1,4 @@
+import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
 import React, { lazy, useState, useEffect, useMemo, useCallback, createContext, useContext, Component, useRef } from "react";
 import { LayoutDashboard, Users, GraduationCap, BookUser, School, BookOpen, Layers, Paperclip, BarChart3, FileText, ScrollText, ShieldCheck, Settings2, ListChecks, Tag, FileStack, Zap, CreditCard, TrendingUp, Megaphone, ClipboardCheck, Mail, Inbox, ArrowUpCircle, History, CheckCircle2, UserPlus, Upload, Wallet, MessageSquare, Settings, BadgeCheck, ReceiptText, Link2, Bell, ChevronRight, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, ChevronDown, ChevronUp, MoreHorizontal, Calendar, CalendarDays, CalendarCheck, Clock, Star, Heart, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, LineChart, Hash, AtSign, Link, ExternalLink, Copy, Share2, Printer, Save, RotateCcw, RotateCw, ZoomIn, ZoomOut, Maximize, Minimize, HelpCircle, BookMarked, FlaskConical, Award, Clipboard, ClipboardList, UserCircle, UserCheck, UserX, UserMinus, UsersRound, BriefcaseBusiness, Banknote, Receipt, PiggyBank, TrendingDown, DollarSign, Percent, Calculator, ListOrdered, ListTree, Grid2x2, Columns2, Rows2, AlignLeft, AlignCenter, CircleCheck, CircleX, CircleAlert, CircleDot, CheckSquare, Square, Circle, Triangle, Hexagon, Bookmark, BookmarkCheck, Flag, FlagOff, Target, Crosshair, Compass, Map as MapIcon, Navigation, Bus, Car, Plane, Train, Package, Box, Boxes, ShoppingCart, ShoppingBag, Store, Building, Hotel, Hospital, Church, Landmark, PenLine, Pen, Type, Bold, Italic, Underline, Strikethrough, Subscript, Superscript, AlignJustify, IndentIncrease, IndentDecrease, List, TableProperties, Table, LayoutGrid, LayoutList, LayoutPanelLeft, Sidebar, SidebarClose, SidebarOpen, PanelLeft, PanelRight, Columns, Rows, MoveHorizontal, MoveVertical, Move, Maximize2, Minimize2, SquarePlus, SquareMinus, SquareCheck, SquareX, PlusCircle, MinusCircle, XCircle, AlertCircle, CheckCircle, Loader2, WifiOff, Wifi, ArrowRight, ArrowLeft, KeyRound } from "lucide-react";
 import ReactDOM from "react-dom";
@@ -11,7 +12,7 @@ import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/the
 import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
 import { ChatHome } from "./chat/ChatHome.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
-import { WORKSPACE_NAVIGATION, buildWorkspaceNavigation, usesEducationNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
+import { canOpenOperations, WORKSPACE_NAVIGATION, buildWorkspaceNavigation, usesEducationNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
 import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
 import { WorkspaceSwitchDialog } from "./components/workspace-switch-dialog.jsx";
 import { signOutForWorkspaceSwitch } from "./utils/switch-workspace.mjs";
@@ -2042,6 +2043,7 @@ function AppInner(){
   // showInactivityWarning replaced by useInactivityTimeout hook below
   const [rolePerms,setRolePerms]       = useState([]);
   const [userPerms,setUserPerms]       = useState([]);
+  const [ownerPermissions,setOwnerPermissions]=useState({scope:null,status:"idle"});
   const [pdfDoc,setPdfDoc]             = useState(null); // {html,title} — mobile in-app viewer
   const [inactivityMs,setInactivityMs] = useState(5*60*1000); // configurable via school_settings
   const {selectedSection,refreshSchool:ctxRefreshSchool,schoolName:_sidebarSchoolName,workspaceType,educationModuleEnabled,terms} = useSection();
@@ -2062,6 +2064,15 @@ function AppInner(){
   // Load permissions when user logs in
   useEffect(()=>{
     if(!user) return;
+    if(user.role==="owner"){
+      let current=true;const scope=ownerNavigationScope(user);
+      setRolePerms([]);setUserPerms([]);setOwnerPermissions({scope,status:"loading"});
+      readOwnerNavigationPermissions(db,user).then(result=>{
+        if(!current)return;
+        setRolePerms(result.rolePermissions);setUserPerms(result.userPermissions);setOwnerPermissions({scope:result.scope,status:"ready"});
+      }).catch(()=>{if(current)setOwnerPermissions({scope,status:"error"});});
+      return()=>{current=false;};
+    }
     if(user.role==="admin"){
       // Admin: load pending approval counts
       db.getStudentRequests("pending").then(({data})=>setPendingApprovals((data||[]).length));
@@ -2352,6 +2363,7 @@ function AppInner(){
   // Check if user can access a page (admin always yes)
   const canAccess=(pageId)=>{
     if(!user||user.role==="admin") return true;
+    if(user.role==="owner"&&(ownerPermissions.scope!==ownerNavigationScope(user)||ownerPermissions.status!=="ready"))return false;
     // Build all lookup keys: bare id + "page:"-prefixed id (for pages), both directions.
     // DB may store "my-classes" (old seed) OR "page:my-classes" (Settings UI save) — handle both.
     const keys=new Set([pageId]);
@@ -2482,6 +2494,7 @@ function AppInner(){
           {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"#d0d4da",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
         </div>}
         <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"#b6bec8",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
           {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#b6bec8",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length} matching pages</p>}
           {visibleNavigation.map((n,i)=>{
             // ── Group header ──
@@ -2688,8 +2701,8 @@ function AppInner(){
         )}
 
         <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
-          {page==="jd-chat"       && <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/>}
-          {page==="jd-operations" && (role==="admin"||role==="manager" ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
+          {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/> : <AccessDenied/>)}
+          {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="sections"      && <SectionsPage ctx={ctx}/>}
           {page==="dashboard"     && <DashboardPage ctx={ctx}/>}
           {page==="members"       && <MembersPage ctx={ctx}/>}

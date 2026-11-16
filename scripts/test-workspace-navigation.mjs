@@ -34,8 +34,8 @@ for(const role of ["admin","manager","bursar","teacher","student"]){
     }
   }
 }
-test("unknown/new roles get no implicit grant, even with a permissive resolver",()=>{
-  for(const role of [undefined,"owner","employee","hr","finance","public"])assert.deepEqual(build({role}),[]);
+test("unsupported roles get no implicit grant, even with a permissive resolver",()=>{
+  for(const role of [undefined,"employee","hr","finance","public"])assert.deepEqual(build({role}),[]);
 });
 test("every individual non-admin denial removes that route and it cannot reappear in search",()=>{
   for(const role of ["manager","bursar","teacher","student"]){
