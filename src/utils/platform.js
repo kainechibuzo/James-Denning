@@ -79,8 +79,12 @@ let _id = 1000;
 export const uid = () => ++_id;
 
 /**
- * Generate a random single-device session token.
- * Stored in DB and localStorage; mismatch → auto-logout on next poll.
+ * Generate a cryptographically secure opaque single-device session token.
+ * Fail closed rather than falling back to Math.random() on unsupported runtimes.
  */
-export const genSessionToken = () =>
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+export const genSessionToken = () => {
+  if (!globalThis.crypto?.randomUUID) {
+    throw new Error("Secure session token generation is unavailable in this browser");
+  }
+  return globalThis.crypto.randomUUID();
+};
