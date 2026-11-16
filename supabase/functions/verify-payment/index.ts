@@ -9,9 +9,15 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // Education-module feature (student fee payments). Disabled for the business platform;
+  // set JD_EDUCATION_MODULE_ENABLED=true in Supabase secrets to re-enable.
+  if (Deno.env.get("JD_EDUCATION_MODULE_ENABLED") !== "true") {
+    return new Response(JSON.stringify({ error: "education_module_disabled" }), { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
   try {
     const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
