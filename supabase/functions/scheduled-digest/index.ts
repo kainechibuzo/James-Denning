@@ -214,7 +214,7 @@ serve(async (req) => {
     if (!school_id) return new Response(JSON.stringify({ error: "school_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -324,7 +324,7 @@ serve(async (req) => {
     const n = events.length;
     const subject = `[${schoolName}] Activity Digest — ${cfg.frequency === "weekly" ? "Weekly" : "Daily"} (${n} event${n !== 1 ? "s" : ""})`;
 
-    const zetpKey = Deno.env.get("ZEPTO_API_KEY"); const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || "noreply@renaissancegardenschools.com"; const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
+    const zetpKey = Deno.env.get("ZEPTO_API_KEY"); const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || ""; const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
     const awsKey = Deno.env.get("AWS_ACCESS_KEY_ID"); const awsSecret = Deno.env.get("AWS_SECRET_ACCESS_KEY"); const awsRegion = Deno.env.get("AWS_REGION") || "eu-north-1"; const sesFrom = Deno.env.get("SES_FROM_EMAIL") || zetpFrom;
 
     let result: { ok: boolean; error?: string }; let provider: string;
