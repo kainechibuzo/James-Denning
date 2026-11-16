@@ -25,6 +25,10 @@ Deno.serve(async (req: Request) => {
   if (action === "authenticate") return reply({ error: "legacy_login_retired", message: "Password verification must use Supabase Auth." }, 410);
   const allowed = ["schools","access_settings","admin","student","teacher"];
   if (typeof action !== "string" || !allowed.includes(action)) return reply({ error: "invalid_action" }, 400);
+  // Student/teacher lookups belong to the optional Education module and are disabled by default.
+  if ((action === "student" || action === "teacher") && Deno.env.get("JD_EDUCATION_MODULE_ENABLED") !== "true") {
+    return reply({ error: "education_module_disabled" }, 410);
+  }
   if (!await rateLimit(req, action)) return reply({ error: "rate_limited" }, 429);
   if (action === "schools") {
     const { data, error } = await db.from("schools").select("id,name,logo,address,phone,student_id_prefix").eq("status","active").order("name").limit(200);
