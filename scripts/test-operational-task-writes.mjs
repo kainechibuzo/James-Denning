@@ -6,7 +6,7 @@ const draft={...blankTask(),title:"Inspect fleet",department:"Operations"};
 const attempt={version:1,id:token,task:normaliseTaskDraft(draft)};
 const row=()=>({id,school_id:school,created_by:actor,idempotency_key:`${school}:task.create:${token}`,title:draft.title,description:"",department:"Operations",priority:"normal",due_at:null,status:"queued",assigned_to:null,updated_at:"2026-11-16T20:00:00.123456+00:00"});
 const ack=()=>({task:row(),reused:false,auditRecorded:true,auditId:audit});
-const config={role:"manager",schoolId:school,actorId:actor,attempt};
+const config={role:"manager",schoolId:school,actorId:actor,attempt,assignmentMode:"checked"};
 const journal=`jd.task-create.v1:${school}:${actor}`;
 const memory=()=>{const data=new Map();return{getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value),removeItem:key=>data.delete(key)};};
 const defer=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return{promise,resolve};};

@@ -3,7 +3,7 @@
   "assessedAt": "2026-11-16",
   "baseCommit": "15a3d1b0b76edffa0c935e0807e8b554ffe72bbb",
   "branch": "arena/dfc4b866-james-denning",
-  "scope": "Repository and existing evidence reconciliation; source mapping is not comprehensive code audit or live acceptance. Current branch engineering changes require staging/review/deployment.",
+  "scope": "Repository and existing evidence reconciliation; source mapping is not comprehensive code audit or live acceptance. The safe-merge release gate keeps existing assignment behaviour by default; new checked assignment remains disabled pending staging/review/backend deployment.",
   "items": [
     {
       "id": "P1-01",
@@ -1147,7 +1147,7 @@
       "id": "P3-E12",
       "requirement": "Make task updates persistent.",
       "implementation": "partial",
-      "assessment": "Creation/transition persist with audit; this branch adds atomic checked assignment. Full deployment/session acceptance remains pending.",
+      "assessment": "Creation/transition persist with audit; this branch adds atomic checked assignment. Full deployment/session acceptance remains pending. Release update: the frontend defaults to the existing legacy contract; checked assignment is implemented but not activated.",
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
@@ -1155,7 +1155,8 @@
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Make task updates persistent. Retain expected/actual results and independent review.",
@@ -1167,7 +1168,7 @@
       "id": "P3-E13",
       "requirement": "Make task ownership explicit.",
       "implementation": "partial",
-      "assessment": "Tasks have department, creator and assignee; stale-assignment CAS/audit added here. Full ownership policy remains incomplete.",
+      "assessment": "Tasks have department, creator and assignee; stale-assignment CAS/audit added here. Full ownership policy remains incomplete. Release update: the frontend defaults to the existing legacy contract; checked assignment is implemented but not activated.",
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
@@ -1175,7 +1176,8 @@
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Make task ownership explicit. Retain expected/actual results and independent review.",
@@ -1983,7 +1985,7 @@
       "id": "P4-T05",
       "requirement": "Check request validation and response handling.",
       "implementation": "partial",
-      "assessment": "Strict create/transition/checked-assignment acknowledgements and validation tested locally; old servers fail closed.",
+      "assessment": "Strict create/transition/checked-assignment acknowledgements and validation tested locally; old servers fail closed. Release update: the frontend defaults to the existing legacy contract; checked assignment is implemented but not activated.",
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
@@ -1991,7 +1993,8 @@
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Check request validation and response handling. Retain expected/actual results and independent review.",
@@ -2083,7 +2086,7 @@
       "id": "P4-T10",
       "requirement": "Test creation, assignment, progress updates and completion end to end.",
       "implementation": "partial",
-      "assessment": "Local SQL/controller/mounted UI cover creation, assignment and transitions; not an authenticated browser-to-Supabase end-to-end test.",
+      "assessment": "Local SQL/controller/mounted UI cover creation, assignment and transitions; not an authenticated browser-to-Supabase end-to-end test. Release update: the frontend defaults to the existing legacy contract; checked assignment is implemented but not activated.",
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
@@ -2091,7 +2094,8 @@
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Test creation, assignment, progress updates and completion end to end. Retain expected/actual results and independent review.",

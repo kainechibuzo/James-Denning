@@ -6,8 +6,8 @@ const card={background:"var(--jd-card,#fff)",border:"1px solid var(--jd-border,#
 const input={width:"100%",boxSizing:"border-box",padding:"9px 10px",border:"1px solid #dfe2e7",borderRadius:8,background:"var(--jd-input,#fff)",color:"inherit",fontSize:13};
 const button={padding:"10px 13px",border:"1px solid #dfe2e7",borderRadius:8,background:"var(--jd-card,#fff)",color:"inherit",cursor:"pointer",fontSize:12,fontWeight:650};
 
-export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onTasksChanged,active=true}) {
-  const controller=useMemo(()=>createTaskWriteController(client,{role,schoolId,actorId,storage}),[client,role,schoolId,actorId,storage]);
+export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onTasksChanged,active=true,assignmentMode}) {
+  const controller=useMemo(()=>createTaskWriteController(client,{role,schoolId,actorId,storage,assignmentMode}),[client,role,schoolId,actorId,storage,assignmentMode]);
   const state=useSyncExternalStore(controller.subscribe,controller.getSnapshot,controller.getSnapshot);
   const [draft,setDraft]=useState(blankTask);
   useEffect(()=>{setDraft(blankTask());controller.activate();return()=>controller.deactivate();},[controller]);

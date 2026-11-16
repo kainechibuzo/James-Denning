@@ -35,7 +35,9 @@ This is the master planning checklist, not an application task ledger. Checking 
 
 - [Task creation and assignment safeguards](evidence/2026-11-16-task-writes/REPORT.md): same-request recovery retained per tab/account/organisation, strict creation/audit acknowledgement, assignment read-back and repaired Auto assign wiring. 167 task tests pass, including actual creation RPC replay/rollback in isolated PostgreSQL and mounted queue tests. That merged baseline lacks an audited transactional manual-assignment contract. The later reconciliation slice below supplies an undeployed candidate repair; live acceptance remains open.
 
-- [Checklist reconciliation, atomic assignment and truthful run history](evidence/2026-11-16-checklist-reconciliation/REPORT.md): full inventory with explicit gaps; checked transactional assignment/audit and exact-ID read-back; neutral run labels and fail-closed history reads. Changes are on the current branch, not deployed or independently accepted. Isolated staging remains a release prerequisite.
+- [Checklist reconciliation, atomic assignment and truthful run history](evidence/2026-11-16-checklist-reconciliation/REPORT.md): full inventory with explicit gaps; checked transactional assignment/audit and exact-ID read-back; neutral run labels and fail-closed history reads. Checked assignment is now gated off by default; the safe-merge follow-up preserves existing production assignment behaviour. Isolated staging remains a prerequisite before enabling or deploying the new assignment contract.
+
+- [Assignment release gate](evidence/2026-11-16-assignment-release-gate/REPORT.md): user-approved safe merge keeps the existing production assignment endpoints active, tests both modes and never falls back after a checked write. Backend deployment and checked-mode activation remain separate approval gates.
 
 ## Execution order and phase gates
 

@@ -1,6 +1,8 @@
 # Checklist reconciliation and task integrity — 2026-11-16
 
-**Status: local engineering checks pass; no phase or final acceptance gate passed. Not deployed.**
+**Historical validation:** local engineering checks passed at the recorded commits; no phase or final acceptance gate passed.
+
+**Release update:** the user chose “Make the merge safe first.” A subsequent [assignment release gate](../2026-11-16-assignment-release-gate/REPORT.md) preserves the existing PR #89 assignment contract by default. The checklist/run-history changes can merge without enabling the undeployed checked assignment flow. The backend migration and checked mode remain subject to the staging/release gates below. This supersedes the earlier requirement to hold the entire frontend PR.
 
 Base: `15a3d1b0b76edffa0c935e0807e8b554ffe72bbb` (merged PR #89). Branch: `arena/dfc4b866-james-denning`.
 Delivery: Arena coding agent for the bounded engineering changes. Independent reviewer: **unassigned**.
@@ -105,9 +107,9 @@ Read-only connector observations are sanitised transcriptions from this session,
 - PR #89 post-merge Verify application run [43944468328](https://github.com/kainechibuzo/James-Denning/actions/runs/43944468328) passed at the exact base SHA; rechecked metadata in [pr89-postmerge-ci.json](pr89-postmerge-ci.json).
 - Prior session Vercel observation (request `54957b17-d890-4f18-b1ce-0ea3a9f0f291`) identified production deployment `dpl_5kxJsxSP9t83uKnHQQncjkTBbW4e`, READY/PROMOTED at `15a3d1b0b76edffa0c935e0807e8b554ffe72bbb`. [PR #89 evidence comment](https://github.com/kainechibuzo/James-Denning/pull/89#issuecomment-6927521940). This is **prior release metadata**, not deployment evidence for this branch or authenticated runtime acceptance.
 
-## 6. Required release sequence — DO NOT MERGE AS FRONTEND ONLY
+## 6. Required release sequence — before enabling checked assignment
 
-Frontend deployment is automatic on master; Supabase release is explicit. A merge before the backend release would leave assignment unavailable/unconfirmed. Keep the PR draft/blocked until the following are approved:
+Frontend deployment is automatic on master; Supabase release is explicit. The original ungated frontend would have required its backend before merge. The later release gate permits merging with `TASK_ASSIGNMENT_RELEASE="legacy"`; it sends only the existing assignment/list contracts and does not enable the new endpoint. Before deploying the new backend or changing the switch to `checked`, complete the following:
 
 1. Name reviewer and release owner. Establish an actually separate staging target and preview-only public configuration per [STAGING_SETUP.md](../../../documentation/STAGING_SETUP.md). Independently verify canonical backend identity and permission for synthetic writes. Never use the production project or an unrelated project.
 2. Reconcile migration history on staging, including the repository's documented legacy migration-version mismatch. Do not blindly run a full production `db push --include-all`.
@@ -122,9 +124,9 @@ No release, review or business approval is inferred from this report.
 
 ## 7. Draft PR and remote checks
 
-Draft [PR #90](https://github.com/kainechibuzo/James-Denning/pull/90) contains implementation commit `79fd1be` (full SHA in the evidence below). It is **not merged** and remains blocked on the release sequence above.
+Draft [PR #90](https://github.com/kainechibuzo/James-Denning/pull/90) contains implementation commit `79fd1be` (full SHA in the evidence below). At that historical observation it was **not merged** and blocked on the release sequence above. The release-gate follow-up records the subsequently approved safe-merge plan.
 
 - [Verify application 43947678533](https://github.com/kainechibuzo/James-Denning/actions/runs/43947678533): passed, including checklist/history/task tests and its Deno checks. [Step metadata](verify-ci.json).
 - [Web CI 43947678577](https://github.com/kainechibuzo/James-Denning/actions/runs/43947678577): passed, including the broader Deno tests and Edge Function type checks. [Step metadata](web-ci.json).
 - Vercel GitHub check passed for preview `ASWNKsTgZVYCDnaZjYNbJmpYW1ov`. [PR check snapshot](pr90-checks.json). This is a preview build result, **not** proof of backend release, isolated staging configuration or authenticated runtime acceptance. No writes were attempted through that preview.
-- This evidence appendix is a documentation-only follow-up to the tested implementation. The source manifest remains unchanged. Independent human review is still unassigned; green CI is not that review.
+- This evidence appendix is a documentation-only follow-up to the tested implementation. The source manifest records that historical implementation, not the later release-gate changes. Independent human review is still unassigned; green CI is not that review.

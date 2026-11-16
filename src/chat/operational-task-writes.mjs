@@ -1,6 +1,11 @@
 import {isTaskId,readOperationalTasks} from "./operational-task-records.mjs";
 import {transitionOperationalTask} from "./operational-task-client.mjs";
 
+// Release switch, not an authorisation boundary. Keep the deployed PR #89
+// contract until isolated staging and the new backend release are approved.
+// Change only in a reviewed release; never infer availability from a failed write.
+export const TASK_ASSIGNMENT_RELEASE = "legacy";
+
 export const canManageTasks = role => ["owner","admin","manager"].includes(role);
 const statuses = new Set(["queued","in_progress","blocked","completed","cancelled"]);
 const priorities = new Set(["low","normal","high","urgent"]);
@@ -77,9 +82,34 @@ export async function assignOperationalTask(client,{role,taskId,assigneeId,auto=
   return {assigned:true,task:saved,auditId:auto?null:data.auditId};
 }
 
+// Deliberate compatibility mode preserves the already-deployed PR #89 path.
+// Its existing limits (bounded read, no audit acknowledgement or CAS) remain
+// explicit. This is NOT a fallback after any checked request was attempted.
+export async function assignReleasedOperationalTask(client,options) {
+  const mode=options.assignmentMode??TASK_ASSIGNMENT_RELEASE;
+  if(mode==="checked") return assignOperationalTask(client,options);
+  if(mode!=="legacy") fail("Assignment release configuration is invalid. No request was sent.");
+  const {role,taskId,auto=false}=options;
+  let {assigneeId}=options;
+  if(!canManageTasks(role)) fail("Manager access is required to assign tasks.");
+  if(!isTaskId(taskId)||(!auto&&!isTaskId(assigneeId))) fail("Choose a valid task and assignee.");
+  const data=await invokeWrite(client,auto?{action:"operations.task.auto_assign",taskId}:{action:"operations.task.assign",taskId,assigneeId});
+  if(auto) {
+    if(data.assignment?.assigned===false&&data.assignment.reason==="No active department member has available capacity") return {assigned:false};
+    if(data.assignment?.assigned!==true||data.assignment.task_id!==taskId||!isTaskId(data.assignment.assignee_id)) fail("Auto-assignment was not confirmed. Refresh task records before trying again.");
+    assigneeId=data.assignment.assignee_id;
+  } else if(data.task?.id!==taskId||data.task.assigned_to!==assigneeId||!statuses.has(data.task.status)) {
+    fail("Assignment was not confirmed. Refresh task records before trying again.");
+  }
+  const tasks=await readOperationalTasks(client,role);
+  const saved=tasks.find(task=>task.id===taskId);
+  if(!saved||saved.assigned_to!==assigneeId) fail("Assignment read-back did not match. Refresh task records before trying again.");
+  return {assigned:true,task:saved,tasks,auditId:null};
+}
+
 // Per-tab journal: no credentials; scoped by authenticated actor and organisation.
 // Persist BEFORE the first request. Never rotate the identity of an unresolved request.
-export function createTaskWriteController(client,{role,schoolId,actorId,storage,randomUUID=()=>crypto.randomUUID()}) {
+export function createTaskWriteController(client,{role,schoolId,actorId,storage,assignmentMode=TASK_ASSIGNMENT_RELEASE,randomUUID=()=>crypto.randomUUID()}) {
   const validScope=isTaskId(schoolId)&&isTaskId(actorId);
   const key=`jd.task-create.v1:${schoolId}:${actorId}`;
   const listeners=new Set();
@@ -150,8 +180,8 @@ export function createTaskWriteController(client,{role,schoolId,actorId,storage,
     },
     async assign(taskId,assigneeId,auto=false){
       return api.mutate(taskId,async()=>{
-        const result=await assignOperationalTask(client,{role,taskId,assigneeId,auto,expectedTask:state.tasks.find(t=>t.id===taskId)});
-        return result.assigned?{tasks:state.tasks.map(t=>t.id===taskId?result.task:t),notice:result.auditId?"Assignment saved with audit evidence and confirmed by record read-back.":"Assignment confirmed by record read-back. Auto-assignment audit evidence is not verified by this response."}:{notice:"No assignment made: no active department member has available capacity."};
+        const result=await assignReleasedOperationalTask(client,{role,taskId,assigneeId,auto,assignmentMode,expectedTask:state.tasks.find(t=>t.id===taskId)});
+        return result.assigned?{tasks:result.tasks||state.tasks.map(t=>t.id===taskId?result.task:t),notice:result.auditId?"Assignment saved with audit evidence and confirmed by record read-back.":"Assignment confirmed by record read-back. Audit evidence is not verified by this response."}:{notice:"No assignment made: no active department member has available capacity."};
       });
     },
     async transition(taskId,status){

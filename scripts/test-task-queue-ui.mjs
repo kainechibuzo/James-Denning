@@ -25,7 +25,7 @@ function fixture(write){
  return{client,calls,storage};
 }
 function created(body,reused=false){return{data:{task:{id,school_id:school,created_by:actor,idempotency_key:`${school}:task.create:${body.idempotencyId}`,title:body.task.title,description:body.task.description,department:body.task.department||null,priority:body.task.priority,due_at:body.task.dueAt,status:"queued"},auditRecorded:true,auditId:audit,reused}};}
-const element=(f,props={})=>React.createElement(JDTaskQueue,{client:f.client,storage:f.storage,schoolId:school,actorId:actor,role:"manager",...props});
+const element=(f,props={})=>React.createElement(JDTaskQueue,{client:f.client,storage:f.storage,schoolId:school,actorId:actor,role:"manager",assignmentMode:"checked",...props});
 async function mount(f,props={}){
  const dom=new JSDOM('<!doctype html><body><div id="root"></div></body>');globalThis.window=dom.window;globalThis.document=dom.window.document;globalThis.IS_REACT_ACT_ENVIRONMENT=true;
  const root=createRoot(document.querySelector("#root"));await act(async()=>root.render(element(f,props)));
@@ -101,4 +101,19 @@ test("tab hide/reopen preserves the unsubmitted draft and refreshes queue record
  const f=fixture(()=>assert.fail("no write"));const m=await mount(f);
  try{await enterTitle("Unsubmitted draft");await m.render({active:false});await m.render({active:true});assert.equal(document.querySelector('input[maxlength="180"]').value,"Unsubmitted draft");assert.equal(f.calls.filter(c=>c.action==="operations.task.list").length,2);}
  finally{await m.cleanup();}
+});
+for(const auto of [false,true])test(`shipping default mounted queue preserves ${auto?'auto':'manual'} assignment against legacy backend`,async()=>{
+ const f=fixture((body,save)=>{
+ assert.equal(body.action,auto?'operations.task.auto_assign':'operations.task.assign');
+ const task={...row(),assigned_to:member};save(task);
+ return auto?{data:{assignment:{assigned:true,task_id:id,assignee_id:member}}}:{data:{task}};
+ });
+ const m=await mount(f,{assignmentMode:undefined});
+ try{
+ if(auto)await act(async()=>button('Auto assign').click());
+ else await act(async()=>Simulate.change(document.querySelector('select[aria-label="Assign Existing task"]'),{target:{value:member}}));
+ assert.match(text(),/Assignment confirmed by record read-back/);assert.match(text(),/Audit evidence is not verified/);assert.doesNotMatch(text(),/Assignment saved with audit evidence/);
+ assert.equal(document.querySelector('select[aria-label="Assign Existing task"]').value,member);
+ assert.equal(f.calls.some(b=>['operations.task.assign_checked','operations.task.get'].includes(b.action)),false);
+ }finally{await m.cleanup();}
 });
