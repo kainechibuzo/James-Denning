@@ -31,6 +31,8 @@ This is the master planning checklist, not an application task ledger. Checking 
 
 - [Chat task-state and reconciliation slice](evidence/2026-11-16-task-workspace/REPORT.md): separates local ticks, unverified snapshots and refreshed saved records; enforces read-before-write and refresh after uncertain acknowledgement. The expanded task suite has 104 passing tests, including mounted React task cards and synthetic read-back/remount. Live authenticated persistence and the complete role architecture remain unverified.
 
+- [Task creation and assignment safeguards](evidence/2026-11-16-task-writes/REPORT.md): same-request recovery retained per tab/account/organisation, strict creation/audit acknowledgement, assignment read-back and repaired Auto assign wiring. 167 task tests pass, including actual creation RPC replay/rollback in isolated PostgreSQL and mounted queue tests. Manual assignment still lacks an audited transactional backend contract; live acceptance remains open.
+
 ## Execution order and phase gates
 
 Phases 1–4 form one foundation programme, delivered sequentially in small, testable slices rather than as four simultaneous rewrites. Security and isolation are prerequisites throughout; Phase 7 is not permission to defer them.

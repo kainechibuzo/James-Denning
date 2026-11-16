@@ -30,17 +30,17 @@ before(async () => {
   `);
   await db.exec(tableDDL("20261112084532_jd_batch01_organisation_operations_hiring.sql", "jd_operational_tasks"));
   await db.exec(tableDDL("20261111085143_jd_autonomous_automation.sql", "jd_audit_events"));
-  // Apply all definitions of this RPC in migration order, not just the original
+  // Apply all definitions of the transition and creation RPCs in migration order, not just the original
   // admin/manager-only definition. Discover uppercase/lowercase CREATE equally.
   let definitions = 0;
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
     const sql = read(file);
-    const pattern = /create or replace function public\.jd_transition_operational_task\s*\([\s\S]*?\bas\s+(\$[a-z_]*\$)[\s\S]*?\1\s*;/gi;
+    const pattern = /create or replace function public\.(?:jd_transition_operational_task|jd_create_operational_task)\s*\([\s\S]*?\bas\s+(\$[a-z_]*\$)[\s\S]*?\1\s*;/gi;
     for (const match of sql.matchAll(pattern)) {
       await db.exec(match[0]);
       definitions++;
     }
-    for (const grant of sql.matchAll(/^(?:grant|revoke)[^\n]*on function public\.jd_transition_operational_task[^\n]*;/gmi)) {
+    for (const grant of sql.matchAll(/^(?:grant|revoke)[^\n]*on function public\.(?:jd_transition_operational_task|jd_create_operational_task)[^\n]*;/gmi)) {
       await db.exec(grant[0]);
     }
   }
@@ -145,4 +145,42 @@ test("service-only grants and empty search_path survive the role-matrix replacem
   const { rows: functions } = await db.query("select prosecdef, proconfig from pg_proc where oid=$1::regprocedure", [signature]);
   assert.equal(functions[0].prosecdef, true);
   assert.ok(functions[0].proconfig.includes('search_path=""'));
+});
+
+async function createTask(actor=actors.manager,patch={},role="service_role") {
+  const task={title:"Synthetic creation",description:"Test only",department:"Operations",due:null,priority:"normal",key:"creation-test-request",...patch};
+  await db.exec(`set role ${role}`);
+  try{return (await db.query("select public.jd_create_operational_task($1,$2,$3,$4,$5,$6,$7) as result",[actor,task.title,task.description,task.department,task.due,task.priority,task.key])).rows[0].result;}
+  finally{await db.exec("reset role");}
+}
+for(const role of ["owner","admin","manager"]){
+ test(`${role}: creation replay persists one task and returns the original audit`,async()=>{
+  const first=await createTask(actors[role]);const second=await createTask(actors[role]);
+  assert.equal(first.reused,false);assert.equal(second.reused,true);assert.equal(second.task.id,first.task.id);assert.equal(second.auditId,first.auditId);assert.equal(second.auditRecorded,true);
+  const rows=await db.query("select id from public.jd_operational_tasks where idempotency_key='creation-test-request'");assert.equal(rows.rows.length,1);
+  const audits=await db.query("select id,event_json from public.jd_audit_events where event_type='operational_task.created'");assert.equal(audits.rows.length,1);assert.equal(audits.rows[0].id,first.auditId);assert.equal(audits.rows[0].event_json.task_id,first.task.id);
+ });
+}
+test("creation key reuse with different payload is rejected without another task/audit",async()=>{
+ const first=await createTask();for(const patch of [{title:"Different"},{description:"Different"},{department:"Different"},{priority:"urgent"},{due:"2026-11-17T00:00:00Z"}])await assert.rejects(createTask(actors.manager,patch),{code:"22023"});
+ assert.equal((await createTask()).task.id,first.task.id);assert.equal((await db.query("select id from public.jd_audit_events")).rows.length,1);
+});
+test("identical creation keys are isolated by tenant",async()=>{
+ const first=await createTask(),other=await createTask(actors.outsider);assert.notEqual(first.task.id,other.task.id);assert.equal(first.task.school_id,orgA);assert.equal(other.task.school_id,orgB);
+});
+for(const role of ["staff","finance","viewer"]){test(`${role}: creation rejected without a task or audit`,async()=>{
+ await assert.rejects(createTask(actors[role]),{code:"42501"});assert.equal((await db.query("select id from public.jd_audit_events")).rows.length,0);assert.equal((await db.query("select id from public.jd_operational_tasks")).rows.length,1);
+});}
+for(const role of ["anon","authenticated"]){test(`${role}: cannot forge creation actor through the service-only RPC`,async()=>{
+ await assert.rejects(createTask(actors.owner,{},role),{code:"42501"});
+});}
+test("audit failure rolls back creation, allowing safe retry with the same identity",async()=>{
+ await db.exec("alter table public.jd_audit_events add constraint force_create_audit_failure check (event_type <> 'operational_task.created')");
+ try {await assert.rejects(createTask(),{code:"23514"});assert.equal((await db.query("select id from public.jd_operational_tasks where idempotency_key='creation-test-request'")).rows.length,0);}
+ finally{await db.exec("alter table public.jd_audit_events drop constraint force_create_audit_failure");}
+ assert.equal((await createTask()).auditRecorded,true);
+});
+test("legacy reused task without original creation audit does not manufacture audit evidence",async()=>{
+ await db.exec("update public.jd_operational_tasks set title='Synthetic creation',description='Test only',department='Operations',idempotency_key='creation-test-request'");
+ const result=await createTask();assert.equal(result.reused,true);assert.equal(result.auditRecorded,false);assert.equal(result.auditId,null);assert.equal((await db.query("select id from public.jd_audit_events")).rows.length,0);
 });
