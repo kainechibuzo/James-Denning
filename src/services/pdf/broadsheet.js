@@ -4,6 +4,10 @@
  */
 import { getGrade } from "../../utils/grades.js";
 
+const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}[char]));
+
 export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSchema,schoolName}){
   const ordinal=n=>{if(n===1)return'1st';if(n===2)return'2nd';if(n===3)return'3rd';return`${n}th`;};
   const gradeFor=score=>{
@@ -15,8 +19,8 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
   // ── Category header columns ─────────────────────────────────────────────────
   const subHdr=subjects.map(s=>
     mode==='detailed'
-      ?`<th colspan="3" style="background:#111827;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:9px;text-align:center;white-space:nowrap;">${s.name}</th>`
-      :`<th style="background:#111827;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:9px;text-align:center;white-space:nowrap;">${s.name}</th>`
+      ?`<th colspan="3" style="background:#111827;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:9px;text-align:center;white-space:nowrap;">${escapeHtml(s.name)}</th>`
+      :`<th style="background:#111827;color:#fff;padding:6px 3px;border:1px solid #c4d4ee;font-size:9px;text-align:center;white-space:nowrap;">${escapeHtml(s.name)}</th>`
   ).join('');
 
   const subHdr2=mode==='detailed'?subjects.map(()=>
@@ -31,23 +35,23 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
     const posCl=row.position<=3?'color:#D97706;font-weight:900;':'color:#0F172A;font-weight:700;';
     const subCells=row.subjectScores.map(ss=>{
       if(mode==='detailed'){
-        const tot=ss.total!=null?`<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:9px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):'color:#94A3B8;'}">${ss.total??'—'}</td>`:'';
-        return `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:8px;">${ss.ca??'—'}</td>`+
-               `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:8px;">${ss.exam??'—'}</td>`+
-               `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:9px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):''}">${ss.total??'—'}</td>`;
+        const tot=ss.total!=null?`<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:9px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):'color:#94A3B8;'}">${escapeHtml(ss.total??'—')}</td>`:'';
+        return `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:8px;">${escapeHtml(ss.ca??'—')}</td>`+
+               `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:8px;">${escapeHtml(ss.exam??'—')}</td>`+
+               `<td style="text-align:center;padding:4px 2px;border:1px solid #e2e8f0;font-size:9px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):''}">${escapeHtml(ss.total??'—')}</td>`;
       }
-      return `<td style="text-align:center;padding:4px 3px;border:1px solid #e2e8f0;font-size:10px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):'color:#94A3B8;'}">${ss.total??'—'}</td>`;
+      return `<td style="text-align:center;padding:4px 3px;border:1px solid #e2e8f0;font-size:10px;font-weight:700;${ss.total!=null?(ss.total>=50?'color:#15803D;':'color:#DC2626;'):'color:#94A3B8;'}">${escapeHtml(ss.total??'—')}</td>`;
     }).join('');
 
     return `<tr style="background:${bg};">
       <td style="text-align:center;padding:5px 2px;border:1px solid #e2e8f0;font-size:10px;color:#64748B;">${i+1}</td>
-      <td style="padding:5px 6px;border:1px solid #e2e8f0;font-size:10px;font-weight:600;white-space:nowrap;">${row.student.last_name||''} ${row.student.first_name||''}</td>
-      <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:9px;color:#64748B;">${row.student.admission_number||'—'}</td>
+      <td style="padding:5px 6px;border:1px solid #e2e8f0;font-size:10px;font-weight:600;white-space:nowrap;">${escapeHtml((row.student.last_name||'')+' '+(row.student.first_name||''))}</td>
+      <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:9px;color:#64748B;">${escapeHtml(row.student.admission_number||'—')}</td>
       ${subCells}
       <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:11px;font-weight:800;background:#F3F4F6;color:#111827;">${row.grandTotal.toFixed(1)}</td>
       <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:10px;font-weight:700;background:#F3F4F6;color:#111827;">${row.average.toFixed(1)}</td>
       <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:10px;${posCl}">${ordinal(row.position)}</td>
-      <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:11px;font-weight:900;">${gradeFor(row.average)}</td>
+      <td style="text-align:center;padding:5px 3px;border:1px solid #e2e8f0;font-size:11px;font-weight:900;">${escapeHtml(gradeFor(row.average))}</td>
     </tr>`;
   }).join('');
 
@@ -67,7 +71,7 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
   const genDate=new Date().toLocaleDateString('en-NG',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
   return`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-<title>${cls?.name||'Group'} Broadsheet</title>
+<title>${escapeHtml(cls?.name||'Group')} Broadsheet</title>
 <style>
   *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;}
   @page{size:A3 landscape;margin:8mm 10mm;}
@@ -80,10 +84,10 @@ export function buildBroadsheetHTML({rows,subjects,cls,session,term,mode,gradeSc
 <button class="no-print print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
 <div style="padding:10px 14px;">
   <div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:3px double #111827;">
-    <div style="font-size:9px;color:#64748B;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">${schoolName||'Organization Management Portal'}</div>
+    <div style="font-size:9px;color:#64748B;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">${escapeHtml(schoolName||'Organization Management Portal')}</div>
     <div style="font-size:22px;font-weight:900;color:#030712;letter-spacing:.03em;">GROUP BROADSHEET</div>
-    <div style="font-size:15px;font-weight:700;color:#111827;margin-top:3px;">${cls?.name||'Group'}</div>
-    <div style="font-size:11px;color:#64748B;margin-top:2px;">${term?.name||''} &bull; ${session?.name||''}</div>
+    <div style="font-size:15px;font-weight:700;color:#111827;margin-top:3px;">${escapeHtml(cls?.name||'Group')}</div>
+    <div style="font-size:11px;color:#64748B;margin-top:2px;">${escapeHtml(term?.name||'')} &bull; ${escapeHtml(session?.name||'')}</div>
   </div>
   <div style="overflow-x:auto;">
   <table>
