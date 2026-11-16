@@ -295,9 +295,14 @@ async function shareOrDownload(filename, content, mimeType="text/plain"){
 // ── Script loader ─────────────────────────────────────────────────────────────
 function loadScript(src){
   return new Promise((resolve,reject)=>{
-    if(document.querySelector(`script[src="${src}"]`)){resolve();return;}
+    let parsed;
+    try{parsed=new URL(src);}catch{return reject(new Error("Invalid script URL"));}
+    if(parsed.protocol!=="https:"||parsed.hostname!=="cdnjs.cloudflare.com"||!parsed.pathname.startsWith("/ajax/libs/")){
+      return reject(new Error("External script host is not approved"));
+    }
+    if(document.querySelector(`script[src="${parsed.href}"]`)){resolve();return;}
     const s=document.createElement("script");
-    s.src=src;s.onload=resolve;s.onerror=reject;
+    s.src=parsed.href;s.crossOrigin="anonymous";s.referrerPolicy="no-referrer";s.onload=resolve;s.onerror=reject;
     document.head.appendChild(s);
   });
 }
