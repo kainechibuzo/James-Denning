@@ -26,6 +26,7 @@ This is the master planning checklist, not an application task ledger. Checking 
 **Evidence:**
 - [Phase 1 baseline, findings and blockers](evidence/2026-11-16-phase-1/REPORT.md).
 - [Task reliability and staging-safety slice](evidence/2026-11-16-task-reliability/REPORT.md): staff action routing, strict task/audit acknowledgements and staging target guards implemented; 57 task tests and 43 guard assertions pass locally. Live endpoint/browser acceptance and incident correlation remain pending. No requirement is marked accepted from local evidence alone.
+- [Phase 2 navigation application](evidence/2026-11-16-phase2-navigation/REPORT.md): JD branding, permission-filtered sidebar search, expansion/active-page accessibility and mobile focus/scroll handling applied on the branch based on merged PR #86. All 25 navigation tests pass locally; complete departmental consolidation and live/browser acceptance remain open.
 
 ## Execution order and phase gates
 

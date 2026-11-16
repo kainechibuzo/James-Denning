@@ -24,6 +24,8 @@ jobs:
         run: npm ci
       - name: Test staging safety and verification guards
         run: npm run test:guards
+      - name: Test navigation search and mobile drawer behaviour
+        run: npm run test:navigation
       - name: Test operational task client and isolated PostgreSQL transitions
         run: npm run test:tasks
       - name: Verify production web build, navigation and bundle budget
