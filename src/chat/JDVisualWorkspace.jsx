@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { CheckCircle2, Circle, Clock3, AlertCircle, GitBranch, ClipboardList, MessageSquare, Building2, FileCheck2, ChevronDown, ChevronUp, ArrowRight, Activity } from "lucide-react";
 
+import {isSavedTaskCard,nextChecklistTaskStatus} from "./operational-task-records.mjs";
+import {taskTransitionAction} from "./operational-task-client.mjs";
+
 const text = (value, fallback = "") => typeof value === "string" ? value.slice(0, 500) : fallback;
 const list = (value, max = 30) => Array.isArray(value) ? value.slice(0, max) : [];
-const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", queued: "Queued", awaiting_approval: "Awaiting approval", queued: "Queued" }[status] || "Pending");
+const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", queued: "Queued", awaiting_approval: "Awaiting approval", cancelled: "Cancelled" }[status] || "Pending");
 
 function Status({ value }) {
   const status = String(value || "pending");
@@ -18,9 +21,10 @@ function Panel({ title, icon: Icon, children, aside }) {
 /**
  * Safe renderer for the structured assistant UI contract.
  * Supported blocks: checklist, workflow, question, timeline, departments, evidence.
- * The UI is advisory: check states are local until a real backend action persists them.
+ * Draft ticks remain local. Saved-task controls require separate authenticated
+ * read/acknowledgement state; a model-supplied ID alone never makes a record writable.
  */
-export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, pendingTaskIds = [] }) {
+export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, taskRole }) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const blocks = useMemo(() => list(ui?.blocks, 12).filter((block) =>
@@ -61,19 +65,47 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, pendingTaskIds =
       const key = String(block.id || block.type + "-" + index);
       if (block.type === "checklist") {
         const items = list(block.items, 40);
-        const done = items.filter((item, i) => item?.status === "completed" || checked[key + "-" + i]).length;
-        const pct = items.length ? Math.round(done / items.length * 100) : 0;
-        return <Panel key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{done}/{items.length} done</span>}>
-          <div className="jd-viz-progress"><span style={{ width: pct + "%" }}/></div>
+        const saved = ui?.source === "persisted_workspace_records";
+        const records = taskRecords?.records || {};
+        const localKey = (item,i) => key + "-" + i + "-" + JSON.stringify(item);
+        const done = saved ? items.filter(item=>isSavedTaskCard(ui,item) && records[item.id]?.status === "completed").length : 0;
+        const localTicks = saved ? 0 : items.filter((item,i)=>checked[localKey(item,i)]).length;
+        const pct = items.length ? Math.round((saved?done:localTicks) / items.length * 100) : 0;
+        return <Panel key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? `${done}/${items.length} records complete` : `${localTicks}/${items.length} local ticks`}</span>}>
+          <div className="jd-viz-progress" aria-label={saved?"Refreshed record completion":"Local draft ticks only"}><span style={{ width: pct + "%" }}/></div>
           {items.map((item, i) => {
-            const isDone = item?.status === "completed" || Boolean(checked[key + "-" + i]);
-            const taskStatus = item?.status || "pending";
-            const canPersist = typeof item?.id === "string" && typeof onTaskToggle === "function";
-            const isPending = canPersist && pendingTaskIds.includes(item.id);
-            const taskAction = taskStatus === "queued" || taskStatus === "pending" || taskStatus === "blocked" ? "in_progress" : taskStatus === "in_progress" ? "completed" : null;
-            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(taskStatus === "in_progress" ? "Complete " : "Start ") + text(item?.title, "task")} aria-pressed={isDone} aria-busy={isPending} disabled={canPersist ? !taskAction || isPending : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}<small>Accountable role: {text(item?.owner, "Unassigned")}</small>{list(item?.dependencies, 8).length > 0 && <small>Depends on: {list(item.dependencies, 8).map((dependency) => text(dependency)).join(", ")}</small>}{item?.approval_required && <small style={{ color: "#94621b" }}>Owner approval required before action: {text(item.approval_reason, "Approval required")}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
+            const record = isSavedTaskCard(ui,item) ? records[item.id] : null;
+            const localChecked = !saved && Boolean(checked[localKey(item,i)]);
+            const isDone = saved ? record?.status === "completed" : localChecked;
+            const taskAction = record ? nextChecklistTaskStatus(record.status) : null;
+            const isPending = saved && Boolean(taskRecords?.pending?.includes(item?.id));
+            const needsRefresh = saved && Boolean(taskRecords?.needsRefresh?.includes(item?.id));
+            const canPersist = saved && Boolean(record) && taskRecords?.phase === "ready" && Boolean(taskTransitionAction(taskRole)) && typeof onTaskToggle === "function" && !needsRefresh;
+            const title = text(record?.title,text(item?.title,"Untitled task"));
+            const actionLabel = saved ? (taskAction === "completed" ? "Mark record complete: " : "Start task record: ") + title : (localChecked ? "Uncheck local draft: " : "Check local draft: ") + title;
+            const description = record ? record.description : item?.description;
+            return <div className="jd-viz-row" key={localKey(item,i)}>
+              <button className="jd-viz-check" type="button" aria-label={actionLabel} aria-pressed={isDone} aria-busy={isPending}
+                disabled={saved && (!canPersist || !taskAction || isPending)}
+                onClick={()=>saved ? onTaskToggle?.(item.id,taskAction) : setChecked(current=>({...current,[localKey(item,i)]:!current[localKey(item,i)]}))}>
+                {isDone?<CheckCircle2 size={17}/>:<Circle size={17}/>}
+              </button>
+              <div className="jd-viz-copy"><strong>{title}</strong>{description&&<small>{text(description)}</small>}
+                <small>{saved ? record ? "Saved record — refreshed from workspace" : "Saved snapshot — current record not confirmed" : "Local checklist — no saved record confirmed. Ticks stay only in this view."}</small>
+                {saved&&!record&&<small>Refresh task records to check status. Missing records may be outside the returned list or no longer accessible.</small>}
+                {saved&&record&&!taskTransitionAction(taskRole)&&<small>Read-only for your role.</small>}
+                {isPending&&<small role="status">Saving record status…</small>}
+                {needsRefresh&&<small role="status">Update not confirmed. Refresh task records before trying again.</small>}
+                {taskRecords?.audits?.[item?.id]&&saved&&<small>Status saved with audit evidence.</small>}
+                <small>Planned owner role: {text(item?.owner,"Unassigned")}</small>
+                {list(item?.dependencies,8).length>0&&<small>Depends on: {list(item.dependencies,8).map(dependency=>text(dependency)).join(", ")}</small>}
+                {item?.approval_required&&<small style={{color:"#94621b"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
+              </div>
+              {record ? record.status === "completed" ? <span className="jd-viz-status good">Record complete</span> : <Status value={record.status}/> : <span className="jd-viz-status">{saved?"Unverified snapshot":localChecked?"Locally checked":"Draft"}</span>}
+            </div>;
           })}
-          {block.sample_truncated && <small style={{ color: "#8a5d18", fontSize: 9 }}>Showing the latest 30 tasks; the department summary may be sampled if the workspace has more than 5,000 tasks.</small>}<small style={{ color: "#8a919a", fontSize: 9 }}>Saved tasks are real workspace records. Marking a task complete records checklist progress; it does not prove an external business activity occurred.</small>
+          {block.sample_truncated&&<small style={{color:"#8a5d18",fontSize:9}}>Only a sample of tasks is shown.</small>}
+          <small style={{color:"#6b7280",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
@@ -91,9 +123,9 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, pendingTaskIds =
       </Panel>;
       const evidence = list(block.items, 30);
       return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
-        <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}{item?.reference ? " · " + text(item.reference, "") : ""}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
+        <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
         {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "#77808b", margin: "9px 0 0" }}>{text(block.summary)}</p>}
-        {list(block.details, 12).length > 0 && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#737d88", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}</ul>}</>}
+        {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#737d88", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
       </Panel>;
     })}
   </div>;

@@ -29,6 +29,8 @@ This is the master planning checklist, not an application task ledger. Checking 
 - [Phase 2 navigation application](evidence/2026-11-16-phase2-navigation/REPORT.md): JD branding, permission-filtered sidebar search, expansion/active-page accessibility and mobile focus/scroll handling applied on the branch based on merged PR #86. All 25 navigation tests pass locally; complete departmental consolidation and live/browser acceptance remain open.
 - [Phase 2 departments and account access](evidence/2026-11-16-phase2-departments/REPORT.md): existing routes grouped into business departments, distinct People modules clarified, compact defaults and explicit sign-out-to-switch flow implemented. 73 navigation tests pass, including role compatibility and mounted-dialog checks. PR #87 production deployment metadata and post-merge CI verified; this newer slice still needs its own review/deployment and authenticated browser acceptance. No scorecard gate is checked from local tests alone.
 
+- [Chat task-state and reconciliation slice](evidence/2026-11-16-task-workspace/REPORT.md): separates local ticks, unverified snapshots and refreshed saved records; enforces read-before-write and refresh after uncertain acknowledgement. The expanded task suite has 104 passing tests, including mounted React task cards and synthetic read-back/remount. Live authenticated persistence and the complete role architecture remain unverified.
+
 ## Execution order and phase gates
 
 Phases 1–4 form one foundation programme, delivered sequentially in small, testable slices rather than as four simultaneous rewrites. Security and isolation are prerequisites throughout; Phase 7 is not permission to defer them.

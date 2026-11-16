@@ -2688,7 +2688,7 @@ function AppInner(){
         )}
 
         <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
-          {page==="jd-chat"       && <ChatHome user={user} organizationName={selectedSchool?.name||"Your organisation"}/>}
+          {page==="jd-chat"       && <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/>}
           {page==="jd-operations" && (role==="admin"||role==="manager" ? <JDOperationsPage ctx={ctx}/> : <AccessDenied/>)}
           {page==="sections"      && <SectionsPage ctx={ctx}/>}
           {page==="dashboard"     && <DashboardPage ctx={ctx}/>}
