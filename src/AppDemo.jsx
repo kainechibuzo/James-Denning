@@ -11,7 +11,10 @@ import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/the
 import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
 import { ChatHome } from "./chat/ChatHome.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
+import { WORKSPACE_NAVIGATION, buildWorkspaceNavigation, usesEducationNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
 import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
+import { WorkspaceSwitchDialog } from "./components/workspace-switch-dialog.jsx";
+import { signOutForWorkspaceSwitch } from "./utils/switch-workspace.mjs";
 // -- Route-level page chunks. The app shell is ready before feature modules download.
 const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const TeachersPage = lazyPage(() => import("./pages/teachers.jsx"), "TeachersPage");
@@ -1747,7 +1750,7 @@ const TOUR_STEPS_CONFIG = [
     roles:["admin"], perms:null},
   {id:"settings-btn",  title:"Settings",
     content:"Configure organization info, performance cycles, grading schemes, RBAC permissions, and portal behaviour.",
-    target:"[data-tour='settings-btn']", page:"dashboard", placement:"bottom",
+    target:"[data-tour='workspace-menu']", page:"settings", placement:"bottom",
     roles:["admin"], perms:null},
   // ── Staff ──
   {id:"nav-my-classes", title:"My Groups",
@@ -2028,6 +2031,8 @@ function AppInner(){
   const [sidebarSearch,setSidebarSearch] = useState("");
   const sidebarRef = useRef(null);
   const navigationToggleRef = useRef(null);
+  const workspaceSwitchRef = useRef(null);
+  const [showWorkspaceSwitch,setShowWorkspaceSwitch] = useState(false);
   const [toasts,setToasts]     = useState([]);
   const [loginLoading,setLoginLoading] = useState(false);
   const [showSettings,setShowSettings] = useState(false); // kept for legacy; now uses setPage("settings")
@@ -2145,8 +2150,15 @@ function AppInner(){
 
   useEffect(()=>{
     setSidebarSearch("");
-    setCollapsedGroups(new Set());
-  },[user?.id,user?.role,selectedSchool?.id]);
+    setCollapsedGroups(defaultCollapsedGroups(workspaceType,educationModuleEnabled,page));
+  },[user?.id,user?.role,selectedSchool?.id,workspaceType,educationModuleEnabled]);
+
+  // A route opened by a dashboard or tour should reveal its containing department.
+  useEffect(()=>{
+    if(usesEducationNavigation(workspaceType,educationModuleEnabled)) return;
+    const group=businessGroupForPage(page);
+    if(group) setCollapsedGroups(previous=>{const next=new Set(previous);next.delete(group);return next;});
+  },[page,workspaceType,educationModuleEnabled]);
 
   useEffect(()=>{
     if(!isMobile || !sideOpen || !user || !selectedSchool || platformAdmin || pdfDoc || !sidebarRef.current) return;
@@ -2192,6 +2204,12 @@ function AppInner(){
     clearSession();
     window.location.reload();
   };
+
+  const switchWorkspace=()=>signOutForWorkspaceSwitch({
+    signOut:options=>supabase.auth.signOut(options),
+    clearSession,clearWorkspace:clearSelectedSchool,
+    resetContext:()=>db.setSchool(null),leave:()=>window.location.assign("/"),
+  });
 
   // Called by SchoolManagerModal after saving school details
   const onSchoolUpdated=(updatedSchool)=>{
@@ -2329,59 +2347,7 @@ function AppInner(){
   // ── Compact grouped NAV ──
   // Admin: grouped by category with dividers
   // Staff/Member: only permitted pages
-  const ALL_NAV = [
-    {id:"jd-chat",          label:"JD Assistant",    icon:"dashboard", roles:["admin","teacher","student","bursar","manager"]},
-    {id:"jd-operations", label:"Business Operations", icon:"activity", roles:["admin","manager"]},
-    {id:"dashboard",       label:"Overview",        icon:"dashboard", roles:["admin","teacher","student","bursar"]},
-    // ── Admin groups ──
-    {id:"g-academic",      group:"Operations",      roles:["admin","bursar"]},
-    {id:"members",         label:"Team",           icon:"members", roles:["admin","manager","bursar"],    gid:"g-academic"},
-    {id:"students",        label:"People",          icon:"students", roles:["admin"],    gid:"g-academic"},
-    {id:"teachers",        label:"Team",          icon:"teachers", roles:["admin"],    gid:"g-academic"},
-    {id:"classes",         label:"Groups",           icon:"classes", roles:["admin"],    gid:"g-academic"},
-    {id:"subjects",        label:"Categories",          icon:"subjects", roles:["admin"],    gid:"g-academic"},
-    {id:"sections",        label:"Divisions",          icon:"sections", roles:["admin"],    gid:"g-academic"},
-    {id:"calendar",        label:"Calendar", icon:"calendar",    roles:["admin","teacher"], gid:"g-academic"},
-    {id:"timetable",       label:"Schedule",         icon:"timetable",   roles:["admin","teacher"], gid:"g-academic"},
-    {id:"broadsheet",      label:"Performance Matrix",        icon:"broadsheet",  roles:["admin"],           gid:"g-academic"},
-    {id:"g-results",       group:"Performance",        roles:["admin"]},
-    {id:"assignments",     label:"Assignments",       icon:"assignments", roles:["admin"],    gid:"g-results"},
-    {id:"results",         label:"Performance Records",           icon:"results", roles:["admin"],    gid:"g-results"},
-    {id:"report-cards",    label:"Reports",      icon:"report-cards", roles:["admin","teacher"], gid:"g-results"},
-    {id:"transcript",      label:"History",        icon:"transcript", roles:["admin","student"],  gid:"g-results"},
-    {id:"academic-summary",label:"Analytics",icon:"academic-summary",roles:["admin"],     gid:"g-results"},
-    {id:"report-card-settings",label:"Report Settings", icon:"report-settings", roles:["admin"], gid:"g-results"},
-    {id:"grading",         label:"Scoring & Rubrics",     icon:"grading", roles:["admin"],    gid:"g-results"},
-    {id:"g-fees",          group:"Billing",           roles:["admin","bursar"]},
-    {id:"fee-items",       label:"Billing Items",         icon:"fee-items", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-templates",   label:"Billing Templates",         icon:"fee-templates", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-generate",    label:"Generate Bills",    icon:"fee-generate", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-tracker",     label:"Payment Tracker",   icon:"fee-tracker", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"fee-stats",       label:"Billing Analytics",        icon:"fee-stats", roles:["admin","manager","bursar"],    gid:"g-fees"},
-    {id:"g-comms",         group:"Communication",  roles:["admin","teacher","bursar"]},
-    {id:"announce",        label:"Notices",     icon:"announce", roles:["admin","teacher","manager","bursar"], gid:"g-comms"},
-    {id:"attendance",      label:"Attendance",        icon:"attendance", roles:["admin","teacher"], gid:"g-comms"},
-    {id:"mail-compose",    label:"Send Email",        icon:"mail",  roles:["admin"],    gid:"g-comms"},
-    {id:"mail-logs",       label:"Email Logs",        icon:"mail-logs", roles:["admin"],    gid:"g-comms"},
-    {id:"g-admin",         group:"Administration",  roles:["admin"]},
-    {id:"admin-tools",     label:"Admin Tools",        icon:"database",   roles:["admin"],    gid:"g-admin"},
-    {id:"org-create",      label:"Register Organization", icon:"building", roles:["admin"],   gid:"g-admin"},
-    {id:"hiring",          label:"Hiring",              icon:"user-check", roles:["admin"],   gid:"g-admin"},
-    {id:"notifications",   label:"Notifications",      icon:"bell",       roles:["admin"],    gid:"g-admin"},
-    {id:"permissions",     label:"Permissions",        icon:"shield",     roles:["admin"],    gid:"g-admin"},
-    {id:"g-approvals",     group:"Approvals",      roles:["admin"]},
-    {id:"approvals",       label:"People Approvals", icon:"approvals", roles:["admin"],    gid:"g-approvals"},
-    {id:"access-requests", label:"Access Requests",   icon:"approvals", roles:["admin"],    gid:"g-approvals"},
-    // ── Staff-only (flat) ──
-    {id:"my-classes",      label:"My Groups",        icon:"my-classes", roles:["teacher"]},
-    {id:"results-teach",   label:"Upload Records",    icon:"upload-results", roles:["teacher"]},
-    {id:"add-students",    label:"Add People",      icon:"add-students", roles:["teacher"]},
-    {id:"request-access",  label:"Request Access",    icon:"approvals",  roles:["teacher"]},
-    // ── Member-only ──
-    {id:"my-results",      label:"My Reports",    icon:"my-results", roles:["student"]},
-    {id:"my-payments",     label:"My Payments",       icon:"my-payments", roles:["student"]},
-    {id:"my-bill",         label:"My Bill",           icon:"receipt", roles:["student"]},
-  ];
+  const ALL_NAV = WORKSPACE_NAVIGATION;
 
   // Check if user can access a page (admin always yes)
   const canAccess=(pageId)=>{
@@ -2424,27 +2390,8 @@ function AppInner(){
   const role=user.role;
 
 
-  // Deduplicate & filter. Education tenants can opt into the original academic
-  // labels without changing the underlying routes or database schema.
-  const navSource = workspaceType==="education" && educationModuleEnabled
-    ? ALL_NAV.map(n=>{
-        const label=EDUCATION_NAV_LABELS[n.id];
-        return label ? (n.group ? {...n,group:label} : {...n,label}) : n;
-      })
-    : ALL_NAV;
-  const seenIds = new Set();
-  const NAV = navSource.filter(n=>{
-    if(!n.roles||!n.roles.includes(role)) return false;
-    if(n.group){
-      // Group header: only include if at least one child item is visible
-      const hasChild=navSource.some(c=>c.gid===n.id&&c.roles&&c.roles.includes(role)&&(role==="admin"||canAccess(c.id)));
-      return hasChild;
-    }
-    if(seenIds.has(n.id)) return false;
-    seenIds.add(n.id);
-    if(role==="admin") return true;
-    return canAccess(n.id);
-  });
+  const educationNavigation = usesEducationNavigation(workspaceType,educationModuleEnabled);
+  const NAV = buildWorkspaceNavigation({role,canAccess,workspaceType,educationModuleEnabled,educationLabels:EDUCATION_NAV_LABELS});
 
   const navigationQuery = sideOpen || isMobile ? sidebarSearch : "";
   const visibleNavigation = searchNavigation(NAV,navigationQuery);
@@ -2464,7 +2411,7 @@ function AppInner(){
   const isSandbox = selectedSchool?.id===SCHOOL_SLUGS.sandbox;
 
   return(
-    <div style={{display:"flex",minHeight:"100vh",background:C.offWhite,
+    <div inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:C.offWhite,
       fontFamily:"'Segoe UI',system-ui,sans-serif",transition:"background .2s",
       paddingTop:isSandbox?22:0}}>
 
@@ -2515,6 +2462,14 @@ function AppInner(){
           )}
         </div>
 
+        <button ref={workspaceSwitchRef} type="button" aria-label="Switch organisation" aria-haspopup="dialog"
+          title={`Switch organisation — ${_sidebarSchoolName||"Your organisation"}`}
+          onClick={()=>{closeSideOnMobile();setShowWorkspaceSwitch(true);}}
+          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",color:"#e2e8f0",cursor:"pointer",flexShrink:0,fontSize:12}}>
+          <Building2 size={16} aria-hidden="true" style={{flexShrink:0}}/>
+          {(sideOpen||isMobile)&&<span>Switch organisation</span>}
+        </button>
+
         {(sideOpen||isMobile)&&<div style={{padding:"10px 10px 4px",flexShrink:0}}>
           <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid rgba(255,255,255,.18)",borderRadius:9,padding:"6px 8px",color:"#aab2bd"}}>
             <Search size={14} aria-hidden="true"/>
@@ -2541,11 +2496,11 @@ function AppInner(){
                 })}
                   style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
                     padding:"10px 9px 5px",fontSize:9.5,fontWeight:800,letterSpacing:1.4,
-                    textTransform:"uppercase",color:"rgba(255,255,255,.35)",background:"none",
+                    textTransform:"uppercase",color:"#aab2bd",background:"none",
                     border:"none",cursor:"pointer",textAlign:"left",marginTop:6,
                     transition:"color .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.color="rgba(255,255,255,.55)"}
-                  onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,.35)"}>
+                  onMouseEnter={e=>e.currentTarget.style.color="#fff"}
+                  onMouseLeave={e=>e.currentTarget.style.color="#aab2bd"}>
                   <span>{n.group}</span>
                   <span style={{fontSize:9,transition:"transform .2s",
                     transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▾</span>
@@ -2597,9 +2552,8 @@ function AppInner(){
 
         {/* User / Sign Out */}
         <div style={{padding:"10px 6px",borderTop:"1px solid rgba(255,255,255,.08)",flexShrink:0}}>
-          {(sideOpen||isMobile)&&(
-            <button onClick={()=>{setShowProfile(true);closeSideOnMobile();}}
-              style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"10px 10px",
+          <button aria-label="My profile" title="My profile" onClick={()=>{setShowProfile(true);closeSideOnMobile();}}
+              style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:sideOpen||isMobile?"10px":"8px 0",
                 borderRadius:10,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",marginBottom:6,
                 background:"rgba(255,255,255,.06)",color:"#fff",textAlign:"left",
                 transition:"all .15s"}}
@@ -2612,16 +2566,15 @@ function AppInner(){
                 boxShadow:"0 2px 8px rgba(232,86,10,.4)"}}>
                 {(user.name||"?")[0].toUpperCase()}
               </div>
-              <div style={{overflow:"hidden",flex:1}}>
+              {(sideOpen||isMobile)&&<div style={{overflow:"hidden",flex:1}}>
                 <div style={{fontWeight:700,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",
                   whiteSpace:"nowrap",color:"#fff",lineHeight:1.2}}>{user.name}</div>
                 <div style={{fontSize:9.5,color:"rgba(255,255,255,.4)",textTransform:"uppercase",
                   letterSpacing:.8,marginTop:2}}>{role}</div>
-              </div>
-              <span style={{color:"rgba(255,255,255,.3)",fontSize:12}}>›</span>
-            </button>
-          )}
-          <button onClick={()=>setShowLogout(true)}
+              </div>}
+              {(sideOpen||isMobile)&&<span style={{color:"rgba(255,255,255,.3)",fontSize:12}}>›</span>}
+          </button>
+          <button aria-label="Sign out" title="Sign out" onClick={()=>{closeSideOnMobile();setShowLogout(true);}}
             style={{width:"100%",display:"flex",alignItems:"center",
               gap:(sideOpen||isMobile)?7:0,justifyContent:(sideOpen||isMobile)?"flex-start":"center",
               padding:"9px 10px",borderRadius:10,border:"none",cursor:"pointer",
@@ -2629,7 +2582,7 @@ function AppInner(){
               fontSize:11.5,fontWeight:600,transition:"all .15s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(248,113,113,.2)";e.currentTarget.style.color="#FCA5A5";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(248,113,113,.1)";e.currentTarget.style.color="rgba(252,165,165,.9)";}}>
-            <LogOut size={14}/>{sideOpen&&<span>Sign Out</span>}
+            <LogOut size={14}/>{(sideOpen||isMobile)&&<span>Sign Out</span>}
           </button>
         </div>
       </aside>
@@ -2642,7 +2595,7 @@ function AppInner(){
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
-            <button ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}
+            <button data-tour="workspace-menu" ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 color:C.muted,padding:"7px 9px",borderRadius:9,
                 display:"flex",alignItems:"center",transition:"all .15s",minWidth:36,minHeight:36,
@@ -2679,7 +2632,7 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background=C.offWhite;e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
               <HelpCircle size={16}/>
             </button>
-            {!isMobile&&role==="admin"&&(
+            {educationNavigation&&!isMobile&&role==="admin"&&(
               <button data-tour="settings-btn" onClick={()=>setPage("settings")}
                 title="Settings"
                 style={{background:C.offWhite,border:`1px solid ${C.border}`,
@@ -2691,7 +2644,7 @@ function AppInner(){
                 <Settings size={14} style={{flexShrink:0}}/>Settings
               </button>
             )}
-            {isMobile&&role==="admin"&&(
+            {educationNavigation&&isMobile&&role==="admin"&&(
               <button onClick={()=>setPage("settings")} title="Settings" data-header-compact="hide"
                 style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,
                   width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",
@@ -2792,6 +2745,10 @@ function AppInner(){
         </main>
       </div>
 
+
+      {showWorkspaceSwitch&&<WorkspaceSwitchDialog organisation={_sidebarSchoolName||selectedSchool?.name}
+        onClose={()=>setShowWorkspaceSwitch(false)} onSwitch={switchWorkspace}
+        returnFocus={isMobile?navigationToggleRef.current:workspaceSwitchRef.current}/>}
 
       {/* Profile modal */}
       {showProfile&&(

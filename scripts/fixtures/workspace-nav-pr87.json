@@ -1,0 +1,444 @@
+[
+  {
+    "id": "jd-chat",
+    "label": "JD Assistant",
+    "icon": "dashboard",
+    "roles": [
+      "admin",
+      "teacher",
+      "student",
+      "bursar",
+      "manager"
+    ]
+  },
+  {
+    "id": "jd-operations",
+    "label": "Business Operations",
+    "icon": "activity",
+    "roles": [
+      "admin",
+      "manager"
+    ]
+  },
+  {
+    "id": "dashboard",
+    "label": "Overview",
+    "icon": "dashboard",
+    "roles": [
+      "admin",
+      "teacher",
+      "student",
+      "bursar"
+    ]
+  },
+  {
+    "id": "g-academic",
+    "group": "Operations",
+    "roles": [
+      "admin",
+      "bursar"
+    ]
+  },
+  {
+    "id": "members",
+    "label": "Team",
+    "icon": "members",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "students",
+    "label": "People",
+    "icon": "students",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "teachers",
+    "label": "Team",
+    "icon": "teachers",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "classes",
+    "label": "Groups",
+    "icon": "classes",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "subjects",
+    "label": "Categories",
+    "icon": "subjects",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "sections",
+    "label": "Divisions",
+    "icon": "sections",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "calendar",
+    "label": "Calendar",
+    "icon": "calendar",
+    "roles": [
+      "admin",
+      "teacher"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "timetable",
+    "label": "Schedule",
+    "icon": "timetable",
+    "roles": [
+      "admin",
+      "teacher"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "broadsheet",
+    "label": "Performance Matrix",
+    "icon": "broadsheet",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-academic"
+  },
+  {
+    "id": "g-results",
+    "group": "Performance",
+    "roles": [
+      "admin"
+    ]
+  },
+  {
+    "id": "assignments",
+    "label": "Assignments",
+    "icon": "assignments",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "results",
+    "label": "Performance Records",
+    "icon": "results",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "report-cards",
+    "label": "Reports",
+    "icon": "report-cards",
+    "roles": [
+      "admin",
+      "teacher"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "transcript",
+    "label": "History",
+    "icon": "transcript",
+    "roles": [
+      "admin",
+      "student"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "academic-summary",
+    "label": "Analytics",
+    "icon": "academic-summary",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "report-card-settings",
+    "label": "Report Settings",
+    "icon": "report-settings",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "grading",
+    "label": "Scoring & Rubrics",
+    "icon": "grading",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-results"
+  },
+  {
+    "id": "g-fees",
+    "group": "Billing",
+    "roles": [
+      "admin",
+      "bursar"
+    ]
+  },
+  {
+    "id": "fee-items",
+    "label": "Billing Items",
+    "icon": "fee-items",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-fees"
+  },
+  {
+    "id": "fee-templates",
+    "label": "Billing Templates",
+    "icon": "fee-templates",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-fees"
+  },
+  {
+    "id": "fee-generate",
+    "label": "Generate Bills",
+    "icon": "fee-generate",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-fees"
+  },
+  {
+    "id": "fee-tracker",
+    "label": "Payment Tracker",
+    "icon": "fee-tracker",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-fees"
+  },
+  {
+    "id": "fee-stats",
+    "label": "Billing Analytics",
+    "icon": "fee-stats",
+    "roles": [
+      "admin",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-fees"
+  },
+  {
+    "id": "g-comms",
+    "group": "Communication",
+    "roles": [
+      "admin",
+      "teacher",
+      "bursar"
+    ]
+  },
+  {
+    "id": "announce",
+    "label": "Notices",
+    "icon": "announce",
+    "roles": [
+      "admin",
+      "teacher",
+      "manager",
+      "bursar"
+    ],
+    "gid": "g-comms"
+  },
+  {
+    "id": "attendance",
+    "label": "Attendance",
+    "icon": "attendance",
+    "roles": [
+      "admin",
+      "teacher"
+    ],
+    "gid": "g-comms"
+  },
+  {
+    "id": "mail-compose",
+    "label": "Send Email",
+    "icon": "mail",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-comms"
+  },
+  {
+    "id": "mail-logs",
+    "label": "Email Logs",
+    "icon": "mail-logs",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-comms"
+  },
+  {
+    "id": "g-admin",
+    "group": "Administration",
+    "roles": [
+      "admin"
+    ]
+  },
+  {
+    "id": "admin-tools",
+    "label": "Admin Tools",
+    "icon": "database",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-admin"
+  },
+  {
+    "id": "org-create",
+    "label": "Register Organization",
+    "icon": "building",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-admin"
+  },
+  {
+    "id": "hiring",
+    "label": "Hiring",
+    "icon": "user-check",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-admin"
+  },
+  {
+    "id": "notifications",
+    "label": "Notifications",
+    "icon": "bell",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-admin"
+  },
+  {
+    "id": "permissions",
+    "label": "Permissions",
+    "icon": "shield",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-admin"
+  },
+  {
+    "id": "g-approvals",
+    "group": "Approvals",
+    "roles": [
+      "admin"
+    ]
+  },
+  {
+    "id": "approvals",
+    "label": "People Approvals",
+    "icon": "approvals",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-approvals"
+  },
+  {
+    "id": "access-requests",
+    "label": "Access Requests",
+    "icon": "approvals",
+    "roles": [
+      "admin"
+    ],
+    "gid": "g-approvals"
+  },
+  {
+    "id": "my-classes",
+    "label": "My Groups",
+    "icon": "my-classes",
+    "roles": [
+      "teacher"
+    ]
+  },
+  {
+    "id": "results-teach",
+    "label": "Upload Records",
+    "icon": "upload-results",
+    "roles": [
+      "teacher"
+    ]
+  },
+  {
+    "id": "add-students",
+    "label": "Add People",
+    "icon": "add-students",
+    "roles": [
+      "teacher"
+    ]
+  },
+  {
+    "id": "request-access",
+    "label": "Request Access",
+    "icon": "approvals",
+    "roles": [
+      "teacher"
+    ]
+  },
+  {
+    "id": "my-results",
+    "label": "My Reports",
+    "icon": "my-results",
+    "roles": [
+      "student"
+    ]
+  },
+  {
+    "id": "my-payments",
+    "label": "My Payments",
+    "icon": "my-payments",
+    "roles": [
+      "student"
+    ]
+  },
+  {
+    "id": "my-bill",
+    "label": "My Bill",
+    "icon": "receipt",
+    "roles": [
+      "student"
+    ]
+  }
+]
