@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState} from "react";
 import {supabase} from "../supabaseClient.js";
+import {transitionOperationalTask} from "../chat/operational-task-client.mjs";
 import {Activity,Building2,BriefcaseBusiness,CheckCircle2,Clock3,Loader2,Plus,RefreshCw,ShieldCheck,Users,Workflow,AlertCircle} from "lucide-react";
 import {JDWorkflowStudio} from "./jd-workflow-studio.jsx";
 import {JDRecurringSchedules} from "./jd-recurring-schedules.jsx";
@@ -60,7 +61,7 @@ export function JDOperationsPage({ctx}){
   await invoke("operations.task.create",{task:{...task,dueAt:task.dueAt?new Date(task.dueAt).toISOString():null},idempotencyId:crypto.randomUUID()});
   setTask({title:"",description:"",department:"",dueAt:"",priority:"normal"});
  },"Operational task created.");
- const transitionTask=(id,status)=>act(()=>invoke("operations.task.transition",{taskId:id,status}),"Task updated.");
+ const transitionTask=(id,status)=>act(()=>transitionOperationalTask(supabase,{taskId:id,status,role:ctx?.role}),"Task updated with audit evidence.");
  const assignTask=(id,assigneeId)=>act(()=>invoke("operations.task.assign",{taskId:id,assigneeId}),"Task assigned.");
  const submitBlueprint=()=>act(async()=>{
   const result=await invoke("organisation.blueprint.preview",{blueprint});

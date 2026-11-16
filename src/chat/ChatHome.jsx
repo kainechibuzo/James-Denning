@@ -6,6 +6,7 @@ import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 import { JDDepartments } from "./JDDepartments.jsx";
+import { transitionOperationalTask } from "./operational-task-client.mjs";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -162,6 +163,8 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const [error, setError] = useState("");
+  const taskUpdatesRef = useRef(new Set());
+  const [pendingTaskIds, setPendingTaskIds] = useState([]);
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -325,32 +328,31 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   };
 
   const updateOperationalTask = async (taskId, status) => {
-    if (!taskId || !["in_progress", "completed"].includes(status)) return;
+    if (!taskId || !["in_progress", "completed"].includes(status) || taskUpdatesRef.current.has(taskId)) return;
+    taskUpdatesRef.current.add(taskId); // Synchronous guard, including repeated cards/double clicks.
+    setPendingTaskIds([...taskUpdatesRef.current]);
     setError("");
-    const { data, error: taskError } = await supabase.functions.invoke("jd-automation", {
-      body: { action: "operations.task.transition", taskId, status },
-    });
-    if (taskError || !data?.task) {
-      setError(data?.error || "JD could not update this task. Refresh the workspace and try again.");
-      return;
+    try {
+      const data = await transitionOperationalTask(supabase, { taskId, status, role: user?.role });
+      setMessages((current) => current.map((message) => {
+        if (!message.visualWorkspace?.blocks) return message;
+        return {
+          ...message,
+          visualWorkspace: {
+            ...message.visualWorkspace,
+            blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
+              ...block,
+              items: (block.items || []).map((item) => item.id === taskId ? { ...item, status: data.task.status } : item),
+            })),
+          },
+        };
+      }));
+    } catch (err) {
+      setError(err.message || "JD could not confirm this task update. Refresh the task before retrying.");
+    } finally {
+      taskUpdatesRef.current.delete(taskId);
+      setPendingTaskIds([...taskUpdatesRef.current]);
     }
-    setError(data.auditRecorded === false
-      ? "Task status changed, but JD could not record its audit event. This transition needs administrator review."
-      : "");
-    const confirmedStatus = data.task.status || status;
-    setMessages((current) => current.map((message) => {
-      if (!message.visualWorkspace?.blocks) return message;
-      return {
-        ...message,
-        visualWorkspace: {
-          ...message.visualWorkspace,
-          blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
-            ...block,
-            items: (block.items || []).map((item) => item.id === taskId ? { ...item, status: confirmedStatus } : item),
-          })),
-        },
-      };
-    }));
   };
 
   const newConversation = () => {
@@ -526,7 +528,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.content ? renderMessageContent(item.content) : null}
-              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask}/>}
+              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask} pendingTaskIds={pendingTaskIds}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>

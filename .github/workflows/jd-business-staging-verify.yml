@@ -8,6 +8,8 @@ name: JD Business Platform Staging Verification
 # isolation as a top unknown. It now also runs on a schedule so the result is
 # continuously reported instead of being an untested claim.
 #
+# Required repository variables after verifying isolated staging:
+#   JD_STAGING_PROJECT_REF, JD_STAGING_ALLOW_WRITES=true
 # Required repository secrets (STAGING project — never production):
 #   JD_STAGING_SUPABASE_URL, JD_STAGING_SUPABASE_ANON_KEY
 #   JD_STAGING_TENANT_A_EMAIL / JD_STAGING_TENANT_A_PASSWORD
@@ -16,12 +18,15 @@ name: JD Business Platform Staging Verification
 #
 # Until those exist this workflow FAILS with an explicit configuration error
 # rather than reporting a green tick. That is deliberate: a daily red run is the
-# honest signal for "tenant isolation is unverified". The run goes green by
-# itself once the secrets exist — there is no switch to flip.
+# honest signal for "tenant isolation is unverified". The run can pass only when
+# secrets, the explicit staging project allowlist and write acknowledgement are
+# configured and the actual isolation checks pass.
 #
 # If a daily failure notification is unacceptable, delete the `schedule` block
 # rather than making this job pass without running the test. A green scheduled
 # run that skipped the test is worse than no workflow at all.
+# The test also refuses non-allowlisted/known production targets before sending
+# any request. Secrets being present does not establish staging isolation.
 
 on:
   workflow_dispatch:
@@ -69,6 +74,8 @@ jobs:
           node-version: 22
       - name: Run authenticated staging and tenant isolation checks
         env:
+          JD_STAGING_PROJECT_REF: ${{ vars.JD_STAGING_PROJECT_REF }}
+          JD_STAGING_ALLOW_WRITES: ${{ vars.JD_STAGING_ALLOW_WRITES }}
           SUPABASE_URL: ${{ secrets.JD_STAGING_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.JD_STAGING_SUPABASE_ANON_KEY }}
           JD_E2E_TENANT_A_EMAIL: ${{ secrets.JD_STAGING_TENANT_A_EMAIL }}

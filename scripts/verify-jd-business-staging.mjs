@@ -7,7 +7,8 @@
  * invoked on a schedule and its result is reported.
  *
  * Requires (staging project, never production):
- *   SUPABASE_URL, SUPABASE_ANON_KEY
+ *   SUPABASE_URL, SUPABASE_ANON_KEY, JD_STAGING_PROJECT_REF
+ *   JD_STAGING_ALLOW_WRITES=true (explicit acknowledgement of the attempted write)
  *   JD_E2E_TENANT_A_EMAIL / _PASSWORD
  *   JD_E2E_TENANT_B_EMAIL / _PASSWORD
  *   JD_E2E_CROSS_TENANT_CUSTOMER_ID  — a customer owned by tenant A
@@ -37,7 +38,23 @@ if (missing.length) {
   process.exit(2);
 }
 
-const base = process.env.SUPABASE_URL.replace(/\/$/, "");
+// This test attempts a write. A variable named STAGING is not isolation proof.
+// Fail before authentication or any network call unless the operator has
+// explicitly selected a canonical, non-production project and allowed writes.
+// Keep known production/legacy refs blocked even if the allowlist is misconfigured.
+const productionRefs = new Set(["thklwiybjuhrjqrrxyid", "mcdcwdfdpqzrzsixmrcg"]);
+let target;
+try { target = new URL(process.env.SUPABASE_URL); } catch { /* fail closed below */ }
+const stagingRef = process.env.JD_STAGING_PROJECT_REF;
+if (!target || !/^[a-z]{20}$/.test(stagingRef || "") ||
+    productionRefs.has(stagingRef) ||
+    target.protocol !== "https:" || target.host !== `${stagingRef}.supabase.co` ||
+    target.username || target.password || target.pathname !== "/" || target.search || target.hash ||
+    process.env.JD_STAGING_ALLOW_WRITES !== "true") {
+  console.error("UNSAFE STAGING TARGET — configure JD_STAGING_PROJECT_REF for a verified isolated Supabase project, its canonical HTTPS URL, and JD_STAGING_ALLOW_WRITES=true. Production targets are forbidden. No requests were sent.");
+  process.exit(2);
+}
+const base = target.origin;
 const anon = process.env.SUPABASE_ANON_KEY;
 const fixtureId = process.env.JD_E2E_CROSS_TENANT_CUSTOMER_ID;
 
@@ -46,6 +63,7 @@ const fail = (msg) => { throw new Error(msg); };
 async function signIn(email, password) {
   const r = await fetch(base + "/auth/v1/token?grant_type=password", {
     method: "POST",
+    redirect: "error",
     headers: { apikey: anon, "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
@@ -58,6 +76,7 @@ async function signIn(email, password) {
 async function invoke(token, body) {
   const r = await fetch(base + "/functions/v1/jd-business-platform", {
     method: "POST",
+    redirect: "error",
     headers: { apikey: anon, Authorization: "Bearer " + token, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -74,7 +93,7 @@ const b = await signIn(process.env.JD_E2E_TENANT_B_EMAIL, process.env.JD_E2E_TEN
 // 2. Tenant A's own surface works.
 for (const action of ["overview", "cashflow.analytics", "performance.predict", "sla.policy.list", "integration.catalog"]) {
   const r = await invoke(a, { action });
-  if (r.status !== 200) fail(`Tenant A "${action}" failed: ${r.status} ${JSON.stringify(r.data).slice(0, 200)}`);
+  if (r.status !== 200) fail(`Tenant A "${action}" failed: HTTP ${r.status}`);
 }
 
 // 5. Non-vacuous precondition: the fixture must be visible to its owner.
@@ -116,7 +135,7 @@ if (writeB.status === 401 || writeB.status === 403) {
   );
 }
 if (writeB.status !== 404) {
-  fail("Unexpected response to cross-tenant update: " + writeB.status + " " + JSON.stringify(writeB.data).slice(0, 200));
+  fail("Unexpected response to cross-tenant update: HTTP " + writeB.status);
 }
 
 console.log(JSON.stringify({

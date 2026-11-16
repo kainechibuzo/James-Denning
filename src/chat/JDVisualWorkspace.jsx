@@ -20,7 +20,7 @@ function Panel({ title, icon: Icon, children, aside }) {
  * Supported blocks: checklist, workflow, question, timeline, departments, evidence.
  * The UI is advisory: check states are local until a real backend action persists them.
  */
-export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
+export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, pendingTaskIds = [] }) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const blocks = useMemo(() => list(ui?.blocks, 12).filter((block) =>
@@ -69,8 +69,9 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle }) {
             const isDone = item?.status === "completed" || Boolean(checked[key + "-" + i]);
             const taskStatus = item?.status || "pending";
             const canPersist = typeof item?.id === "string" && typeof onTaskToggle === "function";
+            const isPending = canPersist && pendingTaskIds.includes(item.id);
             const taskAction = taskStatus === "queued" || taskStatus === "pending" || taskStatus === "blocked" ? "in_progress" : taskStatus === "in_progress" ? "completed" : null;
-            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(taskStatus === "in_progress" ? "Complete " : "Start ") + text(item?.title, "task")} aria-pressed={isDone} disabled={canPersist ? !taskAction : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}<small>Accountable role: {text(item?.owner, "Unassigned")}</small>{list(item?.dependencies, 8).length > 0 && <small>Depends on: {list(item.dependencies, 8).map((dependency) => text(dependency)).join(", ")}</small>}{item?.approval_required && <small style={{ color: "#94621b" }}>Owner approval required before action: {text(item.approval_reason, "Approval required")}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
+            return <div className="jd-viz-row" key={i}><button className="jd-viz-check" type="button" aria-label={(taskStatus === "in_progress" ? "Complete " : "Start ") + text(item?.title, "task")} aria-pressed={isDone} aria-busy={isPending} disabled={canPersist ? !taskAction || isPending : false} onClick={() => canPersist ? onTaskToggle(item.id, taskAction) : setChecked((current) => ({ ...current, [key + "-" + i]: !current[key + "-" + i] }))}>{isDone ? <CheckCircle2 size={17}/> : <Circle size={17}/>}</button><div className="jd-viz-copy"><strong>{text(item?.title, "Untitled task")}</strong>{item?.description && <small>{text(item.description)}</small>}<small>Accountable role: {text(item?.owner, "Unassigned")}</small>{list(item?.dependencies, 8).length > 0 && <small>Depends on: {list(item.dependencies, 8).map((dependency) => text(dependency)).join(", ")}</small>}{item?.approval_required && <small style={{ color: "#94621b" }}>Owner approval required before action: {text(item.approval_reason, "Approval required")}</small>}</div><Status value={isDone ? "completed" : item?.status}/></div>;
           })}
           {block.sample_truncated && <small style={{ color: "#8a5d18", fontSize: 9 }}>Showing the latest 30 tasks; the department summary may be sampled if the workspace has more than 5,000 tasks.</small>}<small style={{ color: "#8a919a", fontSize: 9 }}>Saved tasks are real workspace records. Marking a task complete records checklist progress; it does not prove an external business activity occurred.</small>
         </Panel>;
