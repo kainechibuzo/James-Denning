@@ -30,10 +30,13 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Test CSP-safe CAE arithmetic evaluator
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/arithmetic.test.ts
+
       - name: Test JD Connect execution truthfulness and MCP evidence tools
         run: |
           deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-connect/index.ts supabase/functions/_shared/jd-connect-execution.test.ts
-          deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
+          deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/functions/_shared/jd-agent-runtime.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
       - name: Type-check JD MCP functions
         run: |
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
