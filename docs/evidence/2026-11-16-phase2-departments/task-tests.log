@@ -1,0 +1,356 @@
+
+> james-denning@1.0.0 test:tasks
+> node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs
+
+TAP version 13
+# Subtest: owner uses the correct authenticated action and requires confirmed evidence
+ok 1 - owner uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 6.290214
+  type: 'test'
+  ...
+# Subtest: admin uses the correct authenticated action and requires confirmed evidence
+ok 2 - admin uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.197746
+  type: 'test'
+  ...
+# Subtest: manager uses the correct authenticated action and requires confirmed evidence
+ok 3 - manager uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.095039
+  type: 'test'
+  ...
+# Subtest: staff uses the correct authenticated action and requires confirmed evidence
+ok 4 - staff uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.084422
+  type: 'test'
+  ...
+# Subtest: undefined cannot issue a manager task mutation
+ok 5 - undefined cannot issue a manager task mutation
+  ---
+  duration_ms: 0.494106
+  type: 'test'
+  ...
+# Subtest: viewer cannot issue a manager task mutation
+ok 6 - viewer cannot issue a manager task mutation
+  ---
+  duration_ms: 0.118007
+  type: 'test'
+  ...
+# Subtest: finance cannot issue a manager task mutation
+ok 7 - finance cannot issue a manager task mutation
+  ---
+  duration_ms: 0.0843
+  type: 'test'
+  ...
+# Subtest: hr cannot issue a manager task mutation
+ok 8 - hr cannot issue a manager task mutation
+  ---
+  duration_ms: 0.076936
+  type: 'test'
+  ...
+# Subtest: contractor cannot issue a manager task mutation
+ok 9 - contractor cannot issue a manager task mutation
+  ---
+  duration_ms: 0.222016
+  type: 'test'
+  ...
+# Subtest: teacher cannot issue a manager task mutation
+ok 10 - teacher cannot issue a manager task mutation
+  ---
+  duration_ms: 0.301752
+  type: 'test'
+  ...
+# Subtest: unknown cannot issue a manager task mutation
+ok 11 - unknown cannot issue a manager task mutation
+  ---
+  duration_ms: 0.131149
+  type: 'test'
+  ...
+# Subtest: staff cannot request queued
+ok 12 - staff cannot request queued
+  ---
+  duration_ms: 0.217445
+  type: 'test'
+  ...
+# Subtest: staff cannot request cancelled
+ok 13 - staff cannot request cancelled
+  ---
+  duration_ms: 0.119955
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":"draft-1"}
+ok 14 - invalid input fails before network: {"taskId":"draft-1"}
+  ---
+  duration_ms: 0.180739
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":""}
+ok 15 - invalid input fails before network: {"taskId":""}
+  ---
+  duration_ms: 0.063638
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"status":"published"}
+ok 16 - invalid input fails before network: {"status":"published"}
+  ---
+  duration_ms: 0.057091
+  type: 'test'
+  ...
+# Subtest: HTTP 400 is actionable, sanitised and never auto-retried
+ok 17 - HTTP 400 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.286609
+  type: 'test'
+  ...
+# Subtest: HTTP 401 is actionable, sanitised and never auto-retried
+ok 18 - HTTP 401 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.101763
+  type: 'test'
+  ...
+# Subtest: HTTP 403 is actionable, sanitised and never auto-retried
+ok 19 - HTTP 403 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.056725
+  type: 'test'
+  ...
+# Subtest: HTTP 404 is actionable, sanitised and never auto-retried
+ok 20 - HTTP 404 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.049501
+  type: 'test'
+  ...
+# Subtest: HTTP 409 is actionable, sanitised and never auto-retried
+ok 21 - HTTP 409 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.055968
+  type: 'test'
+  ...
+# Subtest: HTTP 429 is actionable, sanitised and never auto-retried
+ok 22 - HTTP 429 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.050205
+  type: 'test'
+  ...
+# Subtest: HTTP 500 is actionable, sanitised and never auto-retried
+ok 23 - HTTP 500 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.06337
+  type: 'test'
+  ...
+# Subtest: HTTP 503 is actionable, sanitised and never auto-retried
+ok 24 - HTTP 503 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.052166
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 0 cannot report success
+ok 25 - 2xx with incomplete or mismatched evidence 0 cannot report success
+  ---
+  duration_ms: 0.098799
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 1 cannot report success
+ok 26 - 2xx with incomplete or mismatched evidence 1 cannot report success
+  ---
+  duration_ms: 0.054109
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 2 cannot report success
+ok 27 - 2xx with incomplete or mismatched evidence 2 cannot report success
+  ---
+  duration_ms: 0.056008
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 3 cannot report success
+ok 28 - 2xx with incomplete or mismatched evidence 3 cannot report success
+  ---
+  duration_ms: 0.04834
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 4 cannot report success
+ok 29 - 2xx with incomplete or mismatched evidence 4 cannot report success
+  ---
+  duration_ms: 0.045951
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 5 cannot report success
+ok 30 - 2xx with incomplete or mismatched evidence 5 cannot report success
+  ---
+  duration_ms: 0.045513
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 6 cannot report success
+ok 31 - 2xx with incomplete or mismatched evidence 6 cannot report success
+  ---
+  duration_ms: 0.047086
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 7 cannot report success
+ok 32 - 2xx with incomplete or mismatched evidence 7 cannot report success
+  ---
+  duration_ms: 0.045688
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 8 cannot report success
+ok 33 - 2xx with incomplete or mismatched evidence 8 cannot report success
+  ---
+  duration_ms: 0.046626
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 9 cannot report success
+ok 34 - 2xx with incomplete or mismatched evidence 9 cannot report success
+  ---
+  duration_ms: 0.046915
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 10 cannot report success
+ok 35 - 2xx with incomplete or mismatched evidence 10 cannot report success
+  ---
+  duration_ms: 0.100702
+  type: 'test'
+  ...
+# Subtest: body-level error is not success even with task fields
+ok 36 - body-level error is not success even with task fields
+  ---
+  duration_ms: 0.160322
+  type: 'test'
+  ...
+# Subtest: thrown network failure leaves the outcome unknown and does not retry
+ok 37 - thrown network failure leaves the outcome unknown and does not retry
+  ---
+  duration_ms: 0.099804
+  type: 'test'
+  ...
+# Subtest: owner: transition persists with matching audit and completion timestamp
+ok 38 - owner: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 1985.065779
+  type: 'test'
+  ...
+# Subtest: admin: transition persists with matching audit and completion timestamp
+ok 39 - admin: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 9.58495
+  type: 'test'
+  ...
+# Subtest: manager: transition persists with matching audit and completion timestamp
+ok 40 - manager: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 9.236977
+  type: 'test'
+  ...
+# Subtest: staff: transition persists with matching audit and completion timestamp
+ok 41 - staff: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 13.608612
+  type: 'test'
+  ...
+# Subtest: unassigned staff cannot change another employee's task
+ok 42 - unassigned staff cannot change another employee's task
+  ---
+  duration_ms: 31.288963
+  type: 'test'
+  ...
+# Subtest: staff cannot change an unassigned task
+ok 43 - staff cannot change an unassigned task
+  ---
+  duration_ms: 7.630763
+  type: 'test'
+  ...
+# Subtest: staff cannot cancel an assigned task
+ok 44 - staff cannot cancel an assigned task
+  ---
+  duration_ms: 13.552586
+  type: 'test'
+  ...
+# Subtest: staff cannot requeue a blocked task
+ok 45 - staff cannot requeue a blocked task
+  ---
+  duration_ms: 15.146115
+  type: 'test'
+  ...
+# Subtest: staff can block and resume an assigned task
+ok 46 - staff can block and resume an assigned task
+  ---
+  duration_ms: 7.999272
+  type: 'test'
+  ...
+# Subtest: cross-tenant manager sees no task and cannot mutate it
+ok 47 - cross-tenant manager sees no task and cannot mutate it
+  ---
+  duration_ms: 6.663738
+  type: 'test'
+  ...
+# Subtest: finance cannot transition tasks
+ok 48 - finance cannot transition tasks
+  ---
+  duration_ms: 14.36699
+  type: 'test'
+  ...
+# Subtest: viewer cannot transition tasks
+ok 49 - viewer cannot transition tasks
+  ---
+  duration_ms: 10.900777
+  type: 'test'
+  ...
+# Subtest: unknown actor cannot transition tasks
+ok 50 - unknown actor cannot transition tasks
+  ---
+  duration_ms: 6.431102
+  type: 'test'
+  ...
+# Subtest: stale/replayed expected status does not produce a duplicate audit
+ok 51 - stale/replayed expected status does not produce a duplicate audit
+  ---
+  duration_ms: 10.91841
+  type: 'test'
+  ...
+# Subtest: invalid transition cannot skip directly to completion
+ok 52 - invalid transition cannot skip directly to completion
+  ---
+  duration_ms: 9.617388
+  type: 'test'
+  ...
+# Subtest: terminal tasks cannot be reopened
+ok 53 - terminal tasks cannot be reopened
+  ---
+  duration_ms: 20.017215
+  type: 'test'
+  ...
+# Subtest: anon cannot call the SECURITY DEFINER RPC with a forged actor
+ok 54 - anon cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 14.581415
+  type: 'test'
+  ...
+# Subtest: authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+ok 55 - authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 9.057804
+  type: 'test'
+  ...
+# Subtest: audit insertion failure rolls back the status and timestamp update
+ok 56 - audit insertion failure rolls back the status and timestamp update
+  ---
+  duration_ms: 16.808093
+  type: 'test'
+  ...
+# Subtest: service-only grants and empty search_path survive the role-matrix replacement
+ok 57 - service-only grants and empty search_path survive the role-matrix replacement
+  ---
+  duration_ms: 12.146533
+  type: 'test'
+  ...
+1..57
+# tests 57
+# suites 0
+# pass 57
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2518.661819

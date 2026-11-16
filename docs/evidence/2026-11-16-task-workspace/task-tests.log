@@ -1,0 +1,638 @@
+
+> james-denning@1.0.0 test:tasks
+> node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs scripts/test-operational-task-records.mjs scripts/test-task-workspace-ui.mjs
+
+TAP version 13
+# Subtest: owner uses the correct authenticated action and requires confirmed evidence
+ok 1 - owner uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 1.574166
+  type: 'test'
+  ...
+# Subtest: admin uses the correct authenticated action and requires confirmed evidence
+ok 2 - admin uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.208271
+  type: 'test'
+  ...
+# Subtest: manager uses the correct authenticated action and requires confirmed evidence
+ok 3 - manager uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.103294
+  type: 'test'
+  ...
+# Subtest: staff uses the correct authenticated action and requires confirmed evidence
+ok 4 - staff uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.081141
+  type: 'test'
+  ...
+# Subtest: undefined cannot issue a manager task mutation
+ok 5 - undefined cannot issue a manager task mutation
+  ---
+  duration_ms: 0.513834
+  type: 'test'
+  ...
+# Subtest: viewer cannot issue a manager task mutation
+ok 6 - viewer cannot issue a manager task mutation
+  ---
+  duration_ms: 0.12111
+  type: 'test'
+  ...
+# Subtest: finance cannot issue a manager task mutation
+ok 7 - finance cannot issue a manager task mutation
+  ---
+  duration_ms: 0.083948
+  type: 'test'
+  ...
+# Subtest: hr cannot issue a manager task mutation
+ok 8 - hr cannot issue a manager task mutation
+  ---
+  duration_ms: 0.079651
+  type: 'test'
+  ...
+# Subtest: contractor cannot issue a manager task mutation
+ok 9 - contractor cannot issue a manager task mutation
+  ---
+  duration_ms: 0.220471
+  type: 'test'
+  ...
+# Subtest: teacher cannot issue a manager task mutation
+ok 10 - teacher cannot issue a manager task mutation
+  ---
+  duration_ms: 0.331626
+  type: 'test'
+  ...
+# Subtest: unknown cannot issue a manager task mutation
+ok 11 - unknown cannot issue a manager task mutation
+  ---
+  duration_ms: 0.136999
+  type: 'test'
+  ...
+# Subtest: staff cannot request queued
+ok 12 - staff cannot request queued
+  ---
+  duration_ms: 0.24133
+  type: 'test'
+  ...
+# Subtest: staff cannot request cancelled
+ok 13 - staff cannot request cancelled
+  ---
+  duration_ms: 0.126864
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":"draft-1"}
+ok 14 - invalid input fails before network: {"taskId":"draft-1"}
+  ---
+  duration_ms: 0.201944
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":""}
+ok 15 - invalid input fails before network: {"taskId":""}
+  ---
+  duration_ms: 0.07944
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"status":"published"}
+ok 16 - invalid input fails before network: {"status":"published"}
+  ---
+  duration_ms: 0.057577
+  type: 'test'
+  ...
+# Subtest: HTTP 400 is actionable, sanitised and never auto-retried
+ok 17 - HTTP 400 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.341368
+  type: 'test'
+  ...
+# Subtest: HTTP 401 is actionable, sanitised and never auto-retried
+ok 18 - HTTP 401 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.111767
+  type: 'test'
+  ...
+# Subtest: HTTP 403 is actionable, sanitised and never auto-retried
+ok 19 - HTTP 403 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.070149
+  type: 'test'
+  ...
+# Subtest: HTTP 404 is actionable, sanitised and never auto-retried
+ok 20 - HTTP 404 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.052311
+  type: 'test'
+  ...
+# Subtest: HTTP 409 is actionable, sanitised and never auto-retried
+ok 21 - HTTP 409 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.057375
+  type: 'test'
+  ...
+# Subtest: HTTP 429 is actionable, sanitised and never auto-retried
+ok 22 - HTTP 429 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.123613
+  type: 'test'
+  ...
+# Subtest: HTTP 500 is actionable, sanitised and never auto-retried
+ok 23 - HTTP 500 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.067791
+  type: 'test'
+  ...
+# Subtest: HTTP 503 is actionable, sanitised and never auto-retried
+ok 24 - HTTP 503 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.058394
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 0 cannot report success
+ok 25 - 2xx with incomplete or mismatched evidence 0 cannot report success
+  ---
+  duration_ms: 0.15641
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 1 cannot report success
+ok 26 - 2xx with incomplete or mismatched evidence 1 cannot report success
+  ---
+  duration_ms: 0.059322
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 2 cannot report success
+ok 27 - 2xx with incomplete or mismatched evidence 2 cannot report success
+  ---
+  duration_ms: 0.062336
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 3 cannot report success
+ok 28 - 2xx with incomplete or mismatched evidence 3 cannot report success
+  ---
+  duration_ms: 0.049737
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 4 cannot report success
+ok 29 - 2xx with incomplete or mismatched evidence 4 cannot report success
+  ---
+  duration_ms: 0.04697
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 5 cannot report success
+ok 30 - 2xx with incomplete or mismatched evidence 5 cannot report success
+  ---
+  duration_ms: 0.045418
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 6 cannot report success
+ok 31 - 2xx with incomplete or mismatched evidence 6 cannot report success
+  ---
+  duration_ms: 0.046562
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 7 cannot report success
+ok 32 - 2xx with incomplete or mismatched evidence 7 cannot report success
+  ---
+  duration_ms: 0.046425
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 8 cannot report success
+ok 33 - 2xx with incomplete or mismatched evidence 8 cannot report success
+  ---
+  duration_ms: 0.06268
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 9 cannot report success
+ok 34 - 2xx with incomplete or mismatched evidence 9 cannot report success
+  ---
+  duration_ms: 0.091434
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 10 cannot report success
+ok 35 - 2xx with incomplete or mismatched evidence 10 cannot report success
+  ---
+  duration_ms: 0.151204
+  type: 'test'
+  ...
+# Subtest: body-level error is not success even with task fields
+ok 36 - body-level error is not success even with task fields
+  ---
+  duration_ms: 0.147996
+  type: 'test'
+  ...
+# Subtest: thrown network failure leaves the outcome unknown and does not retry
+ok 37 - thrown network failure leaves the outcome unknown and does not retry
+  ---
+  duration_ms: 0.121837
+  type: 'test'
+  ...
+# Subtest: owner: transition persists with matching audit and completion timestamp
+ok 38 - owner: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 2055.981854
+  type: 'test'
+  ...
+# Subtest: admin: transition persists with matching audit and completion timestamp
+ok 39 - admin: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 12.31576
+  type: 'test'
+  ...
+# Subtest: manager: transition persists with matching audit and completion timestamp
+ok 40 - manager: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 9.618013
+  type: 'test'
+  ...
+# Subtest: staff: transition persists with matching audit and completion timestamp
+ok 41 - staff: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 22.161902
+  type: 'test'
+  ...
+# Subtest: unassigned staff cannot change another employee's task
+ok 42 - unassigned staff cannot change another employee's task
+  ---
+  duration_ms: 11.384089
+  type: 'test'
+  ...
+# Subtest: staff cannot change an unassigned task
+ok 43 - staff cannot change an unassigned task
+  ---
+  duration_ms: 11.341085
+  type: 'test'
+  ...
+# Subtest: staff cannot cancel an assigned task
+ok 44 - staff cannot cancel an assigned task
+  ---
+  duration_ms: 26.397748
+  type: 'test'
+  ...
+# Subtest: staff cannot requeue a blocked task
+ok 45 - staff cannot requeue a blocked task
+  ---
+  duration_ms: 7.531399
+  type: 'test'
+  ...
+# Subtest: staff can block and resume an assigned task
+ok 46 - staff can block and resume an assigned task
+  ---
+  duration_ms: 11.055804
+  type: 'test'
+  ...
+# Subtest: cross-tenant manager sees no task and cannot mutate it
+ok 47 - cross-tenant manager sees no task and cannot mutate it
+  ---
+  duration_ms: 7.497781
+  type: 'test'
+  ...
+# Subtest: finance cannot transition tasks
+ok 48 - finance cannot transition tasks
+  ---
+  duration_ms: 7.873318
+  type: 'test'
+  ...
+# Subtest: viewer cannot transition tasks
+ok 49 - viewer cannot transition tasks
+  ---
+  duration_ms: 10.432091
+  type: 'test'
+  ...
+# Subtest: unknown actor cannot transition tasks
+ok 50 - unknown actor cannot transition tasks
+  ---
+  duration_ms: 6.468742
+  type: 'test'
+  ...
+# Subtest: stale/replayed expected status does not produce a duplicate audit
+ok 51 - stale/replayed expected status does not produce a duplicate audit
+  ---
+  duration_ms: 12.217595
+  type: 'test'
+  ...
+# Subtest: invalid transition cannot skip directly to completion
+ok 52 - invalid transition cannot skip directly to completion
+  ---
+  duration_ms: 6.428087
+  type: 'test'
+  ...
+# Subtest: terminal tasks cannot be reopened
+ok 53 - terminal tasks cannot be reopened
+  ---
+  duration_ms: 21.704903
+  type: 'test'
+  ...
+# Subtest: anon cannot call the SECURITY DEFINER RPC with a forged actor
+ok 54 - anon cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 10.58371
+  type: 'test'
+  ...
+# Subtest: authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+ok 55 - authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 12.975419
+  type: 'test'
+  ...
+# Subtest: audit insertion failure rolls back the status and timestamp update
+ok 56 - audit insertion failure rolls back the status and timestamp update
+  ---
+  duration_ms: 9.782437
+  type: 'test'
+  ...
+# Subtest: service-only grants and empty search_path survive the role-matrix replacement
+ok 57 - service-only grants and empty search_path survive the role-matrix replacement
+  ---
+  duration_ms: 5.182121
+  type: 'test'
+  ...
+# Subtest: task read routes owner to operations.task.list
+ok 58 - task read routes owner to operations.task.list
+  ---
+  duration_ms: 1.544571
+  type: 'test'
+  ...
+# Subtest: task read routes admin to operations.task.list
+ok 59 - task read routes admin to operations.task.list
+  ---
+  duration_ms: 0.233916
+  type: 'test'
+  ...
+# Subtest: task read routes manager to operations.task.list
+ok 60 - task read routes manager to operations.task.list
+  ---
+  duration_ms: 0.195377
+  type: 'test'
+  ...
+# Subtest: task read routes staff to operations.task.list_mine
+ok 61 - task read routes staff to operations.task.list_mine
+  ---
+  duration_ms: 0.109883
+  type: 'test'
+  ...
+# Subtest: task read routes contractor to operations.task.list_mine
+ok 62 - task read routes contractor to operations.task.list_mine
+  ---
+  duration_ms: 0.130697
+  type: 'test'
+  ...
+# Subtest: task read routes viewer to operations.task.list_readonly
+ok 63 - task read routes viewer to operations.task.list_readonly
+  ---
+  duration_ms: 0.083731
+  type: 'test'
+  ...
+# Subtest: unsupported roles fail before network
+ok 64 - unsupported roles fail before network
+  ---
+  duration_ms: 0.567319
+  type: 'test'
+  ...
+# Subtest: read rejects missing payload without raw diagnostics
+ok 65 - read rejects missing payload without raw diagnostics
+  ---
+  duration_ms: 0.412968
+  type: 'test'
+  ...
+# Subtest: read rejects missing task list without raw diagnostics
+ok 66 - read rejects missing task list without raw diagnostics
+  ---
+  duration_ms: 0.225826
+  type: 'test'
+  ...
+# Subtest: read rejects body error without raw diagnostics
+ok 67 - read rejects body error without raw diagnostics
+  ---
+  duration_ms: 0.276916
+  type: 'test'
+  ...
+# Subtest: read rejects invalid id without raw diagnostics
+ok 68 - read rejects invalid id without raw diagnostics
+  ---
+  duration_ms: 1.177075
+  type: 'test'
+  ...
+# Subtest: read rejects unknown status without raw diagnostics
+ok 69 - read rejects unknown status without raw diagnostics
+  ---
+  duration_ms: 0.120099
+  type: 'test'
+  ...
+# Subtest: read rejects missing title without raw diagnostics
+ok 70 - read rejects missing title without raw diagnostics
+  ---
+  duration_ms: 0.064981
+  type: 'test'
+  ...
+# Subtest: read rejects duplicate id without raw diagnostics
+ok 71 - read rejects duplicate id without raw diagnostics
+  ---
+  duration_ms: 0.056439
+  type: 'test'
+  ...
+# Subtest: read rejects null item without raw diagnostics
+ok 72 - read rejects null item without raw diagnostics
+  ---
+  duration_ms: 0.050902
+  type: 'test'
+  ...
+# Subtest: read rejects HTTP error without raw diagnostics
+ok 73 - read rejects HTTP error without raw diagnostics
+  ---
+  duration_ms: 0.198832
+  type: 'test'
+  ...
+# Subtest: saved task keys require source provenance and UUID, deduplicate and ignore non-assistant/non-checklist content
+ok 74 - saved task keys require source provenance and UUID, deduplicate and ignore non-assistant/non-checklist content
+  ---
+  duration_ms: 0.192965
+  type: 'test'
+  ...
+# Subtest: checklist actions preserve the legal subset, never convert cancelled/unknown states into start
+ok 75 - checklist actions preserve the legal subset, never convert cancelled/unknown states into start
+  ---
+  duration_ms: 0.068772
+  type: 'test'
+  ...
+# Subtest: mutations require a successful read and a returned record; out-of-sample records stay unavailable
+ok 76 - mutations require a successful read and a returned record; out-of-sample records stay unavailable
+  ---
+  duration_ms: 0.23141
+  type: 'test'
+  ...
+# Subtest: confirmed transition is not optimistic, locks duplicate cards synchronously, and records audit acknowledgement
+ok 77 - confirmed transition is not optimistic, locks duplicate cards synchronously, and records audit acknowledgement
+  ---
+  duration_ms: 0.248741
+  type: 'test'
+  ...
+# Subtest: uncertain mutation requires read reconciliation, never auto-retries or reports success
+ok 78 - uncertain mutation requires read reconciliation, never auto-retries or reports success
+  ---
+  duration_ms: 0.228598
+  type: 'test'
+  ...
+# Subtest: transport failure after a committed mutation is reconciled by read-back
+ok 79 - transport failure after a committed mutation is reconciled by read-back
+  ---
+  duration_ms: 0.279054
+  type: 'test'
+  ...
+# Subtest: failed refresh clears writable state instead of preserving stale success
+ok 80 - failed refresh clears writable state instead of preserving stale success
+  ---
+  duration_ms: 0.180564
+  type: 'test'
+  ...
+# Subtest: late reads cannot overwrite a newer refresh
+ok 81 - late reads cannot overwrite a newer refresh
+  ---
+  duration_ms: 0.147924
+  type: 'test'
+  ...
+# Subtest: deactivated scope ignores late reads and writes, including StrictMode reactivation
+ok 82 - deactivated scope ignores late reads and writes, including StrictMode reactivation
+  ---
+  duration_ms: 0.246554
+  type: 'test'
+  ...
+# Subtest: new cards during a pending mutation cannot reset its duplicate-click guard
+ok 83 - new cards during a pending mutation cannot reset its duplicate-click guard
+  ---
+  duration_ms: 0.224007
+  type: 'test'
+  ...
+# Subtest: independent task mutations merge without losing either acknowledgement
+ok 84 - independent task mutations merge without losing either acknowledgement
+  ---
+  duration_ms: 0.198208
+  type: 'test'
+  ...
+# Subtest: viewer can read but never dispatch a task transition
+ok 85 - viewer can read but never dispatch a task transition
+  ---
+  duration_ms: 0.083893
+  type: 'test'
+  ...
+# Subtest: contractor can read but never dispatch a task transition
+ok 86 - contractor can read but never dispatch a task transition
+  ---
+  duration_ms: 0.049804
+  type: 'test'
+  ...
+# Subtest: draft 11111111-1111-4111-8111-111111111111 never claims saved completion or dispatches a mutation
+ok 87 - draft 11111111-1111-4111-8111-111111111111 never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 98.973913
+  type: 'test'
+  ...
+# Subtest: draft draft-1 never claims saved completion or dispatches a mutation
+ok 88 - draft draft-1 never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 30.708105
+  type: 'test'
+  ...
+# Subtest: draft without ID never claims saved completion or dispatches a mutation
+ok 89 - draft without ID never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 20.200827
+  type: 'test'
+  ...
+# Subtest: snapshot completion is unverified and inert until a matching authorised read
+ok 90 - snapshot completion is unverified and inert until a matching authorised read
+  ---
+  duration_ms: 20.836019
+  type: 'test'
+  ...
+# Subtest: invalid saved ID never becomes a local toggle
+ok 91 - invalid saved ID never becomes a local toggle
+  ---
+  duration_ms: 12.374456
+  type: 'test'
+  ...
+# Subtest: viewer cannot turn a saved task into a local completion
+ok 92 - viewer cannot turn a saved task into a local completion
+  ---
+  duration_ms: 9.729015
+  type: 'test'
+  ...
+# Subtest: contractor cannot turn a saved task into a local completion
+ok 93 - contractor cannot turn a saved task into a local completion
+  ---
+  duration_ms: 17.248303
+  type: 'test'
+  ...
+# Subtest: teacher cannot turn a saved task into a local completion
+ok 94 - teacher cannot turn a saved task into a local completion
+  ---
+  duration_ms: 27.192333
+  type: 'test'
+  ...
+# Subtest: undefined cannot turn a saved task into a local completion
+ok 95 - undefined cannot turn a saved task into a local completion
+  ---
+  duration_ms: 14.430293
+  type: 'test'
+  ...
+# Subtest: refreshed records override stale card title and status, including cancelled
+ok 96 - refreshed records override stale card title and status, including cancelled
+  ---
+  duration_ms: 14.024598
+  type: 'test'
+  ...
+# Subtest: local ticks do not carry to changed item content or remounted workspace
+ok 97 - local ticks do not carry to changed item content or remounted workspace
+  ---
+  duration_ms: 19.238601
+  type: 'test'
+  ...
+# Subtest: references are hidden by default and revealed in explicit evidence details
+ok 98 - references are hidden by default and revealed in explicit evidence details
+  ---
+  duration_ms: 18.955451
+  type: 'test'
+  ...
+# Subtest: mounted hook/card integrates read → start → complete → remount/readback with a synthetic server
+ok 99 - mounted hook/card integrates read → start → complete → remount/readback with a synthetic server
+  ---
+  duration_ms: 19.539249
+  type: 'test'
+  ...
+# Subtest: repeated mounted cards share a synchronous pending lock and no optimistic completion
+ok 100 - repeated mounted cards share a synchronous pending lock and no optimistic completion
+  ---
+  duration_ms: 17.331084
+  type: 'test'
+  ...
+# Subtest: unconfirmed write blocks mounted retry until explicit read-only refresh reconciles status
+ok 101 - unconfirmed write blocks mounted retry until explicit read-only refresh reconciles status
+  ---
+  duration_ms: 19.38379
+  type: 'test'
+  ...
+# Subtest: account/conversation scope changes discard late reads from the previous scope
+ok 102 - account/conversation scope changes discard late reads from the previous scope
+  ---
+  duration_ms: 18.352659
+  type: 'test'
+  ...
+# Subtest: StrictMode replay still leaves mounted task records usable
+ok 103 - StrictMode replay still leaves mounted task records usable
+  ---
+  duration_ms: 10.578659
+  type: 'test'
+  ...
+# Subtest: chat wiring keys local state by account/workspace/conversation and offers read reconciliation
+ok 104 - chat wiring keys local state by account/workspace/conversation and offers read reconciliation
+  ---
+  duration_ms: 1.336618
+  type: 'test'
+  ...
+1..104
+# tests 104
+# suites 0
+# pass 104
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3529.48247

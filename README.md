@@ -105,8 +105,8 @@ npm run build         # Capacitor/Android web bundle (base: './')
 npm run build:web     # Vercel production build (base: '/')
 npm run build:mobile  # Dedicated mobile bundle (dist-mobile/)
 npm run test:guards   # Stubbed verification and staging-target safety tests (no network)
-npm run test:tasks    # Task client + isolated PostgreSQL RPC regression tests (no remote DB)
-npm run test:navigation # Sidebar search + DOM-based mobile focus/cleanup tests
+npm run test:tasks    # Task client, read/write reconciliation, mounted cards + isolated PostgreSQL RPC tests
+npm run test:navigation # Role/layout compatibility, search, mobile focus + mounted switch dialog
 npm run android       # Sync + open Android Studio
 ```
 

@@ -1,0 +1,456 @@
+
+> james-denning@1.0.0 test:navigation
+> node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs
+
+TAP version 13
+# Subtest: opening focuses search and locks body scrolling
+ok 1 - opening focuses search and locks body scrolling
+  ---
+  duration_ms: 50.800908
+  type: 'test'
+  ...
+# Subtest: Tab wraps from last control to search
+ok 2 - Tab wraps from last control to search
+  ---
+  duration_ms: 11.439044
+  type: 'test'
+  ...
+# Subtest: Shift-Tab wraps to the last eligible control
+ok 3 - Shift-Tab wraps to the last eligible control
+  ---
+  duration_ms: 8.281779
+  type: 'test'
+  ...
+# Subtest: interior Tab is left to native browser handling
+ok 4 - interior Tab is left to native browser handling
+  ---
+  duration_ms: 7.730442
+  type: 'test'
+  ...
+# Subtest: Escape closes and returns focus to the menu trigger
+ok 5 - Escape closes and returns focus to the menu trigger
+  ---
+  duration_ms: 7.311147
+  type: 'test'
+  ...
+# Subtest: focus boundaries update after search removes or disables controls
+ok 6 - focus boundaries update after search removes or disables controls
+  ---
+  duration_ms: 15.526122
+  type: 'test'
+  ...
+# Subtest: no controls still contains focus without throwing
+ok 7 - no controls still contains focus without throwing
+  ---
+  duration_ms: 6.659663
+  type: 'test'
+  ...
+# Subtest: cleanup restores prior scroll, focus and removes the event handler
+ok 8 - cleanup restores prior scroll, focus and removes the event handler
+  ---
+  duration_ms: 6.205145
+  type: 'test'
+  ...
+# Subtest: cleanup does not steal focus from a dialog opened by navigation
+ok 9 - cleanup does not steal focus from a dialog opened by navigation
+  ---
+  duration_ms: 8.444972
+  type: 'test'
+  ...
+# Subtest: repeated bind-cleanup cycles do not accumulate Escape handlers
+ok 10 - repeated bind-cleanup cycles do not accumulate Escape handlers
+  ---
+  duration_ms: 6.870735
+  type: 'test'
+  ...
+# Subtest: blank query preserves existing order and identity
+ok 11 - blank query preserves existing order and identity
+  ---
+  duration_ms: 1.653513
+  type: 'test'
+  ...
+# Subtest: case-insensitive label search preserves the matching group
+ok 12 - case-insensitive label search preserves the matching group
+  ---
+  duration_ms: 0.702163
+  type: 'test'
+  ...
+# Subtest: department search finds only its supplied children
+ok 13 - department search finds only its supplied children
+  ---
+  duration_ms: 0.145084
+  type: 'test'
+  ...
+# Subtest: all search words must match label plus department
+ok 14 - all search words must match label plus department
+  ---
+  duration_ms: 0.186705
+  type: 'test'
+  ...
+# Subtest: ungrouped JD Assistant remains searchable
+ok 15 - ungrouped JD Assistant remains searchable
+  ---
+  duration_ms: 0.160125
+  type: 'test'
+  ...
+# Subtest: search never restores routes excluded by permission filtering
+ok 16 - search never restores routes excluded by permission filtering
+  ---
+  duration_ms: 0.108345
+  type: 'test'
+  ...
+# Subtest: role-visible children can be searched when their group header is absent
+ok 17 - role-visible children can be searched when their group header is absent
+  ---
+  duration_ms: 0.196125
+  type: 'test'
+  ...
+# Subtest: empty group headers are not search results
+ok 18 - empty group headers are not search results
+  ---
+  duration_ms: 0.158254
+  type: 'test'
+  ...
+# Subtest: education labels are searched as presented without rewriting routes
+ok 19 - education labels are searched as presented without rewriting routes
+  ---
+  duration_ms: 0.270637
+  type: 'test'
+  ...
+# Subtest: search treats punctuation literally rather than as a regex
+ok 20 - search treats punctuation literally rather than as a regex
+  ---
+  duration_ms: 0.268507
+  type: 'test'
+  ...
+# Subtest: search and icon-rail expand groups without mutating collapse preferences
+ok 21 - search and icon-rail expand groups without mutating collapse preferences
+  ---
+  duration_ms: 0.23049
+  type: 'test'
+  ...
+# Subtest: shell searches authorised NAV, not the raw catalogue; header is independent
+ok 22 - shell searches authorised NAV, not the raw catalogue; header is independent
+  ---
+  duration_ms: 0.340609
+  type: 'test'
+  ...
+# Subtest: navigation retains accessible search, active page and expansion hooks
+ok 23 - navigation retains accessible search, active page and expansion hooks
+  ---
+  duration_ms: 0.173172
+  type: 'test'
+  ...
+# Subtest: mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+ok 24 - mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+  ---
+  duration_ms: 0.164733
+  type: 'test'
+  ...
+# Subtest: demo tenant must not promise isolated staging or publish shared credentials
+ok 25 - demo tenant must not promise isolated staging or publish shared credentials
+  ---
+  duration_ms: 0.430952
+  type: 'test'
+  ...
+# (node:3180) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/src/config/product.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: route/role/icon baseline is unchanged; settings is the only added sidebar route
+ok 26 - route/role/icon baseline is unchanged; settings is the only added sidebar route
+  ---
+  duration_ms: 1.638144
+  type: 'test'
+  ...
+# Subtest: admin: business / allow preserves permitted route set
+ok 27 - admin: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.804985
+  type: 'test'
+  ...
+# Subtest: admin: business / deny preserves permitted route set
+ok 28 - admin: business / deny preserves permitted route set
+  ---
+  duration_ms: 1.126599
+  type: 'test'
+  ...
+# Subtest: admin: business / subset preserves permitted route set
+ok 29 - admin: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.17458
+  type: 'test'
+  ...
+# Subtest: admin: education / allow preserves permitted route set
+ok 30 - admin: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.392428
+  type: 'test'
+  ...
+# Subtest: admin: education / deny preserves permitted route set
+ok 31 - admin: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.990065
+  type: 'test'
+  ...
+# Subtest: admin: education / subset preserves permitted route set
+ok 32 - admin: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.293618
+  type: 'test'
+  ...
+# Subtest: manager: business / allow preserves permitted route set
+ok 33 - manager: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.152754
+  type: 'test'
+  ...
+# Subtest: manager: business / deny preserves permitted route set
+ok 34 - manager: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.212669
+  type: 'test'
+  ...
+# Subtest: manager: business / subset preserves permitted route set
+ok 35 - manager: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.330372
+  type: 'test'
+  ...
+# Subtest: manager: education / allow preserves permitted route set
+ok 36 - manager: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.130909
+  type: 'test'
+  ...
+# Subtest: manager: education / deny preserves permitted route set
+ok 37 - manager: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.061982
+  type: 'test'
+  ...
+# Subtest: manager: education / subset preserves permitted route set
+ok 38 - manager: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.061276
+  type: 'test'
+  ...
+# Subtest: bursar: business / allow preserves permitted route set
+ok 39 - bursar: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.064354
+  type: 'test'
+  ...
+# Subtest: bursar: business / deny preserves permitted route set
+ok 40 - bursar: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.045021
+  type: 'test'
+  ...
+# Subtest: bursar: business / subset preserves permitted route set
+ok 41 - bursar: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.054005
+  type: 'test'
+  ...
+# Subtest: bursar: education / allow preserves permitted route set
+ok 42 - bursar: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.064477
+  type: 'test'
+  ...
+# Subtest: bursar: education / deny preserves permitted route set
+ok 43 - bursar: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.05107
+  type: 'test'
+  ...
+# Subtest: bursar: education / subset preserves permitted route set
+ok 44 - bursar: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.102255
+  type: 'test'
+  ...
+# Subtest: teacher: business / allow preserves permitted route set
+ok 45 - teacher: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.107062
+  type: 'test'
+  ...
+# Subtest: teacher: business / deny preserves permitted route set
+ok 46 - teacher: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.045237
+  type: 'test'
+  ...
+# Subtest: teacher: business / subset preserves permitted route set
+ok 47 - teacher: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.061425
+  type: 'test'
+  ...
+# Subtest: teacher: education / allow preserves permitted route set
+ok 48 - teacher: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.122672
+  type: 'test'
+  ...
+# Subtest: teacher: education / deny preserves permitted route set
+ok 49 - teacher: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.701578
+  type: 'test'
+  ...
+# Subtest: teacher: education / subset preserves permitted route set
+ok 50 - teacher: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.075821
+  type: 'test'
+  ...
+# Subtest: student: business / allow preserves permitted route set
+ok 51 - student: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.068275
+  type: 'test'
+  ...
+# Subtest: student: business / deny preserves permitted route set
+ok 52 - student: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.046365
+  type: 'test'
+  ...
+# Subtest: student: business / subset preserves permitted route set
+ok 53 - student: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.050132
+  type: 'test'
+  ...
+# Subtest: student: education / allow preserves permitted route set
+ok 54 - student: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.059583
+  type: 'test'
+  ...
+# Subtest: student: education / deny preserves permitted route set
+ok 55 - student: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.045814
+  type: 'test'
+  ...
+# Subtest: student: education / subset preserves permitted route set
+ok 56 - student: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.050684
+  type: 'test'
+  ...
+# Subtest: unknown/new roles get no implicit grant, even with a permissive resolver
+ok 57 - unknown/new roles get no implicit grant, even with a permissive resolver
+  ---
+  duration_ms: 0.143794
+  type: 'test'
+  ...
+# Subtest: every individual non-admin denial removes that route and it cannot reappear in search
+ok 58 - every individual non-admin denial removes that route and it cannot reappear in search
+  ---
+  duration_ms: 1.372798
+  type: 'test'
+  ...
+# Subtest: manager can see Finance and People headers without widening specialist page access
+ok 59 - manager can see Finance and People headers without widening specialist page access
+  ---
+  duration_ms: 0.154364
+  type: 'test'
+  ...
+# Subtest: business destinations are unique, grouped and honest about separate record modules
+ok 60 - business destinations are unique, grouped and honest about separate record modules
+  ---
+  duration_ms: 0.271966
+  type: 'test'
+  ...
+# Subtest: business starts compact, active group expands, search/rail remain reachable
+ok 61 - business starts compact, active group expands, search/rail remain reachable
+  ---
+  duration_ms: 0.145361
+  type: 'test'
+  ...
+# Subtest: education labels require explicit enabled education workspace; calls never mutate catalogue
+ok 62 - education labels require explicit enabled education workspace; calls never mutate catalogue
+  ---
+  duration_ms: 0.282765
+  type: 'test'
+  ...
+# Subtest: shell wires role resolver, department resets, account access and reauthentication
+ok 63 - shell wires role resolver, department resets, account access and reauthentication
+  ---
+  duration_ms: 1.641598
+  type: 'test'
+  ...
+# Subtest: switch clears local identity and workspace only after acknowledged local signout
+ok 64 - switch clears local identity and workspace only after acknowledged local signout
+  ---
+  duration_ms: 1.319548
+  type: 'test'
+  ...
+# Subtest: switch fails closed on returned error
+ok 65 - switch fails closed on returned error
+  ---
+  duration_ms: 0.743476
+  type: 'test'
+  ...
+# Subtest: switch fails closed on thrown error
+ok 66 - switch fails closed on thrown error
+  ---
+  duration_ms: 0.206296
+  type: 'test'
+  ...
+# Subtest: switch fails closed on missing acknowledgement
+ok 67 - switch fails closed on missing acknowledgement
+  ---
+  duration_ms: 0.095582
+  type: 'test'
+  ...
+# Subtest: no clearing while signout is pending
+ok 68 - no clearing while signout is pending
+  ---
+  duration_ms: 0.179625
+  type: 'test'
+  ...
+# Subtest: mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+ok 69 - mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+  ---
+  duration_ms: 80.489283
+  type: 'test'
+  ...
+# Subtest: mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+ok 70 - mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+  ---
+  duration_ms: 25.776668
+  type: 'test'
+  ...
+# Subtest: mounted dialog prevents duplicate submission and closing during signout
+ok 71 - mounted dialog prevents duplicate submission and closing during signout
+  ---
+  duration_ms: 31.648682
+  type: 'test'
+  ...
+# Subtest: mounted dialog reports failure without raw error details and allows retry
+ok 72 - mounted dialog reports failure without raw error details and allows retry
+  ---
+  duration_ms: 13.491645
+  type: 'test'
+  ...
+# Subtest: unmount restores focus and pre-existing scroll style
+ok 73 - unmount restores focus and pre-existing scroll style
+  ---
+  duration_ms: 10.196188
+  type: 'test'
+  ...
+1..73
+# tests 73
+# suites 0
+# pass 73
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1140.299029

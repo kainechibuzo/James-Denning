@@ -6,7 +6,8 @@ import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 import { JDDepartments } from "./JDDepartments.jsx";
-import { transitionOperationalTask } from "./operational-task-client.mjs";
+import {savedTaskKey} from "./operational-task-records.mjs";
+import {useOperationalTaskRecords} from "./use-operational-task-records.jsx";
 
 const actions = [
   { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
@@ -146,7 +147,7 @@ function friendlyActivityLabel(name) {
   return labels[String(name || "")] || "Working on your request";
 }
 
-export function ChatHome({ user, organizationName = "Your organisation" }) {
+export function ChatHome({ user, organizationName = "Your organisation", organizationId = user?.school_id }) {
   const [draft, setDraft] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 760);
   const [showReview, setShowReview] = useState(false);
@@ -163,8 +164,9 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const [error, setError] = useState("");
-  const taskUpdatesRef = useRef(new Set());
-  const [pendingTaskIds, setPendingTaskIds] = useState([]);
+  const taskKey = savedTaskKey(messages);
+  const taskScope = JSON.stringify([organizationId,user?._authUserId||user?.id,user?.role,conversationId]);
+  const taskRecords = useOperationalTaskRecords({client:supabase,role:user?.role,scopeKey:taskScope,taskKey});
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -271,7 +273,7 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
-            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Verified execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: friendlyActivityLabel(step.tool_key), status: step.status, detail: step.error_message ? "Needs administrator review" : "" })) }] } : message.visualWorkspace || null),
+            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Recorded execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: friendlyActivityLabel(step.tool_key), status: step.status, detail: step.error_message ? "Needs administrator review" : "" })) }] } : message.visualWorkspace || null),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job.status,
             job: update.job,
@@ -327,33 +329,6 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
     }
   };
 
-  const updateOperationalTask = async (taskId, status) => {
-    if (!taskId || !["in_progress", "completed"].includes(status) || taskUpdatesRef.current.has(taskId)) return;
-    taskUpdatesRef.current.add(taskId); // Synchronous guard, including repeated cards/double clicks.
-    setPendingTaskIds([...taskUpdatesRef.current]);
-    setError("");
-    try {
-      const data = await transitionOperationalTask(supabase, { taskId, status, role: user?.role });
-      setMessages((current) => current.map((message) => {
-        if (!message.visualWorkspace?.blocks) return message;
-        return {
-          ...message,
-          visualWorkspace: {
-            ...message.visualWorkspace,
-            blocks: message.visualWorkspace.blocks.map((block) => block.type !== "checklist" ? block : ({
-              ...block,
-              items: (block.items || []).map((item) => item.id === taskId ? { ...item, status: data.task.status } : item),
-            })),
-          },
-        };
-      }));
-    } catch (err) {
-      setError(err.message || "JD could not confirm this task update. Refresh the task before retrying.");
-    } finally {
-      taskUpdatesRef.current.delete(taskId);
-      setPendingTaskIds([...taskUpdatesRef.current]);
-    }
-  };
 
   const newConversation = () => {
     if (sending) return;
@@ -528,7 +503,13 @@ export function ChatHome({ user, organizationName = "Your organisation" }) {
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.content ? renderMessageContent(item.content) : null}
-              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={updateOperationalTask} pendingTaskIds={pendingTaskIds}/>}
+              {item.role === "assistant" && item.visualWorkspace?.source === "persisted_workspace_records" && Array.isArray(item.visualWorkspace?.blocks) && item.visualWorkspace.blocks.some(block=>block?.type==="checklist") && <div style={{marginTop:12,fontSize:12}}>
+                <button type="button" onClick={taskRecords.refresh} disabled={taskRecords.state.phase==="loading"||taskRecords.state.pending.length>0}
+                  style={{padding:"8px 12px",border:"1px solid #dfe3e8",borderRadius:8,background:"#fff",color:"#374151",fontSize:11,cursor:"pointer"}}>{taskRecords.state.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>
+                {taskRecords.state.error&&<p role="alert">{taskRecords.state.error}</p>}
+                <p style={{fontSize:11,color:"#6b7280",lineHeight:1.6}}>Refresh reads task records only; it never retries a write. Department summaries and execution evidence remain conversation snapshots.</p>
+              </div>}
+              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
