@@ -3,7 +3,7 @@
   "appName": "JAMES-DENNING",
   "webDir": "dist",
   "server": {
-    "url": "https://portal.renaissancegardenschools.com",
+    "url": "https://james-denning-james-projects-57651351.vercel.app",
     "cleartext": false
   },
   "plugins": {
