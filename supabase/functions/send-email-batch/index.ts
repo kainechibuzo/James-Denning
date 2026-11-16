@@ -183,7 +183,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
@@ -206,12 +206,12 @@ serve(async (req) => {
 
 
     const zeptoKey = Deno.env.get("ZEPTO_API_KEY");
-    const zeptoFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "noreply@renaissancegardenschools.com";
+    const zeptoFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "";
     const zeptoName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
     const awsKey = Deno.env.get("AWS_ACCESS_KEY_ID");
     const awsSecret = Deno.env.get("AWS_SECRET_ACCESS_KEY");
     const awsRegion = Deno.env.get("AWS_REGION") || "eu-north-1";
-    const sesFrom = Deno.env.get("SES_FROM_EMAIL") || "noreply@renaissancegardenschools.com";
+    const sesFrom = Deno.env.get("SES_FROM_EMAIL") || "";
 
     const task = processBatch(
       supabaseUrl, serviceRoleKey, batch_id, actor.school_id, rate_per_min,
