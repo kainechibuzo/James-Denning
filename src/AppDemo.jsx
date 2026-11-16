@@ -735,7 +735,10 @@ async function safeRetry(fn, retries=1) {
 // Single-device token: a short random string stored in the DB and in localStorage.
 // If another device logs in with the same account, the DB token changes → this
 // device detects the mismatch on the next 60-second poll and is kicked out.
-const genSessionToken=()=>`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+const genSessionToken=()=>{
+  if(!globalThis.crypto?.randomUUID) throw new Error("Secure session token generation is unavailable in this browser");
+  return globalThis.crypto.randomUUID();
+};
 
 
 // ── Persist session ───────────────────────────────────────────────────────────
