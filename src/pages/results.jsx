@@ -9,6 +9,7 @@ import {
   ShieldCheck, BarChart2, CheckCircle2, Clock, AlertCircle, MinusCircle, ChevronDown,
 } from "lucide-react";
 import { db } from "../supabaseClient.js";
+import { evaluateArithmeticExpression } from "../utils/arithmetic.js";
 import { C } from "../config/theme.js";
 import { useSection } from "../contexts/section.jsx";
 import { useConfirm } from "../contexts/confirm.jsx";
@@ -802,7 +803,7 @@ export function ResultsTeachPage({ctx}){
     });
     try{
       if(!/^[\d\s+\-*/().]+$/.test(expr))return null;
-      return Function('"use strict";return('+expr+')')();
+      return evaluateArithmeticExpression(expr);
     }catch{return null;}
   };
 

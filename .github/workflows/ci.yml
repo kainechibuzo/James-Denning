@@ -96,6 +96,9 @@ jobs:
       - name: Test JD timezone-aware recurring schedule calculation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-scheduler.test.ts
 
+      - name: Test CSP-safe CAE arithmetic evaluator
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/arithmetic.test.ts
+
       - name: Test JD execution reliability helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-runtime.test.ts
 

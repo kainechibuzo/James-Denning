@@ -7,6 +7,7 @@ import {
   Edit, Pencil, Save, Send, Settings, Trash2, Upload,
 } from "lucide-react";
 import { db } from "../supabaseClient.js";
+import { evaluateArithmeticExpression } from "../utils/arithmetic.js";
 import { C } from "../config/theme.js";
 import {
   Card, Btn, Badge, Inp, Sel, Modal, Spinner, AppIcon,
@@ -358,7 +359,7 @@ export function CaeStructurePanel({notify,sections}){
       expr=expr.replace(new RegExp(esc,'gi'),String(v));
     });
     try{ if(!/^[\d\s+\-*/().]+$/.test(expr))return null;
-      return Function('"use strict";return('+expr+')')(); }catch{return null;}
+      return evaluateArithmeticExpression(expr); }catch{return null;}
   };
 
   const previewValues=useMemo(()=>{
