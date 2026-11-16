@@ -17,6 +17,10 @@ import { SectionCtx } from "../contexts/section.jsx";
 import { buildBroadsheetHTML } from "../services/pdf/broadsheet.js";
 import { fullName, fmt } from "../utils/grades.js";
 import { Card, Btn, Badge, Spinner, Modal, AppIcon } from "../components/ui.jsx";
+const escapePrintHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}[char]));
+
 
 // ─── RECYCLE BIN PAGE ─────────────────────────────────────────────────────────
 export function RecycleBinPage({ctx}){
@@ -1212,9 +1216,14 @@ export function BulkPromotionPage({ctx}){
     const owed=list.reduce((a,d)=>a+bal(d.student_id),0);
     const rows=list.slice()
       .sort((a,b)=>classNm(a.from_class_id).localeCompare(classNm(b.from_class_id))||(stuName[String(a.student_id)]||"").localeCompare(stuName[String(b.student_id)]||""))
-      .map(d=>{const b=bal(d.student_id);return `<tr><td style="border:1px solid #cbd5e1;padding:5px 9px">${stuName[String(d.student_id)]||d.student_id}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${d.student_id}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${classNm(d.from_class_id)}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${d.decision==="promote"?"→ "+classNm(d.to_class_id):d.decision==="graduate"?"Graduated":"Repeats"}</td><td style="border:1px solid #cbd5e1;padding:5px 9px;text-align:right;${b>0?"color:#b91c1c;font-weight:700":"color:#94a3b8"}">${b>0?fmt(b):"—"}</td></tr>`;}).join("");
-    const html=`<html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:Arial,sans-serif;padding:24px;color:#111"><h2 style="margin:0 0 4px">${title}</h2><div style="color:#64748b;font-size:12px;margin-bottom:14px">${sessions.find(s=>String(s.id)===String(selectedSession))?.name||""} · ${list.length} student(s)${owed>0?` · outstanding: <b style="color:#b91c1c">${fmt(owed)}</b>`:""}</div><table style="border-collapse:collapse;font-size:13px;width:100%"><thead><tr style="background:#0d2d6e;color:#fff"><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Member</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">ID</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">From Group</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Outcome</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:right">Balance</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
-    ctx.showPDF ? ctx.showPDF(html,title) : (()=>{const w=window.open("","_blank");w.document.write(html);w.document.close();})();
+      .map(d=>{const balance=bal(d.student_id);const outcome=d.decision==="promote"?"→ "+classNm(d.to_class_id):d.decision==="graduate"?"Graduated":"Repeats";return `<tr><td style="border:1px solid #cbd5e1;padding:5px 9px">${escapePrintHtml(stuName[String(d.student_id)]||d.student_id)}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${escapePrintHtml(d.student_id)}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${escapePrintHtml(classNm(d.from_class_id))}</td><td style="border:1px solid #cbd5e1;padding:5px 9px">${escapePrintHtml(outcome)}</td><td style="border:1px solid #cbd5e1;padding:5px 9px;text-align:right;${balance>0?"color:#b91c1c;font-weight:700":"color:#94a3b8"}">${escapePrintHtml(balance>0?fmt(balance):"—")}</td></tr>`;}).join("");
+    const safeTitle=escapePrintHtml(title);
+    const sessionName=escapePrintHtml(sessions.find(s=>String(s.id)===String(selectedSession))?.name||"");
+    const html=`<html><head><meta charset="utf-8"><title>${safeTitle}</title></head><body style="font-family:Arial,sans-serif;padding:24px;color:#111"><h2 style="margin:0 0 4px">${safeTitle}</h2><div style="color:#64748b;font-size:12px;margin-bottom:14px">${sessionName} · ${list.length} student(s)${owed>0?` · outstanding: <b style="color:#b91c1c">${escapePrintHtml(fmt(owed))}</b>`:""}</div><table style="border-collapse:collapse;font-size:13px;width:100%"><thead><tr style="background:#0d2d6e;color:#fff"><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Member</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">ID</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">From Group</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:left">Outcome</th><th style="border:1px solid #0d2d6e;padding:6px 9px;text-align:right">Balance</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+    if(ctx.showPDF){ctx.showPDF(html,title);return;}
+    const w=window.open("","_blank");
+    if(!w){notify("Pop-up blocked — please allow pop-ups to print this list.","error");return;}
+    w.document.write(html);w.document.close();w.focus();
   };
 
   const DEC=[
