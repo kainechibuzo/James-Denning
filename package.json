@@ -14,7 +14,8 @@
     "android:open": "npx cap open android",
     "android:run": "npx cap run android",
     "verify:web": "npm run build:web && node scripts/verify-web-build.mjs",
-    "test:guards": "node scripts/test-verification-guards.mjs"
+    "test:guards": "node scripts/test-verification-guards.mjs",
+    "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^4.0.0",
+    "@electric-sql/pglite": "^0.3.14",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.3.0",

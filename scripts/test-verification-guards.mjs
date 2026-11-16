@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Behavioural tests for the read-only verification scripts (no network).
+ * Behavioural tests for the verification scripts (stubbed network; no real writes).
  *
  * WHY THIS EXISTS
  * ---------------
@@ -138,6 +138,8 @@ const reply = (o, status = 200) => ({
   json: async () => o,
 });
 globalThis.fetch = async (url, opts = {}) => {
+  console.log("STUB_FETCH_CALLED");
+  if (opts.redirect !== "error") throw new Error("Staging requests must reject redirects");
   const u = String(url);
   const body = opts.body ? JSON.parse(opts.body) : {};
   const token = String((opts.headers && opts.headers.Authorization) || "").replace("Bearer ", "");
@@ -162,7 +164,9 @@ globalThis.fetch = async (url, opts = {}) => {
 `;
 
 const stagingEnv = {
-  SUPABASE_URL: "https://staging.test",
+  SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+  JD_STAGING_PROJECT_REF: "abcdefghijklmnopqrst",
+  JD_STAGING_ALLOW_WRITES: "true",
   SUPABASE_ANON_KEY: "anon",
   JD_E2E_TENANT_A_EMAIL: "tenant-a@test",
   JD_E2E_TENANT_A_PASSWORD: "pw",
@@ -233,6 +237,27 @@ check(
 );
 
 stagingCase("missing credentials", {}, { JD_E2E_TENANT_A_EMAIL: "" }, 2);
+
+for (const [label, env] of [
+  ["no project allowlist", { JD_STAGING_PROJECT_REF: "" }],
+  ["no explicit write acknowledgement", { JD_STAGING_ALLOW_WRITES: "" }],
+  ["production ref even when allowlisted", { JD_STAGING_PROJECT_REF: "thklwiybjuhrjqrrxyid", SUPABASE_URL: "https://thklwiybjuhrjqrrxyid.supabase.co" }],
+  ["legacy production ref even when allowlisted", { JD_STAGING_PROJECT_REF: "mcdcwdfdpqzrzsixmrcg", SUPABASE_URL: "https://mcdcwdfdpqzrzsixmrcg.supabase.co" }],
+  ["production URL with staging allowlist", { SUPABASE_URL: "https://thklwiybjuhrjqrrxyid.supabase.co" }],
+  ["different project URL", { SUPABASE_URL: "https://bcdefghijklmnopqrstu.supabase.co" }],
+  ["invalid URL", { SUPABASE_URL: "not-a-url" }],
+  ["HTTP target", { SUPABASE_URL: "http://abcdefghijklmnopqrst.supabase.co" }],
+  ["suffix spoofing", { SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co.evil.test" }],
+  ["URL credentials", { SUPABASE_URL: "https://user:password@abcdefghijklmnopqrst.supabase.co" }],
+  ["URL path", { SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co/proxy" }],
+  ["URL query", { SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co?redirect=production" }],
+  ["URL fragment", { SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co#production" }],
+  ["nonstandard port", { SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co:8443" }],
+]) {
+  const result = stagingCase(label, {}, env, 2);
+  check(!result.out.includes("STUB_FETCH_CALLED"), label + " stops before authentication/network", result.out);
+}
+
 
 // ── result ───────────────────────────────────────────────────────────────────
 
