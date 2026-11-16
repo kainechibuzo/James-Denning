@@ -10,6 +10,8 @@ import { SectionCtx, useSection, SectionProvider } from './contexts/section.jsx'
 import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
 import { PRODUCT, getTerms, EDUCATION_NAV_LABELS } from './config/product.js';
 import { ChatHome } from "./chat/ChatHome.jsx";
+import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
+import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
 // -- Route-level page chunks. The app shell is ready before feature modules download.
 const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const TeachersPage = lazyPage(() => import("./pages/teachers.jsx"), "TeachersPage");
@@ -2023,6 +2025,9 @@ function AppInner(){
   const bumpRefresh = ()=>setRefreshKey(k=>k+1);
   const [sideOpen,setSide]     = useState(()=>window.innerWidth>=768);
   const [collapsedGroups,setCollapsedGroups] = useState(new Set());
+  const [sidebarSearch,setSidebarSearch] = useState("");
+  const sidebarRef = useRef(null);
+  const navigationToggleRef = useRef(null);
   const [toasts,setToasts]     = useState([]);
   const [loginLoading,setLoginLoading] = useState(false);
   const [showSettings,setShowSettings] = useState(false); // kept for legacy; now uses setPage("settings")
@@ -2138,6 +2143,18 @@ function AppInner(){
   const [selectedSchool,setSelectedSchool]=useState(()=>loadSelectedSchool());
   const [platformAdmin,setPlatformAdmin]=useState(null);
 
+  useEffect(()=>{
+    setSidebarSearch("");
+    setCollapsedGroups(new Set());
+  },[user?.id,user?.role,selectedSchool?.id]);
+
+  useEffect(()=>{
+    if(!isMobile || !sideOpen || !user || !selectedSchool || platformAdmin || pdfDoc || !sidebarRef.current) return;
+    return bindMobileNavigation(sidebarRef.current,{
+      onClose:()=>setSide(false),returnFocus:navigationToggleRef.current
+    });
+  },[isMobile,sideOpen,user?.id,user?.role,selectedSchool?.id,platformAdmin,pdfDoc]);
+
   // db school context is set synchronously at module load (see IIFE above loadSelectedSchool).
   // No useEffect needed here — _schoolId is already correct before any component renders.
 
@@ -2153,8 +2170,8 @@ function AppInner(){
   const SCHOOL_SLUGS={
     rgs:'5f8d21ae-bb54-4528-bd01-0a21f180709d',
     heyday:'dcd5c5e5-19a3-4f5c-b30d-90667f4373ab',
-    // Hidden staging tenant — suspended, so it never shows in the school picker.
-    // Reach it only via ?school=sandbox (admin password: "sandbox"). Test-only data.
+    // Legacy demo-tenant route. A tenant ID does not establish environment isolation.
+    // Never treat this tenant as a safe staging database or publish shared credentials.
     sandbox:'f0000000-0000-4000-8000-000000000001',
   };
   useEffect(()=>{
@@ -2429,12 +2446,17 @@ function AppInner(){
     return canAccess(n.id);
   });
 
+  const navigationQuery = sideOpen || isMobile ? sidebarSearch : "";
+  const visibleNavigation = searchNavigation(NAV,navigationQuery);
+  const groupCollapsed = (id) => isNavGroupCollapsed(id,collapsedGroups,navigationQuery,sideOpen||isMobile);
+
   const showPDF = (html, title="Document") => setPdfDoc({html, title});
   const ctx={user,role,notify,setPage,selectedSection,canAccess,pendingApprovals,setPendingApprovals,pendingAccessRequests,setPendingAccessRequests,showPDF,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam,workspaceType,educationModuleEnabled,terms};
 
   // On mobile the sidebar is always a full overlay; on desktop it collapses to icon rail
-  const sideVisible = isMobile ? sideOpen : true;
-  const closeSideOnMobile = () => { if(isMobile) setSide(false); };
+  const closeSideOnMobile = () => {
+    if(isMobile){setSide(false);navigationToggleRef.current?.focus();}
+  };
 
   // Mobile in-app PDF viewer — covers everything
   if(pdfDoc) return <PDFViewer html={pdfDoc.html} title={pdfDoc.title} onClose={()=>setPdfDoc(null)}/>;
@@ -2446,32 +2468,35 @@ function AppInner(){
       fontFamily:"'Segoe UI',system-ui,sans-serif",transition:"background .2s",
       paddingTop:isSandbox?22:0}}>
 
-      {/* Staging sandbox banner — fixed (out of flex flow so it doesn't affect the row) */}
+      {/* A legacy demo tenant is not an isolated staging environment. */}
       {isSandbox&&(
         <div style={{position:"fixed",top:0,left:0,right:0,height:22,zIndex:9999,
           background:"#7C3AED",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",
           fontSize:11,fontWeight:800,letterSpacing:1,fontFamily:"var(--font-sans)"}}>
-          🧪 STAGING SANDBOX — test data only, safe to break
+          DEMO WORKSPACE — staging isolation not verified
         </div>
       )}
 
       {/* Mobile backdrop */}
       {isMobile&&sideOpen&&(
-        <div onClick={()=>setSide(false)}
+        <div onClick={closeSideOnMobile}
           style={{position:"fixed",inset:0,background:"rgba(2,6,23,.55)",
             zIndex:498,backdropFilter:"blur(2px)"}}/>
       )}
 
       {/* SIDEBAR */}
-      <aside style={{
-        width: isMobile ? 240 : (sideOpen?230:56),
+      <aside id="workspace-navigation" ref={sidebarRef} tabIndex={-1} aria-label="Workspace navigation"
+        role={isMobile?"dialog":undefined} aria-modal={isMobile&&sideOpen?true:undefined}
+        aria-hidden={isMobile&&!sideOpen ? true : undefined} inert={isMobile&&!sideOpen ? "" : undefined}
+        style={{
+        width: isMobile ? "min(280px, 88vw)" : (sideOpen?230:56),
         background:"linear-gradient(180deg,#080808 0%,#101010 55%,#080808 100%)",
         transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
         position: isMobile ? "fixed" : "sticky",
         top:0, left:0,
-        height:"100vh",zIndex: isMobile ? 499 : "auto",
-        overflowY:"auto",overflowX:"hidden",scrollbarWidth:"none",
+        height:"100dvh",zIndex: isMobile ? 499 : "auto",
+        overflow:"hidden",
         boxShadow:"4px 0 24px rgba(0,0,0,.15)",
         transform: isMobile ? (sideOpen?"translateX(0)":"translateX(-100%)") : "none",
       }}>
@@ -2483,21 +2508,33 @@ function AppInner(){
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
               <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
-                whiteSpace:"nowrap"}}>{(_sidebarSchoolName||"Business Portal").split(" ").slice(0,2).join(" ")}</div>
+                whiteSpace:"nowrap"}}>James Denning</div>
               <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
-                letterSpacing:1.2,marginTop:1}}>Organisation Workspace</div>
+                letterSpacing:.3,marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={_sidebarSchoolName||"Your organisation"}>{_sidebarSchoolName||"Your organisation"}</div>
             </div>
           )}
         </div>
 
-        <nav style={{flex:1,padding:"8px 6px",overflowY:"auto",scrollbarWidth:"none"}}>
-          {NAV.map((n,i)=>{
+        {(sideOpen||isMobile)&&<div style={{padding:"10px 10px 4px",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid rgba(255,255,255,.18)",borderRadius:9,padding:"6px 8px",color:"#aab2bd"}}>
+            <Search size={14} aria-hidden="true"/>
+            <input type="search" aria-label="Search workspace navigation" placeholder="Find a page or department"
+              value={sidebarSearch} onChange={e=>setSidebarSearch(e.target.value)}
+              style={{width:"100%",minWidth:0,background:"transparent",color:"#fff",border:0,fontSize:12,padding:"5px 0"}}/>
+            {sidebarSearch&&<button type="button" aria-label="Clear navigation search" onClick={()=>{setSidebarSearch("");sidebarRef.current?.querySelector('input[type="search"]')?.focus();}}
+              style={{background:"none",border:0,color:"#fff",cursor:"pointer",padding:4,display:"flex"}}><X size={14}/></button>}
+          </div>
+          {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"#d0d4da",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
+        </div>}
+        <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#b6bec8",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length} matching pages</p>}
+          {visibleNavigation.map((n,i)=>{
             // ── Group header ──
             if(n.group){
               if(!sideOpen) return <div key={n.id} style={{margin:"6px 4px",height:1,background:"rgba(255,255,255,.07)"}}/>;
-              const collapsed=collapsedGroups.has(n.id);
+              const collapsed=groupCollapsed(n.id);
               return(
-                <button key={n.id} onClick={()=>setCollapsedGroups(prev=>{
+                <button key={n.id} type="button" aria-expanded={!collapsed} disabled={Boolean(navigationQuery.trim())} onClick={()=>setCollapsedGroups(prev=>{
                   const s=new Set(prev);
                   s.has(n.id)?s.delete(n.id):s.add(n.id);
                   return s;
@@ -2516,10 +2553,10 @@ function AppInner(){
               );
             }
             // ── Child item: hide when group is collapsed ──
-            if(n.gid&&collapsedGroups.has(n.gid)) return null;
+            if(n.gid&&groupCollapsed(n.gid)) return null;
             const active=page===n.id;
             return(
-              <button key={n.id+i} data-tour={`nav-${n.id}`} onClick={()=>{setPage(n.id);closeSideOnMobile();}}
+              <button key={n.id+i} type="button" aria-label={n.label} aria-current={active?"page":undefined} data-tour={`nav-${n.id}`} onClick={()=>{setPage(n.id);setSidebarSearch("");closeSideOnMobile();}}
                 title={!sideOpen?n.label:""}
                 style={{width:"100%",display:"flex",alignItems:"center",gap:9,
                   padding:sideOpen?"8px 10px":"10px",
@@ -2605,7 +2642,7 @@ function AppInner(){
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
-            <button onClick={()=>setSide(p=>!p)}
+            <button ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 color:C.muted,padding:"7px 9px",borderRadius:9,
                 display:"flex",alignItems:"center",transition:"all .15s",minWidth:36,minHeight:36,

@@ -15,7 +15,8 @@
     "android:run": "npx cap run android",
     "verify:web": "npm run build:web && node scripts/verify-web-build.mjs",
     "test:guards": "node scripts/test-verification-guards.mjs",
-    "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs"
+    "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs",
+    "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -36,6 +37,7 @@
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.3.0",
+    "jsdom": "^26.1.0",
     "sharp": "^0.35.5",
     "vite": "^8.3.8"
   },

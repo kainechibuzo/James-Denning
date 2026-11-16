@@ -1,0 +1,164 @@
+
+> james-denning@1.0.0 test:navigation
+> node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs
+
+TAP version 13
+# Subtest: opening focuses search and locks body scrolling
+ok 1 - opening focuses search and locks body scrolling
+  ---
+  duration_ms: 66.202243
+  type: 'test'
+  ...
+# Subtest: Tab wraps from last control to search
+ok 2 - Tab wraps from last control to search
+  ---
+  duration_ms: 14.678843
+  type: 'test'
+  ...
+# Subtest: Shift-Tab wraps to the last eligible control
+ok 3 - Shift-Tab wraps to the last eligible control
+  ---
+  duration_ms: 12.527743
+  type: 'test'
+  ...
+# Subtest: interior Tab is left to native browser handling
+ok 4 - interior Tab is left to native browser handling
+  ---
+  duration_ms: 10.354549
+  type: 'test'
+  ...
+# Subtest: Escape closes and returns focus to the menu trigger
+ok 5 - Escape closes and returns focus to the menu trigger
+  ---
+  duration_ms: 10.480449
+  type: 'test'
+  ...
+# Subtest: focus boundaries update after search removes or disables controls
+ok 6 - focus boundaries update after search removes or disables controls
+  ---
+  duration_ms: 21.096811
+  type: 'test'
+  ...
+# Subtest: no controls still contains focus without throwing
+ok 7 - no controls still contains focus without throwing
+  ---
+  duration_ms: 9.886544
+  type: 'test'
+  ...
+# Subtest: cleanup restores prior scroll, focus and removes the event handler
+ok 8 - cleanup restores prior scroll, focus and removes the event handler
+  ---
+  duration_ms: 7.681045
+  type: 'test'
+  ...
+# Subtest: cleanup does not steal focus from a dialog opened by navigation
+ok 9 - cleanup does not steal focus from a dialog opened by navigation
+  ---
+  duration_ms: 12.789412
+  type: 'test'
+  ...
+# Subtest: repeated bind-cleanup cycles do not accumulate Escape handlers
+ok 10 - repeated bind-cleanup cycles do not accumulate Escape handlers
+  ---
+  duration_ms: 10.798002
+  type: 'test'
+  ...
+# Subtest: blank query preserves existing order and identity
+ok 11 - blank query preserves existing order and identity
+  ---
+  duration_ms: 2.611594
+  type: 'test'
+  ...
+# Subtest: case-insensitive label search preserves the matching group
+ok 12 - case-insensitive label search preserves the matching group
+  ---
+  duration_ms: 0.938357
+  type: 'test'
+  ...
+# Subtest: department search finds only its supplied children
+ok 13 - department search finds only its supplied children
+  ---
+  duration_ms: 0.160468
+  type: 'test'
+  ...
+# Subtest: all search words must match label plus department
+ok 14 - all search words must match label plus department
+  ---
+  duration_ms: 0.139264
+  type: 'test'
+  ...
+# Subtest: ungrouped JD Assistant remains searchable
+ok 15 - ungrouped JD Assistant remains searchable
+  ---
+  duration_ms: 0.222702
+  type: 'test'
+  ...
+# Subtest: search never restores routes excluded by permission filtering
+ok 16 - search never restores routes excluded by permission filtering
+  ---
+  duration_ms: 0.141376
+  type: 'test'
+  ...
+# Subtest: role-visible children can be searched when their group header is absent
+ok 17 - role-visible children can be searched when their group header is absent
+  ---
+  duration_ms: 0.174169
+  type: 'test'
+  ...
+# Subtest: empty group headers are not search results
+ok 18 - empty group headers are not search results
+  ---
+  duration_ms: 0.135257
+  type: 'test'
+  ...
+# Subtest: education labels are searched as presented without rewriting routes
+ok 19 - education labels are searched as presented without rewriting routes
+  ---
+  duration_ms: 0.366034
+  type: 'test'
+  ...
+# Subtest: search treats punctuation literally rather than as a regex
+ok 20 - search treats punctuation literally rather than as a regex
+  ---
+  duration_ms: 0.321135
+  type: 'test'
+  ...
+# Subtest: search and icon-rail expand groups without mutating collapse preferences
+ok 21 - search and icon-rail expand groups without mutating collapse preferences
+  ---
+  duration_ms: 0.179909
+  type: 'test'
+  ...
+# Subtest: shell searches authorised NAV, not the raw catalogue; header is independent
+ok 22 - shell searches authorised NAV, not the raw catalogue; header is independent
+  ---
+  duration_ms: 0.565096
+  type: 'test'
+  ...
+# Subtest: navigation retains accessible search, active page and expansion hooks
+ok 23 - navigation retains accessible search, active page and expansion hooks
+  ---
+  duration_ms: 0.210595
+  type: 'test'
+  ...
+# Subtest: mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+ok 24 - mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+  ---
+  duration_ms: 0.19008
+  type: 'test'
+  ...
+# Subtest: demo tenant must not promise isolated staging or publish shared credentials
+ok 25 - demo tenant must not promise isolated staging or publish shared credentials
+  ---
+  duration_ms: 0.475945
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 627.62058
