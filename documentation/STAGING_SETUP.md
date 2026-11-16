@@ -53,9 +53,10 @@ a database choice). Claude does all the code side.
 2. In **Vercel → Project → Settings → Environment Variables**, add — scoped to the **Preview**
    environment (the `staging` branch) — your staging Supabase values:
    - `VITE_SUPABASE_URL` = staging project URL
-   - `VITE_SUPABASE_ANON_KEY` = staging anon key
-   - `VITE_SUPABASE_SERVICE_ROLE_KEY` = staging service key
+   - `VITE_SUPABASE_ANON_KEY` = staging anon/publishable key
    - `VITE_APP_ENV` = `staging`
+
+   **Never add `SUPABASE_SERVICE_ROLE_KEY` with a `VITE_` prefix.** Vite embeds `VITE_*` values in browser assets. The service-role key bypasses RLS and must exist only as a server-side secret in Supabase Edge Functions or another trusted backend. If a staging Edge Function needs it, configure the unprefixed `SUPABASE_SERVICE_ROLE_KEY` in that staging project's function secrets.
 3. Vercel auto-builds the `staging` branch to a preview URL. That URL now runs against staging data.
 
 > Note: today `supabaseClient.js` falls back to the hardcoded production keys if env vars are
