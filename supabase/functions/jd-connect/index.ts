@@ -30,7 +30,7 @@ Deno.serve(async req=>{
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:profile,error:profileError}=await db.from("profiles").select("id,school_id,role").eq("id",actorId).maybeSingle();
  if(profileError||!profile?.school_id)return send({error:"Workspace membership required"},403);
- if(!["admin","manager"].includes(String(profile.role)))return send({error:"Manager permission required for JD Connect"},403);
+ if(!["owner","admin","manager"].includes(String(profile.role)))return send({error:"Manager permission required for JD Connect"},403);
  const school=profile.school_id,actor=actorId;
  const allowed=(Deno.env.get("JD_MCP_ALLOWED_HOSTS")||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
  const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY")||"";
@@ -137,6 +137,9 @@ Deno.serve(async req=>{
    return send({servers:(data||[]).map((server:any)=>({...server,grant:byServer.get(server.id)||{access_level:"read_only",granted_at:null,expires_at:null}}))});
   }
   if(body.action==="grants.set"){
+   // Connector permissions are a human decision: never from the agent runtime (service-key calls) and only owners/admins may widen access.
+   if(internal)return send({error:"Connector permissions must be changed by a signed-in person"},403);
+   if(!["owner","admin"].includes(String(profile.role)))return send({error:"Only an owner or admin can change connector permissions"},403);
    const server=await getServer(clip(body.serverId,64));
    const level=body.accessLevel;
    if(!["read_only","read_write","full_control"].includes(level))return send({error:"Access level must be read_only, read_write or full_control"},400);
@@ -255,6 +258,8 @@ Deno.serve(async req=>{
    return send({approval,execution,evidence:{persisted:!!execution,source:"jd_connector_executions"}});
   }
   if(body.action==="approvals.resolve"){
+   // Approvals are the human-in-the-loop gate: the agent runtime (service-key calls) must never resolve its own requests.
+   if(internal)return send({error:"Approvals must be resolved by a signed-in person"},403);
    const id=clip(body.approvalId,64),decision=body.decision==="approve"?"approved":body.decision==="deny"?"denied":"";
    if(!decision)return send({error:"Decision must be approve or deny"},400);
    const {data:approval,error}=await db.from("jd_connector_approvals").select("*").eq("id",id).eq("school_id",school).eq("status","pending").maybeSingle();
