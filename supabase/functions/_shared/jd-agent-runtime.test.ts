@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -63,6 +63,15 @@ Deno.test("configured model choices are never replaced by provider response meta
     "openrouter/free",
     "reject malformed selected model",
   );
+});
+
+Deno.test("launch checklist batch keys are stable but separate distinct checklists", async () => {
+  const first = [{ title: "Recruit drivers", department: "Fleet", description: "Prepare a driver recruitment plan", priority: "high" }];
+  const same = [{ title: "Recruit drivers", department: "Fleet", description: "Prepare a driver recruitment plan", priority: "high" }];
+  const different = [{ title: "Recruit drivers", department: "Fleet", description: "Prepare a recruitment plan for another operation", priority: "high" }];
+  assertEqual(await buildLaunchChecklistBatchKey(first), await buildLaunchChecklistBatchKey(same), "stable batch fingerprint");
+  assertEqual(await buildLaunchChecklistBatchKey(first) === await buildLaunchChecklistBatchKey(different), false, "different checklists do not collide");
+  assertEqual(await buildLaunchChecklistBatchKey(first, "fleet-launch-2026") === await buildLaunchChecklistBatchKey(first, "fleet-launch-2027"), false, "explicit checklist keys separate projects");
 });
 
 Deno.test("business finance intelligence tools are registered in JD", () => {
