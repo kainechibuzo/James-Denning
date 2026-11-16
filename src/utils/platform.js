@@ -38,9 +38,19 @@ export async function shareOrDownload(filename, content, mimeType = "text/plain"
 /** Dynamically load a remote script once (idempotent). */
 export function loadScript(src) {
   return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    let parsed;
+    try { parsed = new URL(src); } catch { reject(new Error("Invalid script URL")); return; }
+    if (parsed.protocol !== "https:" || parsed.hostname !== "cdnjs.cloudflare.com" || !parsed.pathname.startsWith("/ajax/libs/")) {
+      reject(new Error("External script host is not approved"));
+      return;
+    }
+    if (document.querySelector(`script[src="${parsed.href}"]`)) { resolve(); return; }
     const s = document.createElement("script");
-    s.src = src; s.onload = resolve; s.onerror = reject;
+    s.src = parsed.href;
+    s.crossOrigin = "anonymous";
+    s.referrerPolicy = "no-referrer";
+    s.onload = resolve;
+    s.onerror = reject;
     document.head.appendChild(s);
   });
 }
