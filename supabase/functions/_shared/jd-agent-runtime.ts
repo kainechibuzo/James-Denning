@@ -275,6 +275,7 @@ const tools: ToolSpec[] = [  {
     parameters: {
       type: "object",
       properties: {
+        checklist_key: { type: "string", minLength: 1, maxLength: 120 },
         tasks: { type: "array", minItems: 1, maxItems: 80, items: { type: "object", properties: {
           title: { type: "string", minLength: 3, maxLength: 180 },
           description: { type: "string", minLength: 10, maxLength: 5000 },
@@ -291,11 +292,12 @@ const tools: ToolSpec[] = [  {
     },
     execute: async (args, ctx) => {
       const requested = Array.isArray(args.tasks) ? args.tasks : [];
+      const batchKey = await buildLaunchChecklistBatchKey(requested, typeof args.checklist_key === "string" ? args.checklist_key : undefined);
       if (!requested.length || requested.length > 80) throw new Error("Provide between 1 and 80 launch tasks");
       const rows = requested.map((raw: any) => {
         const title = String(raw.title || "").trim().slice(0,180);
         const department = String(raw.department || "Operations").trim().slice(0,120);
-        const slug = title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,110);
+        const slug = (department + "-" + title).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,110);
         if (title.length < 3 || !slug) throw new Error("Every launch task needs a meaningful title");
         const dependencies = Array.isArray(raw.dependencies) ? raw.dependencies.map((v: unknown) => String(v).trim().slice(0,180)).filter(Boolean).slice(0,20) : [];
         const approvalRequired = raw.approval_required === true;
@@ -307,9 +309,10 @@ const tools: ToolSpec[] = [  {
           department,
           priority: ["low","normal","high","urgent"].includes(String(raw.priority)) ? String(raw.priority) : "normal",
           status: "queued",
-          idempotency_key: "jd-launch:" + slug,
+          idempotency_key: "jd-launch:" + batchKey + ":" + slug,
           metadata: {
             source: "jd_business_launch_setup",
+            batch_key: batchKey,
             owner_role: String(raw.owner_role || "Owner").trim().slice(0,120),
             dependencies,
             approval_required: approvalRequired,
@@ -320,6 +323,10 @@ const tools: ToolSpec[] = [  {
           updated_at: new Date().toISOString()
         };
       });
+      const duplicateKeys = rows.map((row) => row.idempotency_key);
+      if (new Set(duplicateKeys).size !== duplicateKeys.length) {
+        throw new Error("This checklist contains duplicate task titles within the same department. Give each task a distinct title.");
+      }
       const { data, error } = await ctx.admin.from("jd_operational_tasks")
         .upsert(rows, { onConflict: "school_id,idempotency_key", ignoreDuplicates: true })
         .select("id,title,department,priority,status,metadata");
@@ -327,13 +334,14 @@ const tools: ToolSpec[] = [  {
       const { data: all, error: readError } = await ctx.admin.from("jd_operational_tasks")
         .select("id,title,department,priority,status,metadata")
         .eq("school_id",ctx.schoolId).eq("created_by_agent",true)
-        .contains("metadata",{source:"jd_business_launch_setup"})
+        .contains("metadata",{source:"jd_business_launch_setup",batch_key:batchKey})
         .order("created_at",{ascending:true}).limit(100);
       if (readError) throw new Error("Checklist tasks were saved, but JD could not verify the saved records");
       return {
         persisted: true,
         created_count: (data || []).length,
         checklist_count: (all || []).length,
+        checklist_key: batchKey,
         tasks: all || [],
         note: "These are saved launch-readiness tasks, not completed business activities. Approval requirements are recorded on each task."
       };
@@ -690,6 +698,28 @@ const tools: ToolSpec[] = [  {
     },
   },
 ];
+
+export async function buildLaunchChecklistBatchKey(
+  tasks: Array<Record<string, unknown>>,
+  checklistKey?: string,
+): Promise<string> {
+  const explicitKey = String(checklistKey || "").trim().toLowerCase();
+  const canonicalTasks = tasks.map((task) => ({
+    title: String(task.title || "").trim().toLowerCase(),
+    department: String(task.department || "").trim().toLowerCase(),
+    description: String(task.description || "").trim(),
+    priority: String(task.priority || "normal"),
+    owner_role: String(task.owner_role || "Owner").trim().toLowerCase(),
+    dependencies: Array.isArray(task.dependencies) ? task.dependencies.map((value) => String(value).trim()).filter(Boolean).sort() : [],
+    approval_required: task.approval_required === true,
+    approval_reason: task.approval_required === true ? String(task.approval_reason || "").trim() : "",
+  })).sort((a, b) => (a.department + "\\0" + a.title).localeCompare(b.department + "\\0" + b.title));
+  const fingerprint = explicitKey
+    ? "explicit:" + explicitKey
+    : "derived:" + JSON.stringify(canonicalTasks);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(fingerprint));
+  return Array.from(new Uint8Array(digest).slice(0, 16), (value) => value.toString(16).padStart(2, "0")).join("");
+}
 
 export const JD_AGENT_TOOL_NAMES = tools.map((tool) => tool.name);
 
