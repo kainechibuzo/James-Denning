@@ -12,19 +12,20 @@ const cache=resolve("node_modules/.cache");mkdirSync(cache,{recursive:true});con
 const source=readFileSync(new URL("../src/pages/jd-task-queue.jsx",import.meta.url),"utf8").replace('"../chat/operational-task-writes.mjs"',JSON.stringify(new URL("../src/chat/operational-task-writes.mjs",import.meta.url).href));
 const {code}=await transformWithOxc(source,"jd-task-queue.jsx",{jsx:{runtime:"classic"}});writeFileSync(`${temp}/queue.mjs`,code);const {JDTaskQueue}=await import(pathToFileURL(`${temp}/queue.mjs`));
 const school="11111111-1111-4111-8111-111111111111",actor="22222222-2222-4222-8222-222222222222",id="33333333-3333-4333-8333-333333333333",member="44444444-4444-4444-8444-444444444444",audit="55555555-5555-4555-8555-555555555555";
-const row=()=>({id,title:"Existing task",description:"Synthetic record",department:"Operations",priority:"normal",status:"queued",assigned_to:null,due_at:null});
+const row=()=>({id,title:"Existing task",description:"Synthetic record",department:"Operations",priority:"normal",status:"queued",assigned_to:null,updated_at:"2026-11-16T20:00:00.123456+00:00",due_at:null});
 const memory=()=>{const m=new Map();return{getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k)};};
 const defer=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return{promise,resolve};};
 function fixture(write){
  const calls=[];let tasks=[row()];const storage=memory();const client={functions:{invoke:async(_,request)=>{const body=request.body;calls.push(body);
  if(body.action==="operations.task.list")return{data:{tasks}};
+ if(body.action==="operations.task.get")return{data:{task:tasks.find(t=>t.id===body.taskId)}};
  if(body.action==="operations.team.list")return{data:{members:[{id:member,role:"staff",full_name:"Test Staff"}]}};
  return write(body,record=>{tasks=[record];});
  }}};
  return{client,calls,storage};
 }
 function created(body,reused=false){return{data:{task:{id,school_id:school,created_by:actor,idempotency_key:`${school}:task.create:${body.idempotencyId}`,title:body.task.title,description:body.task.description,department:body.task.department||null,priority:body.task.priority,due_at:body.task.dueAt,status:"queued"},auditRecorded:true,auditId:audit,reused}};}
-const element=(f,props={})=>React.createElement(JDTaskQueue,{client:f.client,storage:f.storage,schoolId:school,actorId:actor,role:"manager",...props});
+const element=(f,props={})=>React.createElement(JDTaskQueue,{client:f.client,storage:f.storage,schoolId:school,actorId:actor,role:"manager",assignmentMode:"checked",...props});
 async function mount(f,props={}){
  const dom=new JSDOM('<!doctype html><body><div id="root"></div></body>');globalThis.window=dom.window;globalThis.document=dom.window.document;globalThis.IS_REACT_ACT_ENVIRONMENT=true;
  const root=createRoot(document.querySelector("#root"));await act(async()=>root.render(element(f,props)));
@@ -53,15 +54,15 @@ test("corrupt storage renders a blocking explanation, not a fresh creation form"
  try{assert.match(text(),/recovery storage is unavailable or invalid/);assert.ok(document.querySelector("fieldset").disabled);assert.equal(f.calls.filter(c=>c.action==="operations.task.create").length,0);}finally{await m.cleanup();}
 });
 test("manual assignment is disabled while pending and reports success only after matching read-back",async()=>{
- const pending=defer();let save;const f=fixture((body,replace)=>{save=()=>replace({...row(),assigned_to:member});return pending.promise;});const m=await mount(f);
- try{const select=document.querySelector('select[aria-label="Assign Existing task"]');await act(async()=>{Simulate.change(select,{target:{value:member}});Simulate.change(select,{target:{value:member}});});assert.ok(select.disabled);assert.equal(select.value,"");assert.equal(f.calls.filter(c=>c.action==="operations.task.assign").length,1);
- await act(async()=>{save();pending.resolve({data:{task:{id,assigned_to:member,status:"queued"}}});});assert.match(text(),/Assignment confirmed by record read-back/);assert.match(text(),/Audit evidence is not verified/);assert.equal(select.value,member);
+ const pending=defer();let save;const f=fixture((body,replace)=>{save=()=>replace({...row(),assigned_to:member,updated_at:"2026-11-16T20:00:01.123456+00:00"});return pending.promise;});const m=await mount(f);
+ try{const select=document.querySelector('select[aria-label="Assign Existing task"]');await act(async()=>{Simulate.change(select,{target:{value:member}});Simulate.change(select,{target:{value:member}});});assert.ok(select.disabled);assert.equal(select.value,"");assert.equal(f.calls.filter(c=>c.action==="operations.task.assign_checked").length,1);
+ await act(async()=>{save();pending.resolve({data:{task:{id,assigned_to:member,status:"queued",updated_at:"2026-11-16T20:00:01.123456+00:00"},auditRecorded:true,auditId:audit}});});assert.match(text(),/Assignment saved with audit evidence and confirmed by record read-back/);assert.equal(select.value,member);
  }finally{await m.cleanup();}
 });
 test("lost assignment acknowledgement does not show success and requires refresh before another write",async()=>{
  const f=fixture((body,save)=>{save({...row(),assigned_to:member});return{data:{}};});const m=await mount(f);
  try{await act(async()=>Simulate.change(document.querySelector('select[aria-label="Assign Existing task"]'),{target:{value:member}}));assert.match(text(),/Update not confirmed/);assert.ok(document.querySelector('select[aria-label="Assign Existing task"]').disabled);assert.doesNotMatch(text(),/Assignment confirmed/);
- await act(async()=>button("Refresh task records").click());assert.equal(document.querySelector('select[aria-label="Assign Existing task"]').value,member);assert.equal(f.calls.filter(c=>c.action==="operations.task.assign").length,1);
+ await act(async()=>button("Refresh task records").click());assert.equal(document.querySelector('select[aria-label="Assign Existing task"]').value,member);assert.equal(f.calls.filter(c=>c.action==="operations.task.assign_checked").length,1);
  }finally{await m.cleanup();}
 });
 test("auto assign button calls the real endpoint and no-capacity never claims assignment success",async()=>{
@@ -100,4 +101,19 @@ test("tab hide/reopen preserves the unsubmitted draft and refreshes queue record
  const f=fixture(()=>assert.fail("no write"));const m=await mount(f);
  try{await enterTitle("Unsubmitted draft");await m.render({active:false});await m.render({active:true});assert.equal(document.querySelector('input[maxlength="180"]').value,"Unsubmitted draft");assert.equal(f.calls.filter(c=>c.action==="operations.task.list").length,2);}
  finally{await m.cleanup();}
+});
+for(const auto of [false,true])test(`shipping default mounted queue preserves ${auto?'auto':'manual'} assignment against legacy backend`,async()=>{
+ const f=fixture((body,save)=>{
+ assert.equal(body.action,auto?'operations.task.auto_assign':'operations.task.assign');
+ const task={...row(),assigned_to:member};save(task);
+ return auto?{data:{assignment:{assigned:true,task_id:id,assignee_id:member}}}:{data:{task}};
+ });
+ const m=await mount(f,{assignmentMode:undefined});
+ try{
+ if(auto)await act(async()=>button('Auto assign').click());
+ else await act(async()=>Simulate.change(document.querySelector('select[aria-label="Assign Existing task"]'),{target:{value:member}}));
+ assert.match(text(),/Assignment confirmed by record read-back/);assert.match(text(),/Audit evidence is not verified/);assert.doesNotMatch(text(),/Assignment saved with audit evidence/);
+ assert.equal(document.querySelector('select[aria-label="Assign Existing task"]').value,member);
+ assert.equal(f.calls.some(b=>['operations.task.assign_checked','operations.task.get'].includes(b.action)),false);
+ }finally{await m.cleanup();}
 });

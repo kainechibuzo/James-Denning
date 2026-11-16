@@ -6,7 +6,7 @@
 
 JD must understand business objectives, coordinate departments, execute permitted work, track real progress, verify outcomes and request human approval when necessary.
 
-**Baseline:** 2026-11-16 · **8 phases** · **5 confirmed merged changes** · **0/9 final acceptance criteria verified**.
+**Baseline:** 2026-11-16 · **8 phases** · **9 confirmed merged changes** · **0/9 final acceptance criteria verified**.
 
 This is the master planning checklist, not an application task ledger. Checking a box does not execute work, approve an action or verify the application. Existing code is a starting point to inspect and reuse, not proof that a requirement passes. Unchecked means **not accepted**, not necessarily **not implemented**.
 
@@ -23,15 +23,21 @@ This is the master planning checklist, not an application task ledger. Checking 
 - JD must not approve its own restricted actions. Consequential financial/legal commitments and recruitment publication need appropriate human authorisation.
 - Reopen a verified item when new evidence invalidates it. Preserve the previous result and reason; do not erase the audit trail.
 
+**Reconciled inventory:** [Item-by-item status and next actions](JD_CHECKLIST_STATUS.md), with a [machine-readable ledger](JD_CHECKLIST_STATUS.json). All 222 checkbox lines and the 90 department-scoped requirements are mapped. Local implementation categories are not acceptance percentages. CI now checks ledger coverage and rejects unsupported checked boxes.
+
 **Evidence:**
 - [Phase 1 baseline, findings and blockers](evidence/2026-11-16-phase-1/REPORT.md).
 - [Task reliability and staging-safety slice](evidence/2026-11-16-task-reliability/REPORT.md): staff action routing, strict task/audit acknowledgements and staging target guards implemented; 57 task tests and 43 guard assertions pass locally. Live endpoint/browser acceptance and incident correlation remain pending. No requirement is marked accepted from local evidence alone.
 - [Phase 2 navigation application](evidence/2026-11-16-phase2-navigation/REPORT.md): JD branding, permission-filtered sidebar search, expansion/active-page accessibility and mobile focus/scroll handling applied on the branch based on merged PR #86. All 25 navigation tests pass locally; complete departmental consolidation and live/browser acceptance remain open.
-- [Phase 2 departments and account access](evidence/2026-11-16-phase2-departments/REPORT.md): existing routes grouped into business departments, distinct People modules clarified, compact defaults and explicit sign-out-to-switch flow implemented. 73 navigation tests pass, including role compatibility and mounted-dialog checks. PR #87 production deployment metadata and post-merge CI verified; this newer slice still needs its own review/deployment and authenticated browser acceptance. No scorecard gate is checked from local tests alone.
+- [Phase 2 departments and account access](evidence/2026-11-16-phase2-departments/REPORT.md): existing routes grouped into business departments, distinct People modules clarified, compact defaults and explicit sign-out-to-switch flow implemented. 73 navigation tests pass, including role compatibility and mounted-dialog checks. PR #88 is now merged and its production metadata/post-merge CI were confirmed. Authenticated browser acceptance remains outstanding. No scorecard gate is checked from local tests alone.
 
 - [Chat task-state and reconciliation slice](evidence/2026-11-16-task-workspace/REPORT.md): separates local ticks, unverified snapshots and refreshed saved records; enforces read-before-write and refresh after uncertain acknowledgement. The expanded task suite has 104 passing tests, including mounted React task cards and synthetic read-back/remount. Live authenticated persistence and the complete role architecture remain unverified.
 
-- [Task creation and assignment safeguards](evidence/2026-11-16-task-writes/REPORT.md): same-request recovery retained per tab/account/organisation, strict creation/audit acknowledgement, assignment read-back and repaired Auto assign wiring. 167 task tests pass, including actual creation RPC replay/rollback in isolated PostgreSQL and mounted queue tests. Manual assignment still lacks an audited transactional backend contract; live acceptance remains open.
+- [Task creation and assignment safeguards](evidence/2026-11-16-task-writes/REPORT.md): same-request recovery retained per tab/account/organisation, strict creation/audit acknowledgement, assignment read-back and repaired Auto assign wiring. 167 task tests pass, including actual creation RPC replay/rollback in isolated PostgreSQL and mounted queue tests. That merged baseline lacks an audited transactional manual-assignment contract. The later reconciliation slice below supplies an undeployed candidate repair; live acceptance remains open.
+
+- [Checklist reconciliation, atomic assignment and truthful run history](evidence/2026-11-16-checklist-reconciliation/REPORT.md): full inventory with explicit gaps; checked transactional assignment/audit and exact-ID read-back; neutral run labels and fail-closed history reads. Checked assignment is now gated off by default; the safe-merge follow-up preserves existing production assignment behaviour. Isolated staging remains a prerequisite before enabling or deploying the new assignment contract.
+
+- [Assignment release gate](evidence/2026-11-16-assignment-release-gate/REPORT.md): user-approved safe merge keeps the existing production assignment endpoints active, tests both modes and never falls back after a checked write. Backend deployment and checked-mode activation remain separate approval gates.
 
 ## Execution order and phase gates
 
@@ -59,6 +65,11 @@ Do not start a replacement queue, permission system or approval system until exi
 | [#82](https://github.com/kainechibuzo/James-Denning/pull/82) | Promotion print escaping | `a7947d7ee7c8b08733df8f87164b6633e2d51d17` |
 | [#83](https://github.com/kainechibuzo/James-Denning/pull/83) | Broadsheet HTML escaping | `1f8e3a72477c19794fb7f24e2aa75bd26ed7a98d` |
 | [#85](https://github.com/kainechibuzo/James-Denning/pull/85) | Replacement isolated-staging/security guidance | `9895abf0e4f7d6bfd871249ea125065e92f767b0` |
+| [#86](https://github.com/kainechibuzo/James-Denning/pull/86) | Task reliability and staging verification guards | `e94f58f7bd06f7c4c83b13a5a1b1e7ba693df3ef` |
+| [#87](https://github.com/kainechibuzo/James-Denning/pull/87) | JD-first navigation and mobile drawer | `7d38797d3bdf4988ccbb56cae1e5f528be7d200c` |
+| [#88](https://github.com/kainechibuzo/James-Denning/pull/88) | Department/account navigation and persisted chat task reconciliation | `45e01d48edd06a3fbf258094067bdcd560939a6d` |
+| [#89](https://github.com/kainechibuzo/James-Denning/pull/89) | Creation recovery, assignment read-back and queue write safeguards | `15a3d1b0b76edffa0c935e0807e8b554ffe72bbb` |
+
 
 ## Phase 1 — Stabilise the existing platform
 
@@ -397,10 +408,10 @@ These are release acceptance criteria, not a confidence estimate or feature coun
 
 ## Next bounded engineering slice
 
-1. Resolve the staging isolation blocker identified in the baseline report; agree named owners and reviewers.
-2. Obtain the failed request's time, endpoint/action and sanitised correlation reference (not credentials), and correlate it with authorised persisted history.
-3. Reproduce task updates in isolated staging as manager, assigned employee, unassigned employee and another tenant; preserve failing test evidence.
-4. Repair only the demonstrated failure; prove state plus audit persistence, refresh, conflict handling and safe retry.
-5. Then implement the JD-first navigation slice against the existing permission and execution architecture.
+1. Owner to approve genuinely isolated staging, synthetic fixtures and named independent reviewers. No production tenant or reused preview backend may substitute.
+2. Review the checked-assignment migration/endpoint/frontend as one release unit. Rehearse migration, denial tests, concurrent writers, rollback and authenticated browser lifecycle in staging before promotion.
+3. Obtain the original failed request time, endpoint/action and sanitised correlation reference; investigate persisted effects before retrying.
+4. Resolve the mapped owner-route and department-scoped permission gaps against the existing role architecture, with direct API/RLS tests rather than menu changes alone.
+5. Continue the sequential foundation programme using the reconciled ledger. Preserve department/business/legal/recruitment sign-off gates; do not treat this inventory as permission to launch NaijaHaul.
 
 **One rule for every future implementation:** do not accept a task as complete just because code was written or an assistant reported success. Require tests, persisted records and evidence of the actual result.

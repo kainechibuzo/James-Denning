@@ -1,3 +1,4 @@
+import { handleTaskAssignment } from "../_shared/jd-task-assignment.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
@@ -376,20 +377,8 @@ Deno.serve(async (req) => {
    await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,event_type:payload.active?"task.schedule.resumed":"task.schedule.paused",event_json:{schedule_id:id}});
    return json({schedule});
   }
-  if(payload.action==="operations.task.assign"){
-  if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to assign tasks"},403);
-  const taskId=typeof payload.taskId==="string"?payload.taskId:"";
-  const assigneeId=typeof payload.assigneeId==="string"?payload.assigneeId:"";
-  if(!taskId||!assigneeId) return json({error:"taskId and assigneeId are required"},400);
-  const [{data:task,error:taskErr},{data:member,error:memberErr}]=await Promise.all([
-   admin.from("jd_operational_tasks").select("id").eq("id",taskId).eq("school_id",profile.school_id).maybeSingle(),
-   admin.from("profiles").select("id,role").eq("id",assigneeId).eq("school_id",profile.school_id).maybeSingle()
-  ]);
-  if(taskErr||!task) return json({error:"Operational task not found"},404);
-  if(memberErr||!member||!hasRole(ASSIGNEE_ROLES,member.role)) return json({error:"Assignee is not an eligible member of this workspace"},400);
-  const {data:updated,error}=await admin.from("jd_operational_tasks").update({assigned_to:assigneeId,updated_at:new Date().toISOString()}).eq("id",taskId).eq("school_id",profile.school_id).select("id,assigned_to,status").single();
-  if(error) return json({error:"Could not assign operational task"},500);
-  return json({task:updated});
+ if(["operations.task.assign","operations.task.assign_checked","operations.task.get"].includes(payload.action)){
+  return handleTaskAssignment({admin,profile,actorId:authData.user.id,payload,json});
  }
  if(payload.action==="operations.task.create"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to create operational tasks"},403);

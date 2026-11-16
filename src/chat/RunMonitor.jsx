@@ -1,29 +1,33 @@
-import React,{useCallback,useEffect,useState} from "react";
+import React,{useCallback,useEffect,useRef,useState} from "react";
 import {supabase} from "../supabaseClient.js";
 import {RefreshCw,Activity,Clock3,CheckCircle2,XCircle,ArrowLeft,ChevronDown,ChevronUp} from "lucide-react";
 const fmt=(value)=>value?new Date(value).toLocaleString():"—";
 const num=(value)=>new Intl.NumberFormat().format(Number(value)||0);
-const toolLabels={get_workspace_overview:"Reviewed organisation overview",get_organisation_departments:"Reviewed departments",get_business_memory:"Checked saved business decisions",remember_business_fact:"Saved a business decision",get_hiring_pipeline:"Reviewed hiring progress",get_people_intelligence:"Reviewed workforce information",get_operations_intelligence:"Reviewed operations",preview_hiring_vacancy:"Prepared a vacancy preview",preview_organisation_blueprint:"Prepared organisation structure",submit_organisation_blueprint_for_review:"Sent organisation plan for approval",get_workspace_settings_catalogue:"Reviewed workspace settings",create_operational_setup_tasks:"Saved launch-readiness tasks",create_business_document_draft:"Prepared a business document"};
-const friendlyTool=(key)=>toolLabels[key]||"Completed a workspace task";
-const friendlyStatus=(status)=>({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",awaiting_approval:"Awaiting approval",failed:"Failed",cancelled:"Cancelled"}[status]||"In progress");
-export function RunMonitor({onClose}){
+import {friendlyTool,friendlyStatus,readRunHistory} from "./run-history.mjs";
+export function RunMonitor({onClose,client=supabase}){
  const [runs,setRuns]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(""),[expanded,setExpanded]=useState("");
- const load=useCallback(async()=>{setLoading(true);setError("");const {data,error:invokeError}=await supabase.functions.invoke("jd-automation",{body:{action:"runs.list"}});if(invokeError)setError(invokeError.message||"Could not load automation runs.");else setRuns(data?.runs||[]);setLoading(false);},[]);
- useEffect(()=>{load();},[load]);
- const counts=runs.reduce((acc,r)=>{acc[r.status]=(acc[r.status]||0)+1;return acc;},{});
+ const sequence=useRef(0);
+ const load=useCallback(async()=>{
+  const current=++sequence.current;setLoading(true);setError("");setRuns([]);
+  try{const rows=await readRunHistory(client);if(current===sequence.current)setRuns(rows);}
+  catch(error){if(current===sequence.current)setError(error.message);}
+  finally{if(current===sequence.current)setLoading(false);}
+ },[client]);
+ useEffect(()=>{load();return()=>{sequence.current++;};},[load]);
+ const counts=runs.reduce((acc,r)=>{acc[r.status]=(acc[r.status]||0)+1;return acc;},Object.create(null));
  return <section className="jd-runs">
  <header className="jd-runs-head"><div><div className="jd-runs-eyebrow"><Activity size={13}/> OPERATIONS</div><h2>Automation runs</h2><p>Review what JD worked on, what happened and what still needs attention.</p></div><div className="jd-runs-controls"><button type="button" onClick={load} aria-label="Refresh runs"><RefreshCw size={15}/></button>{onClose&&<button type="button" onClick={onClose}><ArrowLeft size={14}/> Back</button>}</div></header>
  {error&&<div className="jd-runs-error">{error}</div>}
- <div className="jd-runs-stats">{["queued","running","completed","partially_completed","awaiting_approval","failed"].map(k=><div key={k}><strong>{counts[k]||0}</strong><span>{friendlyStatus(k)}</span></div>)}</div>
- {loading?<div className="jd-runs-empty">Loading automation runs…</div>:runs.length===0?<div className="jd-runs-empty">No automation runs have been recorded yet.</div>:<div className="jd-runs-list">{runs.map(run=><article className="jd-runs-card" key={run.id}>
- <button type="button" className="jd-runs-card-head" onClick={()=>setExpanded(expanded===run.id?"":run.id)}><span className={"jd-runs-state "+run.status}>{run.status.replaceAll("_"," ")}</span><span className="jd-runs-request">{run.request_preview}</span><span className="jd-runs-time">{fmt(run.created_at)}</span>{expanded===run.id?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>
+ <div className="jd-runs-stats">{["queued","running","completed","partially_completed","awaiting_approval","failed"].map(k=><div key={k}><strong>{loading||error?"—":counts[k]||0}</strong><span>{friendlyStatus(k)}</span></div>)}</div>
+ {loading?<div className="jd-runs-empty">Loading automation runs…</div>:runs.length===0?<div className="jd-runs-empty">{error?"Run history is unavailable; no current execution state has been confirmed.":"No automation runs were returned for this workspace."}</div>:<div className="jd-runs-list">{runs.map(run=><article className="jd-runs-card" key={run.id}>
+ <button type="button" className="jd-runs-card-head" onClick={()=>setExpanded(expanded===run.id?"":run.id)}><span className={"jd-runs-state "+run.status}>{friendlyStatus(run.status)}</span><span className="jd-runs-request">{run.request_preview}</span><span className="jd-runs-time">{fmt(run.created_at)}</span>{expanded===run.id?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>
  {expanded===run.id&&<div className="jd-runs-detail"><div className="jd-runs-meta"><span>Request source: {run.trigger_type==="chat"?"JD conversation":"Workspace automation"}</span><span>Started: {fmt(run.started_at)}</span><span>Finished: {fmt(run.completed_at)}</span></div>
  {run.token_usage&&<div className="jd-runs-tokens">Tokens: {run.token_usage.model_requests>0&&run.token_usage.total_tokens_reported_requests===run.token_usage.model_requests?num(run.token_usage.total_tokens):"total unavailable / partial"} · {num(run.token_usage.input_tokens)} reported input · {num(run.token_usage.output_tokens)} reported output{run.model?" · "+run.model:""}</div>}
  {run.model_requests?.length>0&&<div className="jd-runs-meta"><span>Model requests: {run.model_requests.length}</span><span>Provider retries: {run.model_requests.reduce((sum,item)=>sum+Math.max(0,Number(item.attempts||1)-1),0)}</span>{run.model_requests.some(item=>Number.isFinite(Number(item.first_token_ms)))&&<span>Avg first token: {num(Math.round(run.model_requests.filter(item=>item.first_token_ms!==null&&item.first_token_ms!==undefined&&Number.isFinite(Number(item.first_token_ms))).reduce((sum,item)=>sum+Number(item.first_token_ms),0)/run.model_requests.filter(item=>item.first_token_ms!==null&&item.first_token_ms!==undefined&&Number.isFinite(Number(item.first_token_ms))).length))} ms</span>}<span>Per-request usage records retained</span></div>}
  <div className="jd-runs-step-title">Execution steps ({run.steps?.length||0})</div>
  {run.steps?.length?run.steps.map(step=><div className="jd-runs-step" key={step.id}><span className={"jd-runs-step-dot "+step.status}>{step.status==="completed"?<CheckCircle2 size={13}/>:step.status==="failed"?<XCircle size={13}/>:<Clock3 size={13}/>}</span><span>{friendlyTool(step.tool_key)}</span><small>{friendlyStatus(step.status)}{step.error_message?" · Needs administrator review":""}</small></div>):<div className="jd-runs-no-steps">No tool steps recorded for this run.</div>}</div>}
  </article>)}</div>}
- <div className="jd-runs-foot">Showing the 50 most recent runs in this workspace. Request text is truncated for display. Internal execution details are kept here, separate from your normal JD conversation.</div>
+ <div className="jd-runs-foot">Showing up to 50 recent runs in this workspace. Recorded completion is an internal state, not independent verification of a business outcome. Request text is truncated for display. Internal execution details are kept here, separate from your normal JD conversation.</div>
  <style>{`
  .jd-runs{height:100%;min-height:0;overflow:auto;padding:28px clamp(16px,4vw,42px);background:#f7f8fa;color:#202329;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
  .jd-runs-head{display:flex;justify-content:space-between;gap:18px;max-width:950px;margin:0 auto 20px}.jd-runs-eyebrow{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:.14em;font-weight:800;color:#7a818b}.jd-runs-head h2{font-size:27px;letter-spacing:-1px;margin:10px 0 5px}.jd-runs-head p{font-size:12px;color:#7d838c;margin:0;line-height:1.6}

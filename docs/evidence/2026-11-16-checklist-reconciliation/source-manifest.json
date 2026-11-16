@@ -1,0 +1,30 @@
+{
+  "baseCommit": "15a3d1b0b76edffa0c935e0807e8b554ffe72bbb",
+  "observedAt": "2026-11-16T20:13:57.503303+00:00",
+  "note": "SHA-256 of the tested delivery source and planning files before commit; excludes self-referential evidence/report files. Local test results are scoped in REPORT.md.",
+  "files": {
+    ".github/workflows/ci.yml": "972edf28b00ea684d48952054c2a2b90e8f48b1350e9d0c5e707dacd94e6b5b8",
+    ".github/workflows/verify.yml": "8c0ea52e502e861f8143ec23df8721c6a3464862a1202810e751865c51364f03",
+    "README.md": "cd1b273696ef80a28620c5e9d6735936c42c7fff456531982c918f507b718ff1",
+    "docs/JD_CHECKLIST_STATUS.json": "84fa66ffe7cda460a7168c84edf6246f6dfa4a2523f1ef6797f747fd650a6b58",
+    "docs/JD_CHECKLIST_STATUS.md": "c8e8dc5b4dd2910fe499caf6e5f71f82dd78907070c80543b1ab5c835358a28d",
+    "docs/JD_MASTER_EXECUTION_CHECKLIST.md": "de1c012bbf61e3be595b1180ea92a82812b29476577df7fd883e30075c8d9b8b",
+    "package-lock.json": "4b9dfc76016d1d5cdfaef32fab9f10ab4c5bc5ee2d60396a0838d0dce80194a0",
+    "package.json": "c42b0db60af869714ae66616579c8479f584e7c6c04040ce4211a8140e1c2823",
+    "scripts/check-execution-checklist.mjs": "db2e61a876b68696fcc864ac1ac234fbc712e3f59c2ba923f09bdddd40666f5f",
+    "scripts/test-execution-checklist.mjs": "46a0ed8c1c827fdd10f183cfba55a56cbf2f6c45a866a821d6bb9daa6f5e9383",
+    "scripts/test-operational-task-database.mjs": "ca2543e8093d0963bed0ba588f82c83cab6c6a22f96fb9a35c927011172cbca0",
+    "scripts/test-operational-task-writes.mjs": "1be48ca555b6b13fdbc9159c13e871ba9c9a9e915210fcd0f3b6fc794f666ee2",
+    "scripts/test-run-history.mjs": "c80438eac634a04d39a1ed1d0eb674dacdacefe8ffc99c77b85e0f29ce3eed26",
+    "scripts/test-run-monitor-ui.mjs": "2cf3173e90935da6494def1dcf3635a6f55b8ce83329fbe798b452ac8e538a91",
+    "scripts/test-task-assignment-endpoint.mjs": "18475beb34c6b74a7b141ae41aa7171b4eb5adc6321eba6507398e7102d4b2f1",
+    "scripts/test-task-queue-ui.mjs": "b9927a70e11fbc0e3974d3bd0e413156218957773cabf3ca2a64f7a67d624106",
+    "src/chat/RunMonitor.jsx": "fced3816eb838d977530f8bc2fb11f22458f47f0f5e138ef34587cbf02c78131",
+    "src/chat/operational-task-writes.mjs": "ef10e7d44fbd7a0fa437e2713e10cf605bfaf2dd7982d484ec8cb981627a6e95",
+    "src/chat/run-history.mjs": "cafc49f3fa71ddc57c2809ee8b7dcc75c35a3345fd0475eafab564a46115735e",
+    "supabase/functions/_shared/jd-task-assignment.mjs": "7827776e10fd00faf92d8f8b46783d304b9781eb7ad67fa306549f5ae2178987",
+    "supabase/functions/jd-automation/index.ts": "52bfa223bc4c271cf4a19b2e3b4ad76de97638141091ce820563cc79532cf5a5",
+    "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql": "04b7bd51ab8825716e6428e6b5d38e42bc2082635fbf15c9d299c90b965c4e07",
+    "supabase/rollback/20261116203000_jd_atomic_task_assignment.rollback.sql": "8643e653b2d03b1afe1483a76c7b745adcd56be4da359dbb32cc696f3dd4a468"
+  }
+}

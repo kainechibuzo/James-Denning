@@ -15,7 +15,9 @@
     "android:run": "npx cap run android",
     "verify:web": "npm run build:web && node scripts/verify-web-build.mjs",
     "test:guards": "node scripts/test-verification-guards.mjs",
-    "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs scripts/test-operational-task-records.mjs scripts/test-task-workspace-ui.mjs scripts/test-operational-task-writes.mjs scripts/test-task-queue-ui.mjs",
+    "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs scripts/test-task-assignment-endpoint.mjs scripts/test-task-assignment-release.mjs scripts/test-operational-task-records.mjs scripts/test-task-workspace-ui.mjs scripts/test-operational-task-writes.mjs scripts/test-task-queue-ui.mjs",
+    "test:checklist": "node --test scripts/test-execution-checklist.mjs && node scripts/check-execution-checklist.mjs",
+    "test:history": "node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs",
     "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs"
   },
   "dependencies": {

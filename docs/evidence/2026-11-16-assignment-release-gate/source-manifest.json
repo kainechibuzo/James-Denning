@@ -1,0 +1,17 @@
+{
+  "baseCommit": "b50aa51f8740c6dae9ee5b291f174698f2f5cf7b",
+  "observedAt": "2026-11-16T20:23:30.958083+00:00",
+  "files": {
+    "docs/JD_CHECKLIST_STATUS.json": "5ed49d69b7578141984887d87aed2d03ee12ee99d4660558b271c6e3af90a801",
+    "docs/JD_CHECKLIST_STATUS.md": "faf19f41b92350dd3d59d20e158092aa75ff021e3dabff0d984afa2ef2cadc3e",
+    "docs/JD_MASTER_EXECUTION_CHECKLIST.md": "5993e331887155dfd0685daa4f0ce51adbb9c728bc9df13574ccfc49fdcfb450",
+    "package-lock.json": "4b9dfc76016d1d5cdfaef32fab9f10ab4c5bc5ee2d60396a0838d0dce80194a0",
+    "package.json": "10a31bec18c67781ffb4c715e53ea756e9720a38141600a8fc876e8471bf2993",
+    "scripts/check-execution-checklist.mjs": "6ebb9cb45d127be633a56dbd1c168a7b87140028a08faf1e51606bbfa2a154fa",
+    "scripts/test-operational-task-writes.mjs": "e2ddc7f148d914195e1dfcee123d3dad68b07d77e7b97b1e11ed4ba97991e504",
+    "scripts/test-task-assignment-release.mjs": "5a708bfa1ed499accf9bff9c925a35a7fc07140b10f0b6e2bff321f4a4b7ec0a",
+    "scripts/test-task-queue-ui.mjs": "f1655d6970a2de97662ab46c8a28ef3513fac7dbdda5875df7f2d49a5e14889d",
+    "src/chat/operational-task-writes.mjs": "256e41ca843de5366d9aeb140ff24646ab5620eb7ff9b313fffe05566db6e84b",
+    "src/pages/jd-task-queue.jsx": "8ad4b133972380197414e43aa3cb81091bdf761571540c42afea6892dfc921ea"
+  }
+}
