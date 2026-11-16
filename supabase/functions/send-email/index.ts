@@ -77,12 +77,13 @@ async function sendViaSES(
   secretAccessKey: string,
   region: string,
   fromEmail: string,
+  replyTo = "",
 ): Promise<{ ok: boolean; error?: string }> {
   const url = `https://email.${region}.amazonaws.com/v2/email/outbound-emails`;
 
   const body = JSON.stringify({
     FromEmailAddress: fromEmail,
-    ReplyToAddresses: ["info@renaissancegardenschools.com"],
+    ...(replyTo ? { ReplyToAddresses: [replyTo] } : {}),
     Destination: { ToAddresses: recipients },
     Content: {
       Simple: {
@@ -132,7 +133,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\\s+/i, "");
+    const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const url = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
@@ -142,9 +143,9 @@ serve(async (req) => {
     if (authError || !authData.user) return new Response(JSON.stringify({ error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const adminClient = createClient(url, serviceKey, { auth: { persistSession: false } });
     const { data: actor } = await adminClient.from("profiles").select("role,school_id").eq("id", authData.user.id).maybeSingle();
-    if (!actor || actor.role !== "admin" || !actor.school_id) return new Response(JSON.stringify({ error: "School administrator access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!actor || !["owner", "admin"].includes(String(actor.role)) || !actor.school_id) return new Response(JSON.stringify({ error: "Workspace administrator access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { to, subject, html, from, attachments } = await req.json();
+    const { to, subject, html, attachments } = await req.json();
 
     if (!to || !subject || !html) {
       return new Response(
@@ -154,7 +155,7 @@ serve(async (req) => {
     }
 
     const recipients: string[] = Array.isArray(to) ? to.filter(Boolean) : [to].filter(Boolean);
-    if (!recipients.length || recipients.length > 100 || recipients.some((email) => typeof email !== "string" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) {
+    if (!recipients.length || recipients.length > 100 || recipients.some((email) => typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return new Response(
         JSON.stringify({ error: "No valid recipients" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -163,13 +164,21 @@ serve(async (req) => {
 
     // ── Provider selection: ZeptoMail takes priority if key is configured ──
     const zetpKey  = Deno.env.get("ZEPTO_API_KEY");
-    const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || from || "noreply@renaissancegardenschools.com";
+    // The sender identity is platform configuration only. Callers must never choose it.
+    const zetpFrom = Deno.env.get("ZEPTO_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "";
     const zetpName = Deno.env.get("ZEPTO_FROM_NAME") || "JAMES-DENNING";
 
     const awsKey    = Deno.env.get("AWS_ACCESS_KEY_ID");
     const awsSecret = Deno.env.get("AWS_SECRET_ACCESS_KEY");
     const awsRegion = Deno.env.get("AWS_REGION") || "eu-north-1";
-    const sesFrom   = Deno.env.get("SES_FROM_EMAIL") || from || "noreply@renaissancegardenschools.com";
+    const sesFrom   = Deno.env.get("SES_FROM_EMAIL") || "";
+    const replyTo   = Deno.env.get("EMAIL_REPLY_TO") || "";
+    if (!zetpFrom && !sesFrom) {
+      return new Response(
+        JSON.stringify({ error: "Email sender is not configured. Set ZEPTO_FROM_EMAIL or SES_FROM_EMAIL in Supabase secrets." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     let result: { ok: boolean; error?: string };
     let provider: string;
@@ -181,7 +190,7 @@ serve(async (req) => {
     } else if (awsKey && awsSecret) {
       // AWS SES fallback
       provider = "AWS SES";
-      result = await sendViaSES(recipients, subject, html, awsKey, awsSecret, awsRegion, sesFrom);
+      result = await sendViaSES(recipients, subject, html, awsKey, awsSecret, awsRegion, sesFrom, replyTo);
     } else {
       return new Response(
         JSON.stringify({ error: "No email provider configured. Add ZEPTO_API_KEY or AWS_ACCESS_KEY_ID to Supabase secrets." }),
@@ -192,12 +201,12 @@ serve(async (req) => {
     if (!result.ok) {
       console.error(`[send-email] ${provider} error:`, result.error);
       return new Response(
-        JSON.stringify({ error: result.error }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "The email provider rejected the request. Check the function logs." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    console.log(`[send-email] Sent via ${provider} to ${recipients.length} recipient(s): ${recipients.join(", ")}`);
+    console.log(`[send-email] Sent via ${provider} to ${recipients.length} recipient(s)`);
     return new Response(
       JSON.stringify({ success: true, provider, recipients: recipients.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -206,7 +215,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("[send-email] Unexpected error:", err);
     return new Response(
-      JSON.stringify({ error: (err as Error).message }),
+      JSON.stringify({ error: "Unexpected error sending email" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
