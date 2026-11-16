@@ -94,7 +94,7 @@ Task suite additions exercise service-only grants; permitted/denied roles; forge
 
 The initial regression run had **192/193 pass**: one old test fixture still supplied the retired non-audited assignment response. It was updated to exercise the new task/audit/version response and exact-read contract, not weakened. [tasks-initial.log](tasks-initial.log) preserves that failure; subsequent final runs pass.
 
-Deno is not installed in the local workspace. Web CI already type-checks `jd-automation` and runs the broader Deno suite; its result must be checked on this PR. Local Node tests execute the imported assignment handler directly with a synthetic database adapter. Build/audit warnings remain: Vite config ESM/CommonJS compatibility warning and large spreadsheet vendor chunk. Zero npm findings is not a full security audit.
+Deno is not installed in the local workspace. Web CI type-checks `jd-automation` and runs the broader Deno suite; that workflow passed on the implementation commit as recorded below. Local Node tests execute the imported assignment handler directly with a synthetic database adapter. Build/audit warnings remain: Vite config ESM/CommonJS compatibility warning and large spreadsheet vendor chunk. Zero npm findings is not a full security audit.
 
 ## 5. Environment and prior deployment evidence
 
@@ -119,3 +119,12 @@ Frontend deployment is automatic on master; Supabase release is explicit. A merg
 8. Record commit, migration and function/deployment identities, approved smoke-test procedure, persisted evidence references and reviewer. Update only the checklist items whose full acceptance criteria actually passed.
 
 No release, review or business approval is inferred from this report.
+
+## 7. Draft PR and remote checks
+
+Draft [PR #90](https://github.com/kainechibuzo/James-Denning/pull/90) contains implementation commit `79fd1be` (full SHA in the evidence below). It is **not merged** and remains blocked on the release sequence above.
+
+- [Verify application 43947678533](https://github.com/kainechibuzo/James-Denning/actions/runs/43947678533): passed, including checklist/history/task tests and its Deno checks. [Step metadata](verify-ci.json).
+- [Web CI 43947678577](https://github.com/kainechibuzo/James-Denning/actions/runs/43947678577): passed, including the broader Deno tests and Edge Function type checks. [Step metadata](web-ci.json).
+- Vercel GitHub check passed for preview `ASWNKsTgZVYCDnaZjYNbJmpYW1ov`. [PR check snapshot](pr90-checks.json). This is a preview build result, **not** proof of backend release, isolated staging configuration or authenticated runtime acceptance. No writes were attempted through that preview.
+- This evidence appendix is a documentation-only follow-up to the tested implementation. The source manifest remains unchanged. Independent human review is still unassigned; green CI is not that review.
