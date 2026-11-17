@@ -1,0 +1,146 @@
+
+> james-denning@1.0.0 test:dependency-security
+> node --test scripts/test-picomatch-security.mjs
+
+TAP version 13
+# Subtest: every Vite/glob consumer resolves the reviewed local patch
+ok 1 - every Vite/glob consumer resolves the reviewed local patch
+  ---
+  duration_ms: 9.150476
+  type: 'test'
+  ...
+# Subtest: vendored and installed runtime files match the reviewed provenance hashes
+ok 2 - vendored and installed runtime files match the reviewed provenance hashes
+  ---
+  duration_ms: 2.233674
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*)
+ok 3 - repeated wildcard is literalized: +(*)
+  ---
+  duration_ms: 3.029311
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: *(*)
+ok 4 - repeated wildcard is literalized: *(*)
+  ---
+  duration_ms: 0.90561
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*a)
+ok 5 - repeated wildcard is literalized: +(*a)
+  ---
+  duration_ms: 0.455455
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: *(*a)
+ok 6 - repeated wildcard is literalized: *(*a)
+  ---
+  duration_ms: 0.377016
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(a*)
+ok 7 - repeated wildcard is literalized: +(a*)
+  ---
+  duration_ms: 0.247268
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: *(a*)
+ok 8 - repeated wildcard is literalized: *(a*)
+  ---
+  duration_ms: 0.350306
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(**a)
+ok 9 - repeated wildcard is literalized: +(**a)
+  ---
+  duration_ms: 0.493854
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*?a)
+ok 10 - repeated wildcard is literalized: +(*?a)
+  ---
+  duration_ms: 0.590403
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*[ab])
+ok 11 - repeated wildcard is literalized: +(*[ab])
+  ---
+  duration_ms: 0.444754
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(@(*a))
+ok 12 - repeated wildcard is literalized: +(@(*a))
+  ---
+  duration_ms: 0.36664
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +({a,*b})
+ok 13 - repeated wildcard is literalized: +({a,*b})
+  ---
+  duration_ms: 0.352385
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*a|b)
+ok 14 - repeated wildcard is literalized: +(*a|b)
+  ---
+  duration_ms: 0.402808
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: prefix/+(*a).js
+ok 15 - repeated wildcard is literalized: prefix/+(*a).js
+  ---
+  duration_ms: 0.344473
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +(*(?a))
+ok 16 - repeated wildcard is literalized: +(*(?a))
+  ---
+  duration_ms: 0.300179
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +([*a)
+ok 17 - repeated wildcard is literalized: +([*a)
+  ---
+  duration_ms: 0.371814
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +([[]*a)
+ok 18 - repeated wildcard is literalized: +([[]*a)
+  ---
+  duration_ms: 0.285008
+  type: 'test'
+  ...
+# Subtest: repeated wildcard is literalized: +([[:alpha:]]*a)
+ok 19 - repeated wildcard is literalized: +([[:alpha:]]*a)
+  ---
+  duration_ms: 0.392726
+  type: 'test'
+  ...
+# Subtest: advisory payloads terminate in isolated, bounded child processes
+ok 20 - advisory payloads terminate in isolated, bounded child processes
+  ---
+  duration_ms: 106.859954
+  type: 'test'
+  ...
+# Subtest: ordinary Vite glob patterns and safe extglobs keep their semantics
+ok 21 - ordinary Vite glob patterns and safe extglobs keep their semantics
+  ---
+  duration_ms: 2.904173
+  type: 'test'
+  ...
+# Subtest: CI keeps the audit gate and verifies the local patch before auditing
+ok 22 - CI keeps the audit gate and verifies the local patch before auditing
+  ---
+  duration_ms: 0.552095
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 214.545301

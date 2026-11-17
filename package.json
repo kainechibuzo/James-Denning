@@ -1,7 +1,7 @@
 {
   "name": "james-denning",
   "version": "1.0.0",
-  "description": "JAMES-DENNING \u2014 Organization Operations Workspace",
+  "description": "JAMES-DENNING — Organization Operations Workspace",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -29,7 +29,8 @@
     "test:execution": "node --test scripts/test-execution-monitor.mjs scripts/test-execution-monitor-ui.mjs scripts/test-execution-endpoint.mjs scripts/test-execution-retry-database.mjs scripts/test-execution-cancellation.mjs scripts/test-cancellation-acceptance.mjs",
     "test:history": "node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs",
     "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs",
-    "test:site-layout": "node scripts/test-site-design-layout.mjs"
+    "test:site-layout": "node scripts/test-site-design-layout.mjs",
+    "test:dependency-security": "node --test scripts/test-picomatch-security.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -50,11 +51,13 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.3.0",
     "jsdom": "^26.1.0",
+    "picomatch": "file:vendor/picomatch",
     "playwright-core": "^1.58.2",
     "sharp": "^0.35.5",
     "vite": "^8.3.8"
   },
   "overrides": {
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "picomatch": "$picomatch"
   }
 }
