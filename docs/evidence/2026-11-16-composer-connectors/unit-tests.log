@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: 70 distinct sourced entries, eight business areas, no fabricated endpoint or connection
+ok 1 - 70 distinct sourced entries, eight business areas, no fabricated endpoint or connection
+  ---
+  duration_ms: 1.834008
+  type: 'test'
+  ...
+# Subtest: directory search, category intersection and deterministic sorting
+ok 2 - directory search, category intersection and deterministic sorting
+  ---
+  duration_ms: 8.628792
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: owner
+ok 3 - connector UI follows existing backend role boundary: owner
+  ---
+  duration_ms: 0.424909
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: admin
+ok 4 - connector UI follows existing backend role boundary: admin
+  ---
+  duration_ms: 0.113958
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: manager
+ok 5 - connector UI follows existing backend role boundary: manager
+  ---
+  duration_ms: 0.102095
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: staff
+ok 6 - connector UI follows existing backend role boundary: staff
+  ---
+  duration_ms: 0.089032
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: viewer
+ok 7 - connector UI follows existing backend role boundary: viewer
+  ---
+  duration_ms: 0.145971
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: contractor
+ok 8 - connector UI follows existing backend role boundary: contractor
+  ---
+  duration_ms: 0.130624
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: undefined
+ok 9 - connector UI follows existing backend role boundary: undefined
+  ---
+  duration_ms: 0.252166
+  type: 'test'
+  ...
+# Subtest: @ recognises the caret query, not email addresses or earlier text
+ok 10 - @ recognises the caret query, not email addresses or earlier text
+  ---
+  duration_ms: 1.396789
+  type: 'test'
+  ...
+# Subtest: mention insertion preserves text after the caret and never submits
+ok 11 - mention insertion preserves text after the caret and never submits
+  ---
+  duration_ms: 0.307623
+  type: 'test'
+  ...
+# Subtest: only discovered tools belonging to currently connected servers are mentionable
+ok 12 - only discovered tools belonging to currently connected servers are mentionable
+  ---
+  duration_ms: 0.337518
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 90.520802

@@ -1,0 +1,254 @@
+[
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "light",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 320,
+    "theme": "light",
+    "checked": 58,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "dark",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 320,
+    "theme": "dark",
+    "checked": 58,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "light",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 393,
+    "theme": "light",
+    "checked": 58,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "dark",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 393,
+    "theme": "dark",
+    "checked": 58,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "light",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 1280,
+    "theme": "light",
+    "checked": 58,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 442,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 58,
+    "findings": []
+  }
+]

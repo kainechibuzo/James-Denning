@@ -38,6 +38,12 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(name==='jd-connect'&&window.__connectorFixture){
+   if(window.__connectorFailure)return{error:{message:'Synthetic connector unavailable'}};
+   if(body.action==='servers.list')return{data:{servers:window.__sampleServers||[{id:'sample-server',name:'Sample business',host:'mcp.example.test',status:'connected',grant:{access_level:'read_only'}},{id:'disabled-server',name:'Disabled service',host:'disabled.example.test',status:'disabled'}]}};
+   if(body.action==='tools.list')return{data:{tools:[{id:'sample-tool',server_id:'sample-server',name:'lookup_customer',description:'Synthetic lookup',input_schema:{type:'object'},read_only:true},{id:'disabled-tool',server_id:'disabled-server',name:'disabled_tool',read_only:true}]}};
+   if(body.action==='servers.register'&&window.__allowConnectorRegister){window.__sampleServers=[{id:'new-sample-server',name:body.name,host:new URL(body.endpoint).host,status:'connected',grant:{access_level:'read_only'}}];return{data:{server:window.__sampleServers[0],tools:[],notice:'Synthetic server connected. No external service contacted.'}};}
+  }
   if(window.__historyFailure&&['history','history.list'].includes(body.action))return{error:{message:'Synthetic history unavailable'}};
   if(window.__holdHistory&&body.action==='history')await new Promise(resolve=>{window.__releaseHistory=resolve;});
   if(window.__pendingReview&&body.action==='approvals.list')return{data:{approvals:populatedAutomation['approvals.list'].approvals.map(a=>({...a,status:'pending'}))}};

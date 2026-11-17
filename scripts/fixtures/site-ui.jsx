@@ -1,3 +1,5 @@
+import {ConnectorDirectory} from '../../src/connectors/ConnectorDirectory.jsx';
+import {ComposerTools} from '../../src/chat/ComposerTools.jsx';
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import '../../src/styles/app.css';
@@ -20,3 +22,7 @@ window.__mountSite=(mode='workspace')=>{
  root.render(mode==='landing'?<PublicLanding onSignIn={()=>window.__mountSite('signin')} onGetStarted={()=>window.__mountSite('signup')}/>:['signin','signup','reset','update','invite-sent'].includes(mode)?<EmailAuthPage {...props} mode={mode}/>:mode==='oauth'?<OAuthConsentPage key={++generation}/>:<React.Suspense fallback={<p data-fixture-loading>Loading fixture route…</p>}><AppDemo key={++generation}/></React.Suspense>);
 };
 window.__mountSite(new URLSearchParams(location.search).get('screen')||'workspace');
+
+function ComposerHarness({role}){const [draft,setDraft]=React.useState('');return <div className="jd-command"><div className="jd-compose" style={{marginTop:450,width:400}}><ComposerTools role={role} draft={draft} setDraft={setDraft} actions={[{label:'People',prompt:'Review people.'}]} onSend={()=>{window.__testSent=true;}} onNavigate={()=>{}}/></div></div>;}
+window.__mountConnectorRole=role=>root.render(<ConnectorDirectory key={++generation} role={role}/>);
+window.__mountComposerRole=role=>root.render(<ComposerHarness key={++generation} role={role}/>);

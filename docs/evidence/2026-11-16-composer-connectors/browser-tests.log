@@ -1,0 +1,87 @@
+
+> james-denning@1.0.0 test:connectors
+> node --test scripts/test-composer-connectors.mjs && node scripts/test-composer-connectors-layout.mjs
+
+TAP version 13
+# Subtest: 70 distinct sourced entries, eight business areas, no fabricated endpoint or connection
+ok 1 - 70 distinct sourced entries, eight business areas, no fabricated endpoint or connection
+  ---
+  duration_ms: 1.428298
+  type: 'test'
+  ...
+# Subtest: directory search, category intersection and deterministic sorting
+ok 2 - directory search, category intersection and deterministic sorting
+  ---
+  duration_ms: 9.56138
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: owner
+ok 3 - connector UI follows existing backend role boundary: owner
+  ---
+  duration_ms: 0.39891
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: admin
+ok 4 - connector UI follows existing backend role boundary: admin
+  ---
+  duration_ms: 0.177356
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: manager
+ok 5 - connector UI follows existing backend role boundary: manager
+  ---
+  duration_ms: 0.17491
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: staff
+ok 6 - connector UI follows existing backend role boundary: staff
+  ---
+  duration_ms: 0.140024
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: viewer
+ok 7 - connector UI follows existing backend role boundary: viewer
+  ---
+  duration_ms: 0.14939
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: contractor
+ok 8 - connector UI follows existing backend role boundary: contractor
+  ---
+  duration_ms: 0.084044
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: undefined
+ok 9 - connector UI follows existing backend role boundary: undefined
+  ---
+  duration_ms: 0.328317
+  type: 'test'
+  ...
+# Subtest: @ recognises the caret query, not email addresses or earlier text
+ok 10 - @ recognises the caret query, not email addresses or earlier text
+  ---
+  duration_ms: 1.260924
+  type: 'test'
+  ...
+# Subtest: mention insertion preserves text after the caret and never submits
+ok 11 - mention insertion preserves text after the caret and never submits
+  ---
+  duration_ms: 0.323999
+  type: 'test'
+  ...
+# Subtest: only discovered tools belonging to currently connected servers are mentionable
+ok 12 - only discovered tools belonging to currently connected servers are mentionable
+  ---
+  duration_ms: 0.369648
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 87.189487
+36 composer/connector theme states passed, plus navigation, no-write and role checks.
