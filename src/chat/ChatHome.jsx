@@ -17,7 +17,7 @@ const actions = [
   { icon: Wallet, label: "Billing", prompt: "Summarise billing, payments and outstanding balances." },
   { icon: Mail, label: "Email", prompt: "Help me draft a clear professional email. Ask for any missing details." },
   { icon: FileText, label: "Reports", prompt: "Prepare an organisation report using the latest available records." },
-  { icon: Command, label: "Capabilities", prompt: "Show me what you can currently do in this workspace. Check your live registered capability inventory, explain what is available to my role, and clearly identify anything that is only registered in source but not verified live." },
+  { icon: Command, label: "Capabilities", prompt: "Show me what you can currently do in this workspace. Check the registered tools available to my role. Separate callable actions, approval requirements and independent live verification. Missing verification is not proof that a tool is unavailable. Do not execute writes just to demonstrate a capability." },
   { icon: Activity, label: "Logs", prompt: "Inspect recent activity and audit logs. Highlight failures and unusual activity." },
   { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
 ];
@@ -98,7 +98,7 @@ function renderMessageContent(content) {
       index += 2;
       while (index < lines.length && lines[index].trim().includes("|") && lines[index].trim()) rows.push(splitTableRow(lines[index++]));
       index -= 1;
-      nodes.push(<div className="jd-table-wrap" key={"table-" + index}><table className="jd-table"><thead><tr>{headers.map((cell, i) => <th key={i}>{renderInlineMarkdown(cell, "th-" + index + "-" + i)}</th>)}</tr></thead><tbody>{rows.map((row, ri) => <tr key={ri}>{headers.map((_, ci) => <td key={ci}>{renderInlineMarkdown(row[ci] || "", "td-" + index + "-" + ri + "-" + ci)}</td>)}</tr>)}</tbody></table></div>);
+      nodes.push(<div className="jd-table-block" key={"table-" + index}><p className="jd-table-hint">More columns may be off-screen. Swipe the table sideways, or focus it and use the arrow keys.</p><div className="jd-table-wrap" role="region" aria-label="Message table — scroll horizontally for more columns" tabIndex={0}><table className="jd-table"><thead><tr>{headers.map((cell, i) => <th scope="col" key={i}>{renderInlineMarkdown(cell, "th-" + index + "-" + i)}</th>)}</tr></thead><tbody>{rows.map((row, ri) => <tr key={ri}>{headers.map((_, ci) => <td key={ci}>{renderInlineMarkdown(row[ci] || "", "td-" + index + "-" + ri + "-" + ci)}</td>)}</tr>)}</tbody></table></div></div>);
       continue;
     }
     const bullet = trimmed.match(/^[-*+•]\s+(.+)$/);
@@ -340,7 +340,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
       <style>{`
         .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:absolute;z-index:4;top:9px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f8fa;border-bottom:1px solid #e8eaee}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
         .jd-utility-status.is-working{color:#343941;border-color:#dfe3e8}
         .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite}
         @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
@@ -368,7 +368,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         .jd-top-title{font-size:12px;font-weight:700;color:#25282d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:#969ba3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#737982;flex-shrink:0;white-space:nowrap}
         .jd-dot{width:7px;height:7px;border-radius:50%;background:#28956b}
-        .jd-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:58px 20px 12px}
+        .jd-scroll{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:12px 20px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:#17191d;color:#fff;display:grid;place-items:center;margin-bottom:20px}
         .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
@@ -378,11 +378,11 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         .jd-action:hover{border-color:#bfc4cc;box-shadow:0 3px 12px rgba(20,24,30,.045)}
         .jd-action-icon{width:29px;height:29px;border-radius:9px;background:#f1f2f4;display:grid;place-items:center;color:#656c75;flex:0 0 auto}
         .jd-action span:last-child{font-size:11px;font-weight:620}
-        .jd-thread{width:min(760px,100%);display:flex;flex-direction:column;gap:22px;padding:12px 0 34px}
+        .jd-thread{width:min(760px,100%);min-width:0;flex:0 0 auto;display:flex;flex-direction:column;gap:22px;padding:12px 0 34px}
         .jd-message{font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
         .jd-message.user{align-self:flex-end;max-width:85%;background:#e9ebef;border:1px solid #e2e4e8;border-radius:18px 18px 5px 18px;padding:11px 15px;color:#202329}
-        .jd-message.assistant{align-self:stretch;color:#292d33;padding:2px 2px}
-        .jd-markdown{font-size:14px;line-height:1.75;color:#292d33;overflow-wrap:anywhere}
+        .jd-message.assistant{min-width:0;max-width:100%;align-self:stretch;color:#292d33;padding:2px 2px}
+        .jd-markdown{min-width:0;max-width:100%;white-space:normal;font-size:14px;line-height:1.75;color:#292d33;overflow-wrap:anywhere}
         .jd-markdown>*:first-child{margin-top:0}
         .jd-markdown>*:last-child{margin-bottom:0}
         .jd-markdown p{margin:0 0 12px}
@@ -396,10 +396,10 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         .jd-markdown hr{border:0;border-top:1px solid #e5e8ec;margin:16px 0}
         .jd-code-block{max-width:100%;overflow:auto;background:#171a20;color:#edf0f4;border-radius:10px;padding:12px 14px;margin:10px 0 14px;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
         .jd-code-block code{font:inherit}
-        .jd-table-wrap{max-width:100%;overflow-x:auto;margin:12px 0 16px;border:1px solid #e1e5ea;border-radius:10px;background:#fff}
+        .jd-table-block{min-width:0;max-width:100%;margin:12px 0 16px}.jd-table-hint{font-size:11px;line-height:1.5;color:#616975}.jd-table-wrap:focus-visible{outline:2px solid #245f9e;outline-offset:2px}.jd-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid #e1e5ea;border-radius:10px;background:#fff}
         .jd-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;line-height:1.5;min-width:420px}
         .jd-table th{background:#f1f3f6;color:#424a55;font-weight:750;text-align:left}
-        .jd-table th,.jd-table td{padding:9px 11px;border-bottom:1px solid #edf0f3;border-right:1px solid #edf0f3;vertical-align:top}
+        .jd-table th,.jd-table td{min-width:130px;overflow-wrap:break-word;padding:9px 11px;border-bottom:1px solid #edf0f3;border-right:1px solid #edf0f3;vertical-align:top}
         .jd-table tr:last-child td{border-bottom:0}.jd-table th:last-child,.jd-table td:last-child{border-right:0}
         .jd-table td{color:#4d5661}.jd-math-display{overflow-x:auto;text-align:center;margin:14px 0;padding:9px 4px}
         .jd-math-inline{white-space:normal}.jd-math-display .katex-display{margin:0}
@@ -425,7 +425,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
         .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:#747b85}
         .jd-activity-step.done{color:#5e786b}
-        .jd-compose-wrap{width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
+        .jd-compose-wrap{flex:0 0 auto;width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid #dfe2e7;background:#fff;border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:#202329;font:inherit;font-size:13px;line-height:1.65}
         .jd-queue-note{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px 2px;font-size:10px;color:#818791}
@@ -442,7 +442,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
           .jd-command{height:calc(100dvh - 57px);min-height:0}
           .jd-rail{position:absolute;z-index:8;inset:0 auto 0 0;width:min(300px,86vw);max-width:86vw;box-shadow:16px 0 40px rgba(20,24,30,.16);overflow:auto}
           .jd-history-scrim{display:block;position:absolute;z-index:7;inset:0;background:rgba(18,22,28,.28);border:0;padding:0}
-          .jd-scroll{padding:54px 14px 8px}
+          .jd-scroll{padding:12px 14px 8px}
           .jd-welcome{width:100%;padding:8px 0 12px}
           .jd-spark{width:38px;height:38px;border-radius:12px;margin-bottom:14px}
           .jd-heading{font-size:25px;letter-spacing:-.9px;margin-bottom:7px}

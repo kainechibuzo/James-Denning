@@ -1,0 +1,596 @@
+
+> james-denning@1.0.0 test:execution
+> node --test scripts/test-execution-monitor.mjs scripts/test-execution-monitor-ui.mjs scripts/test-execution-endpoint.mjs scripts/test-execution-retry-database.mjs
+
+TAP version 13
+# Subtest: owner: monitor is tenant-scoped and manager is limited to own requests
+ok 1 - owner: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 8.743458
+  type: 'test'
+  ...
+# Subtest: admin: monitor is tenant-scoped and manager is limited to own requests
+ok 2 - admin: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 1.132788
+  type: 'test'
+  ...
+# Subtest: manager: monitor is tenant-scoped and manager is limited to own requests
+ok 3 - manager: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 0.91583
+  type: 'test'
+  ...
+# Subtest: staff: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 4 - staff: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 2.33091
+  type: 'test'
+  ...
+# Subtest: contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 5 - contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.572288
+  type: 'test'
+  ...
+# Subtest: viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 6 - viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.118187
+  type: 'test'
+  ...
+# Subtest: finance: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 7 - finance: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 2.209908
+  type: 'test'
+  ...
+# Subtest: hr: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 8 - hr: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 2.407744
+  type: 'test'
+  ...
+# Subtest: teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 9 - teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.228075
+  type: 'test'
+  ...
+# Subtest: student: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 10 - student: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.848372
+  type: 'test'
+  ...
+# Subtest: owner: retry RPC receives authenticated actor, not caller-supplied identity
+ok 11 - owner: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 3.441464
+  type: 'test'
+  ...
+# Subtest: admin: retry RPC receives authenticated actor, not caller-supplied identity
+ok 12 - admin: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 0.473148
+  type: 'test'
+  ...
+# Subtest: manager cannot retry or cancel despite read permission
+ok 13 - manager cannot retry or cancel despite read permission
+  ---
+  duration_ms: 0.769119
+  type: 'test'
+  ...
+# Subtest: retry database denial 42501 maps safely
+ok 14 - retry database denial 42501 maps safely
+  ---
+  duration_ms: 2.853426
+  type: 'test'
+  ...
+# Subtest: retry database denial P0002 maps safely
+ok 15 - retry database denial P0002 maps safely
+  ---
+  duration_ms: 0.511605
+  type: 'test'
+  ...
+# Subtest: retry database denial 22023 maps safely
+ok 16 - retry database denial 22023 maps safely
+  ---
+  duration_ms: 1.944652
+  type: 'test'
+  ...
+# Subtest: retry database denial XX000 maps safely
+ok 17 - retry database denial XX000 maps safely
+  ---
+  duration_ms: 2.638623
+  type: 'test'
+  ...
+# Subtest: cross-tenant cancellation finds no job and cannot update anything
+ok 18 - cross-tenant cancellation finds no job and cannot update anything
+  ---
+  duration_ms: 0.495687
+  type: 'test'
+  ...
+# Subtest: queued cancellation conditionally updates only tenant job and returns no audit verification claim
+ok 19 - queued cancellation conditionally updates only tenant job and returns no audit verification claim
+  ---
+  duration_ms: 0.914764
+  type: 'test'
+  ...
+# Subtest: conditional cancellation conflict stops before run or audit writes
+ok 20 - conditional cancellation conflict stops before run or audit writes
+  ---
+  duration_ms: 0.615863
+  type: 'test'
+  ...
+# Subtest: missing or invalid session blocks direct requests before profile data access
+ok 21 - missing or invalid session blocks direct requests before profile data access
+  ---
+  duration_ms: 1.649476
+  type: 'test'
+  ...
+# Subtest: mounted monitor hides raw diagnostics and uses neutral tool labels with diagnostic IDs collapsed
+ok 22 - mounted monitor hides raw diagnostics and uses neutral tool labels with diagnostic IDs collapsed
+  ---
+  duration_ms: 147.368847
+  type: 'test'
+  ...
+# Subtest: retry requires explicit confirmation, locks double-clicks and observes advanced persisted state
+ok 23 - retry requires explicit confirmation, locks double-clicks and observes advanced persisted state
+  ---
+  duration_ms: 28.327507
+  type: 'test'
+  ...
+# Subtest: declining confirmation sends no write
+ok 24 - declining confirmation sends no write
+  ---
+  duration_ms: 17.709437
+  type: 'test'
+  ...
+# Subtest: manager sees history without retry or cancellation controls
+ok 25 - manager sees history without retry or cancellation controls
+  ---
+  duration_ms: 13.797132
+  type: 'test'
+  ...
+# Subtest: lost acknowledgement blocks another write until explicit refresh and never renders success
+ok 26 - lost acknowledgement blocks another write until explicit refresh and never renders success
+  ---
+  duration_ms: 20.225108
+  type: 'test'
+  ...
+# Subtest: cancellation summary mismatch is shown as unconfirmed, not successful cancellation
+ok 27 - cancellation summary mismatch is shown as unconfirmed, not successful cancellation
+  ---
+  duration_ms: 27.519818
+  type: 'test'
+  ...
+# Subtest: account scope replacement ignores a late acknowledgement and resets confirmation
+ok 28 - account scope replacement ignores a late acknowledgement and resets confirmation
+  ---
+  duration_ms: 24.133161
+  type: 'test'
+  ...
+# Subtest: owner: real operations page uses explicit role capabilities
+ok 29 - owner: real operations page uses explicit role capabilities
+  ---
+  duration_ms: 43.013204
+  type: 'test'
+  ...
+# Subtest: admin: real operations page uses explicit role capabilities
+ok 30 - admin: real operations page uses explicit role capabilities
+  ---
+  duration_ms: 52.546063
+  type: 'test'
+  ...
+# Subtest: manager: real operations page uses explicit role capabilities
+ok 31 - manager: real operations page uses explicit role capabilities
+  ---
+  duration_ms: 39.401796
+  type: 'test'
+  ...
+# Subtest: forbidden role mounted directly cannot load operations records
+ok 32 - forbidden role mounted directly cannot load operations records
+  ---
+  duration_ms: 8.063882
+  type: 'test'
+  ...
+# Subtest: operations tab switches and header refresh preserve pending execution lock
+ok 33 - operations tab switches and header refresh preserve pending execution lock
+  ---
+  duration_ms: 56.701018
+  type: 'test'
+  ...
+# Subtest: failed job paired with awaiting-approval run shows discrepancy without retry controls
+ok 34 - failed job paired with awaiting-approval run shows discrepancy without retry controls
+  ---
+  duration_ms: 11.895898
+  type: 'test'
+  ...
+# Subtest: owner: reads monitor and strips diagnostics/result payloads
+ok 35 - owner: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 1.760785
+  type: 'test'
+  ...
+# Subtest: admin: reads monitor and strips diagnostics/result payloads
+ok 36 - admin: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.346344
+  type: 'test'
+  ...
+# Subtest: manager: reads monitor and strips diagnostics/result payloads
+ok 37 - manager: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.240883
+  type: 'test'
+  ...
+# Subtest: staff: cannot read monitor or mutate jobs
+ok 38 - staff: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.525942
+  type: 'test'
+  ...
+# Subtest: viewer: cannot read monitor or mutate jobs
+ok 39 - viewer: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.249902
+  type: 'test'
+  ...
+# Subtest: finance: cannot read monitor or mutate jobs
+ok 40 - finance: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.199179
+  type: 'test'
+  ...
+# Subtest: hr: cannot read monitor or mutate jobs
+ok 41 - hr: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.244016
+  type: 'test'
+  ...
+# Subtest: contractor: cannot read monitor or mutate jobs
+ok 42 - contractor: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.164121
+  type: 'test'
+  ...
+# Subtest: undefined: cannot read monitor or mutate jobs
+ok 43 - undefined: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 1.748007
+  type: 'test'
+  ...
+# Subtest: manager can read but cannot retry/cancel through a direct client call
+ok 44 - manager can read but cannot retry/cancel through a direct client call
+  ---
+  duration_ms: 0.484775
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing arrays
+ok 45 - read fails closed: missing arrays
+  ---
+  duration_ms: 0.278584
+  type: 'test'
+  ...
+# Subtest: read fails closed: duplicate run
+ok 46 - read fails closed: duplicate run
+  ---
+  duration_ms: 0.144573
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong job/run relation
+ok 47 - read fails closed: wrong job/run relation
+  ---
+  duration_ms: 0.098471
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong step/run relation
+ok 48 - read fails closed: wrong step/run relation
+  ---
+  duration_ms: 0.084833
+  type: 'test'
+  ...
+# Subtest: read fails closed: unknown state
+ok 49 - read fails closed: unknown state
+  ---
+  duration_ms: 0.098832
+  type: 'test'
+  ...
+# Subtest: read fails closed: invalid attempts
+ok 50 - read fails closed: invalid attempts
+  ---
+  duration_ms: 0.086411
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing request text
+ok 51 - read fails closed: missing request text
+  ---
+  duration_ms: 0.113833
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+ok 52 - errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+  ---
+  duration_ms: 0.352233
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+ok 53 - errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+  ---
+  duration_ms: 0.084154
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":null}
+ok 54 - errors are sanitised: {"data":null}
+  ---
+  duration_ms: 0.074442
+  type: 'test'
+  ...
+# Subtest: mutation eligibility is explicit and running cancellation is never offered
+ok 55 - mutation eligibility is explicit and running cancellation is never offered
+  ---
+  duration_ms: 0.120216
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {}
+ok 56 - incomplete retry acknowledgement cannot claim success: {}
+  ---
+  duration_ms: 0.125116
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+ok 57 - incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+  ---
+  duration_ms: 0.096935
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+ok 58 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+  ---
+  duration_ms: 0.074353
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+ok 59 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+  ---
+  duration_ms: 0.061053
+  type: 'test'
+  ...
+# Subtest: incomplete cancellation cannot claim success
+ok 60 - incomplete cancellation cannot claim success
+  ---
+  duration_ms: 0.22965
+  type: 'test'
+  ...
+# Subtest: read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+ok 61 - read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+  ---
+  duration_ms: 0.54625
+  type: 'test'
+  ...
+# Subtest: lost write acknowledgement requires explicit read reconciliation, never retries automatically
+ok 62 - lost write acknowledgement requires explicit read reconciliation, never retries automatically
+  ---
+  duration_ms: 0.237918
+  type: 'test'
+  ...
+# Subtest: cancel requires both job and run read-back and never claims an audit
+ok 63 - cancel requires both job and run read-back and never claims an audit
+  ---
+  duration_ms: 0.316652
+  type: 'test'
+  ...
+# Subtest: partial cancellation summary and out-of-sample read-back require reconciliation
+ok 64 - partial cancellation summary and out-of-sample read-back require reconciliation
+  ---
+  duration_ms: 1.592507
+  type: 'test'
+  ...
+# Subtest: failed refresh clears stale records and action eligibility
+ok 65 - failed refresh clears stale records and action eligibility
+  ---
+  duration_ms: 0.704128
+  type: 'test'
+  ...
+# Subtest: deactivated scope ignores late write acknowledgement and never follows it with a read
+ok 66 - deactivated scope ignores late write acknowledgement and never follows it with a read
+  ---
+  duration_ms: 1.153779
+  type: 'test'
+  ...
+# Subtest: failed job with nonfailed run cannot be retried by controller
+ok 67 - failed job with nonfailed run cannot be retried by controller
+  ---
+  duration_ms: 0.214655
+  type: 'test'
+  ...
+# Subtest: reproduces pre-fix NULL result_json violation without changing the persisted job, run, audit or synthetic queue
+ok 68 - reproduces pre-fix NULL result_json violation without changing the persisted job, run, audit or synthetic queue
+  ---
+  duration_ms: 2250.274651
+  type: 'test'
+  ...
+# Subtest: owner: retry atomically resets valid run JSON and creates one queue message and audit
+ok 69 - owner: retry atomically resets valid run JSON and creates one queue message and audit
+  ---
+  duration_ms: 18.998247
+  type: 'test'
+  ...
+# Subtest: admin: retry atomically resets valid run JSON and creates one queue message and audit
+ok 70 - admin: retry atomically resets valid run JSON and creates one queue message and audit
+  ---
+  duration_ms: 21.53316
+  type: 'test'
+  ...
+# Subtest: manager: SQL retry denies authority
+ok 71 - manager: SQL retry denies authority
+  ---
+  duration_ms: 30.343994
+  type: 'test'
+  ...
+# Subtest: staff: SQL retry denies authority
+ok 72 - staff: SQL retry denies authority
+  ---
+  duration_ms: 19.875798
+  type: 'test'
+  ...
+# Subtest: viewer: SQL retry denies authority
+ok 73 - viewer: SQL retry denies authority
+  ---
+  duration_ms: 32.296604
+  type: 'test'
+  ...
+# Subtest: finance: SQL retry denies authority
+ok 74 - finance: SQL retry denies authority
+  ---
+  duration_ms: 42.414751
+  type: 'test'
+  ...
+# Subtest: hr: SQL retry denies authority
+ok 75 - hr: SQL retry denies authority
+  ---
+  duration_ms: 17.774896
+  type: 'test'
+  ...
+# Subtest: contractor: SQL retry denies authority
+ok 76 - contractor: SQL retry denies authority
+  ---
+  duration_ms: 13.514665
+  type: 'test'
+  ...
+# Subtest: unknown actor denied by SQL
+ok 77 - unknown actor denied by SQL
+  ---
+  duration_ms: 15.944444
+  type: 'test'
+  ...
+# Subtest: other-tenant owner cannot retry job
+ok 78 - other-tenant owner cannot retry job
+  ---
+  duration_ms: 13.350694
+  type: 'test'
+  ...
+# Subtest: anon: forged service RPC actor denied
+ok 79 - anon: forged service RPC actor denied
+  ---
+  duration_ms: 15.120561
+  type: 'test'
+  ...
+# Subtest: authenticated: forged service RPC actor denied
+ok 80 - authenticated: forged service RPC actor denied
+  ---
+  duration_ms: 15.940424
+  type: 'test'
+  ...
+# Subtest: lost-response replay cannot enqueue duplicate retry or audit
+ok 81 - lost-response replay cannot enqueue duplicate retry or audit
+  ---
+  duration_ms: 47.601669
+  type: 'test'
+  ...
+# Subtest: queued: cannot manually retry
+ok 82 - queued: cannot manually retry
+  ---
+  duration_ms: 16.554155
+  type: 'test'
+  ...
+# Subtest: retry_wait: cannot manually retry
+ok 83 - retry_wait: cannot manually retry
+  ---
+  duration_ms: 30.940959
+  type: 'test'
+  ...
+# Subtest: completed: cannot manually retry
+ok 84 - completed: cannot manually retry
+  ---
+  duration_ms: 22.03077
+  type: 'test'
+  ...
+# Subtest: cancelled: cannot manually retry
+ok 85 - cancelled: cannot manually retry
+  ---
+  duration_ms: 19.989742
+  type: 'test'
+  ...
+# Subtest: job with mismatched run tenant is rejected before queue delivery or audit
+ok 86 - job with mismatched run tenant is rejected before queue delivery or audit
+  ---
+  duration_ms: 26.418911
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back run, job and transactional queue test double
+ok 87 - audit failure rolls back run, job and transactional queue test double
+  ---
+  duration_ms: 26.008308
+  type: 'test'
+  ...
+# Subtest: queue failure rolls back run/job state
+ok 88 - queue failure rolls back run/job state
+  ---
+  duration_ms: 15.556473
+  type: 'test'
+  ...
+# Subtest: service-only grants and empty search path survive new definition
+ok 89 - service-only grants and empty search path survive new definition
+  ---
+  duration_ms: 23.74743
+  type: 'test'
+  ...
+# Subtest: emergency rollback disables retry without deleting evidence; reviewed reapply restores service access
+ok 90 - emergency rollback disables retry without deleting evidence; reviewed reapply restores service access
+  ---
+  duration_ms: 29.176519
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite awaiting_approval run state or bypass approval
+ok 91 - failed job cannot overwrite awaiting_approval run state or bypass approval
+  ---
+  duration_ms: 21.739288
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite queued run state or bypass approval
+ok 92 - failed job cannot overwrite queued run state or bypass approval
+  ---
+  duration_ms: 20.714692
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite planning run state or bypass approval
+ok 93 - failed job cannot overwrite planning run state or bypass approval
+  ---
+  duration_ms: 15.092901
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite running run state or bypass approval
+ok 94 - failed job cannot overwrite running run state or bypass approval
+  ---
+  duration_ms: 20.460806
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite completed run state or bypass approval
+ok 95 - failed job cannot overwrite completed run state or bypass approval
+  ---
+  duration_ms: 22.545236
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite partially_completed run state or bypass approval
+ok 96 - failed job cannot overwrite partially_completed run state or bypass approval
+  ---
+  duration_ms: 31.881867
+  type: 'test'
+  ...
+# Subtest: failed job cannot overwrite cancelled run state or bypass approval
+ok 97 - failed job cannot overwrite cancelled run state or bypass approval
+  ---
+  duration_ms: 23.35665
+  type: 'test'
+  ...
+1..97
+# tests 97
+# suites 0
+# pass 97
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4736.534492

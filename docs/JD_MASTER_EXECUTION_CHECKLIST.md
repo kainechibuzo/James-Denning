@@ -6,7 +6,7 @@
 
 JD must understand business objectives, coordinate departments, execute permitted work, track real progress, verify outcomes and request human approval when necessary.
 
-**Baseline:** 2026-11-16 · **8 phases** · **10 confirmed merged changes** · **0/9 final acceptance criteria verified**.
+**Baseline:** 2026-11-16 · **8 phases** · **11 confirmed merged changes** · **0/9 final acceptance criteria verified**.
 
 This is the master planning checklist, not an application task ledger. Checking a box does not execute work, approve an action or verify the application. Existing code is a starting point to inspect and reuse, not proof that a requirement passes. Unchecked means **not accepted**, not necessarily **not implemented**.
 
@@ -41,6 +41,8 @@ This is the master planning checklist, not an application task ledger. Checking 
 
 - [Owner identity and execution reliability](evidence/2026-11-16-owner-execution/REPORT.md): owner-only JD route additions, fail-closed identity/session checks, deliberate retry/cancel controls, direct handler authority tests and a reproduced retry SQL constraint failure with staged repair. No deployment or final acceptance is inferred.
 
+- [Capability meaning and mobile chat](evidence/2026-11-17-capability-mobile/REPORT.md): explicit callable/effect/verification distinctions, scoped real-browser mobile regressions and confirmed PR #91 frontend production identity. Current changes require review; backend release remains separately gated. No acceptance box is checked.
+
 ## Execution order and phase gates
 
 Phases 1–4 form one foundation programme, delivered sequentially in small, testable slices rather than as four simultaneous rewrites. Security and isolation are prerequisites throughout; Phase 7 is not permission to defer them.
@@ -72,6 +74,7 @@ Do not start a replacement queue, permission system or approval system until exi
 | [#88](https://github.com/kainechibuzo/James-Denning/pull/88) | Department/account navigation and persisted chat task reconciliation | `45e01d48edd06a3fbf258094067bdcd560939a6d` |
 | [#89](https://github.com/kainechibuzo/James-Denning/pull/89) | Creation recovery, assignment read-back and queue write safeguards | `15a3d1b0b76edffa0c935e0807e8b554ffe72bbb` |
 | [#90](https://github.com/kainechibuzo/James-Denning/pull/90) | Checklist reconciliation, truthful run history and gated atomic assignment | `f37ee68e4443cca3e194537c0914f20d73aac688` |
+| [#91](https://github.com/kainechibuzo/James-Denning/pull/91) | Owner identity, guarded execution monitoring and staged retry repair | `b193215e30c363e6753d8aba069cd61e870b904a` |
 
 ## Phase 1 — Stabilise the existing platform
 

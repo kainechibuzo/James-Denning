@@ -1,0 +1,752 @@
+[
+  {
+    "width": 320,
+    "height": 740,
+    "initial": {
+      "viewport": 320,
+      "documentWidth": 320,
+      "thread": {
+        "left": 14,
+        "right": 306,
+        "top": 124,
+        "bottom": 2870.734375,
+        "width": 292,
+        "client": 292,
+        "scroll": 292
+      },
+      "table": {
+        "left": 16,
+        "right": 304,
+        "top": 246.296875,
+        "bottom": 2642.796875,
+        "width": 288,
+        "client": 286,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 320,
+        "top": 112,
+        "bottom": 554.125,
+        "width": 320,
+        "client": 320,
+        "scroll": 320
+      },
+      "utility": {
+        "left": 0,
+        "right": 320,
+        "top": 57,
+        "bottom": 112,
+        "width": 320,
+        "client": 320,
+        "scroll": 320
+      },
+      "composer": {
+        "left": 12,
+        "right": 308,
+        "top": 554.125,
+        "bottom": 732,
+        "width": 296,
+        "client": 296,
+        "scroll": 296
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 320,
+      "documentWidth": 320,
+      "thread": {
+        "left": 14,
+        "right": 306,
+        "top": -226,
+        "bottom": 2520.734375,
+        "width": 292,
+        "client": 292,
+        "scroll": 292
+      },
+      "table": {
+        "left": 16,
+        "right": 304,
+        "top": -103.703125,
+        "bottom": 2292.796875,
+        "width": 288,
+        "client": 286,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 320,
+        "top": 112,
+        "bottom": 554.125,
+        "width": 320,
+        "client": 320,
+        "scroll": 320
+      },
+      "utility": {
+        "left": 0,
+        "right": 320,
+        "top": 57,
+        "bottom": 112,
+        "width": 320,
+        "client": 320,
+        "scroll": 320
+      },
+      "composer": {
+        "left": 12,
+        "right": 308,
+        "top": 554.125,
+        "bottom": 732,
+        "width": 296,
+        "client": 296,
+        "scroll": 296
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 234,
+      "max": 234
+    },
+    "finalText": {
+      "x": 16,
+      "y": 485.234375,
+      "width": 288,
+      "height": 24.5
+    },
+    "errors": []
+  },
+  {
+    "width": 360,
+    "height": 800,
+    "initial": {
+      "viewport": 360,
+      "documentWidth": 360,
+      "thread": {
+        "left": 14,
+        "right": 346,
+        "top": 124,
+        "bottom": 2870.734375,
+        "width": 332,
+        "client": 332,
+        "scroll": 332
+      },
+      "table": {
+        "left": 16,
+        "right": 344,
+        "top": 246.296875,
+        "bottom": 2642.796875,
+        "width": 328,
+        "client": 326,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 360,
+        "top": 112,
+        "bottom": 628.125,
+        "width": 360,
+        "client": 360,
+        "scroll": 360
+      },
+      "utility": {
+        "left": 0,
+        "right": 360,
+        "top": 57,
+        "bottom": 112,
+        "width": 360,
+        "client": 360,
+        "scroll": 360
+      },
+      "composer": {
+        "left": 12,
+        "right": 348,
+        "top": 628.125,
+        "bottom": 792,
+        "width": 336,
+        "client": 336,
+        "scroll": 336
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 360,
+      "documentWidth": 360,
+      "thread": {
+        "left": 14,
+        "right": 346,
+        "top": -226,
+        "bottom": 2520.734375,
+        "width": 332,
+        "client": 332,
+        "scroll": 332
+      },
+      "table": {
+        "left": 16,
+        "right": 344,
+        "top": -103.703125,
+        "bottom": 2292.796875,
+        "width": 328,
+        "client": 326,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 360,
+        "top": 112,
+        "bottom": 628.125,
+        "width": 360,
+        "client": 360,
+        "scroll": 360
+      },
+      "utility": {
+        "left": 0,
+        "right": 360,
+        "top": 57,
+        "bottom": 112,
+        "width": 360,
+        "client": 360,
+        "scroll": 360
+      },
+      "composer": {
+        "left": 12,
+        "right": 348,
+        "top": 628.125,
+        "bottom": 792,
+        "width": 336,
+        "client": 336,
+        "scroll": 336
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 194,
+      "max": 194
+    },
+    "finalText": {
+      "x": 16,
+      "y": 559.234375,
+      "width": 328,
+      "height": 24.5
+    },
+    "errors": []
+  },
+  {
+    "width": 393,
+    "height": 852,
+    "initial": {
+      "viewport": 393,
+      "documentWidth": 393,
+      "thread": {
+        "left": 14,
+        "right": 379,
+        "top": 124,
+        "bottom": 2870.734375,
+        "width": 365,
+        "client": 365,
+        "scroll": 365
+      },
+      "table": {
+        "left": 16,
+        "right": 377,
+        "top": 246.296875,
+        "bottom": 2642.796875,
+        "width": 361,
+        "client": 359,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 393,
+        "top": 112,
+        "bottom": 680.125,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "utility": {
+        "left": 0,
+        "right": 393,
+        "top": 57,
+        "bottom": 112,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "composer": {
+        "left": 12,
+        "right": 381,
+        "top": 680.125,
+        "bottom": 844,
+        "width": 369,
+        "client": 369,
+        "scroll": 369
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 393,
+      "documentWidth": 393,
+      "thread": {
+        "left": 14,
+        "right": 379,
+        "top": -226,
+        "bottom": 2520.734375,
+        "width": 365,
+        "client": 365,
+        "scroll": 365
+      },
+      "table": {
+        "left": 16,
+        "right": 377,
+        "top": -103.703125,
+        "bottom": 2292.796875,
+        "width": 361,
+        "client": 359,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 393,
+        "top": 112,
+        "bottom": 680.125,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "utility": {
+        "left": 0,
+        "right": 393,
+        "top": 57,
+        "bottom": 112,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "composer": {
+        "left": 12,
+        "right": 381,
+        "top": 680.125,
+        "bottom": 844,
+        "width": 369,
+        "client": 369,
+        "scroll": 369
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 161,
+      "max": 161
+    },
+    "finalText": {
+      "x": 16,
+      "y": 611.234375,
+      "width": 361,
+      "height": 24.5
+    },
+    "errors": []
+  },
+  {
+    "width": 708,
+    "height": 900,
+    "initial": {
+      "viewport": 708,
+      "documentWidth": 708,
+      "thread": {
+        "left": 14,
+        "right": 694,
+        "top": 124,
+        "bottom": 1839.734375,
+        "width": 680,
+        "client": 680,
+        "scroll": 680
+      },
+      "table": {
+        "left": 16,
+        "right": 692,
+        "top": 229.796875,
+        "bottom": 1636.296875,
+        "width": 676,
+        "client": 674,
+        "scroll": 674
+      },
+      "scroll": {
+        "left": 0,
+        "right": 708,
+        "top": 112,
+        "bottom": 741.125,
+        "width": 708,
+        "client": 708,
+        "scroll": 708
+      },
+      "utility": {
+        "left": 0,
+        "right": 708,
+        "top": 57,
+        "bottom": 112,
+        "width": 708,
+        "client": 708,
+        "scroll": 708
+      },
+      "composer": {
+        "left": 12,
+        "right": 696,
+        "top": 741.125,
+        "bottom": 892,
+        "width": 684,
+        "client": 684,
+        "scroll": 684
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 708,
+      "documentWidth": 708,
+      "thread": {
+        "left": 14,
+        "right": 694,
+        "top": -226,
+        "bottom": 1489.734375,
+        "width": 680,
+        "client": 680,
+        "scroll": 680
+      },
+      "table": {
+        "left": 16,
+        "right": 692,
+        "top": -120.203125,
+        "bottom": 1286.296875,
+        "width": 676,
+        "client": 674,
+        "scroll": 674
+      },
+      "scroll": {
+        "left": 0,
+        "right": 708,
+        "top": 112,
+        "bottom": 741.125,
+        "width": 708,
+        "client": 708,
+        "scroll": 708
+      },
+      "utility": {
+        "left": 0,
+        "right": 708,
+        "top": 57,
+        "bottom": 112,
+        "width": 708,
+        "client": 708,
+        "scroll": 708
+      },
+      "composer": {
+        "left": 12,
+        "right": 696,
+        "top": 741.125,
+        "bottom": 892,
+        "width": 684,
+        "client": 684,
+        "scroll": 684
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 0,
+      "max": 0
+    },
+    "finalText": {
+      "x": 16,
+      "y": 672.234375,
+      "width": 676,
+      "height": 24.5
+    },
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "height": 900,
+    "initial": {
+      "viewport": 1280,
+      "documentWidth": 1280,
+      "thread": {
+        "left": 260,
+        "right": 1020,
+        "top": 124,
+        "bottom": 1509.734375,
+        "width": 760,
+        "client": 760,
+        "scroll": 760
+      },
+      "table": {
+        "left": 262,
+        "right": 1018,
+        "top": 229.796875,
+        "bottom": 1306.296875,
+        "width": 756,
+        "client": 754,
+        "scroll": 754
+      },
+      "scroll": {
+        "left": 0,
+        "right": 1280,
+        "top": 112,
+        "bottom": 730,
+        "width": 1280,
+        "client": 1280,
+        "scroll": 1280
+      },
+      "utility": {
+        "left": 0,
+        "right": 1280,
+        "top": 57,
+        "bottom": 112,
+        "width": 1280,
+        "client": 1280,
+        "scroll": 1280
+      },
+      "composer": {
+        "left": 250,
+        "right": 1030,
+        "top": 730,
+        "bottom": 886,
+        "width": 780,
+        "client": 780,
+        "scroll": 780
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 1280,
+      "documentWidth": 1280,
+      "thread": {
+        "left": 260,
+        "right": 1020,
+        "top": -226,
+        "bottom": 1159.734375,
+        "width": 760,
+        "client": 760,
+        "scroll": 760
+      },
+      "table": {
+        "left": 262,
+        "right": 1018,
+        "top": -120.203125,
+        "bottom": 956.296875,
+        "width": 756,
+        "client": 754,
+        "scroll": 754
+      },
+      "scroll": {
+        "left": 0,
+        "right": 1280,
+        "top": 112,
+        "bottom": 730,
+        "width": 1280,
+        "client": 1280,
+        "scroll": 1280
+      },
+      "utility": {
+        "left": 0,
+        "right": 1280,
+        "top": 57,
+        "bottom": 112,
+        "width": 1280,
+        "client": 1280,
+        "scroll": 1280
+      },
+      "composer": {
+        "left": 250,
+        "right": 1030,
+        "top": 730,
+        "bottom": 886,
+        "width": 780,
+        "client": 780,
+        "scroll": 780
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 0,
+      "max": 0
+    },
+    "finalText": {
+      "x": 262,
+      "y": 657.234375,
+      "width": 756,
+      "height": 24.5
+    },
+    "errors": []
+  },
+  {
+    "width": 393,
+    "height": 460,
+    "initial": {
+      "viewport": 393,
+      "documentWidth": 393,
+      "thread": {
+        "left": 14,
+        "right": 379,
+        "top": 124,
+        "bottom": 2870.734375,
+        "width": 365,
+        "client": 365,
+        "scroll": 365
+      },
+      "table": {
+        "left": 16,
+        "right": 377,
+        "top": 246.296875,
+        "bottom": 2642.796875,
+        "width": 361,
+        "client": 359,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 393,
+        "top": 112,
+        "bottom": 288.125,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "utility": {
+        "left": 0,
+        "right": 393,
+        "top": 57,
+        "bottom": 112,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "composer": {
+        "left": 12,
+        "right": 381,
+        "top": 288.125,
+        "bottom": 452,
+        "width": 369,
+        "client": 369,
+        "scroll": 369
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "scrolled": {
+      "viewport": 393,
+      "documentWidth": 393,
+      "thread": {
+        "left": 14,
+        "right": 379,
+        "top": -226,
+        "bottom": 2520.734375,
+        "width": 365,
+        "client": 365,
+        "scroll": 365
+      },
+      "table": {
+        "left": 16,
+        "right": 377,
+        "top": -103.703125,
+        "bottom": 2292.796875,
+        "width": 361,
+        "client": 359,
+        "scroll": 520
+      },
+      "scroll": {
+        "left": 0,
+        "right": 393,
+        "top": 112,
+        "bottom": 288.125,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "utility": {
+        "left": 0,
+        "right": 393,
+        "top": 57,
+        "bottom": 112,
+        "width": 393,
+        "client": 393,
+        "scroll": 393
+      },
+      "composer": {
+        "left": 12,
+        "right": 381,
+        "top": 288.125,
+        "bottom": 452,
+        "width": 369,
+        "client": 369,
+        "scroll": 369
+      },
+      "requests": [
+        "history.list",
+        "approvals.list",
+        "history",
+        "approvals.list"
+      ]
+    },
+    "tableScroll": {
+      "left": 161,
+      "max": 161
+    },
+    "finalText": {
+      "x": 16,
+      "y": 219.234375,
+      "width": 361,
+      "height": 24.5
+    },
+    "errors": []
+  }
+]

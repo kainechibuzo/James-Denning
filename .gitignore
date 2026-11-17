@@ -18,8 +18,9 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 
-# Vite
+# Vite and local test tooling
 *.local
+.cache/
 
 # Capacitor / Android build artefacts
 android/.gradle/
