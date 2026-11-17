@@ -79,7 +79,7 @@ test("scope switch discards late creation response and retains old scoped journa
 });
 test("operations integration replaces unguarded writes and remounts on identity changes",()=>{
  const page=readFileSync(new URL("../src/pages/jd-operations.jsx",import.meta.url),"utf8"),shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
- assert.match(page,/<JDTaskQueue client=\{supabase\}/);assert.doesNotMatch(page,/idempotencyId:crypto.randomUUID|onClick=\{\(\)=>autoAssignTask/);
+ assert.match(page,/<JDTaskQueue client=\{client\}/);assert.doesNotMatch(page,/idempotencyId:crypto.randomUUID|onClick=\{\(\)=>autoAssignTask/);
  assert.match(page,/loading&&tab!=="tasks"/);assert.match(shell,/<JDOperationsPage key=\{JSON.stringify\(\[selectedSchool\?\.id,user\?\._authUserId\|\|user\?\.id,user\?\.role\]\)\}/);
 });
 test("confirmed queue changes update the parent overview without a second write",async()=>{

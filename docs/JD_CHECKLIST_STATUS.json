@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "15a3d1b0b76edffa0c935e0807e8b554ffe72bbb",
-  "branch": "arena/dfc4b866-james-denning",
-  "scope": "Repository and existing evidence reconciliation; source mapping is not comprehensive code audit or live acceptance. The safe-merge release gate keeps existing assignment behaviour by default; new checked assignment remains disabled pending staging/review/backend deployment.",
+  "baseCommit": "f37ee68e4443cca3e194537c0914f20d73aac688",
+  "branch": "arena/a32a0393-james-denning",
+  "scope": "Repository/evidence reconciliation updated with owner Operations access, fail-closed identity activation, guarded execution monitoring and a reproduced retry SQL fix. These changes are not deployed or independently accepted. Audited assignment remains disabled; isolated staging and business approval gates remain open.",
   "items": [
     {
       "id": "P1-01",
@@ -47,18 +47,20 @@
       "id": "P1-03",
       "requirement": "Test authentication, login, logout and session persistence.",
       "implementation": "partial",
-      "assessment": "Auth/session code and preauth contracts exist; live sign-in/out, expiry and restored sessions remain untested here.",
+      "assessment": "Server-confirmed restored session and actor/profile/workspace agreement now gate activation; no default-admin role. Mounted bootstrap tests pass locally. Live expiry/recovery/logout acceptance remains open.",
       "sources": [
-        "src/supabaseClient.js",
-        "supabase/functions/_shared/preauth-auth-contract.test.ts"
+        "src/App.jsx",
+        "src/auth/workspace-identity.mjs",
+        "scripts/test-workspace-activation-ui.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
-        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
+        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Test authentication, login, logout and session persistence. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -558,18 +560,20 @@
       "id": "P2-A01",
       "requirement": "Owner: full organisational visibility and management within their tenant.",
       "implementation": "partial",
-      "assessment": "Backend owner role is recognised; AppDemo operations route still only permits admin/manager. Full owner visibility is incomplete.",
+      "assessment": "Owner JD Assistant/Operations navigation and route/page capabilities are repaired without a blanket admin alias. Owner override reads fail closed and use authenticated identity. Full owner access to all modules remains incomplete.",
       "sources": [
-        "supabase/migrations/20261114213713_jd_authorization_role_matrix.sql",
-        "supabase/functions/jd-automation/index.ts"
+        "src/config/workspace-navigation.mjs",
+        "src/AppDemo.jsx",
+        "src/auth/owner-navigation-permissions.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Owner: full organisational visibility and management within their tenant. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -710,18 +714,19 @@
       "id": "P2-A09",
       "requirement": "Prove menu hiding cannot substitute for backend security through direct-request tests.",
       "implementation": "partial",
-      "assessment": "Task SQL/endpoint tests deny forged actors and cross-tenant access; full deployed direct-request suite remains pending.",
+      "assessment": "Direct execution-handler tests exercise authenticated role checks, body spoofing, manager request scoping and tenant filters; real SQL tests deny forged retry actors. Full deployed API/RLS coverage remains pending.",
       "sources": [
-        "supabase/migrations/20261114213713_jd_authorization_role_matrix.sql",
-        "supabase/functions/jd-automation/index.ts"
+        "scripts/test-execution-endpoint.mjs",
+        "scripts/test-execution-retry-database.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Prove menu hiding cannot substitute for backend security through direct-request tests. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -1071,18 +1076,19 @@
       "id": "P3-E08",
       "requirement": "Add retries with sensible limits and transient/permanent error classification.",
       "implementation": "partial",
-      "assessment": "Bounded retry counters/delays exist. Generic worker failures do not establish correct transient/permanent classification.",
+      "assessment": "Bounded workers exist. A retry NULL/non-null constraint failure is now reproduced and repaired in a staged SQL migration; live rollout and transient/permanent classification remain incomplete.",
       "sources": [
-        "supabase/functions/jd-execution-worker/index.ts",
-        "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql"
+        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql",
+        "scripts/test-execution-retry-database.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Add retries with sensible limits and transient/permanent error classification. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -1569,18 +1575,19 @@
       "id": "P4-L10",
       "requirement": "Show retry counts and retry eligibility.",
       "implementation": "partial",
-      "assessment": "Job attempts appear in operations monitor; provider retry metrics are separate and should not imply eligibility.",
+      "assessment": "Execution view shows persisted attempt count/limit, explicit job/run states and observed eligibility; universal retry classification and historical attempts remain incomplete.",
       "sources": [
-        "src/chat/RunMonitor.jsx",
-        "src/pages/jd-operations.jsx"
+        "src/chat/JDExecutionMonitor.jsx",
+        "src/chat/execution-monitor.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-workspace/REPORT.md"
+        "docs/evidence/2026-11-16-task-workspace/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Show retry counts and retry eligibility. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -1588,15 +1595,16 @@
       "id": "P4-L11",
       "requirement": "Show useful, sanitised execution errors.",
       "implementation": "partial",
-      "assessment": "Run monitor now sanitises load failures and validates records; other operations monitor raw error fields remain to review.",
+      "assessment": "Both run-history and Operations execution views now sanitize diagnostics; transport/body errors fail closed. Full system-wide redaction and actionable correlation remain open.",
       "sources": [
         "src/chat/run-history.mjs",
-        "src/chat/RunMonitor.jsx",
+        "src/chat/execution-monitor.mjs",
         "src/pages/jd-operations.jsx"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-workspace/REPORT.md"
+        "docs/evidence/2026-11-16-task-workspace/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Show useful, sanitised execution errors. Retain expected/actual results and independent review.",
@@ -1627,18 +1635,20 @@
       "id": "P4-L13",
       "requirement": "Provide retry actions only for eligible failures and authorised actors.",
       "implementation": "partial",
-      "assessment": "Failed-job retry buttons and RPC guards exist; deployed eligibility and side-effect safety remain unverified.",
+      "assessment": "Owner/admin retry controls require failed job/run, explicit effect-risk confirmation, synchronous lock, validated queue acknowledgement and read-back. Deployed SQL repair and live eligibility verification remain pending.",
       "sources": [
-        "src/chat/RunMonitor.jsx",
-        "src/pages/jd-operations.jsx"
+        "src/chat/JDExecutionMonitor.jsx",
+        "src/chat/execution-monitor.mjs",
+        "scripts/test-execution-retry-database.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-workspace/REPORT.md"
+        "docs/evidence/2026-11-16-task-workspace/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Provide retry actions only for eligible failures and authorised actors. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -1646,18 +1656,19 @@
       "id": "P4-L14",
       "requirement": "Provide cancellation for supported operations, with honest partial-effect reporting.",
       "implementation": "partial",
-      "assessment": "Queued job cancel is exposed; running work and honest partial-effect reporting remain incomplete.",
+      "assessment": "Queued/waiting cancellation requires explicit warning and matching job/run read-back. Partial cancellation is not success; existing backend cancellation is not transactional with its audit.",
       "sources": [
-        "src/chat/RunMonitor.jsx",
-        "src/pages/jd-operations.jsx"
+        "src/chat/JDExecutionMonitor.jsx",
+        "src/chat/execution-monitor.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-workspace/REPORT.md"
+        "docs/evidence/2026-11-16-task-workspace/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Provide cancellation for supported operations, with honest partial-effect reporting. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -1704,16 +1715,17 @@
       "id": "P4-E02",
       "requirement": "Translate internal tool events into understandable descriptions.",
       "implementation": "partial",
-      "assessment": "Run monitor uses neutral tool labels and explicit unknown statuses after this repair; other raw-tool surfaces still need consolidation.",
+      "assessment": "Both monitor surfaces use neutral tool descriptions and distinct pending/partial/unknown states. Remaining assistant/evidence surfaces still require acceptance.",
       "sources": [
+        "src/chat/JDExecutionMonitor.jsx",
         "src/chat/RunMonitor.jsx",
-        "src/chat/run-history.mjs",
-        "scripts/test-run-monitor-ui.mjs"
+        "src/chat/run-history.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Translate internal tool events into understandable descriptions. Retain expected/actual results and independent review.",
@@ -1725,19 +1737,19 @@
       "id": "P4-E03",
       "requirement": "Hide UUIDs by default while retaining diagnostic access.",
       "implementation": "partial",
-      "assessment": "Friendly labels exist, but operation monitor and diagnostic fields still show IDs by default in places.",
+      "assessment": "Execution monitor IDs are now behind a diagnostic details disclosure; other task/approval interfaces still require a full audit.",
       "sources": [
-        "src/chat/JDVisualWorkspace.jsx",
-        "src/chat/operational-task-records.mjs"
+        "src/chat/JDExecutionMonitor.jsx"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Hide UUIDs by default while retaining diagnostic access. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -2006,19 +2018,19 @@
       "id": "P4-T06",
       "requirement": "Check database constraints and deployed migration/function versions.",
       "implementation": "partial",
-      "assessment": "Repository migrations tested in isolated PGlite subset; actual deployed migration/function inventory not reconciled here.",
+      "assessment": "Local repository SQL demonstrates existing retry error 23502 and a staged migration repair. Actual deployed migration/function versions and real pgmq acceptance remain outstanding.",
       "sources": [
-        "src/chat/operational-task-writes.mjs",
-        "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "scripts/test-execution-retry-database.mjs",
+        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Check database constraints and deployed migration/function versions. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },
@@ -2026,15 +2038,16 @@
       "id": "P4-T07",
       "requirement": "Determine whether updates are rejected, rolled back or silently lost.",
       "implementation": "partial",
-      "assessment": "Audit failure rolls back task changes in SQL tests; lost acknowledgement forces reconciliation. Original incident still unresolved.",
+      "assessment": "Task and retry SQL tests demonstrate transactional rollback; retry NULL failure reproduced. Execution UI treats lost/partial acknowledgements as unconfirmed. Original reported incident still lacks correlation.",
       "sources": [
-        "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "scripts/test-execution-retry-database.mjs",
+        "src/chat/execution-monitor.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Determine whether updates are rejected, rolled back or silently lost. Retain expected/actual results and independent review.",
@@ -3483,18 +3496,20 @@
       "id": "P7-05",
       "requirement": "Review authentication and session management.",
       "implementation": "partial",
-      "assessment": "Auth client and preauth contracts exist; session expiry, revocation and account-switch acceptance pending.",
+      "assessment": "Activation now rejects missing roles/identity mismatch and verifies restored sessions with getUser. Full live session lifecycle, revocation and cross-tab logout acceptance remain unverified.",
       "sources": [
-        "documentation/STAGING_SETUP.md",
-        "scripts/verify-jd-business-staging.mjs"
+        "src/App.jsx",
+        "src/auth/workspace-identity.mjs",
+        "scripts/test-workspace-activation-ui.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Review authentication and session management. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
+      "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Unassigned",
       "verification": null
     },

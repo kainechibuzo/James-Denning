@@ -1,0 +1,454 @@
+TAP version 13
+# Subtest: owner: monitor is tenant-scoped and manager is limited to own requests
+ok 1 - owner: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 8.400915
+  type: 'test'
+  ...
+# Subtest: admin: monitor is tenant-scoped and manager is limited to own requests
+ok 2 - admin: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 0.998121
+  type: 'test'
+  ...
+# Subtest: manager: monitor is tenant-scoped and manager is limited to own requests
+ok 3 - manager: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 0.846495
+  type: 'test'
+  ...
+# Subtest: staff: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 4 - staff: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 2.408723
+  type: 'test'
+  ...
+# Subtest: contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 5 - contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.450005
+  type: 'test'
+  ...
+# Subtest: viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 6 - viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.207444
+  type: 'test'
+  ...
+# Subtest: finance: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 7 - finance: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.148837
+  type: 'test'
+  ...
+# Subtest: hr: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 8 - hr: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.211812
+  type: 'test'
+  ...
+# Subtest: teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 9 - teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.112597
+  type: 'test'
+  ...
+# Subtest: student: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 10 - student: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 3.552377
+  type: 'test'
+  ...
+# Subtest: owner: retry RPC receives authenticated actor, not caller-supplied identity
+ok 11 - owner: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 0.767819
+  type: 'test'
+  ...
+# Subtest: admin: retry RPC receives authenticated actor, not caller-supplied identity
+ok 12 - admin: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 0.358304
+  type: 'test'
+  ...
+# Subtest: manager cannot retry or cancel despite read permission
+ok 13 - manager cannot retry or cancel despite read permission
+  ---
+  duration_ms: 0.696447
+  type: 'test'
+  ...
+# Subtest: retry database denial 42501 maps safely
+ok 14 - retry database denial 42501 maps safely
+  ---
+  duration_ms: 0.56445
+  type: 'test'
+  ...
+# Subtest: retry database denial P0002 maps safely
+ok 15 - retry database denial P0002 maps safely
+  ---
+  duration_ms: 0.459272
+  type: 'test'
+  ...
+# Subtest: retry database denial 22023 maps safely
+ok 16 - retry database denial 22023 maps safely
+  ---
+  duration_ms: 0.299063
+  type: 'test'
+  ...
+# Subtest: retry database denial XX000 maps safely
+ok 17 - retry database denial XX000 maps safely
+  ---
+  duration_ms: 1.829656
+  type: 'test'
+  ...
+# Subtest: cross-tenant cancellation finds no job and cannot update anything
+ok 18 - cross-tenant cancellation finds no job and cannot update anything
+  ---
+  duration_ms: 0.502383
+  type: 'test'
+  ...
+# Subtest: queued cancellation conditionally updates only tenant job and returns no audit verification claim
+ok 19 - queued cancellation conditionally updates only tenant job and returns no audit verification claim
+  ---
+  duration_ms: 0.800491
+  type: 'test'
+  ...
+# Subtest: conditional cancellation conflict stops before run or audit writes
+ok 20 - conditional cancellation conflict stops before run or audit writes
+  ---
+  duration_ms: 0.605042
+  type: 'test'
+  ...
+# Subtest: missing or invalid session blocks direct requests before profile data access
+ok 21 - missing or invalid session blocks direct requests before profile data access
+  ---
+  duration_ms: 1.659802
+  type: 'test'
+  ...
+# Subtest: owner: reads monitor and strips diagnostics/result payloads
+ok 22 - owner: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 2.310238
+  type: 'test'
+  ...
+# Subtest: admin: reads monitor and strips diagnostics/result payloads
+ok 23 - admin: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.37368
+  type: 'test'
+  ...
+# Subtest: manager: reads monitor and strips diagnostics/result payloads
+ok 24 - manager: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.313896
+  type: 'test'
+  ...
+# Subtest: staff: cannot read monitor or mutate jobs
+ok 25 - staff: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.514601
+  type: 'test'
+  ...
+# Subtest: viewer: cannot read monitor or mutate jobs
+ok 26 - viewer: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.408205
+  type: 'test'
+  ...
+# Subtest: finance: cannot read monitor or mutate jobs
+ok 27 - finance: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.379388
+  type: 'test'
+  ...
+# Subtest: hr: cannot read monitor or mutate jobs
+ok 28 - hr: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.308315
+  type: 'test'
+  ...
+# Subtest: contractor: cannot read monitor or mutate jobs
+ok 29 - contractor: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.252868
+  type: 'test'
+  ...
+# Subtest: undefined: cannot read monitor or mutate jobs
+ok 30 - undefined: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 1.660574
+  type: 'test'
+  ...
+# Subtest: manager can read but cannot retry/cancel through a direct client call
+ok 31 - manager can read but cannot retry/cancel through a direct client call
+  ---
+  duration_ms: 0.482284
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing arrays
+ok 32 - read fails closed: missing arrays
+  ---
+  duration_ms: 0.476712
+  type: 'test'
+  ...
+# Subtest: read fails closed: duplicate run
+ok 33 - read fails closed: duplicate run
+  ---
+  duration_ms: 0.217021
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong job/run relation
+ok 34 - read fails closed: wrong job/run relation
+  ---
+  duration_ms: 0.154176
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong step/run relation
+ok 35 - read fails closed: wrong step/run relation
+  ---
+  duration_ms: 0.154113
+  type: 'test'
+  ...
+# Subtest: read fails closed: unknown state
+ok 36 - read fails closed: unknown state
+  ---
+  duration_ms: 0.123272
+  type: 'test'
+  ...
+# Subtest: read fails closed: invalid attempts
+ok 37 - read fails closed: invalid attempts
+  ---
+  duration_ms: 0.184782
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing request text
+ok 38 - read fails closed: missing request text
+  ---
+  duration_ms: 0.157582
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+ok 39 - errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+  ---
+  duration_ms: 0.409396
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+ok 40 - errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+  ---
+  duration_ms: 0.100723
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":null}
+ok 41 - errors are sanitised: {"data":null}
+  ---
+  duration_ms: 0.122609
+  type: 'test'
+  ...
+# Subtest: mutation eligibility is explicit and running cancellation is never offered
+ok 42 - mutation eligibility is explicit and running cancellation is never offered
+  ---
+  duration_ms: 0.150881
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {}
+ok 43 - incomplete retry acknowledgement cannot claim success: {}
+  ---
+  duration_ms: 0.163562
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+ok 44 - incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+  ---
+  duration_ms: 0.100354
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+ok 45 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+  ---
+  duration_ms: 0.078664
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+ok 46 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+  ---
+  duration_ms: 0.121788
+  type: 'test'
+  ...
+# Subtest: incomplete cancellation cannot claim success
+ok 47 - incomplete cancellation cannot claim success
+  ---
+  duration_ms: 0.256167
+  type: 'test'
+  ...
+# Subtest: read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+ok 48 - read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+  ---
+  duration_ms: 0.539777
+  type: 'test'
+  ...
+# Subtest: lost write acknowledgement requires explicit read reconciliation, never retries automatically
+ok 49 - lost write acknowledgement requires explicit read reconciliation, never retries automatically
+  ---
+  duration_ms: 0.458861
+  type: 'test'
+  ...
+# Subtest: cancel requires both job and run read-back and never claims an audit
+ok 50 - cancel requires both job and run read-back and never claims an audit
+  ---
+  duration_ms: 0.419115
+  type: 'test'
+  ...
+# Subtest: partial cancellation summary and out-of-sample read-back require reconciliation
+ok 51 - partial cancellation summary and out-of-sample read-back require reconciliation
+  ---
+  duration_ms: 0.74703
+  type: 'test'
+  ...
+# Subtest: failed refresh clears stale records and action eligibility
+ok 52 - failed refresh clears stale records and action eligibility
+  ---
+  duration_ms: 1.683898
+  type: 'test'
+  ...
+# Subtest: deactivated scope ignores late write acknowledgement and never follows it with a read
+ok 53 - deactivated scope ignores late write acknowledgement and never follows it with a read
+  ---
+  duration_ms: 0.348145
+  type: 'test'
+  ...
+# Subtest: identity preserves owner without aliasing to admin
+ok 54 - identity preserves owner without aliasing to admin
+  ---
+  duration_ms: 1.238359
+  type: 'test'
+  ...
+# Subtest: identity preserves admin without aliasing to admin
+ok 55 - identity preserves admin without aliasing to admin
+  ---
+  duration_ms: 0.190842
+  type: 'test'
+  ...
+# Subtest: identity preserves manager without aliasing to admin
+ok 56 - identity preserves manager without aliasing to admin
+  ---
+  duration_ms: 0.079238
+  type: 'test'
+  ...
+# Subtest: identity preserves staff without aliasing to admin
+ok 57 - identity preserves staff without aliasing to admin
+  ---
+  duration_ms: 0.092058
+  type: 'test'
+  ...
+# Subtest: identity preserves finance without aliasing to admin
+ok 58 - identity preserves finance without aliasing to admin
+  ---
+  duration_ms: 0.129368
+  type: 'test'
+  ...
+# Subtest: identity preserves hr without aliasing to admin
+ok 59 - identity preserves hr without aliasing to admin
+  ---
+  duration_ms: 0.11482
+  type: 'test'
+  ...
+# Subtest: identity preserves contractor without aliasing to admin
+ok 60 - identity preserves contractor without aliasing to admin
+  ---
+  duration_ms: 0.127722
+  type: 'test'
+  ...
+# Subtest: identity preserves viewer without aliasing to admin
+ok 61 - identity preserves viewer without aliasing to admin
+  ---
+  duration_ms: 0.066348
+  type: 'test'
+  ...
+# Subtest: identity preserves teacher without aliasing to admin
+ok 62 - identity preserves teacher without aliasing to admin
+  ---
+  duration_ms: 0.250845
+  type: 'test'
+  ...
+# Subtest: identity preserves student without aliasing to admin
+ok 63 - identity preserves student without aliasing to admin
+  ---
+  duration_ms: 0.276683
+  type: 'test'
+  ...
+# Subtest: identity preserves bursar without aliasing to admin
+ok 64 - identity preserves bursar without aliasing to admin
+  ---
+  duration_ms: 0.117701
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role undefined cannot become admin
+ok 65 - missing/unsupported role undefined cannot become admin
+  ---
+  duration_ms: 0.351113
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role null cannot become admin
+ok 66 - missing/unsupported role null cannot become admin
+  ---
+  duration_ms: 0.06504
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  cannot become admin
+ok 67 - missing/unsupported role  cannot become admin
+  ---
+  duration_ms: 0.055731
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role superadmin cannot become admin
+ok 68 - missing/unsupported role superadmin cannot become admin
+  ---
+  duration_ms: 0.068602
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role OWNER cannot become admin
+ok 69 - missing/unsupported role OWNER cannot become admin
+  ---
+  duration_ms: 0.054969
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  admin  cannot become admin
+ok 70 - missing/unsupported role  admin  cannot become admin
+  ---
+  duration_ms: 0.149332
+  type: 'test'
+  ...
+# Subtest: profile, authenticated actor and workspace identities must agree before persistence
+ok 71 - profile, authenticated actor and workspace identities must agree before persistence
+  ---
+  duration_ms: 0.59132
+  type: 'test'
+  ...
+# Subtest: owner gets JD-only routes with explicit denial preserved (business)
+ok 72 - owner gets JD-only routes with explicit denial preserved (business)
+  ---
+  duration_ms: 0.923527
+  type: 'test'
+  ...
+# Subtest: owner gets JD-only routes with explicit denial preserved (education)
+ok 73 - owner gets JD-only routes with explicit denial preserved (education)
+  ---
+  duration_ms: 0.149226
+  type: 'test'
+  ...
+# Subtest: owner access is additive and scoped, not blanket legacy admin access
+ok 74 - owner access is additive and scoped, not blanket legacy admin access
+  ---
+  duration_ms: 1.352519
+  type: 'test'
+  ...
+1..74
+# tests 74
+# suites 0
+# pass 74
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 381.773953
