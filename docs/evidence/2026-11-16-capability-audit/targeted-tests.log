@@ -1,0 +1,3436 @@
+TAP version 13
+# (node:1544) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: deterministic team has no execution, storage, grants, spend, evaluations or fixed departments
+ok 1 - deterministic team has no execution, storage, grants, spend, evaluations or fixed departments
+  ---
+  duration_ms: 2.50132
+  type: 'test'
+  ...
+# Subtest: website does not inherit backend/database or HR/Finance departments
+ok 2 - website does not inherit backend/database or HR/Finance departments
+  ---
+  duration_ms: 0.595422
+  type: 'test'
+  ...
+# Subtest: payments and research add honest requirements, not connections
+ok 3 - payments and research add honest requirements, not connections
+  ---
+  duration_ms: 0.292502
+  type: 'test'
+  ...
+# Subtest: rejects emptyName
+ok 4 - rejects emptyName
+  ---
+  duration_ms: 0.215466
+  type: 'test'
+  ...
+# Subtest: rejects longName
+ok 5 - rejects longName
+  ---
+  duration_ms: 0.092419
+  type: 'test'
+  ...
+# Subtest: rejects shortBrief
+ok 6 - rejects shortBrief
+  ---
+  duration_ms: 2.523863
+  type: 'test'
+  ...
+# Subtest: rejects longBrief
+ok 7 - rejects longBrief
+  ---
+  duration_ms: 0.088012
+  type: 'test'
+  ...
+# Subtest: rejects wrongType
+ok 8 - rejects wrongType
+  ---
+  duration_ms: 0.070515
+  type: 'test'
+  ...
+# Subtest: rejects noBoolean
+ok 9 - rejects noBoolean
+  ---
+  duration_ms: 0.256491
+  type: 'test'
+  ...
+# Subtest: rejects stringBoolean
+ok 10 - rejects stringBoolean
+  ---
+  duration_ms: 0.279427
+  type: 'test'
+  ...
+# Subtest: rejects unknownField
+ok 11 - rejects unknownField
+  ---
+  duration_ms: 0.115072
+  type: 'test'
+  ...
+# Subtest: rejects grant
+ok 12 - rejects grant
+  ---
+  duration_ms: 0.06138
+  type: 'test'
+  ...
+# Subtest: rejects route
+ok 13 - rejects route
+  ---
+  duration_ms: 0.120384
+  type: 'test'
+  ...
+# Subtest: rejects noBackend
+ok 14 - rejects noBackend
+  ---
+  duration_ms: 0.060918
+  type: 'test'
+  ...
+# Subtest: rejects noIdentity
+ok 15 - rejects noIdentity
+  ---
+  duration_ms: 0.083537
+  type: 'test'
+  ...
+# Subtest: rejects secret
+ok 16 - rejects secret
+  ---
+  duration_ms: 0.084336
+  type: 'test'
+  ...
+# Subtest: rejects privateKey
+ok 17 - rejects privateKey
+  ---
+  duration_ms: 0.056434
+  type: 'test'
+  ...
+# Subtest: rejects unknownAgent
+ok 18 - rejects unknownAgent
+  ---
+  duration_ms: 0.057933
+  type: 'test'
+  ...
+# Subtest: rejects unusedAgent
+ok 19 - rejects unusedAgent
+  ---
+  duration_ms: 0.07981
+  type: 'test'
+  ...
+# Subtest: rejects longNote
+ok 20 - rejects longNote
+  ---
+  duration_ms: 0.059093
+  type: 'test'
+  ...
+# Subtest: rejects malformed project null
+ok 21 - rejects malformed project null
+  ---
+  duration_ms: 0.086484
+  type: 'test'
+  ...
+# Subtest: rejects malformed project []
+ok 22 - rejects malformed project []
+  ---
+  duration_ms: 0.06926
+  type: 'test'
+  ...
+# Subtest: rejects malformed project 3
+ok 23 - rejects malformed project 3
+  ---
+  duration_ms: 0.046831
+  type: 'test'
+  ...
+# Subtest: rejects malformed project "project"
+ok 24 - rejects malformed project "project"
+  ---
+  duration_ms: 0.04423
+  type: 'test'
+  ...
+# Subtest: rejects malformed project {}
+ok 25 - rejects malformed project {}
+  ---
+  duration_ms: 0.047873
+  type: 'test'
+  ...
+# Subtest: editable brief roundtrip retains safety boundaries; injection cannot grant access
+ok 26 - editable brief roundtrip retains safety boundaries; injection cannot grant access
+  ---
+  duration_ms: 0.82143
+  type: 'test'
+  ...
+# Subtest: runtime owner boundary and no side effects
+ok 27 - runtime owner boundary and no side effects
+  ---
+  duration_ms: 0.452504
+  type: 'test'
+  ...
+# Subtest: runtime admin boundary and no side effects
+ok 28 - runtime admin boundary and no side effects
+  ---
+  duration_ms: 0.205318
+  type: 'test'
+  ...
+# Subtest: runtime manager boundary and no side effects
+ok 29 - runtime manager boundary and no side effects
+  ---
+  duration_ms: 0.192198
+  type: 'test'
+  ...
+# Subtest: runtime staff boundary and no side effects
+ok 30 - runtime staff boundary and no side effects
+  ---
+  duration_ms: 0.077574
+  type: 'test'
+  ...
+# Subtest: runtime viewer boundary and no side effects
+ok 31 - runtime viewer boundary and no side effects
+  ---
+  duration_ms: 0.067482
+  type: 'test'
+  ...
+# Subtest: runtime finance boundary and no side effects
+ok 32 - runtime finance boundary and no side effects
+  ---
+  duration_ms: 0.063324
+  type: 'test'
+  ...
+# Subtest: runtime hr boundary and no side effects
+ok 33 - runtime hr boundary and no side effects
+  ---
+  duration_ms: 0.066729
+  type: 'test'
+  ...
+# Subtest: runtime contractor boundary and no side effects
+ok 34 - runtime contractor boundary and no side effects
+  ---
+  duration_ms: 0.105918
+  type: 'test'
+  ...
+# Subtest: runtime capability is preview-only
+ok 35 - runtime capability is preview-only
+  ---
+  duration_ms: 0.136958
+  type: 'test'
+  ...
+# Subtest: client calls authenticated preview action and rejects insufficient role before calling
+ok 36 - client calls authenticated preview action and rejects insufficient role before calling
+  ---
+  duration_ms: 0.43675
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 37 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.34695
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 38 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.098786
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 39 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.078455
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 40 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.149322
+  type: 'test'
+  ...
+# Subtest: network errors are sanitised; not automatically retried
+ok 41 - network errors are sanitised; not automatically retried
+  ---
+  duration_ms: 0.267691
+  type: 'test'
+  ...
+# Subtest: HTTP owner role derived from profile, not payload
+ok 42 - HTTP owner role derived from profile, not payload
+  ---
+  duration_ms: 7.485145
+  type: 'test'
+  ...
+# Subtest: HTTP admin role derived from profile, not payload
+ok 43 - HTTP admin role derived from profile, not payload
+  ---
+  duration_ms: 1.14958
+  type: 'test'
+  ...
+# Subtest: HTTP manager role derived from profile, not payload
+ok 44 - HTTP manager role derived from profile, not payload
+  ---
+  duration_ms: 0.558569
+  type: 'test'
+  ...
+# Subtest: HTTP staff role derived from profile, not payload
+ok 45 - HTTP staff role derived from profile, not payload
+  ---
+  duration_ms: 0.526058
+  type: 'test'
+  ...
+# Subtest: HTTP viewer role derived from profile, not payload
+ok 46 - HTTP viewer role derived from profile, not payload
+  ---
+  duration_ms: 0.614266
+  type: 'test'
+  ...
+# Subtest: HTTP finance role derived from profile, not payload
+ok 47 - HTTP finance role derived from profile, not payload
+  ---
+  duration_ms: 0.420654
+  type: 'test'
+  ...
+# Subtest: HTTP hr role derived from profile, not payload
+ok 48 - HTTP hr role derived from profile, not payload
+  ---
+  duration_ms: 0.576089
+  type: 'test'
+  ...
+# Subtest: HTTP contractor role derived from profile, not payload
+ok 49 - HTTP contractor role derived from profile, not payload
+  ---
+  duration_ms: 0.455194
+  type: 'test'
+  ...
+# Subtest: HTTP denies invalid identity {"valid":false}
+ok 50 - HTTP denies invalid identity {"valid":false}
+  ---
+  duration_ms: 0.648344
+  type: 'test'
+  ...
+# Subtest: HTTP denies invalid identity {"tenant":null}
+ok 51 - HTTP denies invalid identity {"tenant":null}
+  ---
+  duration_ms: 0.289385
+  type: 'test'
+  ...
+# Subtest: HTTP missing token denies before database access
+ok 52 - HTTP missing token denies before database access
+  ---
+  duration_ms: 0.295013
+  type: 'test'
+  ...
+# Subtest: HTTP invalid requirement gives sanitised error without writes
+ok 53 - HTTP invalid requirement gives sanitised error without writes
+  ---
+  duration_ms: 0.620865
+  type: 'test'
+  ...
+# Subtest: actual chat dispatcher returns preview evidence, not created agents, to a synthetic model
+ok 54 - actual chat dispatcher returns preview evidence, not created agents, to a synthetic model
+  ---
+  duration_ms: 6.355255
+  type: 'test'
+  ...
+# (node:1553) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-registry-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: save persists immutable tenant version and audit without authority
+ok 55 - save persists immutable tenant version and audit without authority
+  ---
+  duration_ms: 1596.398229
+  type: 'test'
+  ...
+# Subtest: save replay, request collisions and expected versions are enforced
+ok 56 - save replay, request collisions and expected versions are enforced
+  ---
+  duration_ms: 47.192521
+  type: 'test'
+  ...
+# Subtest: actor 00000000-0000-4000-8000-000000000004 cannot modify/read another authorised scope
+ok 57 - actor 00000000-0000-4000-8000-000000000004 cannot modify/read another authorised scope
+  ---
+  duration_ms: 17.289036
+  type: 'test'
+  ...
+# Subtest: actor 00000000-0000-4000-8000-000000000005 cannot modify/read another authorised scope
+ok 58 - actor 00000000-0000-4000-8000-000000000005 cannot modify/read another authorised scope
+  ---
+  duration_ms: 16.041098
+  type: 'test'
+  ...
+# Subtest: anon cannot forge actor/evaluator or read private tables
+ok 59 - anon cannot forge actor/evaluator or read private tables
+  ---
+  duration_ms: 26.177422
+  type: 'test'
+  ...
+# Subtest: authenticated cannot forge actor/evaluator or read private tables
+ok 60 - authenticated cannot forge actor/evaluator or read private tables
+  ---
+  duration_ms: 23.466196
+  type: 'test'
+  ...
+# Subtest: service role cannot directly modify registry or enable operational evaluators
+ok 61 - service role cannot directly modify registry or enable operational evaluators
+  ---
+  duration_ms: 13.103056
+  type: 'test'
+  ...
+# Subtest: schema-level versions cannot be changed or deleted even by fixture owner
+ok 62 - schema-level versions cannot be changed or deleted even by fixture owner
+  ---
+  duration_ms: 13.29318
+  type: 'test'
+  ...
+# Subtest: contract runner records actual contract outcomes but cannot unlock review/publication
+ok 63 - contract runner records actual contract outcomes but cannot unlock review/publication
+  ---
+  duration_ms: 46.481545
+  type: 'test'
+  ...
+# Subtest: operational execution is refused without a reviewed evaluator and pinned model
+ok 64 - operational execution is refused without a reviewed evaluator and pinned model
+  ---
+  duration_ms: 18.916837
+  type: 'test'
+  ...
+# Subtest: evaluation report must contain every pinned case exactly once
+ok 65 - evaluation report must contain every pinned case exactly once
+  ---
+  duration_ms: 24.495588
+  type: 'test'
+  ...
+# Subtest: evaluation completion replay is exact and reports are immutable
+ok 66 - evaluation completion replay is exact and reports are immutable
+  ---
+  duration_ms: 20.143228
+  type: 'test'
+  ...
+# Subtest: failed/blocked operational runs remain evidence and never unlock publication
+ok 67 - failed/blocked operational runs remain evidence and never unlock publication
+  ---
+  duration_ms: 25.97482
+  type: 'test'
+  ...
+# Subtest: independent human review uses existing approval RPC and publication never hires
+ok 68 - independent human review uses existing approval RPC and publication never hires
+  ---
+  duration_ms: 40.740169
+  type: 'test'
+  ...
+# Subtest: generic approval self-approval cannot bypass registry review transition
+ok 69 - generic approval self-approval cannot bypass registry review transition
+  ---
+  duration_ms: 36.760574
+  type: 'test'
+  ...
+# Subtest: independent rejection is retained and blocks publishing
+ok 70 - independent rejection is retained and blocks publishing
+  ---
+  duration_ms: 34.63716
+  type: 'test'
+  ...
+# Subtest: changing instructions invalidates evaluation and approval, preserving old evidence
+ok 71 - changing instructions invalidates evaluation and approval, preserving old evidence
+  ---
+  duration_ms: 38.886582
+  type: 'test'
+  ...
+# Subtest: changing capabilities invalidates evaluation and approval, preserving old evidence
+ok 72 - changing capabilities invalidates evaluation and approval, preserving old evidence
+  ---
+  duration_ms: 37.474919
+  type: 'test'
+  ...
+# Subtest: changing model invalidates evaluation and approval, preserving old evidence
+ok 73 - changing model invalidates evaluation and approval, preserving old evidence
+  ---
+  duration_ms: 39.58433
+  type: 'test'
+  ...
+# Subtest: changing evaluationCases invalidates evaluation and approval, preserving old evidence
+ok 74 - changing evaluationCases invalidates evaluation and approval, preserving old evidence
+  ---
+  duration_ms: 41.568944
+  type: 'test'
+  ...
+# Subtest: late evaluation cannot restore eligibility of a revised definition
+ok 75 - late evaluation cannot restore eligibility of a revised definition
+  ---
+  duration_ms: 23.298932
+  type: 'test'
+  ...
+# Subtest: new evaluation replaces eligibility even if earlier one later passes
+ok 76 - new evaluation replaces eligibility even if earlier one later passes
+  ---
+  duration_ms: 24.150747
+  type: 'test'
+  ...
+# Subtest: revoked evaluator blocks completion/review and current evaluation flag
+ok 77 - revoked evaluator blocks completion/review and current evaluation flag
+  ---
+  duration_ms: 24.394164
+  type: 'test'
+  ...
+# Subtest: reviewer role revocation blocks publication
+ok 78 - reviewer role revocation blocks publication
+  ---
+  duration_ms: 33.885804
+  type: 'test'
+  ...
+# Subtest: expired approval cannot publish; suspension is immediate and needs fresh review
+ok 79 - expired approval cannot publish; suspension is immediate and needs fresh review
+  ---
+  duration_ms: 37.833755
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back version, pointer and replay receipt
+ok 80 - audit failure rolls back version, pointer and replay receipt
+  ---
+  duration_ms: 19.929992
+  type: 'test'
+  ...
+# Subtest: populated rollback refuses data loss; empty rollback/reapply preserves approvals
+ok 81 - populated rollback refuses data loss; empty rollback/reapply preserves approvals
+  ---
+  duration_ms: 18.522448
+  type: 'test'
+  ...
+# Subtest: empty rollback/reapply preserves control plane
+ok 82 - empty rollback/reapply preserves control plane
+  ---
+  duration_ms: 38.097089
+  type: 'test'
+  ...
+# Subtest: actual HTTP save/readback/evaluate cannot accept forged operational results
+ok 83 - actual HTTP save/readback/evaluate cannot accept forged operational results
+  ---
+  duration_ms: 40.110415
+  type: 'test'
+  ...
+# Subtest: actual HTTP boundary 401
+ok 84 - actual HTTP boundary 401
+  ---
+  duration_ms: 9.871339
+  type: 'test'
+  ...
+# Subtest: actual HTTP boundary 403
+ok 85 - actual HTTP boundary 403
+  ---
+  duration_ms: 10.010067
+  type: 'test'
+  ...
+# Subtest: release gate and unknown evaluation-completion endpoint fail before any mutation
+ok 86 - release gate and unknown evaluation-completion endpoint fail before any mutation
+  ---
+  duration_ms: 12.016267
+  type: 'test'
+  ...
+# Subtest: HTTP rejects invalid definitions before invoking SQL
+ok 87 - HTTP rejects invalid definitions before invoking SQL
+  ---
+  duration_ms: 13.696414
+  type: 'test'
+  ...
+# Subtest: stale same-version review cannot approve a replacement evaluation or approval
+ok 88 - stale same-version review cannot approve a replacement evaluation or approval
+  ---
+  duration_ms: 41.498922
+  type: 'test'
+  ...
+# Subtest: generic Review Centre route redirects registry decisions without approving unseen evidence
+ok 89 - generic Review Centre route redirects registry decisions without approving unseen evidence
+  ---
+  duration_ms: 28.909806
+  type: 'test'
+  ...
+# Subtest: actual HTTP independent publication review pins evaluation and approval identities
+ok 90 - actual HTTP independent publication review pins evaluation and approval identities
+  ---
+  duration_ms: 41.483858
+  type: 'test'
+  ...
+# Subtest: revocation and expiry invalidate effective publication, without rewriting retained history
+ok 91 - revocation and expiry invalidate effective publication, without rewriting retained history
+  ---
+  duration_ms: 43.03231
+  type: 'test'
+  ...
+# Subtest: expired evaluation run cannot accept a late operational-looking report
+ok 92 - expired evaluation run cannot accept a late operational-looking report
+  ---
+  duration_ms: 20.533759
+  type: 'test'
+  ...
+# Subtest: credential-like evaluator evidence is rejected before persistence
+ok 93 - credential-like evaluator evidence is rejected before persistence
+  ---
+  duration_ms: 28.135401
+  type: 'test'
+  ...
+# Subtest: blocked operational outcome is retained without treating it as a passing run
+ok 94 - blocked operational outcome is retained without treating it as a passing run
+  ---
+  duration_ms: 19.770213
+  type: 'test'
+  ...
+# Subtest: HTTP review notes cannot store credentials in audit evidence
+ok 95 - HTTP review notes cannot store credentials in audit evidence
+  ---
+  duration_ms: 15.659072
+  type: 'test'
+  ...
+# Subtest: saved definition and contract evidence survive local database close/reopen
+ok 96 - saved definition and contract evidence survive local database close/reopen
+  ---
+  duration_ms: 1204.287193
+  type: 'test'
+  ...
+# Subtest: save/readback/contract checks remain distinct from operational evaluation and hiring
+ok 97 - save/readback/contract checks remain distinct from operational evaluation and hiring
+  ---
+  duration_ms: 104.870677
+  type: 'test'
+  ...
+# Subtest: material edits lock review until saved, and new version does not inherit evaluation
+ok 98 - material edits lock review until saved, and new version does not inherit evaluation
+  ---
+  duration_ms: 62.877393
+  type: 'test'
+  ...
+# Subtest: copying old content creates a local draft, not old approval authority
+ok 99 - copying old content creates a local draft, not old approval authority
+  ---
+  duration_ms: 40.543126
+  type: 'test'
+  ...
+# Subtest: invalid secret-like instructions never reach transport
+ok 100 - invalid secret-like instructions never reach transport
+  ---
+  duration_ms: 23.789495
+  type: 'test'
+  ...
+# Subtest: duplicate pending saves lock and late scope responses are discarded
+ok 101 - duplicate pending saves lock and late scope responses are discarded
+  ---
+  duration_ms: 26.751498
+  type: 'test'
+  ...
+# Subtest: role downgrade removes definition/evidence controls and clears edits
+ok 102 - role downgrade removes definition/evidence controls and clears edits
+  ---
+  duration_ms: 22.646785
+  type: 'test'
+  ...
+# Subtest: uncertain save retry uses exact request identity, not a second creation
+ok 103 - uncertain save retry uses exact request identity, not a second creation
+  ---
+  duration_ms: 24.955818
+  type: 'test'
+  ...
+# Subtest: failed release/save never displays success or private diagnostic
+ok 104 - failed release/save never displays success or private diagnostic
+  ---
+  duration_ms: 15.720714
+  type: 'test'
+  ...
+# Subtest: suspension needs explicit note and second confirmation
+ok 105 - suspension needs explicit note and second confirmation
+  ---
+  duration_ms: 44.884665
+  type: 'test'
+  ...
+# Subtest: business-advisor derives a valid definition from the existing single catalogue
+ok 106 - business-advisor derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 3.737464
+  type: 'test'
+  ...
+# Subtest: inventory-analyst derives a valid definition from the existing single catalogue
+ok 107 - inventory-analyst derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.554977
+  type: 'test'
+  ...
+# Subtest: dispatch-planner derives a valid definition from the existing single catalogue
+ok 108 - dispatch-planner derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.321156
+  type: 'test'
+  ...
+# Subtest: customer-support derives a valid definition from the existing single catalogue
+ok 109 - customer-support derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.329894
+  type: 'test'
+  ...
+# Subtest: sales-researcher derives a valid definition from the existing single catalogue
+ok 110 - sales-researcher derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.294583
+  type: 'test'
+  ...
+# Subtest: finance-analyst derives a valid definition from the existing single catalogue
+ok 111 - finance-analyst derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 1.007142
+  type: 'test'
+  ...
+# Subtest: admissions-assistant derives a valid definition from the existing single catalogue
+ok 112 - admissions-assistant derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.344619
+  type: 'test'
+  ...
+# Subtest: software-coordinator derives a valid definition from the existing single catalogue
+ok 113 - software-coordinator derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.421184
+  type: 'test'
+  ...
+# Subtest: software-research derives a valid definition from the existing single catalogue
+ok 114 - software-research derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.501241
+  type: 'test'
+  ...
+# Subtest: software-design derives a valid definition from the existing single catalogue
+ok 115 - software-design derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.444121
+  type: 'test'
+  ...
+# Subtest: software-frontend derives a valid definition from the existing single catalogue
+ok 116 - software-frontend derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.307228
+  type: 'test'
+  ...
+# Subtest: software-backend derives a valid definition from the existing single catalogue
+ok 117 - software-backend derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.259666
+  type: 'test'
+  ...
+# Subtest: software-database derives a valid definition from the existing single catalogue
+ok 118 - software-database derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.228343
+  type: 'test'
+  ...
+# Subtest: software-qa derives a valid definition from the existing single catalogue
+ok 119 - software-qa derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.259408
+  type: 'test'
+  ...
+# Subtest: software-security derives a valid definition from the existing single catalogue
+ok 120 - software-security derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.235658
+  type: 'test'
+  ...
+# Subtest: software-release derives a valid definition from the existing single catalogue
+ok 121 - software-release derives a valid definition from the existing single catalogue
+  ---
+  duration_ms: 0.235074
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 1
+ok 122 - strict definition rejects invalid case 1
+  ---
+  duration_ms: 0.33744
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 2
+ok 123 - strict definition rejects invalid case 2
+  ---
+  duration_ms: 0.741284
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 3
+ok 124 - strict definition rejects invalid case 3
+  ---
+  duration_ms: 0.202181
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 4
+ok 125 - strict definition rejects invalid case 4
+  ---
+  duration_ms: 0.237992
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 5
+ok 126 - strict definition rejects invalid case 5
+  ---
+  duration_ms: 0.164314
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 6
+ok 127 - strict definition rejects invalid case 6
+  ---
+  duration_ms: 0.157511
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 7
+ok 128 - strict definition rejects invalid case 7
+  ---
+  duration_ms: 0.147027
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 8
+ok 129 - strict definition rejects invalid case 8
+  ---
+  duration_ms: 0.14235
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 9
+ok 130 - strict definition rejects invalid case 9
+  ---
+  duration_ms: 0.244713
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 10
+ok 131 - strict definition rejects invalid case 10
+  ---
+  duration_ms: 0.169783
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 11
+ok 132 - strict definition rejects invalid case 11
+  ---
+  duration_ms: 0.168967
+  type: 'test'
+  ...
+# Subtest: strict definition rejects invalid case 12
+ok 133 - strict definition rejects invalid case 12
+  ---
+  duration_ms: 0.157186
+  type: 'test'
+  ...
+# Subtest: definition rejects weakened/duplicate evaluation coverage
+ok 134 - definition rejects weakened/duplicate evaluation coverage
+  ---
+  duration_ms: 0.714271
+  type: 'test'
+  ...
+# Subtest: contract runner executes checks but never claims operational coverage or hiring
+ok 135 - contract runner executes checks but never claims operational coverage or hiring
+  ---
+  duration_ms: 0.49186
+  type: 'test'
+  ...
+# Subtest: client confirms canonical saved definition and contract evidence
+ok 136 - client confirms canonical saved definition and contract evidence
+  ---
+  duration_ms: 2.233399
+  type: 'test'
+  ...
+# Subtest: client invalid definition/role fails before transport
+ok 137 - client invalid definition/role fails before transport
+  ---
+  duration_ms: 0.494303
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 138 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 0.402471
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 139 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 0.553892
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 140 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 0.505023
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 141 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 1.131083
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 142 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 0.418825
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 143 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 1.331969
+  type: 'test'
+  ...
+# Subtest: client refuses tampered/incomplete save/read-back
+ok 144 - client refuses tampered/incomplete save/read-back
+  ---
+  duration_ms: 0.4856
+  type: 'test'
+  ...
+# Subtest: release/database failures have no local success fallback or private diagnostics
+ok 145 - release/database failures have no local success fallback or private diagnostics
+  ---
+  duration_ms: 0.629183
+  type: 'test'
+  ...
+# Subtest: replaying save cannot silently overwrite a newer revision
+ok 146 - replaying save cannot silently overwrite a newer revision
+  ---
+  duration_ms: 1.439465
+  type: 'test'
+  ...
+# (node:1582) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: retail gets distinct unactivated module specification without mandatory departments
+ok 147 - retail gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 4.188828
+  type: 'test'
+  ...
+# Subtest: logistics gets distinct unactivated module specification without mandatory departments
+ok 148 - logistics gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.609866
+  type: 'test'
+  ...
+# Subtest: education gets distinct unactivated module specification without mandatory departments
+ok 149 - education gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.358466
+  type: 'test'
+  ...
+# Subtest: services gets distinct unactivated module specification without mandatory departments
+ok 150 - services gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.217271
+  type: 'test'
+  ...
+# Subtest: software gets distinct unactivated module specification without mandatory departments
+ok 151 - software gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.293231
+  type: 'test'
+  ...
+# Subtest: general gets distinct unactivated module specification without mandatory departments
+ok 152 - general gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.392465
+  type: 'test'
+  ...
+# Subtest: retail, education and logistics do not share one imposed menu
+ok 153 - retail, education and logistics do not share one imposed menu
+  ---
+  duration_ms: 0.682883
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"name":""}
+ok 154 - invalid DNA {"name":""}
+  ---
+  duration_ms: 0.284288
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"industry":"unknown"}
+ok 155 - invalid DNA {"industry":"unknown"}
+  ---
+  duration_ms: 0.251986
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"goals":[""]}
+ok 156 - invalid DNA {"goals":[""]}
+  ---
+  duration_ms: 0.30615
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"goals":["x","x","x","x","x","x","x","x","x","x","x","x","x"]}
+ok 157 - invalid DNA {"goals":["x","x","x","x","x","x","x","x","x","x","x","x","x"]}
+  ---
+  duration_ms: 0.287848
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"constraints":"none"}
+ok 158 - invalid DNA {"constraints":"none"}
+  ---
+  duration_ms: 0.130118
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"description":"ghp_abcdefghijklmnopqrstuvwxyz"}
+ok 159 - invalid DNA {"description":"ghp_abcdefghijklmnopqrstuvwxyz"}
+  ---
+  duration_ms: 0.072153
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"geography":123}
+ok 160 - invalid DNA {"geography":123}
+  ---
+  duration_ms: 0.113761
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"role":"owner"}
+ok 161 - invalid DNA {"role":"owner"}
+  ---
+  duration_ms: 0.082441
+  type: 'test'
+  ...
+# Subtest: catalogue has distinct bounded draft definitions, not fictional 400 evaluated workers
+ok 162 - catalogue has distinct bounded draft definitions, not fictional 400 evaluated workers
+  ---
+  duration_ms: 0.309999
+  type: 'test'
+  ...
+# Subtest: recommendations exclude existing definitions; never hire or estimate invented usage
+ok 163 - recommendations exclude existing definitions; never hire or estimate invented usage
+  ---
+  duration_ms: 0.288503
+  type: 'test'
+  ...
+# Subtest: active-only additive quote excludes all waiting states and deduplicates exact events
+ok 164 - active-only additive quote excludes all waiting states and deduplicates exact events
+  ---
+  duration_ms: 1.495175
+  type: 'test'
+  ...
+# Subtest: parallel employees each contribute active time, not a single wall-clock hour
+ok 165 - parallel employees each contribute active time, not a single wall-clock hour
+  ---
+  duration_ms: 0.186469
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 166 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.100342
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 167 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.201355
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 168 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.109887
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 169 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.05708
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce owner boundary without I/O
+ok 170 - new runtime tools enforce owner boundary without I/O
+  ---
+  duration_ms: 0.493353
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce admin boundary without I/O
+ok 171 - new runtime tools enforce admin boundary without I/O
+  ---
+  duration_ms: 0.160104
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce manager boundary without I/O
+ok 172 - new runtime tools enforce manager boundary without I/O
+  ---
+  duration_ms: 0.2781
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce staff boundary without I/O
+ok 173 - new runtime tools enforce staff boundary without I/O
+  ---
+  duration_ms: 0.145549
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce viewer boundary without I/O
+ok 174 - new runtime tools enforce viewer boundary without I/O
+  ---
+  duration_ms: 0.109906
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce finance boundary without I/O
+ok 175 - new runtime tools enforce finance boundary without I/O
+  ---
+  duration_ms: 0.126402
+  type: 'test'
+  ...
+# Subtest: missing credentials never send provider requests
+ok 176 - missing credentials never send provider requests
+  ---
+  duration_ms: 0.446714
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 177 - invalid research input blocks network
+  ---
+  duration_ms: 0.083317
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 178 - invalid research input blocks network
+  ---
+  duration_ms: 0.066524
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 179 - invalid research input blocks network
+  ---
+  duration_ms: 0.06994
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 180 - invalid research input blocks network
+  ---
+  duration_ms: 0.077468
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 181 - invalid research input blocks network
+  ---
+  duration_ms: 0.16502
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 182 - invalid research input blocks network
+  ---
+  duration_ms: 0.082126
+  type: 'test'
+  ...
+# Subtest: provider 401 is sanitised and not automatically retried
+ok 183 - provider 401 is sanitised and not automatically retried
+  ---
+  duration_ms: 18.890213
+  type: 'test'
+  ...
+# Subtest: provider 403 is sanitised and not automatically retried
+ok 184 - provider 403 is sanitised and not automatically retried
+  ---
+  duration_ms: 0.267117
+  type: 'test'
+  ...
+# Subtest: provider 429 is sanitised and not automatically retried
+ok 185 - provider 429 is sanitised and not automatically retried
+  ---
+  duration_ms: 0.315889
+  type: 'test'
+  ...
+# Subtest: provider 500 is sanitised and not automatically retried
+ok 186 - provider 500 is sanitised and not automatically retried
+  ---
+  duration_ms: 0.384671
+  type: 'test'
+  ...
+# Subtest: results retain provenance and reject unsafe/secret links; snippets are untrusted
+ok 187 - results retain provenance and reject unsafe/secret links; snippets are untrusted
+  ---
+  duration_ms: 2.628451
+  type: 'test'
+  ...
+# Subtest: provider body quota_exhausted preserves truthful outcome
+ok 188 - provider body quota_exhausted preserves truthful outcome
+  ---
+  duration_ms: 0.513953
+  type: 'test'
+  ...
+# Subtest: provider body invalid_credentials preserves truthful outcome
+ok 189 - provider body invalid_credentials preserves truthful outcome
+  ---
+  duration_ms: 0.345748
+  type: 'test'
+  ...
+# Subtest: provider body invalid_response preserves truthful outcome
+ok 190 - provider body invalid_response preserves truthful outcome
+  ---
+  duration_ms: 0.435774
+  type: 'test'
+  ...
+# Subtest: provider body empty preserves truthful outcome
+ok 191 - provider body empty preserves truthful outcome
+  ---
+  duration_ms: 0.660569
+  type: 'test'
+  ...
+# Subtest: deadline bounds a stalled provider without retries
+ok 192 - deadline bounds a stalled provider without retries
+  ---
+  duration_ms: 29.341487
+  type: 'test'
+  ...
+# Subtest: network exception never exposes request URL or credential
+ok 193 - network exception never exposes request URL or credential
+  ---
+  duration_ms: 2.860604
+  type: 'test'
+  ...
+# Subtest: oversized provider body rejected
+ok 194 - oversized provider body rejected
+  ---
+  duration_ms: 1.59041
+  type: 'test'
+  ...
+# Subtest: client denies nonadmins and does not trust arbitrary successful save receipts
+ok 195 - client denies nonadmins and does not trust arbitrary successful save receipts
+  ---
+  duration_ms: 0.908624
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 196 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.139659
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 197 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.05455
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 198 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.056365
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 199 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.055024
+  type: 'test'
+  ...
+# Subtest: owner-queued: expected synthetic observation is consistent, not accepted
+ok 200 - owner-queued: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 10.180858
+  type: 'test'
+  ...
+# Subtest: admin-retry-wait: expected synthetic observation is consistent, not accepted
+ok 201 - admin-retry-wait: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.469222
+  type: 'test'
+  ...
+# Subtest: manager-denied: expected synthetic observation is consistent, not accepted
+ok 202 - manager-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.291063
+  type: 'test'
+  ...
+# Subtest: staff-denied: expected synthetic observation is consistent, not accepted
+ok 203 - staff-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.180413
+  type: 'test'
+  ...
+# Subtest: viewer-denied: expected synthetic observation is consistent, not accepted
+ok 204 - viewer-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.201688
+  type: 'test'
+  ...
+# Subtest: finance-denied: expected synthetic observation is consistent, not accepted
+ok 205 - finance-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.19898
+  type: 'test'
+  ...
+# Subtest: hr-denied: expected synthetic observation is consistent, not accepted
+ok 206 - hr-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.196542
+  type: 'test'
+  ...
+# Subtest: contractor-denied: expected synthetic observation is consistent, not accepted
+ok 207 - contractor-denied: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.254802
+  type: 'test'
+  ...
+# Subtest: outside-tenant: expected synthetic observation is consistent, not accepted
+ok 208 - outside-tenant: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.408811
+  type: 'test'
+  ...
+# Subtest: missing-session: expected synthetic observation is consistent, not accepted
+ok 209 - missing-session: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.379884
+  type: 'test'
+  ...
+# Subtest: stale-version: expected synthetic observation is consistent, not accepted
+ok 210 - stale-version: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.253946
+  type: 'test'
+  ...
+# Subtest: audit-rollback: expected synthetic observation is consistent, not accepted
+ok 211 - audit-rollback: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.15264
+  type: 'test'
+  ...
+# Subtest: run-rollback: expected synthetic observation is consistent, not accepted
+ok 212 - run-rollback: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.127735
+  type: 'test'
+  ...
+# Subtest: duplicate-replay: expected synthetic observation is consistent, not accepted
+ok 213 - duplicate-replay: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.172824
+  type: 'test'
+  ...
+# Subtest: running-job: expected synthetic observation is consistent, not accepted
+ok 214 - running-job: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.14993
+  type: 'test'
+  ...
+# Subtest: terminal-run: expected synthetic observation is consistent, not accepted
+ok 215 - terminal-run: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.11961
+  type: 'test'
+  ...
+# Subtest: legacy-client-checked-server: expected synthetic observation is consistent, not accepted
+ok 216 - legacy-client-checked-server: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.113372
+  type: 'test'
+  ...
+# Subtest: checked-client-legacy-server: expected synthetic observation is consistent, not accepted
+ok 217 - checked-client-legacy-server: expected synthetic observation is consistent, not accepted
+  ---
+  duration_ms: 0.24507
+  type: 'test'
+  ...
+# Subtest: record assertion rejects empty fixture
+ok 218 - record assertion rejects empty fixture
+  ---
+  duration_ms: 0.318304
+  type: 'test'
+  ...
+# Subtest: record assertion rejects missing table
+ok 219 - record assertion rejects missing table
+  ---
+  duration_ms: 0.135421
+  type: 'test'
+  ...
+# Subtest: record assertion rejects duplicate identity
+ok 220 - record assertion rejects duplicate identity
+  ---
+  duration_ms: 0.120193
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong case
+ok 221 - record assertion rejects wrong case
+  ---
+  duration_ms: 0.093036
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong role
+ok 222 - record assertion rejects wrong role
+  ---
+  duration_ms: 0.082238
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong actor
+ok 223 - record assertion rejects wrong actor
+  ---
+  duration_ms: 0.267592
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong tenant
+ok 224 - record assertion rejects wrong tenant
+  ---
+  duration_ms: 0.124866
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong action
+ok 225 - record assertion rejects wrong action
+  ---
+  duration_ms: 0.09646
+  type: 'test'
+  ...
+# Subtest: record assertion rejects wrong HTTP status
+ok 226 - record assertion rejects wrong HTTP status
+  ---
+  duration_ms: 0.183396
+  type: 'test'
+  ...
+# Subtest: record assertion rejects stale success request
+ok 227 - record assertion rejects stale success request
+  ---
+  duration_ms: 0.208605
+  type: 'test'
+  ...
+# Subtest: record assertion rejects missing run
+ok 228 - record assertion rejects missing run
+  ---
+  duration_ms: 0.255383
+  type: 'test'
+  ...
+# Subtest: record assertion rejects partial run write
+ok 229 - record assertion rejects partial run write
+  ---
+  duration_ms: 0.176324
+  type: 'test'
+  ...
+# Subtest: record assertion rejects no version change
+ok 230 - record assertion rejects no version change
+  ---
+  duration_ms: 0.156253
+  type: 'test'
+  ...
+# Subtest: record assertion rejects erased prior results
+ok 231 - record assertion rejects erased prior results
+  ---
+  duration_ms: 0.175766
+  type: 'test'
+  ...
+# Subtest: record assertion rejects erased checkpoint
+ok 232 - record assertion rejects erased checkpoint
+  ---
+  duration_ms: 0.165122
+  type: 'test'
+  ...
+# Subtest: record assertion rejects changed queue identity
+ok 233 - record assertion rejects changed queue identity
+  ---
+  duration_ms: 0.222112
+  type: 'test'
+  ...
+# Subtest: record assertion rejects erased completed step
+ok 234 - record assertion rejects erased completed step
+  ---
+  duration_ms: 0.282498
+  type: 'test'
+  ...
+# Subtest: record assertion rejects unrelated run changed
+ok 235 - record assertion rejects unrelated run changed
+  ---
+  duration_ms: 0.204774
+  type: 'test'
+  ...
+# Subtest: record assertion rejects audit absent
+ok 236 - record assertion rejects audit absent
+  ---
+  duration_ms: 0.186535
+  type: 'test'
+  ...
+# Subtest: record assertion rejects duplicate audit
+ok 237 - record assertion rejects duplicate audit
+  ---
+  duration_ms: 1.154731
+  type: 'test'
+  ...
+# Subtest: record assertion rejects audit wrong tenant
+ok 238 - record assertion rejects audit wrong tenant
+  ---
+  duration_ms: 0.244053
+  type: 'test'
+  ...
+# Subtest: record assertion rejects audit wrong actor
+ok 239 - record assertion rejects audit wrong actor
+  ---
+  duration_ms: 0.189766
+  type: 'test'
+  ...
+# Subtest: record assertion rejects receipt missing audit ID
+ok 240 - record assertion rejects receipt missing audit ID
+  ---
+  duration_ms: 0.24124
+  type: 'test'
+  ...
+# Subtest: record assertion rejects false undo claim
+ok 241 - record assertion rejects false undo claim
+  ---
+  duration_ms: 0.219344
+  type: 'test'
+  ...
+# Subtest: record assertion rejects active lease
+ok 242 - record assertion rejects active lease
+  ---
+  duration_ms: 0.122074
+  type: 'test'
+  ...
+# Subtest: record assertion rejects audit version mismatch
+ok 243 - record assertion rejects audit version mismatch
+  ---
+  duration_ms: 0.174704
+  type: 'test'
+  ...
+# Subtest: record assertion rejects false previous state
+ok 244 - record assertion rejects false previous state
+  ---
+  duration_ms: 0.182507
+  type: 'test'
+  ...
+# Subtest: record assertion rejects changed completion time
+ok 245 - record assertion rejects changed completion time
+  ---
+  duration_ms: 0.147205
+  type: 'test'
+  ...
+# Subtest: record assertion rejects receipt wrong run
+ok 246 - record assertion rejects receipt wrong run
+  ---
+  duration_ms: 0.178545
+  type: 'test'
+  ...
+# Subtest: record assertion rejects receipt wrong job
+ok 247 - record assertion rejects receipt wrong job
+  ---
+  duration_ms: 0.206787
+  type: 'test'
+  ...
+# Subtest: manager-denied: denial cannot hide a persisted mutation
+ok 248 - manager-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.155869
+  type: 'test'
+  ...
+# Subtest: staff-denied: denial cannot hide a persisted mutation
+ok 249 - staff-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.110307
+  type: 'test'
+  ...
+# Subtest: viewer-denied: denial cannot hide a persisted mutation
+ok 250 - viewer-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.099095
+  type: 'test'
+  ...
+# Subtest: finance-denied: denial cannot hide a persisted mutation
+ok 251 - finance-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.093581
+  type: 'test'
+  ...
+# Subtest: hr-denied: denial cannot hide a persisted mutation
+ok 252 - hr-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.092108
+  type: 'test'
+  ...
+# Subtest: contractor-denied: denial cannot hide a persisted mutation
+ok 253 - contractor-denied: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.111301
+  type: 'test'
+  ...
+# Subtest: outside-tenant: denial cannot hide a persisted mutation
+ok 254 - outside-tenant: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.165317
+  type: 'test'
+  ...
+# Subtest: missing-session: denial cannot hide a persisted mutation
+ok 255 - missing-session: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.117774
+  type: 'test'
+  ...
+# Subtest: stale-version: denial cannot hide a persisted mutation
+ok 256 - stale-version: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.127584
+  type: 'test'
+  ...
+# Subtest: audit-rollback: denial cannot hide a persisted mutation
+ok 257 - audit-rollback: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.137852
+  type: 'test'
+  ...
+# Subtest: run-rollback: denial cannot hide a persisted mutation
+ok 258 - run-rollback: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.153714
+  type: 'test'
+  ...
+# Subtest: duplicate-replay: denial cannot hide a persisted mutation
+ok 259 - duplicate-replay: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.139119
+  type: 'test'
+  ...
+# Subtest: running-job: denial cannot hide a persisted mutation
+ok 260 - running-job: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.186391
+  type: 'test'
+  ...
+# Subtest: terminal-run: denial cannot hide a persisted mutation
+ok 261 - terminal-run: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.116261
+  type: 'test'
+  ...
+# Subtest: legacy-client-checked-server: denial cannot hide a persisted mutation
+ok 262 - legacy-client-checked-server: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.113514
+  type: 'test'
+  ...
+# Subtest: checked-client-legacy-server: denial cannot hide a persisted mutation
+ok 263 - checked-client-legacy-server: denial cannot hide a persisted mutation
+  ---
+  duration_ms: 0.181077
+  type: 'test'
+  ...
+# Subtest: stale case requires a genuinely different microsecond version
+ok 264 - stale case requires a genuinely different microsecond version
+  ---
+  duration_ms: 0.206005
+  type: 'test'
+  ...
+# Subtest: same instant in a different offset is not a stale version
+ok 265 - same instant in a different offset is not a stale version
+  ---
+  duration_ms: 0.127048
+  type: 'test'
+  ...
+# Subtest: rollback requires observed SQLSTATE, not an arbitrary 500
+ok 266 - rollback requires observed SQLSTATE, not an arbitrary 500
+  ---
+  duration_ms: 0.207331
+  type: 'test'
+  ...
+# Subtest: duplicate replay must include the prior cancellation audit
+ok 267 - duplicate replay must include the prior cancellation audit
+  ---
+  duration_ms: 0.158118
+  type: 'test'
+  ...
+# Subtest: new plans have every case and gate not-run, never a vacuous pass
+ok 268 - new plans have every case and gate not-run, never a vacuous pass
+  ---
+  duration_ms: 0.774933
+  type: 'test'
+  ...
+# Subtest: all-consistent local simulation remains blocked and cannot grant live acceptance
+ok 269 - all-consistent local simulation remains blocked and cannot grant live acceptance
+  ---
+  duration_ms: 8.621848
+  type: 'test'
+  ...
+# Subtest: staging-labelled files at most become ready for independent review, never approval
+ok 270 - staging-labelled files at most become ready for independent review, never approval
+  ---
+  duration_ms: 8.110621
+  type: 'test'
+  ...
+# Subtest: forbidden staging target thklwiybjuhrjqrrxyid
+ok 271 - forbidden staging target thklwiybjuhrjqrrxyid
+  ---
+  duration_ms: 0.309068
+  type: 'test'
+  ...
+# Subtest: forbidden staging target mcdcwdfdpqzrzsixmrcg
+ok 272 - forbidden staging target mcdcwdfdpqzrzsixmrcg
+  ---
+  duration_ms: 0.211694
+  type: 'test'
+  ...
+# Subtest: forbidden staging target https://example.com
+ok 273 - forbidden staging target https://example.com
+  ---
+  duration_ms: 0.11726
+  type: 'test'
+  ...
+# Subtest: forbidden staging target --flag
+ok 274 - forbidden staging target --flag
+  ---
+  duration_ms: 0.092936
+  type: 'test'
+  ...
+# Subtest: forbidden staging target null
+ok 275 - forbidden staging target null
+  ---
+  duration_ms: 0.122124
+  type: 'test'
+  ...
+# Subtest: cases: rejects missing coverage
+ok 276 - cases: rejects missing coverage
+  ---
+  duration_ms: 0.232982
+  type: 'test'
+  ...
+# Subtest: cases: rejects duplicate coverage
+ok 277 - cases: rejects duplicate coverage
+  ---
+  duration_ms: 0.122255
+  type: 'test'
+  ...
+# Subtest: cases: rejects unknown coverage
+ok 278 - cases: rejects unknown coverage
+  ---
+  duration_ms: 0.106231
+  type: 'test'
+  ...
+# Subtest: reviewGates: rejects missing coverage
+ok 279 - reviewGates: rejects missing coverage
+  ---
+  duration_ms: 0.181811
+  type: 'test'
+  ...
+# Subtest: reviewGates: rejects duplicate coverage
+ok 280 - reviewGates: rejects duplicate coverage
+  ---
+  duration_ms: 0.123123
+  type: 'test'
+  ...
+# Subtest: reviewGates: rejects unknown coverage
+ok 281 - reviewGates: rejects unknown coverage
+  ---
+  duration_ms: 0.145184
+  type: 'test'
+  ...
+# Subtest: bundle refuses untrusted pass flag
+ok 282 - bundle refuses untrusted pass flag
+  ---
+  duration_ms: 1.529077
+  type: 'test'
+  ...
+# Subtest: bundle refuses hash tampering
+ok 283 - bundle refuses hash tampering
+  ---
+  duration_ms: 4.786374
+  type: 'test'
+  ...
+# Subtest: bundle refuses missing supporting log
+ok 284 - bundle refuses missing supporting log
+  ---
+  duration_ms: 5.280608
+  type: 'test'
+  ...
+# Subtest: bundle refuses mislabeled source
+ok 285 - bundle refuses mislabeled source
+  ---
+  duration_ms: 5.559504
+  type: 'test'
+  ...
+# Subtest: bundle refuses local evidence relabelled staging
+ok 286 - bundle refuses local evidence relabelled staging
+  ---
+  duration_ms: 2.969819
+  type: 'test'
+  ...
+# Subtest: bundle refuses recorded failure
+ok 287 - bundle refuses recorded failure
+  ---
+  duration_ms: 5.738608
+  type: 'test'
+  ...
+# Subtest: bundle refuses manual gate failure
+ok 288 - bundle refuses manual gate failure
+  ---
+  duration_ms: 4.292204
+  type: 'test'
+  ...
+# Subtest: bundle refuses manual gate missing evidence
+ok 289 - bundle refuses manual gate missing evidence
+  ---
+  duration_ms: 8.337644
+  type: 'test'
+  ...
+# Subtest: bundle refuses path traversal
+ok 290 - bundle refuses path traversal
+  ---
+  duration_ms: 4.71885
+  type: 'test'
+  ...
+# Subtest: bundle refuses absolute path
+ok 291 - bundle refuses absolute path
+  ---
+  duration_ms: 3.903642
+  type: 'test'
+  ...
+# Subtest: bundle refuses symlink leaf
+ok 292 - bundle refuses symlink leaf
+  ---
+  duration_ms: 5.433171
+  type: 'test'
+  ...
+# Subtest: bundle refuses symlink parent
+ok 293 - bundle refuses symlink parent
+  ---
+  duration_ms: 4.271208
+  type: 'test'
+  ...
+# Subtest: bundle refuses oversized evidence
+ok 294 - bundle refuses oversized evidence
+  ---
+  duration_ms: 6.61419
+  type: 'test'
+  ...
+# Subtest: bundle refuses malformed JSON
+ok 295 - bundle refuses malformed JSON
+  ---
+  duration_ms: 4.326147
+  type: 'test'
+  ...
+# Subtest: source commit/hash drift and dirty source cannot be cleared by a manifest claim
+ok 296 - source commit/hash drift and dirty source cannot be cleared by a manifest claim
+  ---
+  duration_ms: 12.405599
+  type: 'test'
+  ...
+# Subtest: diagnostics do not echo raw observation secrets or assertion differences
+ok 297 - diagnostics do not echo raw observation secrets or assertion differences
+  ---
+  duration_ms: 4.52984
+  type: 'test'
+  ...
+# Subtest: actual source fingerprint covers SQL, rollback, server, client and evaluator
+ok 298 - actual source fingerprint covers SQL, rollback, server, client and evaluator
+  ---
+  duration_ms: 0.72724
+  type: 'test'
+  ...
+# Subtest: CLI refuses [] without remote APIs
+ok 299 - CLI refuses [] without remote APIs
+  ---
+  duration_ms: 39.013286
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--live","x"] without remote APIs
+ok 300 - CLI refuses ["--live","x"] without remote APIs
+  ---
+  duration_ms: 38.828395
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--deploy","x"] without remote APIs
+ok 301 - CLI refuses ["--deploy","x"] without remote APIs
+  ---
+  duration_ms: 35.620412
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--check","../escape"] without remote APIs
+ok 302 - CLI refuses ["--check","../escape"] without remote APIs
+  ---
+  duration_ms: 35.568092
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--init",".git/new"] without remote APIs
+ok 303 - CLI refuses ["--init",".git/new"] without remote APIs
+  ---
+  duration_ms: 42.501255
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--init","."] without remote APIs
+ok 304 - CLI refuses ["--init","."] without remote APIs
+  ---
+  duration_ms: 36.466755
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--check","missing"] without remote APIs
+ok 305 - CLI refuses ["--check","missing"] without remote APIs
+  ---
+  duration_ms: 36.682267
+  type: 'test'
+  ...
+# Subtest: CLI refuses ["--init"] without remote APIs
+ok 306 - CLI refuses ["--init"] without remote APIs
+  ---
+  duration_ms: 41.254232
+  type: 'test'
+  ...
+# Subtest: actual CLI creates pending plan, refuses overwrite, and checks it as blocked
+ok 307 - actual CLI creates pending plan, refuses overwrite, and checks it as blocked
+  ---
+  duration_ms: 148.091849
+  type: 'test'
+  ...
+# Subtest: harness contains no network, credential or deployment API
+ok 308 - harness contains no network, credential or deployment API
+  ---
+  duration_ms: 0.37468
+  type: 'test'
+  ...
+# Subtest: invalid timestamp 2026-02-31T12:00:00Z is rejected
+ok 309 - invalid timestamp 2026-02-31T12:00:00Z is rejected
+  ---
+  duration_ms: 0.14661
+  type: 'test'
+  ...
+# Subtest: invalid timestamp 2026-11-16T25:00:00Z is rejected
+ok 310 - invalid timestamp 2026-11-16T25:00:00Z is rejected
+  ---
+  duration_ms: 0.057916
+  type: 'test'
+  ...
+# Subtest: invalid timestamp 2026-11-16T12:00:00.1234567Z is rejected
+ok 311 - invalid timestamp 2026-11-16T12:00:00.1234567Z is rejected
+  ---
+  duration_ms: 0.046873
+  type: 'test'
+  ...
+# Subtest: invalid timestamp yesterday is rejected
+ok 312 - invalid timestamp yesterday is rejected
+  ---
+  duration_ms: 0.048074
+  type: 'test'
+  ...
+# (node:1683) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-capability-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owner: reported callable tools match actual server definitions without writes
+ok 313 - owner: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 2.250979
+  type: 'test'
+  ...
+# Subtest: admin: reported callable tools match actual server definitions without writes
+ok 314 - admin: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.97385
+  type: 'test'
+  ...
+# Subtest: manager: reported callable tools match actual server definitions without writes
+ok 315 - manager: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.165725
+  type: 'test'
+  ...
+# Subtest: staff: reported callable tools match actual server definitions without writes
+ok 316 - staff: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.18136
+  type: 'test'
+  ...
+# Subtest: contractor: reported callable tools match actual server definitions without writes
+ok 317 - contractor: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.207248
+  type: 'test'
+  ...
+# Subtest: viewer: reported callable tools match actual server definitions without writes
+ok 318 - viewer: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 2.327301
+  type: 'test'
+  ...
+# Subtest: finance: reported callable tools match actual server definitions without writes
+ok 319 - finance: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.287588
+  type: 'test'
+  ...
+# Subtest: hr: reported callable tools match actual server definitions without writes
+ok 320 - hr: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.120972
+  type: 'test'
+  ...
+# Subtest: teacher: inventory remains role restricted
+ok 321 - teacher: inventory remains role restricted
+  ---
+  duration_ms: 0.660501
+  type: 'test'
+  ...
+# Subtest: student: inventory remains role restricted
+ok 322 - student: inventory remains role restricted
+  ---
+  duration_ms: 0.371987
+  type: 'test'
+  ...
+# Subtest: unknown: inventory remains role restricted
+ok 323 - unknown: inventory remains role restricted
+  ---
+  duration_ms: 0.139879
+  type: 'test'
+  ...
+# Subtest: saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+ok 324 - saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+  ---
+  duration_ms: 0.112843
+  type: 'test'
+  ...
+# Subtest: a callable read can return scoped persisted data while independent verification is unknown
+ok 325 - a callable read can return scoped persisted data while independent verification is unknown
+  ---
+  duration_ms: 0.549412
+  type: 'test'
+  ...
+# Subtest: runtime errors remain errors, never converted to evidence of success
+ok 326 - runtime errors remain errors, never converted to evidence of success
+  ---
+  duration_ms: 0.181641
+  type: 'test'
+  ...
+# Subtest: unverified inventory never grants a restricted role access to a callable owner tool
+ok 327 - unverified inventory never grants a restricted role access to a callable owner tool
+  ---
+  duration_ms: 0.13661
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 0
+ok 328 - verification requires all five explicit positive evidence fields: 0
+  ---
+  duration_ms: 0.136238
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 1
+ok 329 - verification requires all five explicit positive evidence fields: 1
+  ---
+  duration_ms: 0.068154
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 2
+ok 330 - verification requires all five explicit positive evidence fields: 2
+  ---
+  duration_ms: 0.057857
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 3
+ok 331 - verification requires all five explicit positive evidence fields: 3
+  ---
+  duration_ms: 0.061822
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 4
+ok 332 - verification requires all five explicit positive evidence fields: 4
+  ---
+  duration_ms: 0.062762
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 5
+ok 333 - verification requires all five explicit positive evidence fields: 5
+  ---
+  duration_ms: 0.051889
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 6
+ok 334 - verification requires all five explicit positive evidence fields: 6
+  ---
+  duration_ms: 0.055786
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 7
+ok 335 - verification requires all five explicit positive evidence fields: 7
+  ---
+  duration_ms: 0.054382
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 8
+ok 336 - verification requires all five explicit positive evidence fields: 8
+  ---
+  duration_ms: 0.055978
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 9
+ok 337 - verification requires all five explicit positive evidence fields: 9
+  ---
+  duration_ms: 0.057621
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 10
+ok 338 - verification requires all five explicit positive evidence fields: 10
+  ---
+  duration_ms: 0.053149
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 11
+ok 339 - verification requires all five explicit positive evidence fields: 11
+  ---
+  duration_ms: 0.051281
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 12
+ok 340 - verification requires all five explicit positive evidence fields: 12
+  ---
+  duration_ms: 0.049342
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 13
+ok 341 - verification requires all five explicit positive evidence fields: 13
+  ---
+  duration_ms: 0.051681
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 14
+ok 342 - verification requires all five explicit positive evidence fields: 14
+  ---
+  duration_ms: 0.049972
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 15
+ok 343 - verification requires all five explicit positive evidence fields: 15
+  ---
+  duration_ms: 0.050484
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 16
+ok 344 - verification requires all five explicit positive evidence fields: 16
+  ---
+  duration_ms: 0.050334
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 17
+ok 345 - verification requires all five explicit positive evidence fields: 17
+  ---
+  duration_ms: 0.051424
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 18
+ok 346 - verification requires all five explicit positive evidence fields: 18
+  ---
+  duration_ms: 0.085711
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 19
+ok 347 - verification requires all five explicit positive evidence fields: 19
+  ---
+  duration_ms: 0.133073
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 20
+ok 348 - verification requires all five explicit positive evidence fields: 20
+  ---
+  duration_ms: 0.065045
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 21
+ok 349 - verification requires all five explicit positive evidence fields: 21
+  ---
+  duration_ms: 0.053063
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 22
+ok 350 - verification requires all five explicit positive evidence fields: 22
+  ---
+  duration_ms: 0.051742
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 23
+ok 351 - verification requires all five explicit positive evidence fields: 23
+  ---
+  duration_ms: 0.096214
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 24
+ok 352 - verification requires all five explicit positive evidence fields: 24
+  ---
+  duration_ms: 0.06279
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 25
+ok 353 - verification requires all five explicit positive evidence fields: 25
+  ---
+  duration_ms: 0.053341
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 26
+ok 354 - verification requires all five explicit positive evidence fields: 26
+  ---
+  duration_ms: 0.050083
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 27
+ok 355 - verification requires all five explicit positive evidence fields: 27
+  ---
+  duration_ms: 0.050262
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 28
+ok 356 - verification requires all five explicit positive evidence fields: 28
+  ---
+  duration_ms: 0.051667
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 29
+ok 357 - verification requires all five explicit positive evidence fields: 29
+  ---
+  duration_ms: 0.050105
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 30
+ok 358 - verification requires all five explicit positive evidence fields: 30
+  ---
+  duration_ms: 0.126383
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 31
+ok 359 - verification requires all five explicit positive evidence fields: 31
+  ---
+  duration_ms: 0.054013
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence "true" cannot verify or clear gaps
+ok 360 - truthy or malformed evidence "true" cannot verify or clear gaps
+  ---
+  duration_ms: 0.126637
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence 1 cannot verify or clear gaps
+ok 361 - truthy or malformed evidence 1 cannot verify or clear gaps
+  ---
+  duration_ms: 0.086318
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence {} cannot verify or clear gaps
+ok 362 - truthy or malformed evidence {} cannot verify or clear gaps
+  ---
+  duration_ms: 0.052104
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence [] cannot verify or clear gaps
+ok 363 - truthy or malformed evidence [] cannot verify or clear gaps
+  ---
+  duration_ms: 0.050323
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence null cannot verify or clear gaps
+ok 364 - truthy or malformed evidence null cannot verify or clear gaps
+  ---
+  duration_ms: 0.048154
+  type: 'test'
+  ...
+# Subtest: absence of evidence is unknown, not disabled or failed
+ok 365 - absence of evidence is unknown, not disabled or failed
+  ---
+  duration_ms: 0.190458
+  type: 'test'
+  ...
+# Subtest: current agent prompt receives the interpretation and retains approval gates
+ok 366 - current agent prompt receives the interpretation and retains approval gates
+  ---
+  duration_ms: 5.758767
+  type: 'test'
+  ...
+# Subtest: owner: evidence HTTP route ignores caller-supplied verification and role claims
+ok 367 - owner: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 5.647298
+  type: 'test'
+  ...
+# Subtest: admin: evidence HTTP route ignores caller-supplied verification and role claims
+ok 368 - admin: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.888451
+  type: 'test'
+  ...
+# Subtest: manager: evidence HTTP route ignores caller-supplied verification and role claims
+ok 369 - manager: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.565924
+  type: 'test'
+  ...
+# Subtest: viewer: evidence HTTP route ignores caller-supplied verification and role claims
+ok 370 - viewer: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.637245
+  type: 'test'
+  ...
+# Subtest: owner/queued: job, run and audit commit together without erasing prior evidence
+ok 371 - owner/queued: job, run and audit commit together without erasing prior evidence
+  ---
+  duration_ms: 1347.835898
+  type: 'test'
+  ...
+# Subtest: owner/retry_wait: job, run and audit commit together without erasing prior evidence
+ok 372 - owner/retry_wait: job, run and audit commit together without erasing prior evidence
+  ---
+  duration_ms: 18.149199
+  type: 'test'
+  ...
+# Subtest: admin/queued: job, run and audit commit together without erasing prior evidence
+ok 373 - admin/queued: job, run and audit commit together without erasing prior evidence
+  ---
+  duration_ms: 20.970232
+  type: 'test'
+  ...
+# Subtest: admin/retry_wait: job, run and audit commit together without erasing prior evidence
+ok 374 - admin/retry_wait: job, run and audit commit together without erasing prior evidence
+  ---
+  duration_ms: 25.244736
+  type: 'test'
+  ...
+# Subtest: manager: database rejects cancellation without mutation
+ok 375 - manager: database rejects cancellation without mutation
+  ---
+  duration_ms: 29.338703
+  type: 'test'
+  ...
+# Subtest: staff: database rejects cancellation without mutation
+ok 376 - staff: database rejects cancellation without mutation
+  ---
+  duration_ms: 13.919283
+  type: 'test'
+  ...
+# Subtest: viewer: database rejects cancellation without mutation
+ok 377 - viewer: database rejects cancellation without mutation
+  ---
+  duration_ms: 14.720499
+  type: 'test'
+  ...
+# Subtest: finance: database rejects cancellation without mutation
+ok 378 - finance: database rejects cancellation without mutation
+  ---
+  duration_ms: 12.847216
+  type: 'test'
+  ...
+# Subtest: hr: database rejects cancellation without mutation
+ok 379 - hr: database rejects cancellation without mutation
+  ---
+  duration_ms: 11.207696
+  type: 'test'
+  ...
+# Subtest: contractor: database rejects cancellation without mutation
+ok 380 - contractor: database rejects cancellation without mutation
+  ---
+  duration_ms: 12.793872
+  type: 'test'
+  ...
+# Subtest: anon: cannot invoke service-only cancellation
+ok 381 - anon: cannot invoke service-only cancellation
+  ---
+  duration_ms: 11.389535
+  type: 'test'
+  ...
+# Subtest: authenticated: cannot invoke service-only cancellation
+ok 382 - authenticated: cannot invoke service-only cancellation
+  ---
+  duration_ms: 13.313967
+  type: 'test'
+  ...
+# Subtest: cross-tenant actor cannot cancel a known job
+ok 383 - cross-tenant actor cannot cancel a known job
+  ---
+  duration_ms: 12.79807
+  type: 'test'
+  ...
+# Subtest: mismatched job/run tenant refuses without erasing either run
+ok 384 - mismatched job/run tenant refuses without erasing either run
+  ---
+  duration_ms: 12.090008
+  type: 'test'
+  ...
+# Subtest: missing observed identity/version {"expected":null} fails
+ok 385 - missing observed identity/version {"expected":null} fails
+  ---
+  duration_ms: 27.484508
+  type: 'test'
+  ...
+# Subtest: missing observed identity/version {"runId":null} fails
+ok 386 - missing observed identity/version {"runId":null} fails
+  ---
+  duration_ms: 11.401836
+  type: 'test'
+  ...
+# Subtest: missing observed identity/version {"jobId":null} fails
+ok 387 - missing observed identity/version {"jobId":null} fails
+  ---
+  duration_ms: 10.940411
+  type: 'test'
+  ...
+# Subtest: microsecond-stale version and wrong run identity cannot cancel
+ok 388 - microsecond-stale version and wrong run identity cannot cancel
+  ---
+  duration_ms: 25.03197
+  type: 'test'
+  ...
+# Subtest: terminal job failed is immutable
+ok 389 - terminal job failed is immutable
+  ---
+  duration_ms: 18.624937
+  type: 'test'
+  ...
+# Subtest: terminal job completed is immutable
+ok 390 - terminal job completed is immutable
+  ---
+  duration_ms: 13.651983
+  type: 'test'
+  ...
+# Subtest: terminal job partially_completed is immutable
+ok 391 - terminal job partially_completed is immutable
+  ---
+  duration_ms: 14.797381
+  type: 'test'
+  ...
+# Subtest: terminal job cancelled is immutable
+ok 392 - terminal job cancelled is immutable
+  ---
+  duration_ms: 18.262811
+  type: 'test'
+  ...
+# Subtest: run awaiting_approval cannot be overwritten by a queued-job cancellation
+ok 393 - run awaiting_approval cannot be overwritten by a queued-job cancellation
+  ---
+  duration_ms: 14.975904
+  type: 'test'
+  ...
+# Subtest: run completed cannot be overwritten by a queued-job cancellation
+ok 394 - run completed cannot be overwritten by a queued-job cancellation
+  ---
+  duration_ms: 19.325992
+  type: 'test'
+  ...
+# Subtest: run partially_completed cannot be overwritten by a queued-job cancellation
+ok 395 - run partially_completed cannot be overwritten by a queued-job cancellation
+  ---
+  duration_ms: 18.981175
+  type: 'test'
+  ...
+# Subtest: run failed cannot be overwritten by a queued-job cancellation
+ok 396 - run failed cannot be overwritten by a queued-job cancellation
+  ---
+  duration_ms: 14.740943
+  type: 'test'
+  ...
+# Subtest: run cancelled cannot be overwritten by a queued-job cancellation
+ok 397 - run cancelled cannot be overwritten by a queued-job cancellation
+  ---
+  duration_ms: 15.740805
+  type: 'test'
+  ...
+# Subtest: audit insertion failure rolls back both status changes
+ok 398 - audit insertion failure rolls back both status changes
+  ---
+  duration_ms: 24.30795
+  type: 'test'
+  ...
+# Subtest: run update failure rolls back the job before any audit can be acknowledged
+ok 399 - run update failure rolls back the job before any audit can be acknowledged
+  ---
+  duration_ms: 14.933133
+  type: 'test'
+  ...
+# Subtest: lost-response replay does not create duplicate audit evidence
+ok 400 - lost-response replay does not create duplicate audit evidence
+  ---
+  duration_ms: 24.731966
+  type: 'test'
+  ...
+# Subtest: cancel first: actual worker claim refuses the terminal job even when delivery remains queued
+ok 401 - cancel first: actual worker claim refuses the terminal job even when delivery remains queued
+  ---
+  duration_ms: 27.375368
+  type: 'test'
+  ...
+# Subtest: claim first: cancellation cannot interrupt an active lease
+ok 402 - claim first: cancellation cannot interrupt an active lease
+  ---
+  duration_ms: 14.653394
+  type: 'test'
+  ...
+# Subtest: emergency rollback disables RPC while preserving all records; reviewed reapply restores grant
+ok 403 - emergency rollback disables RPC while preserving all records; reviewed reapply restores grant
+  ---
+  duration_ms: 22.045073
+  type: 'test'
+  ...
+# Subtest: backend and client shipping gates stay legacy; body release fields cannot enable checked RPC
+ok 404 - backend and client shipping gates stay legacy; body release fields cannot enable checked RPC
+  ---
+  duration_ms: 7.450212
+  type: 'test'
+  ...
+# Subtest: checked handler -> actual SQL uses authenticated actor and preserves raw microsecond version
+ok 405 - checked handler -> actual SQL uses authenticated actor and preserves raw microsecond version
+  ---
+  duration_ms: 9.156762
+  type: 'test'
+  ...
+# Subtest: manager: checked HTTP helper cannot be elevated by body role
+ok 406 - manager: checked HTTP helper cannot be elevated by body role
+  ---
+  duration_ms: 7.821556
+  type: 'test'
+  ...
+# Subtest: staff: checked HTTP helper cannot be elevated by body role
+ok 407 - staff: checked HTTP helper cannot be elevated by body role
+  ---
+  duration_ms: 6.452777
+  type: 'test'
+  ...
+# Subtest: viewer: checked HTTP helper cannot be elevated by body role
+ok 408 - viewer: checked HTTP helper cannot be elevated by body role
+  ---
+  duration_ms: 6.22488
+  type: 'test'
+  ...
+# Subtest: RPC 42501 is sanitized and never retried/fallen back
+ok 409 - RPC 42501 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.164197
+  type: 'test'
+  ...
+# Subtest: RPC P0002 is sanitized and never retried/fallen back
+ok 410 - RPC P0002 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.013158
+  type: 'test'
+  ...
+# Subtest: RPC 40001 is sanitized and never retried/fallen back
+ok 411 - RPC 40001 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.738379
+  type: 'test'
+  ...
+# Subtest: RPC 22023 is sanitized and never retried/fallen back
+ok 412 - RPC 22023 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.629892
+  type: 'test'
+  ...
+# Subtest: RPC PGRST202 is sanitized and never retried/fallen back
+ok 413 - RPC PGRST202 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.957771
+  type: 'test'
+  ...
+# Subtest: RPC XX000 is sanitized and never retried/fallen back
+ok 414 - RPC XX000 is sanitized and never retried/fallen back
+  ---
+  duration_ms: 6.104503
+  type: 'test'
+  ...
+# Subtest: checked input validation {"jobId":"bad"} before RPC
+ok 415 - checked input validation {"jobId":"bad"} before RPC
+  ---
+  duration_ms: 6.860137
+  type: 'test'
+  ...
+# Subtest: checked input validation {"expectedRunId":"bad"} before RPC
+ok 416 - checked input validation {"expectedRunId":"bad"} before RPC
+  ---
+  duration_ms: 5.382227
+  type: 'test'
+  ...
+# Subtest: checked input validation {"expectedUpdatedAt":"today"} before RPC
+ok 417 - checked input validation {"expectedUpdatedAt":"today"} before RPC
+  ---
+  duration_ms: 8.493465
+  type: 'test'
+  ...
+# Subtest: checked input validation {} before RPC
+ok 418 - checked input validation {} before RPC
+  ---
+  duration_ms: 5.64082
+  type: 'test'
+  ...
+# Subtest: checked release retires unchecked calls without fetching a fresh version
+ok 419 - checked release retires unchecked calls without fetching a fresh version
+  ---
+  duration_ms: 5.855307
+  type: 'test'
+  ...
+# Subtest: incomplete successful audit acknowledgement remains an error even if transaction committed
+ok 420 - incomplete successful audit acknowledgement remains an error even if transaction committed
+  ---
+  duration_ms: 9.828976
+  type: 'test'
+  ...
+# Subtest: actual checked client/controller -> handler -> SQL -> persisted read-back
+ok 421 - actual checked client/controller -> handler -> SQL -> persisted read-back
+  ---
+  duration_ms: 14.499741
+  type: 'test'
+  ...
+# Subtest: lost acknowledgement locks repeated writes and recovers through refresh without duplicate audit
+ok 422 - lost acknowledgement locks repeated writes and recovers through refresh without duplicate audit
+  ---
+  duration_ms: 15.975064
+  type: 'test'
+  ...
+# Subtest: checked cancellation version mismatch during read-back stays unconfirmed
+ok 423 - checked cancellation version mismatch during read-back stays unconfirmed
+  ---
+  duration_ms: 12.651328
+  type: 'test'
+  ...
+# Subtest: client missing version or invalid release cannot dispatch a write
+ok 424 - client missing version or invalid release cannot dispatch a write
+  ---
+  duration_ms: 5.989851
+  type: 'test'
+  ...
+# Subtest: expired running lease still cannot be cancelled by the queued-only contract
+ok 425 - expired running lease still cannot be cancelled by the queued-only contract
+  ---
+  duration_ms: 13.189056
+  type: 'test'
+  ...
+# Subtest: cancellation retains completed steps and checkpoints as evidence of prior effects
+ok 426 - cancellation retains completed steps and checkpoints as evidence of prior effects
+  ---
+  duration_ms: 11.945994
+  type: 'test'
+  ...
+# Subtest: profile demotion is rechecked by SQL, not trusted from the HTTP preflight
+ok 427 - profile demotion is rechecked by SQL, not trusted from the HTTP preflight
+  ---
+  duration_ms: 13.294436
+  type: 'test'
+  ...
+# Subtest: malformed checked receipt never becomes a success claim
+ok 428 - malformed checked receipt never becomes a success claim
+  ---
+  duration_ms: 7.957095
+  type: 'test'
+  ...
+# Subtest: malformed checked receipt never becomes a success claim
+ok 429 - malformed checked receipt never becomes a success claim
+  ---
+  duration_ms: 8.136209
+  type: 'test'
+  ...
+# Subtest: malformed checked receipt never becomes a success claim
+ok 430 - malformed checked receipt never becomes a success claim
+  ---
+  duration_ms: 9.432575
+  type: 'test'
+  ...
+# Subtest: malformed checked receipt never becomes a success claim
+ok 431 - malformed checked receipt never becomes a success claim
+  ---
+  duration_ms: 8.623747
+  type: 'test'
+  ...
+# Subtest: handler transport exception is sanitized without retry or direct writes
+ok 432 - handler transport exception is sanitized without retry or direct writes
+  ---
+  duration_ms: 7.056059
+  type: 'test'
+  ...
+# Subtest: owner: monitor is tenant-scoped and manager is limited to own requests
+ok 433 - owner: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 9.024995
+  type: 'test'
+  ...
+# Subtest: admin: monitor is tenant-scoped and manager is limited to own requests
+ok 434 - admin: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 0.988005
+  type: 'test'
+  ...
+# Subtest: manager: monitor is tenant-scoped and manager is limited to own requests
+ok 435 - manager: monitor is tenant-scoped and manager is limited to own requests
+  ---
+  duration_ms: 0.862575
+  type: 'test'
+  ...
+# Subtest: staff: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 436 - staff: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 2.824319
+  type: 'test'
+  ...
+# Subtest: contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 437 - contractor: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.904038
+  type: 'test'
+  ...
+# Subtest: viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 438 - viewer: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.385382
+  type: 'test'
+  ...
+# Subtest: finance: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 439 - finance: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.511398
+  type: 'test'
+  ...
+# Subtest: hr: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 440 - hr: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 3.289048
+  type: 'test'
+  ...
+# Subtest: teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 441 - teacher: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.224947
+  type: 'test'
+  ...
+# Subtest: student: direct monitor/retry/cancel requests denied regardless of forged body role
+ok 442 - student: direct monitor/retry/cancel requests denied regardless of forged body role
+  ---
+  duration_ms: 1.267249
+  type: 'test'
+  ...
+# Subtest: owner: retry RPC receives authenticated actor, not caller-supplied identity
+ok 443 - owner: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 0.630028
+  type: 'test'
+  ...
+# Subtest: admin: retry RPC receives authenticated actor, not caller-supplied identity
+ok 444 - admin: retry RPC receives authenticated actor, not caller-supplied identity
+  ---
+  duration_ms: 3.02736
+  type: 'test'
+  ...
+# Subtest: manager cannot retry or cancel despite read permission
+ok 445 - manager cannot retry or cancel despite read permission
+  ---
+  duration_ms: 1.016545
+  type: 'test'
+  ...
+# Subtest: retry database denial 42501 maps safely
+ok 446 - retry database denial 42501 maps safely
+  ---
+  duration_ms: 0.518817
+  type: 'test'
+  ...
+# Subtest: retry database denial P0002 maps safely
+ok 447 - retry database denial P0002 maps safely
+  ---
+  duration_ms: 0.323761
+  type: 'test'
+  ...
+# Subtest: retry database denial 22023 maps safely
+ok 448 - retry database denial 22023 maps safely
+  ---
+  duration_ms: 0.235831
+  type: 'test'
+  ...
+# Subtest: retry database denial XX000 maps safely
+ok 449 - retry database denial XX000 maps safely
+  ---
+  duration_ms: 0.221944
+  type: 'test'
+  ...
+# Subtest: cross-tenant cancellation finds no job and cannot update anything
+ok 450 - cross-tenant cancellation finds no job and cannot update anything
+  ---
+  duration_ms: 0.623779
+  type: 'test'
+  ...
+# Subtest: queued cancellation conditionally updates only tenant job and returns no audit verification claim
+ok 451 - queued cancellation conditionally updates only tenant job and returns no audit verification claim
+  ---
+  duration_ms: 0.701396
+  type: 'test'
+  ...
+# Subtest: conditional cancellation conflict stops before run or audit writes
+ok 452 - conditional cancellation conflict stops before run or audit writes
+  ---
+  duration_ms: 0.51521
+  type: 'test'
+  ...
+# Subtest: missing or invalid session blocks direct requests before profile data access
+ok 453 - missing or invalid session blocks direct requests before profile data access
+  ---
+  duration_ms: 0.499114
+  type: 'test'
+  ...
+# Subtest: actual HTTP checked cancellation route uses authenticated identity and RPC only
+ok 454 - actual HTTP checked cancellation route uses authenticated identity and RPC only
+  ---
+  duration_ms: 7.001579
+  type: 'test'
+  ...
+# Subtest: actual HTTP route cannot enable checked cancellation by body flags
+ok 455 - actual HTTP route cannot enable checked cancellation by body flags
+  ---
+  duration_ms: 0.409276
+  type: 'test'
+  ...
+# Subtest: actual HTTP checked cancellation requires a valid session before profile/RPC access
+ok 456 - actual HTTP checked cancellation requires a valid session before profile/RPC access
+  ---
+  duration_ms: 0.485619
+  type: 'test'
+  ...
+# Subtest: actual HTTP missing checked RPC fails closed without legacy writes
+ok 457 - actual HTTP missing checked RPC fails closed without legacy writes
+  ---
+  duration_ms: 0.392731
+  type: 'test'
+  ...
+# Subtest: owner: reads monitor and strips diagnostics/result payloads
+ok 458 - owner: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 1.651825
+  type: 'test'
+  ...
+# Subtest: admin: reads monitor and strips diagnostics/result payloads
+ok 459 - admin: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.267037
+  type: 'test'
+  ...
+# Subtest: manager: reads monitor and strips diagnostics/result payloads
+ok 460 - manager: reads monitor and strips diagnostics/result payloads
+  ---
+  duration_ms: 0.232036
+  type: 'test'
+  ...
+# Subtest: staff: cannot read monitor or mutate jobs
+ok 461 - staff: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.527236
+  type: 'test'
+  ...
+# Subtest: viewer: cannot read monitor or mutate jobs
+ok 462 - viewer: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.23105
+  type: 'test'
+  ...
+# Subtest: finance: cannot read monitor or mutate jobs
+ok 463 - finance: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.181071
+  type: 'test'
+  ...
+# Subtest: hr: cannot read monitor or mutate jobs
+ok 464 - hr: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.234948
+  type: 'test'
+  ...
+# Subtest: contractor: cannot read monitor or mutate jobs
+ok 465 - contractor: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 1.321486
+  type: 'test'
+  ...
+# Subtest: undefined: cannot read monitor or mutate jobs
+ok 466 - undefined: cannot read monitor or mutate jobs
+  ---
+  duration_ms: 0.372124
+  type: 'test'
+  ...
+# Subtest: manager can read but cannot retry/cancel through a direct client call
+ok 467 - manager can read but cannot retry/cancel through a direct client call
+  ---
+  duration_ms: 0.429515
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing arrays
+ok 468 - read fails closed: missing arrays
+  ---
+  duration_ms: 0.204255
+  type: 'test'
+  ...
+# Subtest: read fails closed: duplicate run
+ok 469 - read fails closed: duplicate run
+  ---
+  duration_ms: 0.121248
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong job/run relation
+ok 470 - read fails closed: wrong job/run relation
+  ---
+  duration_ms: 0.113575
+  type: 'test'
+  ...
+# Subtest: read fails closed: wrong step/run relation
+ok 471 - read fails closed: wrong step/run relation
+  ---
+  duration_ms: 0.134838
+  type: 'test'
+  ...
+# Subtest: read fails closed: unknown state
+ok 472 - read fails closed: unknown state
+  ---
+  duration_ms: 0.109502
+  type: 'test'
+  ...
+# Subtest: read fails closed: invalid attempts
+ok 473 - read fails closed: invalid attempts
+  ---
+  duration_ms: 0.087154
+  type: 'test'
+  ...
+# Subtest: read fails closed: missing request text
+ok 474 - read fails closed: missing request text
+  ---
+  duration_ms: 0.095923
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+ok 475 - errors are sanitised: {"data":{"error":"PRIVATE_DIAGNOSTIC"}}
+  ---
+  duration_ms: 0.269701
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+ok 476 - errors are sanitised: {"error":{"message":"PRIVATE_DIAGNOSTIC","context":{"status":403}}}
+  ---
+  duration_ms: 0.077909
+  type: 'test'
+  ...
+# Subtest: errors are sanitised: {"data":null}
+ok 477 - errors are sanitised: {"data":null}
+  ---
+  duration_ms: 0.064
+  type: 'test'
+  ...
+# Subtest: mutation eligibility is explicit and running cancellation is never offered
+ok 478 - mutation eligibility is explicit and running cancellation is never offered
+  ---
+  duration_ms: 0.145846
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {}
+ok 479 - incomplete retry acknowledgement cannot claim success: {}
+  ---
+  duration_ms: 0.137696
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+ok 480 - incomplete retry acknowledgement cannot claim success: {"job":{"id":"00000000-0000-4000-8000-000000000002","status":"queued"}}
+  ---
+  duration_ms: 0.067345
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+ok 481 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000002","run_id":"00000000-0000-4000-8000-000000000001","status":"queued"}}
+  ---
+  duration_ms: 0.065205
+  type: 'test'
+  ...
+# Subtest: incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+ok 482 - incomplete retry acknowledgement cannot claim success: {"job":{"job_id":"00000000-0000-4000-8000-000000000999","run_id":"00000000-0000-4000-8000-000000000001","status":"queued","queue_message_id":12}}
+  ---
+  duration_ms: 0.061256
+  type: 'test'
+  ...
+# Subtest: incomplete cancellation cannot claim success
+ok 483 - incomplete cancellation cannot claim success
+  ---
+  duration_ms: 0.173807
+  type: 'test'
+  ...
+# Subtest: read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+ok 484 - read-before-write and synchronous lock prevent double retry, with advanced job state observed honestly
+  ---
+  duration_ms: 0.488794
+  type: 'test'
+  ...
+# Subtest: lost write acknowledgement requires explicit read reconciliation, never retries automatically
+ok 485 - lost write acknowledgement requires explicit read reconciliation, never retries automatically
+  ---
+  duration_ms: 0.24742
+  type: 'test'
+  ...
+# Subtest: cancel requires both job and run read-back and never claims an audit
+ok 486 - cancel requires both job and run read-back and never claims an audit
+  ---
+  duration_ms: 0.303094
+  type: 'test'
+  ...
+# Subtest: partial cancellation summary and out-of-sample read-back require reconciliation
+ok 487 - partial cancellation summary and out-of-sample read-back require reconciliation
+  ---
+  duration_ms: 0.528813
+  type: 'test'
+  ...
+# Subtest: failed refresh clears stale records and action eligibility
+ok 488 - failed refresh clears stale records and action eligibility
+  ---
+  duration_ms: 1.371994
+  type: 'test'
+  ...
+# Subtest: deactivated scope ignores late write acknowledgement and never follows it with a read
+ok 489 - deactivated scope ignores late write acknowledgement and never follows it with a read
+  ---
+  duration_ms: 0.285722
+  type: 'test'
+  ...
+# Subtest: failed job with nonfailed run cannot be retried by controller
+ok 490 - failed job with nonfailed run cannot be retried by controller
+  ---
+  duration_ms: 0.162127
+  type: 'test'
+  ...
+# Subtest: shipping default remains explicitly legacy until separately reviewed backend release
+ok 491 - shipping default remains explicitly legacy until separately reviewed backend release
+  ---
+  duration_ms: 1.173263
+  type: 'test'
+  ...
+# Subtest: owner: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 492 - owner: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 1.093733
+  type: 'test'
+  ...
+# Subtest: admin: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 493 - admin: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 0.193082
+  type: 'test'
+  ...
+# Subtest: manager: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 494 - manager: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 0.169701
+  type: 'test'
+  ...
+# Subtest: default auto assignment uses old read-back, never the undeployed exact-read endpoint
+ok 495 - default auto assignment uses old read-back, never the undeployed exact-read endpoint
+  ---
+  duration_ms: 0.24975
+  type: 'test'
+  ...
+# Subtest: default no-capacity performs no follow-up request and claims no success
+ok 496 - default no-capacity performs no follow-up request and claims no success
+  ---
+  duration_ms: 0.14761
+  type: 'test'
+  ...
+# Subtest: staff: release mode cannot bypass manager access
+ok 497 - staff: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.544085
+  type: 'test'
+  ...
+# Subtest: viewer: release mode cannot bypass manager access
+ok 498 - viewer: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.215457
+  type: 'test'
+  ...
+# Subtest: contractor: release mode cannot bypass manager access
+ok 499 - contractor: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.351438
+  type: 'test'
+  ...
+# Subtest: finance: release mode cannot bypass manager access
+ok 500 - finance: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.348095
+  type: 'test'
+  ...
+# Subtest: invalid release mode fails without dispatching any write
+ok 501 - invalid release mode fails without dispatching any write
+  ---
+  duration_ms: 1.324846
+  type: 'test'
+  ...
+# Subtest: legacy uncertain result cannot retry, switch modes or claim success
+ok 502 - legacy uncertain result cannot retry, switch modes or claim success
+  ---
+  duration_ms: 0.284517
+  type: 'test'
+  ...
+# Subtest: legacy missing/mismatched read-back remains unconfirmed
+ok 503 - legacy missing/mismatched read-back remains unconfirmed
+  ---
+  duration_ms: 0.205817
+  type: 'test'
+  ...
+# Subtest: explicit checked mode is reachable and requires its new audit/version/read contract
+ok 504 - explicit checked mode is reachable and requires its new audit/version/read contract
+  ---
+  duration_ms: 0.289367
+  type: 'test'
+  ...
+# Subtest: checked write error NEVER falls back to legacy, even for an unsupported old server
+ok 505 - checked write error NEVER falls back to legacy, even for an unsupported old server
+  ---
+  duration_ms: 0.263876
+  type: 'test'
+  ...
+# Subtest: checked read error after successful mutation NEVER dispatches a second write
+ok 506 - checked read error after successful mutation NEVER dispatches a second write
+  ---
+  duration_ms: 0.257647
+  type: 'test'
+  ...
+# Subtest: default controller preserves PR89 mode, no optimistic success and explicit recovery after lost response
+ok 507 - default controller preserves PR89 mode, no optimistic success and explicit recovery after lost response
+  ---
+  duration_ms: 0.732947
+  type: 'test'
+  ...
+# (node:1726) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: provider and memory waits are excluded while runtime processing is active
+ok 508 - provider and memory waits are excluded while runtime processing is active
+  ---
+  duration_ms: 24.667145
+  type: 'test'
+  ...
+# Subtest: entire parallel tool round and persistence are excluded without phase races
+ok 509 - entire parallel tool round and persistence are excluded without phase races
+  ---
+  duration_ms: 2.710733
+  type: 'test'
+  ...
+# Subtest: meter rejection stops before first provider request
+ok 510 - meter rejection stops before first provider request
+  ---
+  duration_ms: 0.442965
+  type: 'test'
+  ...
+# Subtest: meter rejection is not swallowed by best-effort memory loading
+ok 511 - meter rejection is not swallowed by best-effort memory loading
+  ---
+  duration_ms: 0.3462
+  type: 'test'
+  ...
+# Subtest: meter rejection before tool round prevents tool execution
+ok 512 - meter rejection before tool round prevents tool execution
+  ---
+  duration_ms: 0.900611
+  type: 'test'
+  ...
+# Subtest: legacy runtime remains functional without accounting hook
+ok 513 - legacy runtime remains functional without accounting hook
+  ---
+  duration_ms: 0.634331
+  type: 'test'
+  ...
+# Subtest: actual execution-worker entrypoint parses and wires default-off usage into runtime
+ok 514 - actual execution-worker entrypoint parses and wires default-off usage into runtime
+  ---
+  duration_ms: 85.719101
+  type: 'test'
+  ...
+# (node:1735) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-usage-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: release defaults off before any database calls
+ok 515 - release defaults off before any database calls
+  ---
+  duration_ms: 2.544607
+  type: 'test'
+  ...
+# Subtest: staff cannot configure or read usage via service handler
+ok 516 - staff cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.222424
+  type: 'test'
+  ...
+# Subtest: manager cannot configure or read usage via service handler
+ok 517 - manager cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.099131
+  type: 'test'
+  ...
+# Subtest: finance cannot configure or read usage via service handler
+ok 518 - finance cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.081452
+  type: 'test'
+  ...
+# Subtest: contractor cannot configure or read usage via service handler
+ok 519 - contractor cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.13459
+  type: 'test'
+  ...
+# Subtest: mismatched authenticated actor fails before RPC
+ok 520 - mismatched authenticated actor fails before RPC
+  ---
+  duration_ms: 0.11443
+  type: 'test'
+  ...
+# Subtest: caller cannot choose actor, tenant, rate or charging mode
+ok 521 - caller cannot choose actor, tenant, rate or charging mode
+  ---
+  duration_ms: 0.788203
+  type: 'test'
+  ...
+# Subtest: invalid configure {"confirm":false}
+ok 522 - invalid configure {"confirm":false}
+  ---
+  duration_ms: 0.123157
+  type: 'test'
+  ...
+# Subtest: invalid configure {"requestId":"x"}
+ok 523 - invalid configure {"requestId":"x"}
+  ---
+  duration_ms: 0.284677
+  type: 'test'
+  ...
+# Subtest: invalid configure {"expectedVersion":-1}
+ok 524 - invalid configure {"expectedVersion":-1}
+  ---
+  duration_ms: 0.319325
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":-1}
+ok 525 - invalid configure {"budgetMicros":-1}
+  ---
+  duration_ms: 0.125112
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":1.5}
+ok 526 - invalid configure {"budgetMicros":1.5}
+  ---
+  duration_ms: 0.122895
+  type: 'test'
+  ...
+# Subtest: invalid configure {"policy":"live"}
+ok 527 - invalid configure {"policy":"live"}
+  ---
+  duration_ms: 0.05265
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":1000000000001}
+ok 528 - invalid configure {"budgetMicros":1000000000001}
+  ---
+  duration_ms: 0.046428
+  type: 'test'
+  ...
+# Subtest: browser cannot invoke meter, provide interval timestamps, or close usage as worker
+ok 529 - browser cannot invoke meter, provide interval timestamps, or close usage as worker
+  ---
+  duration_ms: 0.126515
+  type: 'test'
+  ...
+# Subtest: reserve maps only explicit bounded inputs
+ok 530 - reserve maps only explicit bounded inputs
+  ---
+  duration_ms: 0.188759
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"maxMicros":0}
+ok 531 - invalid reserve {"maxMicros":0}
+  ---
+  duration_ms: 0.148322
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"maxMicros":1000000001}
+ok 532 - invalid reserve {"maxMicros":1000000001}
+  ---
+  duration_ms: 0.060858
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"subjectReference":""}
+ok 533 - invalid reserve {"subjectReference":""}
+  ---
+  duration_ms: 0.053602
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"subjectReference":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+ok 534 - invalid reserve {"subjectReference":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+  ---
+  duration_ms: 0.049166
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"jobId":"bad"}
+ok 535 - invalid reserve {"jobId":"bad"}
+  ---
+  duration_ms: 0.045531
+  type: 'test'
+  ...
+# Subtest: snapshot cannot read another supplied tenant; reconcile uses authenticated actor
+ok 536 - snapshot cannot read another supplied tenant; reconcile uses authenticated actor
+  ---
+  duration_ms: 0.168068
+  type: 'test'
+  ...
+# Subtest: database 42501 is sanitised
+ok 537 - database 42501 is sanitised
+  ---
+  duration_ms: 0.171296
+  type: 'test'
+  ...
+# Subtest: database 40001 is sanitised
+ok 538 - database 40001 is sanitised
+  ---
+  duration_ms: 0.09969
+  type: 'test'
+  ...
+# Subtest: database 54000 is sanitised
+ok 539 - database 54000 is sanitised
+  ---
+  duration_ms: 0.074566
+  type: 'test'
+  ...
+# Subtest: database 22023 is sanitised
+ok 540 - database 22023 is sanitised
+  ---
+  duration_ms: 0.051596
+  type: 'test'
+  ...
+# Subtest: database XX000 is sanitised
+ok 541 - database XX000 is sanitised
+  ---
+  duration_ms: 0.04886
+  type: 'test'
+  ...
+# Subtest: network failure and incomplete receipt are never acknowledged as success
+ok 542 - network failure and incomplete receipt are never acknowledged as success
+  ---
+  duration_ms: 0.201434
+  type: 'test'
+  ...
+# Subtest: worker adapter sends no duration or cost, and uses acknowledged sequence
+ok 543 - worker adapter sends no duration or cost, and uses acknowledged sequence
+  ---
+  duration_ms: 3.101465
+  type: 'test'
+  ...
+# Subtest: ambiguous outcome blocks new observations and explicit replay reuses exact request
+ok 544 - ambiguous outcome blocks new observations and explicit replay reuses exact request
+  ---
+  duration_ms: 0.343481
+  type: 'test'
+  ...
+# Subtest: concurrent requests cannot race a usage sequence
+ok 545 - concurrent requests cannot race a usage sequence
+  ---
+  duration_ms: 0.305633
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"job_id":"00000000-0000-4000-8000-000000000020"}
+ok 546 - worker rejects invalid receipt {"job_id":"00000000-0000-4000-8000-000000000020"}
+  ---
+  duration_ms: 0.145403
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"sequence":44}
+ok 547 - worker rejects invalid receipt {"sequence":44}
+  ---
+  duration_ms: 0.154409
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"mode":"billable"}
+ok 548 - worker rejects invalid receipt {"mode":"billable"}
+  ---
+  duration_ms: 0.093415
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"charged":true}
+ok 549 - worker rejects invalid receipt {"charged":true}
+  ---
+  duration_ms: 0.403003
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"active_microseconds":-1}
+ok 550 - worker rejects invalid receipt {"active_microseconds":-1}
+  ---
+  duration_ms: 0.213322
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"estimate_micros":0.1}
+ok 551 - worker rejects invalid receipt {"estimate_micros":0.1}
+  ---
+  duration_ms: 0.119634
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"deadline":null}
+ok 552 - worker rejects invalid receipt {"deadline":null}
+  ---
+  duration_ms: 0.107598
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"phase":"paused"}
+ok 553 - worker rejects invalid receipt {"phase":"paused"}
+  ---
+  duration_ms: 0.092822
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"status":"settled"}
+ok 554 - worker rejects invalid receipt {"status":"settled"}
+  ---
+  duration_ms: 0.166123
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"uncertain":null}
+ok 555 - worker rejects invalid receipt {"uncertain":null}
+  ---
+  duration_ms: 0.134973
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"observed_at":"not a timestamp"}
+ok 556 - worker rejects invalid receipt {"observed_at":"not a timestamp"}
+  ---
+  duration_ms: 0.087895
+  type: 'test'
+  ...
+# Subtest: server closure for uncertainty prevents continuing work
+ok 557 - server closure for uncertainty prevents continuing work
+  ---
+  duration_ms: 0.202856
+  type: 'test'
+  ...
+# Subtest: disabled metering never touches a legacy job or requires new schema
+ok 558 - disabled metering never touches a legacy job or requires new schema
+  ---
+  duration_ms: 0.267841
+  type: 'test'
+  ...
+# Subtest: enabled but unreserved job remains unmetered
+ok 559 - enabled but unreserved job remains unmetered
+  ---
+  duration_ms: 0.286237
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"lookupError":{"message":"PRIVATE"}}
+ok 560 - worker stops before runtime when usage cannot be confirmed {"lookupError":{"message":"PRIVATE"}}
+  ---
+  duration_ms: 0.126606
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000004","status":"settled","sequence":2}}
+ok 561 - worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000004","status":"settled","sequence":2}}
+  ---
+  duration_ms: 0.083619
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000008","status":"open","sequence":0}}
+ok 562 - worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000008","status":"open","sequence":0}}
+  ---
+  duration_ms: 0.069361
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"rpcError":{"message":"PRIVATE"}}
+ok 563 - worker stops before runtime when usage cannot be confirmed {"rpcError":{"message":"PRIVATE"}}
+  ---
+  duration_ms: 0.182212
+  type: 'test'
+  ...
+# Subtest: worker fences before runtime and settles after successful execution
+ok 564 - worker fences before runtime and settles after successful execution
+  ---
+  duration_ms: 0.226723
+  type: 'test'
+  ...
+# Subtest: worker preserves failed task outcome and closes confirmed estimate without replay
+ok 565 - worker preserves failed task outcome and closes confirmed estimate without replay
+  ---
+  duration_ms: 0.299735
+  type: 'test'
+  ...
+# Subtest: server boundary closure stops execution before work
+ok 566 - server boundary closure stops execution before work
+  ---
+  duration_ms: 0.156844
+  type: 'test'
+  ...
+# Subtest: unexpected transport errors do not expose private diagnostics
+ok 567 - unexpected transport errors do not expose private diagnostics
+  ---
+  duration_ms: 0.176496
+  type: 'test'
+  ...
+1..567
+# tests 567
+# suites 0
+# pass 567
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9930.481487
