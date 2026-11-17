@@ -7,6 +7,7 @@ export const JD_ASSISTANT_TOOLS = Object.freeze([
   {id:'departments',label:'Departments',icon:'building'},
   {id:'usage',label:'AI usage',icon:'activity'},
   {id:'runs',label:'Automation runs',icon:'activity'},
+  {id:'connectors',label:'Connectors',icon:'link'},
 ].map(Object.freeze));
 export function assistantNavigation(authorisedNavigation,query=''){
   if(!authorisedNavigation.some(entry=>entry.id==='jd-chat'&&!entry.group))return [];

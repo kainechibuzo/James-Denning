@@ -5,11 +5,11 @@ import {Activity,CheckCircle2,ChevronDown,ChevronRight,Clock,Link2,Loader2,Plus,
 const card={background:"var(--jd-card,#fff)",border:"1px solid var(--jd-border,#e5e7eb)",borderRadius:12,padding:16,marginBottom:12};
 const field={width:"100%",padding:"10px 12px",border:"1px solid var(--jd-border,#d1d5db)",borderRadius:8,fontSize:13,background:"var(--jd-input,#fff)",color:"var(--jd-text,#17191c)"};
 const button={border:0,borderRadius:8,padding:"9px 12px",fontSize:12,fontWeight:700,cursor:"pointer"};
-export function JDConnectPanel({notify=()=>{}}){
+export function JDConnectPanel({notify=()=>{},initialName="",openRegistration=false,role}){
  const [servers,setServers]=useState([]),[tools,setTools]=useState([]),[approvals,setApprovals]=useState([]),[executions,setExecutions]=useState([]);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(""),[error,setError]=useState(""),[success,setSuccess]=useState("");
- const [name,setName]=useState(""),[endpoint,setEndpoint]=useState(""),[token,setToken]=useState("");
- const [showRegister,setShowRegister]=useState(false),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({}),[reconnectTokens,setReconnectTokens]=useState({});
+ const [name,setName]=useState(initialName),[endpoint,setEndpoint]=useState(""),[token,setToken]=useState("");
+ const [showRegister,setShowRegister]=useState(openRegistration),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({}),[reconnectTokens,setReconnectTokens]=useState({});
  const call=useCallback(async(action,extra={})=>{
   const {data,error}=await supabase.functions.invoke("jd-connect",{body:{action,...extra}});
   if(error)throw new Error(error.message||"JD Connect request failed");
@@ -19,7 +19,7 @@ export function JDConnectPanel({notify=()=>{}}){
  const load=useCallback(async()=>{
   setLoading(true);setError("");
   try{const [s,t,a,e]=await Promise.all([call("servers.list"),call("tools.list"),call("approvals.list"),call("executions.list")]);setServers(s.servers||[]);setTools(t.tools||[]);setApprovals(a.approvals||[]);setExecutions(e.executions||[]);}
-  catch(e){setError(e.message||"Could not load JD Connect");}
+  catch(e){setServers([]);setTools([]);setApprovals([]);setExecutions([]);setError(e.message||"Could not load JD Connect");}
   finally{setLoading(false);}
  },[call]);
  useEffect(()=>{load();},[load]);
@@ -30,7 +30,10 @@ export function JDConnectPanel({notify=()=>{}}){
   finally{setBusy("");}
  };
  const register=()=>run("register",async()=>{
-  const r=await call("servers.register",{name,endpoint,bearerToken:token});
+  let url;try{url=new URL(endpoint.trim());}catch{throw new Error("Enter a valid HTTPS MCP endpoint.");}
+  if(url.protocol!=="https:"||url.username||url.password)throw new Error("Use an HTTPS endpoint without embedded credentials. Put credentials in the token field.");
+  const r=await call("servers.register",{name:name.trim(),endpoint:url.toString(),bearerToken:token});
+  if(!r.server?.id||!Array.isArray(r.tools))throw new Error("Connection outcome not confirmed. Refresh connections before retrying.");
   setName("");setEndpoint("");setToken("");setShowRegister(false);setSuccess(r.notice||"Connector registered");return r;
  });
  const refresh=id=>run("refresh:"+id,()=>call("tools.refresh",{serverId:id}));
@@ -55,17 +58,17 @@ export function JDConnectPanel({notify=()=>{}}){
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"18px 0 10px",gap:8}}>
    <div><div style={{fontWeight:900,fontSize:14}}>Connected servers</div><div style={{fontSize:11,color:"var(--jd-muted,#60616b)"}}>{servers.length} server(s) registered</div></div>
    <div style={{display:"flex",gap:6}}>
-    <button onClick={load} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}><RefreshCw size={13}/></button>
-    <button onClick={()=>setShowRegister(v=>!v)} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",display:"flex",alignItems:"center",gap:6}}><Plus size={14}/> Add server</button>
+    <button aria-label="Refresh connections" onClick={load} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}><RefreshCw size={13}/></button>
+    <button onClick={()=>{setShowRegister(v=>!v);setToken("");}} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",display:"flex",alignItems:"center",gap:6}}><Plus size={14}/> Add server</button>
    </div>
   </div>
   {showRegister&&<div style={card}>
    <div style={{fontWeight:800,fontSize:13,marginBottom:12}}>Register remote MCP server</div>
-   <label style={{display:"block",fontSize:11,fontWeight:700,marginBottom:5}}>Display name</label><input style={field} value={name} onChange={e=>setName(e.target.value)} placeholder="Team knowledge server"/>
-   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>HTTPS MCP endpoint</label><input style={field} value={endpoint} onChange={e=>setEndpoint(e.target.value)} placeholder="https://mcp.example.com/mcp" autoCapitalize="none"/>
-   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>Bearer token <span style={{fontWeight:400,color:"var(--jd-muted,#60616b)"}}>(optional)</span></label><input type="password" autoComplete="new-password" style={field} value={token} onChange={e=>setToken(e.target.value)} placeholder="Stored encrypted; never shown again"/>
+   <label style={{display:"block",fontSize:11,fontWeight:700,marginBottom:5}}>Display name</label><input aria-label="MCP server display name" style={field} value={name} onChange={e=>setName(e.target.value)} placeholder="Team knowledge server"/>
+   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>HTTPS MCP endpoint</label><input aria-label="HTTPS MCP endpoint" type="url" style={field} value={endpoint} onChange={e=>setEndpoint(e.target.value)} placeholder="https://mcp.example.com/mcp" autoCapitalize="none"/>
+   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>Bearer token <span style={{fontWeight:400,color:"var(--jd-muted,#60616b)"}}>(optional)</span></label><input aria-label="MCP bearer token" type="password" autoComplete="new-password" style={field} value={token} onChange={e=>setToken(e.target.value)} placeholder="Stored encrypted; never shown again"/>
    <p style={{fontSize:11,lineHeight:1.6,color:"var(--jd-muted,#60616b)"}}>The server hostname must be explicitly allowlisted by the JD operator. Use only trusted servers. Credentials are encrypted at rest.</p>
-   <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowRegister(false)} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>Cancel</button><button disabled={!!busy||!name.trim()||!endpoint.trim()} onClick={register} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",opacity:busy?0.6:1}}>{busy==="register"?"Connecting…":"Connect and discover tools"}</button></div>
+   <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setShowRegister(false);setToken("");}} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>Cancel</button><button disabled={!!busy||!name.trim()||!endpoint.trim()} onClick={register} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",opacity:busy?0.6:1}}>{busy==="register"?"Connecting…":"Connect and discover tools"}</button></div>
   </div>}
   {!servers.length&&!showRegister&&<div style={{...card,textAlign:"center",padding:28}}><Link2 size={25} style={{opacity:.5}}/><div style={{fontWeight:800,marginTop:8}}>No MCP servers connected</div><p style={{fontSize:12,color:"var(--jd-muted,#60616b)"}}>Add an allowlisted remote MCP server to discover its available tools.</p></div>}
   {servers.map(server=>{
@@ -77,8 +80,8 @@ export function JDConnectPanel({notify=()=>{}}){
      <span style={{fontSize:10,fontWeight:800,color:statusColor(server.status)}}>{server.status.toUpperCase()}</span>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginTop:12,padding:"10px 0",borderTop:"1px solid var(--jd-border,#e5e7eb)"}}>
-     <div style={{fontSize:11,fontWeight:800}}>JD access</div>
-     <select aria-label={`JD access for ${server.name}`} value={server.grant?.access_level||"read_only"} disabled={!!busy} onChange={e=>run("grant:"+server.id,()=>call("grants.set",{serverId:server.id,accessLevel:e.target.value}))} style={{...field,width:"auto",minWidth:170,padding:"8px"}}>
+     <div style={{fontSize:11,fontWeight:800}}>JD access</div>{!["owner","admin"].includes(role)&&<span style={{fontSize:11}}>Only owners and admins can widen access.</span>}
+     <select aria-label={`JD access for ${server.name}`} value={server.grant?.access_level||"read_only"} disabled={!!busy||!["owner","admin"].includes(role)} onChange={e=>run("grant:"+server.id,()=>call("grants.set",{serverId:server.id,accessLevel:e.target.value}))} style={{...field,width:"auto",minWidth:170,padding:"8px"}}>
       <option value="read_only">Read only</option><option value="read_write">Read and write</option><option value="full_control">Full control</option>
      </select>
      {server.grant?.access_level&&server.grant.access_level!=="read_only"&&<button onClick={()=>run("revoke-grant:"+server.id,()=>call("grants.revoke",{serverId:server.id}))} disabled={!!busy} style={{...button,background:"var(--jd-soft)",color:"var(--jd-text)"}}>Revoke elevated access</button>}

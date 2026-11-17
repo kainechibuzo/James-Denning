@@ -1,3 +1,5 @@
+import {ComposerTools} from "./ComposerTools.jsx";
+import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
@@ -161,6 +163,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
   const [showDepartments, setShowDepartments] = useState(false);
+  const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -352,7 +355,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const newConversation = () => {
     if (sending) return;
     conversationSequence.current++;setOpeningId(null);setHistoryError("");
-    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);
+    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);
   };
   const handledNavigation = useRef(null);
   useEffect(() => {
@@ -361,6 +364,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     const view = navigationRequest.view;
     setShowReview(view === "review"); setShowUsage(view === "usage");
     setShowRuns(view === "runs"); setShowDepartments(view === "departments");
+    setShowConnectors(view === "connectors");
     conversationSequence.current++;setOpeningId(null);
     setHistoryOpen(view === "history");
     if(view === "history")void loadHistory();
@@ -498,7 +502,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-heading{font-size:23px}
         }
       `}</style>
-      {historyOpen ? <ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
+      {showConnectors ? <ConnectorDirectory organizationName={organizationName} role={user?.role} onBack={()=>setShowConnectors(false)}/> : historyOpen ? <ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
         onOpen={loadConversation} onRefresh={loadHistory} onNew={newConversation} onBack={()=>{conversationSequence.current++;setOpeningId(null);setHistoryOpen(false);}}/> : (
       <section className="jd-main">
         <header className="jd-top">
@@ -539,8 +543,10 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
-            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={isWorking ? "Send another request while JD works…" : "Ask James-Denning to do something..."} rows={2}/>
-            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div></div>
+            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
+              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>
+              <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
+            </ComposerTools>
           </div>
             <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Submitted jobs continue in the background, even if you close this tab."}</div>

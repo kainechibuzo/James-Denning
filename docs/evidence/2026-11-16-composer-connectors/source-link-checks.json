@@ -1,0 +1,702 @@
+[
+  {
+    "id": "pipedrive",
+    "source": "https://github.com/ckalima/pipedrive-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "ckalima/pipedrive-mcp-server",
+      "html_url": "https://github.com/ckalima/pipedrive-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "zendesk",
+    "source": "https://github.com/michaelrice/zendesk-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "michaelrice/zendesk-mcp",
+      "html_url": "https://github.com/michaelrice/zendesk-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "freshdesk",
+    "source": "https://github.com/effytech/freshdesk_mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "effytech/freshdesk_mcp",
+      "html_url": "https://github.com/effytech/freshdesk_mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "attio",
+    "source": "https://github.com/hmk/attio-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "hmk/attio-mcp-server",
+      "html_url": "https://github.com/hmk/attio-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "apollo",
+    "source": "https://github.com/louis030195/apollo-io-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "louis030195/apollo-io-mcp",
+      "html_url": "https://github.com/louis030195/apollo-io-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "shopify-storefront",
+    "source": "https://github.com/QuentinCody/shopify-storefront-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "QuentinCody/shopify-storefront-mcp-server",
+      "html_url": "https://github.com/QuentinCody/shopify-storefront-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "woocommerce",
+    "source": "https://github.com/wppoland/woocommerce-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "wppoland/woocommerce-mcp",
+      "html_url": "https://github.com/wppoland/woocommerce-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "xero",
+    "source": "https://github.com/XeroAPI/xero-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "XeroAPI/xero-mcp-server",
+      "html_url": "https://github.com/XeroAPI/xero-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "bankstatemently",
+    "source": "https://github.com/bankstatemently/plugins",
+    "metadata": {
+      "archived": false,
+      "full_name": "bankstatemently/plugins",
+      "html_url": "https://github.com/bankstatemently/plugins"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "invoice-maker",
+    "source": "https://github.com/InnarM/blank-invoice-maker-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "InnarM/blank-invoice-maker-mcp",
+      "html_url": "https://github.com/InnarM/blank-invoice-maker-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "camt-053-statements",
+    "source": "https://github.com/sebastienrousseau/camt053-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "sebastienrousseau/camt053-mcp",
+      "html_url": "https://github.com/sebastienrousseau/camt053-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "synder-importer",
+    "source": "https://github.com/SynderAccounting/gl-importer-plugin",
+    "metadata": {
+      "archived": false,
+      "full_name": "SynderAccounting/gl-importer-plugin",
+      "html_url": "https://github.com/SynderAccounting/gl-importer-plugin"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "slack",
+    "source": "https://github.com/korotovsky/slack-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "korotovsky/slack-mcp-server",
+      "html_url": "https://github.com/korotovsky/slack-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "microsoft-teams",
+    "source": "https://github.com/InditexTech/mcp-teams-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "InditexTech/mcp-teams-server",
+      "html_url": "https://github.com/InditexTech/mcp-teams-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "gmail",
+    "source": "https://github.com/A1-x-Tech/mcp-google-gmail",
+    "metadata": {
+      "archived": false,
+      "full_name": "A1-x-Tech/mcp-google-gmail",
+      "html_url": "https://github.com/A1-x-Tech/mcp-google-gmail"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "outlook",
+    "source": "https://github.com/dockndevai/mcp-outlook",
+    "metadata": {
+      "archived": false,
+      "full_name": "dockndevai/mcp-outlook",
+      "html_url": "https://github.com/dockndevai/mcp-outlook"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "google-calendar",
+    "source": "https://github.com/takumi0706/google-calendar-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "takumi0706/google-calendar-mcp",
+      "html_url": "https://github.com/takumi0706/google-calendar-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "resend",
+    "source": "https://github.com/helbertparanhos/resend-email-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "helbertparanhos/resend-email-mcp",
+      "html_url": "https://github.com/helbertparanhos/resend-email-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "sendgrid",
+    "source": "https://github.com/Choppaaahh/sendgrid-mcp-secure",
+    "metadata": {
+      "archived": false,
+      "full_name": "Choppaaahh/sendgrid-mcp-secure",
+      "html_url": "https://github.com/Choppaaahh/sendgrid-mcp-secure"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "mailchimp",
+    "source": "https://github.com/damientilman/mailchimp-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "damientilman/mailchimp-mcp-server",
+      "html_url": "https://github.com/damientilman/mailchimp-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "discord",
+    "source": "https://github.com/jaimenbell/discord-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "jaimenbell/discord-mcp",
+      "html_url": "https://github.com/jaimenbell/discord-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "google-chat",
+    "source": "https://github.com/A1-x-Tech/mcp-google-chat",
+    "metadata": {
+      "archived": false,
+      "full_name": "A1-x-Tech/mcp-google-chat",
+      "html_url": "https://github.com/A1-x-Tech/mcp-google-chat"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "notion",
+    "source": "https://github.com/Grey-Iris/easy-notion-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "Grey-Iris/easy-notion-mcp",
+      "html_url": "https://github.com/Grey-Iris/easy-notion-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "asana",
+    "source": "https://github.com/roychri/mcp-server-asana",
+    "metadata": {
+      "archived": false,
+      "full_name": "roychri/mcp-server-asana",
+      "html_url": "https://github.com/roychri/mcp-server-asana"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "linear",
+    "source": "https://github.com/tacticlaunch/mcp-linear",
+    "metadata": {
+      "archived": false,
+      "full_name": "tacticlaunch/mcp-linear",
+      "html_url": "https://github.com/tacticlaunch/mcp-linear"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "clickup",
+    "source": "https://github.com/nicholasbester/clickup-cli",
+    "metadata": {
+      "archived": false,
+      "full_name": "nicholasbester/clickup-cli",
+      "html_url": "https://github.com/nicholasbester/clickup-cli"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "trello",
+    "source": "https://github.com/agrath/Trello-Desktop-MCP",
+    "metadata": {
+      "archived": false,
+      "full_name": "agrath/Trello-Desktop-MCP",
+      "html_url": "https://github.com/agrath/Trello-Desktop-MCP"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "todoist",
+    "source": "https://github.com/christulino/todoist-v1-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "christulino/todoist-v1-mcp-server",
+      "html_url": "https://github.com/christulino/todoist-v1-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "airtable",
+    "source": "https://github.com/domdomegg/airtable-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "domdomegg/airtable-mcp-server",
+      "html_url": "https://github.com/domdomegg/airtable-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "confluence",
+    "source": "https://github.com/aashari/mcp-server-atlassian-confluence",
+    "metadata": {
+      "archived": false,
+      "full_name": "aashari/mcp-server-atlassian-confluence",
+      "html_url": "https://github.com/aashari/mcp-server-atlassian-confluence"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "jira",
+    "source": "https://github.com/aashari/mcp-server-atlassian-jira",
+    "metadata": {
+      "archived": false,
+      "full_name": "aashari/mcp-server-atlassian-jira",
+      "html_url": "https://github.com/aashari/mcp-server-atlassian-jira"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "google-tasks",
+    "source": "https://github.com/arpitbatra123/mcp-googletasks",
+    "metadata": {
+      "archived": false,
+      "full_name": "arpitbatra123/mcp-googletasks",
+      "html_url": "https://github.com/arpitbatra123/mcp-googletasks"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "github",
+    "source": "https://github.com/github/github-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "github/github-mcp-server",
+      "html_url": "https://github.com/github/github-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "gitlab",
+    "source": "https://github.com/jmrplens/gitlab-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "jmrplens/gitlab-mcp-server",
+      "html_url": "https://github.com/jmrplens/gitlab-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "supabase",
+    "source": "https://github.com/supabase-community/supabase-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "supabase/mcp",
+      "html_url": "https://github.com/supabase/mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "neon",
+    "source": "https://github.com/neondatabase/mcp-server-neon",
+    "metadata": {
+      "archived": false,
+      "full_name": "neondatabase/mcp-server-neon",
+      "html_url": "https://github.com/neondatabase/mcp-server-neon"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "redis",
+    "source": "https://github.com/redis/mcp-redis",
+    "metadata": {
+      "archived": false,
+      "full_name": "redis/mcp-redis",
+      "html_url": "https://github.com/redis/mcp-redis"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "cloudflare",
+    "source": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "metadata": {
+      "archived": false,
+      "full_name": "cloudflare/mcp-server-cloudflare",
+      "html_url": "https://github.com/cloudflare/mcp-server-cloudflare"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "sentry",
+    "source": "https://github.com/getsentry/sentry-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "getsentry/toolkit",
+      "html_url": "https://github.com/getsentry/toolkit"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "playwright",
+    "source": "https://github.com/microsoft/playwright-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "microsoft/playwright-mcp",
+      "html_url": "https://github.com/microsoft/playwright-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "azure",
+    "source": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server",
+    "metadata": {
+      "archived": false,
+      "full_name": "microsoft/mcp",
+      "html_url": "https://github.com/microsoft/mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "markitdown",
+    "source": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "microsoft/markitdown",
+      "html_url": "https://github.com/microsoft/markitdown"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "postgresql",
+    "source": "https://github.com/crystaldba/postgres-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "crystaldba/postgres-mcp",
+      "html_url": "https://github.com/crystaldba/postgres-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "mongodb-lens",
+    "source": "https://github.com/furey/mongodb-lens",
+    "metadata": {
+      "archived": false,
+      "full_name": "furey/mongodb-lens",
+      "html_url": "https://github.com/furey/mongodb-lens"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "snowflake",
+    "source": "https://github.com/isaacwasserman/mcp-snowflake-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "isaacwasserman/mcp-snowflake-server",
+      "html_url": "https://github.com/isaacwasserman/mcp-snowflake-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "clickhouse",
+    "source": "https://github.com/ClickHouse/mcp-clickhouse",
+    "metadata": {
+      "archived": false,
+      "full_name": "ClickHouse/mcp-clickhouse",
+      "html_url": "https://github.com/ClickHouse/mcp-clickhouse"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "bigquery",
+    "source": "https://github.com/ergut/mcp-bigquery-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "ergut/mcp-bigquery-server",
+      "html_url": "https://github.com/ergut/mcp-bigquery-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "databricks",
+    "source": "https://github.com/JordiNeil/mcp-databricks-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "JordiNeil/mcp-databricks-server",
+      "html_url": "https://github.com/JordiNeil/mcp-databricks-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "metabase",
+    "source": "https://github.com/1luvc0d3/metabase-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "1luvc0d3/metabase-mcp",
+      "html_url": "https://github.com/1luvc0d3/metabase-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "duckdb",
+    "source": "https://github.com/ktanaka101/mcp-server-duckdb",
+    "metadata": {
+      "archived": false,
+      "full_name": "ktanaka101/mcp-server-duckdb",
+      "html_url": "https://github.com/ktanaka101/mcp-server-duckdb"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "sqlite",
+    "source": "https://github.com/jparkerweb/mcp-sqlite",
+    "metadata": {
+      "archived": false,
+      "full_name": "jparkerweb/mcp-sqlite",
+      "html_url": "https://github.com/jparkerweb/mcp-sqlite"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "qdrant",
+    "source": "https://github.com/qdrant/mcp-server-qdrant",
+    "metadata": {
+      "archived": false,
+      "full_name": "qdrant/mcp-server-qdrant",
+      "html_url": "https://github.com/qdrant/mcp-server-qdrant"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "brave-search",
+    "source": "https://github.com/brave/brave-search-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "brave/brave-search-mcp-server",
+      "html_url": "https://github.com/brave/brave-search-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "exa",
+    "source": "https://github.com/exa-labs/exa-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "exa-labs/exa-mcp-server",
+      "html_url": "https://github.com/exa-labs/exa-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "firecrawl",
+    "source": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "firecrawl/firecrawl-mcp-server",
+      "html_url": "https://github.com/firecrawl/firecrawl-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "tavily",
+    "source": "https://github.com/Tomatio13/mcp-server-tavily",
+    "metadata": {
+      "archived": false,
+      "full_name": "Tomatio13/mcp-server-tavily",
+      "html_url": "https://github.com/Tomatio13/mcp-server-tavily"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "perplexity",
+    "source": "https://github.com/tanigami/mcp-server-perplexity",
+    "metadata": {
+      "archived": false,
+      "full_name": "tanigami/mcp-server-perplexity",
+      "html_url": "https://github.com/tanigami/mcp-server-perplexity"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "apify",
+    "source": "https://github.com/apify/actors-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "apify/apify-mcp-server",
+      "html_url": "https://github.com/apify/apify-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "context7",
+    "source": "https://github.com/upstash/context7",
+    "metadata": {
+      "archived": false,
+      "full_name": "upstash/context7",
+      "html_url": "https://github.com/upstash/context7"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "arxiv",
+    "source": "https://github.com/blazickjp/arxiv-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "blazickjp/arxiv-mcp-server",
+      "html_url": "https://github.com/blazickjp/arxiv-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "searxng",
+    "source": "https://github.com/ihor-sokoliuk/mcp-searxng",
+    "metadata": {
+      "archived": false,
+      "full_name": "ihor-sokoliuk/mcp-searxng",
+      "html_url": "https://github.com/ihor-sokoliuk/mcp-searxng"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "trackmage",
+    "source": "https://github.com/trackmage/trackmage-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "trackmage/trackmage-mcp-server",
+      "html_url": "https://github.com/trackmage/trackmage-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "stadia-maps",
+    "source": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts",
+    "metadata": {
+      "archived": false,
+      "full_name": "stadiamaps/stadiamaps-mcp-server-ts",
+      "html_url": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "openstreetmap",
+    "source": "https://github.com/jagan-shanmugam/open-streetmap-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "jagan-shanmugam/open-streetmap-mcp",
+      "html_url": "https://github.com/jagan-shanmugam/open-streetmap-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "google-maps-via-hasdata",
+    "source": "https://github.com/HasData/google-maps-mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "HasData/google-maps-mcp",
+      "html_url": "https://github.com/HasData/google-maps-mcp"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "weatherapi",
+    "source": "https://github.com/devilcoder01/weather-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "sjanaX01/weather-mcp-server",
+      "html_url": "https://github.com/sjanaX01/weather-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "nigeria-postcodes",
+    "source": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp",
+    "metadata": {
+      "archived": false,
+      "full_name": "Adeniyikayodee/ng-postcode",
+      "html_url": "https://github.com/Adeniyikayodee/ng-postcode"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "timezone-tools",
+    "source": "https://github.com/SecretiveShell/MCP-timeserver",
+    "metadata": {
+      "archived": false,
+      "full_name": "SecretiveShell/MCP-timeserver",
+      "html_url": "https://github.com/SecretiveShell/MCP-timeserver"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "ip-find",
+    "source": "https://github.com/ipfind/ipfind-mcp-server",
+    "metadata": {
+      "archived": false,
+      "full_name": "ipfind/ipfind-mcp-server",
+      "html_url": "https://github.com/ipfind/ipfind-mcp-server"
+    },
+    "retrieved": true
+  },
+  {
+    "id": "ip2location",
+    "source": "https://github.com/ip2location/mcp-ip2location-io",
+    "metadata": {
+      "archived": false,
+      "full_name": "ip2location/mcp-ip2location-io",
+      "html_url": "https://github.com/ip2location/mcp-ip2location-io"
+    },
+    "retrieved": true
+  }
+]

@@ -1,0 +1,702 @@
+[
+  {
+    "id": "pipedrive",
+    "name": "Pipedrive",
+    "category": "Sales & customer support",
+    "description": "Deals and sales pipeline",
+    "sourceUrl": "https://github.com/ckalima/pipedrive-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "zendesk",
+    "name": "Zendesk",
+    "category": "Sales & customer support",
+    "description": "Customer tickets and support",
+    "sourceUrl": "https://github.com/michaelrice/zendesk-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "freshdesk",
+    "name": "Freshdesk",
+    "category": "Sales & customer support",
+    "description": "Helpdesk workflows",
+    "sourceUrl": "https://github.com/effytech/freshdesk_mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "attio",
+    "name": "Attio",
+    "category": "Sales & customer support",
+    "description": "Customer relationship records",
+    "sourceUrl": "https://github.com/hmk/attio-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "apollo",
+    "name": "Apollo",
+    "category": "Sales & customer support",
+    "description": "Prospecting and company research",
+    "sourceUrl": "https://github.com/louis030195/apollo-io-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "shopify-storefront",
+    "name": "Shopify Storefront",
+    "category": "Sales & customer support",
+    "description": "Storefront product discovery",
+    "sourceUrl": "https://github.com/QuentinCody/shopify-storefront-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "woocommerce",
+    "name": "WooCommerce",
+    "category": "Sales & customer support",
+    "description": "Online store operations",
+    "sourceUrl": "https://github.com/wppoland/woocommerce-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "xero",
+    "name": "Xero",
+    "category": "Finance & accounting",
+    "description": "Accounting records",
+    "sourceUrl": "https://github.com/XeroAPI/xero-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "bankstatemently",
+    "name": "Bankstatemently",
+    "category": "Finance & accounting",
+    "description": "Bank statement parsing",
+    "sourceUrl": "https://github.com/bankstatemently/plugins",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "invoice-maker",
+    "name": "Invoice Maker",
+    "category": "Finance & accounting",
+    "description": "Invoice preparation",
+    "sourceUrl": "https://github.com/InnarM/blank-invoice-maker-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "camt-053-statements",
+    "name": "CAMT.053 statements",
+    "category": "Finance & accounting",
+    "description": "Bank statement validation and export",
+    "sourceUrl": "https://github.com/sebastienrousseau/camt053-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "synder-importer",
+    "name": "Synder Importer",
+    "category": "Finance & accounting",
+    "description": "Accounting data imports",
+    "sourceUrl": "https://github.com/SynderAccounting/gl-importer-plugin",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "category": "Communication",
+    "description": "Team conversations",
+    "sourceUrl": "https://github.com/korotovsky/slack-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "microsoft-teams",
+    "name": "Microsoft Teams",
+    "category": "Communication",
+    "description": "Team collaboration",
+    "sourceUrl": "https://github.com/InditexTech/mcp-teams-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "gmail",
+    "name": "Gmail",
+    "category": "Communication",
+    "description": "Mailbox workflows",
+    "sourceUrl": "https://github.com/A1-x-Tech/mcp-google-gmail",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "outlook",
+    "name": "Outlook",
+    "category": "Communication",
+    "description": "Email and productivity",
+    "sourceUrl": "https://github.com/dockndevai/mcp-outlook",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "google-calendar",
+    "name": "Google Calendar",
+    "category": "Communication",
+    "description": "Calendar planning",
+    "sourceUrl": "https://github.com/takumi0706/google-calendar-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "resend",
+    "name": "Resend",
+    "category": "Communication",
+    "description": "Email delivery and diagnostics",
+    "sourceUrl": "https://github.com/helbertparanhos/resend-email-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "sendgrid",
+    "name": "SendGrid",
+    "category": "Communication",
+    "description": "Controlled email sending",
+    "sourceUrl": "https://github.com/Choppaaahh/sendgrid-mcp-secure",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "mailchimp",
+    "name": "Mailchimp",
+    "category": "Communication",
+    "description": "Campaigns and audiences",
+    "sourceUrl": "https://github.com/damientilman/mailchimp-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "discord",
+    "name": "Discord",
+    "category": "Communication",
+    "description": "Community conversations",
+    "sourceUrl": "https://github.com/jaimenbell/discord-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "google-chat",
+    "name": "Google Chat",
+    "category": "Communication",
+    "description": "Workspace messaging",
+    "sourceUrl": "https://github.com/A1-x-Tech/mcp-google-chat",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "category": "Projects & knowledge",
+    "description": "Pages and team knowledge",
+    "sourceUrl": "https://github.com/Grey-Iris/easy-notion-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "asana",
+    "name": "Asana",
+    "category": "Projects & knowledge",
+    "description": "Project coordination",
+    "sourceUrl": "https://github.com/roychri/mcp-server-asana",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "linear",
+    "name": "Linear",
+    "category": "Projects & knowledge",
+    "description": "Issues and planning",
+    "sourceUrl": "https://github.com/tacticlaunch/mcp-linear",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "clickup",
+    "name": "ClickUp",
+    "category": "Projects & knowledge",
+    "description": "Tasks and projects",
+    "sourceUrl": "https://github.com/nicholasbester/clickup-cli",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "trello",
+    "name": "Trello",
+    "category": "Projects & knowledge",
+    "description": "Boards and cards",
+    "sourceUrl": "https://github.com/agrath/Trello-Desktop-MCP",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "todoist",
+    "name": "Todoist",
+    "category": "Projects & knowledge",
+    "description": "Personal task planning",
+    "sourceUrl": "https://github.com/christulino/todoist-v1-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "airtable",
+    "name": "Airtable",
+    "category": "Projects & knowledge",
+    "description": "Structured business records",
+    "sourceUrl": "https://github.com/domdomegg/airtable-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "confluence",
+    "name": "Confluence",
+    "category": "Projects & knowledge",
+    "description": "Team documentation",
+    "sourceUrl": "https://github.com/aashari/mcp-server-atlassian-confluence",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "jira",
+    "name": "Jira",
+    "category": "Projects & knowledge",
+    "description": "Issue tracking",
+    "sourceUrl": "https://github.com/aashari/mcp-server-atlassian-jira",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "google-tasks",
+    "name": "Google Tasks",
+    "category": "Projects & knowledge",
+    "description": "Task lists",
+    "sourceUrl": "https://github.com/arpitbatra123/mcp-googletasks",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "github",
+    "name": "GitHub",
+    "category": "Engineering & cloud",
+    "description": "Repositories, issues and pull requests",
+    "sourceUrl": "https://github.com/github/github-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "gitlab",
+    "name": "GitLab",
+    "category": "Engineering & cloud",
+    "description": "Repository workflows",
+    "sourceUrl": "https://github.com/jmrplens/gitlab-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "supabase",
+    "name": "Supabase",
+    "category": "Engineering & cloud",
+    "description": "Backend and database operations",
+    "sourceUrl": "https://github.com/supabase-community/supabase-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "category": "Engineering & cloud",
+    "description": "Postgres project operations",
+    "sourceUrl": "https://github.com/neondatabase/mcp-server-neon",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "redis",
+    "name": "Redis",
+    "category": "Engineering & cloud",
+    "description": "Cache and data operations",
+    "sourceUrl": "https://github.com/redis/mcp-redis",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "cloudflare",
+    "name": "Cloudflare",
+    "category": "Engineering & cloud",
+    "description": "Cloud services",
+    "sourceUrl": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "sentry",
+    "name": "Sentry",
+    "category": "Engineering & cloud",
+    "description": "Error investigation",
+    "sourceUrl": "https://github.com/getsentry/sentry-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "playwright",
+    "name": "Playwright",
+    "category": "Engineering & cloud",
+    "description": "Browser automation",
+    "sourceUrl": "https://github.com/microsoft/playwright-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "azure",
+    "name": "Azure",
+    "category": "Engineering & cloud",
+    "description": "Cloud resource workflows",
+    "sourceUrl": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "markitdown",
+    "name": "MarkItDown",
+    "category": "Engineering & cloud",
+    "description": "Document conversion",
+    "sourceUrl": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "postgresql",
+    "name": "PostgreSQL",
+    "category": "Data & analytics",
+    "description": "Database analysis",
+    "sourceUrl": "https://github.com/crystaldba/postgres-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "mongodb-lens",
+    "name": "MongoDB Lens",
+    "category": "Data & analytics",
+    "description": "Document database exploration",
+    "sourceUrl": "https://github.com/furey/mongodb-lens",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "snowflake",
+    "name": "Snowflake",
+    "category": "Data & analytics",
+    "description": "Data warehouse workflows",
+    "sourceUrl": "https://github.com/isaacwasserman/mcp-snowflake-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "clickhouse",
+    "name": "ClickHouse",
+    "category": "Data & analytics",
+    "description": "Analytical queries",
+    "sourceUrl": "https://github.com/ClickHouse/mcp-clickhouse",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "bigquery",
+    "name": "BigQuery",
+    "category": "Data & analytics",
+    "description": "Warehouse analysis",
+    "sourceUrl": "https://github.com/ergut/mcp-bigquery-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "databricks",
+    "name": "Databricks",
+    "category": "Data & analytics",
+    "description": "Data platform workflows",
+    "sourceUrl": "https://github.com/JordiNeil/mcp-databricks-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "metabase",
+    "name": "Metabase",
+    "category": "Data & analytics",
+    "description": "Business intelligence",
+    "sourceUrl": "https://github.com/1luvc0d3/metabase-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "duckdb",
+    "name": "DuckDB",
+    "category": "Data & analytics",
+    "description": "Local analytical queries",
+    "sourceUrl": "https://github.com/ktanaka101/mcp-server-duckdb",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "sqlite",
+    "name": "SQLite",
+    "category": "Data & analytics",
+    "description": "Local database exploration",
+    "sourceUrl": "https://github.com/jparkerweb/mcp-sqlite",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "qdrant",
+    "name": "Qdrant",
+    "category": "Data & analytics",
+    "description": "Vector search",
+    "sourceUrl": "https://github.com/qdrant/mcp-server-qdrant",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "brave-search",
+    "name": "Brave Search",
+    "category": "Research & web",
+    "description": "Web research",
+    "sourceUrl": "https://github.com/brave/brave-search-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "exa",
+    "name": "Exa",
+    "category": "Research & web",
+    "description": "Web search and discovery",
+    "sourceUrl": "https://github.com/exa-labs/exa-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "firecrawl",
+    "name": "Firecrawl",
+    "category": "Research & web",
+    "description": "Web extraction",
+    "sourceUrl": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "tavily",
+    "name": "Tavily",
+    "category": "Research & web",
+    "description": "Search and research",
+    "sourceUrl": "https://github.com/Tomatio13/mcp-server-tavily",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "category": "Research & web",
+    "description": "Research assistance",
+    "sourceUrl": "https://github.com/tanigami/mcp-server-perplexity",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "apify",
+    "name": "Apify",
+    "category": "Research & web",
+    "description": "Web data workflows",
+    "sourceUrl": "https://github.com/apify/actors-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "context7",
+    "name": "Context7",
+    "category": "Research & web",
+    "description": "Software documentation",
+    "sourceUrl": "https://github.com/upstash/context7",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "arxiv",
+    "name": "arXiv",
+    "category": "Research & web",
+    "description": "Research papers",
+    "sourceUrl": "https://github.com/blazickjp/arxiv-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "searxng",
+    "name": "SearXNG",
+    "category": "Research & web",
+    "description": "Self-hosted search",
+    "sourceUrl": "https://github.com/ihor-sokoliuk/mcp-searxng",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "trackmage",
+    "name": "TrackMage",
+    "category": "Logistics & location",
+    "description": "Shipment tracking",
+    "sourceUrl": "https://github.com/trackmage/trackmage-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "stadia-maps",
+    "name": "Stadia Maps",
+    "category": "Logistics & location",
+    "description": "Routing and geocoding",
+    "sourceUrl": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "openstreetmap",
+    "name": "OpenStreetMap",
+    "category": "Logistics & location",
+    "description": "Location data",
+    "sourceUrl": "https://github.com/jagan-shanmugam/open-streetmap-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "google-maps-via-hasdata",
+    "name": "Google Maps via HasData",
+    "category": "Logistics & location",
+    "description": "Places and business listings",
+    "sourceUrl": "https://github.com/HasData/google-maps-mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "weatherapi",
+    "name": "WeatherAPI",
+    "category": "Logistics & location",
+    "description": "Weather forecasts",
+    "sourceUrl": "https://github.com/devilcoder01/weather-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "nigeria-postcodes",
+    "name": "Nigeria Postcodes",
+    "category": "Logistics & location",
+    "description": "Nigerian postcode lookup",
+    "sourceUrl": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "timezone-tools",
+    "name": "Timezone tools",
+    "category": "Logistics & location",
+    "description": "Local time across locations",
+    "sourceUrl": "https://github.com/SecretiveShell/MCP-timeserver",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "ip-find",
+    "name": "IP Find",
+    "category": "Logistics & location",
+    "description": "IP location context",
+    "sourceUrl": "https://github.com/ipfind/ipfind-mcp-server",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  },
+  {
+    "id": "ip2location",
+    "name": "IP2Location",
+    "category": "Logistics & location",
+    "description": "IP geolocation",
+    "sourceUrl": "https://github.com/ip2location/mcp-ip2location-io",
+    "listingStatus": "community_listed",
+    "compatibility": "not_verified",
+    "endpoint": null
+  }
+]

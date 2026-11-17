@@ -1,0 +1,287 @@
+{
+  "directory": "https://github.com/punkpeye/awesome-mcp-servers",
+  "referenceGuidance": "https://github.com/modelcontextprotocol/servers",
+  "method": "70 manually selected listings from the retrieved directory. No server code executed, credentials sent or endpoint invented. Publisher ownership, safety, transport and authentication compatibility require review.",
+  "entries": [
+    {
+      "name": "Pipedrive",
+      "source": "https://github.com/ckalima/pipedrive-mcp-server"
+    },
+    {
+      "name": "Zendesk",
+      "source": "https://github.com/michaelrice/zendesk-mcp"
+    },
+    {
+      "name": "Freshdesk",
+      "source": "https://github.com/effytech/freshdesk_mcp"
+    },
+    {
+      "name": "Attio",
+      "source": "https://github.com/hmk/attio-mcp-server"
+    },
+    {
+      "name": "Apollo",
+      "source": "https://github.com/louis030195/apollo-io-mcp"
+    },
+    {
+      "name": "Shopify Storefront",
+      "source": "https://github.com/QuentinCody/shopify-storefront-mcp-server"
+    },
+    {
+      "name": "WooCommerce",
+      "source": "https://github.com/wppoland/woocommerce-mcp"
+    },
+    {
+      "name": "Xero",
+      "source": "https://github.com/XeroAPI/xero-mcp-server"
+    },
+    {
+      "name": "Bankstatemently",
+      "source": "https://github.com/bankstatemently/plugins"
+    },
+    {
+      "name": "Invoice Maker",
+      "source": "https://github.com/InnarM/blank-invoice-maker-mcp"
+    },
+    {
+      "name": "CAMT.053 statements",
+      "source": "https://github.com/sebastienrousseau/camt053-mcp"
+    },
+    {
+      "name": "Synder Importer",
+      "source": "https://github.com/SynderAccounting/gl-importer-plugin"
+    },
+    {
+      "name": "Slack",
+      "source": "https://github.com/korotovsky/slack-mcp-server"
+    },
+    {
+      "name": "Microsoft Teams",
+      "source": "https://github.com/InditexTech/mcp-teams-server"
+    },
+    {
+      "name": "Gmail",
+      "source": "https://github.com/A1-x-Tech/mcp-google-gmail"
+    },
+    {
+      "name": "Outlook",
+      "source": "https://github.com/dockndevai/mcp-outlook"
+    },
+    {
+      "name": "Google Calendar",
+      "source": "https://github.com/takumi0706/google-calendar-mcp"
+    },
+    {
+      "name": "Resend",
+      "source": "https://github.com/helbertparanhos/resend-email-mcp"
+    },
+    {
+      "name": "SendGrid",
+      "source": "https://github.com/Choppaaahh/sendgrid-mcp-secure"
+    },
+    {
+      "name": "Mailchimp",
+      "source": "https://github.com/damientilman/mailchimp-mcp-server"
+    },
+    {
+      "name": "Discord",
+      "source": "https://github.com/jaimenbell/discord-mcp"
+    },
+    {
+      "name": "Google Chat",
+      "source": "https://github.com/A1-x-Tech/mcp-google-chat"
+    },
+    {
+      "name": "Notion",
+      "source": "https://github.com/Grey-Iris/easy-notion-mcp"
+    },
+    {
+      "name": "Asana",
+      "source": "https://github.com/roychri/mcp-server-asana"
+    },
+    {
+      "name": "Linear",
+      "source": "https://github.com/tacticlaunch/mcp-linear"
+    },
+    {
+      "name": "ClickUp",
+      "source": "https://github.com/nicholasbester/clickup-cli"
+    },
+    {
+      "name": "Trello",
+      "source": "https://github.com/agrath/Trello-Desktop-MCP"
+    },
+    {
+      "name": "Todoist",
+      "source": "https://github.com/christulino/todoist-v1-mcp-server"
+    },
+    {
+      "name": "Airtable",
+      "source": "https://github.com/domdomegg/airtable-mcp-server"
+    },
+    {
+      "name": "Confluence",
+      "source": "https://github.com/aashari/mcp-server-atlassian-confluence"
+    },
+    {
+      "name": "Jira",
+      "source": "https://github.com/aashari/mcp-server-atlassian-jira"
+    },
+    {
+      "name": "Google Tasks",
+      "source": "https://github.com/arpitbatra123/mcp-googletasks"
+    },
+    {
+      "name": "GitHub",
+      "source": "https://github.com/github/github-mcp-server"
+    },
+    {
+      "name": "GitLab",
+      "source": "https://github.com/jmrplens/gitlab-mcp-server"
+    },
+    {
+      "name": "Supabase",
+      "source": "https://github.com/supabase-community/supabase-mcp"
+    },
+    {
+      "name": "Neon",
+      "source": "https://github.com/neondatabase/mcp-server-neon"
+    },
+    {
+      "name": "Redis",
+      "source": "https://github.com/redis/mcp-redis"
+    },
+    {
+      "name": "Cloudflare",
+      "source": "https://github.com/cloudflare/mcp-server-cloudflare"
+    },
+    {
+      "name": "Sentry",
+      "source": "https://github.com/getsentry/sentry-mcp"
+    },
+    {
+      "name": "Playwright",
+      "source": "https://github.com/microsoft/playwright-mcp"
+    },
+    {
+      "name": "Azure",
+      "source": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server"
+    },
+    {
+      "name": "MarkItDown",
+      "source": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp"
+    },
+    {
+      "name": "PostgreSQL",
+      "source": "https://github.com/crystaldba/postgres-mcp"
+    },
+    {
+      "name": "MongoDB Lens",
+      "source": "https://github.com/furey/mongodb-lens"
+    },
+    {
+      "name": "Snowflake",
+      "source": "https://github.com/isaacwasserman/mcp-snowflake-server"
+    },
+    {
+      "name": "ClickHouse",
+      "source": "https://github.com/ClickHouse/mcp-clickhouse"
+    },
+    {
+      "name": "BigQuery",
+      "source": "https://github.com/ergut/mcp-bigquery-server"
+    },
+    {
+      "name": "Databricks",
+      "source": "https://github.com/JordiNeil/mcp-databricks-server"
+    },
+    {
+      "name": "Metabase",
+      "source": "https://github.com/1luvc0d3/metabase-mcp"
+    },
+    {
+      "name": "DuckDB",
+      "source": "https://github.com/ktanaka101/mcp-server-duckdb"
+    },
+    {
+      "name": "SQLite",
+      "source": "https://github.com/jparkerweb/mcp-sqlite"
+    },
+    {
+      "name": "Qdrant",
+      "source": "https://github.com/qdrant/mcp-server-qdrant"
+    },
+    {
+      "name": "Brave Search",
+      "source": "https://github.com/brave/brave-search-mcp-server"
+    },
+    {
+      "name": "Exa",
+      "source": "https://github.com/exa-labs/exa-mcp-server"
+    },
+    {
+      "name": "Firecrawl",
+      "source": "https://github.com/firecrawl/firecrawl-mcp-server"
+    },
+    {
+      "name": "Tavily",
+      "source": "https://github.com/Tomatio13/mcp-server-tavily"
+    },
+    {
+      "name": "Perplexity",
+      "source": "https://github.com/tanigami/mcp-server-perplexity"
+    },
+    {
+      "name": "Apify",
+      "source": "https://github.com/apify/actors-mcp-server"
+    },
+    {
+      "name": "Context7",
+      "source": "https://github.com/upstash/context7"
+    },
+    {
+      "name": "arXiv",
+      "source": "https://github.com/blazickjp/arxiv-mcp-server"
+    },
+    {
+      "name": "SearXNG",
+      "source": "https://github.com/ihor-sokoliuk/mcp-searxng"
+    },
+    {
+      "name": "TrackMage",
+      "source": "https://github.com/trackmage/trackmage-mcp-server"
+    },
+    {
+      "name": "Stadia Maps",
+      "source": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts"
+    },
+    {
+      "name": "OpenStreetMap",
+      "source": "https://github.com/jagan-shanmugam/open-streetmap-mcp"
+    },
+    {
+      "name": "Google Maps via HasData",
+      "source": "https://github.com/HasData/google-maps-mcp"
+    },
+    {
+      "name": "WeatherAPI",
+      "source": "https://github.com/devilcoder01/weather-mcp-server"
+    },
+    {
+      "name": "Nigeria Postcodes",
+      "source": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp"
+    },
+    {
+      "name": "Timezone tools",
+      "source": "https://github.com/SecretiveShell/MCP-timeserver"
+    },
+    {
+      "name": "IP Find",
+      "source": "https://github.com/ipfind/ipfind-mcp-server"
+    },
+    {
+      "name": "IP2Location",
+      "source": "https://github.com/ip2location/mcp-ip2location-io"
+    }
+  ]
+}

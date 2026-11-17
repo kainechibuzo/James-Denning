@@ -10,7 +10,7 @@ import { OrganizationCtx } from "../contexts/organization.jsx";
 import { Card, Btn, Badge, Spinner } from "../components/ui.jsx";
 import { buildAlertEmail } from "../services/email/index.js";
 import { PRODUCT, INDUSTRIES, MODULES, getIndustryLabel, storeWorkspaceType } from "../config/product.js";
-import { JDConnectPanel } from "../components/jd-connect/JDConnectPanel.jsx";
+import { ConnectorDirectory } from "../connectors/ConnectorDirectory.jsx";
 
 import { configuredProjectLabel } from "../config/settings-presentation.mjs";
 
@@ -236,7 +236,7 @@ export function SettingsPage({ctx}){
       )}
 
       {/* ── JD CONNECT ── */}
-      {tab==="integrations"&&<JDConnectPanel notify={notify}/>}
+      {tab==="integrations"&&<ConnectorDirectory organizationName={ctx.selectedSchool?.name} role={ctx.user?.role}/>}
 
       {/* ── SECURITY ── */}
       {tab==="security"&&(
