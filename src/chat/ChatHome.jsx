@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
+import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
+import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
@@ -341,47 +342,47 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
   };
 
   return (
-    <div className="jd-command">
+    <div className={`jd-command reference-command${messages.length===0 ? " is-empty" : ""}`}>
       <style>{`
-        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:#f7f8fa;color:#17191c;font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f8fa;border-bottom:1px solid #e8eaee}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#606873;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#626975;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
-        .jd-utility-status.is-working{color:#343941;border-color:#dfe3e8}
-        .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite}
+        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f8fa;border-bottom:1px solid #e8eaee}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid #e1e4e8;background:rgba(255,255,255,.94);border-radius:10px;color:#34353b;display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:#34353b;background:rgba(255,255,255,.96);border:1px solid #e5e7eb;border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-utility-status.is-working{color:#34353b;border-color:#dfe3e8}
+        .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:#60616b;animation:jd-pulse 1.25s ease-in-out infinite}
         @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:#f0f1f3;border-right:1px solid #e2e4e8;padding:18px 13px;display:flex;flex-direction:column;gap:16px}
         .jd-brand{display:flex;align-items:center;gap:10px;padding:4px 7px 12px;font-size:14px;font-weight:700;letter-spacing:-.3px}
         .jd-brand-mark{width:32px;height:32px;border-radius:11px;background:#15171a;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
         .jd-new{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #d9dce1;background:#fff;border-radius:11px;padding:11px 12px;color:#202328;font-size:12px;font-weight:650;cursor:pointer}
-        .jd-rail-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#92979f;font-weight:800;padding:0 9px;margin:4px 0}
+        .jd-rail-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#60616b;font-weight:800;padding:0 9px;margin:4px 0}
         .jd-nav{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-        .jd-nav button{min-width:0;border:1px solid transparent;background:transparent;border-radius:9px;padding:10px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#5e646d;font-size:11px;cursor:pointer}
+        .jd-nav button{min-width:0;border:1px solid transparent;background:transparent;border-radius:9px;padding:10px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#34353b;font-size:11px;cursor:pointer}
         .jd-nav button:hover{background:#fff;border-color:#e1e3e7;color:#202328}
         .jd-nav svg{flex:0 0 auto}
         .jd-history-list{min-height:0;flex:1;overflow:auto;border-top:1px solid #e0e2e6;padding-top:9px}
-        .jd-history-empty{padding:8px 9px;color:#969ca5;font-size:10px;line-height:1.5}
-        .jd-history-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#555c66;text-align:left;font-size:10px;cursor:pointer}
+        .jd-history-empty{padding:8px 9px;color:#60616b;font-size:10px;line-height:1.5}
+        .jd-history-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#34353b;text-align:left;font-size:10px;cursor:pointer}
         .jd-history-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-        .jd-history-item small{flex:0 0 auto;color:#969ca5;font-size:9px}
+        .jd-history-item small{flex:0 0 auto;color:#60616b;font-size:9px}
         .jd-history-item:hover,.jd-history-item.active{background:#fff;border-color:#e1e4e8;color:#202329}
 
-        .jd-rail-foot{margin-top:auto;border-top:1px solid #dfe1e5;padding:13px 5px 0;display:flex;align-items:center;gap:9px;color:#555b64;font-size:11px}
+        .jd-rail-foot{margin-top:auto;border-top:1px solid #dfe1e5;padding:13px 5px 0;display:flex;align-items:center;gap:9px;color:#34353b;font-size:11px}
         .jd-avatar{width:29px;height:29px;border-radius:9px;background:#22252a;color:#fff;display:grid;place-items:center;font-weight:700}
         .jd-main{min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;position:relative}
         .jd-top{display:none}
         .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
-        .jd-icon-btn{border:0;background:transparent;color:#707680;padding:7px;border-radius:8px;cursor:pointer}
-        .jd-top-title{font-size:12px;font-weight:700;color:#25282d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:#969ba3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#737982;flex-shrink:0;white-space:nowrap}
-        .jd-dot{width:7px;height:7px;border-radius:50%;background:#28956b}
+        .jd-icon-btn{border:0;background:transparent;color:#60616b;padding:7px;border-radius:8px;cursor:pointer}
+        .jd-top-title{font-size:12px;font-weight:700;color:#25282d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:#60616b;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:#60616b;flex-shrink:0;white-space:nowrap}
+        .jd-dot{width:7px;height:7px;border-radius:50%;background:#60616b}
         .jd-scroll{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:12px 20px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:#17191d;color:#fff;display:grid;place-items:center;margin-bottom:20px}
         .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
-        .jd-subtitle{font-size:13px;line-height:1.65;color:#777e87;text-align:center;margin:0 0 25px}
+        .jd-subtitle{font-size:13px;line-height:1.65;color:#60616b;text-align:center;margin:0 0 25px}
         .jd-actions{width:min(690px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-        .jd-action{border:1px solid #e1e4e8;background:#fff;border-radius:12px;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;min-height:59px;cursor:pointer;color:#333840}
-        .jd-action:hover{border-color:#bfc4cc;box-shadow:0 3px 12px rgba(20,24,30,.045)}
-        .jd-action-icon{width:29px;height:29px;border-radius:9px;background:#f1f2f4;display:grid;place-items:center;color:#656c75;flex:0 0 auto}
+        .jd-action{border:1px solid #e1e4e8;background:#fff;border-radius:12px;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;min-height:59px;cursor:pointer;color:#34353b}
+        .jd-action:hover{border-color:#a3a4ad;box-shadow:0 3px 12px rgba(20,24,30,.045)}
+        .jd-action-icon{width:29px;height:29px;border-radius:9px;background:#f1f2f4;display:grid;place-items:center;color:#34353b;flex:0 0 auto}
         .jd-action span:last-child{font-size:11px;font-weight:620}
         .jd-thread{width:min(760px,100%);min-width:0;flex:0 0 auto;display:flex;flex-direction:column;gap:22px;padding:12px 0 34px}
         .jd-message{font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -396,53 +397,53 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         .jd-markdown ul,.jd-markdown ol{margin:7px 0 14px;padding-left:22px}
         .jd-markdown li{padding-left:3px;margin:4px 0}
         .jd-markdown strong{font-weight:750;color:#20242a}
-        .jd-markdown a{color:#245f9e;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
-        .jd-markdown del{text-decoration:line-through;color:#747b85}
+        .jd-markdown a{color:#34353b;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+        .jd-markdown del{text-decoration:line-through;color:#60616b}
         .jd-markdown hr{border:0;border-top:1px solid #e5e8ec;margin:16px 0}
         .jd-code-block{max-width:100%;overflow:auto;background:#171a20;color:#edf0f4;border-radius:10px;padding:12px 14px;margin:10px 0 14px;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
         .jd-code-block code{font:inherit}
-        .jd-table-block{min-width:0;max-width:100%;margin:12px 0 16px}.jd-table-hint{font-size:11px;line-height:1.5;color:#616975}.jd-table-wrap:focus-visible{outline:2px solid #245f9e;outline-offset:2px}.jd-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid #e1e5ea;border-radius:10px;background:#fff}
+        .jd-table-block{min-width:0;max-width:100%;margin:12px 0 16px}.jd-table-hint{font-size:11px;line-height:1.5;color:#34353b}.jd-table-wrap:focus-visible{outline:2px solid #34353b;outline-offset:2px}.jd-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid #e1e5ea;border-radius:10px;background:#fff}
         .jd-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;line-height:1.5;min-width:420px}
-        .jd-table th{background:#f1f3f6;color:#424a55;font-weight:750;text-align:left}
+        .jd-table th{background:#f1f3f6;color:#34353b;font-weight:750;text-align:left}
         .jd-table th,.jd-table td{min-width:130px;overflow-wrap:break-word;padding:9px 11px;border-bottom:1px solid #edf0f3;border-right:1px solid #edf0f3;vertical-align:top}
         .jd-table tr:last-child td{border-bottom:0}.jd-table th:last-child,.jd-table td:last-child{border-right:0}
-        .jd-table td{color:#4d5661}.jd-math-display{overflow-x:auto;text-align:center;margin:14px 0;padding:9px 4px}
+        .jd-table td{color:#34353b}.jd-math-display{overflow-x:auto;text-align:center;margin:14px 0;padding:9px 4px}
         .jd-math-inline{white-space:normal}.jd-math-display .katex-display{margin:0}
-        .jd-markdown blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid #cbd1d9;background:#f0f2f5;color:#626a75;border-radius:0 8px 8px 0}
+        .jd-markdown blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid #dedfe4;background:#f0f2f5;color:#34353b;border-radius:0 8px 8px 0}
         .jd-inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:#eef0f3;border:1px solid #e2e5e9;border-radius:5px;padding:1px 5px}
-        .jd-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#818791;font-weight:650}
-        .jd-job-state{display:inline-flex;align-items:center;border:1px solid #e1e4e8;background:#f7f8fa;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:700;color:#737984}
-        .jd-job-state.queued{color:#87621b;background:#fffaf0;border-color:#f0e3c8}
-        .jd-job-state.running,.jd-job-state.planning{color:#246c52;background:#f0f8f4;border-color:#d9ebe1}
-        .jd-job-state.retry_wait{color:#8a641f;background:#fff9ed;border-color:#f1e3c7}
-        .jd-job-state.completed{color:#27684f;background:#f0f8f4;border-color:#d9ebe1}
-        .jd-job-state.partially_completed{color:#6e5b27;background:#fbf8ed;border-color:#ece4c8}
-        .jd-job-state.failed{color:#a13d3d;background:#fff3f3;border-color:#f0dada}
-        .jd-job-state.cancelled{color:#747982;background:#f4f5f6;border-color:#e2e4e7}
+        .jd-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;color:#60616b;font-weight:650}
+        .jd-job-state{display:inline-flex;align-items:center;border:1px solid #e1e4e8;background:#f7f8fa;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:700;color:#60616b}
+        .jd-job-state.queued{color:#34353b;background:#f1f2f5;border-color:#dedfe4}
+        .jd-job-state.running,.jd-job-state.planning{color:#34353b;background:#f0f8f4;border-color:#dedfe4}
+        .jd-job-state.retry_wait{color:#34353b;background:#f1f2f5;border-color:#dedfe4}
+        .jd-job-state.completed{color:#34353b;background:#f0f8f4;border-color:#dedfe4}
+        .jd-job-state.partially_completed{color:#34353b;background:#f1f2f5;border-color:#dedfe4}
+        .jd-job-state.failed{color:#34353b;background:#fff3f3;border-color:#dedfe4}
+        .jd-job-state.cancelled{color:#60616b;background:#f4f5f6;border-color:#e2e4e7}
         .jd-mini-mark{width:20px;height:20px;border-radius:7px;background:#191b1f;color:white;display:grid;place-items:center;font-size:8px}
         .jd-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-        .jd-tool{border:1px solid #e3e5e9;background:#fafbfc;border-radius:7px;padding:5px 8px;color:#737984;font-size:9px}
-        .jd-run{font-size:10px;color:#858b94;margin-top:8px}
+        .jd-tool{border:1px solid #e3e5e9;background:#fafbfc;border-radius:7px;padding:5px 8px;color:#60616b;font-size:9px}
+        .jd-run{font-size:10px;color:#60616b;margin-top:8px}
         .jd-activity{display:flex;flex-direction:column;gap:7px;margin:2px 0 3px;padding:10px 12px;border:1px solid #e8eaee;border-radius:12px;background:rgba(255,255,255,.72);max-width:100%}
-        .jd-activity-title{display:flex;align-items:center;gap:8px;color:#424852;font-size:11px;font-weight:650}
-        .jd-activity-dot{width:7px;height:7px;border-radius:50%;background:#27966c;animation:jd-pulse 1.25s ease-in-out infinite;flex:0 0 auto}
-        .jd-activity-detail{font-size:10px;color:#818791;line-height:1.5;padding-left:15px}
+        .jd-activity-title{display:flex;align-items:center;gap:8px;color:#34353b;font-size:11px;font-weight:650}
+        .jd-activity-dot{width:7px;height:7px;border-radius:50%;background:#60616b;animation:jd-pulse 1.25s ease-in-out infinite;flex:0 0 auto}
+        .jd-activity-detail{font-size:10px;color:#60616b;line-height:1.5;padding-left:15px}
         .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
-        .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:#747b85}
-        .jd-activity-step.done{color:#5e786b}
+        .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:#60616b}
+        .jd-activity-step.done{color:#60616b}
         .jd-compose-wrap{flex:0 0 auto;width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid #dfe2e7;background:#fff;border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:#202329;font:inherit;font-size:13px;line-height:1.65}
-        .jd-queue-note{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px 2px;font-size:10px;color:#818791}
-        .jd-queue-note strong{color:#454b54;font-weight:650}
-        .jd-pause{border:1px solid #e0e3e8;background:#f5f6f8;color:#414750;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:650;cursor:pointer}
+        .jd-queue-note{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px 2px;font-size:10px;color:#60616b}
+        .jd-queue-note strong{color:#34353b;font-weight:650}
+        .jd-pause{border:1px solid #e0e3e8;background:#f5f6f8;color:#34353b;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:650;cursor:pointer}
         .jd-pause:disabled{opacity:.4;cursor:not-allowed}
         .jd-compose-bottom{display:flex;align-items:center;justify-content:space-between}
-        .jd-compose-hint{font-size:9px;color:#a0a5ad}
+        .jd-compose-hint{font-size:9px;color:#60616b}
         .jd-send{width:34px;height:34px;border:0;border-radius:11px;background:#17191d;color:white;display:grid;place-items:center;cursor:pointer}
         .jd-send:disabled{opacity:.35;cursor:not-allowed}
-        .jd-error{color:#b3261e;font-size:11px;margin:0 0 7px 5px}
-        .jd-disclaimer{text-align:center;font-size:9px;color:#a0a5ad;margin-top:9px}
+        .jd-error{color:#34353b;font-size:11px;margin:0 0 7px 5px}
+        .jd-disclaimer{text-align:center;font-size:9px;color:#60616b;margin-top:9px}
         @media(max-width:760px){
           .jd-command{height:calc(100dvh - 57px);min-height:0}
           .jd-rail{position:absolute;z-index:8;inset:0 auto 0 0;width:min(300px,86vw);max-width:86vw;box-shadow:16px 0 40px rgba(20,24,30,.16);overflow:auto}
@@ -498,21 +499,22 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")}>{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace connected"}</span></div><div className="jd-scroll">
+        <div className="jd-utility">{messages.length>0 && <button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}><Menu size={18}/></button>}<button type="button" className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} aria-label={messages.length===0 ? "Open chat history and JD tools" : "Workspace status and chat tools"} title="Open chat history and JD tools" onClick={()=>setSidebarOpen(true)}>{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</button></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
-            <div className="jd-spark"><Sparkles size={20}/></div>
-            <h1 className="jd-heading">{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
-            <p className="jd-subtitle">Your organisation, one conversation.<br/>Ask JD to inspect records, prepare work and manage workflows.</p>
-            <div className="jd-actions">{actions.map(({icon:Icon,label,prompt})=><button className="jd-action" type="button" key={label} onClick={()=>setDraft(prompt)}><span className="jd-action-icon"><Icon size={15}/></span><span>{label}</span></button>)}</div>
+            <div className="jd-spark"><img src="/design/jd-tile.png" alt="James-Denning" width="108" height="108"/></div>
+            <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
+            <div className="jd-welcome-divider" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C14 8 16 10 24 12C16 14 14 16 12 24C10 16 8 14 0 12C8 10 10 8 12 0Z"/></svg></div>
+            <p className="jd-subtitle">Your organisation, one conversation.</p>
+            <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.content ? renderMessageContent(item.content) : null}
               {item.role === "assistant" && item.visualWorkspace?.source === "persisted_workspace_records" && Array.isArray(item.visualWorkspace?.blocks) && item.visualWorkspace.blocks.some(block=>block?.type==="checklist") && <div style={{marginTop:12,fontSize:12}}>
                 <button type="button" onClick={taskRecords.refresh} disabled={taskRecords.state.phase==="loading"||taskRecords.state.pending.length>0}
-                  style={{padding:"8px 12px",border:"1px solid #dfe3e8",borderRadius:8,background:"#fff",color:"#374151",fontSize:11,cursor:"pointer"}}>{taskRecords.state.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>
+                  style={{padding:"8px 12px",border:"1px solid #dfe3e8",borderRadius:8,background:"#fff",color:"#34353b",fontSize:11,cursor:"pointer"}}>{taskRecords.state.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>
                 {taskRecords.state.error&&<p role="alert">{taskRecords.state.error}</p>}
-                <p style={{fontSize:11,color:"#6b7280",lineHeight:1.6}}>Refresh reads task records only; it never retries a write. Department summaries and execution evidence remain conversation snapshots.</p>
+                <p style={{fontSize:11,color:"#60616b",lineHeight:1.6}}>Refresh reads task records only; it never retries a write. Department summaries and execution evidence remain conversation snapshots.</p>
               </div>}
               {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
@@ -534,10 +536,10 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
-            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={isWorking ? "Send another request while JD works…" : "Ask JD to do something in your organisation…"} rows={2}/>
-            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <ArrowUp size={17}/>}</button></div></div>
-            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
+            <textarea aria-label="Message JD" value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder={isWorking ? "Send another request while JD works…" : "Ask James-Denning to do something..."} rows={2}/>
+            <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div></div>
           </div>
+            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
         </div>
       </section>

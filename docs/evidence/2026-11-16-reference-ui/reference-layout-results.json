@@ -1,0 +1,122 @@
+[
+  {
+    "screen": "landing",
+    "width": 320,
+    "height": 740,
+    "documentWidth": 320,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 320,
+    "height": 740,
+    "documentWidth": 320,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "landing",
+    "width": 360,
+    "height": 800,
+    "documentWidth": 360,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 360,
+    "height": 800,
+    "documentWidth": 360,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "landing",
+    "width": 393,
+    "height": 780,
+    "documentWidth": 393,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 393,
+    "height": 780,
+    "documentWidth": 393,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "landing",
+    "width": 708,
+    "height": 900,
+    "documentWidth": 708,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 708,
+    "height": 900,
+    "documentWidth": 708,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "landing",
+    "width": 1280,
+    "height": 900,
+    "documentWidth": 1280,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 1280,
+    "height": 900,
+    "documentWidth": 1280,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "landing",
+    "width": 393,
+    "height": 460,
+    "documentWidth": 393,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  },
+  {
+    "screen": "workspace",
+    "width": 393,
+    "height": 460,
+    "documentWidth": 393,
+    "brokenImages": 0,
+    "font": true,
+    "scriptFont": true,
+    "result": "PASS"
+  }
+]

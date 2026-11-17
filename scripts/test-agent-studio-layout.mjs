@@ -6,7 +6,7 @@ import {build} from 'vite';
 import {chromium} from 'playwright-core';
 const dir=process.env.JD_AGENT_EVIDENCE_DIR;if(dir)mkdirSync(dir,{recursive:true});
 const executablePath=process.env.CHROMIUM_EXECUTABLE_PATH||['/usr/bin/google-chrome','/usr/bin/chromium'].find(existsSync);assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH; this test does not download a browser');
-const entry=`import React from 'react';import {createRoot} from 'react-dom/client';import {SaaSAgentStudio} from '${resolve('src/software-factory/SaaSAgentStudio.jsx')}';import {buildSaasAgentTeam} from '${resolve('supabase/functions/_shared/jd-agent-architect.mjs')}';
+const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {SaaSAgentStudio} from '${resolve('src/software-factory/SaaSAgentStudio.jsx')}';import {buildSaasAgentTeam} from '${resolve('supabase/functions/_shared/jd-agent-architect.mjs')}';
 const root=createRoot(document.getElementById('root'));window.__calls=[];window.__fail=false;
 const client={functions:{invoke:async(_,r)=>{window.__calls.push(r.body);if(window.__fail)return{error:{message:'PRIVATE_DIAGNOSTIC'}};return{data:{design:buildSaasAgentTeam(r.body.project)}};}}};
 window.__mount=(role='owner',scopeKey='synthetic-tenant:actor')=>root.render(<SaaSAgentStudio client={client} role={role} scopeKey={scopeKey}/>);window.__mount();`;

@@ -1,0 +1,123 @@
+/* Site-wide application of the supplied reference. No new visual language.
+   Explicit component classes override legacy inline presentation, not behaviour. */
+:root{
+ --jd-text:#101114;--jd-ink:#101114;--jd-muted:#60616b;--jd-border:#dedfe4;
+ --jd-card:#fff;--jd-input:#fff;--jd-surface:#fff;--jd-canvas:#f7f8fb;
+ --jd-soft:#f1f2f5;--jd-action:#17191c;--jd-on-action:#fff;--jd-accent:#60616b;
+ --jd-radius-sm:12px;--jd-radius-md:16px;--jd-radius-lg:20px;
+}
+:root[data-theme='dark']{
+ --jd-text:#f3f4f5;--jd-ink:#f3f4f5;--jd-muted:#b6b7bf;--jd-border:#38393f;
+ --jd-card:#1d1e22;--jd-input:#17181b;--jd-surface:#17181b;--jd-canvas:#111214;
+ --jd-soft:#252629;--jd-action:#f2f3f5;--jd-on-action:#17191c;--jd-accent:#b6b7bf;
+}
+body{font-family:'JD Inter',Inter,system-ui,sans-serif;background:var(--jd-canvas);color:var(--jd-text)}
+button,input,select,textarea{font-family:inherit}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--jd-accent);outline-offset:3px}
+:where(input,select,textarea){accent-color:var(--jd-action)}
+.jd-workspace-shell{font-family:'JD Inter',Inter,system-ui,sans-serif!important;background:var(--jd-canvas)!important}
+.jd-workspace-page{background:var(--jd-canvas) url('/design/workspace-curves.svg') center top/100% 1100px no-repeat!important;color:var(--jd-text);padding:28px!important}
+.jd-workspace-page>div{max-width:1240px;margin-left:auto;margin-right:auto}
+.jd-workspace-page h1,.jd-workspace-page h2,.jd-workspace-page h3{letter-spacing:-.035em;font-weight:600}
+.jd-workspace-page p{line-height:1.65}
+.jd-workspace-page :is(button,summary){font-family:inherit}
+.jd-workspace-page button:not([role='switch']):not(:has(>svg:only-child)){border-radius:999px!important}
+.jd-workspace-page button:has(>svg:only-child){border-radius:12px!important}
+.jd-workspace-page :is(input,select,textarea):not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']){background:var(--jd-input)!important;color:var(--jd-text)!important;border-color:var(--jd-border)!important;border-radius:12px!important;min-height:42px;line-height:1.5}
+.jd-workspace-page :is(input,select,textarea)::placeholder{color:var(--jd-muted);opacity:.85}
+.jd-workspace-page :is(table,thead,tbody,tr,td,th){border-color:var(--jd-border)!important}
+.jd-workspace-page th{background:var(--jd-soft);color:var(--jd-muted)!important;font-size:11px;letter-spacing:.025em;font-weight:600}
+.jd-workspace-page :is(td,th){padding:12px 14px}
+.jd-workspace-page :is([role='alert'],[role='status']):not(:has(>table)){color:var(--jd-text)}
+/* The same light navigation seen inside the supplied dashboard artwork. */
+#workspace-navigation{background:var(--jd-surface)!important;border-right:1px solid var(--jd-border);box-shadow:2px 0 12px #00000004!important;color:var(--jd-text)}
+#workspace-navigation :is(div,span,p){color:inherit!important;border-color:var(--jd-border)!important;box-shadow:none!important}
+#workspace-navigation button{color:var(--jd-text)!important;background:transparent!important;border-color:var(--jd-border)!important;border-radius:12px!important}
+#workspace-navigation button:hover{background:var(--jd-soft)!important}
+#workspace-navigation button[aria-current='page']{background:var(--jd-soft)!important;font-weight:600!important}
+#workspace-navigation button[aria-current='page']>div{background:var(--jd-action)!important;box-shadow:none!important;width:2px!important}
+#workspace-navigation svg{color:var(--jd-muted)!important}
+#workspace-navigation input{background:transparent!important;color:var(--jd-text)!important;min-height:32px}
+#workspace-navigation input::placeholder{color:var(--jd-muted)}
+#workspace-navigation [style*='text-transform: uppercase']{color:var(--jd-muted)!important;font-weight:500!important;letter-spacing:.06em!important}
+#workspace-navigation [style*='linear-gradient']{background:var(--jd-soft)!important;color:var(--jd-text)!important}
+/* Shared components, including dialogs rendered through document.body portals. */
+.jd-ui-card,.jd-ui-modal,.jd-confirm-card{background:var(--jd-card)!important;border:1px solid var(--jd-border)!important;border-radius:18px;box-shadow:0 2px 5px #00000004!important;color:var(--jd-text)}
+.jd-ui-button{background:var(--jd-action)!important;color:var(--jd-on-action)!important;border:1px solid var(--jd-action)!important;border-radius:999px!important;min-height:40px;box-shadow:none!important;font-weight:600!important;letter-spacing:0!important;padding-left:18px!important;padding-right:18px!important}
+.jd-ui-button.is-outline{background:transparent!important;color:var(--jd-text)!important;border-color:var(--jd-border)!important}
+.jd-ui-button:hover:not(:disabled){box-shadow:0 3px 8px #0000000c!important}
+.jd-ui-button:disabled{opacity:.5!important}
+.jd-ui-badge{color:var(--jd-text)!important;background:var(--jd-soft)!important;border:1px solid var(--jd-border)!important;font-weight:500!important;letter-spacing:0!important}
+.jd-ui-modal-head{background:var(--jd-card)!important;color:var(--jd-text)!important;border-bottom:1px solid var(--jd-border)}
+.jd-ui-modal-head>span{color:var(--jd-text)!important;font-size:17px!important;font-weight:600!important}
+.jd-ui-modal-head>button{background:var(--jd-soft)!important;color:var(--jd-text)!important;border:1px solid var(--jd-border)!important;width:36px!important;height:36px!important;border-radius:12px!important}
+.jd-ui-modal-head>div{background:var(--jd-border)!important}
+.jd-ui-modal :is(input,select,textarea),.jd-confirm-card input{background:var(--jd-input)!important;color:var(--jd-text)!important;border-color:var(--jd-border)!important;border-radius:12px!important}
+.jd-page-header{background:transparent!important;box-shadow:none!important;border:0!important;border-bottom:1px solid var(--jd-border)!important;border-radius:0!important;padding:8px 0 22px!important;gap:16px;flex-wrap:wrap}
+.jd-page-header :is(h1,h2,h3,div,span,svg){color:var(--jd-text)!important}
+.jd-page-header :is(h1,h2,h3){font-size:26px!important;font-weight:600!important;letter-spacing:-.8px!important}
+.jd-page-header p{color:var(--jd-muted)!important;font-size:13px!important;line-height:1.65!important}
+.jd-page-header>div:first-child>div:first-child:has(>svg:only-child){background:var(--jd-soft)!important;border:1px solid var(--jd-border);border-radius:14px!important}
+.jd-page-header>button:not(.jd-ui-button){background:var(--jd-card)!important;color:var(--jd-text)!important;border:1px solid var(--jd-border)!important}
+.jd-page-header .jd-ui-button :is(span,svg){color:inherit!important}
+.jd-confirm-card{box-shadow:0 20px 60px #0002!important}
+.jd-confirm-card button{border-radius:999px!important;min-height:44px;box-shadow:none!important}
+.jd-confirm-card button:last-child:not(:disabled){background:var(--jd-action)!important;color:var(--jd-on-action)!important}
+.jd-confirm-card button:first-child{background:var(--jd-card)!important;color:var(--jd-text)!important;border:1px solid var(--jd-border)!important}
+.jd-confirm-card [style*='font-size: 40px']{font-size:28px!important;filter:grayscale(1)}
+/* Authentication, authorisation, public applications, loading and error routes. */
+.jd-auth-shell,.jd-consent-shell,.jd-public-application,.jd-route-state{background:var(--jd-canvas) url('/design/workspace-curves.svg') center/100% 100% no-repeat!important;color:var(--jd-text)!important;font-family:'JD Inter',Inter,system-ui,sans-serif!important}
+.jd-auth-shell .jd-auth-story{background:transparent!important;border-color:var(--jd-border)!important}
+.jd-auth-story h1{font-size:clamp(38px,4vw,58px)!important;font-weight:500!important;letter-spacing:-.055em!important;line-height:1.12!important;color:var(--jd-text)!important}
+.jd-auth-panel{background:transparent!important}
+.jd-auth-card,.jd-consent-card{background:var(--jd-card)!important;border:1px solid var(--jd-border)!important;border-radius:20px!important;color:var(--jd-text)!important;box-shadow:0 4px 15px #00000006!important}
+.jd-auth-card h2{font-size:28px!important;line-height:1.18;letter-spacing:-.8px;font-weight:600;margin:0 0 12px}
+.jd-auth-card label{color:var(--jd-text)!important;font-size:12px!important;font-weight:500}
+.jd-auth-card :is(p,small){color:var(--jd-muted)!important}
+.jd-auth-card input{min-height:48px;border:1px solid var(--jd-border)!important;background:var(--jd-input)!important;color:var(--jd-text)!important;border-radius:12px!important}
+.jd-auth-card input:focus{outline:2px solid var(--jd-accent);outline-offset:2px}
+.jd-auth-card button[type='submit']{background:var(--jd-action)!important;color:var(--jd-on-action)!important;border-color:var(--jd-action)!important;min-height:48px;font-weight:600}
+.jd-auth-card [role='alert'],.jd-auth-card [role='status']{background:var(--jd-soft)!important;color:var(--jd-text)!important;border-color:var(--jd-border)!important}
+.jd-auth-card button:not([type='submit']){color:var(--jd-text)!important}
+.jd-consent-card>.reference-brand{margin-bottom:30px}
+.jd-consent-card :is(p,div){color:var(--jd-text)!important;border-color:var(--jd-border)!important}
+.jd-consent-card [role='alert']{background:var(--jd-soft)!important;color:var(--jd-text)!important;border:1px solid var(--jd-border)!important}
+.jd-consent-card button{border-radius:999px!important;min-height:44px;font-weight:600!important;border:1px solid var(--jd-border)!important}
+.jd-consent-card button:first-child{background:var(--jd-card)!important;color:var(--jd-text)!important}
+.jd-consent-card button:last-child{background:var(--jd-action)!important;color:var(--jd-on-action)!important}
+.jd-route-state button{background:var(--jd-action)!important;color:var(--jd-on-action)!important;border-radius:999px!important;min-height:44px}
+.jd-public-application>.reference-brand{display:flex;justify-content:center;padding:24px;border-bottom:1px solid var(--jd-border);background:var(--jd-surface)}
+/* The embedded employee and agent tools use the same surfaces, not a separate green theme. */
+.jd-agent-studio{font-family:'JD Inter',Inter,system-ui,sans-serif!important}
+.jd-agent-studio button{background:var(--jd-action);color:var(--jd-on-action);border-color:var(--jd-action);border-radius:999px;font-weight:600}
+.jd-agent-studio .jd-foundation-nav button[aria-pressed=false]{background:transparent;color:var(--jd-text);border-color:var(--jd-border)}
+.jd-agent-studio :is(fieldset,article,.jd-agent-boundary){border-radius:18px;border-color:var(--jd-border);background:var(--jd-card)}
+.jd-agent-studio .jd-agent-card-head span,.jd-agent-studio .jd-agent-error,.jd-agent-studio .jd-agent-notice{background:var(--jd-soft);color:var(--jd-text);border-color:var(--jd-border)}
+.jd-agent-studio :is(input,textarea,select){border-radius:12px}
+.jd-tool-overlay{background:rgba(0,0,0,.18)!important}
+.jd-tool-overlay>:is(section,div){background:var(--jd-canvas)!important;color:var(--jd-text)}
+/* Keep live status distinctions in text and icons; never grayscale content/images. */
+@media(max-width:760px){
+ .jd-workspace-page{padding:20px 12px!important}
+ .jd-page-header{padding:4px 0 18px!important;gap:12px!important}
+ .jd-page-header :is(h1,h2,h3){font-size:23px!important}
+ .jd-auth-shell{display:block!important;min-height:100dvh!important}
+ .jd-auth-shell .jd-auth-story{display:flex!important;padding:18px 22px!important;border-right:0!important;border-bottom:1px solid var(--jd-border);min-height:64px}
+ .jd-auth-story>div,.jd-auth-story>small{display:none}
+ .jd-auth-panel{padding:24px 14px 40px!important;min-height:calc(100dvh - 64px)}
+ .jd-auth-card{max-width:460px!important;padding:26px 22px!important}
+ .jd-auth-card h2{font-size:25px!important}
+ .jd-ui-modal{border-bottom-left-radius:0;border-bottom-right-radius:0}
+ .jd-ui-modal :is(input,select,textarea),.jd-auth-card input{font-size:16px!important}
+}
+@media(max-width:360px){.jd-auth-card{padding:22px 17px!important}.jd-workspace-page{padding:16px 10px!important}}
+:root[data-theme='dark'] .jd-workspace-page,:root[data-theme='dark'] :is(.jd-auth-shell,.jd-consent-shell,.jd-public-application,.jd-route-state){background-blend-mode:soft-light!important}
+:root[data-theme='dark'] .reference-brand{color:var(--jd-text)}
+:root[data-theme='dark'] .reference-brand img{filter:invert(1)}
+
+.jd-workspace-page .jd-operations-page{padding:0!important}
+.jd-two-pane{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media(max-width:900px){.jd-two-pane{grid-template-columns:minmax(0,1fr)!important}}
+
+.jd-consent-card .jd-consent-icon{background:var(--jd-soft)!important;color:var(--jd-text)!important}
+:root[data-theme='dark'] button[style*='background: rgb(242, 243, 245)']{color:var(--jd-on-action)!important}

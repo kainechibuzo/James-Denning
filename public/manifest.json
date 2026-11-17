@@ -1,15 +1,30 @@
 {
-  "name": "JAMES-DENNING — Organization Operations",
+  "name": "JAMES-DENNING \u2014 Organization Operations",
   "short_name": "JAMES-DENNING",
   "description": "A connected workspace for managing people, operations, billing and performance.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090a0c",
-  "theme_color": "#090a0c",
+  "background_color": "#f7f8fb",
+  "theme_color": "#f7f8fb",
   "orientation": "portrait",
   "icons": [
-    { "src": "/jd-mark.svg", "sizes": "128x128", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/jd-mark.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

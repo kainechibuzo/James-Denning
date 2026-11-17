@@ -1,0 +1,13 @@
+Browser: 153.0.8010.0
+landing 320x740: PASS
+workspace 320x740: PASS
+landing 360x800: PASS
+workspace 360x800: PASS
+landing 393x780: PASS
+workspace 393x780: PASS
+landing 708x900: PASS
+workspace 708x900: PASS
+landing 1280x900: PASS
+workspace 1280x900: PASS
+landing 393x460: PASS
+workspace 393x460: PASS

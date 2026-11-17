@@ -17,9 +17,9 @@ export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onT
   const canManage=canManageTasks(role),locked=state.busy||!canManage;
   const update=(field,value)=>setDraft(old=>({...old,[field]:value}));
   return <div style={{display:"grid",gap:14}} aria-label="Operational task queue">
-    {state.recoveryError&&<p role="alert" style={{padding:12,background:"#fff0ef",color:"#a52b27",borderRadius:9}}>{state.recoveryError}</p>}
-    {state.error&&<p role="alert" style={{padding:12,background:"#fff0ef",color:"#a52b27",borderRadius:9}}>{state.error}</p>}
-    {state.notice&&<p role="status" style={{padding:12,background:"#eaf7f0",color:"#176b49",borderRadius:9}}>{state.notice}</p>}
+    {state.recoveryError&&<p role="alert" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.recoveryError}</p>}
+    {state.error&&<p role="alert" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.error}</p>}
+    {state.notice&&<p role="status" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.notice}</p>}
     <section style={card}><h2 style={{fontSize:17,margin:"0 0 12px"}}>Create operational task</h2>
       {state.attempt?<div>
         <h3 style={{fontSize:14}}>Unresolved creation request: {state.attempt.task.title}</h3>

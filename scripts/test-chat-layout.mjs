@@ -20,9 +20,11 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  if(body.action==='approvals.list')return{data:{approvals:[]}};
  throw Error('Unexpected API action: '+body.action);
 }}};`;
-const entry=`import React from 'react';import {createRoot} from 'react-dom/client';import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';window.__requests=[];createRoot(document.getElementById('root')).render(<ChatHome user={{id:'synthetic-owner',school_id:'synthetic-workspace',role:'owner',name:'Test owner'}}/>);`;
+const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';window.__requests=[];createRoot(document.getElementById('root')).render(<ChatHome user={{id:'synthetic-owner',school_id:'synthetic-workspace',role:'owner',name:'Test owner'}}/>);`;
 const bundle=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'synthetic-chat',enforce:'pre',resolveId(id){if(id.endsWith('virtual:chat-fixture'))return '\0chat-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0synthetic-client';},load(id){if(id==='\0chat-fixture.jsx')return entry;if(id==='\0synthetic-client')return stub;}}],build:{write:false,minify:false,lib:{entry:'virtual:chat-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});
-const script=(Array.isArray(bundle)?bundle[0]:bundle).output.find(o=>o.type==='chunk').code;
+const output=(Array.isArray(bundle)?bundle[0]:bundle).output;
+const script=output.find(o=>o.type==='chunk').code;
+const css=output.filter(o=>o.type==='asset'&&o.fileName.endsWith('.css')).map(o=>o.source).join('\n');
 const browser=await chromium.launch({executablePath,args:['--no-sandbox','--disable-dev-shm-usage']});
 const results=[];
 console.log(`Browser: ${browser.version()}`);
@@ -30,7 +32,8 @@ try{
  for(const [width,height] of [[320,740],[360,800],[393,852],[708,900],[1280,900],[393,460]]){
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.message);});
   await page.route('**/*',route=>route.abort());
-  await page.setContent('<!doctype html><html><head><style>*{box-sizing:border-box}body{margin:0}#shell-header{height:57px}#root{min-width:0}</style></head><body><header id="shell-header">Synthetic workspace shell · JD Assistant</header><main id="root"></main></body></html>');
+  await page.setContent('<!doctype html><html><head><style>*{box-sizing:border-box}body{margin:0}#shell-header{height:49px}#root{min-width:0}</style></head><body><header id="shell-header">Synthetic workspace shell · JD Assistant</header><main id="root"></main></body></html>');
+  await page.addStyleTag({content:css});
   await page.addScriptTag({content:script,type:'module'});
   await page.getByRole('button',{name:'Open chat history and JD tools'}).click();
   await page.getByRole('button',{name:/Synthetic capability report/}).click();

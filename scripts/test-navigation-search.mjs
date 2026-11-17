@@ -65,7 +65,11 @@ test("shell searches authorised NAV, not the raw catalogue; header is independen
   assert.match(shell, /visibleNavigation = searchNavigation\(NAV,navigationQuery\)/);
   assert.doesNotMatch(shell, /searchNavigation\(ALL_NAV/);
   assert.match(shell, /\{visibleNavigation\.map/);
-  assert.match(shell, /NAV\.find\(n=>n\.id===page\)/);
+  // The supplied reference keeps the brand in the header on every route;
+  // filtering sidebar search must not replace or hide that header.
+  const header = shell.slice(shell.indexOf('<header className="reference-workspace-header"'), shell.indexOf('</header>'));
+  assert.match(header, /<ReferenceBrand\/>/);
+  assert.doesNotMatch(header, /visibleNavigation|navigationQuery/);
 });
 test("navigation retains accessible search, active page and expansion hooks", () => {
   assert.match(shell, /aria-label="Search workspace navigation"/);

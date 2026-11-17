@@ -19,6 +19,7 @@
  * and writes go through narrow SECURITY DEFINER RPCs (017_hiring_roles.sql),
  * the same pattern as the login_lookup_* functions.
  */
+import {ReferenceBrand} from "../components/reference-brand.jsx";
 import React, { useState, useEffect, useCallback } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Building2, Briefcase, CheckCircle2, Copy, ExternalLink, Eye, EyeOff, Loader2, MessageSquare, Pencil, Plus, Send, ShieldCheck, Sparkles, Tag, Trash2, Users, X } from "lucide-react";
 import { db } from "../supabaseClient.js";
@@ -82,7 +83,7 @@ function PresetGrid({ presets, onSelect, compact }) {
                 }}>{toolLabel(t)}</span>
               ))}
             </div>
-            <Btn onClick={() => onSelect(p)} color="#111827" style={{ marginTop: "auto" }}>
+            <Btn onClick={() => onSelect(p)} color="#17191c" style={{ marginTop: "auto" }}>
               Continue with {p.name} <ArrowRight size={14}/>
             </Btn>
           </div>
@@ -143,7 +144,7 @@ function OrgDetailsForm({ preset, onDone }) {
         </div>
       </div>
 
-      {err && <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
+      {err && <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
         padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 16, fontWeight: 600 }}>{err}</div>}
 
       <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase",
@@ -161,7 +162,7 @@ function OrgDetailsForm({ preset, onDone }) {
       {inp("Password", "admin_password", { req: true, type: "password", placeholder: "Set a strong password" })}
 
       <button onClick={submit} disabled={saving}
-        style={{ width: "100%", background: saving ? "#CBD5E1" : "linear-gradient(135deg,#111827,#374151)",
+        style={{ width: "100%", background: saving ? "#dedfe4" : "linear-gradient(135deg,#17191c,#34353b)",
           color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
           justifyContent: "center", gap: 8 }}>
@@ -503,7 +504,7 @@ export function PublicHireLanding() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5" }}>
         <Spinner text="Loading…"/>
       </div>
     );
@@ -513,13 +514,14 @@ export function PublicHireLanding() {
   if (thread) {
     const app = thread.application;
     return (
-      <div style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'Segoe UI',system-ui,sans-serif" }}>
-        <div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 16px 48px" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'JD Inter',system-ui,sans-serif" }}>
+        <ReferenceBrand divided/>
+<div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 16px 48px" }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "#9CA3AF", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "#60616b", textTransform: "uppercase", marginBottom: 6 }}>
               {thread.role?.title || "Application"}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#111827" }}>Application thread</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#17191c" }}>Application thread</div>
             <div style={{ marginTop: 8 }}>{statusBadge(app.status)}</div>
           </div>
           <Card style={{ padding: 18, marginBottom: 14 }}>
@@ -539,7 +541,7 @@ export function PublicHireLanding() {
   // ── Error state ────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5", padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5", padding: 24, fontFamily: "'JD Inter',system-ui,sans-serif" }}>
         <Card style={{ padding: 32, maxWidth: 420, textAlign: "center" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 8 }}>Application link</div>
           <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{error}</div>
@@ -552,23 +554,24 @@ export function PublicHireLanding() {
 
   // ── Role landing page (ad destination) ─────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'Segoe UI',system-ui,sans-serif", WebkitTapHighlightColor: "transparent" }}>
+    <div className="jd-public-application" style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'JD Inter',system-ui,sans-serif", WebkitTapHighlightColor: "transparent" }}>
+      <ReferenceBrand divided/>
       <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 16px 64px" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#9CA3AF", textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#60616b", textTransform: "uppercase", marginBottom: 8 }}>
             {role.org_name} is hiring
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#111827", lineHeight: 1.2, letterSpacing: "-.02em" }}>{role.title}</div>
-          {role.summary && <div style={{ fontSize: 14.5, color: "#374151", marginTop: 10, lineHeight: 1.6 }}>{role.summary}</div>}
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#17191c", lineHeight: 1.2, letterSpacing: "-.02em" }}>{role.title}</div>
+          {role.summary && <div style={{ fontSize: 14.5, color: "#34353b", marginTop: 10, lineHeight: 1.6 }}>{role.summary}</div>}
         </div>
 
         {/* Key facts */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 20 }}>
           {(role.price_min != null || role.price_max != null) && (
             <span style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 20, padding: "6px 14px",
-              fontSize: 12.5, fontWeight: 700, color: "#111827", display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Tag size={13} color="#6B7280"/>
+              fontSize: 12.5, fontWeight: 700, color: "#17191c", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Tag size={13} color="#60616b"/>
               {role.price_min != null && role.price_max != null ? `${fmtNum(role.price_min)} – ${fmtNum(role.price_max)}`
                 : role.price_min != null ? `From ${fmtNum(role.price_min)}` : `Up to ${fmtNum(role.price_max)}`}
               {role.price_note ? ` ${role.price_note}` : ""}
@@ -576,7 +579,7 @@ export function PublicHireLanding() {
           )}
           {role.expectations && (
             <span style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 20, padding: "6px 14px",
-              fontSize: 12.5, fontWeight: 700, color: "#111827" }}>Goals & expectations included</span>
+              fontSize: 12.5, fontWeight: 700, color: "#17191c" }}>Goals & expectations included</span>
           )}
         </div>
 
@@ -615,7 +618,7 @@ export function PublicHireLanding() {
           <Card style={{ padding: 22 }}>
             <div style={{ fontSize: 16, fontWeight: 900, color: C.text, marginBottom: 4 }}>Apply now</div>
             <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 16 }}>Tell the school about yourself and your asking price.</div>
-            {submitError && <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
+            {submitError && <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
               padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14, fontWeight: 600 }}>{submitError}</div>}
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Full name *</label>
@@ -651,7 +654,7 @@ export function PublicHireLanding() {
               </div>
             </div>
             <button onClick={submit} disabled={submitting}
-              style={{ width: "100%", background: submitting ? "#CBD5E1" : "#111827", color: "#fff", border: "none",
+              style={{ width: "100%", background: submitting ? "#dedfe4" : "#17191c", color: "#fff", border: "none",
                 padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: submitting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               {submitting ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Sending…</> : <>Submit application</>}
@@ -659,7 +662,7 @@ export function PublicHireLanding() {
           </Card>
         )}
 
-        <div style={{ textAlign: "center", marginTop: 18, fontSize: 11.5, color: "#9CA3AF" }}>
+        <div style={{ textAlign: "center", marginTop: 18, fontSize: 11.5, color: "#60616b" }}>
           Powered by JAMES-DENNING — {role.org_name}'s business workspace
         </div>
       </div>
@@ -924,11 +927,11 @@ export function HiringPage({ ctx }) {
         action={<Btn onClick={() => setRoleModal({ edit: null })}><Plus size={14}/> New Role</Btn>}/>
 
       {hiringDisabled && (
-        <div style={{ background: "#fef2f2", border: "1.5px solid #fca5a5", color: "#b91c1c",
+        <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
           padding: "12px 16px", borderRadius: 10, fontSize: 12.5, marginBottom: 16, fontWeight: 600,
           display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
           <span>The hiring tool is currently disabled for this school (set by its school preset).</span>
-          <Btn sm color="#111827" onClick={async () => {
+          <Btn sm color="#17191c" onClick={async () => {
             const { error } = await db.setOrgTool("hiring", true);
             if (error) notify(error.message, "error"); else { notify("Hiring tool enabled ✓"); db.getOrgTools().then(({ data }) => setTools(data || [])); }
           }}>Enable hiring</Btn>
@@ -1117,7 +1120,7 @@ export function HiringPage({ ctx }) {
             )}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
               <Btn outline onClick={() => { setRoleModal(null); setRoleForm(blankRole); }}>Cancel</Btn>
-              <Btn color="#111827" onClick={saveRole} disabled={roleSaving}>{roleSaving ? "Saving…" : roleModal.edit ? "Save changes" : "Create role"}</Btn>
+              <Btn color="#17191c" onClick={saveRole} disabled={roleSaving}>{roleSaving ? "Saving…" : roleModal.edit ? "Save changes" : "Create role"}</Btn>
             </div>
           </div>
         </Modal>
@@ -1274,7 +1277,7 @@ export function HiringPage({ ctx }) {
                   style={{ flex: "1 1 120px", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, background: C.white, color: C.text, outline: "none" }}/>
                 <input value={quotaNote} onChange={e => setQuotaNote(e.target.value)} placeholder="Note (optional)"
                   style={{ flex: "2 1 180px", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, background: C.white, color: C.text, outline: "none" }}/>
-                <Btn color="#111827" onClick={logQuota} disabled={quotaSaving}>{quotaSaving ? <Loader2 size={14} style={{ animation: "spin .7s linear infinite" }}/> : "Log"}</Btn>
+                <Btn color="#17191c" onClick={logQuota} disabled={quotaSaving}>{quotaSaving ? <Loader2 size={14} style={{ animation: "spin .7s linear infinite" }}/> : "Log"}</Btn>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10, maxHeight: 160, overflowY: "auto" }}>
                 {hireEntries.length === 0 && <div style={{ fontSize: 12, color: C.light }}>No progress logged yet.</div>}

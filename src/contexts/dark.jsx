@@ -10,8 +10,7 @@ export const DarkCtx = createContext({ dark: false, toggle: () => {} });
 export const useDark  = () => useContext(DarkCtx);
 
 export function DarkProvider({ children }) {
-  // Defaults to true (all-black theme) unless the user has explicitly opted
-  // into light mode before.
+  // The supplied light reference is the default; honour an explicit saved choice.
   const stored = () => { try { const value = localStorage.getItem("jd_dark"); return value != null ? value === "1" : false; } catch { return false; } };
   const [dark, setDark] = useState(stored);
   // Keep config/theme.js C in sync on every render so service modules read the right palette
@@ -28,6 +27,8 @@ export function DarkProvider({ children }) {
 
   useEffect(() => {
     document.body.style.background = dark ? DARK.offWhite : LIGHT.offWhite;
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    document.body.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
 
   return <DarkCtx.Provider value={{ dark, toggle }}>{children}</DarkCtx.Provider>;
