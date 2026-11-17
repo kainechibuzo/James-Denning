@@ -1,0 +1,2 @@
+CONFIRMED: unmodified 4.0.7 exceeds 1500 ms for +(*a), forcibly killed.
+PASS: patched matcher rejects the same payload in 29 ms (including process startup).

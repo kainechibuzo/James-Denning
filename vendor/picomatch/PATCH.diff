@@ -1,0 +1,55 @@
+--- picomatch-4.0.7/lib/parse.js
++++ picomatch-4.0.7-jd.1/lib/parse.js
+@@ -284,7 +284,52 @@
+   return depth;
+ };
+ 
++// JD security backport for GHSA-fc5q-39xc-vjpf. A wildcard inside a
++// repeated extglob nests an unbounded quantifier even with only one branch.
++// Reuse the existing risky-pattern literalization instead of emitting that
++// backtracking regex. Escapes, quoted literals and character classes are not
++// wildcard operators. Nested extglob operators are handled by the existing
++// recursion/flattening checks; inspect their bodies too for wildcard stars.
++const hasRepeatedWildcard = body => {
++  let escaped = false;
++  let quoted = false;
++  let bracket = 0;
++
++  for (let i = 0; i < body.length; i++) {
++    const ch = body[i];
++    if (escaped) {
++      escaped = false;
++      continue;
++    }
++    if (ch === '\\') {
++      escaped = true;
++      continue;
++    }
++    if (ch === '"' && bracket === 0) {
++      quoted = !quoted;
++      continue;
++    }
++    if (quoted) continue;
++    if (ch === '[') {
++      bracket++;
++      continue;
++    }
++    if (ch === ']' && bracket > 0) {
++      bracket--;
++      continue;
++    }
++    if (bracket > 0) continue;
++    if (ch === '*' && (body[i + 2] === '?' || !parseRepeatedExtglob(body.slice(i), false))) return true;
++  }
++  // An unterminated class may be parsed as literal '[' plus a wildcard.
++  return bracket > 0 && body.includes('*');
++};
++
+ const analyzeRepeatedExtglob = (body, options) => {
++  // This guard is independent of the configurable recursion-depth limit.
++  if (hasRepeatedWildcard(body)) {
++    return { risky: true };
++  }
+   if (options.maxExtglobRecursion === false) {
+     return { risky: false };
+   }

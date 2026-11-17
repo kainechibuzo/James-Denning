@@ -1,0 +1,9 @@
+james-denning@1.0.0 /home/user/James-Denning
++-- picomatch@4.0.7-jd.1 overridden
+`-- vite@8.3.8
+  +-- picomatch@4.0.7-jd.1 deduped
+  `-- tinyglobby@0.2.17
+    +-- fdir@6.5.0
+    | `-- picomatch@4.0.7-jd.1 deduped
+    `-- picomatch@4.0.7-jd.1 deduped
+
