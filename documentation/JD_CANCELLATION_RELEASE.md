@@ -46,6 +46,10 @@ Before any production proposal:
 
 `supabase/rollback/20261117220000_jd_atomic_execution_cancel.rollback.sql` revokes execute access, including service role, without deleting records. Coordinate an approved release that disables cancellation controls; do not automatically fall back to the weaker legacy write path. Revocation does not reverse committed cancellations or external effects. Re-enabling requires a reviewed reapplication and fresh tests.
 
+## Offline acceptance-evidence preparation
+
+The [offline evidence harness](JD_CANCELLATION_ACCEPTANCE.md) prepares 18 not-run observation cases and eight independent live-review gates, then checks source identities, artifact hashes and persisted-record invariants. It does not execute staging tests. Local simulation remains blocked even if every record assertion passes; no result authorises production or enables the feature.
+
 ## Reproduce local evidence
 
 ```sh

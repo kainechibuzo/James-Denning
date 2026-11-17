@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "b6f4734f0095d0eeb32debac9e9713d267d3e00e",
-  "branch": "arena/dd44efbe-james-denning",
-  "scope": "Foundation local-only follow-up: transactional queued/waiting execution cancellation candidate, explicit disabled release gates, SQL rollback and checked client/handler evidence. Shipping cancellation remains legacy/nontransactional. No cloud provisioning, migrations, backend deployment, staging acceptance or production approval; owner review is pending.",
+  "baseCommit": "f760b8bf8e80e2c1ede779e45e0f213164d58eb8",
+  "branch": "arena/18f85510-james-denning",
+  "scope": "Foundation local-only follow-up: offline cancellation evidence harness with 18 record-observation cases, eight live-review gates, source/artifact integrity checks and SQL-connected assertions. No staging execution, provisioning, release activation or approval. Shipping cancellation remains legacy; all acceptance remains unverified.",
   "items": [
     {
       "id": "P1-01",
       "requirement": "Verify latest `master`, relevant GitHub Actions and their actual coverage.",
       "implementation": "partial",
-      "assessment": "PR #93 exact-merge post-merge Verify run 44044645648 passed at b6f4734. This local-only follow-up adds cancellation SQL and HTTP/client regression coverage through test:execution; local evidence does not establish remote CI for the candidate or deployed acceptance.",
+      "assessment": "PR #94 head Web CI and Verify checks passed before merge f760b8bf. This local follow-up adds offline evidence-harness regression tests to test:execution. No remote CI for this new candidate or live staging acceptance is claimed.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
@@ -22,7 +22,8 @@
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
         "docs/evidence/2026-11-17-backend-compatibility/REPORT.md",
-        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md",
+        "docs/evidence/2026-11-16-cancellation-harness/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify latest `master`, relevant GitHub Actions and their actual coverage. Retain expected/actual results and independent review.",
@@ -1110,21 +1111,25 @@
       "id": "P3-E09",
       "requirement": "Add timeout and cancellation handling.",
       "implementation": "partial",
-      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open.",
+      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open. Offline evidence harness now checks persisted-record consistency and source/artifact integrity; even all-consistent local observations stay blocked. No live gate is satisfied by these tests.",
       "sources": [
         "supabase/functions/jd-execution-worker/index.ts",
         "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql",
         "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
         "supabase/functions/_shared/jd-execution-cancellation.mjs",
-        "scripts/test-execution-cancellation.mjs"
+        "scripts/test-execution-cancellation.mjs",
+        "scripts/jd-cancellation-acceptance.mjs",
+        "scripts/lib/jd-cancellation-evidence.mjs",
+        "scripts/test-cancellation-acceptance.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-writes/REPORT.md",
-        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md",
+        "docs/evidence/2026-11-16-cancellation-harness/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "Owner reviews local evidence and limitations; only after separate permission, provision isolated staging and test real sessions, concurrent worker claims, pgmq redelivery, rollback and audit persistence. Production approval is not recorded.",
+      "nextAction": "Owner reviews local candidate and harness evidence. After separate staging permission, prepare a clean-source plan, collect authentic live observations and all eight independent review gates, preserving failures; do not infer production approval from a consistent bundle.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Owner \u2014 pending explicit evidence review",
       "verification": null
@@ -1674,22 +1679,26 @@
       "id": "P4-L14",
       "requirement": "Provide cancellation for supported operations, with honest partial-effect reporting.",
       "implementation": "partial",
-      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open.",
+      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open. Offline evidence harness now checks persisted-record consistency and source/artifact integrity; even all-consistent local observations stay blocked. No live gate is satisfied by these tests.",
       "sources": [
         "src/chat/JDExecutionMonitor.jsx",
         "src/chat/execution-monitor.mjs",
         "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
         "supabase/functions/_shared/jd-execution-cancellation.mjs",
-        "scripts/test-execution-cancellation.mjs"
+        "scripts/test-execution-cancellation.mjs",
+        "scripts/jd-cancellation-acceptance.mjs",
+        "scripts/lib/jd-cancellation-evidence.mjs",
+        "scripts/test-cancellation-acceptance.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
         "docs/evidence/2026-11-16-owner-execution/REPORT.md",
-        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md",
+        "docs/evidence/2026-11-16-cancellation-harness/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "Owner reviews local evidence and limitations; only after separate permission, provision isolated staging and test real sessions, concurrent worker claims, pgmq redelivery, rollback and audit persistence. Production approval is not recorded.",
+      "nextAction": "Owner reviews local candidate and harness evidence. After separate staging permission, prepare a clean-source plan, collect authentic live observations and all eight independent review gates, preserving failures; do not infer production approval from a consistent bundle.",
       "deliveryOwner": "Arena coding agent (engineering slice only)",
       "independentReviewer": "Owner \u2014 pending explicit evidence review",
       "verification": null

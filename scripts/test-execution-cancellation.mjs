@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {PGlite} from '@electric-sql/pglite';
+import {CASES,assertObservation} from './lib/jd-cancellation-evidence.mjs';
 import {handleExecutionCancellation,BACKEND_CANCELLATION_RELEASE} from '../supabase/functions/_shared/jd-execution-cancellation.mjs';
 import {changeExecutionJob,createExecutionMonitorController,EXECUTION_CANCELLATION_RELEASE} from '../src/chat/execution-monitor.mjs';
 const db=new PGlite();
@@ -43,7 +44,10 @@ async function cancel({actor=actors.owner,jobId=job,runId=run,expected=version,d
 async function denied(options,code){const before=await snapshot();await assert.rejects(cancel(options),e=>e.code===code);assert.deepEqual(await snapshot(),before);}
 for(const role of ['owner','admin'])for(const state of ['queued','retry_wait'])test(`${role}/${state}: job, run and audit commit together without erasing prior evidence`,async()=>{
  await db.query('update jd_execution_jobs set status=$1',[state]);if(state==='retry_wait')await db.query("update jd_automation_runs set status='running' where id=$1",[run]);
+ const before=await snapshot();
  const result=await cancel({actor:actors[role]}),s=await snapshot();
+ const spec=CASES.find(c=>c.kind==='cancel'&&c.role===role&&c.jobStatus===state);
+ if(spec)assertObservation(spec,{caseId:spec.id,observedAt:new Date().toISOString(),request:{role,actorId:actors[role],actorSchoolId:school,jobId:job,runId:run,expectedUpdatedAt:version,action:'execution.job.cancel_checked'},response:{status:200,body:result},before,after:s});
  assert.equal(result.job.status,'cancelled');assert.equal(result.run.status,'cancelled');assert.equal(result.auditRecorded,true);assert.equal(result.externalEffectsReversed,false);
  assert.equal(s.jobs[0].status,'cancelled');assert.equal(s.jobs[0].attempt_count,1);assert.equal(s.jobs[0].queue_message_id,42);assert.equal(s.runs.find(r=>r.id===run).status,'cancelled');assert.deepEqual(s.runs.find(r=>r.id===run).result_json,{prior_effect:true});
  assert.equal(s.audits.length,1);assert.equal(s.audits[0].id,result.auditId);assert.equal(s.audits[0].actor_id,actors[role]);assert.equal(s.audits[0].event_json.contract,'atomic_cancel_v1');assert.equal(s.runs.find(r=>r.id===outsideRun).status,'queued');assert.notEqual(result.job.updated_at,version);
@@ -58,7 +62,7 @@ test('microsecond-stale version and wrong run identity cannot cancel',async()=>{
 for(const state of ['failed','completed','partially_completed','cancelled'])test(`terminal job ${state} is immutable`,async()=>{await db.query('update jd_execution_jobs set status=$1',[state]);await denied({},'40001');});
 for(const state of ['awaiting_approval','completed','partially_completed','failed','cancelled'])test(`run ${state} cannot be overwritten by a queued-job cancellation`,async()=>{await db.query('update jd_automation_runs set status=$1 where id=$2',[state,run]);await denied({},'40001');});
 test('audit insertion failure rolls back both status changes',async()=>{
- await db.exec("alter table jd_audit_events add constraint reject_cancel_audit check(event_type <> 'execution.cancelled')");try{const before=await snapshot();await denied({},'23514');evidence('audit-failure-rollback',{expectedError:'23514',before,after:await snapshot()});}finally{await db.exec('alter table jd_audit_events drop constraint reject_cancel_audit');}
+ await db.exec("alter table jd_audit_events add constraint reject_cancel_audit check(event_type <> 'execution.cancelled')");try{const before=await snapshot();await denied({},'23514');const after=await snapshot();assertObservation(CASES.find(c=>c.id==='audit-rollback'),{caseId:'audit-rollback',observedAt:new Date().toISOString(),sqlstate:'23514',request:{role:'owner',actorId:actors.owner,actorSchoolId:school,jobId:job,runId:run,expectedUpdatedAt:version,action:'execution.job.cancel_checked'},response:{status:500,body:{error:'Injected synthetic failure'}},before,after});evidence('audit-failure-rollback',{expectedError:'23514',before,after});}finally{await db.exec('alter table jd_audit_events drop constraint reject_cancel_audit');}
 });
 test('run update failure rolls back the job before any audit can be acknowledged',async()=>{
  await db.exec("alter table jd_automation_runs add constraint reject_cancel_run check(status <> 'cancelled')");try{await denied({},'23514');}finally{await db.exec('alter table jd_automation_runs drop constraint reject_cancel_run');}
