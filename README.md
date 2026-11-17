@@ -14,6 +14,7 @@ Built as a React single-page application backed by Supabase.
 - [Reconciled checklist status](docs/JD_CHECKLIST_STATUS.md) — every item mapped to code/evidence, gaps and next actions.
 - [Business foundation](documentation/JD_BUSINESS_FOUNDATION.md) — versioned Business DNA, SaaS definitions, draft workforce and billing policy.
 - [Employee usage ledger](documentation/JD_EMPLOYEE_USAGE_LEDGER.md) — shadow budgets and usage events.
+- [Versioned agent registry](documentation/JD_AGENT_REGISTRY.md) — customisable specialist definitions, immutable evaluation evidence and independent tenant-private publication review. Contract checks are not operational employee evaluations.
 - [SaaS Agent Studio](documentation/JD_SAAS_AGENT_STUDIO.md) — agent-team designs and exports (design stage).
 - [Business settings](documentation/JD_BUSINESS_SETTINGS.md) — JD-reviewed settings changes.
 - [Backend release procedure](documentation/JD_BACKEND_RELEASE.md) and [cancellation acceptance](documentation/JD_CANCELLATION_ACCEPTANCE.md).
@@ -100,7 +101,7 @@ npm run test:navigation
 npm run test:tasks
 npm run test:checklist
 # Other suites: test:guards, test:backend-release, test:capabilities,
-# test:chat-layout, test:usage, test:foundation, test:agents,
+# test:chat-layout, test:registry, test:usage, test:foundation, test:agents,
 # test:settings, test:execution, test:history
 ```
 

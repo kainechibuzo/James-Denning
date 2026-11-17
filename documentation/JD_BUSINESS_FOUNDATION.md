@@ -4,6 +4,8 @@ This implements a connected foundation across the repository's expanded product 
 
 The user's billing clarification is recorded in both prompt files: **normal platform billing stays; employee usage is additional**. No existing subscription prices, entitlements or payment flows were changed.
 
+Follow-up: the [versioned agent registry](JD_AGENT_REGISTRY.md) adds tenant-specific definition versions, contract-check evidence and independent publication review infrastructure. It does not turn the starter catalogue into evaluated or hireable employees.
+
 ## Delivered code paths
 
 ### Business DNA, workspace plans and advisory context

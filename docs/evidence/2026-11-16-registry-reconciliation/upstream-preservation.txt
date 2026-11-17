@@ -1,0 +1,101 @@
+Upstream c1f13917fbec41ee50f4c42419c80b63176dbb59
+Registry checkpoint 1d01e17573b7c86e0668d736978156415699c9cd
+
+DELETED (preserved): "et --hard \357\200\27403cadfa\357\200\276"
+DELETED (preserved): .claude/launch.json
+DELETED (preserved): .claude/settings.json
+DELETED (preserved): .claude/settings.local.json
+EXACT upstream: .env.example
+EXACT upstream: .gitignore
+EXACT upstream: CLAUDE.md
+DELETED (preserved): PROJECT_NOTES.md
+DELETED (preserved): UPGRADE_GUIDE.md
+EXACT upstream: deno.lock
+EXACT upstream: docs/JD_CHECKLIST_STATUS.json
+EXACT upstream: docs/JD_CHECKLIST_STATUS.md
+EXACT upstream: docs/JD_MASTER_EXECUTION_CHECKLIST.md
+EXACT upstream: docs/LEGACY_SCHEMA.md
+EXACT upstream: docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md
+EXACT upstream: docs/evidence/2026-11-17-p1-ci-deployment/actions-runs.json
+EXACT upstream: docs/evidence/2026-11-17-p1-ci-deployment/live-custom-domain-assets.sha256
+EXACT upstream: docs/evidence/2026-11-17-p1-ci-deployment/live-custom-domain-key-findings.txt
+EXACT upstream: docs/evidence/2026-11-17-p1-ci-deployment/vercel-deployments.json
+DELETED (preserved): documentation/PROJECT_NOTES.md
+DELETED (preserved): documentation/PROMOTION_ROLLOVER_SPEC.md
+DELETED (preserved): documentation/UPGRADE_GUIDE.md
+DELETED (preserved): documentation/sql/reset_sandbox.sql
+DELETED (preserved): fix_emoji.js
+DELETED (preserved): fix_emoji2.js
+DELETED (preserved): fix_emoji3.js
+DELETED (preserved): fix_emoji4.js
+EXACT upstream: index.html
+EXACT upstream: package-lock.json
+EXACT upstream: public/offline.html
+EXACT upstream: public/sw.js
+DELETED (preserved): scripts/fixtures/workspace-nav-pr87.json
+EXACT upstream: scripts/test-execution-checklist.mjs
+EXACT upstream: scripts/test-navigation-search.mjs
+EXACT upstream: scripts/test-settings-layout.mjs
+EXACT upstream: scripts/test-settings-review.mjs
+EXACT upstream: scripts/test-workspace-identity.mjs
+EXACT upstream: scripts/test-workspace-navigation.mjs
+EXACT upstream: scripts/verify-web-build.mjs
+EXACT upstream: src/App.jsx
+EXACT upstream: src/AppDemo.jsx
+DELETED (preserved): src/MobileApp.jsx
+EXACT upstream: src/auth/workspace-identity.mjs
+EXACT upstream: src/components/ui.jsx
+EXACT upstream: src/config/permissions.mjs
+EXACT upstream: src/config/product.js
+EXACT upstream: src/config/settings-presentation.mjs
+EXACT upstream: src/config/workspace-navigation.mjs
+EXACT upstream: src/contexts/dark.jsx
+EXACT upstream: src/contexts/organization.jsx
+DELETED (preserved): src/contexts/section.jsx
+EXACT upstream: src/mobile-main.jsx
+DELETED (preserved): src/pages/access.jsx
+DELETED (preserved): src/pages/analytics.jsx
+DELETED (preserved): src/pages/classes.jsx
+DELETED (preserved): src/pages/comms.jsx
+DELETED (preserved): src/pages/curriculum.jsx
+DELETED (preserved): src/pages/dashboard.jsx
+EXACT upstream: src/pages/email-logs.jsx
+DELETED (preserved): src/pages/fees.jsx
+DELETED (preserved): src/pages/grading.jsx
+EXACT upstream: src/pages/hiring.jsx
+DELETED (preserved): src/pages/lazy.js
+DELETED (preserved): src/pages/login.jsx
+DELETED (preserved): src/pages/members.jsx
+EXACT upstream: src/pages/permissions.jsx
+DELETED (preserved): src/pages/reportcards.jsx
+DELETED (preserved): src/pages/results.jsx
+DELETED (preserved): src/pages/schedule.jsx
+EXACT upstream: src/pages/settings.jsx
+DELETED (preserved): src/pages/students.jsx
+DELETED (preserved): src/pages/teachers.jsx
+EXACT upstream: src/pages/tools.jsx
+DELETED (preserved): src/pages/transcript.jsx
+EXACT upstream: src/services/email/index.js
+DELETED (preserved): src/services/pdf/billing.js
+DELETED (preserved): src/services/pdf/broadsheet.js
+DELETED (preserved): src/services/pdf/capture.js
+DELETED (preserved): src/services/pdf/transcript.js
+DELETED (preserved): src/services/reportCards/generator.js
+DELETED (preserved): src/supabaseAdmin.js
+EXACT upstream: src/supabaseClient.js
+EXACT upstream: src/useInactivityTimeout.js
+DELETED (preserved): src/utils/arithmetic.js
+DELETED (preserved): src/utils/grades.js
+EXACT upstream: src/utils/session.js
+DELETED (preserved): supabase/functions/_shared/arithmetic.test.ts
+EXACT upstream: supabase/functions/_shared/preauth-auth-contract.test.ts
+EXACT upstream: supabase/functions/manage-account/index.ts
+DELETED (preserved): supabase/functions/preauth-lookup/index.ts
+DELETED (preserved): supabase/functions/verify-payment/index.ts
+EXACT upstream: vite.config.js
+COMBINED upstream + registry: .github/workflows/ci.yml
+COMBINED upstream + registry: .github/workflows/verify.yml
+COMBINED upstream + registry: README.md
+COMBINED upstream + registry: package.json
+
+Historical registry source manifest verified against checkpoint, not rewritten to claim post-merge verification.

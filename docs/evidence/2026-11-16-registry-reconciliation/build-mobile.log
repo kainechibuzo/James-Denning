@@ -1,0 +1,33 @@
+> james-denning@1.0.0 build:mobile
+> vite build --config vite.mobile.config.js
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vite.mobile.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 1826 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-mobile/mobile.html                            1.30 kB │ gzip:   0.69 kB
+dist-mobile/assets/jd-operations-xfLEmI2Q.css      3.81 kB │ gzip:   1.21 kB
+dist-mobile/assets/mobile-DU3eN89V.css             8.60 kB │ gzip:   2.33 kB
+dist-mobile/assets/rolldown-runtime-COiEfhsA.js    1.11 kB │ gzip:   0.62 kB
+dist-mobile/assets/oauth-consent-CqDycnke.js       3.98 kB │ gzip:   1.75 kB
+dist-mobile/assets/email-DsI0uUEV.js               4.60 kB │ gzip:   1.71 kB
+dist-mobile/assets/permissions-B2xndxel.js         5.25 kB │ gzip:   2.00 kB
+dist-mobile/assets/ui-BQcwmeOw.js                  9.22 kB │ gzip:   3.24 kB
+dist-mobile/assets/saas-entry-DewCQXun.js         10.98 kB │ gzip:   3.80 kB
+dist-mobile/assets/tools-WRf_QLro.js              15.83 kB │ gzip:   4.20 kB
+dist-mobile/assets/email-logs-CcWt7zxv.js         16.60 kB │ gzip:   4.76 kB
+dist-mobile/assets/lucide-49jQkxKQ.js             30.38 kB │ gzip:  10.53 kB
+dist-mobile/assets/public-landing-COt5TA7x.js     34.25 kB │ gzip:   9.03 kB
+dist-mobile/assets/settings-CEafW21n.js           41.16 kB │ gzip:  10.51 kB
+dist-mobile/assets/hiring-B3RzpMNG.js             52.71 kB │ gzip:  12.57 kB
+dist-mobile/assets/mobile-jY3s9xOL.js            141.95 kB │ gzip:  46.72 kB
+dist-mobile/assets/supabase-BHcAqgAp.js          165.29 kB │ gzip:  42.95 kB
+dist-mobile/assets/AppDemo-6BMDIuak.js           170.43 kB │ gzip:  46.94 kB
+dist-mobile/assets/jd-operations-lCwfoxNI.js     183.55 kB │ gzip:  47.93 kB
+dist-mobile/assets/exceljs.min-DqPyZ1yt.js       929.38 kB │ gzip: 256.38 kB
+
+✓ built in 1.67s

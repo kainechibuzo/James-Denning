@@ -10,7 +10,7 @@ import {createRoot} from 'react-dom/client';
 import {Simulate} from 'react-dom/test-utils';
 import {businessBlueprint} from '../supabase/functions/_shared/jd-business-foundation.mjs';
 const cache=resolve('node_modules/.cache');mkdirSync(cache,{recursive:true});const temp=mkdtempSync(`${cache}/foundation-ui-`);after(()=>rmSync(temp,{recursive:true,force:true}));
-let source=readFileSync('src/software-factory/BusinessFoundation.jsx','utf8').replace("import './agent-studio.css';",'').replace("'./foundation-client.mjs'",JSON.stringify(new URL('../src/software-factory/foundation-client.mjs',import.meta.url).href)).replace("'../../supabase/functions/_shared/jd-business-foundation.mjs'",JSON.stringify(new URL('../supabase/functions/_shared/jd-business-foundation.mjs',import.meta.url).href));
+let source=readFileSync('src/software-factory/BusinessFoundation.jsx','utf8').replace("import './agent-studio.css';",'').replace("import {AgentRegistry} from './AgentRegistry.jsx';",'const AgentRegistry=()=>null;').replace("'./foundation-client.mjs'",JSON.stringify(new URL('../src/software-factory/foundation-client.mjs',import.meta.url).href)).replace("'../../supabase/functions/_shared/jd-business-foundation.mjs'",JSON.stringify(new URL('../supabase/functions/_shared/jd-business-foundation.mjs',import.meta.url).href));
 writeFileSync(`${temp}/component.mjs`,(await transformWithOxc(source,'component.jsx',{jsx:{runtime:'classic'}})).code);const {BusinessFoundation}=await import(pathToFileURL(`${temp}/component.mjs`));
 const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
 async function mount({role='owner',handler=b=>({data:{design:businessBlueprint(b.dna)}})}={}){

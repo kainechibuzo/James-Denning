@@ -1,0 +1,327 @@
+> james-denning@1.0.0 test:settings
+> node --experimental-strip-types --test scripts/test-settings-review.mjs scripts/test-settings-review-database.mjs
+
+TAP version 13
+# (node:2266) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-settings-review.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual JD submit -> SQL -> human approval -> HTTP executor -> client/read-back
+ok 1 - actual JD submit -> SQL -> human approval -> HTTP executor -> client/read-back
+  ---
+  duration_ms: 2291.013386
+  type: 'test'
+  ...
+# Subtest: actual endpoint denies actor null before execution
+ok 2 - actual endpoint denies actor null before execution
+  ---
+  duration_ms: 59.089796
+  type: 'test'
+  ...
+# Subtest: actual endpoint denies actor 00000000-0000-4000-8000-000000000005 before execution
+ok 3 - actual endpoint denies actor 00000000-0000-4000-8000-000000000005 before execution
+  ---
+  duration_ms: 29.001321
+  type: 'test'
+  ...
+# Subtest: actual endpoint denies actor 00000000-0000-4000-8000-000000000004 before execution
+ok 4 - actual endpoint denies actor 00000000-0000-4000-8000-000000000004 before execution
+  ---
+  duration_ms: 32.103063
+  type: 'test'
+  ...
+# Subtest: stale approved before-value fails without overwriting intervening change
+ok 5 - stale approved before-value fails without overwriting intervening change
+  ---
+  duration_ms: 41.487812
+  type: 'test'
+  ...
+# Subtest: tampered approved content fails its SQL hash check
+ok 6 - tampered approved content fails its SQL hash check
+  ---
+  duration_ms: 39.592533
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back the step and does not run subsequent steps
+ok 7 - audit failure rolls back the step and does not run subsequent steps
+  ---
+  duration_ms: 38.866778
+  type: 'test'
+  ...
+# Subtest: replaying completed execution does not duplicate audit steps
+ok 8 - replaying completed execution does not duplicate audit steps
+  ---
+  duration_ms: 57.445297
+  type: 'test'
+  ...
+# Subtest: malformed step receipt stops before the second write and reports uncertainty
+ok 9 - malformed step receipt stops before the second write and reports uncertainty
+  ---
+  duration_ms: 43.796046
+  type: 'test'
+  ...
+# Subtest: final persisted settings mismatch is not a success acknowledgement
+ok 10 - final persisted settings mismatch is not a success acknowledgement
+  ---
+  duration_ms: 45.701023
+  type: 'test'
+  ...
+# Subtest: anon: direct executor RPC denied
+ok 11 - anon: direct executor RPC denied
+  ---
+  duration_ms: 16.205356
+  type: 'test'
+  ...
+# Subtest: authenticated: direct executor RPC denied
+ok 12 - authenticated: direct executor RPC denied
+  ---
+  duration_ms: 21.12954
+  type: 'test'
+  ...
+# Subtest: second-step failure is partial, then explicit resume skips the completed first step
+ok 13 - second-step failure is partial, then explicit resume skips the completed first step
+  ---
+  duration_ms: 51.278779
+  type: 'test'
+  ...
+# (node:2299) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owner: actual JD tool saves review request, never applies settings
+ok 14 - owner: actual JD tool saves review request, never applies settings
+  ---
+  duration_ms: 2.109319
+  type: 'test'
+  ...
+# Subtest: admin: actual JD tool saves review request, never applies settings
+ok 15 - admin: actual JD tool saves review request, never applies settings
+  ---
+  duration_ms: 0.296685
+  type: 'test'
+  ...
+# Subtest: manager: cannot submit a settings proposal
+ok 16 - manager: cannot submit a settings proposal
+  ---
+  duration_ms: 0.334817
+  type: 'test'
+  ...
+# Subtest: staff: cannot submit a settings proposal
+ok 17 - staff: cannot submit a settings proposal
+  ---
+  duration_ms: 0.222682
+  type: 'test'
+  ...
+# Subtest: viewer: cannot submit a settings proposal
+ok 18 - viewer: cannot submit a settings proposal
+  ---
+  duration_ms: 1.393167
+  type: 'test'
+  ...
+# Subtest: finance: cannot submit a settings proposal
+ok 19 - finance: cannot submit a settings proposal
+  ---
+  duration_ms: 0.156561
+  type: 'test'
+  ...
+# Subtest: hr: cannot submit a settings proposal
+ok 20 - hr: cannot submit a settings proposal
+  ---
+  duration_ms: 0.215604
+  type: 'test'
+  ...
+# Subtest: contractor: cannot submit a settings proposal
+ok 21 - contractor: cannot submit a settings proposal
+  ---
+  duration_ms: 0.104979
+  type: 'test'
+  ...
+# Subtest: teacher: cannot submit a settings proposal
+ok 22 - teacher: cannot submit a settings proposal
+  ---
+  duration_ms: 0.327912
+  type: 'test'
+  ...
+# Subtest: student: cannot submit a settings proposal
+ok 23 - student: cannot submit a settings proposal
+  ---
+  duration_ms: 0.381632
+  type: 'test'
+  ...
+# Subtest: server rechecks profile {"profileRole":"staff"}
+ok 24 - server rechecks profile {"profileRole":"staff"}
+  ---
+  duration_ms: 0.242747
+  type: 'test'
+  ...
+# Subtest: server rechecks profile {"profileSchool":"00000000-0000-4000-8000-000000000008"}
+ok 25 - server rechecks profile {"profileSchool":"00000000-0000-4000-8000-000000000008"}
+  ---
+  duration_ms: 0.190808
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [] never saves
+ok 26 - invalid/unsupported proposal [] never saves
+  ---
+  duration_ms: 0.184464
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"school_name","value":"Synthetic Logistics Ltd"},{"key":"school_name","v never saves
+ok 27 - invalid/unsupported proposal [{"key":"school_name","value":"Synthetic Logistics Ltd"},{"key":"school_name","v never saves
+  ---
+  duration_ms: 0.218798
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"smtp_password","value":"private"}] never saves
+ok 28 - invalid/unsupported proposal [{"key":"smtp_password","value":"private"}] never saves
+  ---
+  duration_ms: 0.161771
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"school_name","value":"Synthetic Logistics Ltd"},{"key":"workspace_type" never saves
+ok 29 - invalid/unsupported proposal [{"key":"school_name","value":"Synthetic Logistics Ltd"},{"key":"workspace_type" never saves
+  ---
+  duration_ms: 0.232573
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"school_phone","value":""}] never saves
+ok 30 - invalid/unsupported proposal [{"key":"school_phone","value":""}] never saves
+  ---
+  duration_ms: 0.236117
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"recycle_bin_retention_days","value":30}] never saves
+ok 31 - invalid/unsupported proposal [{"key":"recycle_bin_retention_days","value":30}] never saves
+  ---
+  duration_ms: 0.137394
+  type: 'test'
+  ...
+# Subtest: invalid/unsupported proposal [{"key":"education_module_enabled","value":"sometimes"}] never saves
+ok 32 - invalid/unsupported proposal [{"key":"education_module_enabled","value":"sometimes"}] never saves
+  ---
+  duration_ms: 0.104368
+  type: 'test'
+  ...
+# Subtest: unchanged settings return no-change without persisting duplicate requests
+ok 33 - unchanged settings return no-change without persisting duplicate requests
+  ---
+  duration_ms: 0.193579
+  type: 'test'
+  ...
+# Subtest: missing or invalid backend receipt fails closed {"error":true}
+ok 34 - missing or invalid backend receipt fails closed {"error":true}
+  ---
+  duration_ms: 0.355316
+  type: 'test'
+  ...
+# Subtest: missing or invalid backend receipt fails closed {"receipt":{}}
+ok 35 - missing or invalid backend receipt fails closed {"receipt":{}}
+  ---
+  duration_ms: 0.189589
+  type: 'test'
+  ...
+# Subtest: missing or invalid backend receipt fails closed {"receipt":{"id":"00000000-0000-4000-8000-000000000003","status":"completed","proposal_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+ok 36 - missing or invalid backend receipt fails closed {"receipt":{"id":"00000000-0000-4000-8000-000000000003","status":"completed","proposal_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+  ---
+  duration_ms: 0.124989
+  type: 'test'
+  ...
+# Subtest: catalogue distinguishes stored academic settings from business applicability
+ok 37 - catalogue distinguishes stored academic settings from business applicability
+  ---
+  duration_ms: 0.763814
+  type: 'test'
+  ...
+# Subtest: configured project info is derived, not hard-coded legacy metadata
+ok 38 - configured project info is derived, not hard-coded legacy metadata
+  ---
+  duration_ms: 0.301521
+  type: 'test'
+  ...
+# Subtest: apply client requires explicit approved diff, execution receipt and persisted read-back
+ok 39 - apply client requires explicit approved diff, execution receipt and persisted read-back
+  ---
+  duration_ms: 1.216276
+  type: 'test'
+  ...
+# Subtest: client cannot apply {"status":"pending"}
+ok 40 - client cannot apply {"status":"pending"}
+  ---
+  duration_ms: 0.184057
+  type: 'test'
+  ...
+# Subtest: client cannot apply {"status":"rejected"}
+ok 41 - client cannot apply {"status":"rejected"}
+  ---
+  duration_ms: 0.195517
+  type: 'test'
+  ...
+# Subtest: client cannot apply {"execution_status":"failed"}
+ok 42 - client cannot apply {"execution_status":"failed"}
+  ---
+  duration_ms: 0.211389
+  type: 'test'
+  ...
+# Subtest: client cannot apply {"execution_status":"completed"}
+ok 43 - client cannot apply {"execution_status":"completed"}
+  ---
+  duration_ms: 0.182501
+  type: 'test'
+  ...
+# Subtest: client cannot apply {"proposal_json":{"changes":[]}}
+ok 44 - client cannot apply {"proposal_json":{"changes":[]}}
+  ---
+  duration_ms: 0.128717
+  type: 'test'
+  ...
+# Subtest: incomplete execution acknowledgement cannot claim settings changed
+ok 45 - incomplete execution acknowledgement cannot claim settings changed
+  ---
+  duration_ms: 0.24797
+  type: 'test'
+  ...
+# Subtest: incomplete execution acknowledgement cannot claim settings changed
+ok 46 - incomplete execution acknowledgement cannot claim settings changed
+  ---
+  duration_ms: 0.182439
+  type: 'test'
+  ...
+# Subtest: incomplete execution acknowledgement cannot claim settings changed
+ok 47 - incomplete execution acknowledgement cannot claim settings changed
+  ---
+  duration_ms: 0.136417
+  type: 'test'
+  ...
+# Subtest: incomplete execution acknowledgement cannot claim settings changed
+ok 48 - incomplete execution acknowledgement cannot claim settings changed
+  ---
+  duration_ms: 0.169432
+  type: 'test'
+  ...
+# Subtest: incomplete execution acknowledgement cannot claim settings changed
+ok 49 - incomplete execution acknowledgement cannot claim settings changed
+  ---
+  duration_ms: 1.049119
+  type: 'test'
+  ...
+# Subtest: lost execution acknowledgement is not retried automatically
+ok 50 - lost execution acknowledgement is not retried automatically
+  ---
+  duration_ms: 1.260417
+  type: 'test'
+  ...
+# Subtest: malformed or secret-key diffs are not displayed or approved
+ok 51 - malformed or secret-key diffs are not displayed or approved
+  ---
+  duration_ms: 0.125784
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3448.783652
