@@ -83,7 +83,7 @@ Do not start a replacement queue, permission system or approval system until exi
 
 **Start here.** Initial inspection is partial; the phase is not complete.
 
-- [ ] P1-01 Verify latest `master`, relevant GitHub Actions and their actual coverage.
+- [x] P1-01 Verify latest `master`, relevant GitHub Actions and their actual coverage.
 - [ ] P1-02 Verify Vercel production deployment, commit identity and live application behaviour.
 - [ ] P1-03 Test authentication, login, logout and session persistence.
 - [ ] P1-04 Test role and permission enforcement, including denied operations.

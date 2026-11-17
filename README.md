@@ -27,8 +27,8 @@ Built as a single-page React application backed by Supabase.
 
 A merged PR or successful assistant response is not acceptance: require tests, persisted records and evidence of the actual outcome.
 
-**Current deployment URL:** https://portal.renaissancegardenschools.com (legacy host retained for compatibility while the new public domain is finalized)
-**GitHub:** https://github.com/kainechibuzo/James-Denning (private — `master` is the default branch)
+**Current deployment:** the `james-denning` Vercel project (production alias `james-denning-james-projects-57651351.vercel.app`, behind Vercel Deployment Protection). As of 2026-11-17, `https://portal.renaissancegardenschools.com` serves a separate legacy "Apex" build, not JD master — see [P1-02 evidence](docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md).
+**GitHub:** https://github.com/kainechibuzo/James-Denning (public — `master` is the default branch)
 
 ---
 
