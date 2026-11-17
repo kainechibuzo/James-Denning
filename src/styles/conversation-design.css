@@ -1,0 +1,59 @@
+/* Readable conversation surfaces in both themes. These component selectors
+   beat legacy chat-local rules; colours come from the shared theme tokens. */
+.jd-command.reference-command .jd-message.assistant,.jd-command.reference-command .jd-markdown{color:var(--jd-text);font-size:15px;line-height:1.8}
+.jd-command.reference-command .jd-markdown :is(h2,h3,h4,strong,a){color:var(--jd-text)}
+.jd-command.reference-command .jd-markdown a{text-decoration-thickness:1px}
+.jd-command.reference-command .jd-markdown :is(del),.jd-command.reference-command :is(.jd-table-hint,.jd-message-head,.jd-run,.jd-disclaimer,.jd-history-trigger){color:var(--jd-muted)}
+.jd-command.reference-command .jd-message.user{background:var(--jd-soft);color:var(--jd-text);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-markdown blockquote,.jd-command.reference-command .jd-inline-code{color:var(--jd-text);background:var(--jd-soft);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-markdown hr{border-color:var(--jd-border)}
+.jd-command.reference-command .jd-table-wrap{background:var(--jd-card);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-table :is(th,td){color:var(--jd-text);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-table th{background:var(--jd-soft)}
+.jd-command.reference-command :is(.jd-job-state,.jd-tool,.jd-pause){color:var(--jd-text);background:var(--jd-soft);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-activity{background:var(--jd-card);border-color:var(--jd-border)}
+.jd-command.reference-command .jd-activity-title{color:var(--jd-text)}
+.jd-command.reference-command :is(.jd-activity-detail,.jd-activity-step,.jd-error){color:var(--jd-muted)}
+.jd-command.reference-command .jd-compose{background:var(--jd-card);border-color:var(--jd-border)}
+body .jd-command.reference-command .jd-compose textarea{background:transparent!important;color:var(--jd-text)!important;border:0!important;box-shadow:none;font-size:16px;resize:none;min-height:48px;height:48px;max-height:140px;padding:4px 0;caret-color:var(--jd-text)}
+body .jd-command.reference-command .jd-compose textarea::placeholder{color:var(--jd-muted)!important;opacity:1}
+.jd-command.reference-command .jd-compose:focus-within{outline:2px solid var(--jd-accent);outline-offset:2px}
+.jd-command.reference-command .jd-compose textarea:focus-visible{outline:0}
+.jd-command.reference-command .jd-compose-hint{color:var(--jd-muted);font-size:10px}
+.jd-command.reference-command .jd-send{color:var(--jd-on-action);background:var(--jd-action);min-width:40px;min-height:40px}
+.jd-command.reference-command .jd-send:disabled{opacity:.5}
+.jd-command.reference-command .jd-queue-note{font-size:10px;color:var(--jd-muted)}
+.jd-command.reference-command .jd-disclaimer{font-size:10px}
+.jd-command.reference-command .jd-rail{background:var(--jd-card);border-color:var(--jd-border);color:var(--jd-text)}
+.jd-command.reference-command :is(.jd-brand,.jd-new,.jd-history-item,.jd-nav button,.jd-rail-foot){color:var(--jd-text);border-color:var(--jd-border)}
+.jd-command.reference-command :is(.jd-new,.jd-history-item.active,.jd-nav button){background:var(--jd-soft)}
+.jd-command.reference-command :is(.jd-rail-label,.jd-history-empty,.jd-history-item small){color:var(--jd-muted)}
+/* A compact native disclosure: keyboard/AT support without a simulated button.
+   No open attribute means historical and new checklists start collapsed. */
+.jd-visual-workspace .jd-task-disclosure{padding:0;box-shadow:none;border-radius:18px;overflow:hidden;white-space:normal}
+.jd-task-disclosure>summary.jd-viz-panel-head{cursor:pointer;list-style:none;padding:12px 14px;margin:0;min-height:44px;justify-content:flex-start;flex-wrap:wrap}
+.jd-task-disclosure>summary::-webkit-details-marker{display:none}
+.jd-task-disclosure>summary .jd-viz-panel-title{flex:1;font-size:12px;min-width:100px}
+.jd-task-disclosure>summary .jd-viz-status{font-size:10px}
+.jd-task-disclosure>summary .jd-disclosure-chevron{color:var(--jd-muted);flex-shrink:0;transition:transform .15s}
+.jd-task-disclosure[open]>summary .jd-disclosure-chevron{transform:rotate(180deg)}
+.jd-task-disclosure:not([open]){width:fit-content;max-width:100%;border-radius:999px}
+.jd-task-details{padding:0 14px 14px;border-top:1px solid var(--jd-border)}
+.jd-task-explanation{font-size:12px;line-height:1.65;color:var(--jd-muted);margin:12px 0}
+.jd-task-actions{display:flex;flex-wrap:wrap;gap:8px}
+.jd-task-actions button{background:var(--jd-soft);color:var(--jd-text);border:1px solid var(--jd-border);padding:9px 12px;border-radius:999px;font-size:12px;min-height:40px;cursor:pointer}
+.jd-assistant-navigation{border-bottom:1px solid var(--jd-border);padding-bottom:10px;margin-bottom:10px}
+.jd-assistant-navigation h2{font-size:10px;letter-spacing:.1em;font-weight:600;text-transform:uppercase;padding:4px 10px;color:var(--jd-muted)!important}
+.jd-assistant-navigation button{display:flex;align-items:center;gap:10px;min-height:40px;width:100%;padding:9px 10px;border:0;font-size:12px;text-align:left;cursor:pointer}
+@media(max-width:760px){.jd-command.reference-command .jd-compose-wrap{margin-bottom:calc(12px + env(safe-area-inset-bottom,0px))}.jd-command.reference-command .jd-thread{gap:24px}.jd-task-disclosure>summary.jd-viz-panel-head{gap:7px;padding:11px 12px}}
+.jd-visual-workspace .jd-viz-copy strong{font-size:13px;line-height:1.55}
+.jd-visual-workspace .jd-viz-copy small{font-size:12px;line-height:1.65}
+.jd-visual-workspace .jd-viz-check{min-width:36px;min-height:36px}
+/* Restored assistant tools share readable dark surfaces as well as the chat. */
+.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments){background:var(--jd-canvas);color:var(--jd-text)}
+.jd-command.reference-command :is(.jd-review-card,.jd-review-empty,.jd-review-summary,.jd-usage-panel,.jd-usage-empty,.jd-runs-card,.jd-runs-stats>div,.jd-runs-empty,.jd-departments-summary,.jd-departments-empty){background:var(--jd-card);color:var(--jd-text);border-color:var(--jd-border)}
+.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments) :is(h2,h3,strong){color:var(--jd-text)}
+.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments) :is(p,small){color:var(--jd-muted)}
+.jd-command.reference-command :is(.jd-review-controls,.jd-usage-controls,.jd-runs-controls,.jd-departments-actions) button{background:var(--jd-card);color:var(--jd-text);border-color:var(--jd-border)}
+
+.jd-visual-workspace .jd-task-work{display:inline-flex;margin:10px 0 4px;padding:8px 12px;min-height:36px;background:var(--jd-soft);color:var(--jd-text);border:1px solid var(--jd-border);border-radius:999px;font-size:11px;cursor:pointer}

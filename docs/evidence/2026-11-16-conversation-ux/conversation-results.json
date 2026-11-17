@@ -1,0 +1,242 @@
+[
+  {
+    "name": "sidebar-restored",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-review-centre",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-departments",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-ai-usage",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-automation-runs",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "response-light",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-light",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "response-dark",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-dark",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "read-only-status-poll",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "explicit-task-work-request",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "landing",
+    "width": 320,
+    "result": "PASS"
+  },
+  {
+    "name": "sidebar-restored",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-review-centre",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-departments",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-ai-usage",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-automation-runs",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "response-light",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-light",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "response-dark",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-dark",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "read-only-status-poll",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "explicit-task-work-request",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "landing",
+    "width": 393,
+    "result": "PASS"
+  },
+  {
+    "name": "sidebar-restored",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-review-centre",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-departments",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-ai-usage",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-automation-runs",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "response-light",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-light",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "response-dark",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-dark",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "read-only-status-poll",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "explicit-task-work-request",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "landing",
+    "width": 708,
+    "result": "PASS"
+  },
+  {
+    "name": "sidebar-restored",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-review-centre",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-departments",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-ai-usage",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "menu-automation-runs",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "response-light",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-light",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "response-dark",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "checklist-dark",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "read-only-status-poll",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "explicit-task-work-request",
+    "width": 1280,
+    "result": "PASS"
+  },
+  {
+    "name": "landing",
+    "width": 1280,
+    "result": "PASS"
+  }
+]

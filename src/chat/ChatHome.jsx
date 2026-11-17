@@ -153,7 +153,7 @@ function friendlyActivityLabel(name) {
   return labels[String(name || "")] || "Working on your request";
 }
 
-export function ChatHome({ user, organizationName = "Your organisation", organizationId = user?.school_id }) {
+export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
   const [draft, setDraft] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 760);
   const [showReview, setShowReview] = useState(false);
@@ -340,6 +340,17 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
     if (sending) return;
     setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setSidebarOpen(false);
   };
+  const handledNavigation = useRef(null);
+  useEffect(() => {
+    if (!navigationRequest || handledNavigation.current === navigationRequest) return;
+    handledNavigation.current = navigationRequest;
+    const view = navigationRequest.view;
+    setShowReview(view === "review"); setShowUsage(view === "usage");
+    setShowRuns(view === "runs"); setShowDepartments(view === "departments");
+    setSidebarOpen(view === "history");
+    if (view === "new") newConversation();
+  }, [navigationRequest]);
+
 
   return (
     <div className={`jd-command reference-command${messages.length===0 ? " is-empty" : ""}`}>
@@ -508,15 +519,9 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
-              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Completed",partially_completed:"Completed with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
+              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.content ? renderMessageContent(item.content) : null}
-              {item.role === "assistant" && item.visualWorkspace?.source === "persisted_workspace_records" && Array.isArray(item.visualWorkspace?.blocks) && item.visualWorkspace.blocks.some(block=>block?.type==="checklist") && <div style={{marginTop:12,fontSize:12}}>
-                <button type="button" onClick={taskRecords.refresh} disabled={taskRecords.state.phase==="loading"||taskRecords.state.pending.length>0}
-                  style={{padding:"8px 12px",border:"1px solid #dfe3e8",borderRadius:8,background:"#fff",color:"#34353b",fontSize:11,cursor:"pointer"}}>{taskRecords.state.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>
-                {taskRecords.state.error&&<p role="alert">{taskRecords.state.error}</p>}
-                <p style={{fontSize:11,color:"#60616b",lineHeight:1.6}}>Refresh reads task records only; it never retries a write. Department summaries and execution evidence remain conversation snapshots.</p>
-              </div>}
-              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role}/>}
+              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role} onRefreshTasks={taskRecords.refresh} onViewRuns={()=>setShowRuns(true)} onTaskWork={task=>send(`Review saved operational task ${task.id} (${JSON.stringify(task.title)}). Check its current status, dependencies, inputs and required approvals. Work on the next supported, authorised step using the available tools; if blocked, explain exactly what is needed. Do not treat changing a checklist status as executing the task, do not bypass approval, and do not claim completion without evidence.`)}/>}
               {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
@@ -540,7 +545,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
             <div className="jd-compose-bottom"><span className="jd-compose-hint">Enter to send · Shift + Enter for a new line</span><div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div></div>
           </div>
             <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
-          <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Free model routing · Submitted jobs continue in the background, even if you close this tab."}</div>
+          <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Submitted jobs continue in the background, even if you close this tab."}</div>
         </div>
       </section>
       {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}

@@ -14,7 +14,8 @@ function Status({ value }) {
   return <span className={"jd-viz-status " + tone}>{statusLabel(status)}</span>;
 }
 
-function Panel({ title, icon: Icon, children, aside }) {
+function Panel({ title, icon: Icon, children, aside, collapsible = false }) {
+  if (collapsible) return <details className="jd-viz-panel jd-task-disclosure"><summary className="jd-viz-panel-head"><span className="jd-viz-panel-title"><Icon size={14}/>{title}</span>{aside}<ChevronDown className="jd-disclosure-chevron" size={16} aria-hidden="true"/></summary><div className="jd-task-details">{children}</div></details>;
   return <section className="jd-viz-panel"><header className="jd-viz-panel-head"><span className="jd-viz-panel-title"><Icon size={14}/>{title}</span>{aside}</header>{children}</section>;
 }
 
@@ -24,7 +25,7 @@ function Panel({ title, icon: Icon, children, aside }) {
  * Draft ticks remain local. Saved-task controls require separate authenticated
  * read/acknowledgement state; a model-supplied ID alone never makes a record writable.
  */
-export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, taskRole }) {
+export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, taskRole, onRefreshTasks, onViewRuns, onTaskWork }) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const blocks = useMemo(() => list(ui?.blocks, 12).filter((block) =>
@@ -36,29 +37,29 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
   return <div className="jd-visual-workspace" aria-label="JD interactive workspace">
     <style>{`
       .jd-visual-workspace{display:grid;gap:10px;margin:14px 0 4px;min-width:0}
-      .jd-viz-panel{min-width:0;border:1px solid #e4e7eb;background:#fff;border-radius:14px;padding:13px 14px;box-shadow:0 4px 16px rgba(20,24,30,.035)}
+      .jd-viz-panel{min-width:0;border:1px solid var(--jd-border);background:var(--jd-card);border-radius:14px;padding:13px 14px;box-shadow:0 4px 16px rgba(20,24,30,.035)}
       .jd-viz-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
-      .jd-viz-panel-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;color:#17191c}
-      .jd-viz-panel-title svg{color:#60616b}
-      .jd-viz-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:700;white-space:nowrap;background:#f1f3f5;color:#60616b}
-      .jd-viz-status.good{background:#edf7f0;color:#34353b}.jd-viz-status.bad{background:#f1f2f5;color:#34353b}.jd-viz-status.active{background:#f1f2f5;color:#34353b}
-      .jd-viz-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:1px solid #f0f1f3;min-width:0}
+      .jd-viz-panel-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;color:var(--jd-text)}
+      .jd-viz-panel-title svg{color:var(--jd-muted)}
+      .jd-viz-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:700;white-space:nowrap;background:var(--jd-soft);color:var(--jd-muted)}
+      .jd-viz-status.good{background:var(--jd-soft);color:var(--jd-text)}.jd-viz-status.bad{background:var(--jd-soft);color:var(--jd-text)}.jd-viz-status.active{background:var(--jd-soft);color:var(--jd-text)}
+      .jd-viz-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:1px solid var(--jd-border);min-width:0}
       .jd-viz-row:first-child{border-top:0;padding-top:0}
-      .jd-viz-copy{flex:1;min-width:0}.jd-viz-copy strong{display:block;font-size:11px;color:#34353b;font-weight:650;overflow-wrap:anywhere}.jd-viz-copy small{display:block;color:#60616b;font-size:10px;line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
-      .jd-viz-check{border:0;background:transparent;color:#60616b;padding:1px;display:grid;place-items:center;cursor:pointer}.jd-viz-check[aria-pressed=true]{color:#34353b}
-      .jd-viz-progress{height:6px;background:#edf0f2;border-radius:99px;overflow:hidden;margin:7px 0 10px}.jd-viz-progress>span{display:block;height:100%;background:#60616b;border-radius:99px}
+      .jd-viz-copy{flex:1;min-width:0}.jd-viz-copy strong{display:block;font-size:11px;color:var(--jd-text);font-weight:650;overflow-wrap:anywhere}.jd-viz-copy small{display:block;color:var(--jd-muted);font-size:10px;line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
+      .jd-viz-check{border:0;background:transparent;color:var(--jd-muted);padding:1px;display:grid;place-items:center;cursor:pointer}.jd-viz-check[aria-pressed=true]{color:var(--jd-text)}
+      .jd-viz-progress{height:6px;background:var(--jd-soft);border-radius:99px;overflow:hidden;margin:7px 0 10px}.jd-viz-progress>span{display:block;height:100%;background:var(--jd-muted);border-radius:99px}
       .jd-viz-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:8px}
-      .jd-viz-node{min-width:0;border:1px solid #e8eaed;border-radius:10px;padding:10px;background:#fafbfc;position:relative}
-      .jd-viz-node strong{display:block;font-size:10px;color:#34353b;overflow-wrap:anywhere}.jd-viz-node small{display:block;color:#60616b;font-size:9px;line-height:1.45;margin-top:4px}
-      .jd-viz-question{background:#f8f9fb;border:1px solid #e9ebef;border-radius:11px;padding:12px}
-      .jd-viz-question p{font-size:12px;font-weight:650;color:#17191c;margin:0 0 10px;line-height:1.5}
+      .jd-viz-node{min-width:0;border:1px solid var(--jd-border);border-radius:10px;padding:10px;background:var(--jd-soft);position:relative}
+      .jd-viz-node strong{display:block;font-size:10px;color:var(--jd-text);overflow-wrap:anywhere}.jd-viz-node small{display:block;color:var(--jd-muted);font-size:9px;line-height:1.45;margin-top:4px}
+      .jd-viz-question{background:var(--jd-soft);border:1px solid var(--jd-border);border-radius:11px;padding:12px}
+      .jd-viz-question p{font-size:12px;font-weight:650;color:var(--jd-text);margin:0 0 10px;line-height:1.5}
       .jd-viz-options{display:flex;flex-wrap:wrap;gap:7px}
-      .jd-viz-option{border:1px solid #dfe3e8;background:#fff;border-radius:9px;padding:8px 10px;font-size:10px;color:#34353b;cursor:pointer}
-      .jd-viz-option:hover{border-color:#a3a4ad;background:#f5f7f9}
-      .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:#60616b;padding-top:1px}.jd-viz-event strong{font-size:10px;color:#34353b}.jd-viz-event small{display:block;font-size:9px;color:#60616b;margin-top:3px;line-height:1.45}
-      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid #eceef0;background:#fafbfc;border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:#60616b}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:#17191c;margin-top:4px}
-      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid #e6e9ed;border-radius:8px;padding:7px 9px;font-size:9px;color:#34353b;background:#fafbfc;overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:#60616b}
-      .jd-viz-expand{border:0;background:transparent;color:#60616b;font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
+      .jd-viz-option{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:9px;padding:8px 10px;font-size:10px;color:var(--jd-text);cursor:pointer}
+      .jd-viz-option:hover{border-color:var(--jd-border);background:var(--jd-soft)}
+      .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:var(--jd-muted);padding-top:1px}.jd-viz-event strong{font-size:10px;color:var(--jd-text)}.jd-viz-event small{display:block;font-size:9px;color:var(--jd-muted);margin-top:3px;line-height:1.45}
+      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid var(--jd-border);background:var(--jd-soft);border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:var(--jd-muted)}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:var(--jd-text);margin-top:4px}
+      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid var(--jd-border);border-radius:8px;padding:7px 9px;font-size:9px;color:var(--jd-text);background:var(--jd-soft);overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:var(--jd-muted)}
+      .jd-viz-expand{border:0;background:transparent;color:var(--jd-muted);font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
       @media(max-width:420px){.jd-viz-panel{padding:11px}.jd-viz-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
     `}</style>
     {blocks.map((block, index) => {
@@ -68,10 +69,18 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
         const saved = ui?.source === "persisted_workspace_records";
         const records = taskRecords?.records || {};
         const localKey = (item,i) => key + "-" + i + "-" + JSON.stringify(item);
+        const statusConfirmed = saved && items.length>0 && items.every(item=>isSavedTaskCard(ui,item)&&records[item.id]);
         const done = saved ? items.filter(item=>isSavedTaskCard(ui,item) && records[item.id]?.status === "completed").length : 0;
         const localTicks = saved ? 0 : items.filter((item,i)=>checked[localKey(item,i)]).length;
         const pct = items.length ? Math.round((saved?done:localTicks) / items.length * 100) : 0;
-        return <Panel key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? `${done}/${items.length} records complete` : `${localTicks}/${items.length} local ticks`}</span>}>
+        return <Panel collapsible key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? statusConfirmed ? `${done}/${items.length} records complete` : "Status not confirmed" : `${localTicks}/${items.length} local ticks`}</span>}>
+          <p className="jd-task-explanation">{saved ? "These are saved task statuses, not proof that JD performed the work. JD executes authorised jobs through available tools; approvals, missing inputs or work outside those tools can still require you. Changing a record here does not execute its task." : "This is a draft checklist, not an active job. Local ticks do not perform work or save progress."}</p>
+          {saved && <div className="jd-task-actions">
+            {onRefreshTasks && <button type="button" onClick={onRefreshTasks} disabled={taskRecords?.phase==="loading"||Boolean(taskRecords?.pending?.length)}>{taskRecords?.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>}
+            {onViewRuns && <button type="button" onClick={onViewRuns}>View JD execution runs</button>}
+          </div>}
+          {saved && <p className="jd-task-explanation">Status is checked every 30 seconds while this conversation is visible. Refresh only reads records; it never retries a write. Execution evidence remains a conversation snapshot.</p>}
+          {saved && taskRecords?.error && <p role="alert">{taskRecords.error}</p>}
           <div className="jd-viz-progress" aria-label={saved?"Refreshed record completion":"Local draft ticks only"}><span style={{ width: pct + "%" }}/></div>
           {items.map((item, i) => {
             const record = isSavedTaskCard(ui,item) ? records[item.id] : null;
@@ -97,6 +106,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
                 {isPending&&<small role="status">Saving record status…</small>}
                 {needsRefresh&&<small role="status">Update not confirmed. Refresh task records before trying again.</small>}
                 {taskRecords?.audits?.[item?.id]&&saved&&<small>Status saved with audit evidence.</small>}
+                {saved && record && canPersist && taskAction && onTaskWork && <button className="jd-task-work" type="button" disabled={isPending} onClick={()=>onTaskWork(record)}>Ask JD to work on this</button>}
                 <small>Planned owner role: {text(item?.owner,"Unassigned")}</small>
                 {list(item?.dependencies,8).length>0&&<small>Depends on: {list(item.dependencies,8).map(dependency=>text(dependency)).join(", ")}</small>}
                 {item?.approval_required&&<small style={{color:"#34353b"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
@@ -105,7 +115,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
             </div>;
           })}
           {block.sample_truncated&&<small style={{color:"#34353b",fontSize:9}}>Only a sample of tasks is shown.</small>}
-          <small style={{color:"#60616b",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
+          <small style={{color:"var(--jd-muted)",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>

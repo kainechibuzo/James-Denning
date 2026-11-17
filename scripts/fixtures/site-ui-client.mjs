@@ -1,4 +1,6 @@
-// Local rendering fixture only. Unknown reads and all writes fail closed.
+import {conversationTasks,conversationHistory} from "./conversation-records.mjs";
+// Local rendering fixture only. Unknown calls fail closed; the populated-chat
+// test can explicitly enable a synthetic submit acknowledgement (never a real job).
 // No credentials, external endpoints or production records.
 export const user={id:'ui-admin',_authUserId:'ui-admin',role:'admin',name:'Kaine Denning',email:'owner@example.test',school_id:'ui-workspace'};
 export const school={id:'ui-workspace',name:'Reference workspace',plan:'free',student_id_prefix:'JD'};
@@ -35,6 +37,12 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(name==='jd-automation'&&window.__conversationFixture){
+   if(body.action==='submit'&&window.__allowTaskRequest&&body.message.startsWith('Review saved operational task '))return{data:{conversationId:'synthetic-conversation',reply:'Synthetic work request received. No real job was executed.'}};
+   if(body.action==='history.list')return{data:{conversations:[{id:'synthetic-conversation',title:'Saved operations conversation'}]}};
+   if(body.action==='history')return{data:conversationHistory()};
+   if(body.action==='operations.task.list')return{data:{tasks:conversationTasks()}};
+  }
   const map=name==='jd-automation'?automation:name==='jd-business-platform'?business:name==='jd-connect'?{'servers.list':{servers:[]},'tools.list':{tools:[]},'approvals.list':{approvals:[]},'executions.list':{executions:[]}}:{};
   return Object.hasOwn(map,body.action)?{data:structuredClone(map[body.action])}:fail(name+':'+body.action);
  }},
