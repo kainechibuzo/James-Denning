@@ -1,0 +1,38 @@
+[
+  {
+    "width": 360,
+    "rowHeight": 376,
+    "gap": 6,
+    "labelHeight": 220,
+    "controlTop": 226,
+    "pageWidth": 360,
+    "errors": []
+  },
+  {
+    "width": 393,
+    "rowHeight": 333,
+    "gap": 6,
+    "labelHeight": 220,
+    "controlTop": 226,
+    "pageWidth": 393,
+    "errors": []
+  },
+  {
+    "width": 708,
+    "rowHeight": 292,
+    "gap": 8,
+    "labelHeight": 220,
+    "controlTop": 228,
+    "pageWidth": 708,
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "rowHeight": 111,
+    "gap": -69.5,
+    "labelHeight": 69.5,
+    "controlTop": 0,
+    "pageWidth": 1280,
+    "errors": []
+  }
+]

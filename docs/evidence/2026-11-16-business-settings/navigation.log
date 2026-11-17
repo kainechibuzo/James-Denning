@@ -1,0 +1,654 @@
+
+> james-denning@1.0.0 test:navigation
+> node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs
+
+TAP version 13
+# Subtest: opening focuses search and locks body scrolling
+ok 1 - opening focuses search and locks body scrolling
+  ---
+  duration_ms: 50.112006
+  type: 'test'
+  ...
+# Subtest: Tab wraps from last control to search
+ok 2 - Tab wraps from last control to search
+  ---
+  duration_ms: 11.385096
+  type: 'test'
+  ...
+# Subtest: Shift-Tab wraps to the last eligible control
+ok 3 - Shift-Tab wraps to the last eligible control
+  ---
+  duration_ms: 8.186449
+  type: 'test'
+  ...
+# Subtest: interior Tab is left to native browser handling
+ok 4 - interior Tab is left to native browser handling
+  ---
+  duration_ms: 7.75476
+  type: 'test'
+  ...
+# Subtest: Escape closes and returns focus to the menu trigger
+ok 5 - Escape closes and returns focus to the menu trigger
+  ---
+  duration_ms: 7.111752
+  type: 'test'
+  ...
+# Subtest: focus boundaries update after search removes or disables controls
+ok 6 - focus boundaries update after search removes or disables controls
+  ---
+  duration_ms: 17.835079
+  type: 'test'
+  ...
+# Subtest: no controls still contains focus without throwing
+ok 7 - no controls still contains focus without throwing
+  ---
+  duration_ms: 6.751462
+  type: 'test'
+  ...
+# Subtest: cleanup restores prior scroll, focus and removes the event handler
+ok 8 - cleanup restores prior scroll, focus and removes the event handler
+  ---
+  duration_ms: 5.890893
+  type: 'test'
+  ...
+# Subtest: cleanup does not steal focus from a dialog opened by navigation
+ok 9 - cleanup does not steal focus from a dialog opened by navigation
+  ---
+  duration_ms: 8.635409
+  type: 'test'
+  ...
+# Subtest: repeated bind-cleanup cycles do not accumulate Escape handlers
+ok 10 - repeated bind-cleanup cycles do not accumulate Escape handlers
+  ---
+  duration_ms: 7.172812
+  type: 'test'
+  ...
+# Subtest: blank query preserves existing order and identity
+ok 11 - blank query preserves existing order and identity
+  ---
+  duration_ms: 1.88788
+  type: 'test'
+  ...
+# Subtest: case-insensitive label search preserves the matching group
+ok 12 - case-insensitive label search preserves the matching group
+  ---
+  duration_ms: 0.736961
+  type: 'test'
+  ...
+# Subtest: department search finds only its supplied children
+ok 13 - department search finds only its supplied children
+  ---
+  duration_ms: 0.127974
+  type: 'test'
+  ...
+# Subtest: all search words must match label plus department
+ok 14 - all search words must match label plus department
+  ---
+  duration_ms: 0.18737
+  type: 'test'
+  ...
+# Subtest: ungrouped JD Assistant remains searchable
+ok 15 - ungrouped JD Assistant remains searchable
+  ---
+  duration_ms: 0.209462
+  type: 'test'
+  ...
+# Subtest: search never restores routes excluded by permission filtering
+ok 16 - search never restores routes excluded by permission filtering
+  ---
+  duration_ms: 0.116236
+  type: 'test'
+  ...
+# Subtest: role-visible children can be searched when their group header is absent
+ok 17 - role-visible children can be searched when their group header is absent
+  ---
+  duration_ms: 0.170153
+  type: 'test'
+  ...
+# Subtest: empty group headers are not search results
+ok 18 - empty group headers are not search results
+  ---
+  duration_ms: 0.120871
+  type: 'test'
+  ...
+# Subtest: education labels are searched as presented without rewriting routes
+ok 19 - education labels are searched as presented without rewriting routes
+  ---
+  duration_ms: 0.237318
+  type: 'test'
+  ...
+# Subtest: search treats punctuation literally rather than as a regex
+ok 20 - search treats punctuation literally rather than as a regex
+  ---
+  duration_ms: 0.308673
+  type: 'test'
+  ...
+# Subtest: search and icon-rail expand groups without mutating collapse preferences
+ok 21 - search and icon-rail expand groups without mutating collapse preferences
+  ---
+  duration_ms: 0.159896
+  type: 'test'
+  ...
+# Subtest: shell searches authorised NAV, not the raw catalogue; header is independent
+ok 22 - shell searches authorised NAV, not the raw catalogue; header is independent
+  ---
+  duration_ms: 0.463173
+  type: 'test'
+  ...
+# Subtest: navigation retains accessible search, active page and expansion hooks
+ok 23 - navigation retains accessible search, active page and expansion hooks
+  ---
+  duration_ms: 0.219573
+  type: 'test'
+  ...
+# Subtest: mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+ok 24 - mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup
+  ---
+  duration_ms: 0.204927
+  type: 'test'
+  ...
+# Subtest: demo tenant must not promise isolated staging or publish shared credentials
+ok 25 - demo tenant must not promise isolated staging or publish shared credentials
+  ---
+  duration_ms: 0.362479
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap preserves verified owner identity and opens workspace
+ok 26 - mounted bootstrap preserves verified owner identity and opens workspace
+  ---
+  duration_ms: 70.191954
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role null as admin
+ok 27 - mounted bootstrap never persists missing/unsupported role null as admin
+  ---
+  duration_ms: 21.726808
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role  as admin
+ok 28 - mounted bootstrap never persists missing/unsupported role  as admin
+  ---
+  duration_ms: 20.793183
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role unknown as admin
+ok 29 - mounted bootstrap never persists missing/unsupported role unknown as admin
+  ---
+  duration_ms: 7.995263
+  type: 'test'
+  ...
+# Subtest: mounted identity mismatch stops before cached workspace writes {"profileId":"00000000-0000-4000-8000-000000000003"}
+ok 30 - mounted identity mismatch stops before cached workspace writes {"profileId":"00000000-0000-4000-8000-000000000003"}
+  ---
+  duration_ms: 8.272701
+  type: 'test'
+  ...
+# Subtest: mounted identity mismatch stops before cached workspace writes {"schoolId":"00000000-0000-4000-8000-000000000003"}
+ok 31 - mounted identity mismatch stops before cached workspace writes {"schoolId":"00000000-0000-4000-8000-000000000003"}
+  ---
+  duration_ms: 6.868113
+  type: 'test'
+  ...
+# Subtest: restored session requires server-confirmed identity {"verifiedId":"00000000-0000-4000-8000-000000000009"}
+ok 32 - restored session requires server-confirmed identity {"verifiedId":"00000000-0000-4000-8000-000000000009"}
+  ---
+  duration_ms: 6.553164
+  type: 'test'
+  ...
+# Subtest: restored session requires server-confirmed identity {"authError":true}
+ok 33 - restored session requires server-confirmed identity {"authError":true}
+  ---
+  duration_ms: 7.888529
+  type: 'test'
+  ...
+# Subtest: bootstrap transport diagnostics are not exposed
+ok 34 - bootstrap transport diagnostics are not exposed
+  ---
+  duration_ms: 15.919167
+  type: 'test'
+  ...
+# Subtest: identity preserves owner without aliasing to admin
+ok 35 - identity preserves owner without aliasing to admin
+  ---
+  duration_ms: 1.136443
+  type: 'test'
+  ...
+# Subtest: identity preserves admin without aliasing to admin
+ok 36 - identity preserves admin without aliasing to admin
+  ---
+  duration_ms: 0.205445
+  type: 'test'
+  ...
+# Subtest: identity preserves manager without aliasing to admin
+ok 37 - identity preserves manager without aliasing to admin
+  ---
+  duration_ms: 0.105344
+  type: 'test'
+  ...
+# Subtest: identity preserves staff without aliasing to admin
+ok 38 - identity preserves staff without aliasing to admin
+  ---
+  duration_ms: 0.087905
+  type: 'test'
+  ...
+# Subtest: identity preserves finance without aliasing to admin
+ok 39 - identity preserves finance without aliasing to admin
+  ---
+  duration_ms: 0.118129
+  type: 'test'
+  ...
+# Subtest: identity preserves hr without aliasing to admin
+ok 40 - identity preserves hr without aliasing to admin
+  ---
+  duration_ms: 0.092543
+  type: 'test'
+  ...
+# Subtest: identity preserves contractor without aliasing to admin
+ok 41 - identity preserves contractor without aliasing to admin
+  ---
+  duration_ms: 0.174188
+  type: 'test'
+  ...
+# Subtest: identity preserves viewer without aliasing to admin
+ok 42 - identity preserves viewer without aliasing to admin
+  ---
+  duration_ms: 0.063995
+  type: 'test'
+  ...
+# Subtest: identity preserves teacher without aliasing to admin
+ok 43 - identity preserves teacher without aliasing to admin
+  ---
+  duration_ms: 0.264672
+  type: 'test'
+  ...
+# Subtest: identity preserves student without aliasing to admin
+ok 44 - identity preserves student without aliasing to admin
+  ---
+  duration_ms: 0.295875
+  type: 'test'
+  ...
+# Subtest: identity preserves bursar without aliasing to admin
+ok 45 - identity preserves bursar without aliasing to admin
+  ---
+  duration_ms: 0.151602
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role undefined cannot become admin
+ok 46 - missing/unsupported role undefined cannot become admin
+  ---
+  duration_ms: 0.363076
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role null cannot become admin
+ok 47 - missing/unsupported role null cannot become admin
+  ---
+  duration_ms: 0.073103
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  cannot become admin
+ok 48 - missing/unsupported role  cannot become admin
+  ---
+  duration_ms: 0.916512
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role superadmin cannot become admin
+ok 49 - missing/unsupported role superadmin cannot become admin
+  ---
+  duration_ms: 0.12387
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role OWNER cannot become admin
+ok 50 - missing/unsupported role OWNER cannot become admin
+  ---
+  duration_ms: 0.054302
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  admin  cannot become admin
+ok 51 - missing/unsupported role  admin  cannot become admin
+  ---
+  duration_ms: 0.06711
+  type: 'test'
+  ...
+# Subtest: profile, authenticated actor and workspace identities must agree before persistence
+ok 52 - profile, authenticated actor and workspace identities must agree before persistence
+  ---
+  duration_ms: 0.628232
+  type: 'test'
+  ...
+# Subtest: owner gets JD-only routes with explicit denial preserved (business)
+ok 53 - owner gets JD-only routes with explicit denial preserved (business)
+  ---
+  duration_ms: 0.944443
+  type: 'test'
+  ...
+# Subtest: owner gets JD-only routes with explicit denial preserved (education)
+ok 54 - owner gets JD-only routes with explicit denial preserved (education)
+  ---
+  duration_ms: 0.148395
+  type: 'test'
+  ...
+# Subtest: owner access is additive and scoped, not blanket legacy admin access
+ok 55 - owner access is additive and scoped, not blanket legacy admin access
+  ---
+  duration_ms: 1.484656
+  type: 'test'
+  ...
+# Subtest: owner permission reads use the authenticated profile ID, not an undefined staff/student ID
+ok 56 - owner permission reads use the authenticated profile ID, not an undefined staff/student ID
+  ---
+  duration_ms: 1.057857
+  type: 'test'
+  ...
+# Subtest: owner permission load errors or malformed overrides never become an empty permissive result
+ok 57 - owner permission load errors or malformed overrides never become an empty permissive result
+  ---
+  duration_ms: 2.141319
+  type: 'test'
+  ...
+# Subtest: owner override metadata must match the requested tenant, role and actor
+ok 58 - owner override metadata must match the requested tenant, role and actor
+  ---
+  duration_ms: 0.45514
+  type: 'test'
+  ...
+# (node:3807) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/src/config/product.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: route/role/icon baseline is unchanged; settings is the only added sidebar route
+ok 59 - route/role/icon baseline is unchanged; settings is the only added sidebar route
+  ---
+  duration_ms: 1.776396
+  type: 'test'
+  ...
+# Subtest: admin: business / allow preserves permitted route set
+ok 60 - admin: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.739712
+  type: 'test'
+  ...
+# Subtest: admin: business / deny preserves permitted route set
+ok 61 - admin: business / deny preserves permitted route set
+  ---
+  duration_ms: 1.230435
+  type: 'test'
+  ...
+# Subtest: admin: business / subset preserves permitted route set
+ok 62 - admin: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.26727
+  type: 'test'
+  ...
+# Subtest: admin: education / allow preserves permitted route set
+ok 63 - admin: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.664436
+  type: 'test'
+  ...
+# Subtest: admin: education / deny preserves permitted route set
+ok 64 - admin: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.744614
+  type: 'test'
+  ...
+# Subtest: admin: education / subset preserves permitted route set
+ok 65 - admin: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.365212
+  type: 'test'
+  ...
+# Subtest: manager: business / allow preserves permitted route set
+ok 66 - manager: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.271816
+  type: 'test'
+  ...
+# Subtest: manager: business / deny preserves permitted route set
+ok 67 - manager: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.34125
+  type: 'test'
+  ...
+# Subtest: manager: business / subset preserves permitted route set
+ok 68 - manager: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.367174
+  type: 'test'
+  ...
+# Subtest: manager: education / allow preserves permitted route set
+ok 69 - manager: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.228715
+  type: 'test'
+  ...
+# Subtest: manager: education / deny preserves permitted route set
+ok 70 - manager: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.148819
+  type: 'test'
+  ...
+# Subtest: manager: education / subset preserves permitted route set
+ok 71 - manager: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.119779
+  type: 'test'
+  ...
+# Subtest: bursar: business / allow preserves permitted route set
+ok 72 - bursar: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.101172
+  type: 'test'
+  ...
+# Subtest: bursar: business / deny preserves permitted route set
+ok 73 - bursar: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.064809
+  type: 'test'
+  ...
+# Subtest: bursar: business / subset preserves permitted route set
+ok 74 - bursar: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.084713
+  type: 'test'
+  ...
+# Subtest: bursar: education / allow preserves permitted route set
+ok 75 - bursar: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.096744
+  type: 'test'
+  ...
+# Subtest: bursar: education / deny preserves permitted route set
+ok 76 - bursar: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.068435
+  type: 'test'
+  ...
+# Subtest: bursar: education / subset preserves permitted route set
+ok 77 - bursar: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.066247
+  type: 'test'
+  ...
+# Subtest: teacher: business / allow preserves permitted route set
+ok 78 - teacher: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.26267
+  type: 'test'
+  ...
+# Subtest: teacher: business / deny preserves permitted route set
+ok 79 - teacher: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.083768
+  type: 'test'
+  ...
+# Subtest: teacher: business / subset preserves permitted route set
+ok 80 - teacher: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.100741
+  type: 'test'
+  ...
+# Subtest: teacher: education / allow preserves permitted route set
+ok 81 - teacher: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.122346
+  type: 'test'
+  ...
+# Subtest: teacher: education / deny preserves permitted route set
+ok 82 - teacher: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.821518
+  type: 'test'
+  ...
+# Subtest: teacher: education / subset preserves permitted route set
+ok 83 - teacher: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.117498
+  type: 'test'
+  ...
+# Subtest: student: business / allow preserves permitted route set
+ok 84 - student: business / allow preserves permitted route set
+  ---
+  duration_ms: 0.076323
+  type: 'test'
+  ...
+# Subtest: student: business / deny preserves permitted route set
+ok 85 - student: business / deny preserves permitted route set
+  ---
+  duration_ms: 0.04905
+  type: 'test'
+  ...
+# Subtest: student: business / subset preserves permitted route set
+ok 86 - student: business / subset preserves permitted route set
+  ---
+  duration_ms: 0.051315
+  type: 'test'
+  ...
+# Subtest: student: education / allow preserves permitted route set
+ok 87 - student: education / allow preserves permitted route set
+  ---
+  duration_ms: 0.062874
+  type: 'test'
+  ...
+# Subtest: student: education / deny preserves permitted route set
+ok 88 - student: education / deny preserves permitted route set
+  ---
+  duration_ms: 0.049603
+  type: 'test'
+  ...
+# Subtest: student: education / subset preserves permitted route set
+ok 89 - student: education / subset preserves permitted route set
+  ---
+  duration_ms: 0.053239
+  type: 'test'
+  ...
+# Subtest: unsupported roles get no implicit grant, even with a permissive resolver
+ok 90 - unsupported roles get no implicit grant, even with a permissive resolver
+  ---
+  duration_ms: 0.199229
+  type: 'test'
+  ...
+# Subtest: every individual non-admin denial removes that route and it cannot reappear in search
+ok 91 - every individual non-admin denial removes that route and it cannot reappear in search
+  ---
+  duration_ms: 1.324619
+  type: 'test'
+  ...
+# Subtest: manager can see Finance and People headers without widening specialist page access
+ok 92 - manager can see Finance and People headers without widening specialist page access
+  ---
+  duration_ms: 0.151078
+  type: 'test'
+  ...
+# Subtest: business destinations are unique, grouped and honest about separate record modules
+ok 93 - business destinations are unique, grouped and honest about separate record modules
+  ---
+  duration_ms: 0.414885
+  type: 'test'
+  ...
+# Subtest: business starts compact, active group expands, search/rail remain reachable
+ok 94 - business starts compact, active group expands, search/rail remain reachable
+  ---
+  duration_ms: 0.1928
+  type: 'test'
+  ...
+# Subtest: education labels require explicit enabled education workspace; calls never mutate catalogue
+ok 95 - education labels require explicit enabled education workspace; calls never mutate catalogue
+  ---
+  duration_ms: 0.2676
+  type: 'test'
+  ...
+# Subtest: shell wires role resolver, department resets, account access and reauthentication
+ok 96 - shell wires role resolver, department resets, account access and reauthentication
+  ---
+  duration_ms: 1.600085
+  type: 'test'
+  ...
+# Subtest: switch clears local identity and workspace only after acknowledged local signout
+ok 97 - switch clears local identity and workspace only after acknowledged local signout
+  ---
+  duration_ms: 1.438281
+  type: 'test'
+  ...
+# Subtest: switch fails closed on returned error
+ok 98 - switch fails closed on returned error
+  ---
+  duration_ms: 0.868794
+  type: 'test'
+  ...
+# Subtest: switch fails closed on thrown error
+ok 99 - switch fails closed on thrown error
+  ---
+  duration_ms: 0.317584
+  type: 'test'
+  ...
+# Subtest: switch fails closed on missing acknowledgement
+ok 100 - switch fails closed on missing acknowledgement
+  ---
+  duration_ms: 0.145194
+  type: 'test'
+  ...
+# Subtest: no clearing while signout is pending
+ok 101 - no clearing while signout is pending
+  ---
+  duration_ms: 0.216521
+  type: 'test'
+  ...
+# Subtest: mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+ok 102 - mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+  ---
+  duration_ms: 88.387565
+  type: 'test'
+  ...
+# Subtest: mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+ok 103 - mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+  ---
+  duration_ms: 35.021116
+  type: 'test'
+  ...
+# Subtest: mounted dialog prevents duplicate submission and closing during signout
+ok 104 - mounted dialog prevents duplicate submission and closing during signout
+  ---
+  duration_ms: 28.20313
+  type: 'test'
+  ...
+# Subtest: mounted dialog reports failure without raw error details and allows retry
+ok 105 - mounted dialog reports failure without raw error details and allows retry
+  ---
+  duration_ms: 15.521019
+  type: 'test'
+  ...
+# Subtest: unmount restores focus and pre-existing scroll style
+ok 106 - unmount restores focus and pre-existing scroll style
+  ---
+  duration_ms: 10.493571
+  type: 'test'
+  ...
+1..106
+# tests 106
+# suites 0
+# pass 106
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1780.713107

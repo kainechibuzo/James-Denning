@@ -12,6 +12,7 @@ export const CAPABILITY_INTERPRETATION = [
 const effects: Record<string, {effect:string; boundary:string}> = {
   preview_organisation_blueprint: {effect:"preview_only",boundary:"Generates a proposal without saving or provisioning departments."},
   preview_hiring_vacancy: {effect:"preview_only",boundary:"Generates a vacancy draft; does not publish it or hire anyone."},
+  submit_workspace_settings_for_review: {effect:"approval_request",boundary:"Saves an exact settings proposal only. Human approval and explicit application in Review Centre are separate; never approves its own request or claims settings changed on submission."},
   plan_workspace_settings_changes: {effect:"preview_only",boundary:"Reads settings and prepares a proposal; does not apply it."},
   remember_business_fact: {effect:"saved_internal_record",boundary:"May save confirmed business context. Not a draft approval and not proof of a real-world action; never store secrets."},
   create_operational_setup_tasks: {effect:"saved_internal_record",boundary:"May save task records. Per-task approval requirements apply to later actions; saving a task does not complete that activity."},

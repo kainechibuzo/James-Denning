@@ -7,7 +7,7 @@ import {
   Bell, Building2, Calendar, Clock, Edit, Info, Pencil, Phone, Save, School,
   Send, Settings, Shield, Trash2, Upload, Users,
 } from "lucide-react";
-import { db } from "../supabaseClient.js";
+import { db, supabase } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
 import { SectionCtx } from "../contexts/section.jsx";
 import { useConfirm } from "../contexts/confirm.jsx";
@@ -16,10 +16,12 @@ import {
 } from "../components/ui.jsx";
 import { buildTranscriptHTML } from "../services/pdf/transcript.js";
 import { buildAlertEmail } from "../services/email/index.js";
-import { _applyNameCase } from "../utils/grades.js";
+import { _applyNameCase, setNameSettings } from "../utils/grades.js";
 import { PRODUCT, INDUSTRIES, MODULES, getIndustryLabel, storeWorkspaceType } from "../config/product.js";
 import { PermissionsPage } from "./permissions.jsx";
 import { JDConnectPanel } from "../components/jd-connect/JDConnectPanel.jsx";
+
+import { showEducationSettings, configuredProjectLabel } from "../config/settings-presentation.mjs";
 
 const APP_VERSION = PRODUCT.version;
 
@@ -70,7 +72,7 @@ export const STAMP_TEMPLATES=[
 export function SettingRow({label,desc,children}){
   return(
     <div className="jd-setting-row" style={{borderBottom:`1px solid ${C.border}`,padding:"16px 0"}}>
-      <div style={{flex:"1 1 220px",minWidth:0,paddingRight:8}}>
+      <div className="jd-setting-row__label" style={{minWidth:0,paddingRight:8}}>
         <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:2}}>{label}</div>
         {desc&&<div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{desc}</div>}
       </div>
@@ -106,6 +108,7 @@ export function SettingsPage({ctx,inPanel}){
   const confirm=useConfirm();
   const [settings,setSettings]=useState({});
   const [loading,setLoading]=useState(true);
+  const [loadError,setLoadError]=useState(false);
   const [saving,setSaving]=useState(false);
   const [tab,setTab]=useState("workspace"); // workspace | school | sessions | academic | security | portal
   const [showPass,setShowPass]=useState(false);
@@ -138,14 +141,14 @@ export function SettingsPage({ctx,inPanel}){
   };
 
   const load=()=>{
-    setLoading(true);
-    db.getSettings().then(({data})=>{
+    setLoading(true);setLoadError(false);
+    db.getSettings().then(({data,error})=>{
+      if(error||!Array.isArray(data))throw Error("Settings unavailable");
       const m={};
       (data||[]).forEach(r=>{m[r.key]=r.value;});
       setSettings(m);
       if(m.portal_logo_base64) setLogoPreview(m.portal_logo_base64);
-      setLoading(false);
-    });
+    }).catch(()=>setLoadError(true)).finally(()=>setLoading(false));
     db.getNotifConfig().then(({data})=>{
       setNotifConfig(data || {
         admin_email: "",
@@ -165,28 +168,39 @@ export function SettingsPage({ctx,inPanel}){
       setSesLoading(false);
     });
   };
-  useEffect(()=>{load();loadSessions();},[]);
+  useEffect(()=>{load();},[]);
+  useEffect(()=>{if(showEducationSettings(settings))loadSessions();},[settings.workspace_type,settings.education_module_enabled]);
 
   const set=(key,value)=>setSettings(p=>({...p,[key]:value}));
   const saveTab=async(keys)=>{
     setSaving(true);
-    const pairs=keys.map(k=>({key:k,value:settings[k]||""}));
-    const {error}=await db.setSettings(pairs);
-    setSaving(false);
-    if(error)notify(error.message,"error");
-    else notify("Settings saved ✓");
+    try{
+      const pairs=keys.map(k=>({key:k,value:String(settings[k]??"")}));
+      const {error}=await db.setSettings(pairs);
+      if(error)throw Error();
+      const {data,error:readError}=await db.getSettings();
+      if(readError||!Array.isArray(data)||pairs.some(p=>!data.some(r=>r.key===p.key&&r.value===p.value)))throw Error();
+      if(keys.includes("school_name"))refreshLogo?.();
+      notify("Settings saved and read back ✓");return true;
+    }catch{notify("Settings save was not confirmed. Reload before retrying; some changes may have been saved.","error");return false;}
+    finally{setSaving(false);}
   };
 
   const saveWorkspace=async()=>{
     const workspaceType=settings.workspace_type||PRODUCT.defaultIndustry;
-    const educationEnabled=settings.education_module_enabled !== "false";
+    const educationEnabled=showEducationSettings(settings);
     setSaving(true);
-    const {error}=await db.setSettings([{key:"workspace_type",value:workspaceType},{key:"education_module_enabled",value:educationEnabled?"true":"false"}]);
-    setSaving(false);
-    if(error){notify(error.message,"error");return;}
-    storeWorkspaceType(workspaceType);
-    if(refreshWorkspace)refreshWorkspace(workspaceType,educationEnabled);
-    notify(`${getIndustryLabel(workspaceType)} workspace saved ✓`);
+    try{
+      const pairs=[{key:"workspace_type",value:workspaceType},{key:"education_module_enabled",value:educationEnabled?"true":"false"}];
+      const {error}=await db.setSettings(pairs);
+      if(error)throw Error();
+      const {data,error:readError}=await db.getSettings();
+      if(readError||!Array.isArray(data)||pairs.some(p=>!data.some(r=>r.key===p.key&&r.value===p.value)))throw Error();
+      storeWorkspaceType(workspaceType);
+      refreshWorkspace?.(workspaceType,educationEnabled);
+      notify(`${getIndustryLabel(workspaceType)} workspace saved and read back ✓`);
+    }catch{notify("Workspace save was not confirmed. Reload before retrying; some changes may have been saved.","error");}
+    finally{setSaving(false);}
   };
 
   const handleLogoUpload=async(file)=>{
@@ -281,11 +295,11 @@ export function SettingsPage({ctx,inPanel}){
     await db.deleteTerm(id);notify(`${name} deleted`,"warn");loadSessions();
   };
 
+  const educationSettings=showEducationSettings(settings);
   const tabs=[
     {id:"workspace",     label:"Workspace"},
     {id:"school",        label:"Organization Info"},
-    {id:"sessions",      label:"Cycles & Periods"},
-    {id:"academic",      label:"Performance"},
+    ...(educationSettings?[{id:"sessions",label:"Academic periods"},{id:"academic",label:"Academic scores"}]:[]),
     {id:"security",      label:"Security"},
     {id:"integrations",   label:"JD Connect"},
     {id:"portal",        label:"Portal"},
@@ -295,6 +309,7 @@ export function SettingsPage({ctx,inPanel}){
   // to prevent focus-loss caused by component re-creation on every keystroke.
 
   if(loading)return <Spinner/>;
+  if(loadError)return <div role="alert"><p>Organisation settings could not be loaded. No editable defaults have been substituted.</p><Btn onClick={load}>Reload settings</Btn></div>;
 
   return(
     <div style={{padding:"0 0 40px"}}>
@@ -342,7 +357,7 @@ export function SettingsPage({ctx,inPanel}){
             </select><div style={{fontSize:11,color:C.muted,marginTop:6}}>{INDUSTRIES.find(item=>item.value===(settings.workspace_type||PRODUCT.defaultIndustry))?.description}</div>
           </div>
           <div style={{border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:20,background:C.offWhite}}><div style={{display:"flex",alignItems:"flex-start",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:C.text,color:C.white,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Settings size={17}/></div><div style={{flex:1}}><div style={{fontWeight:800,fontSize:13,color:C.text}}>{MODULES.core.label}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5,marginTop:3}}>{MODULES.core.description}</div></div><Badge color={C.green}>Always on</Badge></div></div>
-          <div style={{border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:20}}><div style={{display:"flex",alignItems:"flex-start",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:C.offWhite,color:C.text,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Calendar size={17}/></div><div style={{flex:1}}><div style={{fontWeight:800,fontSize:13,color:C.text}}>{MODULES.education.label}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5,marginTop:3}}>{MODULES.education.description}</div></div><button type="button" onClick={()=>set("education_module_enabled",settings.education_module_enabled==="false"?"true":"false")} style={{width:44,height:24,borderRadius:14,border:"none",background:settings.education_module_enabled!=="false"?C.text:C.border,position:"relative",cursor:"pointer",flexShrink:0}}><span style={{position:"absolute",top:4,left:settings.education_module_enabled!=="false"?24:4,width:16,height:16,borderRadius:"50%",background:C.white,transition:"left .15s"}}/></button></div><div style={{fontSize:11,color:C.muted,marginTop:12}}>Enable this for education teams, or keep the core workspace neutral for any other business.</div></div>
+          <div style={{border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:20}}><div style={{display:"flex",alignItems:"flex-start",gap:12}}><div style={{width:36,height:36,borderRadius:10,background:C.offWhite,color:C.text,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Calendar size={17}/></div><div style={{flex:1}}><div style={{fontWeight:800,fontSize:13,color:C.text}}>{MODULES.education.label}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.5,marginTop:3}}>{MODULES.education.description}</div></div><button type="button" aria-label="Enable education module" role="switch" aria-checked={showEducationSettings(settings)} disabled={settings.workspace_type!=="education"} onClick={()=>set("education_module_enabled",showEducationSettings(settings)?"false":"true")} style={{width:44,height:24,borderRadius:14,border:"none",background:showEducationSettings(settings)?C.text:C.border,position:"relative",cursor:"pointer",flexShrink:0}}><span style={{position:"absolute",top:4,left:showEducationSettings(settings)?24:4,width:16,height:16,borderRadius:"50%",background:C.white,transition:"left .15s"}}/></button></div><div style={{fontSize:11,color:C.muted,marginTop:12}}>Academic tools are available only for the Education workspace type. Business workspaces keep these controls out of the way; existing academic records are not deleted.</div></div>
           <Btn onClick={saveWorkspace} disabled={saving}>{saving?"Saving…":"Save Workspace Profile"}</Btn>
         </Card>
       )}
@@ -382,10 +397,10 @@ export function SettingsPage({ctx,inPanel}){
             </div>
           </div>
 
-          <SettingRow label="Business Name" desc="Full official name"><SettingInput settings={settings} onSet={set} k="school_name" placeholder="Your Business"/></SettingRow>
-          <SettingRow label="Organization Address" desc="Physical address on official documents"><SettingInput settings={settings} onSet={set} k="school_address" placeholder="No. 1 Business Avenue, Abuja"/></SettingRow>
+          <SettingRow label="Organisation Name" desc="Full official name"><SettingInput settings={settings} onSet={set} k="school_name" placeholder="Your Business"/></SettingRow>
+          <SettingRow label="Organization Address" desc="Physical address on official documents"><SettingInput settings={settings} onSet={set} k="school_address" placeholder="Enter the confirmed organisation address"/></SettingRow>
           <SettingRow label="Phone Number" desc="Main contact number"><SettingInput settings={settings} onSet={set} k="school_phone" placeholder="+234 800 000 0000"/></SettingRow>
-          <SettingRow label="Organization Motto" desc="Appears on transcripts"><SettingInput settings={settings} onSet={set} k="school_motto" placeholder="Built for Progress"/></SettingRow>
+          <SettingRow label="Organization Motto" desc="Optional tagline on supported organisation documents"><SettingInput settings={settings} onSet={set} k="school_motto" placeholder="Built for Progress"/></SettingRow>
 
           <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}>
             <Btn onClick={()=>saveTab(["school_name","school_address","school_phone","school_motto"])} color={C.orange} disabled={saving}>
@@ -396,7 +411,7 @@ export function SettingsPage({ctx,inPanel}){
       )}
 
       {/* ── SESSIONS & TERMS ── */}
-      {tab==="sessions"&&(
+      {tab==="sessions"&&educationSettings&&(
         <div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div>
@@ -470,9 +485,9 @@ export function SettingsPage({ctx,inPanel}){
       )}
 
       {/* ── ACADEMIC ── */}
-      {tab==="academic"&&(
+      {tab==="academic"&&educationSettings&&(
         <Card>
-          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Performance Settings</div>
+          <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Academic Score Settings</div>
           <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Configure scoring rules (CA / Exam maximums).</p>
           <SettingRow label="CA Score Maximum" desc="Max marks for Continuous Assessment (default: 40)">
             <input type="number" value={settings.result_ca_max||40} onChange={e=>set("result_ca_max",e.target.value)}
@@ -513,9 +528,9 @@ export function SettingsPage({ctx,inPanel}){
       {tab==="security"&&(
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <Card>
-            <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Cycle Security</div>
+            <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Session Security</div>
             <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Control automatic sign-out behaviour for all portal users.</p>
-            <SettingRow label="Inactivity Timeout" desc="Users are warned 1 minute before being signed out. Applies to all staff, managers, and members. Admin cycles are not affected.">
+            <SettingRow label="Inactivity Timeout" desc="Users are warned 1 minute before being signed out. Applies to all staff, managers, and members. Administrator sessions are not affected.">
               <select
                 value={settings.inactivity_timeout_minutes||"5"}
                 onChange={e=>set("inactivity_timeout_minutes",e.target.value)}
@@ -527,7 +542,7 @@ export function SettingsPage({ctx,inPanel}){
             </SettingRow>
             <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}>
               <Btn onClick={()=>saveTab(["inactivity_timeout_minutes"])} color={C.orange} disabled={saving}>
-                {saving?"Saving…":"Save Cycle Settings"}
+                {saving?"Saving…":"Save Session Settings"}
               </Btn>
             </div>
           </Card>
@@ -564,11 +579,11 @@ export function SettingsPage({ctx,inPanel}){
             <div style={{fontWeight:900,color:C.red,fontSize:14,marginBottom:8}}>Danger Zone</div>
             <p style={{fontSize:12,color:C.muted,marginBottom:12}}>These actions are irreversible. Proceed with extreme caution.</p>
             <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              <DangerBtn label="Clear All Results" icon={<Trash2 size={14}/>} typePhrase="DELETE RESULTS"
+              {educationSettings&&<DangerBtn label="Clear All Results" icon={<Trash2 size={14}/>} typePhrase="DELETE RESULTS"
                 onClick={async()=>{
                   const {error}=await db.clearAllResults();
                   if(error)notify(error.message,"error"); else notify("All results for this organization deleted","warn");
-                }}/>
+                }}/>}
               <DangerBtn label="Clear All Payments" icon={<Trash2 size={14}/>} typePhrase="DELETE PAYMENTS"
                 onClick={async()=>{
                   const {error}=await db.clearAllPayments();
@@ -586,7 +601,7 @@ export function SettingsPage({ctx,inPanel}){
           <p style={{color:C.muted,fontSize:12,marginBottom:16}}>Control portal behaviour and notifications.</p>
 
           {/* ── Login Access Control ──────────────────────────────────────── */}
-          <div style={{background:C.offWhite,border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16,overflow:"hidden"}}>
+          {educationSettings&&<div style={{background:C.offWhite,border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16,overflow:"hidden"}}>
             <div style={{padding:"12px 16px",background:C.redPale,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
               <Shield size={15} color={C.red}/>
               <span style={{fontWeight:800,fontSize:13,color:C.red}}>Login Access Control</span>
@@ -635,9 +650,9 @@ export function SettingsPage({ctx,inPanel}){
                   lineHeight:1.5,boxSizing:"border-box"}}
               />
             </div>
-          </div>
+          </div>}
 
-          <SettingRow label="Block Reports for Owing Members"
+          {educationSettings&&<SettingRow label="Block Reports for Owing Members"
             desc="When enabled, members with any outstanding billing balance — even partial — cannot view or download their report card until the balance is cleared. Admins are never blocked.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               <SettingToggle settings={settings} onSet={set} k="block_reports_if_owing"/>
@@ -647,7 +662,7 @@ export function SettingsPage({ctx,inPanel}){
                 </div>
               )}
             </div>
-          </SettingRow>
+          </SettingRow>}
           <div style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`}}/>
           <SettingRow label="Rows Per Page" desc="How many members (or staff) to show per page in list tables. Applies immediately.">
             <select
@@ -658,7 +673,7 @@ export function SettingsPage({ctx,inPanel}){
             </select>
           </SettingRow>
           <div style={{padding:"8px 0",borderBottom:`1px solid ${C.border}`}}/>
-          <SettingRow label="Member Name Order" desc="Controls how member names appear across results, reports, bills, and member lists.">
+          <SettingRow label="Member Name Order" desc="Controls how names appear in people lists, invoices and supported documents.">
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {[{v:"FML",l:"First, Middle, Last (default)"},{v:"LFM",l:"Last, First, Middle"}].map(o=>(
                 <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
@@ -708,9 +723,9 @@ export function SettingsPage({ctx,inPanel}){
             </div>
           </SettingRow>
           <div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}>
-            <Btn onClick={()=>{
-              saveTab(["login_students_disabled","login_teachers_disabled","login_disabled_message","block_reports_if_owing","name_order","name_case","recycle_bin_retention_days"]);
-              setNameSettings({order:settings.name_order||"FML",casing:settings.name_case||"title"});
+            <Btn onClick={async()=>{
+              const saved=await saveTab([...(educationSettings?["login_students_disabled","login_teachers_disabled","login_disabled_message","block_reports_if_owing"]:[]),"name_order","name_case","recycle_bin_retention_days"]);
+              if(saved)setNameSettings({order:settings.name_order||"FML",casing:settings.name_case||"title"});
             }} color={C.orange} disabled={saving}>
               {saving?"Saving…":"Save Portal Settings"}
             </Btn>
@@ -718,7 +733,7 @@ export function SettingsPage({ctx,inPanel}){
           <div style={{marginTop:16,padding:"14px 16px",background:C.offWhite,borderRadius:10}}>
             <div style={{fontWeight:700,color:C.muted,fontSize:12,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Portal Info</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12}}>
-              {[["Portal Version",APP_VERSION],["Database","Supabase (PostgreSQL)"],["Project ID","mcdcwdfdpqzrzsixmrcg"],["Region","eu-west-1"]].map(([k,v])=>(
+              {[["Portal Version",APP_VERSION],["Database","Supabase (PostgreSQL)"],["Configured project",configuredProjectLabel(supabase.supabaseUrl)],["Region","Not reported by this client"]].map(([k,v])=>(
                 <div key={k} style={{background:C.white,borderRadius:7,padding:"8px 12px",border:`1px solid ${C.border}`}}>
                   <div style={{color:C.muted,fontSize:10,fontWeight:700,marginBottom:2,textTransform:"uppercase"}}>{k}</div>
                   <div style={{color:C.text,fontWeight:600}}>{v}</div>

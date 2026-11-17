@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "f760b8bf8e80e2c1ede779e45e0f213164d58eb8",
-  "branch": "arena/18f85510-james-denning",
-  "scope": "Foundation local-only follow-up: offline cancellation evidence harness with 18 record-observation cases, eight live-review gates, source/artifact integrity checks and SQL-connected assertions. No staging execution, provisioning, release activation or approval. Shipping cancellation remains legacy; all acceptance remains unverified.",
+  "baseCommit": "a5e01ef8dfd2b1985092b5c1aa3fdfff1778e5f6",
+  "branch": "arena/ea8f1137-james-denning",
+  "scope": "Screenshot-driven business settings repair: compact mobile rows, education-only presentation, truthful project metadata and JD settings submission with explicit human review/apply plus persisted read-back. Locally tested only; no production settings, schema, deployment or acceptance changed.",
   "items": [
     {
       "id": "P1-01",
@@ -417,14 +417,19 @@
       "id": "P2-N07",
       "requirement": "Remove irrelevant school-management terminology from business workspaces.",
       "implementation": "partial",
-      "assessment": "Business-neutral navigation labels coexist with legacy school-oriented fields and modules; terminology removal is incomplete.",
+      "assessment": "Business-neutral navigation labels coexist with legacy school-oriented fields and modules; terminology removal is incomplete. This slice reproduces/fixes the 220px mobile settings label gap, hides academic controls in business settings without deleting data, and tests actual SettingsPage/ReviewCentre at four browser widths. JD can submit supported exact settings diffs for human approval and explicit apply; deployed and real-device acceptance remain open.",
       "sources": [
         "src/AppDemo.jsx",
         "src/config/workspace-navigation.mjs",
-        "scripts/test-workspace-navigation.mjs"
+        "scripts/test-workspace-navigation.mjs",
+        "src/pages/settings.jsx",
+        "src/config/settings-presentation.mjs",
+        "src/chat/settings-review.mjs",
+        "scripts/test-settings-layout.mjs"
       ],
       "evidence": [
-        "docs/evidence/2026-11-16-phase2-departments/REPORT.md"
+        "docs/evidence/2026-11-16-phase2-departments/REPORT.md",
+        "docs/evidence/2026-11-16-business-settings/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Remove irrelevant school-management terminology from business workspaces. Retain expected/actual results and independent review.",
@@ -493,17 +498,22 @@
       "id": "P2-N11",
       "requirement": "Improve mobile navigation and scrolling.",
       "implementation": "implemented \u2014 unverified",
-      "assessment": "Chat utility controls moved outside the scrollport; bounded markdown/table layout, readable column widths and focusable horizontal scrolling tested with actual ChatHome in Chromium at six viewport sizes. Physical-device, screen-reader and full authenticated shell acceptance remain open.",
+      "assessment": "Chat utility controls moved outside the scrollport; bounded markdown/table layout, readable column widths and focusable horizontal scrolling tested with actual ChatHome in Chromium at six viewport sizes. Physical-device, screen-reader and full authenticated shell acceptance remain open. This slice reproduces/fixes the 220px mobile settings label gap, hides academic controls in business settings without deleting data, and tests actual SettingsPage/ReviewCentre at four browser widths. JD can submit supported exact settings diffs for human approval and explicit apply; deployed and real-device acceptance remain open.",
       "sources": [
         "src/AppDemo.jsx",
         "src/config/workspace-navigation.mjs",
         "scripts/test-workspace-navigation.mjs",
         "src/chat/ChatHome.jsx",
-        "scripts/test-chat-layout.mjs"
+        "scripts/test-chat-layout.mjs",
+        "src/pages/settings.jsx",
+        "src/config/settings-presentation.mjs",
+        "src/chat/settings-review.mjs",
+        "scripts/test-settings-layout.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase2-departments/REPORT.md",
-        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
+        "docs/evidence/2026-11-16-business-settings/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Improve mobile navigation and scrolling. Retain expected/actual results and independent review.",
@@ -4032,17 +4042,22 @@
       "id": "P8-12",
       "requirement": "Add accessible mobile layouts and test keyboard/screen-reader operation.",
       "implementation": "partial",
-      "assessment": "Six actual ChatHome Chromium layouts cover bounded content, toolbar/composer separation, last-paragraph reachability, table focus and keyboard scrolling. This is scoped foundation hardening, not completion of Phase 8 or full accessibility/device acceptance.",
+      "assessment": "Six actual ChatHome Chromium layouts cover bounded content, toolbar/composer separation, last-paragraph reachability, table focus and keyboard scrolling. This is scoped foundation hardening, not completion of Phase 8 or full accessibility/device acceptance. This slice reproduces/fixes the 220px mobile settings label gap, hides academic controls in business settings without deleting data, and tests actual SettingsPage/ReviewCentre at four browser widths. JD can submit supported exact settings diffs for human approval and explicit apply; deployed and real-device acceptance remain open.",
       "sources": [
         "src/chat/ChatHome.jsx",
         "src/chat/JDVisualWorkspace.jsx",
         "scripts/verify-web-build.mjs",
-        "scripts/test-chat-layout.mjs"
+        "scripts/test-chat-layout.mjs",
+        "src/pages/settings.jsx",
+        "src/config/settings-presentation.mjs",
+        "src/chat/settings-review.mjs",
+        "scripts/test-settings-layout.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
-        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
+        "docs/evidence/2026-11-16-business-settings/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Add accessible mobile layouts and test keyboard/screen-reader operation. Retain expected/actual results and independent review.",

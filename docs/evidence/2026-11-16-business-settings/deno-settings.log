@@ -1,0 +1,37 @@
+Check supabase/functions/_shared/jd-settings-catalogue.test.ts
+Check supabase/functions/_shared/jd-settings-change-planner.test.ts
+Check supabase/functions/_shared/jd-settings-intelligence.test.ts
+Check supabase/functions/_shared/jd-settings-proposal-migration.test.ts
+Check supabase/functions/_shared/jd-settings-executor-migration.test.ts
+running 3 tests from ./supabase/functions/_shared/jd-settings-catalogue.test.ts
+catalogue reports configured and missing registered settings ... ok (718µs)
+secret-like and unknown settings values never enter model output ... ok (122µs)
+category filter returns only the requested category ... ok (104µs)
+running 4 tests from ./supabase/functions/_shared/jd-settings-change-planner.test.ts
+planner creates before-and-after proposals without applying them ... ok (596µs)
+security and identity changes are marked for Review Centre approval ... ok (70µs)
+unknown keys, invalid values and duplicate keys are rejected ... ok (50µs)
+unchanged values are identified as no-op entries ... ok (89µs)
+running 10 tests from ./supabase/functions/_shared/jd-settings-intelligence.test.ts
+explainSetting returns evidence-backed detail for a registered key ... ok (453µs)
+explainSetting refuses unknown, invented and secret-like keys ... ok (152µs)
+explainSetting omits the value when the setting is missing ... ok (74µs)
+auditConfiguration flags contradictory CA/exam maxima above 100 ... ok (305µs)
+auditConfiguration flags education workspace mismatches ... ok (200µs)
+auditConfiguration reports missing identity settings and never touches secrets ... ok (87µs)
+auditConfiguration flags invalid timeout, retention, name order and name case ... ok (96µs)
+auditConfiguration passes a coherent configuration cleanly ... ok (59µs)
+explainSaveBehaviour states executor guarantees for registered keys ... ok (11ms)
+refusalFor always lists the supported catalogue and leaks nothing ... ok (100µs)
+running 3 tests from ./supabase/functions/_shared/jd-settings-proposal-migration.test.ts
+settings proposal migration binds approvals to immutable content hashes ... ok (360µs)
+settings proposal submission is tenant and admin scoped ... ok (47µs)
+settings proposal RPC is service-role only and does not execute settings ... ok (41µs)
+running 5 tests from ./supabase/functions/_shared/jd-settings-executor-migration.test.ts
+executor requires an approved hash-bound settings proposal ... ok (272µs)
+executor limits writes to registered keys and revalidates values ... ok (42µs)
+executor checks stale before-values and verifies persisted values ... ok (28µs)
+execution steps are idempotent and separately audited ... ok (40µs)
+database executor is service-role only ... ok (42µs)
+
+ok | 25 passed | 0 failed (236ms)

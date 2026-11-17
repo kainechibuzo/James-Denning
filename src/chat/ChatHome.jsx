@@ -134,6 +134,7 @@ function friendlyActivityLabel(name) {
     remember_business_fact: "Remembering a business decision",
     preview_organisation_blueprint: "Designing your business structure",
     submit_organisation_blueprint_for_review: "Sending the business plan for your approval",
+    submit_workspace_settings_for_review: "Sending settings changes for your review",
     preview_hiring_vacancy: "Preparing a hiring plan",
     get_people_intelligence: "Reviewing team information",
     get_operations_intelligence: "Reviewing daily operations",
@@ -540,6 +541,7 @@ export function ChatHome({ user, organizationName = "Your organisation", organiz
       {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
       {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
+        if(item.action_key==="settings.apply"&&decision==="approve")return; // Keep the reviewed diff and explicit Apply action visible.
         setShowReview(false);
         const targetConversationId=data?.conversationId||conversationId;
         if(targetConversationId){
