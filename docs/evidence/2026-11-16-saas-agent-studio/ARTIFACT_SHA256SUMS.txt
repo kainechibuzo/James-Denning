@@ -6,6 +6,8 @@ b3148bf6ced7849a8b29d5ddc14cb9df2d92a3379631b86ed5c639bdcfebaf02  docs/evidence/
 52b5179fcb61f12ba52d182391384a0dccef5910d1892f23c8dcd73915837998  docs/evidence/2026-11-16-saas-agent-studio/deno-manual-attempt.log
 a6d56535b6802a4decaa8199bd83e251ecc1c09eabd33ef944dfc01da6e62489  docs/evidence/2026-11-16-saas-agent-studio/deno-unstaged-worker-attempt.log
 6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3  docs/evidence/2026-11-16-saas-agent-studio/npm-audit.log
+d58628d3b7b7e1ff67917fe1006c4ce925f563056623d9acbc7e2d74f46fb27a  docs/evidence/2026-11-16-saas-agent-studio/pr101-ci-staging-test.log
+c41ac94f2f3ea354aa7ae2e945fae61001d1a2653218eb8cb68b715f1fdea7bc  docs/evidence/2026-11-16-saas-agent-studio/pr101-missing-dependencies-attempt.log
 98383ac8196b6b7924dc007f12eac444f979c37292d97333435093d6f1550c4d  docs/evidence/2026-11-16-saas-agent-studio/studio-1280.png
 d27a5d9d2ed66b64ae970a3d79faccfdb70fe904f2134f0250a7aa1e8dbea3c0  docs/evidence/2026-11-16-saas-agent-studio/studio-360.png
 77862a23afb585de5ee3fe49808d60852c715d7f486c70b8d9861c217faa93c7  docs/evidence/2026-11-16-saas-agent-studio/studio-393.png

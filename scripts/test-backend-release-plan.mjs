@@ -25,6 +25,16 @@ function fixture(){
  return root;
 }
 const plan=validateBackendRelease(input);
+test('CI nested staging copies runtime MJS helpers as well as TypeScript',()=>{
+ const workflow=readFileSync('.github/workflows/ci.yml','utf8');
+ const block=workflow.split('      - name: Stage nested Edge Function shared modules\n        run: |\n')[1]?.split('\n      - name:')[0];
+ assert.ok(block,'CI staging step must exist');const shell=block.split('\n').map(line=>line.replace(/^          /,'')).join('\n');
+ const legacy=fixture();execFileSync('bash',['-eu','-c',shell.replace(' supabase/functions/_shared/*.mjs','')],{cwd:legacy});
+ const nested='supabase/functions/jd-execution-worker/_shared/jd-agent-architect.mjs';
+ assert.equal(existsSync(resolve(legacy,nested)),false,'Old TS-only staging reproduces missing runtime dependency');
+ const root=fixture();execFileSync('bash',['-eu','-c',shell],{cwd:root});
+ for(const name of ['jd-agent-runtime.ts','jd-agent-architect.mjs','jd-execution-cancellation.mjs'])assert.deepEqual(readFileSync(resolve(root,'supabase/functions/jd-execution-worker/_shared',name)),readFileSync(resolve(root,'supabase/functions/_shared',name)));
+});
 test('real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions',()=>{
  const root=fixture();const {output,manifest}=writeBackendArtifact(root,plan);assert.equal(verifyBackendArtifact(root,plan).sourceSha,sourceSha);
  const paths=manifest.files.map(f=>f.path);

@@ -197,7 +197,7 @@ jobs:
             if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint"; then
               function_dir="${entrypoint%/index.ts}"
               mkdir -p "$function_dir/_shared"
-              cp supabase/functions/_shared/*.ts "$function_dir/_shared/"
+              cp supabase/functions/_shared/*.ts supabase/functions/_shared/*.mjs "$function_dir/_shared/"
             fi
           done
 

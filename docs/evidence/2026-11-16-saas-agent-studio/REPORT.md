@@ -76,3 +76,13 @@
 - Checklist acceptance remains unverified. Local tests do not change production readiness, NaijaHaul launch gates, or the separate assignment/cancellation release gates.
 
 See [operator guide and remaining feature map](../../../documentation/JD_SAAS_AGENT_STUDIO.md). Next foundation work: a tenant-isolated agent registry with immutable versions, review/diff/rollback and negative-access tests, followed by explicitly authorised sandbox execution using the existing ledger. Release must remain a separate reviewed decision with genuinely isolated staging and retained failures.
+
+## PR #101 pre-merge CI correction
+
+At head `7f8326b6dbaa4f3516794e02552c3b5050b32f01`, Verify application passed, but [Web CI run 44071241311](https://github.com/kainechibuzo/James-Denning/actions/runs/44071241311) failed at **Type-check secured Edge Functions** after all preceding test/build steps passed. GitHub job metadata was available; raw job logs could not be downloaded in this sandbox (log-storage hosts returned EOF), so the precise remote diagnostic was not recovered.
+
+Inspection found the CI-only nested staging command copied `*.ts` but omitted `*.mjs`. The existing release-file collector already copies both; the earlier packaged-source type check therefore did not cover this CI discrepancy. The worker now imports the `.mjs` agent architect. Fixed CI staging to copy both extensions, without changing application behaviour or weakening type checks.
+
+Added an executable regression test that extracts the actual workflow staging shell, demonstrates the architect is missing under TS-only staging, and confirms the corrected staging copies the architect, runtime and cancellation helper byte-for-byte into the nested worker layout. `npm run test:backend-release` now passes **82 tests** (`pr101-ci-staging-test.log`, formerly 81). The first local attempt lacked Vite because dependencies were absent in this sandbox; its failure is retained in `pr101-missing-dependencies-attempt.log`. Restored locked dependencies with `npm ci` before the successful rerun.
+
+The earlier 927-test table records the original implementation run; this correction adds one regression test and has its own rerun evidence. Updated source/artifact manifests cover the correction. Full remote CI must pass on the corrected head before merge; merge remains separate from backend deployment and production acceptance.
