@@ -46,7 +46,7 @@
       "id": "P1-02",
       "requirement": "Verify Vercel production deployment, commit identity and live application behaviour.",
       "implementation": "partial",
-      "assessment": "Production deployment 7853035983 for 7539715 succeeded but is behind Vercel SSO. The README domain portal.renaissancegardenschools.com serves a different app titled Apex, not JD master.",
+      "assessment": "Production deployment 7853035983 for 7539715 succeeded but is behind Vercel SSO. The legacy school domain portal.renaissancegardenschools.com is not used by JD and was detached from the james-denning project on 2026-11-17; the README now documents the Vercel deployment URL. No public JD domain is configured yet.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md"
@@ -59,7 +59,7 @@
         "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "Owner: point the public domain at the james-denning Vercel project (or correct the README), then test live behaviour with an authorised session.",
+      "nextAction": "Owner: choose a public JD domain (or relax Deployment Protection), attach it to the james-denning Vercel project, then test live behaviour with an authorised session.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
@@ -146,16 +146,17 @@
       "id": "P1-07",
       "requirement": "Test CAE formula evaluation in a browser under production-equivalent CSP.",
       "implementation": "partial",
-      "assessment": "CSP-safe arithmetic change is merged. No real browser/CSP attack test in this run.",
+      "assessment": "The CAE formula evaluator and its arithmetic module were removed with the school features, so there is no CAE evaluation left to test. School features were removed in the chore/prune-education-module change; see docs/LEGACY_SCHEMA.md. The item stays open until the owner retires or rewrites it.",
       "sources": [
-        "supabase/functions/_shared/arithmetic.test.ts"
+        "docs/LEGACY_SCHEMA.md",
+        "src/pages/tools.jsx"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Test CAE formula evaluation in a browser under production-equivalent CSP. Retain expected/actual results and independent review.",
+      "nextAction": "Owner decision: retire this item or replace it with an equivalent CSP test for a business feature.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
@@ -164,8 +165,9 @@
       "id": "P1-08",
       "requirement": "Test promotion print HTML escaping with malicious and ordinary fixture values.",
       "implementation": "partial",
-      "assessment": "Promotion escaping change is merged. No browser print exploit test in this run.",
+      "assessment": "The promotion print flow was removed with the school features; there is no promotion print HTML left to test. School features were removed in the chore/prune-education-module change; see docs/LEGACY_SCHEMA.md. The item stays open until the owner retires or rewrites it.",
       "sources": [
+        "docs/LEGACY_SCHEMA.md",
         "src/pages/tools.jsx"
       ],
       "evidence": [
@@ -173,7 +175,7 @@
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Test promotion print HTML escaping with malicious and ordinary fixture values. Retain expected/actual results and independent review.",
+      "nextAction": "Owner decision: retire this item or replace it with an HTML-escaping test for a business print/export surface.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
@@ -182,17 +184,17 @@
       "id": "P1-09",
       "requirement": "Test broadsheet HTML escaping with malicious and ordinary fixture values.",
       "implementation": "partial",
-      "assessment": "Broadsheet escaping change is merged. No browser print exploit test in this run.",
+      "assessment": "The broadsheet PDF generator was removed with the school features; there is no broadsheet HTML left to test. School features were removed in the chore/prune-education-module change; see docs/LEGACY_SCHEMA.md. The item stays open until the owner retires or rewrites it.",
       "sources": [
-        "src/AppDemo.jsx",
-        "src/pages/tools.jsx"
+        "docs/LEGACY_SCHEMA.md",
+        "src/AppDemo.jsx"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Test broadsheet HTML escaping with malicious and ordinary fixture values. Retain expected/actual results and independent review.",
+      "nextAction": "Owner decision: retire this item or replace it with an HTML-escaping test for a business print/export surface.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
@@ -277,7 +279,7 @@
       "id": "P1-14",
       "requirement": "Verify actual frontend deployment bundles contain no privileged secrets.",
       "implementation": "partial",
-      "assessment": "All 48 public chunks on portal.renaissancegardenschools.com scanned: only public Paystack and Supabase publishable keys found. The SSO-protected JD production bundle was not scanned.",
+      "assessment": "An earlier scan of 48 public chunks on the legacy school domain (a different app, not JD) found only public Paystack and Supabase publishable keys; that domain is no longer used. The SSO-protected JD production bundle was not scanned.",
       "sources": [
         "src/supabaseClient.js",
         "scripts/verify-web-build.mjs"
@@ -430,14 +432,13 @@
       "id": "P2-N07",
       "requirement": "Remove irrelevant school-management terminology from business workspaces.",
       "implementation": "partial",
-      "assessment": "Business-neutral navigation labels coexist with legacy school-oriented fields and modules; terminology removal is incomplete. This slice reproduces/fixes the 220px mobile settings label gap, hides academic controls in business settings without deleting data, and tests actual SettingsPage/ReviewCentre at four browser widths. JD can submit supported exact settings diffs for human approval and explicit apply; deployed and real-device acceptance remain open.",
+      "assessment": "School-management pages, routes, navigation, settings tabs, roles, mobile school app, PIN pre-auth login and edge functions were removed from the application; navigation now contains only JD, hiring, mail logs, notifications, permissions, settings and admin tools. Legacy database names (schools, school_id, school_settings) remain and are documented in docs/LEGACY_SCHEMA.md. Deployed and real-device acceptance remain open.",
       "sources": [
         "src/AppDemo.jsx",
         "src/config/workspace-navigation.mjs",
         "scripts/test-workspace-navigation.mjs",
         "src/pages/settings.jsx",
-        "src/config/settings-presentation.mjs",
-        "src/chat/settings-review.mjs",
+        "docs/LEGACY_SCHEMA.md",
         "scripts/test-settings-layout.mjs"
       ],
       "evidence": [
@@ -454,11 +455,11 @@
       "id": "P2-N08",
       "requirement": "Preserve useful existing modules and tenant compatibility.",
       "implementation": "implemented \u2014 unverified",
-      "assessment": "Education-specific labels and routes are preserved in compatibility tests; real tenant journeys remain unverified.",
+      "assessment": "Scope changed by the owner: school modules are no longer preserved and were removed from the application. Tenant data and database schema are kept unchanged (docs/LEGACY_SCHEMA.md); business modules (JD chat, operations, hiring, settings, permissions) are preserved. Real tenant journeys remain unverified.",
       "sources": [
         "src/AppDemo.jsx",
         "src/config/workspace-navigation.mjs",
-        "scripts/test-workspace-navigation.mjs"
+        "docs/LEGACY_SCHEMA.md"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase2-departments/REPORT.md"

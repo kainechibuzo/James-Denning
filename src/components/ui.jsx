@@ -1,42 +1,23 @@
 /**
  * Shared UI Primitives
  *
- * Exports all reusable presentational components used across the portal:
+ * Exports all reusable presentational components used across the workspace:
  * ErrorBoundary, DangerBtn, Logo, Card, Btn, Badge, Inp, Sel, Modal,
- * Toast, StatCard, Th, TRow, ClassMultiSelect, Spinner, PDFViewer,
- * SectionSelector, ICON_MAP, AppIcon, ActionsMenu, SectionPillTabs,
- * PageHeader, EmptyState.
+ * Toast, StatCard, Th, TRow, Spinner, PDFViewer, ICON_MAP, AppIcon,
+ * ActionsMenu, PageHeader, EmptyState.
  *
  * C is imported as a live ES-module binding from config/theme.js —
  * it always reflects the current palette because setTheme() is called
  * by DarkProvider on every toggle.
  */
 
-import React, { useState, useEffect, useContext, useRef, Component } from "react";
+import React, { useState, useEffect, useRef, Component } from "react";
 import ReactDOM from "react-dom";
-import {
-  LayoutDashboard, Users, GraduationCap, BookUser, School, BookOpen, Layers,
-  Link2, BarChart3, FileText, ScrollText, ShieldCheck, Settings2, ListChecks,
-  Tag, FileStack, Zap, CreditCard, TrendingUp, Megaphone, ClipboardCheck,
-  Mail, Inbox, ArrowUpCircle, History, CheckCircle2, UserPlus, Upload,
-  Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff,
-  Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info,
-  LogOut, UserCircle, ChevronDown, Calendar, Clock, Star, Home, Menu,
-  Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image,
-  File, Folder, Archive, Database, Activity, PieChart, BarChart2,
-  TrendingDown, Banknote, Receipt, PiggyBank, Calculator, ListOrdered,
-  BookMarked, FlaskConical, Award, ClipboardList, UserCheck, UserX,
-  Table, TableProperties, CheckCircle, Share2, Printer, Save, Copy,
-  AlignLeft, AlignCenter, Target, Compass, Package, Store, Building,
-  PenLine, Type, List, LayoutGrid, Sidebar, Move, Maximize2, Minimize2,
-  SquarePlus, SquareMinus, SquareCheck, PlusCircle, MinusCircle, XCircle,
-  AlertCircle, Loader2, WifiOff, Wifi, ArrowRight, ArrowLeft, KeyRound,
-  MapPin as MapPinIcon, ExternalLink, MoreHorizontal,
-} from "lucide-react";
+import { LayoutDashboard, Users, Link2, TrendingUp, Megaphone, Mail, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, UserCircle, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, TrendingDown, Banknote, Calculator, BookMarked, Award, ClipboardList, UserCheck, UserX, Table, CheckCircle, Share2, Printer, Save, Copy, Target, Package, Type, MapPin as MapPinIcon } from "lucide-react";
 
-import { C, LIGHT, DARK } from "../config/theme.js";
+import { C, LIGHT } from "../config/theme.js";
 import { useIsMobile }    from "../utils/hooks.js";
-import { useSection }     from "../contexts/section.jsx";
+import { useOrganization } from "../contexts/organization.jsx";
 import { useConfirm }     from "../contexts/confirm.jsx";
 import { isNative }       from "../utils/platform.js";
 import { PRODUCT }         from "../config/product.js";
@@ -56,7 +37,7 @@ export class ErrorBoundary extends Component {
             <div style={{ marginBottom:14 }}><Shield size={52} color={C.blue}/></div>
             <div style={{ fontSize:21, fontWeight:900, color:"#dc2626", marginBottom:8 }}>Something went wrong</div>
             <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.7, marginBottom:6 }}>
-              The portal hit an unexpected error. Your data is safe — this is a display issue only.
+              The workspace hit an unexpected error. Your data is safe — this is a display issue only.
             </div>
             <div style={{ fontSize:12, color:"#94a3b8", lineHeight:1.6, marginBottom:20 }}>
               Click <b>Try Again</b> to dismiss, or <b>Reload</b> if the issue persists.
@@ -83,7 +64,7 @@ export class ErrorBoundary extends Component {
                 style={{ flex:1, background:"#202124", color:"#fff", border:"none", padding:"12px",
                   borderRadius:10, fontWeight:800, fontSize:13, cursor:"pointer",
                   boxShadow:"0 4px 14px rgba(26,79,160,.4)" }}>
-                Reload Portal
+                Reload workspace
               </button>
             </div>
           </div>
@@ -117,8 +98,8 @@ export function DangerBtn({ label, icon, typePhrase, onClick }) {
 
 // ── Logo ───────────────────────────────────────────────────────────────────────
 export function Logo({ size = 44 }) {
-  const ctx  = useSection();
-  const logo = ctx?.schoolLogo;
+  const ctx  = useOrganization();
+  const logo = ctx?.orgLogo;
   if (logo) {
     return <img src={logo} alt="Organization logo" style={{ width:size, height:size, objectFit:"contain", borderRadius:size*0.18, background:"transparent" }}/>;
   }
@@ -403,75 +384,6 @@ export function TRow({ cells, i, onClick }) {
   );
 }
 
-// ── Group Multi-Select Dropdown ────────────────────────────────────────────────
-export function ClassMultiSelect({ classes, selClasses, onToggle, onClear, placeholder = "All Groups" }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-  const count = selClasses.size;
-  const label = count === 0 ? placeholder : count === 1
-    ? (classes.find(c => selClasses.has(String(c.id)))?.name || "1 group selected")
-    : `${count} classes selected`;
-  return (
-    <div ref={ref} style={{ position:"relative", flex:1, minWidth:150 }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{ width:"100%", padding:"9px 10px", border:`2px solid ${count>0 ? C.orange : C.border}`,
-          borderRadius:8, fontSize:13, background:count>0 ? C.orangePale : C.white, color:C.text,
-          fontWeight:count>0 ? 700 : 400, cursor:"pointer", display:"flex", justifyContent:"space-between",
-          alignItems:"center", gap:6, textAlign:"left" }}>
-        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{label}</span>
-        <span style={{ fontSize:10, opacity:.6, flexShrink:0 }}>{open ? "▲" : "▼"}</span>
-      </button>
-      {open && (
-        <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:999,
-          background:C.white, border:`2px solid ${C.border}`, borderRadius:10,
-          boxShadow:"0 8px 24px rgba(0,0,0,.12)", maxHeight:280, overflowY:"auto" }}>
-          <div onClick={() => { onClear(); }}
-            style={{ padding:"9px 14px", cursor:"pointer", fontWeight:700, fontSize:13,
-              color:count===0 ? C.orange : C.text,
-              background:count===0 ? C.orangePale : "transparent",
-              borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:8 }}
-            onMouseEnter={e => e.currentTarget.style.background = count===0 ? C.orangePale : C.offWhite}
-            onMouseLeave={e => e.currentTarget.style.background = count===0 ? C.orangePale : "transparent"}>
-            <span style={{ width:16, height:16, borderRadius:4, display:"inline-flex", alignItems:"center",
-              justifyContent:"center", fontSize:11,
-              background:count===0 ? C.orange : "transparent",
-              border:`2px solid ${count===0 ? C.orange : C.border}`, color:"#fff", flexShrink:0 }}>
-              {count===0 ? "✓" : ""}
-            </span>
-            All Groups
-          </div>
-          {classes.map(c => {
-            const sid     = String(c.id);
-            const checked = selClasses.has(sid);
-            return (
-              <div key={c.id} onClick={() => onToggle(sid)}
-                style={{ padding:"8px 14px", cursor:"pointer", fontSize:13,
-                  background:checked ? C.orangePale : "transparent",
-                  display:"flex", alignItems:"center", gap:8,
-                  borderBottom:`1px solid ${C.border}22` }}
-                onMouseEnter={e => e.currentTarget.style.background = checked ? C.orangePale : C.offWhite}
-                onMouseLeave={e => e.currentTarget.style.background = checked ? C.orangePale : "transparent"}>
-                <span style={{ width:16, height:16, borderRadius:4, display:"inline-flex", alignItems:"center",
-                  justifyContent:"center", fontSize:11, flexShrink:0,
-                  background:checked ? C.orange : "transparent",
-                  border:`2px solid ${checked ? C.orange : C.border}`, color:"#fff" }}>
-                  {checked ? "✓" : ""}
-                </span>
-                <span style={{ flex:1 }}>{c.name}</span>
-                {c.sections && <span style={{ fontSize:11, color:C.muted }}>{c.sections.code || c.sections.name}</span>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Spinner ────────────────────────────────────────────────────────────────────
 export function Spinner({ text = "Loading…" }) {
@@ -684,79 +596,13 @@ export function PDFViewer({ html, title, onClose }) {
   );
 }
 
-// ── Section Pill Selector ──────────────────────────────────────────────────────
-export function SectionSelector() {
-  const { sections, selectedSection, selectSection, loading } = useSection();
-  const [hover, setHover] = useState(null);
-  const pills = [
-    { id:"all", label:"All Sections", code:"ALL", color:C.muted },
-    ...sections.map(s => ({ id:s.id, label:s.name, code:s.code, color:s.color||C.blue, data:s })),
-  ];
-  if (loading) return (
-    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"10px 20px" }}>
-      <span style={{ color:C.muted, fontSize:12 }}>Loading sections…</span>
-    </div>
-  );
-  return (
-    <div style={{ background:C.white, borderBottom:`1px solid ${C.border}`,
-      padding:"8px 12px", display:"flex", alignItems:"center", gap:10,
-      overflowX:"auto", scrollbarWidth:"none", WebkitOverflowScrolling:"touch",
-      boxShadow:"0 1px 4px rgba(0,0,0,.04)", flexShrink:0 }}>
-      <span style={{ fontSize:10, fontWeight:800, color:C.muted, textTransform:"uppercase",
-        letterSpacing:1.2, whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
-        <Folder size={11} style={{ flexShrink:0 }}/> Section
-      </span>
-      <div style={{ width:1, height:18, background:C.border, flexShrink:0 }}/>
-      <div style={{ display:"flex", gap:5, flexShrink:0 }}>
-        {pills.map(p => {
-          const active = p.id === "all" ? selectedSection === null : selectedSection?.id === p.id;
-          return (
-            <button key={p.id}
-              onMouseEnter={() => setHover(p.id)}
-              onMouseLeave={() => setHover(null)}
-              onClick={() => selectSection(p.id === "all" ? null : p.data)}
-              style={{
-                padding:"5px 14px", borderRadius:20,
-                border:`1.5px solid ${active ? p.color : hover===p.id ? p.color+"66" : "transparent"}`,
-                background: active ? p.color : hover===p.id ? p.color+"10" : C.offWhite,
-                color: active ? "#fff" : hover===p.id ? p.color : C.muted,
-                fontSize:11.5, fontWeight:active ? 700 : 500, cursor:"pointer",
-                transition:"all .15s ease", letterSpacing:.2,
-                display:"flex", alignItems:"center", gap:5,
-                boxShadow: active ? `0 2px 8px ${p.color}40` : "none",
-              }}>
-              {p.label}
-              {p.code !== "ALL" && (
-                <span style={{
-                  background: active ? "rgba(255,255,255,.22)" : p.color+"18",
-                  color: active ? "#fff" : p.color,
-                  padding:"1px 6px", borderRadius:8, fontSize:9, fontWeight:800, letterSpacing:.5,
-                }}>{p.code}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 // ── Icon Map + AppIcon ─────────────────────────────────────────────────────────
 export const ICON_MAP = {
   // Navigation
-  dashboard: LayoutDashboard, members: Users, students: GraduationCap,
-  teachers: BookUser, classes: School, subjects: BookOpen, sections: Layers,
-  assignments: Link2, results: BarChart3, "report-cards": FileText,
-  transcript: ScrollText, "result-approvals": ShieldCheck,
-  "report-settings": Settings2, grading: ListChecks,
-  "fee-items": Tag, "fee-templates": FileStack, "fee-generate": Zap,
-  "fee-tracker": CreditCard, "fee-stats": TrendingUp,
-  announce: Megaphone, attendance: ClipboardCheck,
-  mail: Mail, "mail-logs": Inbox,
-  "bulk-promote": ArrowUpCircle, "recycle-bin": Trash2, "audit-log": History, approvals: CheckCircle2,
-  timetable: TableProperties, export: Download, "login-activity": Activity, broadsheet: Table,
-  "my-classes": School, "upload-results": Upload, "add-students": UserPlus,
-  "my-results": FileText, "my-payments": CreditCard,
+  dashboard: LayoutDashboard, members: Users,
+  announce: Megaphone, mail: Mail, "mail-logs": Inbox,
+  "audit-log": History, approvals: CheckCircle2,
   // Actions
   add: Plus, edit: Pencil, delete: Trash2, view: Eye, hide: EyeOff,
   download: Download, send: Send, search: Search, filter: Filter,
@@ -869,7 +715,6 @@ export function ActionsMenu({ items }) {
   );
 }
 
-// ── Section Pill Tabs ──────────────────────────────────────────────────────────
 // ── Page Header ────────────────────────────────────────────────────────────────
 export function PageHeader({ icon, title, subtitle, action, gradient }) {
   const bg = gradient || `linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
@@ -923,24 +768,3 @@ export function EmptyState({ icon, title, message, action }) {
   );
 }
 
-export function SectionPillTabs({ sections, value, onChange }) {
-  const all = [{ id:"", name:"All Sections", color:null }, ...sections];
-  return (
-    <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:16 }}>
-      {all.map(s => {
-        const active = value === (s.id ? ""+s.id : "");
-        return (
-          <button key={s.id || "all"} onClick={() => onChange(s.id ? ""+s.id : "")}
-            style={{ padding:"6px 16px", borderRadius:20,
-              border:`2px solid ${active ? (s.color||C.blue) : C.border}`,
-              background: active ? (s.color||C.blue) : (s.color ? s.color+"18" : C.white),
-              color: active ? "#fff" : (s.color||C.blue),
-              fontSize:12, fontWeight:700, cursor:"pointer", transition:"all .15s",
-              whiteSpace:"nowrap" }}>
-            {s.id ? `${s.code || s.name}` : "All"}
-          </button>
-        );
-      })}
-    </div>
-  );
-}

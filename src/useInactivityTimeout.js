@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export const INACTIVITY_KEY = 'rgs_last_active';
+export const INACTIVITY_KEY = 'jd_last_active';
 
 const ACTIVITY_EVENTS = [
   'mousemove', 'mousedown', 'keydown',

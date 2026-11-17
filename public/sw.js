@@ -10,7 +10,7 @@
  * asset bundling — the SW is not registered when isNativePlatform() is true.
  */
 
-const CACHE_VERSION = "rgs-v4"; // bumped to purge stale caches pinning users to pre-?school= builds
+const CACHE_VERSION = "jd-v5"; // bump to purge stale caches after major releases
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 

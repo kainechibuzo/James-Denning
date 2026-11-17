@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(ls \"c:\\\\Users\\\\nnago\\\\Downloads\\\\rgs-portal-v15 \\(1\\)\\\\rgs-v15v1\\\\supabase\\\\migrations\")"
-    ]
-  }
-}

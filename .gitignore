@@ -32,3 +32,4 @@ android/.idea/
 *.aab
 *.keystore
 # Keep android/ source in git but ignore build output above
+.claude/settings.local.json
