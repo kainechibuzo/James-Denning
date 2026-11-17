@@ -1,3 +1,4 @@
+import { handleAgentRegistry } from "../_shared/jd-agent-registry-service.ts";
 import { handleUsage } from "../_shared/jd-usage-service.ts";
 import { handleFoundation } from "../_shared/jd-foundation-service.ts";
 import { buildSaasAgentTeam } from "../_shared/jd-agent-architect.mjs";
@@ -44,6 +45,7 @@ Deno.serve(async (req) => {
 
 
  if(!payload||typeof payload!=="object"||Array.isArray(payload))return json({error:"Invalid request object"},400);
+ if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("usage."))return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){
@@ -560,6 +562,7 @@ Deno.serve(async (req) => {
   const {data:before,error:beforeError}=await admin.from("jd_approvals")
    .select("id,run_id,action_key,proposal_json,school_id").eq("id",approvalId).eq("school_id",profile.school_id).maybeSingle();
   if(beforeError||!before) return json({error:"Approval request not found"},404);
+  if(before.action_key==="agent.publication.review") return json({error:"Review this definition in Business Builder → Agent registry. That review pins the exact evaluation and requires an independent reviewer; the generic approval action cannot publish an agent."},409);
   const {data:result,error:decisionErr}=await admin.rpc("jd_decide_approval",{
    p_approval_id:approvalId,p_actor_id:authData.user.id,p_decision:decision,p_note:note
   });

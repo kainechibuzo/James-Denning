@@ -1,0 +1,74 @@
+[
+  {
+    "width": 360,
+    "scrollWidth": 360,
+    "pageErrors": [],
+    "flows": [
+      "route",
+      "save/readback",
+      "double-submit lock",
+      "confirmed contract-only evaluation",
+      "publication gate",
+      "revision invalidation",
+      "restore as draft",
+      "confirmed suspension",
+      "scope reset",
+      "role downgrade"
+    ],
+    "backend": "synthetic, not deployed"
+  },
+  {
+    "width": 393,
+    "scrollWidth": 393,
+    "pageErrors": [],
+    "flows": [
+      "route",
+      "save/readback",
+      "double-submit lock",
+      "confirmed contract-only evaluation",
+      "publication gate",
+      "revision invalidation",
+      "restore as draft",
+      "confirmed suspension",
+      "scope reset",
+      "role downgrade"
+    ],
+    "backend": "synthetic, not deployed"
+  },
+  {
+    "width": 708,
+    "scrollWidth": 708,
+    "pageErrors": [],
+    "flows": [
+      "route",
+      "save/readback",
+      "double-submit lock",
+      "confirmed contract-only evaluation",
+      "publication gate",
+      "revision invalidation",
+      "restore as draft",
+      "confirmed suspension",
+      "scope reset",
+      "role downgrade"
+    ],
+    "backend": "synthetic, not deployed"
+  },
+  {
+    "width": 1280,
+    "scrollWidth": 1280,
+    "pageErrors": [],
+    "flows": [
+      "route",
+      "save/readback",
+      "double-submit lock",
+      "confirmed contract-only evaluation",
+      "publication gate",
+      "revision invalidation",
+      "restore as draft",
+      "confirmed suspension",
+      "scope reset",
+      "role downgrade"
+    ],
+    "backend": "synthetic, not deployed"
+  }
+]

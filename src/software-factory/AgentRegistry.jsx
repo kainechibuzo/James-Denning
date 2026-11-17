@@ -1,0 +1,60 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {definitionFromTemplate,validateAgentDefinition} from '../../supabase/functions/_shared/jd-agent-registry.mjs';
+import {workforceCatalogue} from '../../supabase/functions/_shared/jd-business-foundation.mjs';
+import {registryRequest} from './agent-registry-client.mjs';
+import {stable} from './foundation-client.mjs';
+export function AgentRegistry({client,role,scopeKey}){
+ if(!['owner','admin'].includes(role))return <p role="status">Workspace administrator access is required.</p>;
+ return <Registry key={`${scopeKey}:${role}`} client={client} role={role}/>;
+}
+function Registry({client,role}){
+ const templates=workforceCatalogue().employees;
+ const [draft,setDraft]=useState(()=>definitionFromTemplate('inventory-analyst')),[records,setRecords]=useState([]),[detail,setDetail]=useState(null),[selected,setSelected]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState(null),[note,setNote]=useState('');
+ const alive=useRef(true),lock=useRef(false),requests=useRef(new Map());
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+ const change=(key,value)=>{setDraft(d=>({...d,[key]:value}));setConfirm(null);setNotice('Unsaved changes. Saving creates a new draft and invalidates prior evaluation/publication eligibility.');};
+ const current=detail?.agents[0],dirty=selected&&stable(draft)!==stable(detail?.versions.find(v=>v.version===selected.version)?.content);
+ async function run(task,apply){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const r=await task();if(alive.current)apply(r);}catch(e){if(alive.current)setError(e.message||'Registry outcome not confirmed.');}finally{lock.current=false;if(alive.current)setBusy(false);}}
+ const api=body=>registryRequest(client,role,body);
+ const apply=r=>{const a=r.agents[0];setDetail(r);setSelected(a?{id:a.id,version:a.current_version}:null);if(a)setDraft(r.versions.find(v=>v.version===a.current_version).content);setConfirm(null);setNote('');};
+ function mutate(action,extra={}){
+  const body={action,agentId:selected?.id||null,expectedVersion:selected?.version||0,evaluationId:current?.current_evaluation||null,approvalId:current?.review_approval||null,confirm:true,...extra};
+  const key=stable(body);if(!requests.current.has(key))requests.current.set(key,crypto.randomUUID());body.requestId=requests.current.get(key);
+  run(()=>api(body),r=>{apply(r);setNotice(action==='registry.evaluate'?'Contract checks recorded and read back. No operational agent tasks ran; publication and hiring are not unlocked.':action==='registry.save'?'Immutable draft saved and read back. Previous evaluation/review authority was not carried forward.':'Definition decision recorded and read back. No hiring, tool grants, execution or charges.');});
+ }
+ return <section aria-label="Versioned agent registry">
+  <h3>Agent definitions & evaluation evidence</h3>
+  <p>Customise a maintained specialist, save immutable versions and inspect recorded checks. This tenant-private registry does not hire employees or grant tools.</p>
+  <div className="jd-agent-boundary"><strong>Contract checks are not operational evaluations.</strong> Publication requires a current passing report from a separately reviewed operational evaluator and an independent human reviewer. No operational evaluator is enabled by this release.</div>
+  {error&&<p role="alert" className="jd-agent-error">{error}</p>}{notice&&<p role="status" className="jd-agent-notice">{notice}</p>}
+  <button disabled={busy} onClick={()=>run(()=>api({action:'registry.read'}),r=>setRecords(r.agents))}>Refresh saved agents</button>
+  <div className="jd-foundation-nav">{records.map(a=><button key={a.id} disabled={busy} onClick={()=>run(()=>api({action:'registry.read',agentId:a.id}),apply)}>{a.name} · v{a.current_version} · {a.state.replaceAll('_',' ')}</button>)}</div>
+  <form onSubmit={e=>{e.preventDefault();try{const definition=validateAgentDefinition(draft);mutate('registry.save',{definition});}catch(e){setError(e.message);}}}>
+   <fieldset disabled={busy}><legend>{selected?`Editing saved agent · base version ${selected.version}`:'New definition from a starter specialist'}</legend>
+    <label>Starter specialist<select aria-label="Starter specialist" value={draft.templateId} disabled={!!selected} onChange={e=>{setDraft(definitionFromTemplate(e.target.value));setConfirm(null);setNotice('New local draft. No employee created.');}}>{templates.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
+    <div className="jd-agent-form-grid">
+     <label>Agent name<input aria-label="Agent name" required minLength={2} maxLength={120} value={draft.name} onChange={e=>change('name',e.target.value)}/></label>
+     <label>Responsibility<textarea aria-label="Responsibility" required maxLength={2000} value={draft.responsibility} onChange={e=>change('responsibility',e.target.value)}/></label>
+     <label className="jd-agent-wide">Instructions, one per line<textarea aria-label="Instructions, one per line" rows={5} maxLength={40000} value={draft.instructions.join('\n')} onChange={e=>change('instructions',e.target.value.split('\n'))}/></label>
+     <label>Requested capabilities, one per line<textarea aria-label="Requested capabilities, one per line" rows={3} value={draft.capabilities.join('\n')} onChange={e=>change('capabilities',e.target.value.split('\n'))}/></label>
+     <label>Model provider<input aria-label="Model provider" maxLength={80} value={draft.model.provider||''} onChange={e=>change('model',{...draft.model,provider:e.target.value||null})}/></label>
+     <label>Model identifier<input aria-label="Model identifier" maxLength={160} value={draft.model.name||''} onChange={e=>change('model',{...draft.model,name:e.target.value||null})}/></label>
+     <label>Maximum steps<input aria-label="Maximum steps" type="number" min={1} max={30} value={draft.maxSteps} onChange={e=>change('maxSteps',Number(e.target.value))}/></label>
+     <label>Timeout in seconds<input aria-label="Timeout in seconds" type="number" min={1} max={600} value={draft.timeoutSeconds} onChange={e=>change('timeoutSeconds',Number(e.target.value))}/></label>
+    </div>
+    <p>No tool is bound by naming a capability. Model selection is a proposal, not provider authorisation. Never put credentials or customer secrets in definitions or evaluation cases.</p>
+    <details><summary>Required operational evaluation cases — not run</summary>{draft.evaluationCases.map((c,i)=><fieldset key={c.id}><legend>{c.category.replaceAll('_',' ')}</legend><label>Test input<textarea aria-label={`${c.category} test input`} value={c.input} maxLength={2000} onChange={e=>change('evaluationCases',draft.evaluationCases.map((x,j)=>i===j?{...x,input:e.target.value}:x))}/></label><label>Expected behaviour<textarea aria-label={`${c.category} expected behaviour`} value={c.expected} maxLength={2000} onChange={e=>change('evaluationCases',draft.evaluationCases.map((x,j)=>i===j?{...x,expected:e.target.value}:x))}/></label></fieldset>)}</details>
+    <button type="submit">Save agent draft</button> <button type="button" onClick={()=>{setSelected(null);setDetail(null);setDraft(definitionFromTemplate('inventory-analyst'));setConfirm(null);setError('');setNotice('New local draft. Saved evidence remains unchanged.');}}>Start new definition</button>
+   </fieldset>
+  </form>
+  {current&&<>
+   <h4>Saved version {current.current_version} · {current.state.replaceAll('_',' ')}</h4><p>Current operational evaluation: {current.operational_evaluation_current?'Passing report recorded':'Not established'} · Current tenant-private publication: {current.publication_current?'Reviewed publication recorded':'Not established'}. Hiring and execution remain disabled.</p>
+   <p>Definition hash: <code>{current.content_hash}</code></p>
+   {dirty&&<p role="status">Unsaved changes: review actions are locked until saved or reloaded.</p>}
+   <div className="jd-foundation-nav">{[['evaluate','Review contract checks',true],['request_review','Request publication review',current.operational_evaluation_current],['approve','Approve definition review',current.state==='review_pending'],['reject','Reject definition review',current.state==='review_pending'],['publish','Publish tenant-private definition',current.state==='reviewed'&&current.operational_evaluation_current],['suspend','Suspend definition',true]].map(([action,label,allowed])=><button key={action} disabled={busy||dirty||!allowed} onClick={()=>{setConfirm(action);setNote('');}}>{label}</button>)}</div>
+   {confirm&&<div role="group" aria-label="Confirm agent registry action" className="jd-agent-boundary"><h4>Confirm {confirm.replaceAll('_',' ')} for saved version {current.current_version}</h4><p>Inspect the exact saved definition and evidence below. A reviewer must differ from the version author and evaluation requester. New checks invalidate prior review/publication eligibility. No hiring, execution or spending is authorised.</p>{confirm!=='evaluate'&&<label>Review note<textarea aria-label="Review note" minLength={10} maxLength={1000} value={note} onChange={e=>setNote(e.target.value)}/></label>}<button disabled={busy||(confirm!=='evaluate'&&note.trim().length<10)} onClick={()=>mutate(`registry.${confirm}`,confirm==='evaluate'?{}:{note})}>Confirm registry action</button> <button disabled={busy} onClick={()=>setConfirm(null)}>Keep unchanged</button></div>}
+   <h4>Evaluation history</h4>{detail.evaluations.length===0&&<p>No evaluation has run.</p>}{detail.evaluations.map(e=><article key={e.id} className="jd-agent-boundary"><h5>Version {e.version} · {e.kind==='contract'?'Contract checks only':'Operational evaluator report'} · {e.outcome||'Incomplete — no result'}</h5><p>Runner: <code>{e.runner_key}</code> · Completed: {e.completed_at||'Not confirmed'}</p><p>Report hash: <code>{e.report_hash||'None'}</code></p><ul>{e.report?.cases?.map(c=><li key={c.caseId}><strong>{c.caseId}: {c.status}</strong> — {c.observed}</li>)}</ul></article>)}
+   <h4>Immutable saved definitions</h4>{detail.versions.map(v=><details key={v.version}><summary>Inspect saved version {v.version}</summary><pre className="jd-foundation-json">{JSON.stringify(v.content,null,2)}</pre>{v.version<current.current_version&&<button disabled={busy} onClick={()=>{setDraft(v.content);setConfirm(null);setNotice(`Version ${v.version} copied locally. Save to create a new draft; no old evaluation or approval will be restored.`);}}>Use version {v.version} as a new draft</button>}</details>)}
+  </>}
+ </section>;
+}
