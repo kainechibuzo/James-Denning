@@ -38,27 +38,27 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
       .jd-visual-workspace{display:grid;gap:10px;margin:14px 0 4px;min-width:0}
       .jd-viz-panel{min-width:0;border:1px solid #e4e7eb;background:#fff;border-radius:14px;padding:13px 14px;box-shadow:0 4px 16px rgba(20,24,30,.035)}
       .jd-viz-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
-      .jd-viz-panel-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;color:#303640}
-      .jd-viz-panel-title svg{color:#6b7480}
-      .jd-viz-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:700;white-space:nowrap;background:#f1f3f5;color:#737b86}
-      .jd-viz-status.good{background:#edf7f0;color:#287548}.jd-viz-status.bad{background:#fff0ef;color:#a33b35}.jd-viz-status.active{background:#eef4fb;color:#315d88}
+      .jd-viz-panel-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;color:#17191c}
+      .jd-viz-panel-title svg{color:#60616b}
+      .jd-viz-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:700;white-space:nowrap;background:#f1f3f5;color:#60616b}
+      .jd-viz-status.good{background:#edf7f0;color:#34353b}.jd-viz-status.bad{background:#f1f2f5;color:#34353b}.jd-viz-status.active{background:#f1f2f5;color:#34353b}
       .jd-viz-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:1px solid #f0f1f3;min-width:0}
       .jd-viz-row:first-child{border-top:0;padding-top:0}
-      .jd-viz-copy{flex:1;min-width:0}.jd-viz-copy strong{display:block;font-size:11px;color:#333943;font-weight:650;overflow-wrap:anywhere}.jd-viz-copy small{display:block;color:#818894;font-size:10px;line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
-      .jd-viz-check{border:0;background:transparent;color:#69727e;padding:1px;display:grid;place-items:center;cursor:pointer}.jd-viz-check[aria-pressed=true]{color:#23814d}
-      .jd-viz-progress{height:6px;background:#edf0f2;border-radius:99px;overflow:hidden;margin:7px 0 10px}.jd-viz-progress>span{display:block;height:100%;background:#36845b;border-radius:99px}
+      .jd-viz-copy{flex:1;min-width:0}.jd-viz-copy strong{display:block;font-size:11px;color:#34353b;font-weight:650;overflow-wrap:anywhere}.jd-viz-copy small{display:block;color:#60616b;font-size:10px;line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
+      .jd-viz-check{border:0;background:transparent;color:#60616b;padding:1px;display:grid;place-items:center;cursor:pointer}.jd-viz-check[aria-pressed=true]{color:#34353b}
+      .jd-viz-progress{height:6px;background:#edf0f2;border-radius:99px;overflow:hidden;margin:7px 0 10px}.jd-viz-progress>span{display:block;height:100%;background:#60616b;border-radius:99px}
       .jd-viz-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:8px}
       .jd-viz-node{min-width:0;border:1px solid #e8eaed;border-radius:10px;padding:10px;background:#fafbfc;position:relative}
-      .jd-viz-node strong{display:block;font-size:10px;color:#343a43;overflow-wrap:anywhere}.jd-viz-node small{display:block;color:#858c96;font-size:9px;line-height:1.45;margin-top:4px}
+      .jd-viz-node strong{display:block;font-size:10px;color:#34353b;overflow-wrap:anywhere}.jd-viz-node small{display:block;color:#60616b;font-size:9px;line-height:1.45;margin-top:4px}
       .jd-viz-question{background:#f8f9fb;border:1px solid #e9ebef;border-radius:11px;padding:12px}
-      .jd-viz-question p{font-size:12px;font-weight:650;color:#303640;margin:0 0 10px;line-height:1.5}
+      .jd-viz-question p{font-size:12px;font-weight:650;color:#17191c;margin:0 0 10px;line-height:1.5}
       .jd-viz-options{display:flex;flex-wrap:wrap;gap:7px}
-      .jd-viz-option{border:1px solid #dfe3e8;background:#fff;border-radius:9px;padding:8px 10px;font-size:10px;color:#424a55;cursor:pointer}
-      .jd-viz-option:hover{border-color:#aeb7c2;background:#f5f7f9}
-      .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:#7d8792;padding-top:1px}.jd-viz-event strong{font-size:10px;color:#414852}.jd-viz-event small{display:block;font-size:9px;color:#858d97;margin-top:3px;line-height:1.45}
-      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid #eceef0;background:#fafbfc;border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:#838b96}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:#303640;margin-top:4px}
-      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid #e6e9ed;border-radius:8px;padding:7px 9px;font-size:9px;color:#626c78;background:#fafbfc;overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:#87909a}
-      .jd-viz-expand{border:0;background:transparent;color:#68727e;font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
+      .jd-viz-option{border:1px solid #dfe3e8;background:#fff;border-radius:9px;padding:8px 10px;font-size:10px;color:#34353b;cursor:pointer}
+      .jd-viz-option:hover{border-color:#a3a4ad;background:#f5f7f9}
+      .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:#60616b;padding-top:1px}.jd-viz-event strong{font-size:10px;color:#34353b}.jd-viz-event small{display:block;font-size:9px;color:#60616b;margin-top:3px;line-height:1.45}
+      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid #eceef0;background:#fafbfc;border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:#60616b}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:#17191c;margin-top:4px}
+      .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid #e6e9ed;border-radius:8px;padding:7px 9px;font-size:9px;color:#34353b;background:#fafbfc;overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:#60616b}
+      .jd-viz-expand{border:0;background:transparent;color:#60616b;font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
       @media(max-width:420px){.jd-viz-panel{padding:11px}.jd-viz-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
     `}</style>
     {blocks.map((block, index) => {
@@ -99,17 +99,17 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
                 {taskRecords?.audits?.[item?.id]&&saved&&<small>Status saved with audit evidence.</small>}
                 <small>Planned owner role: {text(item?.owner,"Unassigned")}</small>
                 {list(item?.dependencies,8).length>0&&<small>Depends on: {list(item.dependencies,8).map(dependency=>text(dependency)).join(", ")}</small>}
-                {item?.approval_required&&<small style={{color:"#94621b"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
+                {item?.approval_required&&<small style={{color:"#34353b"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
               </div>
               {record ? record.status === "completed" ? <span className="jd-viz-status good">Record complete</span> : <Status value={record.status}/> : <span className="jd-viz-status">{saved?"Unverified snapshot":localChecked?"Locally checked":"Draft"}</span>}
             </div>;
           })}
-          {block.sample_truncated&&<small style={{color:"#8a5d18",fontSize:9}}>Only a sample of tasks is shown.</small>}
-          <small style={{color:"#6b7280",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
+          {block.sample_truncated&&<small style={{color:"#34353b",fontSize:9}}>Only a sample of tasks is shown.</small>}
+          <small style={{color:"#60616b",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
-        {block.description && <p style={{ fontSize: 10, color: "#7b838d", margin: "0 0 10px", lineHeight: 1.5 }}>{text(block.description)}</p>}
+        {block.description && <p style={{ fontSize: 10, color: "#60616b", margin: "0 0 10px", lineHeight: 1.5 }}>{text(block.description)}</p>}
         <div className="jd-viz-flow">{list(block.steps, 24).map((step, i) => <div className="jd-viz-node" key={String(step?.id || i)}><div style={{ display: "flex", justifyContent: "space-between", gap: 6, alignItems: "center" }}><strong>{text(step?.title, "Workflow step")}</strong><Status value={step?.status}/></div>{step?.description && <small>{text(step.description)}</small>}{step?.owner && <small>Owner: {text(step.owner)}</small>}</div>)}</div>
       </Panel>;
       if (block.type === "question") return <Panel key={key} title={text(block.title, "Decision required")} icon={MessageSquare}>
@@ -124,8 +124,8 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
       const evidence = list(block.items, 30);
       return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
         <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
-        {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "#77808b", margin: "9px 0 0" }}>{text(block.summary)}</p>}
-        {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#737d88", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
+        {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "#60616b", margin: "9px 0 0" }}>{text(block.summary)}</p>}
+        {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#60616b", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
       </Panel>;
     })}
   </div>;

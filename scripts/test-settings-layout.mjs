@@ -9,7 +9,7 @@ const baseline=process.argv.includes('--baseline');
 const dir=process.env.JD_SETTINGS_EVIDENCE_DIR;if(dir)mkdirSync(dir,{recursive:true});
 const executablePath=process.env.CHROMIUM_EXECUTABLE_PATH||['/usr/bin/google-chrome','/usr/bin/chromium'].find(existsSync);assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH; this test never downloads a browser');
 const source=path=>baseline?execFileSync('git',['show',`a5e01ef8dfd2b1985092b5c1aa3fdfff1778e5f6:${path}`],{encoding:'utf8'}):readFileSync(path,'utf8');
-const css=source('src/styles/system.css');
+let css=source('src/styles/system.css');
 const stub=`
 export const db={
  async getSettings(){if(window.__loadFailure)return{error:{message:'synthetic read failure'}};return{data:Object.entries(window.__settings).map(([key,value])=>({key,value:window.__readBackMismatch&&window.__writes.length&&key==='inactivity_timeout_minutes'?'UNMATCHED':value}))};},
@@ -28,7 +28,7 @@ export const supabase={supabaseUrl:'https://abcdefghijklmnopqrst.supabase.co',fu
  }
  throw Error('Unexpected action '+b.action);
 }}};`;
-const entry=`import React from 'react';import {createRoot} from 'react-dom/client';import {SettingsPage} from '${resolve('src/pages/settings.jsx')}';import {ReviewCentre} from '${resolve('src/chat/ReviewCentre.jsx')}';import {OrganizationCtx} from '${resolve('src/contexts/organization.jsx')}';
+const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {SettingsPage} from '${resolve('src/pages/settings.jsx')}';import {ReviewCentre} from '${resolve('src/chat/ReviewCentre.jsx')}';import {OrganizationCtx} from '${resolve('src/contexts/organization.jsx')}';
 const root=createRoot(document.getElementById('root'));let generation=0;
 window.__mount=(mode='business',lose=false)=>{
  window.__settings={workspace_type:'business',education_module_enabled:'true',school_name:'Old synthetic name',inactivity_timeout_minutes:'5',name_order:'FML',name_case:'title',recycle_bin_retention_days:'30',result_ca_max:'40',result_exam_max:'60'};
@@ -38,6 +38,7 @@ window.__mount=(mode='business',lose=false)=>{
 };window.__mount();`;
 const result=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'settings-fixture',enforce:'pre',resolveId(id){if(id.endsWith('virtual:settings-fixture'))return '\0settings-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0synthetic-settings-client';},load(id){if(id==='\0settings-fixture.jsx')return entry;if(id==='\0synthetic-settings-client')return stub;if(baseline&&id===resolve('src/pages/settings.jsx'))return source('src/pages/settings.jsx');}}],build:{write:false,minify:false,lib:{entry:'virtual:settings-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});
 const script=(Array.isArray(result)?result[0]:result).output.find(o=>o.type==='chunk').code;
+if(!baseline)css=(Array.isArray(result)?result[0]:result).output.filter(o=>o.fileName.endsWith('.css')).map(o=>o.source).join('\n');
 const browser=await chromium.launch({executablePath,args:['--no-sandbox','--disable-dev-shm-usage']});const results=[];
 try{
  for(const width of [360,393,708,1280]){

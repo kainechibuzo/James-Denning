@@ -1,6 +1,6 @@
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
-import React, { lazy, useState, useEffect, useMemo, Component, useRef } from "react";
-import { Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
+import React, { lazy, useId, useState, useEffect, useMemo, Component, useRef } from "react";
+import { ArrowLeft, ArrowRight, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
@@ -104,24 +104,24 @@ class ErrorBoundary extends Component {
     if(this.state.hasError){
       return(
         <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",
-          background:"linear-gradient(135deg,#030712,#111827)",fontFamily:"'Segoe UI',system-ui,sans-serif",padding:24}}>
+          background:"linear-gradient(135deg,#17191c,#17191c)",fontFamily:"'JD Inter',system-ui,sans-serif",padding:24}}>
           <div style={{background:"#fff",borderRadius:20,padding:"38px 32px",maxWidth:500,width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)",textAlign:"center"}}>
             <div style={{marginBottom:14}}><Shield size={52} color={C.blue}/></div>
-            <div style={{fontSize:21,fontWeight:900,color:"#dc2626",marginBottom:8}}>Something went wrong</div>
-            <div style={{fontSize:13,color:"#6b7280",lineHeight:1.7,marginBottom:6}}>
+            <div style={{fontSize:21,fontWeight:900,color:"#34353b",marginBottom:8}}>Something went wrong</div>
+            <div style={{fontSize:13,color:"#60616b",lineHeight:1.7,marginBottom:6}}>
               The portal hit an unexpected error. Your data is safe — this is a display issue only.
             </div>
-            <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.6,marginBottom:20}}>
+            <div style={{fontSize:12,color:"#60616b",lineHeight:1.6,marginBottom:20}}>
               Click <b>Try Again</b> to dismiss, or <b>Reload</b> if the issue persists.
             </div>
             {this.state.error?.message&&(
               <details style={{textAlign:"left",marginBottom:20}}>
-                <summary style={{cursor:"pointer",fontSize:12,color:"#6b7280",fontWeight:600,userSelect:"none"}}>
+                <summary style={{cursor:"pointer",fontSize:12,color:"#60616b",fontWeight:600,userSelect:"none"}}>
                   Technical details
                 </summary>
                 <pre style={{background:"#fef2f2",borderRadius:8,padding:"10px 12px",fontSize:11,
-                  color:"#dc2626",overflow:"auto",maxHeight:120,marginTop:6,border:"1px solid #fca5a5",
+                  color:"#34353b",overflow:"auto",maxHeight:120,marginTop:6,border:"1px solid #a3a4ad",
                   whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
                   {this.state.error.message}
                 </pre>
@@ -129,14 +129,14 @@ class ErrorBoundary extends Component {
             )}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>this.setState({hasError:false,error:null,info:null})}
-                style={{flex:1,background:"#fff",color:"#111827",border:"2px solid #111827",
+                style={{flex:1,background:"#fff",color:"#17191c",border:"2px solid #17191c",
                   padding:"12px",borderRadius:10,fontWeight:700,fontSize:13,cursor:"pointer"}}>
-                ↩ Try Again
+                <RefreshCw size={14}/> Try Again
               </button>
               <button onClick={()=>window.location.reload()}
-                style={{flex:1,background:"#111827",color:"#fff",border:"none",padding:"12px",
+                style={{flex:1,background:"#17191c",color:"#fff",border:"none",padding:"12px",
                   borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",
-                  boxShadow:"0 4px 14px rgba(26,79,160,.4)"}}>
+                  boxShadow:"0 4px 14px rgba(74,74,74,.4)"}}>
                 Reload Portal
               </button>
             </div>
@@ -313,18 +313,14 @@ function Logo({size=44}){
     return <img src={logo} alt="Organization logo" style={{width:size,height:size,objectFit:"contain",borderRadius:size*0.18,background:"transparent"}}/>;
   }
   return(
-    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={PRODUCT.name}>
-      <rect width="48" height="48" rx="13" fill={C.text}/>
-      <path d="M13 13h5v22h-5zM18 13h7.5c5.5 0 8.5 2.7 8.5 7.1 0 2.7-1.4 4.8-3.9 5.9L35 35h-6.2l-5.1-7.5H18V35h-5V13h5Zm0 9.8h7c2.4 0 3.7-.9 3.7-2.7s-1.3-2.7-3.7-2.7h-7v5.4Z" fill="#fff"/>
-      <path d="M37 11.5h2v25h-2z" fill={C.light}/>
-    </svg>
+    <img src="/design/jd-tile.png" width={size} height={size} alt={PRODUCT.name} style={{borderRadius:size*.26,objectFit:"contain"}}/>
   );
 }
 
 function Card({children,style={},onClick}){
   const [h,setH]=useState(false);
   return(
-    <div onClick={onClick}
+    <div className="jd-ui-card" onClick={onClick}
       onMouseEnter={()=>onClick&&setH(true)} onMouseLeave={()=>setH(false)}
       style={{background:C.white,borderRadius:18,padding:22,
         boxShadow:h?C.shadowMd:C.shadow,
@@ -343,10 +339,10 @@ function Btn({children,onClick,color=C.blue,outline=false,sm=false,xs=false,disa
   const fs=xs?11:sm?12:13;
   const radius=xs?6:sm?8:9;
   return(
-    <button onClick={onClick} disabled={disabled}
+    <button className={`jd-ui-button${outline?" is-outline":""}`} onClick={onClick} disabled={disabled}
       onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
       style={{
-        background:outline?"transparent":disabled?"#CBD5E1":h
+        background:outline?"transparent":disabled?"#dedfe4":h
           ?`linear-gradient(135deg,${color}ee,${color}bb)`
           :`linear-gradient(135deg,${color},${color}cc)`,
         color:outline?(disabled?C.light:color):"#fff",
@@ -363,20 +359,21 @@ function Btn({children,onClick,color=C.blue,outline=false,sm=false,xs=false,disa
 }
 
 function Badge({children,color=C.blue,style={}}){
-  return <span style={{background:color+"15",color,padding:"3px 10px",borderRadius:20,
+  return <span className="jd-ui-badge" style={{background:color+"15",color,padding:"3px 10px",borderRadius:20,
     fontSize:11,fontWeight:700,border:`1px solid ${color}25`,whiteSpace:"nowrap",
     letterSpacing:".02em",...style}}>{children}</span>;
 }
 
 function Inp({label,value,onChange,type="text",placeholder="",disabled=false,required=false,style={}}){
+  const fieldId = useId();
   const [focused,setFocused]=useState(false);
   return(
     <div style={{marginBottom:14}}>
-      {label&&<label style={{display:"block",fontSize:11,fontWeight:700,color:focused?C.blue:C.muted,
+      {label&&<label htmlFor={fieldId} style={{display:"block",fontSize:11,fontWeight:700,color:focused?C.blue:C.muted,
         textTransform:"uppercase",letterSpacing:.6,marginBottom:5,transition:"color .15s"}}>
         {label}{required&&<span style={{color:C.red}}> *</span>}
       </label>}
-      <input type={type} value={value??""} onChange={e=>onChange(e.target.value)}
+      <input id={fieldId} type={type} value={value??""} onChange={e=>onChange(e.target.value)}
         placeholder={placeholder} disabled={disabled}
         onFocus={e=>{setFocused(true);e.target.style.borderColor=C.blue;e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`;}}
         onBlur={e=>{setFocused(false);e.target.style.borderColor=C.border;e.target.style.boxShadow="none";}}
@@ -394,13 +391,13 @@ function Inp({label,value,onChange,type="text",placeholder="",disabled=false,req
 function Modal({title,children,onClose,width=520}){
   const isMobile=useIsMobile();
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(2,6,23,.6)",backdropFilter:"blur(6px)",
+    <div style={{position:"fixed",inset:0,background:"rgba(6,6,6,.6)",backdropFilter:"blur(6px)",
       display:"flex",
       alignItems:isMobile?"flex-end":"flex-start",
       justifyContent:"center",
       zIndex:800,padding:isMobile?"0":"28px 16px",overflowY:isMobile?"hidden":"auto"}}
       onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{background:C.white,
+      <div className="jd-ui-modal" role="dialog" aria-modal="true" aria-label={title} style={{background:C.white,
         borderRadius:isMobile?"20px 20px 0 0":"20px",
         width:"100%",maxWidth:isMobile?"100%":width,
         maxHeight:isMobile?"92vh":"none",
@@ -408,7 +405,7 @@ function Modal({title,children,onClose,width=520}){
         boxShadow:C.shadowXl,
         animation:isMobile?"sheetUp .28s cubic-bezier(.34,1.3,.64,1)":"modalUp .22s cubic-bezier(.34,1.56,.64,1)",
         transition:"background .2s"}}>
-        <div style={{background:`linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`,
+        <div className="jd-ui-modal-head" style={{background:`linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`,
           borderRadius:isMobile?"20px 20px 0 0":"20px 20px 0 0",
           padding:"16px 22px",flexShrink:0,
           display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -416,14 +413,14 @@ function Modal({title,children,onClose,width=520}){
             background:"rgba(255,255,255,.3)",margin:"0 auto 0 0",flexShrink:0}}/>}
           <span style={{color:"#fff",fontWeight:800,fontSize:15,letterSpacing:".01em",flex:1,
             textAlign:isMobile?"center":"left"}}>{title}</span>
-          <button onClick={onClose}
+          <button aria-label="Close dialog" onClick={onClose}
             style={{background:"rgba(255,255,255,.15)",color:"rgba(255,255,255,.9)",
               border:"1px solid rgba(255,255,255,.2)",width:30,height:30,borderRadius:"50%",
               cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",
               justifyContent:"center",transition:"background .15s",flexShrink:0}}
             onMouseEnter={e=>e.target.style.background="rgba(255,255,255,.28)"}
             onMouseLeave={e=>e.target.style.background="rgba(255,255,255,.15)"}>
-            ✕
+            <X size={16}/>
           </button>
         </div>
         <div style={{padding:isMobile?"20px 16px 32px":24,overflowY:"auto"}}>{children}</div>
@@ -439,9 +436,9 @@ function Toast({t,rm}){
   const onClose=()=>rm(t?.id);
   useEffect(()=>{ const tid=setTimeout(onClose,4000); return()=>clearTimeout(tid); },[]);
   const configs={
-    success:{bg:`linear-gradient(135deg,${LIGHT.green},#16A34A)`,icon:"check",bdr:LIGHT.green},
-    error:  {bg:`linear-gradient(135deg,#DC2626,#B91C1C)`,       icon:"close",bdr:"#DC2626"},
-    warn:   {bg:`linear-gradient(135deg,#D97706,#B45309)`,       icon:"warning",bdr:"#D97706"},
+    success:{bg:`linear-gradient(135deg,${LIGHT.green},#60616b)`,icon:"check",bdr:LIGHT.green},
+    error:  {bg:`linear-gradient(135deg,#34353b,#34353b)`,       icon:"close",bdr:"#34353b"},
+    warn:   {bg:`linear-gradient(135deg,#60616b,#34353b)`,       icon:"warning",bdr:"#60616b"},
   };
   const cfg=configs[type]||configs.success;
   return(
@@ -459,7 +456,7 @@ function Toast({t,rm}){
         style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",
           cursor:"pointer",width:22,height:22,borderRadius:"50%",fontSize:12,
           display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-        ✕
+        <X size={14}/>
       </button>
     </div>
   );
@@ -585,15 +582,15 @@ html{-webkit-text-size-adjust:100%;}
       {!isOnline&&(
         <div style={{position:"fixed",inset:0,zIndex:99999,display:"flex",flexDirection:"column",
           alignItems:"center",justifyContent:"center",
-          background:"rgba(10,15,30,0.82)",backdropFilter:"blur(6px)"}}>
+          background:"rgba(15,15,15,0.82)",backdropFilter:"blur(6px)"}}>
           <div style={{background:C.white,borderRadius:20,padding:"44px 48px",maxWidth:460,width:"90%",
             textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.45)",
-            border:"3px solid #EF4444",animation:"fadeUp .35s ease"}}>
+            border:"3px solid #34353b",animation:"fadeUp .35s ease"}}>
             <div style={{display:"flex",justifyContent:"center",marginBottom:18}}>
               <div style={{background:C.redPale,borderRadius:"50%",width:72,height:72,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 animation:"pulse 2s ease infinite"}}>
-                <WifiOff size={36} color="#EF4444"/>
+                <WifiOff size={36} color="#34353b"/>
               </div>
             </div>
             <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:8}}>
@@ -621,9 +618,9 @@ html{-webkit-text-size-adjust:100%;}
       {/* ── Reconnected toast ─────────────────────────────────────────────── */}
       {justReconnected&&(
         <div style={{position:"fixed",bottom:28,left:"50%",transform:"translateX(-50%)",
-          zIndex:99999,background:"#10B981",color:"#fff",
+          zIndex:99999,background:"#60616b",color:"#fff",
           padding:"14px 28px",borderRadius:14,fontWeight:700,fontSize:14,
-          boxShadow:"0 8px 32px rgba(16,185,129,0.45)",animation:"fadeUp .3s ease",
+          boxShadow:"0 8px 32px rgba(145,145,145,0.45)",animation:"fadeUp .3s ease",
           display:"flex",alignItems:"center",gap:10,whiteSpace:"nowrap"}}>
           <Wifi size={18} color="#fff"/>
           Internet connection restored
@@ -710,9 +707,9 @@ function ProfileModal({user,onClose,notify,onUpdated}){
 // ── Logout confirmation dialog ────────────────────────────────────────────────
 function LogoutDialog({onConfirm,onCancel}){
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(2,6,23,.65)",backdropFilter:"blur(8px)",
+    <div style={{position:"fixed",inset:0,background:"rgba(6,6,6,.65)",backdropFilter:"blur(8px)",
       zIndex:10000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:C.white,borderRadius:24,padding:"36px 32px",maxWidth:380,width:"100%",
+      <div className="jd-confirm-card" role="dialog" aria-modal="true" aria-label="Sign out" style={{background:C.white,borderRadius:24,padding:"36px 32px",maxWidth:380,width:"100%",
         boxShadow:C.shadowXl,textAlign:"center",animation:"modalUp .22s cubic-bezier(.34,1.56,.64,1)"}}>
         <div style={{width:64,height:64,borderRadius:18,background:C.redPale,
           display:"flex",alignItems:"center",justifyContent:"center",
@@ -732,9 +729,9 @@ function LogoutDialog({onConfirm,onCancel}){
           </button>
           <button onClick={onConfirm}
             style={{flex:1,padding:"12px",borderRadius:12,border:"none",
-              background:`linear-gradient(135deg,#DC2626,#B91C1C)`,
+              background:`linear-gradient(135deg,#34353b,#34353b)`,
               color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",
-              boxShadow:"0 6px 20px rgba(220,38,38,.35)",transition:"all .15s"}}
+              boxShadow:"0 6px 20px rgba(77,77,77,.35)",transition:"all .15s"}}
             onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"}
             onMouseLeave={e=>e.currentTarget.style.transform="none"}>
             Yes, Sign Out
@@ -749,9 +746,9 @@ function LogoutDialog({onConfirm,onCancel}){
 function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
   const urgent = secondsLeft <= 15;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(2,6,23,.8)",backdropFilter:"blur(10px)",
+    <div style={{position:"fixed",inset:0,background:"rgba(6,6,6,.8)",backdropFilter:"blur(10px)",
       zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:`linear-gradient(160deg,${C.blueDark} 0%,#061124 100%)`,
+      <div style={{background:`linear-gradient(160deg,${C.blueDark} 0%,#17191c 100%)`,
         border:"1px solid rgba(255,255,255,.12)",borderRadius:24,
         padding:"44px 36px 36px",maxWidth:380,width:"100%",textAlign:"center",
         boxShadow:"0 32px 80px rgba(0,0,0,.5)",animation:"modalUp .3s cubic-bezier(.34,1.56,.64,1)"}}>
@@ -770,15 +767,15 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
         {/* Countdown */}
         <div style={{fontSize:52,fontWeight:900,letterSpacing:"-2px",marginBottom:28,
           fontVariantNumeric:"tabular-nums",transition:"color .4s",
-          color: urgent ? "#FC8181" : C.orange}}>
+          color: urgent ? "#60616b" : C.orange}}>
           {secondsLeft}<span style={{fontSize:20,fontWeight:600,opacity:.7}}>s</span>
         </div>
         {/* Stay logged in */}
         <button onClick={onStay}
           style={{width:"100%",padding:"14px",borderRadius:12,border:"none",cursor:"pointer",
-            background:`linear-gradient(135deg,${C.orange},#374151)`,color:"#fff",
+            background:`linear-gradient(135deg,${C.orange},#34353b)`,color:"#fff",
             fontSize:15,fontWeight:800,letterSpacing:".2px",marginBottom:10,
-            boxShadow:"0 4px 16px rgba(232,86,10,.4)",transition:"opacity .15s"}}
+            boxShadow:"0 4px 16px rgba(112,112,112,.4)",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".9"}
           onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
           Stay Logged In
@@ -972,7 +969,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
 
       {/* Tooltip card */}
       <div style={{...tooltipStyle, pointerEvents:"auto",
-        background: dark ? "#1E2D3D" : "#ffffff",
+        background: dark ? "#17191c" : "#ffffff",
         borderRadius:16, boxShadow:"0 24px 48px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)",
         border:`1px solid ${C.border}`,
         animation:"tourFadeIn .25s ease both",
@@ -990,7 +987,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{width:28,height:28,borderRadius:8,
-                background:`linear-gradient(135deg,${C.orange},#374151)`,
+                background:`linear-gradient(135deg,${C.orange},#34353b)`,
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <HelpCircle size={14} color="#fff"/>
               </div>
@@ -1034,7 +1031,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
                 borderRadius:8, padding:"6px 14px", cursor:"pointer",
                 fontSize:12, fontWeight:700, color:C.textSoft,
                 display:"flex",alignItems:"center",gap:5}}>
-                ← Back
+                <ArrowLeft size={14}/> Back
               </button>
             )}
             {step===0&&(
@@ -1046,12 +1043,12 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
               </button>
             )}
             <button onClick={()=>{ if(isLast){ onClose(); } else { setStep(s=>s+1); } }}
-              style={{background:`linear-gradient(135deg,${C.orange},#374151)`,
+              style={{background:`linear-gradient(135deg,${C.orange},#34353b)`,
                 border:"none", borderRadius:8, padding:"6px 16px",
                 cursor:"pointer", fontSize:12, fontWeight:800, color:"#fff",
                 display:"flex",alignItems:"center",gap:5,
                 boxShadow:`0 2px 10px ${C.orange}40`}}>
-              {isLast ? "Finish ✓" : "Next →"}
+              {isLast ? <>Finish <Check size={14}/></> : <>Next <ArrowRight size={14}/></>}
             </button>
           </div>
         </div>
@@ -1285,14 +1282,14 @@ function AppInner(){
 
 
   return(
-    <div inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:C.offWhite,
-      fontFamily:"'Segoe UI',system-ui,sans-serif",transition:"background .2s"}}>
+    <div className="jd-workspace-shell" inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:C.offWhite,
+      fontFamily:"'JD Inter',system-ui,sans-serif",transition:"background .2s"}}>
 
 
       {/* Mobile backdrop */}
       {isMobile&&sideOpen&&(
         <div onClick={closeSideOnMobile}
-          style={{position:"fixed",inset:0,background:"rgba(2,6,23,.55)",
+          style={{position:"fixed",inset:0,background:"rgba(6,6,6,.55)",
             zIndex:498,backdropFilter:"blur(2px)"}}/>
       )}
 
@@ -1320,7 +1317,7 @@ function AppInner(){
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
               <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
-                whiteSpace:"nowrap"}}>James Denning</div>
+                whiteSpace:"nowrap"}}>James-Denning</div>
               <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
                 letterSpacing:.3,marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={_sidebarSchoolName||"Your organisation"}>{_sidebarSchoolName||"Your organisation"}</div>
             </div>
@@ -1330,13 +1327,13 @@ function AppInner(){
         <button ref={workspaceSwitchRef} type="button" aria-label="Switch organisation" aria-haspopup="dialog"
           title={`Switch organisation — ${_sidebarSchoolName||"Your organisation"}`}
           onClick={()=>{closeSideOnMobile();setShowWorkspaceSwitch(true);}}
-          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",color:"#e2e8f0",cursor:"pointer",flexShrink:0,fontSize:12}}>
+          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",color:"#dedfe4",cursor:"pointer",flexShrink:0,fontSize:12}}>
           <Building2 size={16} aria-hidden="true" style={{flexShrink:0}}/>
           {(sideOpen||isMobile)&&<span>Switch organisation</span>}
         </button>
 
         {(sideOpen||isMobile)&&<div style={{padding:"10px 10px 4px",flexShrink:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid rgba(255,255,255,.18)",borderRadius:9,padding:"6px 8px",color:"#aab2bd"}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid rgba(255,255,255,.18)",borderRadius:9,padding:"6px 8px",color:"#a3a4ad"}}>
             <Search size={14} aria-hidden="true"/>
             <input type="search" aria-label="Search workspace navigation" placeholder="Find a page or department"
               value={sidebarSearch} onChange={e=>setSidebarSearch(e.target.value)}
@@ -1347,8 +1344,8 @@ function AppInner(){
           {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"#d0d4da",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
         </div>}
         <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"#b6bec8",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
-          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#b6bec8",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length} matching pages</p>}
+          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
+          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length} matching pages</p>}
           {visibleNavigation.map((n,i)=>{
             // ── Group header ──
             if(n.group){
@@ -1362,14 +1359,14 @@ function AppInner(){
                 })}
                   style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
                     padding:"10px 9px 5px",fontSize:9.5,fontWeight:800,letterSpacing:1.4,
-                    textTransform:"uppercase",color:"#aab2bd",background:"none",
+                    textTransform:"uppercase",color:"#a3a4ad",background:"none",
                     border:"none",cursor:"pointer",textAlign:"left",marginTop:6,
                     transition:"color .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.color="#fff"}
-                  onMouseLeave={e=>e.currentTarget.style.color="#aab2bd"}>
+                  onMouseLeave={e=>e.currentTarget.style.color="#a3a4ad"}>
                   <span>{n.group}</span>
                   <span style={{fontSize:9,transition:"transform .2s",
-                    transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▾</span>
+                    transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}><ChevronDown size={12}/></span>
                 </button>
               );
             }
@@ -1394,7 +1391,7 @@ function AppInner(){
                 {active&&<div style={{position:"absolute",left:0,top:"12%",bottom:"12%",
                   width:4,borderRadius:"0 4px 4px 0",background:C.orange,
                   boxShadow:`0 0 10px ${C.orange}99`}}/>}
-                <AppIcon name={n.icon} size={16} color={active?C.orange:"#94A3B8"}/>
+                <AppIcon name={n.icon} size={16} color={active?C.orange:"#60616b"}/>
                 {(sideOpen||isMobile)&&<span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
                   letterSpacing:".01em"}}>{n.label}</span>}
               </button>
@@ -1412,10 +1409,10 @@ function AppInner(){
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";}}>
               <div style={{width:30,height:30,borderRadius:9,
-                background:`linear-gradient(135deg,${C.orange},#374151)`,
+                background:`linear-gradient(135deg,${C.orange},#34353b)`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:13,fontWeight:900,flexShrink:0,color:"#fff",
-                boxShadow:"0 2px 8px rgba(232,86,10,.4)"}}>
+                boxShadow:"0 2px 8px rgba(112,112,112,.4)"}}>
                 {(user.name||"?")[0].toUpperCase()}
               </div>
               {(sideOpen||isMobile)&&<div style={{overflow:"hidden",flex:1}}>
@@ -1430,10 +1427,10 @@ function AppInner(){
             style={{width:"100%",display:"flex",alignItems:"center",
               gap:(sideOpen||isMobile)?7:0,justifyContent:(sideOpen||isMobile)?"flex-start":"center",
               padding:"9px 10px",borderRadius:10,border:"none",cursor:"pointer",
-              background:"rgba(248,113,113,.1)",color:"rgba(252,165,165,.9)",
+              background:"rgba(142,142,142,.1)",color:"rgba(183,183,183,.9)",
               fontSize:11.5,fontWeight:600,transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(248,113,113,.2)";e.currentTarget.style.color="#FCA5A5";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(248,113,113,.1)";e.currentTarget.style.color="rgba(252,165,165,.9)";}}>
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(142,142,142,.2)";e.currentTarget.style.color="#a3a4ad";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(142,142,142,.1)";e.currentTarget.style.color="rgba(183,183,183,.9)";}}>
             <LogOut size={14}/>{(sideOpen||isMobile)&&<span>Sign Out</span>}
           </button>
         </div>
@@ -1442,7 +1439,7 @@ function AppInner(){
       {/* MAIN */}
       <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,
         marginLeft: isMobile ? 0 : undefined}}>
-        <header className={page==="jd-chat" ? "reference-workspace-header" : undefined} style={{background:C.white,borderBottom:`1px solid ${C.border}`,
+        <header className="reference-workspace-header" style={{background:C.white,borderBottom:`1px solid ${C.border}`,
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
@@ -1456,21 +1453,11 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
               <AppIcon name="menu" size={18} color={C.muted}/>
             </button>
-            {page==="jd-chat" ? <ReferenceBrand/> : <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,overflow:"hidden"}}>
-              <div style={{width:28,height:28,borderRadius:8,background:C.blue+"14",
-                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <AppIcon name={NAV.find(n=>n.id===page)?.icon||""} size={14} color={C.blue}/>
-              </div>
-              <span style={{fontSize:isMobile?13:14,fontWeight:800,color:C.text,letterSpacing:"-.01em",
-                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,
-                maxWidth:isMobile?"46vw":260}}>
-                {NAV.find(n=>n.id===page)?.label||"Portal"}
-              </span>
-            </div>}
+            <ReferenceBrand/>
           </div>
           <div className="reference-header-controls" style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
-            {!isMobile&&page!=="jd-chat"&&<LiveClock/>}
-            <DarkToggle compact={isMobile||page==="jd-chat"}/>
+
+            <DarkToggle compact/>
             <button data-tour="tour-trigger"
               onClick={()=>setShowTour(true)}
               title="Help / Product Tour"
@@ -1483,36 +1470,21 @@ function AppInner(){
               <HelpCircle size={16}/>
             </button>
             <NotificationBell ctx={ctx}/>
-            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)} data-header-compact={page==="jd-chat"?undefined:"hide"}
+            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)}
               style={{width:34,height:34,borderRadius:10,
                 background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
                 color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer",
                 display:"flex",alignItems:"center",justifyContent:"center",
                 boxShadow:`0 2px 8px ${C.blue}40`}}
               title="My Profile">
-              {page==="jd-chat" ? (user.name||"?").trim().split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase() : (user.name||"?")[0].toUpperCase()}
+              {(user.name||"?").trim().split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase()}
             </button>
-            {!isMobile&&page!=="jd-chat"&&<button onClick={()=>setShowLogout(true)}
-              title="Sign Out"
-              style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
-                borderRadius:8,padding:"7px 9px",display:"flex",alignItems:"center",
-                gap:5,fontSize:12,fontWeight:600,color:C.muted,transition:"all .15s",
-                minWidth:36,minHeight:36,justifyContent:"center"}}
-              onMouseEnter={e=>{e.currentTarget.style.background=C.redPale;e.currentTarget.style.borderColor=C.red+"50";e.currentTarget.style.color=C.red;}}
-              onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              {!isMobile&&<span>Sign Out</span>}
-            </button>}
+
           </div>
         </header>
 
-        {page!=="jd-chat"&&<div style={{height:3,background:`linear-gradient(90deg,${C.orange} 0%,#374151 20%,${C.green} 55%,${C.blue} 85%,${C.blueDark} 100%)`,opacity:.85}}/>}
 
-        <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
+        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="hiring"        && (canAccess("hiring")       ?<HiringPage ctx={ctx}/>             :<AccessDenied/>)}
@@ -1572,7 +1544,7 @@ function AppInner(){
 
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+        body{font-family:'JD Inter',system-ui,-apple-system,sans-serif;}
         input,select,textarea{color:${C.text}!important;background:${C.white}!important;font-family:inherit;}
         input::placeholder,textarea::placeholder{color:${C.light}!important;}
         table{color:${C.text};width:100%;}
@@ -1584,7 +1556,7 @@ function AppInner(){
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         @keyframes tourFadeIn{from{opacity:0;transform:scale(.95) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        @keyframes tourPulse{0%,100%{box-shadow:0 0 0 4px rgba(232,86,10,.3)}50%{box-shadow:0 0 0 8px rgba(232,86,10,.15),0 0 0 4px rgba(232,86,10,.4)}}
+        @keyframes tourPulse{0%,100%{box-shadow:0 0 0 4px rgba(112,112,112,.3)}50%{box-shadow:0 0 0 8px rgba(112,112,112,.15),0 0 0 4px rgba(112,112,112,.4)}}
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:10px}
         ::-webkit-scrollbar-track{background:transparent}

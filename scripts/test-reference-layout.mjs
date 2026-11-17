@@ -11,7 +11,7 @@ assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH; no browser is downloaded
 const evidence=process.env.JD_LAYOUT_EVIDENCE_DIR;
 if(evidence)mkdirSync(evidence,{recursive:true});
 const shell=readFileSync('src/AppDemo.jsx','utf8');
-const header=shell.slice(shell.indexOf('<header className={page==='),shell.indexOf('</header>',shell.indexOf('<header className={page==='))+9);
+const header=shell.slice(shell.indexOf('<header className="reference-workspace-header"'),shell.indexOf('</header>',shell.indexOf('<header className="reference-workspace-header"'))+9);
 assert.ok(header.includes('<ReferenceBrand/>'),'Exercise the real workspace header markup');
 const darkToggle=shell.slice(shell.indexOf('function DarkToggle('),shell.indexOf('\n}',shell.indexOf('function DarkToggle('))+2);
 const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
@@ -22,7 +22,7 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  if(body.action==='submit')return{data:{conversationId:'fixture',reply:'Synthetic submission received.'}};
  throw Error('Unexpected API action: '+body.action);
 }}};`;
-const entry=`import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
+const entry=`import '${resolve('src/styles/app.css')}';import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
 import {Menu,HelpCircle,Bell,Moon,Sun} from 'lucide-react';
 import {PublicLanding} from '${resolve('src/pages/public-landing.jsx')}';
 import {ReferenceBrand} from '${resolve('src/components/reference-brand.jsx')}';

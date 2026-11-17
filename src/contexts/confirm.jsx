@@ -18,7 +18,7 @@ function ConfirmDialog({ config, onDone }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.6)", zIndex:99999,
       display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div style={{ background:C.white, borderRadius:18, padding:"30px 28px", maxWidth:420, width:"100%",
+      <div className="jd-confirm-card" role="dialog" aria-modal="true" aria-label={title} style={{ background:C.white, borderRadius:18, padding:"30px 28px", maxWidth:420, width:"100%",
         boxShadow:"0 24px 60px rgba(0,0,0,.35)", animation:"fadeUp .15s ease" }}>
         <div style={{ fontSize:40, textAlign:"center", marginBottom:12 }}>{icon}</div>
         <div style={{ fontSize:17, fontWeight:900, color:danger ? C.red : C.text,
@@ -48,10 +48,10 @@ function ConfirmDialog({ config, onDone }) {
           <button onClick={() => { if (canConfirm) onDone(true); }}
             disabled={!canConfirm}
             style={{ flex:1, padding:"11px", borderRadius:10, border:"none",
-              background: canConfirm ? (danger ? "linear-gradient(135deg,#dc2626,#b91c1c)" : "linear-gradient(135deg,#E8560A,#FF7A35)") : "#cbd5e1",
-              color: canConfirm ? "#fff" : "#94a3b8", fontWeight:800, fontSize:13,
+              background: canConfirm ? (danger ? "linear-gradient(135deg,#34353b,#34353b)" : "linear-gradient(135deg,#60616b,#60616b)") : "#dedfe4",
+              color: canConfirm ? "#fff" : "#60616b", fontWeight:800, fontSize:13,
               cursor: canConfirm ? "pointer" : "not-allowed",
-              boxShadow: canConfirm && danger ? "0 4px 14px rgba(220,38,38,.35)" : canConfirm ? "0 4px 14px rgba(232,86,10,.3)" : "none" }}>
+              boxShadow: canConfirm && danger ? "0 4px 14px rgba(77,77,77,.35)" : canConfirm ? "0 4px 14px rgba(112,112,112,.3)" : "none" }}>
             {confirmLabel}
           </button>
         </div>

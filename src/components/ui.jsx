@@ -11,9 +11,9 @@
  * by DarkProvider on every toggle.
  */
 
-import React, { useState, useEffect, useRef, Component } from "react";
+import React, { useId, useState, useEffect, useRef, Component } from "react";
 import ReactDOM from "react-dom";
-import { LayoutDashboard, Users, Link2, TrendingUp, Megaphone, Mail, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, UserCircle, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, TrendingDown, Banknote, Calculator, BookMarked, Award, ClipboardList, UserCheck, UserX, Table, CheckCircle, Share2, Printer, Save, Copy, Target, Package, Type, MapPin as MapPinIcon } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Users, Link2, TrendingUp, Megaphone, Mail, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, UserCircle, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, TrendingDown, Banknote, Calculator, BookMarked, Award, ClipboardList, UserCheck, UserX, Table, CheckCircle, Share2, Printer, Save, Copy, Target, Package, Type, MapPin as MapPinIcon } from "lucide-react";
 
 import { C, LIGHT } from "../config/theme.js";
 import { useIsMobile }    from "../utils/hooks.js";
@@ -31,24 +31,24 @@ export class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center",
-          background:"#f7f8f8", fontFamily:"'Segoe UI',system-ui,sans-serif", padding:24 }}>
+          background:"#f7f8f8", fontFamily:"'JD Inter',system-ui,sans-serif", padding:24 }}>
           <div style={{ background:"#fff", borderRadius:20, padding:"38px 32px", maxWidth:500, width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)", textAlign:"center" }}>
             <div style={{ marginBottom:14 }}><Shield size={52} color={C.blue}/></div>
-            <div style={{ fontSize:21, fontWeight:900, color:"#dc2626", marginBottom:8 }}>Something went wrong</div>
-            <div style={{ fontSize:13, color:"#6b7280", lineHeight:1.7, marginBottom:6 }}>
+            <div style={{ fontSize:21, fontWeight:900, color:"#34353b", marginBottom:8 }}>Something went wrong</div>
+            <div style={{ fontSize:13, color:"#60616b", lineHeight:1.7, marginBottom:6 }}>
               The workspace hit an unexpected error. Your data is safe — this is a display issue only.
             </div>
-            <div style={{ fontSize:12, color:"#94a3b8", lineHeight:1.6, marginBottom:20 }}>
+            <div style={{ fontSize:12, color:"#60616b", lineHeight:1.6, marginBottom:20 }}>
               Click <b>Try Again</b> to dismiss, or <b>Reload</b> if the issue persists.
             </div>
             {this.state.error?.message && (
               <details style={{ textAlign:"left", marginBottom:20 }}>
-                <summary style={{ cursor:"pointer", fontSize:12, color:"#6b7280", fontWeight:600, userSelect:"none" }}>
+                <summary style={{ cursor:"pointer", fontSize:12, color:"#60616b", fontWeight:600, userSelect:"none" }}>
                   Technical details
                 </summary>
                 <pre style={{ background:"#fef2f2", borderRadius:8, padding:"10px 12px", fontSize:11,
-                  color:"#dc2626", overflow:"auto", maxHeight:120, marginTop:6, border:"1px solid #fca5a5",
+                  color:"#34353b", overflow:"auto", maxHeight:120, marginTop:6, border:"1px solid #a3a4ad",
                   whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
                   {this.state.error.message}
                 </pre>
@@ -58,12 +58,12 @@ export class ErrorBoundary extends Component {
               <button onClick={() => this.setState({ hasError:false, error:null, info:null })}
                 style={{ flex:1, background:"#fff", color:"#202124", border:"1px solid #dfe2e5",
                   padding:"12px", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer" }}>
-                ↩ Try Again
+                <RefreshCw size={14}/> Try Again
               </button>
               <button onClick={() => window.location.reload()}
                 style={{ flex:1, background:"#202124", color:"#fff", border:"none", padding:"12px",
                   borderRadius:10, fontWeight:800, fontSize:13, cursor:"pointer",
-                  boxShadow:"0 4px 14px rgba(26,79,160,.4)" }}>
+                  boxShadow:"0 4px 14px rgba(74,74,74,.4)" }}>
                 Reload workspace
               </button>
             </div>
@@ -104,11 +104,7 @@ export function Logo({ size = 44 }) {
     return <img src={logo} alt="Organization logo" style={{ width:size, height:size, objectFit:"contain", borderRadius:size*0.18, background:"transparent" }}/>;
   }
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={PRODUCT.name}>
-      <rect width="48" height="48" rx="13" fill={C.text}/>
-      <path d="M13 13h5v22h-5zM18 13h7.5c5.5 0 8.5 2.7 8.5 7.1 0 2.7-1.4 4.8-3.9 5.9L35 35h-6.2l-5.1-7.5H18V35h-5V13h5Zm0 9.8h7c2.4 0 3.7-.9 3.7-2.7s-1.3-2.7-3.7-2.7h-7v5.4Z" fill="#fff"/>
-      <path d="M37 11.5h2v25h-2z" fill={C.light}/>
-    </svg>
+    <img src="/design/jd-tile.png" width={size} height={size} alt={PRODUCT.name} style={{borderRadius:size*.26,objectFit:"contain"}}/>
   );
 }
 
@@ -116,7 +112,7 @@ export function Logo({ size = 44 }) {
 export function Card({ children, style = {}, onClick }) {
   const [h, setH] = useState(false);
   return (
-    <div onClick={onClick}
+    <div className="jd-ui-card" onClick={onClick}
       onMouseEnter={() => onClick && setH(true)}
       onMouseLeave={() => setH(false)}
       style={{ background:C.white, borderRadius:18, padding:22,
@@ -138,11 +134,11 @@ export function Btn({ children, onClick, color, outline = false, sm = false, xs 
   const fs  = xs ? 11 : sm ? 12 : 13;
   const rad = xs ? 6 : sm ? 8 : 9;
   return (
-    <button onClick={onClick} disabled={disabled}
+    <button className={`jd-ui-button${outline?" is-outline":""}`} onClick={onClick} disabled={disabled}
       onMouseEnter={() => setH(true)}
       onMouseLeave={() => setH(false)}
       style={{
-        background: outline ? "transparent" : disabled ? "#CBD5E1" : h
+        background: outline ? "transparent" : disabled ? "#dedfe4" : h
           ? `linear-gradient(135deg,${btnColor}ee,${btnColor}bb)`
           : `linear-gradient(135deg,${btnColor},${btnColor}cc)`,
         color: outline ? (disabled ? C.light : btnColor) : "#fff",
@@ -163,7 +159,7 @@ export function Btn({ children, onClick, color, outline = false, sm = false, xs 
 export function Badge({ children, color, style = {} }) {
   const badgeColor = color || C.blue;
   return (
-    <span style={{ background:badgeColor+"15", color:badgeColor, padding:"3px 10px", borderRadius:20,
+    <span className="jd-ui-badge" style={{ background:badgeColor+"15", color:badgeColor, padding:"3px 10px", borderRadius:20,
       fontSize:11, fontWeight:700, border:`1px solid ${badgeColor}25`, whiteSpace:"nowrap",
       letterSpacing:".02em", ...style }}>
       {children}
@@ -173,17 +169,18 @@ export function Badge({ children, color, style = {} }) {
 
 // ── Input ──────────────────────────────────────────────────────────────────────
 export function Inp({ label, value, onChange, type = "text", placeholder = "", disabled = false, required = false, style = {} }) {
+  const fieldId = useId();
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom:14 }}>
       {label && (
-        <label style={{ display:"block", fontSize:11, fontWeight:700,
+        <label htmlFor={fieldId} style={{ display:"block", fontSize:11, fontWeight:700,
           color:focused ? C.blue : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}{required && <span style={{ color:C.red }}> *</span>}
         </label>
       )}
-      <input type={type} value={value ?? ""} onChange={e => onChange(e.target.value)}
+      <input id={fieldId} type={type} value={value ?? ""} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} disabled={disabled}
         onFocus={e => { setFocused(true); e.target.style.borderColor=C.blue; e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
@@ -198,17 +195,18 @@ export function Inp({ label, value, onChange, type = "text", placeholder = "", d
 
 // ── Select ─────────────────────────────────────────────────────────────────────
 export function Sel({ label, value, onChange, options = [], disabled = false }) {
+  const fieldId = useId();
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom:14 }}>
       {label && (
-        <label style={{ display:"block", fontSize:11, fontWeight:700,
+        <label htmlFor={fieldId} style={{ display:"block", fontSize:11, fontWeight:700,
           color:focused ? C.blue : C.muted, textTransform:"uppercase",
           letterSpacing:.6, marginBottom:5, transition:"color .15s" }}>
           {label}
         </label>
       )}
-      <select value={value ?? ""} onChange={e => onChange(e.target.value)} disabled={disabled}
+      <select id={fieldId} value={value ?? ""} onChange={e => onChange(e.target.value)} disabled={disabled}
         onFocus={e => { setFocused(true); e.target.style.borderColor=C.blue; e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`; }}
         onBlur={e  => { setFocused(false); e.target.style.borderColor=C.border; e.target.style.boxShadow="none"; }}
         style={{ display:"block", width:"100%", padding:"10px 13px",
@@ -226,13 +224,13 @@ export function Sel({ label, value, onChange, options = [], disabled = false }) 
 export function Modal({ title, children, onClose, width = 520 }) {
   const isMobile = useIsMobile();
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(2,6,23,.6)", backdropFilter:"blur(6px)",
+    <div style={{ position:"fixed", inset:0, background:"rgba(6,6,6,.6)", backdropFilter:"blur(6px)",
       display:"flex",
       alignItems: isMobile ? "flex-end" : "flex-start",
       justifyContent:"center",
       zIndex:800, padding:isMobile ? "0" : "28px 16px", overflowY:isMobile ? "hidden" : "auto" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background:C.white,
+      <div className="jd-ui-modal" role="dialog" aria-modal="true" aria-label={title} style={{ background:C.white,
         borderRadius: isMobile ? "20px 20px 0 0" : "20px",
         width:"100%", maxWidth: isMobile ? "100%" : width,
         maxHeight: isMobile ? "92vh" : "none",
@@ -240,7 +238,7 @@ export function Modal({ title, children, onClose, width = 520 }) {
         boxShadow:C.shadowXl,
         animation: isMobile ? "sheetUp .28s cubic-bezier(.34,1.3,.64,1)" : "modalUp .22s cubic-bezier(.34,1.56,.64,1)",
         transition:"background .2s" }}>
-        <div style={{ background:`linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`,
+        <div className="jd-ui-modal-head" style={{ background:`linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`,
           borderRadius: isMobile ? "20px 20px 0 0" : "20px 20px 0 0",
           padding:"16px 22px", flexShrink:0,
           display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -248,14 +246,14 @@ export function Modal({ title, children, onClose, width = 520 }) {
             background:"rgba(255,255,255,.3)", margin:"0 auto 0 0", flexShrink:0 }}/>}
           <span style={{ color:"#fff", fontWeight:800, fontSize:15, letterSpacing:".01em", flex:1,
             textAlign: isMobile ? "center" : "left" }}>{title}</span>
-          <button onClick={onClose}
+          <button aria-label="Close dialog" onClick={onClose}
             style={{ background:"rgba(255,255,255,.15)", color:"rgba(255,255,255,.9)",
               border:"1px solid rgba(255,255,255,.2)", width:30, height:30, borderRadius:"50%",
               cursor:"pointer", fontSize:14, display:"flex", alignItems:"center",
               justifyContent:"center", transition:"background .15s", flexShrink:0 }}
             onMouseEnter={e => e.target.style.background="rgba(255,255,255,.28)"}
             onMouseLeave={e => e.target.style.background="rgba(255,255,255,.15)"}>
-            ✕
+            <X size={16}/>
           </button>
         </div>
         <div style={{ padding: isMobile ? "20px 16px 32px" : 24, overflowY:"auto" }}>{children}</div>
@@ -271,9 +269,9 @@ export function Toast({ t, rm }) {
   const onClose = () => rm(t?.id);
   useEffect(() => { const tid = setTimeout(onClose, 4000); return () => clearTimeout(tid); }, []);
   const configs = {
-    success: { bg:`linear-gradient(135deg,${LIGHT.green},#16A34A)`,  icon:"check",   bdr:LIGHT.green },
-    error:   { bg:"linear-gradient(135deg,#DC2626,#B91C1C)",          icon:"close",   bdr:"#DC2626"   },
-    warn:    { bg:"linear-gradient(135deg,#D97706,#B45309)",          icon:"warning", bdr:"#D97706"   },
+    success: { bg:`linear-gradient(135deg,${LIGHT.green},#60616b)`,  icon:"check",   bdr:LIGHT.green },
+    error:   { bg:"linear-gradient(135deg,#34353b,#34353b)",          icon:"close",   bdr:"#34353b"   },
+    warn:    { bg:"linear-gradient(135deg,#60616b,#34353b)",          icon:"warning", bdr:"#60616b"   },
   };
   const cfg = configs[type] || configs.success;
   return (
@@ -291,7 +289,7 @@ export function Toast({ t, rm }) {
         style={{ background:"rgba(255,255,255,.15)", border:"none", color:"#fff",
           cursor:"pointer", width:22, height:22, borderRadius:"50%", fontSize:12,
           display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-        ✕
+        <X size={14}/>
       </button>
     </div>
   );
@@ -490,7 +488,7 @@ export function PDFViewer({ html, title, onClose }) {
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9998,
       background:C.offWhite, display:"flex", flexDirection:"column",
-      fontFamily:"'Segoe UI',system-ui,sans-serif" }}>
+      fontFamily:"'JD Inter',system-ui,sans-serif" }}>
       {/* Header */}
       <div style={{ background:`linear-gradient(135deg,${LIGHT.blueDark} 0%,${LIGHT.blue} 100%)`,
         paddingTop:`calc(${safeTop} + 10px)`, paddingBottom:10,
@@ -502,7 +500,7 @@ export function PDFViewer({ html, title, onClose }) {
             border:"1px solid rgba(255,255,255,.2)",
             borderRadius:10, padding:"9px 14px", cursor:"pointer", fontWeight:700, fontSize:13,
             display:"flex", alignItems:"center", gap:5, flexShrink:0, whiteSpace:"nowrap" }}>
-          ← Back
+          <ArrowLeft size={14}/> Back
         </button>
         <span style={{ color:"#fff", fontWeight:700, flex:1, fontSize:13,
           overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", opacity:.9 }}>
@@ -568,7 +566,7 @@ export function PDFViewer({ html, title, onClose }) {
           <span>{shareMsg.text}</span>
           <button onClick={() => setShareMsg(null)}
             style={{ marginLeft:"auto", background:"none", border:"none", cursor:"pointer",
-              fontSize:14, color:"inherit", opacity:.6, padding:"0 2px", flexShrink:0 }}>✕</button>
+              fontSize:14, color:"inherit", opacity:.6, padding:"0 2px", flexShrink:0 }}><X size={14}/></button>
         </div>
       )}
       {/* Document iframe */}
@@ -719,7 +717,7 @@ export function ActionsMenu({ items }) {
 export function PageHeader({ icon, title, subtitle, action, gradient }) {
   const bg = gradient || `linear-gradient(135deg,${C.blue} 0%,${C.blueDark} 100%)`;
   return (
-    <div style={{ background:bg, borderRadius:16, padding:"20px 24px", marginBottom:24,
+    <div className="jd-page-header" style={{ background:bg, borderRadius:16, padding:"20px 24px", marginBottom:24,
       display:"flex", alignItems:"center", justifyContent:"space-between", gap:16,
       boxShadow:`0 4px 20px ${C.blue}22` }}>
       <div style={{ display:"flex", alignItems:"center", gap:14 }}>

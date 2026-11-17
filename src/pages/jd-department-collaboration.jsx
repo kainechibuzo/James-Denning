@@ -46,7 +46,7 @@ export function JDDepartmentCollaboration({ tasks = [], team = [] }) {
   return <section style={card}>
     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
       <MessageSquare size={17} />
-      <div><h2 style={{ fontSize: 16, margin: 0 }}>Department collaboration</h2><p style={{ fontSize: 11, color: "var(--jd-muted,#727780)", margin: "4px 0 0" }}>Internal task discussions and member mentions. No external notifications are sent.</p></div>
+      <div><h2 style={{ fontSize: 16, margin: 0 }}>Department collaboration</h2><p style={{ fontSize: 11, color: "var(--jd-muted,#60616b)", margin: "4px 0 0" }}>Internal task discussions and member mentions. No external notifications are sent.</p></div>
     </div>
     <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 650 }}>Operational task
       <select value={taskId} onChange={(e) => setTaskId(e.target.value)} style={field}>
@@ -57,11 +57,11 @@ export function JDDepartmentCollaboration({ tasks = [], team = [] }) {
     {selected && <>
       <div style={{ display: "grid", gap: 9, marginTop: 14, maxHeight: 360, overflowY: "auto" }}>
         {comments.map((comment) => <article key={comment.id} style={{ borderTop: "1px solid var(--jd-border,#eee)", paddingTop: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><b style={{ fontSize: 12 }}>{comment.author_name}</b><time style={{ fontSize: 10, color: "var(--jd-muted,#727780)" }}>{new Date(comment.created_at).toLocaleString()}</time></div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><b style={{ fontSize: 12 }}>{comment.author_name}</b><time style={{ fontSize: 10, color: "var(--jd-muted,#60616b)" }}>{new Date(comment.created_at).toLocaleString()}</time></div>
           <p style={{ fontSize: 12, lineHeight: 1.55, whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: "6px 0" }}>{comment.body}</p>
-          {!!comment.mention_names?.length && <div style={{ fontSize: 10, color: "var(--jd-muted,#727780)" }}>Mentioned: {comment.mention_names.join(", ")}</div>}
+          {!!comment.mention_names?.length && <div style={{ fontSize: 10, color: "var(--jd-muted,#60616b)" }}>Mentioned: {comment.mention_names.join(", ")}</div>}
         </article>)}
-        {!comments.length && <p style={{ fontSize: 12, color: "var(--jd-muted,#727780)" }}>No discussion yet. Start the task conversation.</p>}
+        {!comments.length && <p style={{ fontSize: 12, color: "var(--jd-muted,#60616b)" }}>No discussion yet. Start the task conversation.</p>}
       </div>
       <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 650 }}>Add a comment
@@ -73,14 +73,14 @@ export function JDDepartmentCollaboration({ tasks = [], team = [] }) {
           </select>
         </label>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, color: "var(--jd-muted,#727780)" }}>{body.length}/2,000 characters</span>
+          <span style={{ fontSize: 10, color: "var(--jd-muted,#60616b)" }}>{body.length}/2,000 characters</span>
           <button type="button" disabled={busy || !body.trim()} onClick={send} style={{ ...button, opacity: busy || !body.trim() ? 0.55 : 1 }}><Send size={13} style={{ verticalAlign: "-2px", marginRight: 6 }} />{busy ? "Posting…" : "Post comment"}</button>
         </div>
       </div>
     </>}
-    {error && <p role="alert" style={{ color: "#b42318", fontSize: 11 }}>{error}</p>}
-    {notice && <p role="status" style={{ color: "#16835d", fontSize: 11 }}>{notice}</p>}
-    {!tasks.length && <p style={{ fontSize: 12, color: "var(--jd-muted,#727780)" }}>Create an operational task before starting a discussion.</p>}
+    {error && <p role="alert" style={{ color: "#34353b", fontSize: 11 }}>{error}</p>}
+    {notice && <p role="status" style={{ color: "#34353b", fontSize: 11 }}>{notice}</p>}
+    {!tasks.length && <p style={{ fontSize: 12, color: "var(--jd-muted,#60616b)" }}>Create an operational task before starting a discussion.</p>}
     <button type="button" onClick={() => refresh().catch((e) => setError(e.message))} disabled={!taskId || busy} style={{ marginTop: 10, background: "transparent", border: 0, color: "inherit", fontSize: 11, cursor: "pointer" }}><RefreshCw size={12} style={{ verticalAlign: "-2px", marginRight: 5 }} />Refresh discussion</button>
   </section>;
 }

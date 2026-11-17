@@ -3,7 +3,7 @@
  * SettingToggle.
  */
 import React, { useState, useEffect, useContext } from "react";
-import { Bell, Building2, Calendar, Clock, Settings } from "lucide-react";
+import { ArrowLeft, Bell, Building2, Calendar, Clock, Settings } from "lucide-react";
 import { db, supabase } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
 import { OrganizationCtx } from "../contexts/organization.jsx";
@@ -46,7 +46,7 @@ export function SettingToggle({k,settings,onSet}){
   return(
     <button onClick={()=>onSet(k,on?"false":"true")}
       style={{width:52,height:28,borderRadius:14,border:"none",cursor:"pointer",
-        background:on?C.green:"#cbd5e1",transition:"all .2s",position:"relative"}}>
+        background:on?C.green:"#dedfe4",transition:"all .2s",position:"relative"}}>
       <div style={{position:"absolute",top:3,left:on?26:3,width:22,height:22,
         borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}/>
     </button>
@@ -140,17 +140,17 @@ export function SettingsPage({ctx}){
   return(
     <div style={{padding:"0 0 40px"}}>
       {/* ── Page header ── */}
-      <div style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
+      <div className="jd-page-header" style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
         padding:"20px 28px",marginBottom:24,display:"flex",alignItems:"center",gap:16}}>
-        <button onClick={()=>setPage&&setPage("dashboard")}
+        <button onClick={()=>setPage&&setPage("jd-chat")}
           style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",
             borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:700,
             display:"flex",alignItems:"center",gap:6}}>
-          ← Back
+          <ArrowLeft size={14}/> Back
         </button>
         <div style={{flex:1}}>
           <div style={{fontWeight:900,fontSize:20,color:"#fff",display:"flex",alignItems:"center",gap:10}}>
-            <Settings size={20} color="#fff" style={{opacity:.85}}/>Settings
+            <Settings size={20} color={C.text} style={{opacity:.85}}/>Settings
           </div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.7)",marginTop:2}}>Configure your business portal</div>
         </div>
@@ -328,8 +328,8 @@ export function NotificationsPage({ctx}){
      desc:`Fires when a user exceeds the threshold of failed login attempts (default: 5 within 10 min).`},
   ];
 
-  const SEV_COLOR={critical:"#b91c1c",warn:"#d97706",info:"#1A4FA0"};
-  const SEV_BG   ={critical:"#fef2f2",warn:"#fffbeb",info:"#eff6ff"};
+  const SEV_COLOR={critical:"#34353b",warn:"#60616b",info:"#34353b"};
+  const SEV_BG   ={critical:"#fef2f2",warn:"#f1f2f5",info:"#f1f2f5"};
 
   const saveNotif=async()=>{
     setNotifSaving(true);
@@ -363,10 +363,10 @@ export function NotificationsPage({ctx}){
   return(
     <div style={{maxWidth:760,margin:"0 auto",paddingBottom:40}}>
       {/* Page header */}
-      <div style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
+      <div className="jd-page-header" style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
         padding:"20px 28px",marginBottom:24,display:"flex",alignItems:"center",gap:16,borderRadius:14}}>
         <div style={{background:"rgba(255,255,255,.18)",borderRadius:10,padding:10,display:"flex"}}>
-          <Bell size={22} color="#fff"/>
+          <Bell size={22} color={C.text}/>
         </div>
         <div>
           <h2 style={{color:"#fff",fontWeight:900,fontSize:18,margin:0}}>Notifications</h2>
@@ -443,7 +443,7 @@ export function NotificationsPage({ctx}){
                 background:on?C.white:C.offWhite,opacity:on?1:.7}}>
                 <button onClick={()=>setEvt(ev.key,!on)}
                   style={{flexShrink:0,marginTop:2,width:40,height:22,borderRadius:11,border:"none",
-                    cursor:"pointer",background:on?C.green:"#cbd5e1",position:"relative",transition:"all .2s"}}>
+                    cursor:"pointer",background:on?C.green:"#dedfe4",position:"relative",transition:"all .2s"}}>
                   <div style={{position:"absolute",top:3,left:on?20:3,width:16,height:16,
                     borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
                 </button>
@@ -529,10 +529,10 @@ export function NotificationsPage({ctx}){
               {/* Enable toggle */}
               <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
                 borderRadius:10,border:`2px solid ${dc.enabled?C.blue:C.border}`,
-                background:dc.enabled?"#eff6ff":C.offWhite,marginBottom:16,cursor:"pointer"}}
+                background:dc.enabled?"#f1f2f5":C.offWhite,marginBottom:16,cursor:"pointer"}}
                 onClick={()=>setDc({enabled:!dc.enabled})}>
                 <button style={{flexShrink:0,width:44,height:24,borderRadius:12,border:"none",
-                  cursor:"pointer",background:dc.enabled?C.blue:"#cbd5e1",position:"relative",transition:"all .2s"}}>
+                  cursor:"pointer",background:dc.enabled?C.blue:"#dedfe4",position:"relative",transition:"all .2s"}}>
                   <div style={{position:"absolute",top:4,left:dc.enabled?22:4,width:16,height:16,
                     borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
                 </button>
@@ -621,7 +621,7 @@ export function NotificationsPage({ctx}){
                   Include in Digest
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:8,
-                  border:`2px solid ${allOn?C.blue:C.border}`,background:allOn?"#eff6ff":C.offWhite,
+                  border:`2px solid ${allOn?C.blue:C.border}`,background:allOn?"#f1f2f5":C.offWhite,
                   marginBottom:10,cursor:"pointer"}} onClick={()=>setDc({events:allOn?{}:null})}>
                   <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${allOn?C.blue:C.border}`,
                     background:allOn?C.blue:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>

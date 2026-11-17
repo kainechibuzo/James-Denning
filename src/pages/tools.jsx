@@ -42,11 +42,11 @@ export function AuditLogPage({ctx}){
     role_change:"Role Change",setting_change:"Setting Changed",
     bulk_delete:"Bulk Delete",bulk_status_change:"Bulk Status",
     page_view:"Page View",data_export:"Data Exported"}[a]||a);
-  const typeColor=(t)=>({auth:C.orange,setting:"#6366f1",member:C.muted,
+  const typeColor=(t)=>({auth:C.orange,setting:"#60616b",member:C.muted,
     page:C.muted,dataset:C.muted}[t]||C.muted);
   const actionColor=(a)=>({login_success:C.green,login_failed:C.red,logout:C.muted,logout_kicked:C.red,
     delete:C.red,bulk_delete:C.red,create:C.green,edit:C.blue,role_change:C.purple,
-    setting_change:"#6366f1",page_view:C.muted,data_export:C.muted}[a]||C.text);
+    setting_change:"#60616b",page_view:C.muted,data_export:C.muted}[a]||C.text);
 
   const actors=useMemo(()=>{const s=new Set();logs.forEach(l=>{if(l.performed_by)s.add(l.performed_by);});return[...s].sort();},[logs]);
   const actions=useMemo(()=>{const s=new Set();logs.forEach(l=>{if(l.action)s.add(l.action);});return[...s].sort();},[logs]);
@@ -276,12 +276,12 @@ export function AdminToolsPage({ctx}){
   const TOOLS=[
     {id:"audit-log",     icon:"audit-log",     label:"Audit Trail",
      desc:"Full chronological record of every admin action taken in the workspace.",
-     color:"#B45309",bg:"#FFFBEB"},
+     color:"#34353b",bg:"#f1f2f5"},
   ];
 
   return(
     <div style={{maxWidth:860,margin:"0 auto",paddingBottom:40}}>
-      <div style={{background:`linear-gradient(135deg,#1e3a5f,#1A4FA0)`,
+      <div className="jd-page-header" style={{background:`linear-gradient(135deg,#17191c,#34353b)`,
         padding:"20px 28px",marginBottom:28,display:"flex",alignItems:"center",gap:16,borderRadius:14}}>
         <div style={{background:"rgba(255,255,255,.18)",borderRadius:10,padding:10,display:"flex"}}>
           <AppIcon name="database" size={22} color="#fff"/>

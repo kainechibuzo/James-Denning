@@ -6,7 +6,7 @@ import {build} from 'vite';
 import {chromium} from 'playwright-core';
 const dir=process.env.JD_FOUNDATION_EVIDENCE_DIR;if(dir)mkdirSync(dir,{recursive:true});
 const executablePath=process.env.CHROMIUM_EXECUTABLE_PATH||['/usr/bin/google-chrome','/usr/bin/chromium'].find(existsSync);assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH');
-const entry=`import React from 'react';import {createRoot} from 'react-dom/client';import {BusinessFoundation} from '${resolve('src/software-factory/BusinessFoundation.jsx')}';import {SaaSAgentStudio} from '${resolve('src/software-factory/SaaSAgentStudio.jsx')}';import {businessBlueprint} from '${resolve('supabase/functions/_shared/jd-business-foundation.mjs')}';import {buildSaasAgentTeam} from '${resolve('supabase/functions/_shared/jd-agent-architect.mjs')}';
+const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {BusinessFoundation} from '${resolve('src/software-factory/BusinessFoundation.jsx')}';import {SaaSAgentStudio} from '${resolve('src/software-factory/SaaSAgentStudio.jsx')}';import {businessBlueprint} from '${resolve('supabase/functions/_shared/jd-business-foundation.mjs')}';import {buildSaasAgentTeam} from '${resolve('supabase/functions/_shared/jd-agent-architect.mjs')}';
 const root=createRoot(document.getElementById('root'));const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');window.__calls=[];window.__versions=[];window.__fail=false;let documentId=id(1);let configured=false;
 const client={functions:{invoke:async(_,r)=>{const b=r.body;window.__calls.push(b);if(window.__fail)return{error:{message:'PRIVATE_DIAGNOSTIC'}};
 if(b.action==='foundation.preview')return{data:{design:businessBlueprint(b.dna)}};

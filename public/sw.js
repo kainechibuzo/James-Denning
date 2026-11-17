@@ -10,12 +10,12 @@
  * asset bundling — the SW is not registered when isNativePlatform() is true.
  */
 
-const CACHE_VERSION = "jd-v5"; // bump to purge stale caches after major releases
+const CACHE_VERSION = "jd-v6-reference"; // bump to purge stale caches after major releases
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 
 // App shell URLs to pre-cache on install
-const SHELL_URLS = ["/", "/offline.html"];
+const SHELL_URLS = ["/", "/offline.html", "/design/jd-tile.png", "/design/workspace-curves.svg", "/fonts/inter-400.woff2", "/fonts/inter-600.woff2"];
 
 // Origins / URL patterns to NEVER cache (always hit network)
 const BYPASS_PATTERNS = [

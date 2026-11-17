@@ -15,7 +15,7 @@ export function JDExecutionMonitor({client,role,scopeKey,active=true}){
   <header><h2>JD execution monitor</h2><p>Persisted job and run records, not independently verified business outcomes. Up to 100 runs and 500 steps.</p><button type="button" disabled={state.busy} onClick={()=>{setConfirmation(null);void controller.refresh();}}>Refresh execution records</button></header>
   {state.error&&<p role="alert">{state.error}</p>}{state.notice&&<p role="status">{state.notice}</p>}
   {state.needsRefresh&&<p role="status">No further execution changes are allowed until records are refreshed. No write was automatically retried.</p>}
-  {confirmation&&<section role="region" aria-label="Confirm execution change" style={{padding:14,border:'2px solid #aa7835',marginTop:12}}>
+  {confirmation&&<section role="region" aria-label="Confirm execution change" style={{padding:14,border:'2px solid #60616b',marginTop:12}}>
    <h3>{confirmation.action==='retry'?'Review before retrying':'Review before cancelling'}</h3>
    <p>{confirmation.action==='retry'?'Retrying can repeat external effects already performed. Inspect the earlier execution evidence and confirm that another attempt is authorised.':'Only queued or waiting jobs can be cancelled. Cancellation does not undo earlier external effects.'}</p>
    <button type="button" disabled={disabled} onClick={confirm}>{confirmation.action==='retry'?'Confirm retry':'Confirm cancellation'}</button>{' '}
