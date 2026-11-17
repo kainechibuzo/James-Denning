@@ -1,3 +1,4 @@
+import { handleExecutionCancellation } from "../_shared/jd-execution-cancellation.mjs";
 import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityAssessment } from "../_shared/jd-capability-intelligence.ts";
@@ -195,19 +196,8 @@ Deno.serve(async (req) => {
   }
   return json({job:retry});
  }
- if(payload.action==="execution.job.cancel"){
-  if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can cancel queued JD jobs"},403);
-  const jobId=typeof payload.jobId==="string"?payload.jobId:"";
-  if(!jobId) return json({error:"jobId is required"},400);
-  const {data:job,error:jobErr}=await admin.from("jd_execution_jobs").select("id,run_id,status").eq("id",jobId).eq("school_id",profile.school_id).maybeSingle();
-  if(jobErr||!job) return json({error:"Execution job not found"},404);
-  if(!["queued","retry_wait"].includes(job.status)) return json({error:"Only queued or waiting jobs can be cancelled safely"},409);
-  const {data:updated,error:updateErr}=await admin.from("jd_execution_jobs").update({status:"cancelled",updated_at:new Date().toISOString(),completed_at:new Date().toISOString()}).eq("id",jobId).eq("school_id",profile.school_id).eq("status",job.status).select("id,status").maybeSingle();
-  if(updateErr||!updated) return json({error:"Job changed concurrently; refresh before retrying"},409);
-  const {error:runUpdateErr}=await admin.from("jd_automation_runs").update({status:"cancelled",completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.run_id).eq("school_id",profile.school_id);
-  if(runUpdateErr) return json({error:"Job was cancelled but run summary could not be updated"},500);
-  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:job.run_id,event_type:"execution.cancelled",event_json:{job_id:jobId,previous_status:job.status}});
-  return json({job:updated});
+ if(["execution.job.cancel","execution.job.cancel_checked"].includes(payload.action)){
+  return handleExecutionCancellation({admin,profile,actorId:authData.user.id,payload,json});
  }
  if(payload.action==="organisation.blueprints.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can inspect organisation blueprints"},403);

@@ -15,6 +15,7 @@ Built as a single-page React application backed by Supabase.
 - [Owner identity and execution reliability](docs/evidence/2026-11-16-owner-execution/REPORT.md) — fail-closed owner access, guarded execution controls and staged retry SQL repair.
 - [Capability meaning and mobile chat](docs/evidence/2026-11-17-capability-mobile/REPORT.md) — separate availability, approval and verification; real-browser layout checks and backend release boundaries.
 - [Backend compatibility and scoped release preparation](docs/evidence/2026-11-17-backend-compatibility/REPORT.md) — legacy assignment compatibility, source-artifact guards and separately approved backend releases.
+- [Atomic cancellation candidate](docs/evidence/2026-11-16-atomic-cancellation/REPORT.md) — local SQL rollback, access-control and acknowledgement evidence; disabled pending isolated staging and owner review.
 - [Reviewed backend release procedure](documentation/JD_BACKEND_RELEASE.md) — staging, independent approvals, narrow deployment and recovery boundaries.
 - [Initial Phase 1 verification report](docs/evidence/2026-11-16-phase-1/REPORT.md) — dated findings, passing checks, unresolved failures and testing limitations.
 - [Safe staging setup](documentation/STAGING_SETUP.md) — isolated infrastructure and server-only privileged secrets.

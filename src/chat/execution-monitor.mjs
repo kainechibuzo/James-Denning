@@ -1,4 +1,7 @@
 import {isTaskId} from './operational-task-records.mjs';
+// Change only after isolated migration/backend/client acceptance. Never auto-detect.
+export const EXECUTION_CANCELLATION_RELEASE = 'legacy';
+const isVersion=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(v)&&Number.isFinite(Date.parse(v));
 const readers=new Set(['owner','admin','manager']);
 const administrators=new Set(['owner','admin']);
 const runStates=new Set(['queued','planning','awaiting_approval','running','retry_wait','completed','partially_completed','failed','cancelled']);
@@ -42,16 +45,22 @@ export async function readExecutionMonitor(client,role){
   steps:data.steps.map(s=>({id:s.id,run_id:s.run_id,tool_key:s.tool_key,status:s.status,started_at:time(s.started_at),completed_at:time(s.completed_at),hasError:!!s.error_message})),
  };
 }
-export async function changeExecutionJob(client,{role,job,action}){
+export async function changeExecutionJob(client,{role,job,action,cancellationMode=EXECUTION_CANCELLATION_RELEASE}){
  if(!canChangeExecution(role,job,action))fail('Your role or the observed job state does not allow this action.');
- const data=await invoke(client,{action:`execution.job.${action}`,jobId:job.id});
+ if(action==='cancel'&&!['legacy','checked'].includes(cancellationMode))fail('Cancellation release is invalid. No request was sent.');
+ if(action==='cancel'&&cancellationMode==='checked'&&!isVersion(job.updated_at))fail('Refresh records to obtain the cancellation version.');
+ const checked=action==='cancel'&&cancellationMode==='checked';
+ const data=await invoke(client,checked?{action:'execution.job.cancel_checked',jobId:job.id,expectedRunId:job.run_id,expectedUpdatedAt:job.updated_at}:{action:`execution.job.${action}`,jobId:job.id});
  const saved=data.job;
  if(action==='retry'){
   if(saved?.job_id!==job.id||saved.run_id!==job.run_id||saved.status!=='queued'||!Number.isSafeInteger(saved.queue_message_id)||saved.queue_message_id<1)fail('Retry queue acknowledgement was incomplete. Refresh records; do not repeat the request.');
+ }else if(checked){
+  if(saved?.id!==job.id||saved.run_id!==job.run_id||saved.status!=='cancelled'||!isVersion(saved.updated_at)||saved.updated_at===job.updated_at||data.run?.id!==job.run_id||data.run.status!=='cancelled'||data.auditRecorded!==true||!isTaskId(data.auditId)||data.externalEffectsReversed!==false)fail('Cancellation and audit acknowledgement was incomplete. Refresh records; do not repeat the request.');
+  return {id:saved.id,run_id:saved.run_id,status:saved.status,updated_at:saved.updated_at,cancellationAuditId:data.auditId};
  }else if(saved?.id!==job.id||saved.status!=='cancelled')fail('Cancellation acknowledgement was incomplete. Refresh records; partial changes may have been saved.');
- return saved; // Neither endpoint acknowledges an audit ID; never claim audit verification.
+ return saved; // Legacy cancellation/retry provide no audit receipt.
 }
-export function createExecutionMonitorController(client,{role}){
+export function createExecutionMonitorController(client,{role,cancellationMode=EXECUTION_CANCELLATION_RELEASE}){
  let active=false,generation=0;
  let state={...empty(),phase:'idle',busy:false,error:'',notice:'',needsRefresh:false};
  const listeners=new Set();
@@ -73,14 +82,15 @@ export function createExecutionMonitorController(client,{role}){
    if(!active||state.busy||state.phase!=='ready'||state.needsRefresh||!canChangeExecution(role,job,action,state.runs.find(r=>r.id===job?.run_id)))return;
    const g=generation;emit({busy:true,error:'',notice:''});
    try{
-    await changeExecutionJob(client,{role,job,action});
+    const acknowledgement=await changeExecutionJob(client,{role,job,action,cancellationMode});
     if(!current(g))return;
     const rows=await readExecutionMonitor(client,role);
     if(!current(g))return;
     const observed=rows.jobs.find(j=>j.id===jobId&&j.run_id===job.run_id),run=rows.runs.find(r=>r.id===job.run_id);
     if(!observed||!run)fail('The changed job was not in the returned history sample. Refresh before another action.');
     if(action==='cancel'&&(observed.status!=='cancelled'||run.status!=='cancelled'))fail('Job and run cancellation records do not agree. Refresh and request administrator review; partial effects may remain.');
-    emit({...rows,notice:action==='retry'?`Retry request acknowledged. Current job state: ${observed.status}. This is not proof of successful execution or absence of duplicate external effects.`:'Cancellation confirmed in job and run records. Earlier external effects are not undone. Audit evidence is not verified by this response.'});
+    if(acknowledgement.cancellationAuditId&&observed.updated_at!==acknowledgement.updated_at)fail('Cancellation version read-back did not match. Refresh and request administrator review.');
+    emit({...rows,notice:action==='retry'?`Retry request acknowledged. Current job state: ${observed.status}. This is not proof of successful execution or absence of duplicate external effects.`:acknowledgement.cancellationAuditId?'Cancellation confirmed in job and run records; a transactional audit receipt was acknowledged. Earlier external effects are not undone. This is not independent verification of a business outcome.':'Cancellation confirmed in job and run records. Earlier external effects are not undone. Audit evidence is not verified by this response.'});
    }catch(error){if(current(g))emit({error:error.message,needsRefresh:true,notice:''});}
    finally{if(current(g))emit({busy:false});}
   },

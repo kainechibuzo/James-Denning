@@ -12,7 +12,7 @@ for(const [name,patch] of [
 ])test(`release refuses ${name}`,()=>assert.throws(()=>validateBackendRelease({...input,...patch})));
 for(const [name,patch] of [['missing same-SHA staging acceptance',{stagingVerifiedSha:undefined}],['different tested SHA',{stagingVerifiedSha:otherSha}],['different production target',{projectRef:staging}],['unapproved SHA',{approvedSha:otherSha}]])test(`production refuses ${name}`,()=>assert.throws(()=>validateBackendRelease({...prod,...patch})));
 test('valid staged and production plans are narrow source-pinned attestations, not deployments',()=>{
- for(const item of [input,prod]){const plan=validateBackendRelease(item);assert.equal(plan.assignmentRelease,'legacy');assert.equal(plan.migrations,'excluded');assert.deepEqual(plan.functions,['jd-automation','jd-execution-worker','jd-mcp']);assert.equal(plan.sourceSha,sourceSha);}
+ for(const item of [input,prod]){const plan=validateBackendRelease(item);assert.equal(plan.assignmentRelease,'legacy');assert.equal(plan.cancellationRelease,'legacy');assert.equal(plan.migrations,'excluded');assert.deepEqual(plan.functions,['jd-automation','jd-execution-worker','jd-mcp']);assert.equal(plan.sourceSha,sourceSha);}
 });
 const cache=resolve('node_modules/.cache');mkdirSync(cache,{recursive:true});const temp=mkdtempSync(`${cache}/release-plan-`);after(()=>rmSync(temp,{recursive:true,force:true}));
 let counter=0;
@@ -21,14 +21,14 @@ function fixture(){
  const source=collectBackendReleaseFiles(process.cwd());
  // Copy the real release inputs, rather than inventing an unrelated sample artifact.
  for(const [path] of source){if(path.includes('/jd-execution-worker/_shared/'))continue;const target=resolve(root,path);mkdirSync(dirname(target),{recursive:true});copyFileSync(resolve(path),target);}
- for(const path of ['src/chat/operational-task-writes.mjs']){const target=resolve(root,path);mkdirSync(dirname(target),{recursive:true});copyFileSync(resolve(path),target);}
+ for(const path of ['src/chat/operational-task-writes.mjs','src/chat/execution-monitor.mjs']){const target=resolve(root,path);mkdirSync(dirname(target),{recursive:true});copyFileSync(resolve(path),target);}
  return root;
 }
 const plan=validateBackendRelease(input);
 test('real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions',()=>{
  const root=fixture();const {output,manifest}=writeBackendArtifact(root,plan);assert.equal(verifyBackendArtifact(root,plan).sourceSha,sourceSha);
  const paths=manifest.files.map(f=>f.path);
- for(const required of ['supabase/functions/_shared/jd-task-assignment-release.mjs','supabase/functions/_shared/jd-capability-contract.ts','supabase/functions/jd-execution-worker/_shared/jd-agent-runtime.ts','supabase/functions/jd-execution-worker/_shared/jd-task-assignment-release.mjs'])assert.ok(paths.includes(required));
+ for(const required of ['supabase/functions/_shared/jd-execution-cancellation.mjs','supabase/functions/jd-execution-worker/_shared/jd-execution-cancellation.mjs','supabase/functions/_shared/jd-task-assignment-release.mjs','supabase/functions/_shared/jd-capability-contract.ts','supabase/functions/jd-execution-worker/_shared/jd-agent-runtime.ts','supabase/functions/jd-execution-worker/_shared/jd-task-assignment-release.mjs'])assert.ok(paths.includes(required));
  assert.ok(paths.every(p=>!p.includes('/migrations/')&&!p.endsWith('.sql')&&!p.endsWith('.test.ts')&&!p.includes('.env')));
  const functionDirs=new Set(paths.filter(p=>p.startsWith('supabase/functions/')).map(p=>p.split('/')[2]));assert.deepEqual([...functionDirs].sort(),['_shared',...RELEASE_FUNCTIONS].sort());
  const config=readFileSync(resolve(output,'supabase/config.toml'),'utf8');assert.doesNotMatch(config,/thklwiybjuhrjqrrxyid|\[auth/);assert.match(config,/\[functions.jd-automation\]\nverify_jwt = true/);
@@ -37,6 +37,9 @@ test('real source bundle includes current fixes and nested worker dependencies b
 for(const [name,mutate] of [
  ['frontend switched early',root=>{const p=resolve(root,'src/chat/operational-task-writes.mjs');writeFileSync(p,readFileSync(p,'utf8').replace('TASK_ASSIGNMENT_RELEASE = "legacy"','TASK_ASSIGNMENT_RELEASE = "checked"'));}],
  ['backend switched early',root=>{const p=resolve(root,'supabase/functions/_shared/jd-task-assignment-release.mjs');writeFileSync(p,readFileSync(p,'utf8').replace("BACKEND_TASK_ASSIGNMENT_RELEASE = 'legacy'","BACKEND_TASK_ASSIGNMENT_RELEASE = 'checked'"));}],
+ ['cancellation switched early',root=>{const p=resolve(root,'supabase/functions/_shared/jd-execution-cancellation.mjs');writeFileSync(p,readFileSync(p,'utf8').replace("BACKEND_CANCELLATION_RELEASE = 'legacy'","BACKEND_CANCELLATION_RELEASE = 'checked'"));}],
+ ['cancellation client switched early',root=>{const p=resolve(root,'src/chat/execution-monitor.mjs');writeFileSync(p,readFileSync(p,'utf8').replace("EXECUTION_CANCELLATION_RELEASE = 'legacy'","EXECUTION_CANCELLATION_RELEASE = 'checked'"));}],
+ ['cancellation router bypassed',root=>{const p=resolve(root,'supabase/functions/jd-automation/index.ts');writeFileSync(p,readFileSync(p,'utf8').replace('return handleExecutionCancellation(','return bypassCancellation('));}],
  ['JWT changed',root=>{const p=resolve(root,'supabase/config.toml');writeFileSync(p,readFileSync(p,'utf8').replace('[functions.jd-automation]\nverify_jwt = true','[functions.jd-automation]\nverify_jwt = false'));}],
  ['router bypassed',root=>{const p=resolve(root,'supabase/functions/jd-automation/index.ts');writeFileSync(p,readFileSync(p,'utf8').replace('return handleReleasedTaskAssignment(','return handleTaskAssignment('));}],
 ])test(`packaging refuses ${name}`,()=>{const root=fixture();mutate(root);assert.throws(()=>writeBackendArtifact(root,plan));assert.equal(existsSync(resolve(root,'build/jd-backend-release')),false);});
