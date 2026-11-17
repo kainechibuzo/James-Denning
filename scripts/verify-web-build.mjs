@@ -22,8 +22,13 @@ assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable err
 // Multi-industry product identity and mobile regression guards.
 assert.match(product, /defaultIndustry:\s*"business"/, "General business is the default workspace type");
 assert.match(product, /defaultModule:\s*"core"/, "The core module is the default");
-assert.match(landing, /Meet JD, your AI-powered operations assistant/i, "Landing page must position JD as the AI operations assistant");
-assert.match(landing, /Revenue/, "Landing preview must show business metrics");
+assert.match(landing, /Meet James-Denning, your AI-powered operations assistant/i, "Landing page must use the approved reference identity and positioning");
+assert.match(landing, /revenue, expenses and business performance/i, "Landing artwork must describe its business metrics accessibly");
+for (const asset of ["dashboard-laptop.webp", "dashboard-laptop-front.webp", "jd-monogram.png", "jd-tile.png"]) {
+  assert.ok(existsSync(join(root, "public/design", asset)), `Missing supplied reference artwork: ${asset}`);
+  assert.ok(existsSync(join(root, "dist/design", asset)), `Reference artwork missing from build: ${asset}`);
+}
+assert.match(landing, /sample figures, not live workspace records/, "Illustrative marketing metrics must not claim live records");
 assert.match(tour, /if\(isMobile \|\| left < 12\)/, "Tour tooltip must stay inside mobile viewport");
 assert.match(auth, /james-denning-james-projects-57651351\.vercel\.app/, "Auth redirects must use the verified production deployment URL");
 assert.doesNotMatch(auth, /rgs-portal-master\.vercel\.app/, "Auth must not redirect to the retired school-portal deployment URL");

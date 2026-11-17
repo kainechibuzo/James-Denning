@@ -1,6 +1,6 @@
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
 import React, { lazy, useState, useEffect, useMemo, Component, useRef } from "react";
-import { LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
@@ -11,6 +11,8 @@ import { OrganizationProvider, useOrganization } from './contexts/organization.j
 import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
 import { PRODUCT } from './config/product.js';
 import { PERM_ROLE_DEFAULTS } from './config/permissions.mjs';
+import { ReferenceBrand } from "./components/reference-brand.jsx";
+import "./styles/reference-design.css";
 import { ChatHome } from "./chat/ChatHome.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
 import { canOpenOperations, WORKSPACE_NAVIGATION, buildWorkspaceNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
@@ -76,7 +78,7 @@ function DarkToggle({compact=false}){
         border:`1px solid ${C.border}`,borderRadius:9,width:36,height:36,cursor:"pointer",
         display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,lineHeight:1,
         color:C.text,transition:"all .2s",flexShrink:0}}>
-      <span aria-hidden="true">{dark?"☀":"☾"}</span>
+      <span aria-hidden="true">{dark?<Sun size={17}/>:<Moon size={17}/>}</span>
     </button>;
   }
   return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
@@ -1440,11 +1442,11 @@ function AppInner(){
       {/* MAIN */}
       <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,
         marginLeft: isMobile ? 0 : undefined}}>
-        <header style={{background:C.white,borderBottom:`1px solid ${C.border}`,
+        <header className={page==="jd-chat" ? "reference-workspace-header" : undefined} style={{background:C.white,borderBottom:`1px solid ${C.border}`,
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
+          <div className="reference-header-left" style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
             <button data-tour="workspace-menu" ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 color:C.muted,padding:"7px 9px",borderRadius:9,
@@ -1454,7 +1456,7 @@ function AppInner(){
               onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
               <AppIcon name="menu" size={18} color={C.muted}/>
             </button>
-            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,overflow:"hidden"}}>
+            {page==="jd-chat" ? <ReferenceBrand/> : <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,overflow:"hidden"}}>
               <div style={{width:28,height:28,borderRadius:8,background:C.blue+"14",
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <AppIcon name={NAV.find(n=>n.id===page)?.icon||""} size={14} color={C.blue}/>
@@ -1464,11 +1466,11 @@ function AppInner(){
                 maxWidth:isMobile?"46vw":260}}>
                 {NAV.find(n=>n.id===page)?.label||"Portal"}
               </span>
-            </div>
+            </div>}
           </div>
-          <div style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
-            {!isMobile&&<LiveClock/>}
-            <DarkToggle compact={isMobile}/>
+          <div className="reference-header-controls" style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
+            {!isMobile&&page!=="jd-chat"&&<LiveClock/>}
+            <DarkToggle compact={isMobile||page==="jd-chat"}/>
             <button data-tour="tour-trigger"
               onClick={()=>setShowTour(true)}
               title="Help / Product Tour"
@@ -1481,16 +1483,16 @@ function AppInner(){
               <HelpCircle size={16}/>
             </button>
             <NotificationBell ctx={ctx}/>
-            <button onClick={()=>setShowProfile(true)} data-header-compact="hide"
+            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)} data-header-compact={page==="jd-chat"?undefined:"hide"}
               style={{width:34,height:34,borderRadius:10,
                 background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
                 color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer",
                 display:"flex",alignItems:"center",justifyContent:"center",
                 boxShadow:`0 2px 8px ${C.blue}40`}}
               title="My Profile">
-              {(user.name||"?")[0].toUpperCase()}
+              {page==="jd-chat" ? (user.name||"?").trim().split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase() : (user.name||"?")[0].toUpperCase()}
             </button>
-            {!isMobile&&<button onClick={()=>setShowLogout(true)}
+            {!isMobile&&page!=="jd-chat"&&<button onClick={()=>setShowLogout(true)}
               title="Sign Out"
               style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
                 borderRadius:8,padding:"7px 9px",display:"flex",alignItems:"center",
@@ -1508,7 +1510,7 @@ function AppInner(){
           </div>
         </header>
 
-        <div style={{height:3,background:`linear-gradient(90deg,${C.orange} 0%,#374151 20%,${C.green} 55%,${C.blue} 85%,${C.blueDark} 100%)`,opacity:.85}}/>
+        {page!=="jd-chat"&&<div style={{height:3,background:`linear-gradient(90deg,${C.orange} 0%,#374151 20%,${C.green} 55%,${C.blue} 85%,${C.blueDark} 100%)`,opacity:.85}}/>}
 
         <main style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/> : <AccessDenied/>)}
@@ -1715,7 +1717,7 @@ function NotificationBell({ctx}){
   const typeIcons={info:Info,success:CheckCircle2,warning:AlertTriangle,alert:AlertCircle};
   return(
     <div ref={ref} style={{position:"relative"}}>
-      <button onClick={()=>{setOpen(p=>!p);if(!open)load();}}
+      <button aria-label="Notifications" aria-expanded={open} onClick={()=>{setOpen(p=>!p);if(!open)load();}}
         style={{position:"relative",background:C.offWhite,border:`1px solid ${C.border}`,borderRadius:9,
           width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted}}>
         <Bell size={16}/>
