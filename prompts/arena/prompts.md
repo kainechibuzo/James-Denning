@@ -77,6 +77,7 @@ Use `prompts/arena/JD-FEATURE-SHEET.md` as the product authority, especially the
 - Explain each recommendation and its expected deliverables.
 - Never hire, assign billable work, grant permissions or trigger external actions without customer authorisation.
 - Apply least privilege, tenant isolation, budget limits and bounded delegation.
+- Preserve normal platform billing. AI employee usage is additional, not a replacement subscription or the platform's total price. Do not invent plan entitlements or undisclosed provider surcharges.
 - Treat the proposed US$1 per active billable agent-hour as a pricing rule requiring transparent metering, not a claim that every agent has identical infrastructure costs.
 - Never bill queued, idle or approval-wait time under the standard active-time policy.
 - Do not claim an agent is evaluated or production-ready without recorded test evidence.

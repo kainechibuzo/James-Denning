@@ -1,0 +1,363 @@
+{
+  "scope": "Local PGlite synthetic auth only; not live acceptance",
+  "documents": [
+    {
+      "id": "2917dbb3-d73d-4c41-bcab-67966fe3aa5d",
+      "school_id": "00000000-0000-4000-8000-000000000002",
+      "kind": "business",
+      "title": "Synthetic business",
+      "current_version": 1,
+      "created_by": "00000000-0000-4000-8000-000000000001",
+      "created_at": "2026-11-17T11:44:14.808Z"
+    }
+  ],
+  "versions": [
+    {
+      "id": "1a83fca8-05ac-44c4-9b09-a9181786af73",
+      "document_id": "2917dbb3-d73d-4c41-bcab-67966fe3aa5d",
+      "school_id": "00000000-0000-4000-8000-000000000002",
+      "version": 1,
+      "base_version": 0,
+      "restored_from_version": null,
+      "request_id": "00000000-0000-4000-8000-000000000020",
+      "request_hash": "a4b97405476836a133fa3012c0eaf89efe9e1d632bc4da4bc64f9f3bda818f3a",
+      "content_hash": "51a8396620af66d5e48c5da9baca9dd954b870bc853bc90af3b06ed090d43022",
+      "content": {
+        "dna": {
+          "name": "Synthetic business",
+          "goals": [
+            "Validate demand"
+          ],
+          "industry": "retail",
+          "customers": "Local shoppers",
+          "geography": "Lagos",
+          "constraints": [],
+          "description": "Sell clothing to local retail customers."
+        },
+        "kind": "business",
+        "status": "preview_generated",
+        "advisor": {
+          "facts": [
+            {
+              "text": "Customer supplied this business context; its claims have not been independently verified.",
+              "provenance": "user_input"
+            }
+          ],
+          "status": "context_only",
+          "options": [
+            {
+              "title": "Validate demand before expansion",
+              "tradeoff": "Reduces commitment risk, but delays a wider launch."
+            },
+            {
+              "title": "Pilot the core customer workflow",
+              "tradeoff": "Produces operational evidence, but requires an explicitly approved scope and budget."
+            }
+          ],
+          "sources": [],
+          "assumptions": [],
+          "openQuestions": [
+            "What evidence supports demand and pricing?",
+            "What are the budget and success criteria?",
+            "Which systems and data are already authorised?"
+          ],
+          "recommendations": [
+            "Confirm one measurable outcome for each goal.",
+            "Validate customer demand and operational constraints with authorised evidence.",
+            "Review required modules and permissions before activating anything."
+          ],
+          "regulatedAdvice": false,
+          "researchPerformed": false
+        },
+        "billing": {
+          "employeeUsage": "additional",
+          "chargesEnabled": false,
+          "externalCharges": "not_configured",
+          "authorisedBudget": 0,
+          "platformSubscription": "unchanged",
+          "proposedRateUsdPerActiveHour": 1
+        },
+        "workflow": {
+          "steps": [
+            {
+              "id": "scope",
+              "title": "Confirm Business DNA and measurable goals",
+              "dependsOn": [],
+              "approvalRequired": true
+            },
+            {
+              "id": "access",
+              "title": "Review employee evaluations, connectors and budgets",
+              "dependsOn": [
+                "scope"
+              ],
+              "approvalRequired": true
+            },
+            {
+              "id": "work",
+              "title": "Assign bounded work to an authorised executor",
+              "dependsOn": [
+                "access"
+              ],
+              "approvalRequired": true
+            },
+            {
+              "id": "verify",
+              "title": "Inspect artifacts and actual test outcomes",
+              "dependsOn": [
+                "work"
+              ],
+              "approvalRequired": true
+            }
+          ],
+          "status": "planned_not_executable"
+        },
+        "execution": {
+          "status": "not_started",
+          "performed": false
+        },
+        "persisted": false,
+        "workspace": {
+          "kpis": [
+            {
+              "goal": "Validate demand",
+              "metric": null,
+              "status": "needs_definition",
+              "target": null,
+              "baseline": null
+            }
+          ],
+          "status": "proposed_not_activated",
+          "modules": [
+            {
+              "id": "retail-1",
+              "label": "Products",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-2",
+              "label": "Inventory",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-3",
+              "label": "Orders",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-4",
+              "label": "Customers",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-5",
+              "label": "Sales",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-6",
+              "label": "Marketing",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-7",
+              "label": "Revenue",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            },
+            {
+              "id": "retail-8",
+              "label": "Suppliers",
+              "route": null,
+              "status": "proposed",
+              "implementation": "not_assessed"
+            }
+          ],
+          "departments": []
+        },
+        "limitations": [
+          "This is a saved/reviewable blueprint, not activated navigation, hired employees or executed workflows.",
+          "Recommendations are deterministic templates, not live market research or evaluated agent output.",
+          "Review approval confirms document content only; no permissions, spending or deployment are authorised."
+        ],
+        "schemaVersion": 1,
+        "recommendations": [
+          {
+            "id": "business-advisor",
+            "name": "Business Advisor",
+            "reason": "Proposed for retail: Turn approved business context into decision briefs with options, evidence gaps and measurable next steps.",
+            "status": "recommended_not_hired",
+            "version": 1,
+            "evaluation": "not_run",
+            "importance": "optional",
+            "permissions": [
+              {
+                "binding": null,
+                "capability": "project.read",
+                "permission": "requested_only"
+              },
+              {
+                "binding": null,
+                "capability": "research.read",
+                "permission": "requested_only"
+              }
+            ],
+            "costEstimate": null,
+            "deliverables": [
+              "Decision brief",
+              "Assumptions register"
+            ],
+            "estimatedHours": null
+          },
+          {
+            "id": "inventory-analyst",
+            "name": "Inventory Analyst",
+            "reason": "Proposed for retail: Identify stock discrepancies and replenishment candidates from authorised inventory data.",
+            "status": "recommended_not_hired",
+            "version": 1,
+            "evaluation": "not_run",
+            "importance": "optional",
+            "permissions": [
+              {
+                "binding": null,
+                "capability": "inventory.read",
+                "permission": "requested_only"
+              }
+            ],
+            "costEstimate": null,
+            "deliverables": [
+              "Stock discrepancy report",
+              "Replenishment proposal"
+            ],
+            "estimatedHours": null
+          },
+          {
+            "id": "customer-support",
+            "name": "Customer Support Analyst",
+            "reason": "Proposed for retail: Draft case responses and escalate issues using approved support information.",
+            "status": "recommended_not_hired",
+            "version": 1,
+            "evaluation": "not_run",
+            "importance": "optional",
+            "permissions": [
+              {
+                "binding": null,
+                "capability": "support.read",
+                "permission": "requested_only"
+              },
+              {
+                "binding": null,
+                "capability": "response.draft",
+                "permission": "requested_only"
+              }
+            ],
+            "costEstimate": null,
+            "deliverables": [
+              "Response drafts",
+              "Escalation queue"
+            ],
+            "estimatedHours": null
+          }
+        ],
+        "connectorRequirements": [
+          {
+            "id": "research",
+            "name": "Search research",
+            "method": "not_verified",
+            "reason": "Current evidence for business decisions.",
+            "authorised": false,
+            "connection": "not_inspected",
+            "dataAccess": "Approved public search queries; never customer secrets.",
+            "importance": "recommended",
+            "officialMcp": false,
+            "catalogueStatus": "requirement_only",
+            "discoveredTools": []
+          },
+          {
+            "id": "commerce",
+            "name": "Commerce platform",
+            "method": "not_verified",
+            "reason": "Product, order and inventory operations.",
+            "authorised": false,
+            "connection": "not_inspected",
+            "dataAccess": "Selected store records; writes require explicit scopes.",
+            "importance": "recommended",
+            "officialMcp": false,
+            "catalogueStatus": "requirement_only",
+            "discoveredTools": []
+          },
+          {
+            "id": "payments",
+            "name": "Payment service",
+            "method": "not_verified",
+            "reason": "Collect payments only if requested and separately authorised.",
+            "authorised": false,
+            "connection": "not_inspected",
+            "dataAccess": "Scoped billing metadata; no raw card details.",
+            "importance": "conditional",
+            "officialMcp": false,
+            "catalogueStatus": "requirement_only",
+            "discoveredTools": []
+          },
+          {
+            "id": "communications",
+            "name": "Communications",
+            "method": "not_verified",
+            "reason": "Customer and team communication when approved.",
+            "authorised": false,
+            "connection": "not_inspected",
+            "dataAccess": "Selected mailboxes/channels; sending is a separate permission.",
+            "importance": "recommended",
+            "officialMcp": false,
+            "catalogueStatus": "requirement_only",
+            "discoveredTools": []
+          }
+        ]
+      },
+      "approval_id": "b0f34202-4a5c-4386-a906-8eea880551a7",
+      "created_by": "00000000-0000-4000-8000-000000000001",
+      "created_at": "2026-11-17T11:44:14.808Z"
+    }
+  ],
+  "approval": [
+    {
+      "id": "b0f34202-4a5c-4386-a906-8eea880551a7",
+      "status": "approved",
+      "action_key": "foundation.review",
+      "execution_status": "not_executed"
+    }
+  ],
+  "audit": [
+    {
+      "event_type": "foundation.version_saved",
+      "event_json": {
+        "version": 1,
+        "version_id": "1a83fca8-05ac-44c4-9b09-a9181786af73",
+        "approval_id": "b0f34202-4a5c-4386-a906-8eea880551a7",
+        "document_id": "2917dbb3-d73d-4c41-bcab-67966fe3aa5d",
+        "content_hash": "51a8396620af66d5e48c5da9baca9dd954b870bc853bc90af3b06ed090d43022",
+        "restored_from_version": null
+      }
+    },
+    {
+      "event_type": "approval.approved",
+      "event_json": {
+        "approval_id": "b0f34202-4a5c-4386-a906-8eea880551a7",
+        "execution_status": "not_executed"
+      }
+    }
+  ]
+}

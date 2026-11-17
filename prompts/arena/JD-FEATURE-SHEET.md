@@ -750,6 +750,8 @@ Customers should be able to inspect, hire, assign, pause, resume, replace and re
 
 ### 18.5 Pricing and metering
 
+The platform retains its normal subscription/billing. **AI employee usage is an additional charge, not a replacement for or the total price of the platform.** Do not change existing platform prices or entitlements as part of employee metering, and do not invent subscription tiers or undisclosed provider surcharges.
+
 The proposed standard starting rate is **US$1 per active billable agent-hour**. This is a product pricing rule to validate commercially, not a claim that all agents have identical operating costs.
 
 Billing requirements:

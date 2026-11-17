@@ -1,0 +1,74 @@
+[
+  {
+    "width": 360,
+    "pageWidth": 360,
+    "errors": [],
+    "flows": [
+      "business-preview",
+      "save-readback",
+      "explicit-content-review",
+      "revision",
+      "restore-new-pending-version",
+      "catalogue-filter",
+      "credential-clear",
+      "research-release-gate",
+      "credential-delete",
+      "scope-reset",
+      "saas-save-revise"
+    ]
+  },
+  {
+    "width": 393,
+    "pageWidth": 393,
+    "errors": [],
+    "flows": [
+      "business-preview",
+      "save-readback",
+      "explicit-content-review",
+      "revision",
+      "restore-new-pending-version",
+      "catalogue-filter",
+      "credential-clear",
+      "research-release-gate",
+      "credential-delete",
+      "scope-reset",
+      "saas-save-revise"
+    ]
+  },
+  {
+    "width": 708,
+    "pageWidth": 708,
+    "errors": [],
+    "flows": [
+      "business-preview",
+      "save-readback",
+      "explicit-content-review",
+      "revision",
+      "restore-new-pending-version",
+      "catalogue-filter",
+      "credential-clear",
+      "research-release-gate",
+      "credential-delete",
+      "scope-reset",
+      "saas-save-revise"
+    ]
+  },
+  {
+    "width": 1280,
+    "pageWidth": 1280,
+    "errors": [],
+    "flows": [
+      "business-preview",
+      "save-readback",
+      "explicit-content-review",
+      "revision",
+      "restore-new-pending-version",
+      "catalogue-filter",
+      "credential-clear",
+      "research-release-gate",
+      "credential-delete",
+      "scope-reset",
+      "saas-save-revise"
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+export {saveFoundationDesign} from './foundation-client.mjs';
 import {buildSaasAgentTeam,validateAgentProject} from '../../supabase/functions/_shared/jd-agent-architect.mjs';
 export const canDesignAgents=role=>['owner','admin'].includes(role);
 export async function previewAgentTeam(client,role,project){

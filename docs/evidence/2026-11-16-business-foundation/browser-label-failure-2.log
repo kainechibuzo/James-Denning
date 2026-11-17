@@ -1,0 +1,13 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.fill: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByLabel('Goals, one per line', { exact: true })
+
+    at /home/user/James-Denning/scripts/test-foundation-layout.mjs:33:126 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.22.3
