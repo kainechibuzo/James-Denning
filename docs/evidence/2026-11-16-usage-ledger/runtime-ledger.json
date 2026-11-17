@@ -1,0 +1,154 @@
+{
+  "scope": "Actual runtime and SQL with synthetic auth, fake model stream and fixture-adjusted excluded wait; not a real provider/employee evaluation.",
+  "result": {
+    "text": "Synthetic metered response, not operational employee evaluation.",
+    "status": "completed",
+    "truncated": false,
+    "toolEvents": [],
+    "responseId": "synthetic-provider-response",
+    "tokenUsage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0,
+      "cached_input_tokens": 0,
+      "reasoning_tokens": 0,
+      "model_requests": 1,
+      "usage_reported_requests": 0,
+      "total_tokens_reported_requests": 0
+    },
+    "modelRequests": [
+      {
+        "request_index": 1,
+        "attempts": 1,
+        "latency_ms": 4,
+        "first_token_ms": null,
+        "usage": null,
+        "model": "synthetic"
+      }
+    ],
+    "model": "synthetic",
+    "provider": "openrouter"
+  },
+  "snapshot": {
+    "mode": "shadow",
+    "runs": [
+      {
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "sequence": 6,
+        "closed_at": "2026-11-17T12:13:11.393+00:00",
+        "uncertain": false,
+        "created_at": "2026-11-17T12:13:11.372+00:00",
+        "estimate_micros": 2,
+        "subject_reference": "synthetic-subject-not-hired",
+        "reservation_micros": 500000,
+        "active_microseconds": 6000
+      }
+    ],
+    "policy": "employee-active-v1-shadow",
+    "charged": false,
+    "version": 1,
+    "balanced": true,
+    "run_limit": 50,
+    "configured": true,
+    "budget_micros": 1000000,
+    "hourly_micros": 1000000,
+    "accrued_micros": 2,
+    "invoice_created": false,
+    "reserved_micros": 0,
+    "platform_subscription": "unchanged"
+  },
+  "observations": [
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "idle",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": null,
+        "sequence": 1,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.376+00:00",
+        "estimate_micros": 0,
+        "active_microseconds": 0
+      }
+    },
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "external_wait",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": null,
+        "sequence": 2,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.379+00:00",
+        "estimate_micros": 0,
+        "active_microseconds": 0
+      }
+    },
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "active",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": "2026-11-17T12:13:41.381+00:00",
+        "sequence": 3,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.381+00:00",
+        "estimate_micros": 0,
+        "active_microseconds": 0
+      }
+    },
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "external_wait",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": null,
+        "sequence": 4,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.383+00:00",
+        "estimate_micros": 1,
+        "active_microseconds": 2000
+      }
+    },
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "active",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": "2026-11-17T12:13:41.389+00:00",
+        "sequence": 5,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.389+00:00",
+        "estimate_micros": 1,
+        "active_microseconds": 2000
+      }
+    },
+    {
+      "receipt": {
+        "mode": "shadow",
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "charged": false,
+        "deadline": null,
+        "sequence": 6,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.393+00:00",
+        "estimate_micros": 2,
+        "active_microseconds": 6000
+      }
+    }
+  ]
+}

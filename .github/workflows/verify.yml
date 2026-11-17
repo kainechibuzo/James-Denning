@@ -35,6 +35,9 @@ jobs:
       - name: Test reviewed organisation settings and SQL execution
         run: npm run test:settings
 
+      - name: Test shadow usage ledger, worker fencing and runtime boundaries
+        run: npm run test:usage
+
       - name: Test business foundation, research and isolated registry SQL
         run: npm run test:foundation
 

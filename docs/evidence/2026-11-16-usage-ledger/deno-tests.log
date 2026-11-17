@@ -1,0 +1,20 @@
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/pptxgenjs@3.12.0
+Download https://esm.sh/docx@8.5.0
+Check supabase/functions/_shared/jd-agent-runtime.test.ts
+Check supabase/functions/_shared/jd-execution-worker.test.ts
+running 8 tests from ./supabase/functions/_shared/jd-agent-runtime.test.ts
+usage normalisation never invents total tokens ... ok (456µs)
+usage aggregation counts model requests and preserves missing totals ... ok (147µs)
+only transient provider statuses are retried ... ok (60µs)
+retry delay is bounded and respects Retry-After seconds ... ok (86µs)
+free router follow-up requests stay on the first selected model ... ok (194µs)
+configured model choices are never replaced by provider response metadata ... ok (90µs)
+launch checklist batch keys are stable but separate distinct checklists ... ok (1ms)
+business finance intelligence tools are registered in JD ... ok (52µs)
+running 3 tests from ./supabase/functions/_shared/jd-execution-worker.test.ts
+accepts only version-one opaque job messages ... ok (428µs)
+worker identifiers are bounded and normalised ... ok (162µs)
+retry delay is exponential and bounded ... ok (71µs)
+
+ok | 11 passed | 0 failed (67ms)

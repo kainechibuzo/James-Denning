@@ -59,7 +59,7 @@ No automatic retries, provider failover, cache, direct page retrieval or model-b
 
 A pure usage-quote function validates identified UTC intervals, deduplicates identical event IDs, rejects conflicting/overlapping intervals, sums active time per employee and excludes queued/idle/approval/external-service waits and pauses. Integer microdollar arithmetic rounds once after aggregation; a proposed $1/hour rate and supplied budget are explicit.
 
-**This is a quote primitive, not metering or billing infrastructure.** There is no trusted runner emitting usage events, durable billing ledger, invoice, charge, platform-plan change or activated billing flag. Retry/failure/dispute policy, actual budgets, billing authorisation and reconciliation still need implementation and commercial review. No unannounced model/API surcharge was introduced.
+**The foundation's quote function is not billing infrastructure.** A subsequent [employee usage accounting stage](JD_EMPLOYEE_USAGE_LEDGER.md) adds durable **shadow** budgets/reservations/events, terminal reconciliation and default-off instrumentation of the existing worker. It does not create a commercial billing ledger, invoice, charge, platform-plan change or hired-employee identity. Retry/failure/dispute policy, trusted active-time measurement and billing authorisation still need implementation and commercial review. No unannounced model/API surcharge was introduced.
 
 ## Local tests and evidence
 

@@ -1,0 +1,714 @@
+TAP version 13
+# Subtest: configuration is explicit shadow only and preserves base subscription
+not ok 1 - configuration is explicit shadow only and preserves base subscription
+  ---
+  duration_ms: 1740.296755
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:43:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: budget policy cannot be upgraded to charging by caller
+not ok 2 - budget policy cannot be upgraded to charging by caller
+  ---
+  duration_ms: 24.080645
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:44:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: configuration rejects null budget
+not ok 3 - configuration rejects null budget
+  ---
+  duration_ms: 21.730746
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:45:134'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: configuration rejects negative
+not ok 4 - configuration rejects negative
+  ---
+  duration_ms: 18.460139
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:45:134'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: configuration rejects oversized
+not ok 5 - configuration rejects oversized
+  ---
+  duration_ms: 21.345098
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:45:134'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: configuration rejects invalid version
+not ok 6 - configuration rejects invalid version
+  ---
+  duration_ms: 20.46961
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:45:134'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: configure has request replay and optimistic version protection
+not ok 7 - configure has request replay and optimistic version protection
+  ---
+  duration_ms: 38.792958
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:46:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: reservation does not hire, authorise execution or charge
+not ok 8 - reservation does not hire, authorise execution or charge
+  ---
+  duration_ms: 13.098523
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:47:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: reservation requires configured sufficient budget and rejects double allocation
+not ok 9 - reservation requires configured sufficient budget and rejects double allocation
+  ---
+  duration_ms: 12.266599
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:48:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: reservation replay cannot double reserve or reuse request for another operation
+not ok 10 - reservation replay cannot double reserve or reuse request for another operation
+  ---
+  duration_ms: 11.078615
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:49:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: staff cannot access or mutate this tenant's usage
+not ok 11 - staff cannot access or mutate this tenant's usage
+  ---
+  duration_ms: 11.429278
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:50:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: other tenant cannot access or mutate this tenant's usage
+not ok 12 - other tenant cannot access or mutate this tenant's usage
+  ---
+  duration_ms: 13.227112
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:50:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: anon cannot spoof actor or access private worker data
+not ok 13 - anon cannot spoof actor or access private worker data
+  ---
+  duration_ms: 16.429721
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:51:44'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: authenticated cannot spoof actor or access private worker data
+not ok 14 - authenticated cannot spoof actor or access private worker data
+  ---
+  duration_ms: 16.872956
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:51:44'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: service role cannot forge direct ledger writes
+not ok 15 - service role cannot forge direct ledger writes
+  ---
+  duration_ms: 15.956952
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:55:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: immutable observations also reject mutation by privileged fixture owner
+not ok 16 - immutable observations also reject mutation by privileged fixture owner
+  ---
+  duration_ms: 12.844667
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:56:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: active time comes from the server and aggregates rounding once
+not ok 17 - active time comes from the server and aggregates rounding once
+  ---
+  duration_ms: 18.283916
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:57:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: idle duration is not counted
+not ok 18 - idle duration is not counted
+  ---
+  duration_ms: 13.761968
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:62:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: paused duration is not counted
+not ok 19 - paused duration is not counted
+  ---
+  duration_ms: 15.634542
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:62:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: approval_wait duration is not counted
+not ok 20 - approval_wait duration is not counted
+  ---
+  duration_ms: 12.957665
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:62:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: external_wait duration is not counted
+not ok 21 - external_wait duration is not counted
+  ---
+  duration_ms: 18.362695
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:62:70'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: observation replay is exact, never double counts and conflicts fail closed
+not ok 22 - observation replay is exact, never double counts and conflicts fail closed
+  ---
+  duration_ms: 14.288594
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:63:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: stale lease and expiration cannot append observations
+not ok 23 - stale lease and expiration cannot append observations
+  ---
+  duration_ms: 14.06001
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:64:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: replacement lease cannot attribute old active time to new worker
+not ok 24 - replacement lease cannot attribute old active time to new worker
+  ---
+  duration_ms: 17.37758
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:65:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: missed active deadline discards unconfirmed time and closes for review
+not ok 25 - missed active deadline discards unconfirmed time and closes for review
+  ---
+  duration_ms: 13.64465
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:66:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: active deadline is bounded by remaining budget and job lease
+not ok 26 - active deadline is bounded by remaining budget and job lease
+  ---
+  duration_ms: 18.266532
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:67:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: authorisation is checked again after role or tenant changes
+not ok 27 - authorisation is checked again after role or tenant changes
+  ---
+  duration_ms: 21.579521
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:68:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: reconciliation refuses running job and then releases terminal reservation without inventing time
+not ok 28 - reconciliation refuses running job and then releases terminal reservation without inventing time
+  ---
+  duration_ms: 18.014276
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:69:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: completed zero-work reservation can be reconciled but never automatically billed
+not ok 29 - completed zero-work reservation can be reconciled but never automatically billed
+  ---
+  duration_ms: 15.596555
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:70:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: audit failures roll back both reservation and financial counters
+not ok 30 - audit failures roll back both reservation and financial counters
+  ---
+  duration_ms: 23.507672
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:71:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: reconciliation detects tampered derived counters without concealing drift
+not ok 31 - reconciliation detects tampered derived counters without concealing drift
+  ---
+  duration_ms: 11.465594
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:72:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: persist evidence from actual synthetic reservation/observation/settlement chain
+not ok 32 - persist evidence from actual synthetic reservation/observation/settlement chain
+  ---
+  duration_ms: 11.012695
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-usage-ledger-database.mjs:73:1'
+  failureType: 'hookFailed'
+  error: 'null value in column "request_text" of relation "jd_automation_runs" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 0
+# fail 32
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2417.710398

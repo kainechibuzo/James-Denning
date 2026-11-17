@@ -1,0 +1,186 @@
+{
+  "scope": "Local synthetic PGlite only. Fixture timestamps adjusted by test owner, never caller timestamps. No provider, charge or hired employee.",
+  "snapshot": {
+    "mode": "shadow",
+    "runs": [
+      {
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "sequence": 3,
+        "closed_at": "2026-11-17T12:13:11.066+00:00",
+        "uncertain": false,
+        "created_at": "2026-11-17T12:13:11.058+00:00",
+        "estimate_micros": 279,
+        "subject_reference": "synthetic-subject-not-hired",
+        "reservation_micros": 500000,
+        "active_microseconds": 1001000
+      }
+    ],
+    "policy": "employee-active-v1-shadow",
+    "charged": false,
+    "version": 1,
+    "balanced": true,
+    "run_limit": 50,
+    "configured": true,
+    "budget_micros": 1000000,
+    "hourly_micros": 1000000,
+    "accrued_micros": 279,
+    "invoice_created": false,
+    "reserved_micros": 0,
+    "platform_subscription": "unchanged"
+  },
+  "events": [
+    {
+      "kind": "configure",
+      "receipt": {
+        "mode": "shadow",
+        "policy": "employee-active-v1-shadow",
+        "charged": false,
+        "version": 1,
+        "budget_micros": 1000000,
+        "hourly_micros": 1000000,
+        "platform_subscription": "unchanged"
+      },
+      "created_at": "2026-11-17T12:13:11.055Z"
+    },
+    {
+      "kind": "reserve",
+      "receipt": {
+        "mode": "shadow",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "charged": false,
+        "sequence": 0,
+        "subject_verified": false,
+        "reservation_micros": 500000,
+        "execution_authorised": false
+      },
+      "created_at": "2026-11-17T12:13:11.059Z"
+    },
+    {
+      "kind": "observe",
+      "receipt": {
+        "mode": "shadow",
+        "phase": "active",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": "2026-11-17T12:13:41.062+00:00",
+        "sequence": 1,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.062+00:00",
+        "estimate_micros": 0,
+        "active_microseconds": 0
+      },
+      "created_at": "2026-11-17T12:13:11.062Z"
+    },
+    {
+      "kind": "observe",
+      "receipt": {
+        "mode": "shadow",
+        "phase": "external_wait",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": null,
+        "sequence": 2,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.064+00:00",
+        "estimate_micros": 279,
+        "active_microseconds": 1001000
+      },
+      "created_at": "2026-11-17T12:13:11.064Z"
+    },
+    {
+      "kind": "observe",
+      "receipt": {
+        "mode": "shadow",
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "charged": false,
+        "deadline": null,
+        "sequence": 3,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.066+00:00",
+        "estimate_micros": 279,
+        "active_microseconds": 1001000
+      },
+      "created_at": "2026-11-17T12:13:11.067Z"
+    }
+  ],
+  "audit": [
+    {
+      "event_type": "usage.shadow_configured",
+      "event_json": {
+        "mode": "shadow",
+        "policy": "employee-active-v1-shadow",
+        "charged": false,
+        "version": 1,
+        "budget_micros": 1000000,
+        "hourly_micros": 1000000,
+        "platform_subscription": "unchanged"
+      }
+    },
+    {
+      "event_type": "usage.reserved",
+      "event_json": {
+        "mode": "shadow",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "charged": false,
+        "sequence": 0,
+        "subject_verified": false,
+        "reservation_micros": 500000,
+        "execution_authorised": false
+      }
+    },
+    {
+      "event_type": "usage.observed",
+      "event_json": {
+        "mode": "shadow",
+        "phase": "active",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": "2026-11-17T12:13:41.062+00:00",
+        "sequence": 1,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.062+00:00",
+        "estimate_micros": 0,
+        "active_microseconds": 0
+      }
+    },
+    {
+      "event_type": "usage.observed",
+      "event_json": {
+        "mode": "shadow",
+        "phase": "external_wait",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "open",
+        "charged": false,
+        "deadline": null,
+        "sequence": 2,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.064+00:00",
+        "estimate_micros": 279,
+        "active_microseconds": 1001000
+      }
+    },
+    {
+      "event_type": "usage.observed",
+      "event_json": {
+        "mode": "shadow",
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "charged": false,
+        "deadline": null,
+        "sequence": 3,
+        "uncertain": false,
+        "observed_at": "2026-11-17T12:13:11.066+00:00",
+        "estimate_micros": 279,
+        "active_microseconds": 1001000
+      }
+    }
+  ]
+}

@@ -1,0 +1,395 @@
+> james-denning@1.0.0 test:agents
+> node --experimental-strip-types --test scripts/test-agent-architect.mjs scripts/test-agent-studio-ui.mjs
+
+TAP version 13
+# (node:3370) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: deterministic team has no execution, storage, grants, spend, evaluations or fixed departments
+ok 1 - deterministic team has no execution, storage, grants, spend, evaluations or fixed departments
+  ---
+  duration_ms: 3.276412
+  type: 'test'
+  ...
+# Subtest: website does not inherit backend/database or HR/Finance departments
+ok 2 - website does not inherit backend/database or HR/Finance departments
+  ---
+  duration_ms: 0.711291
+  type: 'test'
+  ...
+# Subtest: payments and research add honest requirements, not connections
+ok 3 - payments and research add honest requirements, not connections
+  ---
+  duration_ms: 0.49558
+  type: 'test'
+  ...
+# Subtest: rejects emptyName
+ok 4 - rejects emptyName
+  ---
+  duration_ms: 0.3738
+  type: 'test'
+  ...
+# Subtest: rejects longName
+ok 5 - rejects longName
+  ---
+  duration_ms: 0.184955
+  type: 'test'
+  ...
+# Subtest: rejects shortBrief
+ok 6 - rejects shortBrief
+  ---
+  duration_ms: 3.712562
+  type: 'test'
+  ...
+# Subtest: rejects longBrief
+ok 7 - rejects longBrief
+  ---
+  duration_ms: 0.172297
+  type: 'test'
+  ...
+# Subtest: rejects wrongType
+ok 8 - rejects wrongType
+  ---
+  duration_ms: 0.193787
+  type: 'test'
+  ...
+# Subtest: rejects noBoolean
+ok 9 - rejects noBoolean
+  ---
+  duration_ms: 0.320634
+  type: 'test'
+  ...
+# Subtest: rejects stringBoolean
+ok 10 - rejects stringBoolean
+  ---
+  duration_ms: 0.474523
+  type: 'test'
+  ...
+# Subtest: rejects unknownField
+ok 11 - rejects unknownField
+  ---
+  duration_ms: 0.171624
+  type: 'test'
+  ...
+# Subtest: rejects grant
+ok 12 - rejects grant
+  ---
+  duration_ms: 0.085114
+  type: 'test'
+  ...
+# Subtest: rejects route
+ok 13 - rejects route
+  ---
+  duration_ms: 0.157156
+  type: 'test'
+  ...
+# Subtest: rejects noBackend
+ok 14 - rejects noBackend
+  ---
+  duration_ms: 0.078779
+  type: 'test'
+  ...
+# Subtest: rejects noIdentity
+ok 15 - rejects noIdentity
+  ---
+  duration_ms: 0.096885
+  type: 'test'
+  ...
+# Subtest: rejects secret
+ok 16 - rejects secret
+  ---
+  duration_ms: 0.100303
+  type: 'test'
+  ...
+# Subtest: rejects privateKey
+ok 17 - rejects privateKey
+  ---
+  duration_ms: 0.071236
+  type: 'test'
+  ...
+# Subtest: rejects unknownAgent
+ok 18 - rejects unknownAgent
+  ---
+  duration_ms: 0.073317
+  type: 'test'
+  ...
+# Subtest: rejects unusedAgent
+ok 19 - rejects unusedAgent
+  ---
+  duration_ms: 0.129277
+  type: 'test'
+  ...
+# Subtest: rejects longNote
+ok 20 - rejects longNote
+  ---
+  duration_ms: 0.116383
+  type: 'test'
+  ...
+# Subtest: rejects malformed project null
+ok 21 - rejects malformed project null
+  ---
+  duration_ms: 0.141819
+  type: 'test'
+  ...
+# Subtest: rejects malformed project []
+ok 22 - rejects malformed project []
+  ---
+  duration_ms: 0.111336
+  type: 'test'
+  ...
+# Subtest: rejects malformed project 3
+ok 23 - rejects malformed project 3
+  ---
+  duration_ms: 0.121768
+  type: 'test'
+  ...
+# Subtest: rejects malformed project "project"
+ok 24 - rejects malformed project "project"
+  ---
+  duration_ms: 0.065618
+  type: 'test'
+  ...
+# Subtest: rejects malformed project {}
+ok 25 - rejects malformed project {}
+  ---
+  duration_ms: 0.085553
+  type: 'test'
+  ...
+# Subtest: editable brief roundtrip retains safety boundaries; injection cannot grant access
+ok 26 - editable brief roundtrip retains safety boundaries; injection cannot grant access
+  ---
+  duration_ms: 1.274269
+  type: 'test'
+  ...
+# Subtest: runtime owner boundary and no side effects
+ok 27 - runtime owner boundary and no side effects
+  ---
+  duration_ms: 0.702946
+  type: 'test'
+  ...
+# Subtest: runtime admin boundary and no side effects
+ok 28 - runtime admin boundary and no side effects
+  ---
+  duration_ms: 0.253975
+  type: 'test'
+  ...
+# Subtest: runtime manager boundary and no side effects
+ok 29 - runtime manager boundary and no side effects
+  ---
+  duration_ms: 0.250813
+  type: 'test'
+  ...
+# Subtest: runtime staff boundary and no side effects
+ok 30 - runtime staff boundary and no side effects
+  ---
+  duration_ms: 0.152149
+  type: 'test'
+  ...
+# Subtest: runtime viewer boundary and no side effects
+ok 31 - runtime viewer boundary and no side effects
+  ---
+  duration_ms: 0.103614
+  type: 'test'
+  ...
+# Subtest: runtime finance boundary and no side effects
+ok 32 - runtime finance boundary and no side effects
+  ---
+  duration_ms: 0.085409
+  type: 'test'
+  ...
+# Subtest: runtime hr boundary and no side effects
+ok 33 - runtime hr boundary and no side effects
+  ---
+  duration_ms: 0.084263
+  type: 'test'
+  ...
+# Subtest: runtime contractor boundary and no side effects
+ok 34 - runtime contractor boundary and no side effects
+  ---
+  duration_ms: 0.083644
+  type: 'test'
+  ...
+# Subtest: runtime capability is preview-only
+ok 35 - runtime capability is preview-only
+  ---
+  duration_ms: 0.172375
+  type: 'test'
+  ...
+# Subtest: client calls authenticated preview action and rejects insufficient role before calling
+ok 36 - client calls authenticated preview action and rejects insufficient role before calling
+  ---
+  duration_ms: 0.583693
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 37 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.387007
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 38 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.124367
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 39 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.102611
+  type: 'test'
+  ...
+# Subtest: client fails closed without trusting malformed or incompatible responses
+ok 40 - client fails closed without trusting malformed or incompatible responses
+  ---
+  duration_ms: 0.248342
+  type: 'test'
+  ...
+# Subtest: network errors are sanitised; not automatically retried
+ok 41 - network errors are sanitised; not automatically retried
+  ---
+  duration_ms: 0.267921
+  type: 'test'
+  ...
+# Subtest: HTTP owner role derived from profile, not payload
+ok 42 - HTTP owner role derived from profile, not payload
+  ---
+  duration_ms: 9.950121
+  type: 'test'
+  ...
+# Subtest: HTTP admin role derived from profile, not payload
+ok 43 - HTTP admin role derived from profile, not payload
+  ---
+  duration_ms: 1.316382
+  type: 'test'
+  ...
+# Subtest: HTTP manager role derived from profile, not payload
+ok 44 - HTTP manager role derived from profile, not payload
+  ---
+  duration_ms: 0.697264
+  type: 'test'
+  ...
+# Subtest: HTTP staff role derived from profile, not payload
+ok 45 - HTTP staff role derived from profile, not payload
+  ---
+  duration_ms: 0.872547
+  type: 'test'
+  ...
+# Subtest: HTTP viewer role derived from profile, not payload
+ok 46 - HTTP viewer role derived from profile, not payload
+  ---
+  duration_ms: 0.861456
+  type: 'test'
+  ...
+# Subtest: HTTP finance role derived from profile, not payload
+ok 47 - HTTP finance role derived from profile, not payload
+  ---
+  duration_ms: 0.771783
+  type: 'test'
+  ...
+# Subtest: HTTP hr role derived from profile, not payload
+ok 48 - HTTP hr role derived from profile, not payload
+  ---
+  duration_ms: 0.897286
+  type: 'test'
+  ...
+# Subtest: HTTP contractor role derived from profile, not payload
+ok 49 - HTTP contractor role derived from profile, not payload
+  ---
+  duration_ms: 0.531541
+  type: 'test'
+  ...
+# Subtest: HTTP denies invalid identity {"valid":false}
+ok 50 - HTTP denies invalid identity {"valid":false}
+  ---
+  duration_ms: 0.729918
+  type: 'test'
+  ...
+# Subtest: HTTP denies invalid identity {"tenant":null}
+ok 51 - HTTP denies invalid identity {"tenant":null}
+  ---
+  duration_ms: 0.371274
+  type: 'test'
+  ...
+# Subtest: HTTP missing token denies before database access
+ok 52 - HTTP missing token denies before database access
+  ---
+  duration_ms: 0.385381
+  type: 'test'
+  ...
+# Subtest: HTTP invalid requirement gives sanitised error without writes
+ok 53 - HTTP invalid requirement gives sanitised error without writes
+  ---
+  duration_ms: 0.816305
+  type: 'test'
+  ...
+# Subtest: actual chat dispatcher returns preview evidence, not created agents, to a synthetic model
+ok 54 - actual chat dispatcher returns preview evidence, not created agents, to a synthetic model
+  ---
+  duration_ms: 8.693294
+  type: 'test'
+  ...
+# Subtest: preview and per-agent edits are local, truthful, and discarded on requirements change
+ok 55 - preview and per-agent edits are local, truthful, and discarded on requirements change
+  ---
+  duration_ms: 181.2271
+  type: 'test'
+  ...
+# Subtest: invalid architecture never reaches backend
+ok 56 - invalid architecture never reaches backend
+  ---
+  duration_ms: 22.89464
+  type: 'test'
+  ...
+# Subtest: credential-like agent note is rejected without crashing or changing definition
+ok 57 - credential-like agent note is rejected without crashing or changing definition
+  ---
+  duration_ms: 43.776442
+  type: 'test'
+  ...
+# Subtest: duplicate submissions lock; delayed previous-scope response never appears in new scope
+ok 58 - duplicate submissions lock; delayed previous-scope response never appears in new scope
+  ---
+  duration_ms: 26.105679
+  type: 'test'
+  ...
+# Subtest: role downgrade removes unsaved data and controls
+ok 59 - role downgrade removes unsaved data and controls
+  ---
+  duration_ms: 66.881863
+  type: 'test'
+  ...
+# Subtest: backend failure gives no local success fallback or export
+ok 60 - backend failure gives no local success fallback or export
+  ---
+  duration_ms: 22.008431
+  type: 'test'
+  ...
+# Subtest: non-admin cannot open studio directly
+ok 61 - non-admin cannot open studio directly
+  ---
+  duration_ms: 7.444515
+  type: 'test'
+  ...
+# Subtest: operations studio is reachable while overview calls are still loading
+ok 62 - operations studio is reachable while overview calls are still loading
+  ---
+  duration_ms: 49.491999
+  type: 'test'
+  ...
+# Subtest: operations navigation does not expose studio to manager
+ok 63 - operations navigation does not expose studio to manager
+  ---
+  duration_ms: 25.831349
+  type: 'test'
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 63
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1577.83176

@@ -1,0 +1,51 @@
+{
+  "scope": "Synthetic on-disk PGlite close/reopen, not hosted PostgreSQL crash recovery.",
+  "first": {
+    "mode": "shadow",
+    "policy": "employee-active-v1-shadow",
+    "charged": false,
+    "version": 1,
+    "budget_micros": 1000000,
+    "hourly_micros": 1000000,
+    "platform_subscription": "unchanged"
+  },
+  "replay": {
+    "mode": "shadow",
+    "policy": "employee-active-v1-shadow",
+    "charged": false,
+    "version": 1,
+    "budget_micros": 1000000,
+    "hourly_micros": 1000000,
+    "platform_subscription": "unchanged"
+  },
+  "snapshot": {
+    "mode": "shadow",
+    "runs": [
+      {
+        "phase": "closed",
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "status": "settled",
+        "sequence": 2,
+        "closed_at": "2026-11-17T12:13:12.538+00:00",
+        "uncertain": false,
+        "created_at": "2026-11-17T12:13:12.531+00:00",
+        "estimate_micros": 279,
+        "subject_reference": "synthetic-durable",
+        "reservation_micros": 500000,
+        "active_microseconds": 1001000
+      }
+    ],
+    "policy": "employee-active-v1-shadow",
+    "charged": false,
+    "version": 1,
+    "balanced": true,
+    "run_limit": 50,
+    "configured": true,
+    "budget_micros": 1000000,
+    "hourly_micros": 1000000,
+    "accrued_micros": 279,
+    "invoice_created": false,
+    "reserved_micros": 0,
+    "platform_subscription": "unchanged"
+  }
+}
