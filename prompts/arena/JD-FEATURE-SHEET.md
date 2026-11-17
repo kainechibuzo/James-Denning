@@ -665,3 +665,229 @@ JD should be able to:
 **The ultimate objective is not to build another dashboard or chatbot. It is to build an intelligent platform that helps people create, operate and grow real organisations.**
 
 **JAMES DENNING — RUN. MONITOR. BUILD. GROW.**
+
+
+---
+
+# Platform Expansion: AI Workforce, Business Advisor and Research Infrastructure
+
+The following capabilities extend the product vision above. They are product requirements, not claims that the capabilities are already implemented or deployed.
+
+## 18. JD AI Workforce and Employee Marketplace
+
+James Denning should provide a discoverable catalogue of **400+ specialised AI employees** across business functions and industries. These are operational AI agents with defined skills, instructions, tools, permissions, evaluation criteria and measurable deliverables—not merely named chatbot personas.
+
+### 18.1 Workforce catalogue
+
+The catalogue should cover, at minimum:
+
+- Executive assistance and strategy.
+- Business advisory and business planning.
+- Market, customer and competitor research.
+- Marketing, content, SEO and advertising.
+- Sales, lead research and customer relationship management.
+- Finance operations, budgeting and reporting.
+- Recruitment, HR administration and onboarding.
+- Software engineering, QA, security and DevOps.
+- Product management, UX and visual design.
+- Operations, procurement and process improvement.
+- Logistics, fleet, dispatch and supply chain.
+- Education administration and academic operations.
+- Customer support and customer success.
+- Data analysis, business intelligence and reporting.
+- Industry-specific specialist roles as the catalogue expands.
+
+The 400+ target refers to distinct, maintained and evaluated agent definitions. Do not inflate the count with duplicate agents that only differ by display name. Each listing must describe its actual capability boundaries.
+
+### 18.2 Employee profiles
+
+Every AI employee profile should define:
+
+| Field | Requirement |
+|---|---|
+| Identity | Name, category, role and concise description. |
+| Capabilities | Supported tasks, inputs and deliverables. |
+| Limitations | Unsupported tasks and known failure modes. |
+| Tools | Required and optional tools/connectors. |
+| Permissions | Least-privilege access and risk classification. |
+| Model routing | Approved model/provider configuration and fallback policy. |
+| Pricing | Rate, billable-time policy and any separately charged tools. |
+| Evaluation | Test suite, quality measures and last evaluation status. |
+| Version | Versioned instructions, tools and configuration. |
+| Availability | Available, degraded, paused or retired. |
+
+### 18.3 Intelligent employee recommendations
+
+JD should recommend employees based on the customer's business model, goals, active projects, workload, requested outcomes, connected tools and existing workforce.
+
+Recommendations must:
+- Explain why each employee is relevant and what outcome it is expected to deliver.
+- Show required integrations, permissions, estimated usage and cost assumptions.
+- Distinguish required employees from optional recommendations.
+- Detect overlapping capabilities and avoid unnecessary hires.
+- Consider existing employees before recommending duplicates.
+- Support customer review, selection and explicit hiring/assignment.
+- Re-evaluate recommendations as the business changes.
+- Never hire, start billable work or grant permissions solely because JD made a recommendation.
+
+### 18.4 Hiring and workforce lifecycle
+
+Support the following lifecycle states:
+
+- Listed — available in the catalogue.
+- Recommended — suggested by JD, not hired.
+- Awaiting approval — customer action required.
+- Hired — customer has authorised assignment to the organisation.
+- Assigned — linked to a task, project or workflow.
+- Running — actively executing an authorised task.
+- Paused — not accepting new billable work.
+- Blocked — waiting on an input, permission, dependency or approval.
+- Completed — assigned work finished.
+- Failed — execution ended unsuccessfully.
+- Retired — no longer available for new assignments.
+
+Customers should be able to inspect, hire, assign, pause, resume, replace and release employees. Changes to permissions and consequential external actions remain approval-gated.
+
+### 18.5 Pricing and metering
+
+The proposed standard starting rate is **US$1 per active billable agent-hour**. This is a product pricing rule to validate commercially, not a claim that all agents have identical operating costs.
+
+Billing requirements:
+- Meter actual active execution time using server-side timestamps and durable execution records.
+- Define rounding, minimum increments, pauses, retries, cancellations and disputed/failed work transparently.
+- Do not bill for idle time, queued time, approval waits or external-service waits unless a separately disclosed pricing rule explicitly applies.
+- Show per-agent, per-task and organisation-level usage and cost.
+- Provide spending limits, budgets, alerts and customer-controlled stop/pause controls.
+- Disclose external API, model, storage and connector charges separately where applicable.
+- Prevent duplicate charges through idempotent usage events and reconciliation.
+- Do not begin billable work without customer authorisation and an available budget.
+- Provide invoices and an auditable usage ledger.
+
+### 18.6 Agent teams and coordination
+
+JD should assemble multi-agent teams for projects and ongoing operations. A coordinator or project-manager agent can delegate scoped tasks to specialists, track dependencies, consolidate outputs and report progress.
+
+Team execution must include:
+- Explicit task ownership and dependency tracking.
+- Scoped context sharing rather than unrestricted access to all customer data.
+- Per-agent permissions and budget ceilings.
+- Conflict handling, escalation and human review.
+- Shared project status and evidence records.
+- Protection against circular delegation, runaway retries and uncontrolled agent spawning.
+- A clear distinction between an agent's draft/recommendation and a verified deliverable.
+
+### 18.7 Workforce quality and governance
+
+Evaluate agents before catalogue publication and after material changes. Measure task success, output quality, reliability, latency, cost, tool errors and customer feedback. Display evaluation dates and known limitations. Support version rollback, incident suspension and retirement. Customer data must remain tenant-isolated.
+
+## 19. JD Business Advisor
+
+JD should include a dedicated **Business Advisor** capability that helps customers reason about starting, operating and growing their organisations.
+
+The Business Advisor should:
+- Understand the business model, stage, objectives, target customers and constraints.
+- Help turn broad ideas into structured business plans and practical milestones.
+- Research markets, competitors, customer segments and industry trends using approved research sources.
+- Analyse pricing, positioning, distribution, operations and growth opportunities.
+- Identify risks, assumptions, dependencies and unanswered questions.
+- Recommend suitable workspace modules, AI employees, workflows and connectors.
+- Produce decision briefs with options, trade-offs, evidence and recommended next steps.
+- Track approved goals and compare subsequent evidence against them.
+- Revisit recommendations when new information or business results become available.
+
+### Advisor operating rules
+
+- Clearly label facts, estimates, assumptions and recommendations.
+- Cite research sources and record retrieval dates.
+- Explain uncertainty and avoid fabricating market sizes, competitor facts, revenue forecasts or legal requirements.
+- Ask for missing information when it materially changes the recommendation.
+- Tailor advice to the customer's industry, geography, stage and stated constraints.
+- Do not guarantee business outcomes or present general information as regulated legal, tax, investment or accounting advice.
+- Do not make financial commitments, contact third parties, publish campaigns, change prices or execute consequential business actions without the required customer approval.
+- Keep an auditable record of important recommendations and the customer's decisions.
+
+The Business Advisor should work with the Business DNA, Market Research, Workspace Architect, AI Workforce and Workflow Architect rather than become a disconnected chatbot.
+
+## 20. SerpApi Key Support and Search Research Provider
+
+JD should support **SerpApi** as a configurable search research provider for live search-engine results used by Business Discovery, the Business Advisor, Market Research and other authorised research agents.
+
+### 20.1 Credential configuration
+
+- Provide an administrator-controlled provider settings experience for configuring the SerpApi API key.
+- Accept the key through a secure secret input; never expose or return the stored value after saving.
+- Store credentials only in an approved encrypted server-side secret store or secret-management facility.
+- Never place the key in source code, prompts, browser bundles, client-side environment variables, logs, analytics events or Git history.
+- Support secure replacement, rotation, deletion and connection testing.
+- Show configuration status and last successful test without displaying the secret.
+- Keep provider credentials separate from customer research data and enforce appropriate tenant/workspace access.
+- If customer-specific bring-your-own-key is supported, isolate each customer's credential and usage; do not silently share one customer's key with another.
+- Do not assume a key is configured merely because the provider appears in settings.
+
+### 20.2 Search provider service
+
+Implement a server-side SerpApi adapter with:
+- Validated search requests and bounded result counts.
+- Supported search types and locale/location parameters where configured.
+- Request timeouts, rate limits, retries with backoff and error classification.
+- Usage and cost tracking where provider data makes it available.
+- Safe handling of provider errors, quota exhaustion and missing credentials.
+- Caching where appropriate, with freshness and source timestamps.
+- Normalised result records containing title, URL, snippet, source/provider, query and retrieval timestamp.
+- Source links and provenance retained in research reports.
+- Protection against prompt injection and untrusted instructions embedded in retrieved pages or snippets.
+
+### 20.3 Provider abstraction and fallback
+
+SerpApi should be one provider behind a provider-neutral research interface. JD should be able to add or select other approved research providers without rewriting every agent. Fallback is permitted only to a configured and authorised provider; report which provider actually supplied the results. Do not claim live research when no provider call succeeded.
+
+### 20.4 SerpApi acceptance checks
+
+1. An authorised administrator can configure and test a key.
+2. The secret is never returned to the browser or written to logs.
+3. Missing, invalid, revoked and quota-exhausted credentials produce clear, actionable states.
+4. Research agents can invoke the server-side adapter within permission and usage limits.
+5. Results preserve source URLs, query and retrieval timestamps.
+6. Research reports distinguish retrieved evidence from agent interpretation.
+7. Tenant-specific credentials and usage cannot leak across organisations.
+8. Automated tests cover credential absence, success, provider errors, rate limits and secret redaction.
+
+## 21. Expanded Technical Areas and Roadmap
+
+Proposed implementation areas to evaluate against the existing architecture:
+
+| Module | Responsibility |
+|---|---|
+| `jd-ai-workforce-catalogue.ts` | Versioned catalogue and searchable agent definitions. |
+| `jd-agent-recommender.ts` | Match business needs and tasks to suitable agents. |
+| `jd-agent-hiring.ts` | Customer-authorised hiring, assignment and lifecycle. |
+| `jd-agent-metering.ts` | Active execution metering, budgets and reconciliation. |
+| `jd-agent-team-orchestrator.ts` | Bounded multi-agent team coordination. |
+| `jd-agent-evaluation.ts` | Quality tests, performance and release gates. |
+| `jd-business-advisor.ts` | Business advice, decision briefs and goal tracking. |
+| `jd-research-provider.ts` | Provider-neutral research interface. |
+| `jd-serpapi-adapter.ts` | Server-side SerpApi integration. |
+| `jd-research-credentials.ts` | Secure provider credential configuration and testing. |
+
+Roadmap additions:
+- Critical: Business Advisor and evidence-backed decision briefs.
+- Critical: SerpApi provider configuration, secure secret handling and server-side search adapter.
+- Critical: AI employee catalogue schema, profiles and capability taxonomy.
+- Critical: JD employee recommendation and customer-controlled hiring.
+- High: Active-hour metering, budgets, billing ledger and reconciliation.
+- High: Agent teams, bounded delegation and shared project evidence.
+- High: Agent evaluation, versioning, quality monitoring and catalogue governance.
+- High: Expand and validate the catalogue to 400+ distinct specialist agents.
+
+### Additional acceptance criteria
+
+15. JD can recommend relevant AI employees from a maintained catalogue of 400+ distinct evaluated agent definitions.
+16. A recommendation never silently hires an employee or starts billable execution.
+17. Customers can inspect employee capabilities, limitations, permissions and pricing before hiring.
+18. Billable time is based on auditable active execution, with idle and waiting time excluded under the published policy.
+19. Budgets, alerts, pause controls and usage reconciliation work end to end.
+20. Multi-agent teams coordinate bounded tasks without bypassing permissions or approvals.
+21. Business Advisor recommendations include evidence, assumptions, risks and actionable next steps.
+22. SerpApi credentials are securely configured and used only server-side.
+23. Search results retain provenance and retrieval timestamps, and provider failures are reported truthfully.
+24. Agent and research usage is tenant-isolated and auditable.
