@@ -42,11 +42,11 @@ export function AuditLogPage({ctx}){
     role_change:"Role Change",setting_change:"Setting Changed",
     bulk_delete:"Bulk Delete",bulk_status_change:"Bulk Status",
     page_view:"Page View",data_export:"Data Exported"}[a]||a);
-  const typeColor=(t)=>({auth:C.orange,setting:"#60616b",member:C.muted,
+  const typeColor=(t)=>({auth:C.orange,setting:"var(--jd-muted)",member:C.muted,
     page:C.muted,dataset:C.muted}[t]||C.muted);
   const actionColor=(a)=>({login_success:C.green,login_failed:C.red,logout:C.muted,logout_kicked:C.red,
     delete:C.red,bulk_delete:C.red,create:C.green,edit:C.blue,role_change:C.purple,
-    setting_change:"#60616b",page_view:C.muted,data_export:C.muted}[a]||C.text);
+    setting_change:"var(--jd-muted)",page_view:C.muted,data_export:C.muted}[a]||C.text);
 
   const actors=useMemo(()=>{const s=new Set();logs.forEach(l=>{if(l.performed_by)s.add(l.performed_by);});return[...s].sort();},[logs]);
   const actions=useMemo(()=>{const s=new Set();logs.forEach(l=>{if(l.action)s.add(l.action);});return[...s].sort();},[logs]);
@@ -276,19 +276,19 @@ export function AdminToolsPage({ctx}){
   const TOOLS=[
     {id:"audit-log",     icon:"audit-log",     label:"Audit Trail",
      desc:"Full chronological record of every admin action taken in the workspace.",
-     color:"#34353b",bg:"#f1f2f5"},
+     color:"var(--jd-text-soft)",bg:"var(--jd-soft)"},
   ];
 
   return(
     <div style={{maxWidth:860,margin:"0 auto",paddingBottom:40}}>
-      <div className="jd-page-header" style={{background:`linear-gradient(135deg,#17191c,#34353b)`,
+      <div className="jd-page-header" style={{background:`linear-gradient(135deg,var(--jd-text),var(--jd-text-soft))`,
         padding:"20px 28px",marginBottom:28,display:"flex",alignItems:"center",gap:16,borderRadius:14}}>
-        <div style={{background:"rgba(255,255,255,.18)",borderRadius:10,padding:10,display:"flex"}}>
-          <AppIcon name="database" size={22} color="#fff"/>
+        <div style={{background:"color-mix(in srgb, var(--jd-card) 18%, transparent)",borderRadius:10,padding:10,display:"flex"}}>
+          <AppIcon name="database" size={22} color="var(--jd-card)"/>
         </div>
         <div>
-          <h2 style={{color:"#fff",fontWeight:900,fontSize:18,margin:0}}>Admin Tools</h2>
-          <p style={{color:"rgba(255,255,255,.75)",fontSize:12,margin:"2px 0 0"}}>
+          <h2 style={{color:"var(--jd-card)",fontWeight:900,fontSize:18,margin:0}}>Admin Tools</h2>
+          <p style={{color:"color-mix(in srgb, var(--jd-card) 75%, transparent)",fontSize:12,margin:"2px 0 0"}}>
             Maintenance, exports, audit history and system utilities
           </p>
         </div>

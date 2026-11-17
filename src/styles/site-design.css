@@ -1,13 +1,13 @@
 /* Site-wide application of the supplied reference. No new visual language.
    Explicit component classes override legacy inline presentation, not behaviour. */
 :root{
- --jd-text:#101114;--jd-ink:#101114;--jd-muted:#60616b;--jd-border:#dedfe4;
+ --jd-text:#101114;--jd-text-soft:#34353b;--jd-ink:#101114;--jd-muted:#60616b;--jd-border:#dedfe4;
  --jd-card:#fff;--jd-input:#fff;--jd-surface:#fff;--jd-canvas:#f7f8fb;
  --jd-soft:#f1f2f5;--jd-action:#17191c;--jd-on-action:#fff;--jd-accent:#60616b;
  --jd-radius-sm:12px;--jd-radius-md:16px;--jd-radius-lg:20px;
 }
 :root[data-theme='dark']{
- --jd-text:#f3f4f5;--jd-ink:#f3f4f5;--jd-muted:#b6b7bf;--jd-border:#38393f;
+ --jd-text:#f3f4f5;--jd-text-soft:#d1d2d8;--jd-ink:#f3f4f5;--jd-muted:#b6b7bf;--jd-border:#38393f;
  --jd-card:#1d1e22;--jd-input:#17181b;--jd-surface:#17181b;--jd-canvas:#111214;
  --jd-soft:#252629;--jd-action:#f2f3f5;--jd-on-action:#17191c;--jd-accent:#b6b7bf;
 }

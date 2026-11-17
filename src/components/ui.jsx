@@ -31,24 +31,24 @@ export class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center",
-          background:"#f7f8f8", fontFamily:"'JD Inter',system-ui,sans-serif", padding:24 }}>
-          <div style={{ background:"#fff", borderRadius:20, padding:"38px 32px", maxWidth:500, width:"100%",
+          background:"var(--jd-canvas)", fontFamily:"'JD Inter',system-ui,sans-serif", padding:24 }}>
+          <div style={{ background:"var(--jd-card)", borderRadius:20, padding:"38px 32px", maxWidth:500, width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)", textAlign:"center" }}>
             <div style={{ marginBottom:14 }}><Shield size={52} color={C.blue}/></div>
-            <div style={{ fontSize:21, fontWeight:900, color:"#34353b", marginBottom:8 }}>Something went wrong</div>
-            <div style={{ fontSize:13, color:"#60616b", lineHeight:1.7, marginBottom:6 }}>
+            <div style={{ fontSize:21, fontWeight:900, color:"var(--jd-text-soft)", marginBottom:8 }}>Something went wrong</div>
+            <div style={{ fontSize:13, color:"var(--jd-muted)", lineHeight:1.7, marginBottom:6 }}>
               The workspace hit an unexpected error. Your data is safe — this is a display issue only.
             </div>
-            <div style={{ fontSize:12, color:"#60616b", lineHeight:1.6, marginBottom:20 }}>
+            <div style={{ fontSize:12, color:"var(--jd-muted)", lineHeight:1.6, marginBottom:20 }}>
               Click <b>Try Again</b> to dismiss, or <b>Reload</b> if the issue persists.
             </div>
             {this.state.error?.message && (
               <details style={{ textAlign:"left", marginBottom:20 }}>
-                <summary style={{ cursor:"pointer", fontSize:12, color:"#60616b", fontWeight:600, userSelect:"none" }}>
+                <summary style={{ cursor:"pointer", fontSize:12, color:"var(--jd-muted)", fontWeight:600, userSelect:"none" }}>
                   Technical details
                 </summary>
-                <pre style={{ background:"#fef2f2", borderRadius:8, padding:"10px 12px", fontSize:11,
-                  color:"#34353b", overflow:"auto", maxHeight:120, marginTop:6, border:"1px solid #a3a4ad",
+                <pre style={{ background:"var(--jd-soft)", borderRadius:8, padding:"10px 12px", fontSize:11,
+                  color:"var(--jd-text-soft)", overflow:"auto", maxHeight:120, marginTop:6, border:"1px solid var(--jd-muted)",
                   whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
                   {this.state.error.message}
                 </pre>
@@ -56,12 +56,12 @@ export class ErrorBoundary extends Component {
             )}
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={() => this.setState({ hasError:false, error:null, info:null })}
-                style={{ flex:1, background:"#fff", color:"#202124", border:"1px solid #dfe2e5",
+                style={{ flex:1, background:"var(--jd-card)", color:"var(--jd-text)", border:"1px solid var(--jd-border)",
                   padding:"12px", borderRadius:10, fontWeight:700, fontSize:13, cursor:"pointer" }}>
                 <RefreshCw size={14}/> Try Again
               </button>
               <button onClick={() => window.location.reload()}
-                style={{ flex:1, background:"#202124", color:"#fff", border:"none", padding:"12px",
+                style={{ flex:1, background:"var(--jd-text)", color:"var(--jd-card)", border:"none", padding:"12px",
                   borderRadius:10, fontWeight:800, fontSize:13, cursor:"pointer",
                   boxShadow:"0 4px 14px rgba(74,74,74,.4)" }}>
                 Reload workspace
@@ -138,15 +138,15 @@ export function Btn({ children, onClick, color, outline = false, sm = false, xs 
       onMouseEnter={() => setH(true)}
       onMouseLeave={() => setH(false)}
       style={{
-        background: outline ? "transparent" : disabled ? "#dedfe4" : h
-          ? `linear-gradient(135deg,${btnColor}ee,${btnColor}bb)`
-          : `linear-gradient(135deg,${btnColor},${btnColor}cc)`,
-        color: outline ? (disabled ? C.light : btnColor) : "#fff",
+        background: outline ? "transparent" : disabled ? "var(--jd-border)" : h
+          ? btnColor
+          : btnColor,
+        color: outline ? (disabled ? C.light : btnColor) : "var(--jd-card)",
         border: outline ? `1.5px solid ${disabled ? C.border : btnColor}` : "none",
         padding:p, borderRadius:rad, cursor:disabled ? "not-allowed" : "pointer",
         fontSize:fs, fontWeight:700, display:"inline-flex", alignItems:"center", gap:5,
         whiteSpace:"nowrap", transition:"all .15s ease", opacity:disabled ? .55 : 1,
-        boxShadow: (!outline && !disabled && h) ? `0 4px 12px ${btnColor}40` : "none",
+        boxShadow: (!outline && !disabled && h) ? "0 4px 12px rgba(0,0,0,.12)" : "none",
         transform: (!disabled && h) ? "translateY(-1px)" : "none",
         letterSpacing:".01em", ...style,
       }}>
@@ -159,8 +159,8 @@ export function Btn({ children, onClick, color, outline = false, sm = false, xs 
 export function Badge({ children, color, style = {} }) {
   const badgeColor = color || C.blue;
   return (
-    <span className="jd-ui-badge" style={{ background:badgeColor+"15", color:badgeColor, padding:"3px 10px", borderRadius:20,
-      fontSize:11, fontWeight:700, border:`1px solid ${badgeColor}25`, whiteSpace:"nowrap",
+    <span className="jd-ui-badge" style={{ background:"var(--jd-soft)", color:badgeColor, padding:"3px 10px", borderRadius:20,
+      fontSize:11, fontWeight:700, border:"1px solid var(--jd-border)", whiteSpace:"nowrap",
       letterSpacing:".02em", ...style }}>
       {children}
     </span>
@@ -243,16 +243,16 @@ export function Modal({ title, children, onClose, width = 520 }) {
           padding:"16px 22px", flexShrink:0,
           display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           {isMobile && <div style={{ width:36, height:4, borderRadius:2,
-            background:"rgba(255,255,255,.3)", margin:"0 auto 0 0", flexShrink:0 }}/>}
-          <span style={{ color:"#fff", fontWeight:800, fontSize:15, letterSpacing:".01em", flex:1,
+            background:"color-mix(in srgb, var(--jd-card) 30%, transparent)", margin:"0 auto 0 0", flexShrink:0 }}/>}
+          <span style={{ color:"var(--jd-card)", fontWeight:800, fontSize:15, letterSpacing:".01em", flex:1,
             textAlign: isMobile ? "center" : "left" }}>{title}</span>
           <button aria-label="Close dialog" onClick={onClose}
-            style={{ background:"rgba(255,255,255,.15)", color:"rgba(255,255,255,.9)",
-              border:"1px solid rgba(255,255,255,.2)", width:30, height:30, borderRadius:"50%",
+            style={{ background:"color-mix(in srgb, var(--jd-card) 15%, transparent)", color:"color-mix(in srgb, var(--jd-card) 90%, transparent)",
+              border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)", width:30, height:30, borderRadius:"50%",
               cursor:"pointer", fontSize:14, display:"flex", alignItems:"center",
               justifyContent:"center", transition:"background .15s", flexShrink:0 }}
-            onMouseEnter={e => e.target.style.background="rgba(255,255,255,.28)"}
-            onMouseLeave={e => e.target.style.background="rgba(255,255,255,.15)"}>
+            onMouseEnter={e => e.target.style.background="color-mix(in srgb, var(--jd-card) 28%, transparent)"}
+            onMouseLeave={e => e.target.style.background="color-mix(in srgb, var(--jd-card) 15%, transparent)"}>
             <X size={16}/>
           </button>
         </div>
@@ -269,24 +269,24 @@ export function Toast({ t, rm }) {
   const onClose = () => rm(t?.id);
   useEffect(() => { const tid = setTimeout(onClose, 4000); return () => clearTimeout(tid); }, []);
   const configs = {
-    success: { bg:`linear-gradient(135deg,${LIGHT.green},#60616b)`,  icon:"check",   bdr:LIGHT.green },
-    error:   { bg:"linear-gradient(135deg,#34353b,#34353b)",          icon:"close",   bdr:"#34353b"   },
-    warn:    { bg:"linear-gradient(135deg,#60616b,#34353b)",          icon:"warning", bdr:"#60616b"   },
+    success: { bg:`linear-gradient(135deg,${LIGHT.green},var(--jd-muted))`,  icon:"check",   bdr:LIGHT.green },
+    error:   { bg:"linear-gradient(135deg,var(--jd-text-soft),var(--jd-text-soft))",          icon:"close",   bdr:"var(--jd-text-soft)"   },
+    warn:    { bg:"linear-gradient(135deg,var(--jd-muted),var(--jd-text-soft))",          icon:"warning", bdr:"var(--jd-muted)"   },
   };
   const cfg = configs[type] || configs.success;
   return (
-    <div style={{ background:cfg.bg, color:"#fff", padding:"12px 16px", borderRadius:12,
+    <div style={{ background:cfg.bg, color:"var(--jd-card)", padding:"12px 16px", borderRadius:12,
       fontWeight:600, fontSize:13, boxShadow:`0 8px 24px ${cfg.bdr}40`,
       display:"flex", alignItems:"center", gap:10, minWidth:240, maxWidth:360,
       animation:"slideInRight .28s cubic-bezier(.34,1.56,.64,1)",
       border:`1px solid ${cfg.bdr}80` }}>
-      <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(255,255,255,.2)",
+      <div style={{ width:22, height:22, borderRadius:"50%", background:"color-mix(in srgb, var(--jd-card) 20%, transparent)",
         display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-        <AppIcon name={cfg.icon} size={13} color="#fff"/>
+        <AppIcon name={cfg.icon} size={13} color="var(--jd-card)"/>
       </div>
       <span style={{ flex:1, lineHeight:1.4 }}>{msg}</span>
       <button onClick={onClose}
-        style={{ background:"rgba(255,255,255,.15)", border:"none", color:"#fff",
+        style={{ background:"color-mix(in srgb, var(--jd-card) 15%, transparent)", border:"none", color:"var(--jd-card)",
           cursor:"pointer", width:22, height:22, borderRadius:"50%", fontSize:12,
           display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
         <X size={14}/>
@@ -496,47 +496,47 @@ export function PDFViewer({ html, title, onClose }) {
         display:"flex", alignItems:"center", gap:8, flexShrink:0,
         boxShadow:"0 3px 16px rgba(0,0,0,.3)" }}>
         <button onClick={onClose}
-          style={{ color:"#fff", background:"rgba(255,255,255,.12)",
-            border:"1px solid rgba(255,255,255,.2)",
+          style={{ color:"var(--jd-card)", background:"color-mix(in srgb, var(--jd-card) 12%, transparent)",
+            border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)",
             borderRadius:10, padding:"9px 14px", cursor:"pointer", fontWeight:700, fontSize:13,
             display:"flex", alignItems:"center", gap:5, flexShrink:0, whiteSpace:"nowrap" }}>
           <ArrowLeft size={14}/> Back
         </button>
-        <span style={{ color:"#fff", fontWeight:700, flex:1, fontSize:13,
+        <span style={{ color:"var(--jd-card)", fontWeight:700, flex:1, fontSize:13,
           overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", opacity:.9 }}>
           {title}
         </span>
         {!isNative() && (
           <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
             <button onClick={() => setZoom(z => Math.max(50, z-10))}
-              style={{ background:"rgba(255,255,255,.12)", border:"1px solid rgba(255,255,255,.2)",
-                color:"#fff", borderRadius:7, width:28, height:28, cursor:"pointer", fontSize:14,
+              style={{ background:"color-mix(in srgb, var(--jd-card) 12%, transparent)", border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)",
+                color:"var(--jd-card)", borderRadius:7, width:28, height:28, cursor:"pointer", fontSize:14,
                 display:"flex", alignItems:"center", justifyContent:"center" }}>−</button>
-            <span style={{ color:"rgba(255,255,255,.7)", fontSize:11, minWidth:36, textAlign:"center" }}>{zoom}%</span>
+            <span style={{ color:"color-mix(in srgb, var(--jd-card) 70%, transparent)", fontSize:11, minWidth:36, textAlign:"center" }}>{zoom}%</span>
             <button onClick={() => setZoom(z => Math.min(200, z+10))}
-              style={{ background:"rgba(255,255,255,.12)", border:"1px solid rgba(255,255,255,.2)",
-                color:"#fff", borderRadius:7, width:28, height:28, cursor:"pointer", fontSize:14,
+              style={{ background:"color-mix(in srgb, var(--jd-card) 12%, transparent)", border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)",
+                color:"var(--jd-card)", borderRadius:7, width:28, height:28, cursor:"pointer", fontSize:14,
                 display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
           </div>
         )}
         {!isNative() && (
           <button onClick={handlePrint}
-            style={{ color:"#fff", background:"rgba(255,255,255,.12)",
-              border:"1px solid rgba(255,255,255,.2)",
+            style={{ color:"var(--jd-card)", background:"color-mix(in srgb, var(--jd-card) 12%, transparent)",
+              border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)",
               borderRadius:10, padding:"9px 13px", cursor:"pointer", fontWeight:700,
               fontSize:13, display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
             Print
           </button>
         )}
         <button onClick={handleShare} disabled={sharing}
-          style={{ color:"#fff", background:sharing ? "rgba(255,255,255,.15)" : LIGHT.orange,
+          style={{ color:"var(--jd-card)", background:sharing ? "color-mix(in srgb, var(--jd-card) 15%, transparent)" : LIGHT.orange,
             border:"none", borderRadius:10, padding:"9px 16px", cursor:sharing ? "wait" : "pointer",
             fontWeight:800, fontSize:13, display:"flex", alignItems:"center", gap:6, flexShrink:0,
             boxShadow:sharing ? "none" : `0 3px 12px ${LIGHT.orange}55`, whiteSpace:"nowrap",
             opacity:sharing ? .7 : 1 }}>
           {sharing
-            ? <><div style={{ width:13, height:13, border:"2px solid rgba(255,255,255,.4)",
-                borderTop:"2px solid #fff", borderRadius:"50%", animation:"spin .7s linear infinite" }}/> Wait…</>
+            ? <><div style={{ width:13, height:13, border:"2px solid color-mix(in srgb, var(--jd-card) 40%, transparent)",
+                borderTop:"2px solid var(--jd-card)", borderRadius:"50%", animation:"spin .7s linear infinite" }}/> Wait…</>
             : <>{isNative() ? "Share" : "Download"}</>
           }
         </button>
@@ -581,7 +581,7 @@ export function PDFViewer({ html, title, onClose }) {
             flex: isNative() ? 1 : "none",
             height: isNative() ? "100%" : "auto",
             minHeight: isNative() ? undefined : "80vh",
-            border:"none", background:"#fff",
+            border:"none", background:"var(--jd-card)",
             borderRadius: isNative() ? 0 : 8,
             boxShadow: isNative() ? "none" : "0 4px 24px rgba(0,0,0,.12)",
             transform: isNative() ? undefined : `scale(${zoom/100})`,
@@ -698,7 +698,7 @@ export function ActionsMenu({ items }) {
                     color:item.disabled ? C.light : item.danger ? C.red : item.color || C.text,
                     opacity:item.disabled ? .5 : 1,
                     transition:"background .1s", whiteSpace:"nowrap" }}
-                  onMouseEnter={e => { if (!item.disabled) e.currentTarget.style.background = item.danger ? "#fff5f5" : C.offWhite; }}
+                  onMouseEnter={e => { if (!item.disabled) e.currentTarget.style.background = item.danger ? "var(--jd-soft)" : C.offWhite; }}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <span style={{ width:20, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <AppIcon name={item.icon || "file"} size={15} color={item.danger ? C.red : item.color || C.muted}/>
@@ -722,17 +722,17 @@ export function PageHeader({ icon, title, subtitle, action, gradient }) {
       boxShadow:`0 4px 20px ${C.blue}22` }}>
       <div style={{ display:"flex", alignItems:"center", gap:14 }}>
         {icon && (
-          <div style={{ background:"rgba(255,255,255,.18)", borderRadius:12, padding:10,
+          <div style={{ background:"color-mix(in srgb, var(--jd-card) 18%, transparent)", borderRadius:12, padding:10,
             display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
             {typeof icon === "string"
-              ? <AppIcon name={icon} size={22} color="#fff"/>
-              : React.cloneElement(icon, { size:22, color:"#fff" })}
+              ? <AppIcon name={icon} size={22} color="var(--jd-card)"/>
+              : React.cloneElement(icon, { size:22, color:"var(--jd-card)" })}
           </div>
         )}
         <div>
-          <h2 style={{ color:"#fff", fontWeight:900, fontSize:19, margin:0, lineHeight:1.2 }}>{title}</h2>
+          <h2 style={{ color:"var(--jd-card)", fontWeight:900, fontSize:19, margin:0, lineHeight:1.2 }}>{title}</h2>
           {subtitle && (
-            <p style={{ color:"rgba(255,255,255,.72)", fontSize:12.5, margin:"4px 0 0", lineHeight:1.4 }}>
+            <p style={{ color:"color-mix(in srgb, var(--jd-card) 72%, transparent)", fontSize:12.5, margin:"4px 0 0", lineHeight:1.4 }}>
               {subtitle}
             </p>
           )}

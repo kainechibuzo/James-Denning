@@ -11,11 +11,11 @@ export function JDExecutionMonitor({client,role,scopeKey,active=true}){
  const disabled=state.busy||state.phase!=='ready'||state.needsRefresh;
  const ask=(job,action)=>{if(!disabled&&canChangeExecution(role,job,action))setConfirmation({jobId:job.id,action});};
  const confirm=()=>{if(!confirmation)return;const {jobId,action}=confirmation;setConfirmation(null);void controller.change(jobId,action);};
- return <section aria-label="JD execution monitor" aria-busy={state.busy} style={{padding:18,border:'1px solid #dfe2e7',borderRadius:14}}>
+ return <section aria-label="JD execution monitor" aria-busy={state.busy} style={{padding:18,border:'1px solid var(--jd-border)',borderRadius:14}}>
   <header><h2>JD execution monitor</h2><p>Persisted job and run records, not independently verified business outcomes. Up to 100 runs and 500 steps.</p><button type="button" disabled={state.busy} onClick={()=>{setConfirmation(null);void controller.refresh();}}>Refresh execution records</button></header>
   {state.error&&<p role="alert">{state.error}</p>}{state.notice&&<p role="status">{state.notice}</p>}
   {state.needsRefresh&&<p role="status">No further execution changes are allowed until records are refreshed. No write was automatically retried.</p>}
-  {confirmation&&<section role="region" aria-label="Confirm execution change" style={{padding:14,border:'2px solid #60616b',marginTop:12}}>
+  {confirmation&&<section role="region" aria-label="Confirm execution change" style={{padding:14,border:'2px solid var(--jd-muted)',marginTop:12}}>
    <h3>{confirmation.action==='retry'?'Review before retrying':'Review before cancelling'}</h3>
    <p>{confirmation.action==='retry'?'Retrying can repeat external effects already performed. Inspect the earlier execution evidence and confirm that another attempt is authorised.':'Only queued or waiting jobs can be cancelled. Cancellation does not undo earlier external effects.'}</p>
    <button type="button" disabled={disabled} onClick={confirm}>{confirmation.action==='retry'?'Confirm retry':'Confirm cancellation'}</button>{' '}
@@ -24,7 +24,7 @@ export function JDExecutionMonitor({client,role,scopeKey,active=true}){
   {state.phase==='loading'&&<p role="status">Refreshing execution records…</p>}
   {state.phase==='error'&&<p>Execution history unavailable. No current state has been confirmed.</p>}
   {state.phase==='ready'&&!state.runs.length&&<p>No runs returned in this workspace history sample.</p>}
-  {state.runs.map(run=><article key={run.id} style={{borderTop:'1px solid #e7e9ed',marginTop:14,paddingTop:12}}>
+  {state.runs.map(run=><article key={run.id} style={{borderTop:'1px solid var(--jd-border)',marginTop:14,paddingTop:12}}>
    <h3>{run.request_text||'Workspace execution'}</h3><p>Run record: {friendlyStatus(run.status)} · Created: {fmt(run.created_at)}</p>
    <p>Started: {fmt(run.started_at)} · Finished: {fmt(run.completed_at)}</p>
    <details><summary>Diagnostic record reference</summary><code>{run.id}</code></details>

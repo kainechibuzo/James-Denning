@@ -78,7 +78,7 @@ export function PermissionsPage({ctx}){
             {RBAC_ROLES.map(r=>(
               <button key={r.id} type="button" onClick={()=>setRole(r.id)} aria-pressed={role===r.id}
                 style={{padding:"6px 14px",borderRadius:20,cursor:"pointer",fontSize:12,fontWeight:700,
-                  border:`1.5px solid ${r.color}`,background:role===r.id?r.color:"transparent",color:role===r.id?"#fff":r.color}}>
+                  border:`1.5px solid ${r.color}`,background:role===r.id?r.color:"transparent",color:role===r.id?"var(--jd-card)":r.color}}>
                 {r.label}
               </button>
             ))}

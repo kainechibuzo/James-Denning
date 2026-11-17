@@ -1,0 +1,48 @@
+
+> james-denning@1.0.0 build
+> vite build
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vite.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 1831 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               3.68 kB │ gzip:   1.50 kB
+dist/assets/AppDemo-BcEb6PeY.css              3.08 kB │ gzip:   0.89 kB
+dist/assets/jd-operations-Dkfn7TiK.css        3.92 kB │ gzip:   1.19 kB
+dist/assets/public-landing-CsoeeOcg.css       5.65 kB │ gzip:   1.53 kB
+dist/assets/reference-design-BRntgMc-.css    14.45 kB │ gzip:   3.37 kB
+dist/assets/index-BaC_7GFp.css               46.67 kB │ gzip:   9.72 kB
+dist/assets/loader-circle-CGLPcEkK.js         0.14 kB │ gzip:   0.15 kB
+dist/assets/mail-Dx3FE6IX.js                  0.21 kB │ gzip:   0.20 kB
+dist/assets/circle-alert-D0ubpNYz.js          0.24 kB │ gzip:   0.18 kB
+dist/assets/eye-B4Jf6wXU.js                   0.73 kB │ gzip:   0.38 kB
+dist/assets/reference-design-sBs4kWYn.js      0.94 kB │ gzip:   0.48 kB
+dist/assets/rolldown-runtime-COiEfhsA.js      1.11 kB │ gzip:   0.62 kB
+dist/assets/reference-brand-C6xl7fZT.js       1.96 kB │ gzip:   1.11 kB
+dist/assets/oauth-consent-C1OvIMDO.js         4.39 kB │ gzip:   1.79 kB
+dist/assets/email-DwLdQDjH.js                 4.60 kB │ gzip:   1.71 kB
+dist/assets/permissions-1bORH1rn.js           5.44 kB │ gzip:   2.12 kB
+dist/assets/index-BwCYu3Cy.js                 9.27 kB │ gzip:   3.81 kB
+dist/assets/saas-entry-OjFj55k8.js           10.08 kB │ gzip:   3.39 kB
+dist/assets/ui-Dx5UBHwk.js                   10.38 kB │ gzip:   3.69 kB
+dist/assets/public-landing-CdCenCcE.js       11.75 kB │ gzip:   3.95 kB
+dist/assets/tools-DHGY9Ycu.js                16.00 kB │ gzip:   4.24 kB
+dist/assets/email-logs-FZ79plw0.js           16.70 kB │ gzip:   4.78 kB
+dist/assets/settings-CoSYwAMM.js             41.92 kB │ gzip:  10.47 kB
+dist/assets/hiring-1qMvHQZM.js               55.59 kB │ gzip:  12.93 kB
+dist/assets/react-vendor-kYtB7Jyh.js        139.82 kB │ gzip:  45.32 kB
+dist/assets/supabase-BHcAqgAp.js            165.29 kB │ gzip:  42.95 kB
+dist/assets/jd-operations-BC-Kq8An.js       184.99 kB │ gzip:  48.27 kB
+dist/assets/AppDemo-LVQkMkcM.js             194.17 kB │ gzip:  52.30 kB
+dist/assets/spreadsheet-vendor-M4UAhqUV.js  929.38 kB │ gzip: 256.38 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 900 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.08s

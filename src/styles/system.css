@@ -57,7 +57,7 @@ body[data-theme="dark"] textarea{
   background-color:#191c1f!important;color:#f3f4f5!important;border-color:#3a4046!important;
 }
 body[data-theme="dark"] input::placeholder,
-body[data-theme="dark"] textarea::placeholder{color:#60616b!important;opacity:1}
+body[data-theme="dark"] textarea::placeholder{color:var(--jd-muted)!important;opacity:1}
 body[data-theme="dark"] option{background:#191c1f;color:#f3f4f5}
 body[data-theme="dark"] button[style*="background: rgb(255, 255, 255)"],
 body[data-theme="dark"] button[style*="background: #fff"],

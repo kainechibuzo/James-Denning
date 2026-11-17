@@ -31,25 +31,25 @@ export function JDDepartments({ onClose }) {
       </article>)}
     </div>}
     <style>{`
-      .jd-departments{height:100%;min-height:0;overflow:auto;padding:28px clamp(16px,4vw,42px);background:#f7f8fa;color:#202329;font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .jd-departments{height:100%;min-height:0;overflow:auto;padding:28px clamp(16px,4vw,42px);background:var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
       .jd-departments-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;max-width:1000px;margin:0 auto 20px}
-      .jd-departments-eyebrow{display:flex;align-items:center;gap:7px;color:#60616b;font-size:9px;letter-spacing:.14em;font-weight:800}
-      .jd-departments-head h2{font-size:25px;letter-spacing:-.8px;margin:9px 0 5px}.jd-departments-head p{font-size:12px;line-height:1.55;color:#60616b;margin:0}
-      .jd-departments-actions{display:flex;gap:7px}.jd-departments-actions button{display:flex;align-items:center;gap:6px;border:1px solid #dfe3e8;background:#fff;border-radius:9px;padding:8px 10px;color:#34353b;font-size:10px;cursor:pointer}
-      .jd-departments-summary{max-width:1000px;margin:0 auto 14px;padding:13px 16px;background:#fff;border:1px solid #e5e8ec;border-radius:12px;display:flex;align-items:center;gap:8px;color:#60616b;font-size:11px}
-      .jd-departments-summary strong{font-size:20px;color:#252a31}.jd-departments-count{margin-left:auto}
+      .jd-departments-eyebrow{display:flex;align-items:center;gap:7px;color:var(--jd-muted);font-size:9px;letter-spacing:.14em;font-weight:800}
+      .jd-departments-head h2{font-size:25px;letter-spacing:-.8px;margin:9px 0 5px}.jd-departments-head p{font-size:12px;line-height:1.55;color:var(--jd-muted);margin:0}
+      .jd-departments-actions{display:flex;gap:7px}.jd-departments-actions button{display:flex;align-items:center;gap:6px;border:1px solid var(--jd-border);background:var(--jd-card);border-radius:9px;padding:8px 10px;color:var(--jd-text-soft);font-size:10px;cursor:pointer}
+      .jd-departments-summary{max-width:1000px;margin:0 auto 14px;padding:13px 16px;background:var(--jd-card);border:1px solid var(--jd-border);border-radius:12px;display:flex;align-items:center;gap:8px;color:var(--jd-muted);font-size:11px}
+      .jd-departments-summary strong{font-size:20px;color:var(--jd-text)}.jd-departments-count{margin-left:auto}
       .jd-departments-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-      .jd-department-card{background:#fff;border:1px solid #e3e6eb;border-radius:14px;padding:16px;min-width:0}
+      .jd-department-card{background:var(--jd-card);border:1px solid var(--jd-border);border-radius:14px;padding:16px;min-width:0}
       .jd-department-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-      .jd-department-icon{width:31px;height:31px;border-radius:9px;background:#f0f2f5;color:#60616b;display:grid;place-items:center}
-      .jd-created-tag{display:inline-flex;align-items:center;gap:4px;background:#eff7f1;border:1px solid #dedfe4;color:#34353b;border-radius:20px;padding:5px 8px;font-size:9px;font-weight:700}
-      .jd-department-card h3{font-size:15px;letter-spacing:-.25px;margin:12px 0 5px}.jd-department-card>p{font-size:11px;line-height:1.55;color:#60616b;margin:0 0 12px}
-      .jd-department-section{border-top:1px solid #edf0f3;padding-top:9px;margin-top:9px}
-      .jd-department-section>div{display:flex;align-items:center;gap:6px;color:#60616b;font-size:10px;font-weight:700}
-      .jd-department-section ul{margin:6px 0 0;padding-left:18px;color:#34353b;font-size:10px;line-height:1.55}
-      .jd-department-section li{margin:3px 0}.jd-role-tag{margin-left:6px;color:#34353b;background:#eff7f1;border-radius:4px;padding:1px 4px;font-size:8px;font-weight:800}
-      .jd-departments-empty{max-width:1000px;margin:0 auto;background:#fff;border:1px dashed #dfe3e8;border-radius:13px;padding:42px 18px;display:flex;flex-direction:column;align-items:center;gap:9px;color:#60616b;text-align:center;font-size:11px}
-      .jd-departments-empty strong{font-size:13px;color:#34353b}.jd-departments-error{max-width:1000px;margin:0 auto 12px;background:#f1f2f5;border:1px solid #dedfe4;border-radius:9px;padding:10px 12px;color:#34353b;font-size:11px}
+      .jd-department-icon{width:31px;height:31px;border-radius:9px;background:var(--jd-soft);color:var(--jd-muted);display:grid;place-items:center}
+      .jd-created-tag{display:inline-flex;align-items:center;gap:4px;background:var(--jd-soft);border:1px solid var(--jd-border);color:var(--jd-text-soft);border-radius:20px;padding:5px 8px;font-size:9px;font-weight:700}
+      .jd-department-card h3{font-size:15px;letter-spacing:-.25px;margin:12px 0 5px}.jd-department-card>p{font-size:11px;line-height:1.55;color:var(--jd-muted);margin:0 0 12px}
+      .jd-department-section{border-top:1px solid var(--jd-soft);padding-top:9px;margin-top:9px}
+      .jd-department-section>div{display:flex;align-items:center;gap:6px;color:var(--jd-muted);font-size:10px;font-weight:700}
+      .jd-department-section ul{margin:6px 0 0;padding-left:18px;color:var(--jd-text-soft);font-size:10px;line-height:1.55}
+      .jd-department-section li{margin:3px 0}.jd-role-tag{margin-left:6px;color:var(--jd-text-soft);background:var(--jd-soft);border-radius:4px;padding:1px 4px;font-size:8px;font-weight:800}
+      .jd-departments-empty{max-width:1000px;margin:0 auto;background:var(--jd-card);border:1px dashed var(--jd-border);border-radius:13px;padding:42px 18px;display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--jd-muted);text-align:center;font-size:11px}
+      .jd-departments-empty strong{font-size:13px;color:var(--jd-text-soft)}.jd-departments-error{max-width:1000px;margin:0 auto 12px;background:var(--jd-soft);border:1px solid var(--jd-border);border-radius:9px;padding:10px 12px;color:var(--jd-text-soft);font-size:11px}
       @media(max-width:650px){.jd-departments-grid{grid-template-columns:1fr}.jd-departments{padding:20px 12px}.jd-departments-head h2{font-size:21px}}
     `}</style>
   </section>;

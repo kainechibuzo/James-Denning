@@ -49,11 +49,5 @@ body .jd-command.reference-command .jd-compose textarea::placeholder{color:var(-
 .jd-visual-workspace .jd-viz-copy strong{font-size:13px;line-height:1.55}
 .jd-visual-workspace .jd-viz-copy small{font-size:12px;line-height:1.65}
 .jd-visual-workspace .jd-viz-check{min-width:36px;min-height:36px}
-/* Restored assistant tools share readable dark surfaces as well as the chat. */
-.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments){background:var(--jd-canvas);color:var(--jd-text)}
-.jd-command.reference-command :is(.jd-review-card,.jd-review-empty,.jd-review-summary,.jd-usage-panel,.jd-usage-empty,.jd-runs-card,.jd-runs-stats>div,.jd-runs-empty,.jd-departments-summary,.jd-departments-empty){background:var(--jd-card);color:var(--jd-text);border-color:var(--jd-border)}
-.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments) :is(h2,h3,strong){color:var(--jd-text)}
-.jd-command.reference-command :is(.jd-review,.jd-usage,.jd-runs,.jd-departments) :is(p,small){color:var(--jd-muted)}
-.jd-command.reference-command :is(.jd-review-controls,.jd-usage-controls,.jd-runs-controls,.jd-departments-actions) button{background:var(--jd-card);color:var(--jd-text);border-color:var(--jd-border)}
 
 .jd-visual-workspace .jd-task-work{display:inline-flex;margin:10px 0 4px;padding:8px 12px;min-height:36px;background:var(--jd-soft);color:var(--jd-text);border:1px solid var(--jd-border);border-radius:999px;font-size:11px;cursor:pointer}

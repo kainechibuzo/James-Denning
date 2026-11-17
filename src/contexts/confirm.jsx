@@ -48,8 +48,8 @@ function ConfirmDialog({ config, onDone }) {
           <button onClick={() => { if (canConfirm) onDone(true); }}
             disabled={!canConfirm}
             style={{ flex:1, padding:"11px", borderRadius:10, border:"none",
-              background: canConfirm ? (danger ? "linear-gradient(135deg,#34353b,#34353b)" : "linear-gradient(135deg,#60616b,#60616b)") : "#dedfe4",
-              color: canConfirm ? "#fff" : "#60616b", fontWeight:800, fontSize:13,
+              background: canConfirm ? (danger ? "linear-gradient(135deg,var(--jd-text-soft),var(--jd-text-soft))" : "linear-gradient(135deg,var(--jd-muted),var(--jd-muted))") : "var(--jd-border)",
+              color: canConfirm ? "var(--jd-card)" : "var(--jd-muted)", fontWeight:800, fontSize:13,
               cursor: canConfirm ? "pointer" : "not-allowed",
               boxShadow: canConfirm && danger ? "0 4px 14px rgba(77,77,77,.35)" : canConfirm ? "0 4px 14px rgba(112,112,112,.3)" : "none" }}>
             {confirmLabel}

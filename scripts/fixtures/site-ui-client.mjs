@@ -1,3 +1,4 @@
+import {populatedAutomation,populatedBusiness} from "./populated-theme.mjs";
 import {conversationTasks,conversationHistory} from "./conversation-records.mjs";
 // Local rendering fixture only. Unknown calls fail closed; the populated-chat
 // test can explicitly enable a synthetic submit acknowledgement (never a real job).
@@ -37,6 +38,13 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(window.__historyFailure&&['history','history.list'].includes(body.action))return{error:{message:'Synthetic history unavailable'}};
+  if(window.__holdHistory&&body.action==='history')await new Promise(resolve=>{window.__releaseHistory=resolve;});
+  if(window.__pendingReview&&body.action==='approvals.list')return{data:{approvals:populatedAutomation['approvals.list'].approvals.map(a=>({...a,status:'pending'}))}};
+  if(window.__populatedThemeFixture){
+   const populated=name==='jd-automation'?populatedAutomation:name==='jd-business-platform'?populatedBusiness:{};
+   if(Object.hasOwn(populated,body.action))return{data:structuredClone(populated[body.action])};
+  }
   if(name==='jd-automation'&&window.__conversationFixture){
    if(body.action==='submit'&&window.__allowTaskRequest&&body.message.startsWith('Review saved operational task '))return{data:{conversationId:'synthetic-conversation',reply:'Synthetic work request received. No real job was executed.'}};
    if(body.action==='history.list')return{data:{conversations:[{id:'synthetic-conversation',title:'Saved operations conversation'}]}};

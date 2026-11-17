@@ -1,0 +1,38 @@
+
+> james-denning@1.0.0 build:mobile
+> vite build --config vite.mobile.config.js
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vite.mobile.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 1832 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-mobile/mobile.html                             1.30 kB │ gzip:   0.69 kB
+dist-mobile/assets/AppDemo-BcEb6PeY.css             3.08 kB │ gzip:   0.89 kB
+dist-mobile/assets/jd-operations-Dkfn7TiK.css       3.92 kB │ gzip:   1.19 kB
+dist-mobile/assets/public-landing-CsoeeOcg.css      5.65 kB │ gzip:   1.53 kB
+dist-mobile/assets/reference-design-BRntgMc-.css   14.45 kB │ gzip:   3.37 kB
+dist-mobile/assets/mobile-BaC_7GFp.css             46.67 kB │ gzip:   9.72 kB
+dist-mobile/assets/reference-brand-Bam9erW1.js      0.40 kB │ gzip:   0.29 kB
+dist-mobile/assets/rolldown-runtime-COiEfhsA.js     1.11 kB │ gzip:   0.62 kB
+dist-mobile/assets/oauth-consent-hYHJ3i6i.js        4.30 kB │ gzip:   1.75 kB
+dist-mobile/assets/email-C4wguc-O.js                4.60 kB │ gzip:   1.71 kB
+dist-mobile/assets/permissions-DaZqQtGJ.js          5.26 kB │ gzip:   2.01 kB
+dist-mobile/assets/ui-CFKQL1zp.js                   9.80 kB │ gzip:   3.39 kB
+dist-mobile/assets/saas-entry-9plYod-R.js           9.97 kB │ gzip:   3.37 kB
+dist-mobile/assets/public-landing-Dky0LvBU.js      10.90 kB │ gzip:   3.59 kB
+dist-mobile/assets/tools-CSoPHe8X.js               15.99 kB │ gzip:   4.24 kB
+dist-mobile/assets/email-logs-BXqRT10K.js          16.70 kB │ gzip:   4.78 kB
+dist-mobile/assets/lucide-BE_FH5VV.js              29.94 kB │ gzip:  10.39 kB
+dist-mobile/assets/settings-B9MMx9qV.js            41.76 kB │ gzip:  10.41 kB
+dist-mobile/assets/hiring-DWuRXbcQ.js              54.88 kB │ gzip:  12.58 kB
+dist-mobile/assets/mobile-DPTEB2Kx.js             141.95 kB │ gzip:  46.72 kB
+dist-mobile/assets/supabase-BHcAqgAp.js           165.29 kB │ gzip:  42.95 kB
+dist-mobile/assets/AppDemo-C0jwqx-h.js            177.62 kB │ gzip:  46.68 kB
+dist-mobile/assets/jd-operations-eSjXZCei.js      184.07 kB │ gzip:  47.84 kB
+dist-mobile/assets/exceljs.min-DqPyZ1yt.js        929.38 kB │ gzip: 256.38 kB
+
+✓ built in 838ms

@@ -4,7 +4,7 @@ import { supabase } from "../supabaseClient.js";
 
 const card = { background: "var(--jd-card,#fff)", border: "1px solid var(--jd-border,#e7e9ed)", borderRadius: 14, padding: 16 };
 const field = { width: "100%", boxSizing: "border-box", border: "1px solid var(--jd-border,#dfe2e7)", borderRadius: 9, padding: "10px 12px", fontSize: 12, background: "var(--jd-input,#fff)", color: "inherit" };
-const button = { border: 0, borderRadius: 9, padding: "10px 13px", background: "#17191c", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" };
+const button = { border: 0, borderRadius: 9, padding: "10px 13px", background: "var(--jd-text)", color: "var(--jd-card)", fontSize: 12, fontWeight: 700, cursor: "pointer" };
 
 export function JDDepartmentCollaboration({ tasks = [], team = [] }) {
   const [taskId, setTaskId] = useState("");
@@ -78,8 +78,8 @@ export function JDDepartmentCollaboration({ tasks = [], team = [] }) {
         </div>
       </div>
     </>}
-    {error && <p role="alert" style={{ color: "#34353b", fontSize: 11 }}>{error}</p>}
-    {notice && <p role="status" style={{ color: "#34353b", fontSize: 11 }}>{notice}</p>}
+    {error && <p role="alert" style={{ color: "var(--jd-text-soft)", fontSize: 11 }}>{error}</p>}
+    {notice && <p role="status" style={{ color: "var(--jd-text-soft)", fontSize: 11 }}>{notice}</p>}
     {!tasks.length && <p style={{ fontSize: 12, color: "var(--jd-muted,#60616b)" }}>Create an operational task before starting a discussion.</p>}
     <button type="button" onClick={() => refresh().catch((e) => setError(e.message))} disabled={!taskId || busy} style={{ marginTop: 10, background: "transparent", border: 0, color: "inherit", fontSize: 11, cursor: "pointer" }}><RefreshCw size={12} style={{ verticalAlign: "-2px", marginRight: 5 }} />Refresh discussion</button>
   </section>;

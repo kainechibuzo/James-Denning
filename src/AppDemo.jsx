@@ -75,7 +75,7 @@ function DarkToggle({compact=false}){
   if(compact){
     return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
       aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
-      style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
+      style={{background:dark?"color-mix(in srgb, var(--jd-card) 8%, transparent)":"rgba(0,0,0,.05)",
         border:`1px solid ${C.border}`,borderRadius:9,width:36,height:36,cursor:"pointer",
         display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,lineHeight:1,
         color:C.text,transition:"all .2s",flexShrink:0}}>
@@ -84,7 +84,7 @@ function DarkToggle({compact=false}){
   }
   return <button onClick={toggle} title={dark?"Switch to Light Mode":"Switch to Dark Mode"}
     aria-label={dark?"Switch to light mode":"Switch to dark mode"} aria-pressed={dark}
-    style={{background:dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.05)",
+    style={{background:dark?"color-mix(in srgb, var(--jd-card) 8%, transparent)":"rgba(0,0,0,.05)",
       border:`1px solid ${C.border}`,borderRadius:20,padding:"7px 14px",cursor:"pointer",
       display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:600,
       color:C.text,transition:"all .2s",flexShrink:0,backdropFilter:"blur(4px)"}}>
@@ -105,24 +105,24 @@ class ErrorBoundary extends Component {
     if(this.state.hasError){
       return(
         <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",
-          background:"linear-gradient(135deg,#17191c,#17191c)",fontFamily:"'JD Inter',system-ui,sans-serif",padding:24}}>
-          <div style={{background:"#fff",borderRadius:20,padding:"38px 32px",maxWidth:500,width:"100%",
+          background:"linear-gradient(135deg,var(--jd-text),var(--jd-text))",fontFamily:"'JD Inter',system-ui,sans-serif",padding:24}}>
+          <div style={{background:"var(--jd-card)",borderRadius:20,padding:"38px 32px",maxWidth:500,width:"100%",
             boxShadow:"0 24px 60px rgba(0,0,0,.35)",textAlign:"center"}}>
             <div style={{marginBottom:14}}><Shield size={52} color={C.blue}/></div>
-            <div style={{fontSize:21,fontWeight:900,color:"#34353b",marginBottom:8}}>Something went wrong</div>
-            <div style={{fontSize:13,color:"#60616b",lineHeight:1.7,marginBottom:6}}>
+            <div style={{fontSize:21,fontWeight:900,color:"var(--jd-text-soft)",marginBottom:8}}>Something went wrong</div>
+            <div style={{fontSize:13,color:"var(--jd-muted)",lineHeight:1.7,marginBottom:6}}>
               The portal hit an unexpected error. Your data is safe — this is a display issue only.
             </div>
-            <div style={{fontSize:12,color:"#60616b",lineHeight:1.6,marginBottom:20}}>
+            <div style={{fontSize:12,color:"var(--jd-muted)",lineHeight:1.6,marginBottom:20}}>
               Click <b>Try Again</b> to dismiss, or <b>Reload</b> if the issue persists.
             </div>
             {this.state.error?.message&&(
               <details style={{textAlign:"left",marginBottom:20}}>
-                <summary style={{cursor:"pointer",fontSize:12,color:"#60616b",fontWeight:600,userSelect:"none"}}>
+                <summary style={{cursor:"pointer",fontSize:12,color:"var(--jd-muted)",fontWeight:600,userSelect:"none"}}>
                   Technical details
                 </summary>
-                <pre style={{background:"#fef2f2",borderRadius:8,padding:"10px 12px",fontSize:11,
-                  color:"#34353b",overflow:"auto",maxHeight:120,marginTop:6,border:"1px solid #a3a4ad",
+                <pre style={{background:"var(--jd-soft)",borderRadius:8,padding:"10px 12px",fontSize:11,
+                  color:"var(--jd-text-soft)",overflow:"auto",maxHeight:120,marginTop:6,border:"1px solid var(--jd-muted)",
                   whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
                   {this.state.error.message}
                 </pre>
@@ -130,12 +130,12 @@ class ErrorBoundary extends Component {
             )}
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>this.setState({hasError:false,error:null,info:null})}
-                style={{flex:1,background:"#fff",color:"#17191c",border:"2px solid #17191c",
+                style={{flex:1,background:"var(--jd-card)",color:"var(--jd-text)",border:"2px solid var(--jd-text)",
                   padding:"12px",borderRadius:10,fontWeight:700,fontSize:13,cursor:"pointer"}}>
                 <RefreshCw size={14}/> Try Again
               </button>
               <button onClick={()=>window.location.reload()}
-                style={{flex:1,background:"#17191c",color:"#fff",border:"none",padding:"12px",
+                style={{flex:1,background:"var(--jd-text)",color:"var(--jd-card)",border:"none",padding:"12px",
                   borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",
                   boxShadow:"0 4px 14px rgba(74,74,74,.4)"}}>
                 Reload Portal
@@ -343,15 +343,15 @@ function Btn({children,onClick,color=C.blue,outline=false,sm=false,xs=false,disa
     <button className={`jd-ui-button${outline?" is-outline":""}`} onClick={onClick} disabled={disabled}
       onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
       style={{
-        background:outline?"transparent":disabled?"#dedfe4":h
-          ?`linear-gradient(135deg,${color}ee,${color}bb)`
-          :`linear-gradient(135deg,${color},${color}cc)`,
-        color:outline?(disabled?C.light:color):"#fff",
+        background:outline?"transparent":disabled?"var(--jd-border)":h
+          ?color
+          :color,
+        color:outline?(disabled?C.light:color):"var(--jd-card)",
         border:outline?`1.5px solid ${disabled?C.border:color}`:"none",
         padding:p,borderRadius:radius,cursor:disabled?"not-allowed":"pointer",
         fontSize:fs,fontWeight:700,display:"inline-flex",alignItems:"center",gap:5,
         whiteSpace:"nowrap",transition:"all .15s ease",opacity:disabled?.55:1,
-        boxShadow:(!outline&&!disabled&&h)?`0 4px 12px ${color}40`:"none",
+        boxShadow:(!outline&&!disabled&&h)?"0 4px 12px rgba(0,0,0,.12)":"none",
         transform:(!disabled&&h)?"translateY(-1px)":"none",
         letterSpacing:".01em",...style}}>
       {children}
@@ -360,8 +360,8 @@ function Btn({children,onClick,color=C.blue,outline=false,sm=false,xs=false,disa
 }
 
 function Badge({children,color=C.blue,style={}}){
-  return <span className="jd-ui-badge" style={{background:color+"15",color,padding:"3px 10px",borderRadius:20,
-    fontSize:11,fontWeight:700,border:`1px solid ${color}25`,whiteSpace:"nowrap",
+  return <span className="jd-ui-badge" style={{background:"var(--jd-soft)",color,padding:"3px 10px",borderRadius:20,
+    fontSize:11,fontWeight:700,border:"1px solid var(--jd-border)",whiteSpace:"nowrap",
     letterSpacing:".02em",...style}}>{children}</span>;
 }
 
@@ -411,16 +411,16 @@ function Modal({title,children,onClose,width=520}){
           padding:"16px 22px",flexShrink:0,
           display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {isMobile&&<div style={{width:36,height:4,borderRadius:2,
-            background:"rgba(255,255,255,.3)",margin:"0 auto 0 0",flexShrink:0}}/>}
-          <span style={{color:"#fff",fontWeight:800,fontSize:15,letterSpacing:".01em",flex:1,
+            background:"color-mix(in srgb, var(--jd-card) 30%, transparent)",margin:"0 auto 0 0",flexShrink:0}}/>}
+          <span style={{color:"var(--jd-card)",fontWeight:800,fontSize:15,letterSpacing:".01em",flex:1,
             textAlign:isMobile?"center":"left"}}>{title}</span>
           <button aria-label="Close dialog" onClick={onClose}
-            style={{background:"rgba(255,255,255,.15)",color:"rgba(255,255,255,.9)",
-              border:"1px solid rgba(255,255,255,.2)",width:30,height:30,borderRadius:"50%",
+            style={{background:"color-mix(in srgb, var(--jd-card) 15%, transparent)",color:"color-mix(in srgb, var(--jd-card) 90%, transparent)",
+              border:"1px solid color-mix(in srgb, var(--jd-card) 20%, transparent)",width:30,height:30,borderRadius:"50%",
               cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",
               justifyContent:"center",transition:"background .15s",flexShrink:0}}
-            onMouseEnter={e=>e.target.style.background="rgba(255,255,255,.28)"}
-            onMouseLeave={e=>e.target.style.background="rgba(255,255,255,.15)"}>
+            onMouseEnter={e=>e.target.style.background="color-mix(in srgb, var(--jd-card) 28%, transparent)"}
+            onMouseLeave={e=>e.target.style.background="color-mix(in srgb, var(--jd-card) 15%, transparent)"}>
             <X size={16}/>
           </button>
         </div>
@@ -437,24 +437,24 @@ function Toast({t,rm}){
   const onClose=()=>rm(t?.id);
   useEffect(()=>{ const tid=setTimeout(onClose,4000); return()=>clearTimeout(tid); },[]);
   const configs={
-    success:{bg:`linear-gradient(135deg,${LIGHT.green},#60616b)`,icon:"check",bdr:LIGHT.green},
-    error:  {bg:`linear-gradient(135deg,#34353b,#34353b)`,       icon:"close",bdr:"#34353b"},
-    warn:   {bg:`linear-gradient(135deg,#60616b,#34353b)`,       icon:"warning",bdr:"#60616b"},
+    success:{bg:`linear-gradient(135deg,${LIGHT.green},var(--jd-muted))`,icon:"check",bdr:LIGHT.green},
+    error:  {bg:`linear-gradient(135deg,var(--jd-text-soft),var(--jd-text-soft))`,       icon:"close",bdr:"var(--jd-text-soft)"},
+    warn:   {bg:`linear-gradient(135deg,var(--jd-muted),var(--jd-text-soft))`,       icon:"warning",bdr:"var(--jd-muted)"},
   };
   const cfg=configs[type]||configs.success;
   return(
-    <div style={{background:cfg.bg,color:"#fff",padding:"12px 16px",borderRadius:12,
+    <div style={{background:cfg.bg,color:"var(--jd-card)",padding:"12px 16px",borderRadius:12,
       fontWeight:600,fontSize:13,boxShadow:`0 8px 24px ${cfg.bdr}40`,
       display:"flex",alignItems:"center",gap:10,minWidth:240,maxWidth:360,
       animation:"slideInRight .28s cubic-bezier(.34,1.56,.64,1)",
       border:`1px solid ${cfg.bdr}80`}}>
-      <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(255,255,255,.2)",
+      <div style={{width:22,height:22,borderRadius:"50%",background:"color-mix(in srgb, var(--jd-card) 20%, transparent)",
         display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-        <AppIcon name={cfg.icon} size={13} color="#fff"/>
+        <AppIcon name={cfg.icon} size={13} color="var(--jd-card)"/>
       </div>
       <span style={{flex:1,lineHeight:1.4}}>{msg}</span>
       <button onClick={onClose}
-        style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",
+        style={{background:"color-mix(in srgb, var(--jd-card) 15%, transparent)",border:"none",color:"var(--jd-card)",
           cursor:"pointer",width:22,height:22,borderRadius:"50%",fontSize:12,
           display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
         <X size={14}/>
@@ -566,9 +566,9 @@ function AppInnerWrapper(){
 html{-webkit-text-size-adjust:100%;}
 @media print{
   aside,header,nav,.no-print,button:not(.print-show),[data-no-print]{display:none!important;}
-  body,html{background:#fff!important;color:#000!important;font-size:11pt!important;}
+  body,html{background:#fff!important;color:#101114!important;font-size:11pt!important;}
   *{box-shadow:none!important;}
-  table,th,td{border:1px solid #ccc!important;}
+  table,th,td{border:1px solid var(--jd-muted)!important;}
   tr,td,th{page-break-inside:avoid;}
   @page{margin:1.5cm;}
 }`;
@@ -586,12 +586,12 @@ html{-webkit-text-size-adjust:100%;}
           background:"rgba(15,15,15,0.82)",backdropFilter:"blur(6px)"}}>
           <div style={{background:C.white,borderRadius:20,padding:"44px 48px",maxWidth:460,width:"90%",
             textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,0.45)",
-            border:"3px solid #34353b",animation:"fadeUp .35s ease"}}>
+            border:"3px solid var(--jd-text-soft)",animation:"fadeUp .35s ease"}}>
             <div style={{display:"flex",justifyContent:"center",marginBottom:18}}>
               <div style={{background:C.redPale,borderRadius:"50%",width:72,height:72,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 animation:"pulse 2s ease infinite"}}>
-                <WifiOff size={36} color="#34353b"/>
+                <WifiOff size={36} color="var(--jd-text-soft)"/>
               </div>
             </div>
             <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:8}}>
@@ -619,11 +619,11 @@ html{-webkit-text-size-adjust:100%;}
       {/* ── Reconnected toast ─────────────────────────────────────────────── */}
       {justReconnected&&(
         <div style={{position:"fixed",bottom:28,left:"50%",transform:"translateX(-50%)",
-          zIndex:99999,background:"#60616b",color:"#fff",
+          zIndex:99999,background:"var(--jd-muted)",color:"var(--jd-card)",
           padding:"14px 28px",borderRadius:14,fontWeight:700,fontSize:14,
           boxShadow:"0 8px 32px rgba(145,145,145,0.45)",animation:"fadeUp .3s ease",
           display:"flex",alignItems:"center",gap:10,whiteSpace:"nowrap"}}>
-          <Wifi size={18} color="#fff"/>
+          <Wifi size={18} color="var(--jd-card)"/>
           Internet connection restored
         </div>
       )}
@@ -632,7 +632,7 @@ html{-webkit-text-size-adjust:100%;}
       {!isMobile&&(
         <div style={{position:"fixed",bottom:6,right:10,zIndex:9000,
           fontSize:10,fontWeight:500,letterSpacing:"0.04em",
-          color:dark?"rgba(255,255,255,0.22)":"rgba(0,0,0,0.2)",
+          color:C.muted,
           pointerEvents:"none",userSelect:"none"}}>
           {APP_VERSION}
         </div>
@@ -679,7 +679,7 @@ function ProfileModal({user,onClose,notify,onUpdated}){
       <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:18,
         padding:"14px 16px",background:C.bluePale,borderRadius:10}}>
         <div style={{width:56,height:56,borderRadius:"50%",background:C.blue,
-          color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",
+          color:"var(--jd-card)",display:"flex",alignItems:"center",justifyContent:"center",
           fontSize:22,fontWeight:900,flexShrink:0}}>
           {(name||"?")[0].toUpperCase()}
         </div>
@@ -730,8 +730,8 @@ function LogoutDialog({onConfirm,onCancel}){
           </button>
           <button onClick={onConfirm}
             style={{flex:1,padding:"12px",borderRadius:12,border:"none",
-              background:`linear-gradient(135deg,#34353b,#34353b)`,
-              color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",
+              background:`linear-gradient(135deg,var(--jd-text-soft),var(--jd-text-soft))`,
+              color:"var(--jd-card)",fontWeight:800,fontSize:13,cursor:"pointer",
               boxShadow:"0 6px 20px rgba(77,77,77,.35)",transition:"all .15s"}}
             onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"}
             onMouseLeave={e=>e.currentTarget.style.transform="none"}>
@@ -749,32 +749,32 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(6,6,6,.8)",backdropFilter:"blur(10px)",
       zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:`linear-gradient(160deg,${C.blueDark} 0%,#17191c 100%)`,
-        border:"1px solid rgba(255,255,255,.12)",borderRadius:24,
+      <div style={{background:`linear-gradient(160deg,${C.blueDark} 0%,var(--jd-text) 100%)`,
+        border:"1px solid color-mix(in srgb, var(--jd-card) 12%, transparent)",borderRadius:24,
         padding:"44px 36px 36px",maxWidth:380,width:"100%",textAlign:"center",
         boxShadow:"0 32px 80px rgba(0,0,0,.5)",animation:"modalUp .3s cubic-bezier(.34,1.56,.64,1)"}}>
         {/* Lock icon */}
-        <div style={{width:72,height:72,borderRadius:20,background:"rgba(255,255,255,.08)",
-          border:"1px solid rgba(255,255,255,.15)",display:"flex",alignItems:"center",
+        <div style={{width:72,height:72,borderRadius:20,background:"color-mix(in srgb, var(--jd-card) 8%, transparent)",
+          border:"1px solid color-mix(in srgb, var(--jd-card) 15%, transparent)",display:"flex",alignItems:"center",
           justifyContent:"center",fontSize:34,margin:"0 auto 22px"}}><Lock size={34} color={C.orange}/></div>
         {/* Title */}
-        <div style={{fontSize:22,fontWeight:900,color:"#fff",marginBottom:10,letterSpacing:"-.02em"}}>
+        <div style={{fontSize:22,fontWeight:900,color:"var(--jd-card)",marginBottom:10,letterSpacing:"-.02em"}}>
           Still there?
         </div>
         {/* Message */}
-        <p style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:16}}>
+        <p style={{fontSize:14,color:"color-mix(in srgb, var(--jd-card) 60%, transparent)",lineHeight:1.7,marginBottom:16}}>
           You'll be logged out in due to inactivity.
         </p>
         {/* Countdown */}
         <div style={{fontSize:52,fontWeight:900,letterSpacing:"-2px",marginBottom:28,
           fontVariantNumeric:"tabular-nums",transition:"color .4s",
-          color: urgent ? "#60616b" : C.orange}}>
+          color: urgent ? "var(--jd-muted)" : C.orange}}>
           {secondsLeft}<span style={{fontSize:20,fontWeight:600,opacity:.7}}>s</span>
         </div>
         {/* Stay logged in */}
         <button onClick={onStay}
           style={{width:"100%",padding:"14px",borderRadius:12,border:"none",cursor:"pointer",
-            background:`linear-gradient(135deg,${C.orange},#34353b)`,color:"#fff",
+            background:`linear-gradient(135deg,${C.orange},var(--jd-text-soft))`,color:"var(--jd-card)",
             fontSize:15,fontWeight:800,letterSpacing:".2px",marginBottom:10,
             boxShadow:"0 4px 16px rgba(112,112,112,.4)",transition:"opacity .15s"}}
           onMouseEnter={e=>e.currentTarget.style.opacity=".9"}
@@ -783,11 +783,11 @@ function InactivityWarningModal({ secondsLeft, onStay, onLogout }) {
         </button>
         {/* Log out now */}
         <button onClick={onLogout}
-          style={{width:"100%",padding:"11px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
-            cursor:"pointer",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",
+          style={{width:"100%",padding:"11px",borderRadius:12,border:"1px solid color-mix(in srgb, var(--jd-card) 12%, transparent)",
+            cursor:"pointer",background:"color-mix(in srgb, var(--jd-card) 6%, transparent)",color:"color-mix(in srgb, var(--jd-card) 50%, transparent)",
             fontSize:13,fontWeight:600,transition:"all .15s"}}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";e.currentTarget.style.color="rgba(255,255,255,.8)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";e.currentTarget.style.color="rgba(255,255,255,.5)";}}>
+          onMouseEnter={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 12%, transparent)";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 80%, transparent)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 6%, transparent)";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 50%, transparent)";}}>
           Log Out Now
         </button>
       </div>
@@ -970,7 +970,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
 
       {/* Tooltip card */}
       <div style={{...tooltipStyle, pointerEvents:"auto",
-        background: dark ? "#17191c" : "#ffffff",
+        background: "var(--jd-card)",
         borderRadius:16, boxShadow:"0 24px 48px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)",
         border:`1px solid ${C.border}`,
         animation:"tourFadeIn .25s ease both",
@@ -988,9 +988,9 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{width:28,height:28,borderRadius:8,
-                background:`linear-gradient(135deg,${C.orange},#34353b)`,
+                background:`linear-gradient(135deg,${C.orange},var(--jd-text-soft))`,
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <HelpCircle size={14} color="#fff"/>
+                <HelpCircle size={14} color="var(--jd-card)"/>
               </div>
               <h3 style={{fontSize:14,fontWeight:800,color:C.text,lineHeight:1.3,margin:0}}>
                 {current.title}
@@ -1044,9 +1044,9 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
               </button>
             )}
             <button onClick={()=>{ if(isLast){ onClose(); } else { setStep(s=>s+1); } }}
-              style={{background:`linear-gradient(135deg,${C.orange},#34353b)`,
+              style={{background:`linear-gradient(135deg,${C.orange},var(--jd-text-soft))`,
                 border:"none", borderRadius:8, padding:"6px 16px",
-                cursor:"pointer", fontSize:12, fontWeight:800, color:"#fff",
+                cursor:"pointer", fontSize:12, fontWeight:800, color:"var(--jd-card)",
                 display:"flex",alignItems:"center",gap:5,
                 boxShadow:`0 2px 10px ${C.orange}40`}}>
               {isLast ? <>Finish <Check size={14}/></> : <>Next <ArrowRight size={14}/></>}
@@ -1062,7 +1062,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
 // Shown when a route exists but the current role cannot open it.
 function AccessDenied(){
   return (
-    <div role="alert" style={{maxWidth:420,margin:"48px auto",padding:24,textAlign:"center",background:"#fff",border:`1px solid ${C.border}`,borderRadius:12}}>
+    <div role="alert" style={{maxWidth:420,margin:"48px auto",padding:24,textAlign:"center",background:"var(--jd-card)",border:`1px solid ${C.border}`,borderRadius:12}}>
       <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:6}}>You do not have access to this page</div>
       <div style={{fontSize:13,color:C.muted}}>Ask a workspace admin to grant access, or return to the chat.</div>
     </div>
@@ -1077,7 +1077,7 @@ function SignInRequired(){
       <div style={{maxWidth:380,textAlign:"center"}}>
         <div style={{fontSize:18,fontWeight:700,color:C.text,marginBottom:8}}>Sign in to continue</div>
         <div style={{fontSize:13,color:C.muted,marginBottom:16}}>Your session has ended or no workspace is selected.</div>
-        <button onClick={()=>window.location.assign("/")} style={{padding:"10px 20px",borderRadius:8,border:"none",background:C.blue,color:"#fff",fontWeight:600,cursor:"pointer"}}>Go to sign in</button>
+        <button onClick={()=>window.location.assign("/")} style={{padding:"10px 20px",borderRadius:8,border:"none",background:C.blue,color:"var(--jd-card)",fontWeight:600,cursor:"pointer"}}>Go to sign in</button>
       </div>
     </div>
   );
@@ -1303,7 +1303,7 @@ function AppInner(){
         aria-hidden={isMobile&&!sideOpen ? true : undefined} inert={isMobile&&!sideOpen ? "" : undefined}
         style={{
         width: isMobile ? "min(280px, 88vw)" : (sideOpen?230:56),
-        background:"linear-gradient(180deg,#080808 0%,#101010 55%,#080808 100%)",
+        background:"linear-gradient(180deg,var(--jd-text) 0%,var(--jd-text) 55%,var(--jd-text) 100%)",
         transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
         position: isMobile ? "fixed" : "sticky",
@@ -1316,13 +1316,13 @@ function AppInner(){
 
         {/* Logo / Brand */}
         <div style={{padding:"16px 12px",display:"flex",alignItems:"center",gap:10,
-          borderBottom:"1px solid rgba(255,255,255,.08)",flexShrink:0,minHeight:60}}>
+          borderBottom:"1px solid color-mix(in srgb, var(--jd-card) 8%, transparent)",flexShrink:0,minHeight:60}}>
           <div style={{flexShrink:0,transition:"all .2s"}}><Logo size={32}/></div>
           {(sideOpen||isMobile)&&(
             <div style={{overflow:"hidden",transition:"opacity .2s"}}>
-              <div style={{color:"#fff",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
+              <div style={{color:"var(--jd-card)",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
                 whiteSpace:"nowrap"}}>James-Denning</div>
-              <div style={{color:"rgba(255,255,255,.4)",fontSize:9,textTransform:"uppercase",
+              <div style={{color:"color-mix(in srgb, var(--jd-card) 40%, transparent)",fontSize:9,textTransform:"uppercase",
                 letterSpacing:.3,marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={_sidebarSchoolName||"Your organisation"}>{_sidebarSchoolName||"Your organisation"}</div>
             </div>
           )}
@@ -1331,28 +1331,28 @@ function AppInner(){
         <button ref={workspaceSwitchRef} type="button" aria-label="Switch organisation" aria-haspopup="dialog"
           title={`Switch organisation — ${_sidebarSchoolName||"Your organisation"}`}
           onClick={()=>{closeSideOnMobile();setShowWorkspaceSwitch(true);}}
-          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",color:"#dedfe4",cursor:"pointer",flexShrink:0,fontSize:12}}>
+          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid color-mix(in srgb, var(--jd-card) 18%, transparent)",background:"color-mix(in srgb, var(--jd-card) 6%, transparent)",color:"var(--jd-border)",cursor:"pointer",flexShrink:0,fontSize:12}}>
           <Building2 size={16} aria-hidden="true" style={{flexShrink:0}}/>
           {(sideOpen||isMobile)&&<span>Switch organisation</span>}
         </button>
 
         {(sideOpen||isMobile)&&<div style={{padding:"10px 10px 4px",flexShrink:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid rgba(255,255,255,.18)",borderRadius:9,padding:"6px 8px",color:"#a3a4ad"}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid color-mix(in srgb, var(--jd-card) 18%, transparent)",borderRadius:9,padding:"6px 8px",color:"var(--jd-muted)"}}>
             <Search size={14} aria-hidden="true"/>
             <input type="search" aria-label="Search workspace navigation" placeholder="Find a page or department"
               value={sidebarSearch} onChange={e=>setSidebarSearch(e.target.value)}
-              style={{width:"100%",minWidth:0,background:"transparent",color:"#fff",border:0,fontSize:12,padding:"5px 0"}}/>
+              style={{width:"100%",minWidth:0,background:"transparent",color:"var(--jd-card)",border:0,fontSize:12,padding:"5px 0"}}/>
             {sidebarSearch&&<button type="button" aria-label="Clear navigation search" onClick={()=>{setSidebarSearch("");sidebarRef.current?.querySelector('input[type="search"]')?.focus();}}
-              style={{background:"none",border:0,color:"#fff",cursor:"pointer",padding:4,display:"flex"}}><X size={14}/></button>}
+              style={{background:"none",border:0,color:"var(--jd-card)",cursor:"pointer",padding:4,display:"flex"}}><X size={14}/></button>}
           </div>
-          {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"#d0d4da",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
+          {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"var(--jd-muted)",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
         </div>}
         <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
-          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length+assistantTools.length} matching destinations</p>}
+          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"var(--jd-muted)",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
+          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"var(--jd-muted)",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length+assistantTools.length} matching destinations</p>}
           {assistantTools.length>0 && <section className="jd-assistant-navigation" aria-label="JD AI assistant">
             {(sideOpen||isMobile)&&<h2>JD AI assistant</h2>}
-            {assistantTools.map(tool=><button key={tool.id} type="button" aria-label={tool.label} title={!sideOpen?tool.label:undefined}
+            {assistantTools.map(tool=><button className="jd-nav-pill" key={tool.id} type="button" aria-label={tool.label} title={!sideOpen?tool.label:undefined}
               onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
               <AppIcon name={tool.icon} size={16}/>{(sideOpen||isMobile)&&<span>{tool.label}</span>}
             </button>)}
@@ -1360,7 +1360,7 @@ function AppInner(){
           {visibleNavigation.map((n,i)=>{
             // ── Group header ──
             if(n.group){
-              if(!sideOpen) return <div key={n.id} style={{margin:"6px 4px",height:1,background:"rgba(255,255,255,.07)"}}/>;
+              if(!sideOpen) return <div key={n.id} style={{margin:"6px 4px",height:1,background:"color-mix(in srgb, var(--jd-card) 7%, transparent)"}}/>;
               const collapsed=groupCollapsed(n.id);
               return(
                 <button key={n.id} type="button" aria-expanded={!collapsed} disabled={Boolean(navigationQuery.trim())} onClick={()=>setCollapsedGroups(prev=>{
@@ -1370,11 +1370,11 @@ function AppInner(){
                 })}
                   style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
                     padding:"10px 9px 5px",fontSize:9.5,fontWeight:800,letterSpacing:1.4,
-                    textTransform:"uppercase",color:"#a3a4ad",background:"none",
+                    textTransform:"uppercase",color:"var(--jd-muted)",background:"none",
                     border:"none",cursor:"pointer",textAlign:"left",marginTop:6,
                     transition:"color .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.color="#fff"}
-                  onMouseLeave={e=>e.currentTarget.style.color="#a3a4ad"}>
+                  onMouseEnter={e=>e.currentTarget.style.color="var(--jd-card)"}
+                  onMouseLeave={e=>e.currentTarget.style.color="var(--jd-muted)"}>
                   <span>{n.group}</span>
                   <span style={{fontSize:9,transition:"transform .2s",
                     transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}><ChevronDown size={12}/></span>
@@ -1385,24 +1385,24 @@ function AppInner(){
             if(n.gid&&groupCollapsed(n.gid)) return null;
             const active=page===n.id;
             return(
-              <button key={n.id+i} type="button" aria-label={n.label} aria-current={active?"page":undefined} data-tour={`nav-${n.id}`} onClick={()=>{setPage(n.id);setSidebarSearch("");closeSideOnMobile();}}
+              <button className="jd-nav-pill" key={n.id+i} type="button" aria-label={n.label} aria-current={active?"page":undefined} data-tour={`nav-${n.id}`} onClick={()=>{if(n.id==="jd-chat")setAssistantRequest({view:"chat"});setPage(n.id);setSidebarSearch("");closeSideOnMobile();}}
                 title={!sideOpen?n.label:""}
                 style={{width:"100%",display:"flex",alignItems:"center",gap:9,
                   padding:sideOpen?"8px 10px":"10px",
                   borderRadius:10,border:"none",cursor:"pointer",marginBottom:1,
-                  background:active?`linear-gradient(90deg,${C.orange}2a,rgba(255,255,255,.04))`:"transparent",
-                  color:active?"#fff":"rgba(255,255,255,.5)",
+                  background:active?`linear-gradient(90deg,${C.orange}2a,color-mix(in srgb, var(--jd-card) 4%, transparent))`:"transparent",
+                  color:active?"var(--jd-card)":"color-mix(in srgb, var(--jd-card) 50%, transparent)",
                   fontSize:12,fontWeight:active?700:400,
                   transition:"all .15s ease",textAlign:"left",
                   position:"relative",
                   justifyContent:sideOpen?"flex-start":"center"}}
-                onMouseEnter={e=>{if(!active){e.currentTarget.style.background="rgba(255,255,255,.07)";e.currentTarget.style.color="rgba(255,255,255,.8)";}}}
-                onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,.5)";}}}
+                onMouseEnter={e=>{if(!active){e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 7%, transparent)";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 80%, transparent)";}}}
+                onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 50%, transparent)";}}}
               >
                 {active&&<div style={{position:"absolute",left:0,top:"12%",bottom:"12%",
                   width:4,borderRadius:"0 4px 4px 0",background:C.orange,
                   boxShadow:`0 0 10px ${C.orange}99`}}/>}
-                <AppIcon name={n.icon} size={16} color={active?C.orange:"#60616b"}/>
+                <AppIcon name={n.icon} size={16} color={active?C.orange:"var(--jd-muted)"}/>
                 {(sideOpen||isMobile)&&<span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
                   letterSpacing:".01em"}}>{n.label}</span>}
               </button>
@@ -1411,28 +1411,28 @@ function AppInner(){
         </nav>
 
         {/* User / Sign Out */}
-        <div style={{padding:"10px 6px",borderTop:"1px solid rgba(255,255,255,.08)",flexShrink:0}}>
+        <div style={{padding:"10px 6px",borderTop:"1px solid color-mix(in srgb, var(--jd-card) 8%, transparent)",flexShrink:0}}>
           <button aria-label="My profile" title="My profile" onClick={()=>{setShowProfile(true);closeSideOnMobile();}}
               style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:sideOpen||isMobile?"10px":"8px 0",
-                borderRadius:10,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",marginBottom:6,
-                background:"rgba(255,255,255,.06)",color:"#fff",textAlign:"left",
+                borderRadius:10,border:"1px solid color-mix(in srgb, var(--jd-card) 10%, transparent)",cursor:"pointer",marginBottom:6,
+                background:"color-mix(in srgb, var(--jd-card) 6%, transparent)",color:"var(--jd-card)",textAlign:"left",
                 transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.06)";}}>
+              onMouseEnter={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 12%, transparent)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 6%, transparent)";}}>
               <div style={{width:30,height:30,borderRadius:9,
-                background:`linear-gradient(135deg,${C.orange},#34353b)`,
+                background:`linear-gradient(135deg,${C.orange},var(--jd-text-soft))`,
                 display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:13,fontWeight:900,flexShrink:0,color:"#fff",
+                fontSize:13,fontWeight:900,flexShrink:0,color:"var(--jd-card)",
                 boxShadow:"0 2px 8px rgba(112,112,112,.4)"}}>
                 {(user.name||"?")[0].toUpperCase()}
               </div>
               {(sideOpen||isMobile)&&<div style={{overflow:"hidden",flex:1}}>
                 <div style={{fontWeight:700,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",
-                  whiteSpace:"nowrap",color:"#fff",lineHeight:1.2}}>{user.name}</div>
-                <div style={{fontSize:9.5,color:"rgba(255,255,255,.4)",textTransform:"uppercase",
+                  whiteSpace:"nowrap",color:"var(--jd-card)",lineHeight:1.2}}>{user.name}</div>
+                <div style={{fontSize:9.5,color:"color-mix(in srgb, var(--jd-card) 40%, transparent)",textTransform:"uppercase",
                   letterSpacing:.8,marginTop:2}}>{role}</div>
               </div>}
-              {(sideOpen||isMobile)&&<span style={{color:"rgba(255,255,255,.3)",fontSize:12}}>›</span>}
+              {(sideOpen||isMobile)&&<span style={{color:"color-mix(in srgb, var(--jd-card) 30%, transparent)",fontSize:12}}>›</span>}
           </button>
           <button aria-label="Sign out" title="Sign out" onClick={()=>{closeSideOnMobile();setShowLogout(true);}}
             style={{width:"100%",display:"flex",alignItems:"center",
@@ -1440,7 +1440,7 @@ function AppInner(){
               padding:"9px 10px",borderRadius:10,border:"none",cursor:"pointer",
               background:"rgba(142,142,142,.1)",color:"rgba(183,183,183,.9)",
               fontSize:11.5,fontWeight:600,transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(142,142,142,.2)";e.currentTarget.style.color="#a3a4ad";}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(142,142,142,.2)";e.currentTarget.style.color="var(--jd-muted)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(142,142,142,.1)";e.currentTarget.style.color="rgba(183,183,183,.9)";}}>
             <LogOut size={14}/>{(sideOpen||isMobile)&&<span>Sign Out</span>}
           </button>
@@ -1481,10 +1481,12 @@ function AppInner(){
               <HelpCircle size={16}/>
             </button>
             <NotificationBell ctx={ctx}/>
+            <button className="reference-settings" type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
+              onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={17}/></button>
             <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)}
               style={{width:34,height:34,borderRadius:10,
                 background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
-                color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer",
+                color:"var(--jd-card)",fontSize:13,fontWeight:900,cursor:"pointer",
                 display:"flex",alignItems:"center",justifyContent:"center",
                 boxShadow:`0 2px 8px ${C.blue}40`}}
               title="My Profile">
@@ -1495,7 +1497,7 @@ function AppInner(){
         </header>
 
 
-        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
+        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-canvas)":C.offWhite,transition:"background .2s"}}>
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="hiring"        && (canAccess("hiring")       ?<HiringPage ctx={ctx}/>             :<AccessDenied/>)}
@@ -1705,7 +1707,7 @@ function NotificationBell({ctx}){
           width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted}}>
         <Bell size={16}/>
         {unread>0&&(
-          <span style={{position:"absolute",top:-4,right:-4,background:C.red,color:"#fff",
+          <span style={{position:"absolute",top:-4,right:-4,background:C.red,color:"var(--jd-card)",
             borderRadius:"50%",width:16,height:16,fontSize:9,fontWeight:900,
             display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid "+C.white}}>
             {unread>9?"9+":unread}

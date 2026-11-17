@@ -109,17 +109,17 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
                 {saved && record && canPersist && taskAction && onTaskWork && <button className="jd-task-work" type="button" disabled={isPending} onClick={()=>onTaskWork(record)}>Ask JD to work on this</button>}
                 <small>Planned owner role: {text(item?.owner,"Unassigned")}</small>
                 {list(item?.dependencies,8).length>0&&<small>Depends on: {list(item.dependencies,8).map(dependency=>text(dependency)).join(", ")}</small>}
-                {item?.approval_required&&<small style={{color:"#34353b"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
+                {item?.approval_required&&<small style={{color:"var(--jd-text-soft)"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
               </div>
               {record ? record.status === "completed" ? <span className="jd-viz-status good">Record complete</span> : <Status value={record.status}/> : <span className="jd-viz-status">{saved?"Unverified snapshot":localChecked?"Locally checked":"Draft"}</span>}
             </div>;
           })}
-          {block.sample_truncated&&<small style={{color:"#34353b",fontSize:9}}>Only a sample of tasks is shown.</small>}
+          {block.sample_truncated&&<small style={{color:"var(--jd-text-soft)",fontSize:9}}>Only a sample of tasks is shown.</small>}
           <small style={{color:"var(--jd-muted)",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
-        {block.description && <p style={{ fontSize: 10, color: "#60616b", margin: "0 0 10px", lineHeight: 1.5 }}>{text(block.description)}</p>}
+        {block.description && <p style={{ fontSize: 10, color: "var(--jd-muted)", margin: "0 0 10px", lineHeight: 1.5 }}>{text(block.description)}</p>}
         <div className="jd-viz-flow">{list(block.steps, 24).map((step, i) => <div className="jd-viz-node" key={String(step?.id || i)}><div style={{ display: "flex", justifyContent: "space-between", gap: 6, alignItems: "center" }}><strong>{text(step?.title, "Workflow step")}</strong><Status value={step?.status}/></div>{step?.description && <small>{text(step.description)}</small>}{step?.owner && <small>Owner: {text(step.owner)}</small>}</div>)}</div>
       </Panel>;
       if (block.type === "question") return <Panel key={key} title={text(block.title, "Decision required")} icon={MessageSquare}>
@@ -134,8 +134,8 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
       const evidence = list(block.items, 30);
       return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
         <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
-        {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "#60616b", margin: "9px 0 0" }}>{text(block.summary)}</p>}
-        {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#60616b", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
+        {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "var(--jd-muted)", margin: "9px 0 0" }}>{text(block.summary)}</p>}
+        {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--jd-muted)", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
       </Panel>;
     })}
   </div>;
