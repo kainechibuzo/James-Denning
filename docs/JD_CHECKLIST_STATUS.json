@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "assessedAt": "2026-11-16",
-  "baseCommit": "a5e01ef8dfd2b1985092b5c1aa3fdfff1778e5f6",
-  "branch": "arena/ea8f1137-james-denning",
+  "assessedAt": "2026-11-17",
+  "baseCommit": "753971562cab3c0b2d4bff303cc6dca27b88826f",
+  "branch": "verify/p1-ci-deployment-evidence",
   "scope": "Screenshot-driven business settings repair: compact mobile rows, education-only presentation, truthful project metadata and JD settings submission with explicit human review/apply plus persisted read-back. Locally tested only; no production settings, schema, deployment or acceptance changed.",
   "items": [
     {
       "id": "P1-01",
       "requirement": "Verify latest `master`, relevant GitHub Actions and their actual coverage.",
-      "implementation": "partial",
-      "assessment": "PR #94 head Web CI and Verify checks passed before merge f760b8bf. This local follow-up adds offline evidence-harness regression tests to test:execution. No remote CI for this new candidate or live staging acceptance is claimed.",
+      "implementation": "implemented \u2014 unverified",
+      "assessment": "Master 7539715 Verify application, Execution Dispatcher and Vercel Production deployment succeeded; PR #103 head Web CI passed. Coverage documented: Deno suites/npm audit run on PR heads only, cron schedules execute every ~6\u20139 h, staging verification fails daily until staging secrets exist.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
@@ -18,6 +18,7 @@
         "scripts/test-backend-release-plan.mjs"
       ],
       "evidence": [
+        "docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
@@ -25,29 +26,40 @@
         "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md",
         "docs/evidence/2026-11-16-cancellation-harness/REPORT.md"
       ],
-      "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Verify latest `master`, relevant GitHub Actions and their actual coverage. Retain expected/actual results and independent review.",
-      "deliveryOwner": "Unassigned \u2014 owner must nominate",
-      "independentReviewer": "Unassigned",
-      "verification": null
+      "acceptance": "verified",
+      "nextAction": "Re-verify after each master merge; close the coverage gaps listed in the evidence report.",
+      "deliveryOwner": "Perplexity Computer (verification agent)",
+      "independentReviewer": "Kaine Chibuzo (repository owner)",
+      "verification": {
+        "commit": "753971562cab3c0b2d4bff303cc6dca27b88826f",
+        "environment": "GitHub Actions (kainechibuzo/James-Denning) and local Node 22 reproduction",
+        "timestamp": "2026-11-17T13:30:00Z",
+        "procedure": "Listed workflow triggers; fetched run results for the master merge commit and PR head via gh; reproduced build:web, test:navigation and test:tasks locally.",
+        "expectedResult": "Latest master identified; its checks pass; actual coverage and gaps documented.",
+        "actualResult": "Verify application success (44082224020), Dispatcher success (44082224040), PR head Web CI success (44081804558); local build passes, 106/106 navigation and 250/250 task tests pass. Gaps recorded.",
+        "artifact": "docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md",
+        "reviewer": "Kaine Chibuzo (repository owner)",
+        "limitations": "Does not cover authenticated browser flows, RLS, Edge Function behaviour or staging. Deno suites are not re-run on the master merge commit."
+      }
     },
     {
       "id": "P1-02",
       "requirement": "Verify Vercel production deployment, commit identity and live application behaviour.",
       "implementation": "partial",
-      "assessment": "Vercel metadata confirms exact PR #92 merge 4c2b93b5 as READY/PROMOTED production with no alias error. This establishes frontend deployment identity/status, not authenticated behaviour or backend deployment.",
+      "assessment": "Production deployment 7853035983 for 7539715 succeeded but is behind Vercel SSO. The README domain portal.renaissancegardenschools.com serves a different app titled Apex, not JD master.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md"
       ],
       "evidence": [
+        "docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
         "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Verify Vercel production deployment, commit identity and live application behaviour. Retain expected/actual results and independent review.",
+      "nextAction": "Owner: point the public domain at the james-denning Vercel project (or correct the README), then test live behaviour with an authorised session.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
@@ -265,17 +277,18 @@
       "id": "P1-14",
       "requirement": "Verify actual frontend deployment bundles contain no privileged secrets.",
       "implementation": "partial",
-      "assessment": "Local builds reject privileged frontend configuration, but actual deployed asset contents have not been scanned here.",
+      "assessment": "All 48 public chunks on portal.renaissancegardenschools.com scanned: only public Paystack and Supabase publishable keys found. The SSO-protected JD production bundle was not scanned.",
       "sources": [
         "src/supabaseClient.js",
         "scripts/verify-web-build.mjs"
       ],
       "evidence": [
+        "docs/evidence/2026-11-17-p1-ci-deployment/REPORT.md",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Verify actual frontend deployment bundles contain no privileged secrets. Retain expected/actual results and independent review.",
+      "nextAction": "Scan the protected JD production deployment with an authorised session.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
       "independentReviewer": "Unassigned",
       "verification": null
