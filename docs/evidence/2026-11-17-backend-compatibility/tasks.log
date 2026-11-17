@@ -1,0 +1,1514 @@
+
+> james-denning@1.0.0 test:tasks
+> node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs scripts/test-task-assignment-endpoint.mjs scripts/test-task-assignment-release.mjs scripts/test-operational-task-records.mjs scripts/test-task-workspace-ui.mjs scripts/test-operational-task-writes.mjs scripts/test-task-queue-ui.mjs
+
+TAP version 13
+# Subtest: owner uses the correct authenticated action and requires confirmed evidence
+ok 1 - owner uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 1.500699
+  type: 'test'
+  ...
+# Subtest: admin uses the correct authenticated action and requires confirmed evidence
+ok 2 - admin uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.184075
+  type: 'test'
+  ...
+# Subtest: manager uses the correct authenticated action and requires confirmed evidence
+ok 3 - manager uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.095016
+  type: 'test'
+  ...
+# Subtest: staff uses the correct authenticated action and requires confirmed evidence
+ok 4 - staff uses the correct authenticated action and requires confirmed evidence
+  ---
+  duration_ms: 0.13718
+  type: 'test'
+  ...
+# Subtest: undefined cannot issue a manager task mutation
+ok 5 - undefined cannot issue a manager task mutation
+  ---
+  duration_ms: 0.536673
+  type: 'test'
+  ...
+# Subtest: viewer cannot issue a manager task mutation
+ok 6 - viewer cannot issue a manager task mutation
+  ---
+  duration_ms: 0.112631
+  type: 'test'
+  ...
+# Subtest: finance cannot issue a manager task mutation
+ok 7 - finance cannot issue a manager task mutation
+  ---
+  duration_ms: 0.08169
+  type: 'test'
+  ...
+# Subtest: hr cannot issue a manager task mutation
+ok 8 - hr cannot issue a manager task mutation
+  ---
+  duration_ms: 0.130304
+  type: 'test'
+  ...
+# Subtest: contractor cannot issue a manager task mutation
+ok 9 - contractor cannot issue a manager task mutation
+  ---
+  duration_ms: 0.227416
+  type: 'test'
+  ...
+# Subtest: teacher cannot issue a manager task mutation
+ok 10 - teacher cannot issue a manager task mutation
+  ---
+  duration_ms: 0.257388
+  type: 'test'
+  ...
+# Subtest: unknown cannot issue a manager task mutation
+ok 11 - unknown cannot issue a manager task mutation
+  ---
+  duration_ms: 0.122299
+  type: 'test'
+  ...
+# Subtest: staff cannot request queued
+ok 12 - staff cannot request queued
+  ---
+  duration_ms: 0.268991
+  type: 'test'
+  ...
+# Subtest: staff cannot request cancelled
+ok 13 - staff cannot request cancelled
+  ---
+  duration_ms: 0.125005
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":"draft-1"}
+ok 14 - invalid input fails before network: {"taskId":"draft-1"}
+  ---
+  duration_ms: 0.117755
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"taskId":""}
+ok 15 - invalid input fails before network: {"taskId":""}
+  ---
+  duration_ms: 0.062121
+  type: 'test'
+  ...
+# Subtest: invalid input fails before network: {"status":"published"}
+ok 16 - invalid input fails before network: {"status":"published"}
+  ---
+  duration_ms: 0.055312
+  type: 'test'
+  ...
+# Subtest: HTTP 400 is actionable, sanitised and never auto-retried
+ok 17 - HTTP 400 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.282012
+  type: 'test'
+  ...
+# Subtest: HTTP 401 is actionable, sanitised and never auto-retried
+ok 18 - HTTP 401 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.153326
+  type: 'test'
+  ...
+# Subtest: HTTP 403 is actionable, sanitised and never auto-retried
+ok 19 - HTTP 403 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.064849
+  type: 'test'
+  ...
+# Subtest: HTTP 404 is actionable, sanitised and never auto-retried
+ok 20 - HTTP 404 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.051802
+  type: 'test'
+  ...
+# Subtest: HTTP 409 is actionable, sanitised and never auto-retried
+ok 21 - HTTP 409 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.058891
+  type: 'test'
+  ...
+# Subtest: HTTP 429 is actionable, sanitised and never auto-retried
+ok 22 - HTTP 429 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.101879
+  type: 'test'
+  ...
+# Subtest: HTTP 500 is actionable, sanitised and never auto-retried
+ok 23 - HTTP 500 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.056102
+  type: 'test'
+  ...
+# Subtest: HTTP 503 is actionable, sanitised and never auto-retried
+ok 24 - HTTP 503 is actionable, sanitised and never auto-retried
+  ---
+  duration_ms: 0.051651
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 0 cannot report success
+ok 25 - 2xx with incomplete or mismatched evidence 0 cannot report success
+  ---
+  duration_ms: 0.099284
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 1 cannot report success
+ok 26 - 2xx with incomplete or mismatched evidence 1 cannot report success
+  ---
+  duration_ms: 0.055235
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 2 cannot report success
+ok 27 - 2xx with incomplete or mismatched evidence 2 cannot report success
+  ---
+  duration_ms: 0.057102
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 3 cannot report success
+ok 28 - 2xx with incomplete or mismatched evidence 3 cannot report success
+  ---
+  duration_ms: 0.049202
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 4 cannot report success
+ok 29 - 2xx with incomplete or mismatched evidence 4 cannot report success
+  ---
+  duration_ms: 0.046186
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 5 cannot report success
+ok 30 - 2xx with incomplete or mismatched evidence 5 cannot report success
+  ---
+  duration_ms: 0.045269
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 6 cannot report success
+ok 31 - 2xx with incomplete or mismatched evidence 6 cannot report success
+  ---
+  duration_ms: 0.083496
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 7 cannot report success
+ok 32 - 2xx with incomplete or mismatched evidence 7 cannot report success
+  ---
+  duration_ms: 0.054094
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 8 cannot report success
+ok 33 - 2xx with incomplete or mismatched evidence 8 cannot report success
+  ---
+  duration_ms: 0.050644
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 9 cannot report success
+ok 34 - 2xx with incomplete or mismatched evidence 9 cannot report success
+  ---
+  duration_ms: 0.050237
+  type: 'test'
+  ...
+# Subtest: 2xx with incomplete or mismatched evidence 10 cannot report success
+ok 35 - 2xx with incomplete or mismatched evidence 10 cannot report success
+  ---
+  duration_ms: 0.106362
+  type: 'test'
+  ...
+# Subtest: body-level error is not success even with task fields
+ok 36 - body-level error is not success even with task fields
+  ---
+  duration_ms: 0.115711
+  type: 'test'
+  ...
+# Subtest: thrown network failure leaves the outcome unknown and does not retry
+ok 37 - thrown network failure leaves the outcome unknown and does not retry
+  ---
+  duration_ms: 0.091231
+  type: 'test'
+  ...
+# Subtest: owner: transition persists with matching audit and completion timestamp
+ok 38 - owner: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 2037.023921
+  type: 'test'
+  ...
+# Subtest: admin: transition persists with matching audit and completion timestamp
+ok 39 - admin: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 19.227412
+  type: 'test'
+  ...
+# Subtest: manager: transition persists with matching audit and completion timestamp
+ok 40 - manager: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 13.012019
+  type: 'test'
+  ...
+# Subtest: staff: transition persists with matching audit and completion timestamp
+ok 41 - staff: transition persists with matching audit and completion timestamp
+  ---
+  duration_ms: 11.192575
+  type: 'test'
+  ...
+# Subtest: unassigned staff cannot change another employee's task
+ok 42 - unassigned staff cannot change another employee's task
+  ---
+  duration_ms: 8.686753
+  type: 'test'
+  ...
+# Subtest: staff cannot change an unassigned task
+ok 43 - staff cannot change an unassigned task
+  ---
+  duration_ms: 16.176787
+  type: 'test'
+  ...
+# Subtest: staff cannot cancel an assigned task
+ok 44 - staff cannot cancel an assigned task
+  ---
+  duration_ms: 14.578741
+  type: 'test'
+  ...
+# Subtest: staff cannot requeue a blocked task
+ok 45 - staff cannot requeue a blocked task
+  ---
+  duration_ms: 18.965462
+  type: 'test'
+  ...
+# Subtest: staff can block and resume an assigned task
+ok 46 - staff can block and resume an assigned task
+  ---
+  duration_ms: 23.644415
+  type: 'test'
+  ...
+# Subtest: cross-tenant manager sees no task and cannot mutate it
+ok 47 - cross-tenant manager sees no task and cannot mutate it
+  ---
+  duration_ms: 6.983372
+  type: 'test'
+  ...
+# Subtest: finance cannot transition tasks
+ok 48 - finance cannot transition tasks
+  ---
+  duration_ms: 7.927612
+  type: 'test'
+  ...
+# Subtest: viewer cannot transition tasks
+ok 49 - viewer cannot transition tasks
+  ---
+  duration_ms: 7.246037
+  type: 'test'
+  ...
+# Subtest: unknown actor cannot transition tasks
+ok 50 - unknown actor cannot transition tasks
+  ---
+  duration_ms: 14.111196
+  type: 'test'
+  ...
+# Subtest: stale/replayed expected status does not produce a duplicate audit
+ok 51 - stale/replayed expected status does not produce a duplicate audit
+  ---
+  duration_ms: 10.979269
+  type: 'test'
+  ...
+# Subtest: invalid transition cannot skip directly to completion
+ok 52 - invalid transition cannot skip directly to completion
+  ---
+  duration_ms: 9.301053
+  type: 'test'
+  ...
+# Subtest: terminal tasks cannot be reopened
+ok 53 - terminal tasks cannot be reopened
+  ---
+  duration_ms: 21.9983
+  type: 'test'
+  ...
+# Subtest: anon cannot call the SECURITY DEFINER RPC with a forged actor
+ok 54 - anon cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 9.923249
+  type: 'test'
+  ...
+# Subtest: authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+ok 55 - authenticated cannot call the SECURITY DEFINER RPC with a forged actor
+  ---
+  duration_ms: 6.933097
+  type: 'test'
+  ...
+# Subtest: audit insertion failure rolls back the status and timestamp update
+ok 56 - audit insertion failure rolls back the status and timestamp update
+  ---
+  duration_ms: 13.158573
+  type: 'test'
+  ...
+# Subtest: service-only grants and empty search_path survive the role-matrix replacement
+ok 57 - service-only grants and empty search_path survive the role-matrix replacement
+  ---
+  duration_ms: 6.391087
+  type: 'test'
+  ...
+# Subtest: owner: creation replay persists one task and returns the original audit
+ok 58 - owner: creation replay persists one task and returns the original audit
+  ---
+  duration_ms: 10.438748
+  type: 'test'
+  ...
+# Subtest: admin: creation replay persists one task and returns the original audit
+ok 59 - admin: creation replay persists one task and returns the original audit
+  ---
+  duration_ms: 7.953439
+  type: 'test'
+  ...
+# Subtest: manager: creation replay persists one task and returns the original audit
+ok 60 - manager: creation replay persists one task and returns the original audit
+  ---
+  duration_ms: 11.091543
+  type: 'test'
+  ...
+# Subtest: creation key reuse with different payload is rejected without another task/audit
+ok 61 - creation key reuse with different payload is rejected without another task/audit
+  ---
+  duration_ms: 18.80743
+  type: 'test'
+  ...
+# Subtest: identical creation keys are isolated by tenant
+ok 62 - identical creation keys are isolated by tenant
+  ---
+  duration_ms: 11.10505
+  type: 'test'
+  ...
+# Subtest: staff: creation rejected without a task or audit
+ok 63 - staff: creation rejected without a task or audit
+  ---
+  duration_ms: 7.797619
+  type: 'test'
+  ...
+# Subtest: finance: creation rejected without a task or audit
+ok 64 - finance: creation rejected without a task or audit
+  ---
+  duration_ms: 5.90791
+  type: 'test'
+  ...
+# Subtest: viewer: creation rejected without a task or audit
+ok 65 - viewer: creation rejected without a task or audit
+  ---
+  duration_ms: 4.612343
+  type: 'test'
+  ...
+# Subtest: anon: cannot forge creation actor through the service-only RPC
+ok 66 - anon: cannot forge creation actor through the service-only RPC
+  ---
+  duration_ms: 4.664645
+  type: 'test'
+  ...
+# Subtest: authenticated: cannot forge creation actor through the service-only RPC
+ok 67 - authenticated: cannot forge creation actor through the service-only RPC
+  ---
+  duration_ms: 3.493872
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back creation, allowing safe retry with the same identity
+ok 68 - audit failure rolls back creation, allowing safe retry with the same identity
+  ---
+  duration_ms: 13.460625
+  type: 'test'
+  ...
+# Subtest: legacy reused task without original creation audit does not manufacture audit evidence
+ok 69 - legacy reused task without original creation audit does not manufacture audit evidence
+  ---
+  duration_ms: 6.536284
+  type: 'test'
+  ...
+# Subtest: owner: assignment and matching audit commit atomically
+ok 70 - owner: assignment and matching audit commit atomically
+  ---
+  duration_ms: 9.246606
+  type: 'test'
+  ...
+# Subtest: admin: assignment and matching audit commit atomically
+ok 71 - admin: assignment and matching audit commit atomically
+  ---
+  duration_ms: 8.073773
+  type: 'test'
+  ...
+# Subtest: manager: assignment and matching audit commit atomically
+ok 72 - manager: assignment and matching audit commit atomically
+  ---
+  duration_ms: 8.701431
+  type: 'test'
+  ...
+# Subtest: staff: cannot assign
+ok 73 - staff: cannot assign
+  ---
+  duration_ms: 7.077067
+  type: 'test'
+  ...
+# Subtest: finance: cannot assign
+ok 74 - finance: cannot assign
+  ---
+  duration_ms: 10.428614
+  type: 'test'
+  ...
+# Subtest: viewer: cannot assign
+ok 75 - viewer: cannot assign
+  ---
+  duration_ms: 7.61238
+  type: 'test'
+  ...
+# Subtest: assignment rejects unknown actor
+ok 76 - assignment rejects unknown actor
+  ---
+  duration_ms: 14.15535
+  type: 'test'
+  ...
+# Subtest: assignment cannot address a cross-tenant task
+ok 77 - assignment cannot address a cross-tenant task
+  ---
+  duration_ms: 7.637142
+  type: 'test'
+  ...
+# Subtest: assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000016
+ok 78 - assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000016
+  ---
+  duration_ms: 7.560184
+  type: 'test'
+  ...
+# Subtest: assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000017
+ok 79 - assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000017
+  ---
+  duration_ms: 9.767349
+  type: 'test'
+  ...
+# Subtest: assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000999
+ok 80 - assignment rejects ineligible assignee 00000000-0000-4000-8000-000000000999
+  ---
+  duration_ms: 7.563371
+  type: 'test'
+  ...
+# Subtest: anon: cannot forge assignment actor
+ok 81 - anon: cannot forge assignment actor
+  ---
+  duration_ms: 7.016215
+  type: 'test'
+  ...
+# Subtest: authenticated: cannot forge assignment actor
+ok 82 - authenticated: cannot forge assignment actor
+  ---
+  duration_ms: 7.155646
+  type: 'test'
+  ...
+# Subtest: assignment rejects changed assignee and changed version independently
+ok 83 - assignment rejects changed assignee and changed version independently
+  ---
+  duration_ms: 13.505695
+  type: 'test'
+  ...
+# Subtest: assignment replay after lost response cannot duplicate audit
+ok 84 - assignment replay after lost response cannot duplicate audit
+  ---
+  duration_ms: 12.87129
+  type: 'test'
+  ...
+# Subtest: assignment uses microsecond versions and prevents ABA overwrite
+ok 85 - assignment uses microsecond versions and prevents ABA overwrite
+  ---
+  duration_ms: 19.48341
+  type: 'test'
+  ...
+# Subtest: unassigned task assignment uses explicit null expected value
+ok 86 - unassigned task assignment uses explicit null expected value
+  ---
+  duration_ms: 11.386501
+  type: 'test'
+  ...
+# Subtest: same-assignee confirmation advances version and records changed false
+ok 87 - same-assignee confirmation advances version and records changed false
+  ---
+  duration_ms: 14.041535
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back assignment and version
+ok 88 - audit failure rolls back assignment and version
+  ---
+  duration_ms: 16.262052
+  type: 'test'
+  ...
+# Subtest: assignment requires expected version and valid IDs
+ok 89 - assignment requires expected version and valid IDs
+  ---
+  duration_ms: 17.561548
+  type: 'test'
+  ...
+# Subtest: assignment remains service-only with empty search path
+ok 90 - assignment remains service-only with empty search path
+  ---
+  duration_ms: 4.270287
+  type: 'test'
+  ...
+# Subtest: owner: eligible tenant member can be assigned
+ok 91 - owner: eligible tenant member can be assigned
+  ---
+  duration_ms: 7.782586
+  type: 'test'
+  ...
+# Subtest: admin: eligible tenant member can be assigned
+ok 92 - admin: eligible tenant member can be assigned
+  ---
+  duration_ms: 5.647549
+  type: 'test'
+  ...
+# Subtest: manager: eligible tenant member can be assigned
+ok 93 - manager: eligible tenant member can be assigned
+  ---
+  duration_ms: 7.051557
+  type: 'test'
+  ...
+# Subtest: staff: eligible tenant member can be assigned
+ok 94 - staff: eligible tenant member can be assigned
+  ---
+  duration_ms: 8.257554
+  type: 'test'
+  ...
+# Subtest: finance: eligible tenant member can be assigned
+ok 95 - finance: eligible tenant member can be assigned
+  ---
+  duration_ms: 17.333528
+  type: 'test'
+  ...
+# Subtest: hr: eligible tenant member can be assigned
+ok 96 - hr: eligible tenant member can be assigned
+  ---
+  duration_ms: 6.487621
+  type: 'test'
+  ...
+# Subtest: contractor: eligible tenant member can be assigned
+ok 97 - contractor: eligible tenant member can be assigned
+  ---
+  duration_ms: 7.357983
+  type: 'test'
+  ...
+# Subtest: assignment rollback removes executable RPC without deleting existing records/audits; reviewed reapply restores service-only grants
+ok 98 - assignment rollback removes executable RPC without deleting existing records/audits; reviewed reapply restores service-only grants
+  ---
+  duration_ms: 20.648665
+  type: 'test'
+  ...
+# Subtest: task read routes owner to operations.task.list
+ok 99 - task read routes owner to operations.task.list
+  ---
+  duration_ms: 1.504496
+  type: 'test'
+  ...
+# Subtest: task read routes admin to operations.task.list
+ok 100 - task read routes admin to operations.task.list
+  ---
+  duration_ms: 0.275273
+  type: 'test'
+  ...
+# Subtest: task read routes manager to operations.task.list
+ok 101 - task read routes manager to operations.task.list
+  ---
+  duration_ms: 0.137282
+  type: 'test'
+  ...
+# Subtest: task read routes staff to operations.task.list_mine
+ok 102 - task read routes staff to operations.task.list_mine
+  ---
+  duration_ms: 0.10711
+  type: 'test'
+  ...
+# Subtest: task read routes contractor to operations.task.list_mine
+ok 103 - task read routes contractor to operations.task.list_mine
+  ---
+  duration_ms: 0.129845
+  type: 'test'
+  ...
+# Subtest: task read routes viewer to operations.task.list_readonly
+ok 104 - task read routes viewer to operations.task.list_readonly
+  ---
+  duration_ms: 0.08778
+  type: 'test'
+  ...
+# Subtest: unsupported roles fail before network
+ok 105 - unsupported roles fail before network
+  ---
+  duration_ms: 0.602286
+  type: 'test'
+  ...
+# Subtest: read rejects missing payload without raw diagnostics
+ok 106 - read rejects missing payload without raw diagnostics
+  ---
+  duration_ms: 0.316722
+  type: 'test'
+  ...
+# Subtest: read rejects missing task list without raw diagnostics
+ok 107 - read rejects missing task list without raw diagnostics
+  ---
+  duration_ms: 0.267064
+  type: 'test'
+  ...
+# Subtest: read rejects body error without raw diagnostics
+ok 108 - read rejects body error without raw diagnostics
+  ---
+  duration_ms: 0.274923
+  type: 'test'
+  ...
+# Subtest: read rejects invalid id without raw diagnostics
+ok 109 - read rejects invalid id without raw diagnostics
+  ---
+  duration_ms: 1.201126
+  type: 'test'
+  ...
+# Subtest: read rejects unknown status without raw diagnostics
+ok 110 - read rejects unknown status without raw diagnostics
+  ---
+  duration_ms: 0.112646
+  type: 'test'
+  ...
+# Subtest: read rejects missing title without raw diagnostics
+ok 111 - read rejects missing title without raw diagnostics
+  ---
+  duration_ms: 0.064376
+  type: 'test'
+  ...
+# Subtest: read rejects duplicate id without raw diagnostics
+ok 112 - read rejects duplicate id without raw diagnostics
+  ---
+  duration_ms: 0.05754
+  type: 'test'
+  ...
+# Subtest: read rejects null item without raw diagnostics
+ok 113 - read rejects null item without raw diagnostics
+  ---
+  duration_ms: 0.09719
+  type: 'test'
+  ...
+# Subtest: read rejects HTTP error without raw diagnostics
+ok 114 - read rejects HTTP error without raw diagnostics
+  ---
+  duration_ms: 0.145741
+  type: 'test'
+  ...
+# Subtest: saved task keys require source provenance and UUID, deduplicate and ignore non-assistant/non-checklist content
+ok 115 - saved task keys require source provenance and UUID, deduplicate and ignore non-assistant/non-checklist content
+  ---
+  duration_ms: 0.171058
+  type: 'test'
+  ...
+# Subtest: checklist actions preserve the legal subset, never convert cancelled/unknown states into start
+ok 116 - checklist actions preserve the legal subset, never convert cancelled/unknown states into start
+  ---
+  duration_ms: 0.069025
+  type: 'test'
+  ...
+# Subtest: mutations require a successful read and a returned record; out-of-sample records stay unavailable
+ok 117 - mutations require a successful read and a returned record; out-of-sample records stay unavailable
+  ---
+  duration_ms: 0.22439
+  type: 'test'
+  ...
+# Subtest: confirmed transition is not optimistic, locks duplicate cards synchronously, and records audit acknowledgement
+ok 118 - confirmed transition is not optimistic, locks duplicate cards synchronously, and records audit acknowledgement
+  ---
+  duration_ms: 0.246368
+  type: 'test'
+  ...
+# Subtest: uncertain mutation requires read reconciliation, never auto-retries or reports success
+ok 119 - uncertain mutation requires read reconciliation, never auto-retries or reports success
+  ---
+  duration_ms: 0.227123
+  type: 'test'
+  ...
+# Subtest: transport failure after a committed mutation is reconciled by read-back
+ok 120 - transport failure after a committed mutation is reconciled by read-back
+  ---
+  duration_ms: 0.261455
+  type: 'test'
+  ...
+# Subtest: failed refresh clears writable state instead of preserving stale success
+ok 121 - failed refresh clears writable state instead of preserving stale success
+  ---
+  duration_ms: 0.12105
+  type: 'test'
+  ...
+# Subtest: late reads cannot overwrite a newer refresh
+ok 122 - late reads cannot overwrite a newer refresh
+  ---
+  duration_ms: 0.134975
+  type: 'test'
+  ...
+# Subtest: deactivated scope ignores late reads and writes, including StrictMode reactivation
+ok 123 - deactivated scope ignores late reads and writes, including StrictMode reactivation
+  ---
+  duration_ms: 0.178917
+  type: 'test'
+  ...
+# Subtest: new cards during a pending mutation cannot reset its duplicate-click guard
+ok 124 - new cards during a pending mutation cannot reset its duplicate-click guard
+  ---
+  duration_ms: 0.325637
+  type: 'test'
+  ...
+# Subtest: independent task mutations merge without losing either acknowledgement
+ok 125 - independent task mutations merge without losing either acknowledgement
+  ---
+  duration_ms: 0.203835
+  type: 'test'
+  ...
+# Subtest: viewer can read but never dispatch a task transition
+ok 126 - viewer can read but never dispatch a task transition
+  ---
+  duration_ms: 0.086097
+  type: 'test'
+  ...
+# Subtest: contractor can read but never dispatch a task transition
+ok 127 - contractor can read but never dispatch a task transition
+  ---
+  duration_ms: 0.051153
+  type: 'test'
+  ...
+# Subtest: normalisation preserves details without silent truncation and converts dates once
+ok 128 - normalisation preserves details without silent truncation and converts dates once
+  ---
+  duration_ms: 1.760554
+  type: 'test'
+  ...
+# Subtest: owner creation requires exact persisted request and audit
+ok 129 - owner creation requires exact persisted request and audit
+  ---
+  duration_ms: 0.666119
+  type: 'test'
+  ...
+# Subtest: admin creation requires exact persisted request and audit
+ok 130 - admin creation requires exact persisted request and audit
+  ---
+  duration_ms: 0.192606
+  type: 'test'
+  ...
+# Subtest: manager creation requires exact persisted request and audit
+ok 131 - manager creation requires exact persisted request and audit
+  ---
+  duration_ms: 0.108721
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong task id
+ok 132 - creation rejects wrong task id
+  ---
+  duration_ms: 0.389294
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong tenant
+ok 133 - creation rejects wrong tenant
+  ---
+  duration_ms: 1.180177
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong actor
+ok 134 - creation rejects wrong actor
+  ---
+  duration_ms: 0.172201
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong key
+ok 135 - creation rejects wrong key
+  ---
+  duration_ms: 0.107674
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong title
+ok 136 - creation rejects wrong title
+  ---
+  duration_ms: 0.30936
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong description
+ok 137 - creation rejects wrong description
+  ---
+  duration_ms: 0.348678
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong department
+ok 138 - creation rejects wrong department
+  ---
+  duration_ms: 0.16026
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong priority
+ok 139 - creation rejects wrong priority
+  ---
+  duration_ms: 0.087374
+  type: 'test'
+  ...
+# Subtest: creation rejects wrong due date
+ok 140 - creation rejects wrong due date
+  ---
+  duration_ms: 0.136815
+  type: 'test'
+  ...
+# Subtest: creation rejects invalid status
+ok 141 - creation rejects invalid status
+  ---
+  duration_ms: 0.112929
+  type: 'test'
+  ...
+# Subtest: creation rejects missing reused flag
+ok 142 - creation rejects missing reused flag
+  ---
+  duration_ms: 0.084228
+  type: 'test'
+  ...
+# Subtest: creation rejects missing audit
+ok 143 - creation rejects missing audit
+  ---
+  duration_ms: 0.066843
+  type: 'test'
+  ...
+# Subtest: creation rejects bad audit id
+ok 144 - creation rejects bad audit id
+  ---
+  duration_ms: 0.063388
+  type: 'test'
+  ...
+# Subtest: creation rejects new task not queued
+ok 145 - creation rejects new task not queued
+  ---
+  duration_ms: 0.075148
+  type: 'test'
+  ...
+# Subtest: reused task may have progressed but still needs original audit and request match
+ok 146 - reused task may have progressed but still needs original audit and request match
+  ---
+  duration_ms: 0.119558
+  type: 'test'
+  ...
+# Subtest: unsupported roles and invalid identities never send writes
+ok 147 - unsupported roles and invalid identities never send writes
+  ---
+  duration_ms: 0.327042
+  type: 'test'
+  ...
+# Subtest: transport and API errors do not leak diagnostics or retry
+ok 148 - transport and API errors do not leak diagnostics or retry
+  ---
+  duration_ms: 0.343073
+  type: 'test'
+  ...
+# Subtest: journal is persisted before first network request and double clicks share one attempt
+ok 149 - journal is persisted before first network request and double clicks share one attempt
+  ---
+  duration_ms: 0.345128
+  type: 'test'
+  ...
+# Subtest: lost response/remount retains exact ID and immutable details even if caller supplies another draft
+ok 150 - lost response/remount retains exact ID and immutable details even if caller supplies another draft
+  ---
+  duration_ms: 0.332561
+  type: 'test'
+  ...
+# Subtest: storage writes fail closed before any network mutation
+ok 151 - storage writes fail closed before any network mutation
+  ---
+  duration_ms: 0.127088
+  type: 'test'
+  ...
+# Subtest: corrupted or unavailable recovery storage is not silently discarded
+ok 152 - corrupted or unavailable recovery storage is not silently discarded
+  ---
+  duration_ms: 0.165283
+  type: 'test'
+  ...
+# Subtest: confirmed save with failed journal cleanup stays recoverable, never rotates ID
+ok 153 - confirmed save with failed journal cleanup stays recoverable, never rotates ID
+  ---
+  duration_ms: 0.153465
+  type: 'test'
+  ...
+# Subtest: recovery records are isolated by actor and workspace
+ok 154 - recovery records are isolated by actor and workspace
+  ---
+  duration_ms: 0.730053
+  type: 'test'
+  ...
+# Subtest: late create acknowledgement after unmount leaves recovery journal for safe replay
+ok 155 - late create acknowledgement after unmount leaves recovery journal for safe replay
+  ---
+  duration_ms: 0.175411
+  type: 'test'
+  ...
+# Subtest: assignment validates response then reads back exact saved assignee
+ok 156 - assignment validates response then reads back exact saved assignee
+  ---
+  duration_ms: 0.215909
+  type: 'test'
+  ...
+# Subtest: assignment rejects wrong task without reporting success
+ok 157 - assignment rejects wrong task without reporting success
+  ---
+  duration_ms: 0.104178
+  type: 'test'
+  ...
+# Subtest: assignment rejects wrong assignee without reporting success
+ok 158 - assignment rejects wrong assignee without reporting success
+  ---
+  duration_ms: 0.864343
+  type: 'test'
+  ...
+# Subtest: assignment rejects empty 2xx without reporting success
+ok 159 - assignment rejects empty 2xx without reporting success
+  ---
+  duration_ms: 0.114594
+  type: 'test'
+  ...
+# Subtest: assignment missing or overwritten at exact read-back is unconfirmed
+ok 160 - assignment missing or overwritten at exact read-back is unconfirmed
+  ---
+  duration_ms: 0.297581
+  type: 'test'
+  ...
+# Subtest: auto assign no-capacity is a non-success outcome; raw reasons are not trusted
+ok 161 - auto assign no-capacity is a non-success outcome; raw reasons are not trusted
+  ---
+  duration_ms: 0.248421
+  type: 'test'
+  ...
+# Subtest: auto assign validates task/assignee then reads back; already assigned is supported
+ok 162 - auto assign validates task/assignee then reads back; already assigned is supported
+  ---
+  duration_ms: 0.118266
+  type: 'test'
+  ...
+# Subtest: uncertain assignment blocks repeat until read-only reconciliation; no optimistic assignment
+ok 163 - uncertain assignment blocks repeat until read-only reconciliation; no optimistic assignment
+  ---
+  duration_ms: 0.691127
+  type: 'test'
+  ...
+# Subtest: failed refresh disables queue and preserves creation success notice
+ok 164 - failed refresh disables queue and preserves creation success notice
+  ---
+  duration_ms: 0.293297
+  type: 'test'
+  ...
+# Subtest: externally removed unresolved journal never silently rotates request identity
+ok 165 - externally removed unresolved journal never silently rotates request identity
+  ---
+  duration_ms: 0.140924
+  type: 'test'
+  ...
+# Subtest: manual assignment sends exact observed version, requires audit and uses exact-ID read rather than bounded list
+ok 166 - manual assignment sends exact observed version, requires audit and uses exact-ID read rather than bounded list
+  ---
+  duration_ms: 0.198508
+  type: 'test'
+  ...
+# Subtest: assignment refuses missing auditId
+ok 167 - assignment refuses missing auditId
+  ---
+  duration_ms: 0.113521
+  type: 'test'
+  ...
+# Subtest: assignment refuses missing auditRecorded
+ok 168 - assignment refuses missing auditRecorded
+  ---
+  duration_ms: 0.063899
+  type: 'test'
+  ...
+# Subtest: missing/stale-shaped expected record cannot dispatch assignment
+ok 169 - missing/stale-shaped expected record cannot dispatch assignment
+  ---
+  duration_ms: 0.171275
+  type: 'test'
+  ...
+# Subtest: old server unsupported action does not fallback to unchecked assignment
+ok 170 - old server unsupported action does not fallback to unchecked assignment
+  ---
+  duration_ms: 0.093358
+  type: 'test'
+  ...
+# Subtest: staff: endpoint rejects assignment and exact reads before database access
+ok 171 - staff: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.976671
+  type: 'test'
+  ...
+# Subtest: contractor: endpoint rejects assignment and exact reads before database access
+ok 172 - contractor: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.200108
+  type: 'test'
+  ...
+# Subtest: viewer: endpoint rejects assignment and exact reads before database access
+ok 173 - viewer: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.145688
+  type: 'test'
+  ...
+# Subtest: finance: endpoint rejects assignment and exact reads before database access
+ok 174 - finance: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.156076
+  type: 'test'
+  ...
+# Subtest: hr: endpoint rejects assignment and exact reads before database access
+ok 175 - hr: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.115715
+  type: 'test'
+  ...
+# Subtest: teacher: endpoint rejects assignment and exact reads before database access
+ok 176 - teacher: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.073361
+  type: 'test'
+  ...
+# Subtest: undefined: endpoint rejects assignment and exact reads before database access
+ok 177 - undefined: endpoint rejects assignment and exact reads before database access
+  ---
+  duration_ms: 0.068154
+  type: 'test'
+  ...
+# Subtest: owner: trusted identity and raw microsecond CAS version reach service-only RPC
+ok 178 - owner: trusted identity and raw microsecond CAS version reach service-only RPC
+  ---
+  duration_ms: 0.799037
+  type: 'test'
+  ...
+# Subtest: admin: trusted identity and raw microsecond CAS version reach service-only RPC
+ok 179 - admin: trusted identity and raw microsecond CAS version reach service-only RPC
+  ---
+  duration_ms: 0.290038
+  type: 'test'
+  ...
+# Subtest: manager: trusted identity and raw microsecond CAS version reach service-only RPC
+ok 180 - manager: trusted identity and raw microsecond CAS version reach service-only RPC
+  ---
+  duration_ms: 0.280033
+  type: 'test'
+  ...
+# Subtest: legacy unchecked action is retired, not silently upgraded with a fresh server version
+ok 181 - legacy unchecked action is retired, not silently upgraded with a fresh server version
+  ---
+  duration_ms: 0.155351
+  type: 'test'
+  ...
+# Subtest: invalid input {"taskId":"bad"} cannot write
+ok 182 - invalid input {"taskId":"bad"} cannot write
+  ---
+  duration_ms: 1.094453
+  type: 'test'
+  ...
+# Subtest: invalid input {"assigneeId":null} cannot write
+ok 183 - invalid input {"assigneeId":null} cannot write
+  ---
+  duration_ms: 0.089292
+  type: 'test'
+  ...
+# Subtest: invalid input {} cannot write
+ok 184 - invalid input {} cannot write
+  ---
+  duration_ms: 0.042863
+  type: 'test'
+  ...
+# Subtest: invalid input {"expectedAssigneeId":"bad"} cannot write
+ok 185 - invalid input {"expectedAssigneeId":"bad"} cannot write
+  ---
+  duration_ms: 0.036967
+  type: 'test'
+  ...
+# Subtest: invalid input {"expectedUpdatedAt":null} cannot write
+ok 186 - invalid input {"expectedUpdatedAt":null} cannot write
+  ---
+  duration_ms: 0.139291
+  type: 'test'
+  ...
+# Subtest: invalid input {"expectedUpdatedAt":"today"} cannot write
+ok 187 - invalid input {"expectedUpdatedAt":"today"} cannot write
+  ---
+  duration_ms: 0.051976
+  type: 'test'
+  ...
+# Subtest: invalid input {"expectedUpdatedAt":"2026-11-16"} cannot write
+ok 188 - invalid input {"expectedUpdatedAt":"2026-11-16"} cannot write
+  ---
+  duration_ms: 0.039938
+  type: 'test'
+  ...
+# Subtest: SQL 42501 maps to sanitized 403 without retry
+ok 189 - SQL 42501 maps to sanitized 403 without retry
+  ---
+  duration_ms: 0.280279
+  type: 'test'
+  ...
+# Subtest: SQL P0002 maps to sanitized 404 without retry
+ok 190 - SQL P0002 maps to sanitized 404 without retry
+  ---
+  duration_ms: 0.084199
+  type: 'test'
+  ...
+# Subtest: SQL 40001 maps to sanitized 409 without retry
+ok 191 - SQL 40001 maps to sanitized 409 without retry
+  ---
+  duration_ms: 0.050333
+  type: 'test'
+  ...
+# Subtest: SQL 22023 maps to sanitized 400 without retry
+ok 192 - SQL 22023 maps to sanitized 400 without retry
+  ---
+  duration_ms: 0.049417
+  type: 'test'
+  ...
+# Subtest: SQL 22007 maps to sanitized 400 without retry
+ok 193 - SQL 22007 maps to sanitized 400 without retry
+  ---
+  duration_ms: 0.045431
+  type: 'test'
+  ...
+# Subtest: SQL 22008 maps to sanitized 400 without retry
+ok 194 - SQL 22008 maps to sanitized 400 without retry
+  ---
+  duration_ms: 0.040977
+  type: 'test'
+  ...
+# Subtest: SQL 23514 maps to sanitized 500 without retry
+ok 195 - SQL 23514 maps to sanitized 500 without retry
+  ---
+  duration_ms: 0.041895
+  type: 'test'
+  ...
+# Subtest: SQL PGRST202 maps to sanitized 500 without retry
+ok 196 - SQL PGRST202 maps to sanitized 500 without retry
+  ---
+  duration_ms: 0.042086
+  type: 'test'
+  ...
+# Subtest: incomplete successful RPC never claims assignment audit
+ok 197 - incomplete successful RPC never claims assignment audit
+  ---
+  duration_ms: 0.176534
+  type: 'test'
+  ...
+# Subtest: exact read constrains both task ID and authenticated tenant, not a bounded list
+ok 198 - exact read constrains both task ID and authenticated tenant, not a bounded list
+  ---
+  duration_ms: 0.149383
+  type: 'test'
+  ...
+# Subtest: missing/cross-tenant exact read is not found and errors do not leak
+ok 199 - missing/cross-tenant exact read is not found and errors do not leak
+  ---
+  duration_ms: 0.111139
+  type: 'test'
+  ...
+# Subtest: edge wiring routes all assignment contracts after authentication and removes direct update path
+ok 200 - edge wiring routes all assignment contracts after authentication and removes direct update path
+  ---
+  duration_ms: 0.403411
+  type: 'test'
+  ...
+# Subtest: shipping default remains explicitly legacy until separately reviewed backend release
+ok 201 - shipping default remains explicitly legacy until separately reviewed backend release
+  ---
+  duration_ms: 1.101927
+  type: 'test'
+  ...
+# Subtest: owner: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 202 - owner: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 0.966796
+  type: 'test'
+  ...
+# Subtest: admin: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 203 - admin: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 0.224929
+  type: 'test'
+  ...
+# Subtest: manager: default manual assignment uses existing production endpoints and truthful non-audited result
+ok 204 - manager: default manual assignment uses existing production endpoints and truthful non-audited result
+  ---
+  duration_ms: 0.152394
+  type: 'test'
+  ...
+# Subtest: default auto assignment uses old read-back, never the undeployed exact-read endpoint
+ok 205 - default auto assignment uses old read-back, never the undeployed exact-read endpoint
+  ---
+  duration_ms: 0.181295
+  type: 'test'
+  ...
+# Subtest: default no-capacity performs no follow-up request and claims no success
+ok 206 - default no-capacity performs no follow-up request and claims no success
+  ---
+  duration_ms: 0.126774
+  type: 'test'
+  ...
+# Subtest: staff: release mode cannot bypass manager access
+ok 207 - staff: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.442357
+  type: 'test'
+  ...
+# Subtest: viewer: release mode cannot bypass manager access
+ok 208 - viewer: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.107862
+  type: 'test'
+  ...
+# Subtest: contractor: release mode cannot bypass manager access
+ok 209 - contractor: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.24001
+  type: 'test'
+  ...
+# Subtest: finance: release mode cannot bypass manager access
+ok 210 - finance: release mode cannot bypass manager access
+  ---
+  duration_ms: 0.295002
+  type: 'test'
+  ...
+# Subtest: invalid release mode fails without dispatching any write
+ok 211 - invalid release mode fails without dispatching any write
+  ---
+  duration_ms: 0.411768
+  type: 'test'
+  ...
+# Subtest: legacy uncertain result cannot retry, switch modes or claim success
+ok 212 - legacy uncertain result cannot retry, switch modes or claim success
+  ---
+  duration_ms: 1.29982
+  type: 'test'
+  ...
+# Subtest: legacy missing/mismatched read-back remains unconfirmed
+ok 213 - legacy missing/mismatched read-back remains unconfirmed
+  ---
+  duration_ms: 0.188676
+  type: 'test'
+  ...
+# Subtest: explicit checked mode is reachable and requires its new audit/version/read contract
+ok 214 - explicit checked mode is reachable and requires its new audit/version/read contract
+  ---
+  duration_ms: 0.270902
+  type: 'test'
+  ...
+# Subtest: checked write error NEVER falls back to legacy, even for an unsupported old server
+ok 215 - checked write error NEVER falls back to legacy, even for an unsupported old server
+  ---
+  duration_ms: 0.212567
+  type: 'test'
+  ...
+# Subtest: checked read error after successful mutation NEVER dispatches a second write
+ok 216 - checked read error after successful mutation NEVER dispatches a second write
+  ---
+  duration_ms: 0.156178
+  type: 'test'
+  ...
+# Subtest: default controller preserves PR89 mode, no optimistic success and explicit recovery after lost response
+ok 217 - default controller preserves PR89 mode, no optimistic success and explicit recovery after lost response
+  ---
+  duration_ms: 0.629324
+  type: 'test'
+  ...
+# Subtest: mounted form submits once, retains details while pending, then clears only after task+audit acknowledgement
+ok 218 - mounted form submits once, retains details while pending, then clears only after task+audit acknowledgement
+  ---
+  duration_ms: 176.953181
+  type: 'test'
+  ...
+# Subtest: unconfirmed create survives component remount and explicit recovery reuses original payload
+ok 219 - unconfirmed create survives component remount and explicit recovery reuses original payload
+  ---
+  duration_ms: 46.830309
+  type: 'test'
+  ...
+# Subtest: corrupt storage renders a blocking explanation, not a fresh creation form
+ok 220 - corrupt storage renders a blocking explanation, not a fresh creation form
+  ---
+  duration_ms: 30.462014
+  type: 'test'
+  ...
+# Subtest: manual assignment is disabled while pending and reports success only after matching read-back
+ok 221 - manual assignment is disabled while pending and reports success only after matching read-back
+  ---
+  duration_ms: 25.210557
+  type: 'test'
+  ...
+# Subtest: lost assignment acknowledgement does not show success and requires refresh before another write
+ok 222 - lost assignment acknowledgement does not show success and requires refresh before another write
+  ---
+  duration_ms: 28.658287
+  type: 'test'
+  ...
+# Subtest: auto assign button calls the real endpoint and no-capacity never claims assignment success
+ok 223 - auto assign button calls the real endpoint and no-capacity never claims assignment success
+  ---
+  duration_ms: 20.876258
+  type: 'test'
+  ...
+# Subtest: unsupported role has no mutation controls and sends no requests
+ok 224 - unsupported role has no mutation controls and sends no requests
+  ---
+  duration_ms: 24.629783
+  type: 'test'
+  ...
+# Subtest: scope switch discards late creation response and retains old scoped journal
+ok 225 - scope switch discards late creation response and retains old scoped journal
+  ---
+  duration_ms: 41.907187
+  type: 'test'
+  ...
+# Subtest: operations integration replaces unguarded writes and remounts on identity changes
+ok 226 - operations integration replaces unguarded writes and remounts on identity changes
+  ---
+  duration_ms: 1.40373
+  type: 'test'
+  ...
+# Subtest: confirmed queue changes update the parent overview without a second write
+ok 227 - confirmed queue changes update the parent overview without a second write
+  ---
+  duration_ms: 31.136982
+  type: 'test'
+  ...
+# Subtest: queue Start requires task/audit acknowledgement and prevents a repeated transition
+ok 228 - queue Start requires task/audit acknowledgement and prevents a repeated transition
+  ---
+  duration_ms: 43.17329
+  type: 'test'
+  ...
+# Subtest: queue transition without audit is not success and requires a refresh
+ok 229 - queue transition without audit is not success and requires a refresh
+  ---
+  duration_ms: 17.259752
+  type: 'test'
+  ...
+# Subtest: tab hide/reopen preserves the unsubmitted draft and refreshes queue records
+ok 230 - tab hide/reopen preserves the unsubmitted draft and refreshes queue records
+  ---
+  duration_ms: 23.230482
+  type: 'test'
+  ...
+# Subtest: shipping default mounted queue preserves manual assignment against legacy backend
+ok 231 - shipping default mounted queue preserves manual assignment against legacy backend
+  ---
+  duration_ms: 35.178502
+  type: 'test'
+  ...
+# Subtest: shipping default mounted queue preserves auto assignment against legacy backend
+ok 232 - shipping default mounted queue preserves auto assignment against legacy backend
+  ---
+  duration_ms: 27.616961
+  type: 'test'
+  ...
+# Subtest: draft 11111111-1111-4111-8111-111111111111 never claims saved completion or dispatches a mutation
+ok 233 - draft 11111111-1111-4111-8111-111111111111 never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 138.757528
+  type: 'test'
+  ...
+# Subtest: draft draft-1 never claims saved completion or dispatches a mutation
+ok 234 - draft draft-1 never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 33.213093
+  type: 'test'
+  ...
+# Subtest: draft without ID never claims saved completion or dispatches a mutation
+ok 235 - draft without ID never claims saved completion or dispatches a mutation
+  ---
+  duration_ms: 20.624967
+  type: 'test'
+  ...
+# Subtest: snapshot completion is unverified and inert until a matching authorised read
+ok 236 - snapshot completion is unverified and inert until a matching authorised read
+  ---
+  duration_ms: 11.895098
+  type: 'test'
+  ...
+# Subtest: invalid saved ID never becomes a local toggle
+ok 237 - invalid saved ID never becomes a local toggle
+  ---
+  duration_ms: 13.22626
+  type: 'test'
+  ...
+# Subtest: viewer cannot turn a saved task into a local completion
+ok 238 - viewer cannot turn a saved task into a local completion
+  ---
+  duration_ms: 13.751053
+  type: 'test'
+  ...
+# Subtest: contractor cannot turn a saved task into a local completion
+ok 239 - contractor cannot turn a saved task into a local completion
+  ---
+  duration_ms: 10.779687
+  type: 'test'
+  ...
+# Subtest: teacher cannot turn a saved task into a local completion
+ok 240 - teacher cannot turn a saved task into a local completion
+  ---
+  duration_ms: 14.896289
+  type: 'test'
+  ...
+# Subtest: undefined cannot turn a saved task into a local completion
+ok 241 - undefined cannot turn a saved task into a local completion
+  ---
+  duration_ms: 13.43492
+  type: 'test'
+  ...
+# Subtest: refreshed records override stale card title and status, including cancelled
+ok 242 - refreshed records override stale card title and status, including cancelled
+  ---
+  duration_ms: 12.87562
+  type: 'test'
+  ...
+# Subtest: local ticks do not carry to changed item content or remounted workspace
+ok 243 - local ticks do not carry to changed item content or remounted workspace
+  ---
+  duration_ms: 16.604658
+  type: 'test'
+  ...
+# Subtest: references are hidden by default and revealed in explicit evidence details
+ok 244 - references are hidden by default and revealed in explicit evidence details
+  ---
+  duration_ms: 26.17717
+  type: 'test'
+  ...
+# Subtest: mounted hook/card integrates read → start → complete → remount/readback with a synthetic server
+ok 245 - mounted hook/card integrates read → start → complete → remount/readback with a synthetic server
+  ---
+  duration_ms: 27.394726
+  type: 'test'
+  ...
+# Subtest: repeated mounted cards share a synchronous pending lock and no optimistic completion
+ok 246 - repeated mounted cards share a synchronous pending lock and no optimistic completion
+  ---
+  duration_ms: 23.082984
+  type: 'test'
+  ...
+# Subtest: unconfirmed write blocks mounted retry until explicit read-only refresh reconciles status
+ok 247 - unconfirmed write blocks mounted retry until explicit read-only refresh reconciles status
+  ---
+  duration_ms: 20.917765
+  type: 'test'
+  ...
+# Subtest: account/conversation scope changes discard late reads from the previous scope
+ok 248 - account/conversation scope changes discard late reads from the previous scope
+  ---
+  duration_ms: 12.158223
+  type: 'test'
+  ...
+# Subtest: StrictMode replay still leaves mounted task records usable
+ok 249 - StrictMode replay still leaves mounted task records usable
+  ---
+  duration_ms: 12.07629
+  type: 'test'
+  ...
+# Subtest: chat wiring keys local state by account/workspace/conversation and offers read reconciliation
+ok 250 - chat wiring keys local state by account/workspace/conversation and offers read reconciliation
+  ---
+  duration_ms: 1.366282
+  type: 'test'
+  ...
+1..250
+# tests 250
+# suites 0
+# pass 250
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5322.275743
