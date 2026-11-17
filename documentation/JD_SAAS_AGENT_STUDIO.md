@@ -1,5 +1,9 @@
 # SaaS Agent Studio — design-stage foundation
 
+## Additive registry update
+
+The [Business foundation implementation](JD_BUSINESS_FOUNDATION.md) adds **Save team definition for review**. After its separately reviewed database/backend release, this explicitly saves an immutable team-definition document version, creates a content-review request, and verifies read-back. Subsequent edits in the same Studio session append versions to that document. Business Builder → Saved versions inspects/restores records. This is not an employee hiring/execution registry and grants no permissions. The original design/export boundaries below still apply to preview and export alone.
+
 ## Scope and current truth
 
 This is the first local slice of the November 2026 **Run. Monitor. Build. Grow.** product direction, specifically the request to make agents for building SaaS. It is **not the completed autonomous platform** and **does not run software-building agents**.

@@ -1,0 +1,195 @@
+TAP version 13
+# (node:2063) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-foundation-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: save creates immutable version, pending existing approval, run and audit atomically
+ok 1 - save creates immutable version, pending existing approval, run and audit atomically
+  ---
+  duration_ms: 2029.43749
+  type: 'test'
+  ...
+# Subtest: same operation replays one version; conflicting reuse is rejected
+ok 2 - same operation replays one version; conflicting reuse is rejected
+  ---
+  duration_ms: 40.543148
+  type: 'test'
+  ...
+# Subtest: new revision uses expected version; stale revision and other-tenant edits are denied
+ok 3 - new revision uses expected version; stale revision and other-tenant edits are denied
+  ---
+  duration_ms: 41.004477
+  type: 'test'
+  ...
+# Subtest: direct anon cannot call privileged RPC with forged actor
+ok 4 - direct anon cannot call privileged RPC with forged actor
+  ---
+  duration_ms: 15.105126
+  type: 'test'
+  ...
+# Subtest: direct authenticated cannot call privileged RPC with forged actor
+ok 5 - direct authenticated cannot call privileged RPC with forged actor
+  ---
+  duration_ms: 16.69164
+  type: 'test'
+  ...
+# Subtest: staff profile cannot save via service RPC
+ok 6 - staff profile cannot save via service RPC
+  ---
+  duration_ms: 16.861784
+  type: 'test'
+  ...
+# Subtest: versions cannot be mutated even by the service role
+ok 7 - versions cannot be mutated even by the service role
+  ---
+  duration_ms: 20.4975
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000001
+ok 8 - actual RLS visibility for 00000000-0000-4000-8000-000000000001
+  ---
+  duration_ms: 27.129946
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000004
+ok 9 - actual RLS visibility for 00000000-0000-4000-8000-000000000004
+  ---
+  duration_ms: 23.206976
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000005
+ok 10 - actual RLS visibility for 00000000-0000-4000-8000-000000000005
+  ---
+  duration_ms: 23.262355
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back document, version, approval and run
+ok 11 - audit failure rolls back document, version, approval and run
+  ---
+  duration_ms: 27.139041
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 12 - unsafe document contract is rejected
+  ---
+  duration_ms: 17.922595
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 13 - unsafe document contract is rejected
+  ---
+  duration_ms: 14.113305
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 14 - unsafe document contract is rejected
+  ---
+  duration_ms: 15.700099
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 15 - unsafe document contract is rejected
+  ---
+  duration_ms: 14.718523
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 16 - unsafe document contract is rejected
+  ---
+  duration_ms: 16.017618
+  type: 'test'
+  ...
+# Subtest: credential mutation is audited; rate reservation is tenant/version scoped and bounded
+ok 17 - credential mutation is audited; rate reservation is tenant/version scoped and bounded
+  ---
+  duration_ms: 60.257149
+  type: 'test'
+  ...
+# Subtest: actual HTTP + SQL + client confirms saved content through read-back
+ok 18 - actual HTTP + SQL + client confirms saved content through read-back
+  ---
+  duration_ms: 36.231939
+  type: 'test'
+  ...
+# Subtest: actual HTTP role boundary null
+ok 19 - actual HTTP role boundary null
+  ---
+  duration_ms: 14.849224
+  type: 'test'
+  ...
+# Subtest: actual HTTP role boundary 00000000-0000-4000-8000-000000000005
+ok 20 - actual HTTP role boundary 00000000-0000-4000-8000-000000000005
+  ---
+  duration_ms: 15.084621
+  type: 'test'
+  ...
+# Subtest: other tenant cannot load or restore a saved design
+ok 21 - other tenant cannot load or restore a saved design
+  ---
+  duration_ms: 31.413356
+  type: 'test'
+  ...
+# Subtest: restore copies content into new pending version without carrying prior approval
+ok 22 - restore copies content into new pending version without carrying prior approval
+  ---
+  duration_ms: 32.790245
+  type: 'test'
+  ...
+# Subtest: HTTP live research is release-gated before reading secrets or network
+ok 23 - HTTP live research is release-gated before reading secrets or network
+  ---
+  duration_ms: 17.163282
+  type: 'test'
+  ...
+# Subtest: enabled research stores sanitised provenance and exposes metadata but never credentials
+ok 24 - enabled research stores sanitised provenance and exposes metadata but never credentials
+  ---
+  duration_ms: 30.258526
+  type: 'test'
+  ...
+# Subtest: actual human approval route records decision but cannot execute blueprint or grant permissions
+not ok 25 - actual human approval route records decision but cannot execute blueprint or grant permissions
+  ---
+  duration_ms: 50.460533
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-foundation-database.mjs:66:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(['profiles','jd_foundation_documents','jd_foundation_versions','jd_approvals','jd_research_credentials','jd_research_attempts'].includes(table))
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.from (file:///home/user/James-Denning/scripts/test-foundation-database.mjs:55:79)
+    file:///home/user/James-Denning/node_modules/.cache/foundation-http-7dkf0H/handler.mjs:963:38
+    async Object.send (file:///home/user/James-Denning/scripts/test-foundation-database.mjs:56:247)
+    async TestContext.<anonymous> (file:///home/user/James-Denning/scripts/test-foundation-database.mjs:69:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: 24-hour research cap includes failed and reserved attempts, not only successes
+ok 26 - 24-hour research cap includes failed and reserved attempts, not only successes
+  ---
+  duration_ms: 94.944172
+  type: 'test'
+  ...
+# Subtest: copied encrypted credential envelope cannot be used by another tenant
+ok 27 - copied encrypted credential envelope cannot be used by another tenant
+  ---
+  duration_ms: 39.835692
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 26
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3157.168095

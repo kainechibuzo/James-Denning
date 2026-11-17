@@ -10,6 +10,8 @@ export const CAPABILITY_INTERPRETATION = [
 ].join("\n");
 
 const effects: Record<string, {effect:string; boundary:string}> = {
+  get_ai_workforce_catalogue:{effect:"preview_only",boundary:"Reads draft catalogue definitions; does not certify evaluations, hire employees or start billable work."},
+  preview_business_workspace:{effect:"preview_only",boundary:"Generates an industry-specific blueprint and context-only advisory brief. No research, activation, hiring, persistence or charges."},
   preview_saas_agent_team:{effect:"preview_only",boundary:"Designs agent definitions and requested permissions only. Does not create running agents, bind tools, authorise spend, run evaluations or deploy software."},
   preview_organisation_blueprint: {effect:"preview_only",boundary:"Generates a proposal without saving or provisioning departments."},
   preview_hiring_vacancy: {effect:"preview_only",boundary:"Generates a vacancy draft; does not publish it or hire anyone."},
@@ -22,7 +24,7 @@ const effects: Record<string, {effect:string; boundary:string}> = {
   call_connected_mcp_tool: {effect:"connector_dependent",boundary:"Discover first. Read-only calls may execute; write-capable calls request approval. Check execution evidence after approval, never treat an approval as execution."},
 };
 const readers = new Set([
-  "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence",
+  "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence",
   "get_organisation_departments", "get_business_memory", "get_workspace_overview",
   "get_hiring_pipeline", "get_billing_snapshot", "get_business_expense_anomalies",
   "get_business_kpi_trends", "get_recent_activity_logs", "get_email_delivery_logs",

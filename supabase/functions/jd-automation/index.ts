@@ -1,3 +1,4 @@
+import { handleFoundation } from "../_shared/jd-foundation-service.ts";
 import { buildSaasAgentTeam } from "../_shared/jd-agent-architect.mjs";
 import { handleExecutionCancellation } from "../_shared/jd-execution-cancellation.mjs";
 import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";
@@ -41,6 +42,8 @@ Deno.serve(async (req) => {
 
 
 
+ if(!payload||typeof payload!=="object"||Array.isArray(payload))return json({error:"Invalid request object"},400);
+ if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){
   if(!hasRole(ADMIN_ROLES,profile.role))return json({error:"Workspace administrator required to design agent teams"},403);
   try{return json({design:buildSaasAgentTeam(payload.project)});}catch{return json({error:"Invalid agent project. Check the explicit requirements and remove credentials; no agents were created."},400);}

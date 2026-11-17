@@ -17,6 +17,7 @@ Built as a single-page React application backed by Supabase.
 - [Backend compatibility and scoped release preparation](docs/evidence/2026-11-17-backend-compatibility/REPORT.md) — legacy assignment compatibility, source-artifact guards and separately approved backend releases.
 - [Atomic cancellation candidate](docs/evidence/2026-11-16-atomic-cancellation/REPORT.md) — local SQL rollback, access-control and acknowledgement evidence; disabled pending isolated staging and owner review.
 - [Business settings and JD review/apply](docs/evidence/2026-11-16-business-settings/REPORT.md) — screenshot-driven mobile fixes, education-only settings separation and exact human-reviewed settings changes.
+- [Business foundation implementation](documentation/JD_BUSINESS_FOUNDATION.md) — versioned Business DNA and SaaS definitions, content review, draft workforce, gated research and additive billing policy; not the completed autonomous platform.
 - [SaaS Agent Studio](documentation/JD_SAAS_AGENT_STUDIO.md) — tailored agent-team designs, editable briefs and honest exports; design stage only, not activated agents or autonomous builds. [Local evidence](docs/evidence/2026-11-16-saas-agent-studio/REPORT.md).
 - [Offline cancellation evidence harness](documentation/JD_CANCELLATION_ACCEPTANCE.md) — source-pinned case register and persisted-record assertions; cannot grant live acceptance or production approval.
 - [Reviewed backend release procedure](documentation/JD_BACKEND_RELEASE.md) — staging, independent approvals, narrow deployment and recovery boundaries.

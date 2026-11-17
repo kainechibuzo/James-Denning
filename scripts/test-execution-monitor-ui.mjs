@@ -11,7 +11,7 @@ const cache=resolve('node_modules/.cache');mkdirSync(cache,{recursive:true});con
 let source=readFileSync('src/chat/JDExecutionMonitor.jsx','utf8');for(const file of ['execution-monitor.mjs','run-history.mjs'])source=source.replace(`'./${file}'`,JSON.stringify(new URL(`../src/chat/${file}`,import.meta.url).href));
 writeFileSync(`${temp}/monitor.mjs`,(await transformWithOxc(source,'monitor.jsx',{jsx:{runtime:'classic'}})).code);const {JDExecutionMonitor}=await import(pathToFileURL(`${temp}/monitor.mjs`));
 let page=readFileSync('src/pages/jd-operations.jsx','utf8').replace('import {supabase} from "../supabaseClient.js";','const supabase=null;').replace('"../chat/JDExecutionMonitor.jsx"',JSON.stringify(pathToFileURL(`${temp}/monitor.mjs`).href)).replace('"../config/workspace-navigation.mjs"',JSON.stringify(new URL('../src/config/workspace-navigation.mjs',import.meta.url).href));
-for(const name of ['SaaSAgentStudio','JDTaskQueue','JDWorkflowStudio','JDRecurringSchedules','JDDepartmentCollaboration','JDBusinessPlatform'])page=page.replace(new RegExp(`import \\{${name}\\} from [^;]+;`),`const ${name}=()=>null;`);
+for(const name of ['BusinessFoundation','SaaSAgentStudio','JDTaskQueue','JDWorkflowStudio','JDRecurringSchedules','JDDepartmentCollaboration','JDBusinessPlatform'])page=page.replace(new RegExp(`import \\{${name}\\} from [^;]+;`),`const ${name}=()=>null;`);
 writeFileSync(`${temp}/page.mjs`,(await transformWithOxc(page,'page.jsx',{jsx:{runtime:'classic'}})).code);const {JDOperationsPage}=await import(pathToFileURL(`${temp}/page.mjs`));
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const jobId=id(2),runId=id(1);

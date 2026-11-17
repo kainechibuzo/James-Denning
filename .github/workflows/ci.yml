@@ -54,6 +54,9 @@ jobs:
       - name: Test reviewed organisation settings and SQL execution
         run: npm run test:settings
 
+      - name: Test business foundation, research and isolated registry SQL
+        run: npm run test:foundation
+
       - name: Test SaaS agent design contracts and access boundaries
         run: npm run test:agents
 
