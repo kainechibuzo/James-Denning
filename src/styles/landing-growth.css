@@ -1,0 +1,68 @@
+/* Conversion-focused additions retain the supplied JD brand and artwork. */
+.reference-landing{color-scheme:light}
+.landing-signin{border:0;background:transparent;color:#17191c;font-size:13px;font-weight:550;cursor:pointer;padding:10px 6px}
+.landing-eyebrow{font-size:10px!important;font-weight:600;letter-spacing:.16em;line-height:1.7;color:#60616b;margin:0 0 20px}
+.reference-hero-copy>.landing-eyebrow{margin-bottom:20px}
+.reference-landing-body>section:not(.reference-hero):not(.reference-features){max-width:1120px;margin-left:auto;margin-right:auto}
+.landing-section-heading h2{font-size:clamp(30px,3.8vw,46px);line-height:1.13;font-weight:500;letter-spacing:-.055em;margin:0 0 20px}
+.landing-section-heading>p:last-child:not(.landing-eyebrow){font-size:15px;line-height:1.8;color:#60616b;max-width:410px}
+.landing-use-cases{display:grid;grid-template-columns:1fr 1.2fr;gap:70px;align-items:center;padding:100px 0}
+.landing-scenario{min-width:0}
+.landing-scenario-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.landing-scenario-tabs button{border:1px solid #dedfe4;border-radius:999px;background:transparent;color:#60616b;padding:10px 14px;font-size:12px;cursor:pointer}
+.landing-scenario-tabs button[aria-pressed=true]{background:#17191c;border-color:#17191c;color:#fff}
+.landing-demo{border:1px solid #dedfe4;background:#fff;border-radius:22px;padding:28px;box-shadow:0 8px 30px #17191c05;min-height:320px}
+.landing-demo>small{font-size:9px;letter-spacing:.1em;color:#60616b;line-height:1.7;display:block}
+.landing-demo-question{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.6;background:#f1f2f5;padding:16px;border-radius:14px;margin:24px 0}
+.landing-demo-question svg{flex-shrink:0;margin-top:4px}
+.landing-demo-answer{display:flex;gap:12px;align-items:flex-start}
+.landing-demo-answer img{flex-shrink:0;border-radius:10px}
+.landing-demo-answer strong{font-size:12px;font-weight:600}
+.landing-demo-answer p{font-size:14px;line-height:1.8;color:#60616b;margin:6px 0 18px}
+.landing-demo-outcome{display:flex;gap:8px;align-items:flex-start;font-size:11px;line-height:1.7;border-top:1px solid #ececf0;padding-top:16px;margin:0;color:#60616b}
+.landing-demo-outcome svg{flex-shrink:0;margin-top:2px}
+.landing-how{border-top:1px solid #dedfe4;padding:80px 0}
+.landing-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:40px}
+.landing-steps article{padding:24px 0;border-top:1px solid #dedfe4}
+.landing-steps article>div{display:flex;justify-content:space-between;align-items:center;color:#60616b;margin-bottom:35px}
+.landing-steps article>div>span{font-size:12px}
+.landing-steps h3{font-size:20px;font-weight:550;letter-spacing:-.025em;margin:0 0 12px}
+.landing-steps p{font-size:14px;color:#60616b;line-height:1.85;margin:0}
+.landing-control{padding:50px;background:#17191c;border-radius:24px;color:#f3f4f5;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.landing-control .landing-eyebrow{color:#b6b7bf;margin-top:24px;font-size:9px!important}
+.landing-control h2{font-size:clamp(30px,4vw,46px);font-weight:500;letter-spacing:-.055em;line-height:1.12;margin:0 0 20px}
+.landing-control p:not(.landing-eyebrow){color:#b6b7bf;line-height:1.8;font-size:14px;max-width:320px}
+.landing-control ul{list-style:none;padding:0;margin:0;display:grid;gap:28px}
+.landing-control li{display:flex;gap:14px;font-size:13px;color:#b6b7bf;line-height:1.8}
+.landing-control li svg{flex-shrink:0;margin-top:4px;color:#fff}
+.landing-control strong{display:block;color:#fff;font-size:15px;font-weight:550;margin-bottom:5px}
+.landing-faq{display:grid;grid-template-columns:1fr 1.4fr;gap:70px;padding:100px 0}
+.landing-faq details{border-bottom:1px solid #dedfe4}
+.landing-faq summary{list-style:none;cursor:pointer;padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:15px;font-weight:550;line-height:1.6}
+.landing-faq summary::-webkit-details-marker{display:none}
+.landing-faq summary span{font-size:22px;font-weight:400}
+.landing-faq details[open] summary span{transform:rotate(45deg)}
+.landing-faq details p{font-size:14px;color:#60616b;line-height:1.85;margin:0 0 24px}
+.landing-final-cta{text-align:center;border-top:1px solid #dedfe4;padding:80px 16px 90px}
+.landing-final-cta h2{font-size:clamp(36px,5vw,64px);line-height:1.1;letter-spacing:-.06em;font-weight:500;margin:0 0 24px}
+.landing-final-cta h2 em{font-family:'JD Caslon',Georgia,serif;font-weight:400}
+.landing-final-cta>p:not(.landing-eyebrow){font-size:15px;color:#60616b;margin-bottom:28px;line-height:1.8}
+.landing-final-cta .reference-primary{margin:0 auto}
+.landing-final-cta>.landing-signin{display:block;margin:14px auto 0;font-size:12px}
+.landing-footer{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;max-width:1120px;margin:0 auto;padding:28px 0;border-top:1px solid #dedfe4;color:#60616b;font-size:12px}
+.landing-footer .reference-brand{color:#17191c;font-size:14px}
+.landing-footer .reference-brand img{filter:none!important}
+@media(max-width:760px){
+ .reference-site-header .landing-signin{display:none}
+ .landing-use-cases,.landing-faq{grid-template-columns:minmax(0,1fr);gap:28px;padding:56px 0}
+ .landing-how{padding:50px 0}
+ .landing-steps{grid-template-columns:minmax(0,1fr);gap:8px;margin-top:25px}
+ .landing-steps article>div{margin-bottom:18px}
+ .landing-control{grid-template-columns:minmax(0,1fr);gap:28px;padding:28px 24px;border-radius:20px}
+ .landing-demo{padding:20px;min-height:0}
+ .landing-demo-question{font-size:15px;padding:14px}
+ .landing-scenario-tabs button{padding:10px 12px;font-size:11px}
+ .landing-final-cta{padding:50px 0}
+ .landing-footer{gap:18px;padding:24px 0}
+ .landing-footer>span{width:100%;order:3}
+}

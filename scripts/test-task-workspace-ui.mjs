@@ -47,7 +47,7 @@ for(const item of [task("completed"),{id:"draft-1",title:"Draft task",status:"co
 }
 test("snapshot completion is unverified and inert until a matching authorised read",async()=>{
   const m=await mount(view({ui:workspace(true,task("completed")),onTaskToggle:()=>assert.fail("must not write")}));
-  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.match(content(),/0\/1 records complete/);assert.equal(check().getAttribute("aria-pressed"),"false");}
+  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.match(content(),/Status not confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");}
   finally{await m.cleanup();}
 });
 test("invalid saved ID never becomes a local toggle",async()=>{
@@ -125,6 +125,35 @@ test("chat wiring keys local state by account/workspace/conversation and offers 
   const shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
   assert.match(shell,/<ChatHome key=\{JSON.stringify\(\[selectedSchool\?\.id,user\?\._authUserId\|\|user\?\.id,user\?\.role\]\)\}/);
   assert.match(shell,/organizationId=\{selectedSchool\?\.id\}/);
-  assert.match(source,/key=\{taskScope\+":"\+index\}/);assert.match(source,/onClick=\{taskRecords.refresh\}/);
+  assert.match(source,/key=\{taskScope\+":"\+index\}/);assert.match(source,/onRefreshTasks=\{taskRecords.refresh\}/);
   assert.match(source,/onTaskToggle=\{taskRecords.transition\} taskRecords=\{taskRecords.state\} taskRole=\{user\?\.role\}/);
+});
+
+// Native details retain the mounted controls without displaying a large checklist
+// until the user explicitly opens it. Opening is never an execution request.
+test("saved task checklist starts collapsed and opening it does not mutate a record",async()=>{
+  let writes=0;const m=await mount(view({taskRecords:ready(),onTaskToggle:()=>writes++}));
+  try{const details=document.querySelector("details.jd-task-disclosure");assert.ok(details);assert.equal(details.open,false);
+    await act(async()=>details.querySelector("summary").click());assert.equal(details.open,true);assert.equal(writes,0);
+    assert.match(content(),/Changing a record here does not execute its task/);
+  }finally{await m.cleanup();}
+});
+test("focus refresh reads new server status, skips hidden tabs and never executes tasks",async()=>{
+  let reads=0,status="in_progress",visibility="visible";const calls=[];
+  const client={functions:{invoke:async(_,request)=>{calls.push(request.body.action);reads++;return{data:{tasks:[task(status)]}};}}};
+  const m=await mount(React.createElement(Harness,{client}));
+  try{Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>visibility});
+    assert.equal(reads,1);status="completed";visibility="hidden";
+    await act(async()=>window.dispatchEvent(new window.Event("focus")));assert.equal(reads,1);assert.doesNotMatch(content(),/Record complete/);
+    visibility="visible";await act(async()=>document.dispatchEvent(new window.Event("visibilitychange")));
+    assert.equal(reads,2);assert.match(content(),/Record complete/);assert.ok(calls.every(a=>a==="operations.task.list"));
+  }finally{await m.cleanup();}
+});
+
+test("asking JD to work is an explicit request, not a task status transition",async()=>{
+  const requests=[];let writes=0;
+  const m=await mount(view({taskRecords:ready(),onTaskToggle:()=>writes++,onTaskWork:record=>requests.push(record)}));
+  try{assert.equal(requests.length,0);await act(async()=>document.querySelector("details summary").click());assert.equal(requests.length,0);
+    await act(async()=>document.querySelector(".jd-task-work").click());assert.equal(requests.length,1);assert.equal(requests[0].id,id);assert.equal(writes,0);assert.equal(check().getAttribute("aria-pressed"),"false");
+  }finally{await m.cleanup();}
 });

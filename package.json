@@ -20,7 +20,7 @@
     "test:backend-release": "node --test scripts/test-backend-assignment-release.mjs scripts/test-backend-release-plan.mjs",
     "test:capabilities": "node --experimental-strip-types --test scripts/test-capability-contract.mjs",
     "test:reference-layout": "node scripts/test-reference-layout.mjs",
-    "test:chat-layout": "node scripts/test-chat-layout.mjs && node scripts/test-settings-layout.mjs && node scripts/test-agent-studio-layout.mjs && node scripts/test-foundation-layout.mjs && node scripts/test-agent-registry-layout.mjs && npm run test:reference-layout && npm run test:site-layout",
+    "test:chat-layout": "node scripts/test-chat-layout.mjs && node scripts/test-settings-layout.mjs && node scripts/test-agent-studio-layout.mjs && node scripts/test-foundation-layout.mjs && node scripts/test-agent-registry-layout.mjs && npm run test:reference-layout && npm run test:site-layout && npm run test:conversation-layout",
     "test:registry": "node --experimental-strip-types --test scripts/test-agent-registry.mjs scripts/test-agent-registry-database.mjs scripts/test-agent-registry-ui.mjs",
     "test:usage": "node --experimental-strip-types --test scripts/test-usage-ledger-database.mjs scripts/test-usage-service.mjs scripts/test-usage-runtime.mjs",
     "test:foundation": "node --experimental-strip-types --test scripts/test-business-foundation.mjs scripts/test-foundation-database.mjs scripts/test-foundation-ui.mjs",
@@ -28,9 +28,10 @@
     "test:settings": "node --experimental-strip-types --test scripts/test-settings-review.mjs scripts/test-settings-review-database.mjs",
     "test:execution": "node --test scripts/test-execution-monitor.mjs scripts/test-execution-monitor-ui.mjs scripts/test-execution-endpoint.mjs scripts/test-execution-retry-database.mjs scripts/test-execution-cancellation.mjs scripts/test-cancellation-acceptance.mjs",
     "test:history": "node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs",
-    "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs",
+    "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs scripts/test-assistant-navigation.mjs",
     "test:site-layout": "node scripts/test-site-design-layout.mjs",
-    "test:dependency-security": "node --test scripts/test-picomatch-security.mjs"
+    "test:dependency-security": "node --test scripts/test-picomatch-security.mjs",
+    "test:conversation-layout": "node scripts/test-conversation-layout.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

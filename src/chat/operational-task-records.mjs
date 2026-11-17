@@ -60,11 +60,11 @@ export function createTaskRecordController(client,{role,taskIds=[]}) {
       if(state.pending.length){refreshAfterWrites=true;return;}
       return controller.refresh();
     },
-    async refresh(){
+    async refresh({background=false}={}){
       if (!active || state.pending.length) return;
       const current = generation, version = ++readVersion;
       if (!wanted.size) {emit({phase:"idle",records:{},needsRefresh:[],error:"",audits:{}});return;}
-      emit({phase:"loading",records:{},error:"",audits:{}});
+      emit({phase:"loading",records:background?state.records:{},error:"",audits:{}});
       try {
         const tasks = await readOperationalTasks(client,role);
         if (!active || generation!==current || readVersion!==version) return;

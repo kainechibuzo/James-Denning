@@ -93,3 +93,14 @@ for(const role of ["viewer","contractor"]){
     const {controller,calls}=setup(()=>rows(task()),role);await controller.refresh();await controller.transition(id,"in_progress");assert.equal(calls.length,1);
   });
 }
+
+test("background reads retain last confirmed status while pending, never guess completion",async()=>{
+  const wait=deferred();let reads=0;const {controller,state}=setup(()=>++reads===1?rows(task("in_progress")):wait.promise);
+  await controller.refresh();const refresh=controller.refresh({background:true});
+  assert.equal(state().phase,"loading");assert.equal(state().records[id].status,"in_progress");
+  wait.resolve(rows(task("completed")));await refresh;assert.equal(state().records[id].status,"completed");assert.equal(state().phase,"ready");
+});
+test("failed background read invalidates displayed current records instead of claiming completion",async()=>{
+  let reads=0;const {controller,state}=setup(()=>++reads===1?rows(task("completed")):{error:{message:"failed"}});
+  await controller.refresh();await controller.refresh({background:true});assert.equal(state().phase,"error");assert.deepEqual(state().records,{});
+});

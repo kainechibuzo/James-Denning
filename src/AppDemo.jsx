@@ -1,3 +1,4 @@
+import {assistantNavigation} from "./config/assistant-navigation.mjs";
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
 import React, { lazy, useId, useState, useEffect, useMemo, Component, useRef } from "react";
 import { ArrowLeft, ArrowRight, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
@@ -1085,6 +1086,8 @@ function SignInRequired(){
 function AppInner(){
   const [user,setUser]         = useState(()=>loadSession());
   const [page,setPage]         = useState("jd-chat");
+  const [assistantRequest,setAssistantRequest] = useState(null);
+  useEffect(()=>{if(page!=="jd-chat")setAssistantRequest(null);},[page]);
   // Optional payload set alongside a page navigation (e.g. dashboard "Fix →" links) so the
   // target page can pre-apply a filter. The target page should clear it after reading it.
   const [pageParam,setPageParam] = useState(null);
@@ -1269,6 +1272,7 @@ function AppInner(){
 
   const navigationQuery = sideOpen || isMobile ? sidebarSearch : "";
   const visibleNavigation = searchNavigation(NAV,navigationQuery);
+  const assistantTools = assistantNavigation(NAV,navigationQuery);
   const groupCollapsed = (id) => isNavGroupCollapsed(id,collapsedGroups,navigationQuery,sideOpen||isMobile);
 
   const ctx={user,role,notify,setPage,canAccess,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam,workspaceType,terms};
@@ -1345,7 +1349,14 @@ function AppInner(){
         </div>}
         <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
           {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
-          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length} matching pages</p>}
+          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"#a3a4ad",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length+assistantTools.length} matching destinations</p>}
+          {assistantTools.length>0 && <section className="jd-assistant-navigation" aria-label="JD AI assistant">
+            {(sideOpen||isMobile)&&<h2>JD AI assistant</h2>}
+            {assistantTools.map(tool=><button key={tool.id} type="button" aria-label={tool.label} title={!sideOpen?tool.label:undefined}
+              onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+              <AppIcon name={tool.icon} size={16}/>{(sideOpen||isMobile)&&<span>{tool.label}</span>}
+            </button>)}
+          </section>}
           {visibleNavigation.map((n,i)=>{
             // ── Group header ──
             if(n.group){
@@ -1485,7 +1496,7 @@ function AppInner(){
 
 
         <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"#f8f9fa":C.offWhite,transition:"background .2s"}}>
-          {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"}/> : <AccessDenied/>)}
+          {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="hiring"        && (canAccess("hiring")       ?<HiringPage ctx={ctx}/>             :<AccessDenied/>)}
           {page==="mail-logs"     && (canAccess("mail-logs")    ?<MailLogsPage ctx={ctx}/>           :<AccessDenied/>)}
