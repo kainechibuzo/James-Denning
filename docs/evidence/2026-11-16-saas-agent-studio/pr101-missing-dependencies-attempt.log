@@ -1,0 +1,292 @@
+
+> james-denning@1.0.0 test:backend-release
+> node --test scripts/test-backend-assignment-release.mjs scripts/test-backend-release-plan.mjs
+
+TAP version 13
+# node:internal/modules/package_json_reader:314
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /home/user/James-Denning/scripts/test-backend-assignment-release.mjs
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:855:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:985:11)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.3
+# Subtest: scripts/test-backend-assignment-release.mjs
+not ok 1 - scripts/test-backend-assignment-release.mjs
+  ---
+  duration_ms: 81.370157
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-backend-assignment-release.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: release refuses missing stage
+ok 2 - release refuses missing stage
+  ---
+  duration_ms: 3.505384
+  type: 'test'
+  ...
+# Subtest: release refuses unknown stage
+ok 3 - release refuses unknown stage
+  ---
+  duration_ms: 0.308665
+  type: 'test'
+  ...
+# Subtest: release refuses short SHA
+ok 4 - release refuses short SHA
+  ---
+  duration_ms: 0.238916
+  type: 'test'
+  ...
+# Subtest: release refuses different source SHA
+ok 5 - release refuses different source SHA
+  ---
+  duration_ms: 0.188005
+  type: 'test'
+  ...
+# Subtest: release refuses missing approval
+ok 6 - release refuses missing approval
+  ---
+  duration_ms: 0.16073
+  type: 'test'
+  ...
+# Subtest: release refuses wrong approved SHA
+ok 7 - release refuses wrong approved SHA
+  ---
+  duration_ms: 0.15846
+  type: 'test'
+  ...
+# Subtest: release refuses missing confirmation
+ok 8 - release refuses missing confirmation
+  ---
+  duration_ms: 0.152696
+  type: 'test'
+  ...
+# Subtest: release refuses missing evidence reference
+ok 9 - release refuses missing evidence reference
+  ---
+  duration_ms: 0.239267
+  type: 'test'
+  ...
+# Subtest: release refuses unrelated repository evidence
+ok 10 - release refuses unrelated repository evidence
+  ---
+  duration_ms: 0.426406
+  type: 'test'
+  ...
+# Subtest: release refuses URL instead of project ref
+ok 11 - release refuses URL instead of project ref
+  ---
+  duration_ms: 0.642362
+  type: 'test'
+  ...
+# Subtest: release refuses target flag injection
+ok 12 - release refuses target flag injection
+  ---
+  duration_ms: 0.293725
+  type: 'test'
+  ...
+# Subtest: release refuses missing independent staging allowlist
+ok 13 - release refuses missing independent staging allowlist
+  ---
+  duration_ms: 0.142085
+  type: 'test'
+  ...
+# Subtest: release refuses mismatched staging allowlist
+ok 14 - release refuses mismatched staging allowlist
+  ---
+  duration_ms: 0.113043
+  type: 'test'
+  ...
+# Subtest: release refuses production as staging
+ok 15 - release refuses production as staging
+  ---
+  duration_ms: 0.106599
+  type: 'test'
+  ...
+# Subtest: release refuses legacy production as staging
+ok 16 - release refuses legacy production as staging
+  ---
+  duration_ms: 0.104008
+  type: 'test'
+  ...
+# Subtest: production refuses missing same-SHA staging acceptance
+ok 17 - production refuses missing same-SHA staging acceptance
+  ---
+  duration_ms: 0.194233
+  type: 'test'
+  ...
+# Subtest: production refuses different tested SHA
+ok 18 - production refuses different tested SHA
+  ---
+  duration_ms: 0.146022
+  type: 'test'
+  ...
+# Subtest: production refuses different production target
+ok 19 - production refuses different production target
+  ---
+  duration_ms: 0.094495
+  type: 'test'
+  ...
+# Subtest: production refuses unapproved SHA
+ok 20 - production refuses unapproved SHA
+  ---
+  duration_ms: 0.098568
+  type: 'test'
+  ...
+# Subtest: valid staged and production plans are narrow source-pinned attestations, not deployments
+ok 21 - valid staged and production plans are narrow source-pinned attestations, not deployments
+  ---
+  duration_ms: 1.187587
+  type: 'test'
+  ...
+# Subtest: CI nested staging copies runtime MJS helpers as well as TypeScript
+ok 22 - CI nested staging copies runtime MJS helpers as well as TypeScript
+  ---
+  duration_ms: 70.123783
+  type: 'test'
+  ...
+# Subtest: real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions
+ok 23 - real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions
+  ---
+  duration_ms: 94.5664
+  type: 'test'
+  ...
+# Subtest: packaging refuses frontend switched early
+ok 24 - packaging refuses frontend switched early
+  ---
+  duration_ms: 14.250544
+  type: 'test'
+  ...
+# Subtest: packaging refuses backend switched early
+ok 25 - packaging refuses backend switched early
+  ---
+  duration_ms: 5.842167
+  type: 'test'
+  ...
+# Subtest: packaging refuses cancellation switched early
+ok 26 - packaging refuses cancellation switched early
+  ---
+  duration_ms: 7.070978
+  type: 'test'
+  ...
+# Subtest: packaging refuses cancellation client switched early
+ok 27 - packaging refuses cancellation client switched early
+  ---
+  duration_ms: 5.476425
+  type: 'test'
+  ...
+# Subtest: packaging refuses cancellation router bypassed
+ok 28 - packaging refuses cancellation router bypassed
+  ---
+  duration_ms: 5.452661
+  type: 'test'
+  ...
+# Subtest: packaging refuses JWT changed
+ok 29 - packaging refuses JWT changed
+  ---
+  duration_ms: 5.67622
+  type: 'test'
+  ...
+# Subtest: packaging refuses router bypassed
+ok 30 - packaging refuses router bypassed
+  ---
+  duration_ms: 5.721464
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed source file
+ok 31 - artifact verification rejects changed source file
+  ---
+  duration_ms: 22.995324
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects extra migration
+ok 32 - artifact verification rejects extra migration
+  ---
+  duration_ms: 25.58875
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects missing file
+ok 33 - artifact verification rejects missing file
+  ---
+  duration_ms: 24.415544
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed target
+ok 34 - artifact verification rejects changed target
+  ---
+  duration_ms: 20.315039
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed hash
+ok 35 - artifact verification rejects changed hash
+  ---
+  duration_ms: 26.344687
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects symlink
+ok 36 - artifact verification rejects symlink
+  ---
+  duration_ms: 20.979296
+  type: 'test'
+  ...
+# Subtest: output parent symlink cannot redirect artifact writes
+ok 37 - output parent symlink cannot redirect artifact writes
+  ---
+  duration_ms: 8.65501
+  type: 'test'
+  ...
+# Subtest: source symlink is rejected before output creation
+ok 38 - source symlink is rejected before output creation
+  ---
+  duration_ms: 6.381626
+  type: 'test'
+  ...
+# Subtest: CLI with no approvals fails before artifact creation and has no network/deploy API
+ok 39 - CLI with no approvals fails before artifact creation and has no network/deploy API
+  ---
+  duration_ms: 93.617079
+  type: 'test'
+  ...
+# Subtest: manual workflow defaults to artifact-only; exact SHA, independent approvals and narrow deployment are retained
+ok 40 - manual workflow defaults to artifact-only; exact SHA, independent approvals and narrow deployment are retained
+  ---
+  duration_ms: 0.899812
+  type: 'test'
+  ...
+# Subtest: CLI preparation on clean synthetic checkout
+ok 41 - CLI preparation on clean synthetic checkout
+  ---
+  duration_ms: 187.602523
+  type: 'test'
+  ...
+# Subtest: CLI preparation on dirty synthetic checkout
+ok 42 - CLI preparation on dirty synthetic checkout
+  ---
+  duration_ms: 66.450498
+  type: 'test'
+  ...
+1..42
+# tests 42
+# suites 0
+# pass 41
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1000.94589
+npm notice
+npm notice New major version of npm available! 10.9.8 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

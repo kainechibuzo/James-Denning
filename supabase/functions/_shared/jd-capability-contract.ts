@@ -10,6 +10,7 @@ export const CAPABILITY_INTERPRETATION = [
 ].join("\n");
 
 const effects: Record<string, {effect:string; boundary:string}> = {
+  preview_saas_agent_team:{effect:"preview_only",boundary:"Designs agent definitions and requested permissions only. Does not create running agents, bind tools, authorise spend, run evaluations or deploy software."},
   preview_organisation_blueprint: {effect:"preview_only",boundary:"Generates a proposal without saving or provisioning departments."},
   preview_hiring_vacancy: {effect:"preview_only",boundary:"Generates a vacancy draft; does not publish it or hire anyone."},
   submit_workspace_settings_for_review: {effect:"approval_request",boundary:"Saves an exact settings proposal only. Human approval and explicit application in Review Centre are separate; never approves its own request or claims settings changed on submission."},

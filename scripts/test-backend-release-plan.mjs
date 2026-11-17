@@ -25,10 +25,20 @@ function fixture(){
  return root;
 }
 const plan=validateBackendRelease(input);
+test('CI nested staging copies runtime MJS helpers as well as TypeScript',()=>{
+ const workflow=readFileSync('.github/workflows/ci.yml','utf8');
+ const block=workflow.split('      - name: Stage nested Edge Function shared modules\n        run: |\n')[1]?.split('\n      - name:')[0];
+ assert.ok(block,'CI staging step must exist');const shell=block.split('\n').map(line=>line.replace(/^          /,'')).join('\n');
+ const legacy=fixture();execFileSync('bash',['-eu','-c',shell.replace(' supabase/functions/_shared/*.mjs','')],{cwd:legacy});
+ const nested='supabase/functions/jd-execution-worker/_shared/jd-agent-architect.mjs';
+ assert.equal(existsSync(resolve(legacy,nested)),false,'Old TS-only staging reproduces missing runtime dependency');
+ const root=fixture();execFileSync('bash',['-eu','-c',shell],{cwd:root});
+ for(const name of ['jd-agent-runtime.ts','jd-agent-architect.mjs','jd-execution-cancellation.mjs'])assert.deepEqual(readFileSync(resolve(root,'supabase/functions/jd-execution-worker/_shared',name)),readFileSync(resolve(root,'supabase/functions/_shared',name)));
+});
 test('real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions',()=>{
  const root=fixture();const {output,manifest}=writeBackendArtifact(root,plan);assert.equal(verifyBackendArtifact(root,plan).sourceSha,sourceSha);
  const paths=manifest.files.map(f=>f.path);
- for(const required of ['supabase/functions/_shared/jd-execution-cancellation.mjs','supabase/functions/jd-execution-worker/_shared/jd-execution-cancellation.mjs','supabase/functions/_shared/jd-task-assignment-release.mjs','supabase/functions/_shared/jd-capability-contract.ts','supabase/functions/jd-execution-worker/_shared/jd-agent-runtime.ts','supabase/functions/jd-execution-worker/_shared/jd-task-assignment-release.mjs'])assert.ok(paths.includes(required));
+ for(const required of ['supabase/functions/_shared/jd-agent-architect.mjs','supabase/functions/jd-execution-worker/_shared/jd-agent-architect.mjs','supabase/functions/_shared/jd-execution-cancellation.mjs','supabase/functions/jd-execution-worker/_shared/jd-execution-cancellation.mjs','supabase/functions/_shared/jd-task-assignment-release.mjs','supabase/functions/_shared/jd-capability-contract.ts','supabase/functions/jd-execution-worker/_shared/jd-agent-runtime.ts','supabase/functions/jd-execution-worker/_shared/jd-task-assignment-release.mjs'])assert.ok(paths.includes(required));
  assert.ok(paths.every(p=>!p.includes('/migrations/')&&!p.endsWith('.sql')&&!p.endsWith('.test.ts')&&!p.includes('.env')));
  const functionDirs=new Set(paths.filter(p=>p.startsWith('supabase/functions/')).map(p=>p.split('/')[2]));assert.deepEqual([...functionDirs].sort(),['_shared',...RELEASE_FUNCTIONS].sort());
  const config=readFileSync(resolve(output,'supabase/config.toml'),'utf8');assert.doesNotMatch(config,/thklwiybjuhrjqrrxyid|\[auth/);assert.match(config,/\[functions.jd-automation\]\nverify_jwt = true/);

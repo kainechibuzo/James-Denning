@@ -1,3 +1,4 @@
+import { buildSaasAgentTeam } from "./jd-agent-architect.mjs";
 import { submitSettingsForReview } from "./jd-settings-review.ts";
 import { CAPABILITY_INTERPRETATION, capabilityEffect } from "./jd-capability-contract.ts";
 import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
@@ -31,7 +32,17 @@ type ToolSpec = {
 const roleAllowed = (context: AgentContext, roles: string[]) =>
   roles.includes("*") || roles.includes(context.role);
 
-const tools: ToolSpec[] = [  {
+const tools: ToolSpec[] = [
+  {
+    name:"preview_saas_agent_team",
+    description:"Design a tailored AI-agent team for a SaaS, website or internal software tool from explicit project requirements. Includes responsibilities, instructions, proposed tool permissions, handoffs, unevaluated acceptance tests and human approval checkpoints. This is a no-write design preview only: it does not create running agents, bind connectors, execute code or deploy software. Never imply a proposed connector requirement is an authorised connection or official MCP server. Use confirmed requirements; ask about unresolved needs rather than silently granting access.",
+    risk:"low",roles:["owner","admin"],
+    parameters:{type:"object",properties:{project:{type:"object",properties:{
+      name:{type:"string",minLength:2,maxLength:120},brief:{type:"string",minLength:12,maxLength:3000},kind:{type:"string",enum:["saas","website","internal-tool"]},
+      backend:{type:"boolean"},authentication:{type:"boolean"},multiTenant:{type:"boolean"},payments:{type:"boolean"},research:{type:"boolean"},preferredRoute:{type:"string",enum:["native","repository","scaffolder"]}
+    },required:["name","brief","kind","backend","authentication","multiTenant","payments","research","preferredRoute"],additionalProperties:false}},required:["project"],additionalProperties:false},
+    execute:async(args)=>buildSaasAgentTeam(args.project),
+  },  {
     name: "get_people_intelligence",
     description: "Return a privacy-conscious workforce snapshot for the authenticated organisation: total members grouped by role. Does not expose names, emails or personal records.",
     risk: "low",

@@ -1,0 +1,6 @@
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/pptxgenjs@3.12.0
+Download https://esm.sh/docx@8.5.0
+Check .cache/agent-typecheck/supabase/functions/jd-automation/index.ts
+Check .cache/agent-typecheck/supabase/functions/jd-execution-worker/index.ts
+Check .cache/agent-typecheck/supabase/functions/jd-mcp/index.ts

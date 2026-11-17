@@ -1,0 +1,5 @@
+Download https://esm.sh/docx@8.5.0
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/pptxgenjs@3.12.0
+error: Could not find a matching package for 'npm:zod@^4.3.6' in the node_modules directory. Ensure you have all your JSR and npm dependencies listed in your deno.json or package.json, then run `deno install`. Alternatively, turn on auto-install by specifying `"nodeModulesDir": "auto"` in your deno.json file.
+    at file:///home/user/James-Denning/supabase/functions/jd-mcp/index.ts:5:19

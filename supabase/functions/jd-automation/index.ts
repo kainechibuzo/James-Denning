@@ -1,3 +1,4 @@
+import { buildSaasAgentTeam } from "../_shared/jd-agent-architect.mjs";
 import { handleExecutionCancellation } from "../_shared/jd-execution-cancellation.mjs";
 import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
@@ -40,6 +41,10 @@ Deno.serve(async (req) => {
 
 
 
+ if(payload.action==="software.agents.preview"){
+  if(!hasRole(ADMIN_ROLES,profile.role))return json({error:"Workspace administrator required to design agent teams"},403);
+  try{return json({design:buildSaasAgentTeam(payload.project)});}catch{return json({error:"Invalid agent project. Check the explicit requirements and remove credentials; no agents were created."},400);}
+ }
  if(payload.action==="workflow.draft.list"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect workflow drafts"},403);
   const {data:workflows,error}=await admin.from("jd_workflows")
