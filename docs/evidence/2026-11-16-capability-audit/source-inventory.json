@@ -1,0 +1,245 @@
+{
+  "sourceCommit": "524a2b6a0d4d48914f168981466febc3f13a1fe6",
+  "nativeToolCount": 30,
+  "tools": [
+    {
+      "name": "get_approved_business_context",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_ai_workforce_catalogue",
+      "effect": "preview_only",
+      "boundary": "Reads draft catalogue definitions; does not certify evaluations, hire employees or start billable work."
+    },
+    {
+      "name": "preview_business_workspace",
+      "effect": "preview_only",
+      "boundary": "Generates an industry-specific blueprint and context-only advisory brief. No research, activation, hiring, persistence or charges."
+    },
+    {
+      "name": "preview_saas_agent_team",
+      "effect": "preview_only",
+      "boundary": "Designs agent definitions and requested permissions only. Does not create running agents, bind tools, authorise spend, run evaluations or deploy software."
+    },
+    {
+      "name": "get_people_intelligence",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_performance_intelligence",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_operations_intelligence",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_jd_capability_inventory",
+      "effect": "not_classified",
+      "boundary": "Effect boundary has not been classified. Inspect the registered tool contract; do not assume it is read-only or approved."
+    },
+    {
+      "name": "preview_organisation_blueprint",
+      "effect": "preview_only",
+      "boundary": "Generates a proposal without saving or provisioning departments."
+    },
+    {
+      "name": "get_organisation_departments",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_business_memory",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "remember_business_fact",
+      "effect": "saved_internal_record",
+      "boundary": "May save confirmed business context. Not a draft approval and not proof of a real-world action; never store secrets."
+    },
+    {
+      "name": "submit_organisation_blueprint_for_review",
+      "effect": "approval_request",
+      "boundary": "May save a proposal and request review. Does not create departments; approval and successful provisioning are separate."
+    },
+    {
+      "name": "preview_hiring_vacancy",
+      "effect": "preview_only",
+      "boundary": "Generates a vacancy draft; does not publish it or hire anyone."
+    },
+    {
+      "name": "create_operational_setup_tasks",
+      "effect": "saved_internal_record",
+      "boundary": "May save task records. Per-task approval requirements apply to later actions; saving a task does not complete that activity."
+    },
+    {
+      "name": "get_workspace_overview",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_hiring_pipeline",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_billing_snapshot",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_business_expense_anomalies",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_business_kpi_trends",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_recent_activity_logs",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_email_delivery_logs",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_attendance_snapshot",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_recent_announcements",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "get_workspace_settings_catalogue",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "plan_workspace_settings_changes",
+      "effect": "preview_only",
+      "boundary": "Reads settings and prepares a proposal; does not apply it."
+    },
+    {
+      "name": "submit_workspace_settings_for_review",
+      "effect": "approval_request",
+      "boundary": "Saves an exact settings proposal only. Human approval and explicit application in Review Centre are separate; never approves its own request or claims settings changed on submission."
+    },
+    {
+      "name": "create_business_document_draft",
+      "effect": "private_document_draft",
+      "boundary": "Only on an explicit file request. Saves a private draft; never sends or publishes it."
+    },
+    {
+      "name": "list_connected_mcp_tools",
+      "effect": "read_only",
+      "boundary": "Reads authorised records; the result is a bounded observation, not independent verification of the whole capability."
+    },
+    {
+      "name": "call_connected_mcp_tool",
+      "effect": "connector_dependent",
+      "boundary": "Discover first. Read-only calls may execute; write-capable calls request approval. Check execution evidence after approval, never treat an approval as execution."
+    }
+  ],
+  "workforce": {
+    "definitions": 16,
+    "evaluated": 0,
+    "target": 400,
+    "publication": false,
+    "billing": false,
+    "employees": [
+      {
+        "name": "Business Advisor",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Inventory Analyst",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Dispatch Planner",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Customer Support Analyst",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Sales Researcher",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Finance Operations Analyst",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Admissions Assistant",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Project Coordinator",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Research Agent",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Product & UX Designer",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Frontend Developer",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Backend Developer",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Database Architect",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Quality Assurance Agent",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Security Review Agent",
+        "status": "draft",
+        "availability": "not_hireable"
+      },
+      {
+        "name": "Release Planner",
+        "status": "draft",
+        "availability": "not_hireable"
+      }
+    ]
+  }
+}

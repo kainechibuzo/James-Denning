@@ -1,0 +1,17 @@
+{
+  "scope": "Read-only, project-wide aggregate observations from the connected James-Denning Supabase project; not a per-workspace acceptance test. No business content or credentials retained.",
+  "source_commit": "524a2b6a0d4d48914f168981466febc3f13a1fe6",
+  "deployment": {"platform":"Vercel","state":"READY","target":"production","commit":"524a2b6a0d4d48914f168981466febc3f13a1fe6","id":"dpl_26429Ap613WSBhQSEJCJbNpSbsHz","request_id":"b3a0ab55-98a0-4f0d-b349-9124e5b2b2f1"},
+  "supabase_project_status":"ACTIVE_HEALTHY",
+  "deployed_edge_function_count":20,
+  "execution_jobs":{"completed":36,"failed":1,"other_statuses":0,"query_request_id":"4100bd46-556a-421e-9e4d-0e63641330eb"},
+  "tool_steps":{"completed":120,"distinct_tool_types":20,"query_request_id":"97de6916-fac5-4f2f-b0b4-2db323fd8f76"},
+  "footprint":{"connector_servers":0,"discovered_connector_tools":0,"connector_executions":0,"recurring_schedules":0,"saved_business_documents":0,"business_memory_records":4,"operational_tasks":{"completed":20,"in_progress":3,"queued":10},"query_request_ids":["86072caf-27d0-43b9-84b1-0620579f492f","d524f29d-e9f9-4aec-b32c-ab3bd7004e6a"]},
+  "approval_execution":[{"action":"unclassified_request","approval":"approved","execution":"not_executed","run":"awaiting_approval","count":11},{"action":"organisation.provision_departments","approval":"approved","execution":"completed","run":"completed","count":1}],
+  "approval_query_request_id":"f81a48f3-6bdd-4d51-8070-b340e5b6bab7",
+  "absent_tables":["jd_foundation_documents","jd_research_attempts","jd_agent_definitions","jd_usage_accounts"],
+  "table_presence_query_request_id":"d82b67b0-6fc4-4a36-9e93-e1b7ac3aac3d",
+  "model_observation":{"completed_runs_with_model":36,"distinct_recorded_models":10,"all_recorded_models_use_free_suffix":true,"configured_model_secrets_not_read":true},
+  "staging_verification":{"run":44103633325,"configuration_job":"failure","cross_tenant_job":"skipped","reason":"Required staging secrets presence check failed","logs_download":"unavailable due to sandbox network restriction; job/step conclusions retrieved through GitHub API"},
+  "limitations":["Stored completed status is not independent proof of outcome quality.","Project-level counts do not prove behaviour for each role or tenant.","No fresh model invocation, connector execution, approval, write, deployment or paid work was performed.","Production frontend commit identity was established; deployed Edge Function source parity with this commit was not established.","Provider timestamps were preserved in upstream responses; no wall-clock SLA was inferred."]
+}
