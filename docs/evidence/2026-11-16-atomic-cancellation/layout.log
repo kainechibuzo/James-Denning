@@ -1,0 +1,11 @@
+
+> james-denning@1.0.0 test:chat-layout
+> node scripts/test-chat-layout.mjs
+
+Browser: 153.0.8010.0
+Layout 320x740: PASS
+Layout 360x800: PASS
+Layout 393x852: PASS
+Layout 708x900: PASS
+Layout 1280x900: PASS
+Layout 393x460: PASS

@@ -1,6 +1,6 @@
 # Reviewed JD backend compatibility release
 
-This is a release procedure, **not authorisation to deploy**. No environment, credential, approval variable or staging fixture is provisioned by merging the code. The intended first release carries the capability fixes while preserving the shipping legacy assignment contract. It does not enable checked assignment or apply the retry repair migration.
+This is a release procedure, **not authorisation to deploy**. No environment, credential, approval variable or staging fixture is provisioned by merging the code. The intended first release carries the capability fixes while preserving the shipping legacy assignment contract. It does not enable checked assignment or checked cancellation, or apply the retry/cancellation migrations. Both cancellation source gates must also remain `legacy`; the planner rejects early switches. The [atomic cancellation candidate procedure](JD_CANCELLATION_RELEASE.md) describes the separate staging evidence and reviewed release-plan change required before activation.
 
 ## 1. Why this exists
 

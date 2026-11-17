@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "4c2b93b52b371e0df08a9bc31fc6cd28fb62b879",
-  "branch": "arena/fbef563f-james-denning",
-  "scope": "Foundation backend release follow-up: shipping legacy assignment compatibility restored in source, checked writes remain gated, and the manual release workflow is narrowed to a source-pinned three-function artifact with independent approval/staging attestations. PR #92 frontend production identity is confirmed. No backend deployment, isolated staging acceptance, migration application or business verification is established.",
+  "baseCommit": "b6f4734f0095d0eeb32debac9e9713d267d3e00e",
+  "branch": "arena/dd44efbe-james-denning",
+  "scope": "Foundation local-only follow-up: transactional queued/waiting execution cancellation candidate, explicit disabled release gates, SQL rollback and checked client/handler evidence. Shipping cancellation remains legacy/nontransactional. No cloud provisioning, migrations, backend deployment, staging acceptance or production approval; owner review is pending.",
   "items": [
     {
       "id": "P1-01",
       "requirement": "Verify latest `master`, relevant GitHub Actions and their actual coverage.",
       "implementation": "partial",
-      "assessment": "PR #92 exact-merge post-merge Verify application run 44042566423 passed. This slice adds client-to-handler backend compatibility and release artifact/approval guard tests. Independent review and runtime acceptance remain separate.",
+      "assessment": "PR #93 exact-merge post-merge Verify run 44044645648 passed at b6f4734. This local-only follow-up adds cancellation SQL and HTTP/client regression coverage through test:execution; local evidence does not establish remote CI for the candidate or deployed acceptance.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
@@ -21,7 +21,8 @@
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
-        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md",
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify latest `master`, relevant GitHub Actions and their actual coverage. Retain expected/actual results and independent review.",
@@ -1109,19 +1110,23 @@
       "id": "P3-E09",
       "requirement": "Add timeout and cancellation handling.",
       "implementation": "partial",
-      "assessment": "Worker timeouts and queued cancellation exist; running cancellation and partial-effect reporting are incomplete.",
+      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open.",
       "sources": [
         "supabase/functions/jd-execution-worker/index.ts",
-        "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql"
+        "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql",
+        "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
+        "supabase/functions/_shared/jd-execution-cancellation.mjs",
+        "scripts/test-execution-cancellation.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Add timeout and cancellation handling. Retain expected/actual results and independent review.",
+      "nextAction": "Owner reviews local evidence and limitations; only after separate permission, provision isolated staging and test real sessions, concurrent worker claims, pgmq redelivery, rollback and audit persistence. Production approval is not recorded.",
       "deliveryOwner": "Unassigned \u2014 owner must nominate",
-      "independentReviewer": "Unassigned",
+      "independentReviewer": "Owner \u2014 pending explicit evidence review",
       "verification": null
     },
     {
@@ -1669,20 +1674,24 @@
       "id": "P4-L14",
       "requirement": "Provide cancellation for supported operations, with honest partial-effect reporting.",
       "implementation": "partial",
-      "assessment": "Queued/waiting cancellation requires explicit warning and matching job/run read-back. Partial cancellation is not success; existing backend cancellation is not transactional with its audit.",
+      "assessment": "Atomic queued/retry-wait cancellation is implemented and tested locally with service-only SQL, actor/tenant/version checks and job/run/audit rollback. Checked handler/client validate an audit receipt and persisted job/run/version read-back. Both release constants remain legacy: shipping cancellation is still nontransactional. Running cancellation, deployed lifecycle/concurrency evidence and independent acceptance remain open.",
       "sources": [
         "src/chat/JDExecutionMonitor.jsx",
-        "src/chat/execution-monitor.mjs"
+        "src/chat/execution-monitor.mjs",
+        "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
+        "supabase/functions/_shared/jd-execution-cancellation.mjs",
+        "scripts/test-execution-cancellation.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
-        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md",
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
       ],
       "acceptance": "unverified",
-      "nextAction": "In isolated staging, demonstrate: Provide cancellation for supported operations, with honest partial-effect reporting. Retain expected/actual results and independent review.",
+      "nextAction": "Owner reviews local evidence and limitations; only after separate permission, provision isolated staging and test real sessions, concurrent worker claims, pgmq redelivery, rollback and audit persistence. Production approval is not recorded.",
       "deliveryOwner": "Arena coding agent (engineering slice only)",
-      "independentReviewer": "Unassigned",
+      "independentReviewer": "Owner \u2014 pending explicit evidence review",
       "verification": null
     },
     {
@@ -3695,7 +3704,7 @@
       "id": "P7-14",
       "requirement": "Establish deployment rollback procedures and rehearse them in staging.",
       "implementation": "partial",
-      "assessment": "Documented exact-source artifacts, partial three-function deployment boundaries and independently approved rollback requirements. Generic deploy-all, blind migration push and automatic cancellation were removed. No production release or real rollback rehearsal was performed; remote dependency ranges remain a reproducibility limitation.",
+      "assessment": "Documented exact-source artifacts, partial three-function deployment boundaries and independently approved rollback requirements. Generic deploy-all, blind migration push and automatic cancellation were removed. No production release or real rollback rehearsal was performed; remote dependency ranges remain a reproducibility limitation. Cancellation candidate adds revoke-only emergency disable and local reapply tests; in-flight calls require reconciliation. No real staging rollback rehearsal.",
       "sources": [
         "documentation/STAGING_SETUP.md",
         "scripts/verify-jd-business-staging.mjs",
@@ -3705,7 +3714,8 @@
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
-        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md",
+        "docs/evidence/2026-11-16-atomic-cancellation/REPORT.md"
       ],
       "acceptance": "blocked",
       "nextAction": "In isolated staging, demonstrate: Establish deployment rollback procedures and rehearse them in staging. Retain expected/actual results and independent review.",

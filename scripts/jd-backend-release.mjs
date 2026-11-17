@@ -24,7 +24,7 @@ export function validateBackendRelease(input){
   if(input.projectRef!==production)fail('Production project does not match this application.');
   if(input.stagingVerifiedSha!==input.sourceSha)fail('Independent isolated-staging acceptance for this exact SHA is missing.');
  }
- return {format:1,sourceSha:input.sourceSha,stage:input.stage,projectRef:input.projectRef,approvalReference:input.approvalReference,assignmentRelease:'legacy',functions:[...RELEASE_FUNCTIONS],migrations:'excluded'};
+ return {format:1,sourceSha:input.sourceSha,stage:input.stage,projectRef:input.projectRef,approvalReference:input.approvalReference,assignmentRelease:'legacy',cancellationRelease:'legacy',functions:[...RELEASE_FUNCTIONS],migrations:'excluded'};
 }
 const hash=data=>createHash('sha256').update(data).digest('hex');
 function safeRead(root,path){
@@ -38,6 +38,9 @@ export function collectBackendReleaseFiles(root){
  const frontend=safeRead(root,'src/chat/operational-task-writes.mjs').toString();
  const backend=safeRead(root,'supabase/functions/_shared/jd-task-assignment-release.mjs').toString();
  if(!/export const TASK_ASSIGNMENT_RELEASE = "legacy";/.test(frontend)||!/export const BACKEND_TASK_ASSIGNMENT_RELEASE = 'legacy';/.test(backend))fail('This compatibility release requires both shipping assignment modes to remain legacy.');
+ const cancelClient=safeRead(root,'src/chat/execution-monitor.mjs').toString();
+ const cancelServer=safeRead(root,'supabase/functions/_shared/jd-execution-cancellation.mjs').toString();
+ if(!cancelClient.includes("export const EXECUTION_CANCELLATION_RELEASE = 'legacy';")||!cancelServer.includes("export const BACKEND_CANCELLATION_RELEASE = 'legacy';"))fail('This compatibility release requires cancellation to remain legacy until its migration is accepted.');
  const config=safeRead(root,'supabase/config.toml').toString();
  for(const name of RELEASE_FUNCTIONS){
   const block=config.split(`[functions.${name}]`)[1]?.split(/\n\s*\[/)[0];
@@ -46,6 +49,7 @@ export function collectBackendReleaseFiles(root){
  }
  const automation=files.get('supabase/functions/jd-automation/index.ts').toString();
  if(!automation.includes('import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";')||!automation.includes('return handleReleasedTaskAssignment({admin,profile,actorId:authData.user.id,payload,json});'))fail('Authenticated assignment release router is not wired as reviewed.');
+ if(!automation.includes('import { handleExecutionCancellation } from "../_shared/jd-execution-cancellation.mjs";')||!automation.includes('return handleExecutionCancellation({admin,profile,actorId:authData.user.id,payload,json});'))fail('Cancellation release router is not wired as reviewed.');
  const shared='supabase/functions/_shared';
  for(const name of readdirSync(resolve(root,shared)).sort()){
   if(!/\.(?:ts|mjs)$/.test(name)||name.endsWith('.test.ts'))continue;
@@ -102,7 +106,7 @@ function main(){
  const plan=validateBackendRelease(releaseInputFromEnvironment(process.env,sourceSha));
  if(execFileSync('git',['status','--porcelain','--untracked-files=normal'],{encoding:'utf8'}).trim())fail('Release preparation requires a clean checkout.');
  const result=action==='--prepare'?writeBackendArtifact(root,plan).manifest:verifyBackendArtifact(root,plan);
- console.log(JSON.stringify({sourceSha:result.sourceSha,stage:result.stage,projectRef:result.projectRef,functions:result.functions,assignmentRelease:result.assignmentRelease,migrations:result.migrations,files:result.files.length,action}));
+ console.log(JSON.stringify({sourceSha:result.sourceSha,stage:result.stage,projectRef:result.projectRef,functions:result.functions,assignmentRelease:result.assignmentRelease,cancellationRelease:result.cancellationRelease,migrations:result.migrations,files:result.files.length,action}));
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  try{main();}catch(error){console.error(error instanceof Error?error.message:'Release validation failed.');process.exitCode=2;}

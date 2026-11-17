@@ -1,0 +1,142 @@
+{
+  "scope": "Synthetic local PGlite records only; not production or live staging acceptance",
+  "expectedError": "23514",
+  "before": {
+    "jobs": [
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "run_id": "00000000-0000-4000-8000-000000000003",
+        "status": "queued",
+        "school_id": "00000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-17T08:47:55.675+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "lease_owner": null,
+        "lease_token": null,
+        "available_at": "2026-11-17T08:47:55.675+00:00",
+        "completed_at": null,
+        "heartbeat_at": null,
+        "max_attempts": 5,
+        "requested_by": "00000000-0000-4000-8000-000000000010",
+        "attempt_count": 1,
+        "idempotency_key": "synthetic-cancel",
+        "last_error_code": null,
+        "lease_expires_at": null,
+        "queue_message_id": 42,
+        "last_error_message": null,
+        "checkpoint_step_index": -1
+      }
+    ],
+    "runs": [
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "scope": "organisation",
+        "status": "queued",
+        "plan_json": [],
+        "school_id": "00000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-17T08:47:55.674+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "result_json": {
+          "prior_effect": true
+        },
+        "completed_at": null,
+        "request_text": "Synthetic run",
+        "requested_by": "00000000-0000-4000-8000-000000000010",
+        "trigger_type": "chat",
+        "autonomy_mode": "autonomous",
+        "conversation_id": null,
+        "idempotency_key": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "scope": "organisation",
+        "status": "queued",
+        "plan_json": [],
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T08:47:55.674+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "result_json": {},
+        "completed_at": null,
+        "request_text": "Other tenant",
+        "requested_by": "00000000-0000-4000-8000-000000000018",
+        "trigger_type": "chat",
+        "autonomy_mode": "autonomous",
+        "conversation_id": null,
+        "idempotency_key": null
+      }
+    ],
+    "audits": [],
+    "steps": []
+  },
+  "after": {
+    "jobs": [
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "run_id": "00000000-0000-4000-8000-000000000003",
+        "status": "queued",
+        "school_id": "00000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-17T08:47:55.675+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "lease_owner": null,
+        "lease_token": null,
+        "available_at": "2026-11-17T08:47:55.675+00:00",
+        "completed_at": null,
+        "heartbeat_at": null,
+        "max_attempts": 5,
+        "requested_by": "00000000-0000-4000-8000-000000000010",
+        "attempt_count": 1,
+        "idempotency_key": "synthetic-cancel",
+        "last_error_code": null,
+        "lease_expires_at": null,
+        "queue_message_id": 42,
+        "last_error_message": null,
+        "checkpoint_step_index": -1
+      }
+    ],
+    "runs": [
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "scope": "organisation",
+        "status": "queued",
+        "plan_json": [],
+        "school_id": "00000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-17T08:47:55.674+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "result_json": {
+          "prior_effect": true
+        },
+        "completed_at": null,
+        "request_text": "Synthetic run",
+        "requested_by": "00000000-0000-4000-8000-000000000010",
+        "trigger_type": "chat",
+        "autonomy_mode": "autonomous",
+        "conversation_id": null,
+        "idempotency_key": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "scope": "organisation",
+        "status": "queued",
+        "plan_json": [],
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T08:47:55.674+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-16T12:00:00.123456+00:00",
+        "result_json": {},
+        "completed_at": null,
+        "request_text": "Other tenant",
+        "requested_by": "00000000-0000-4000-8000-000000000018",
+        "trigger_type": "chat",
+        "autonomy_mode": "autonomous",
+        "conversation_id": null,
+        "idempotency_key": null
+      }
+    ],
+    "audits": [],
+    "steps": []
+  }
+}

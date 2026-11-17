@@ -1,0 +1,72 @@
+
+> james-denning@1.0.0 verify:web
+> npm run build:web && node scripts/verify-web-build.mjs
+
+
+> james-denning@1.0.0 build:web
+> vite build --mode web
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vite.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.8 building client environment for web...
+transforming...
+✓ 1837 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                 3.67 kB │ gzip:   1.50 kB
+dist/assets/index-CylkKHMg.css                  8.50 kB │ gzip:   2.30 kB
+dist/assets/loader-circle-BsPraKM0.js           0.14 kB │ gzip:   0.15 kB
+dist/assets/rotate-ccw-DmC47RFu.js              0.20 kB │ gzip:   0.17 kB
+dist/assets/dollar-sign-BuaOPMRK.js             0.21 kB │ gzip:   0.18 kB
+dist/assets/circle-alert-0hwdsKpq.js            0.25 kB │ gzip:   0.18 kB
+dist/assets/lock-keyhole-Cdxt31rX.js            0.25 kB │ gzip:   0.21 kB
+dist/assets/calendar-check-sYNDnmc4.js          0.30 kB │ gzip:   0.22 kB
+dist/assets/shield-check-DrgBPbSe.js            0.32 kB │ gzip:   0.24 kB
+dist/assets/arithmetic-CYq_QOrG.js              0.85 kB │ gzip:   0.44 kB
+dist/assets/mail-57pRcCgi.js                    0.89 kB │ gzip:   0.46 kB
+dist/assets/rolldown-runtime-COiEfhsA.js        1.11 kB │ gzip:   0.62 kB
+dist/assets/createLucideIcon-9m43oycf.js        1.42 kB │ gzip:   0.80 kB
+dist/assets/zap-F7sUtJ30.js                     3.18 kB │ gzip:   1.24 kB
+dist/assets/oauth-consent-BJv2HuAb.js           4.10 kB │ gzip:   1.79 kB
+dist/assets/capture-BEsp0xCf.js                 8.57 kB │ gzip:   3.61 kB
+dist/assets/index-CymkCf-H.js                   9.27 kB │ gzip:   3.81 kB
+dist/assets/curriculum-CycdhKuS.js             10.15 kB │ gzip:   2.86 kB
+dist/assets/saas-entry-61VCnIAc.js             11.06 kB │ gzip:   3.83 kB
+dist/assets/access-CcyhimIl.js                 13.45 kB │ gzip:   3.90 kB
+dist/assets/email-Cnc9nJgi.js                  13.55 kB │ gzip:   3.60 kB
+dist/assets/login-B26OKZak.js                  18.61 kB │ gzip:   5.36 kB
+dist/assets/ui-Dy6wSj5t.js                     21.83 kB │ gzip:   6.86 kB
+dist/assets/teachers-CVI5bbVj.js               23.99 kB │ gzip:   7.02 kB
+dist/assets/section-DZU0Py-7.js                25.87 kB │ gzip:   9.44 kB
+dist/assets/grading-Bn2JD5jp.js                25.98 kB │ gzip:   6.78 kB
+dist/assets/permissions-wT7sChM_.js            26.98 kB │ gzip:   6.62 kB
+dist/assets/analytics-BRvGzj77.js              29.73 kB │ gzip:   6.58 kB
+dist/assets/public-landing-CmWBZ4Bd.js         34.46 kB │ gzip:   9.13 kB
+dist/assets/classes-CQoc2tq4.js                37.29 kB │ gzip:   9.12 kB
+dist/assets/comms-fsci4o0T.js                  52.70 kB │ gzip:  13.41 kB
+dist/assets/hiring-DX08alp5.js                 53.53 kB │ gzip:  12.91 kB
+dist/assets/schedule-B6WiuWML.js               55.82 kB │ gzip:  12.34 kB
+dist/assets/dashboard-ItHJaMMF.js              60.32 kB │ gzip:  13.79 kB
+dist/assets/tools-C0G_L783.js                  74.35 kB │ gzip:  18.41 kB
+dist/assets/settings-DPSiI4vs.js               79.40 kB │ gzip:  16.88 kB
+dist/assets/results-j805gWpj.js                83.68 kB │ gzip:  20.33 kB
+dist/assets/transcript-CmJK6M3I.js             85.03 kB │ gzip:  18.65 kB
+dist/assets/generator-CqlKl5Pk.js              88.99 kB │ gzip:  16.55 kB
+dist/assets/members-CS_DWMs3.js                95.14 kB │ gzip:  22.13 kB
+dist/assets/students-C-Qjh40T.js               95.48 kB │ gzip:  22.50 kB
+dist/assets/reportcards-DoN1FiAZ.js           103.89 kB │ gzip:  24.11 kB
+dist/assets/jd-operations-Bzt8t5Oa.js         115.16 kB │ gzip:  28.87 kB
+dist/assets/react-vendor-kYtB7Jyh.js          139.82 kB │ gzip:  45.32 kB
+dist/assets/supabase-BHcAqgAp.js              165.29 kB │ gzip:  42.95 kB
+dist/assets/AppDemo-CYQikvKn.js               240.13 kB │ gzip:  62.11 kB
+dist/assets/fees-ChTz5yOX.js                  269.65 kB │ gzip:  57.69 kB
+dist/assets/spreadsheet-vendor-DrDnTGnX.js  1,792.75 kB │ gzip: 574.22 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 900 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.42s
+Web verification passed: 5 landing buttons, 11 links, 46 JS chunks, entry 9 KB (4 KB gzip).
