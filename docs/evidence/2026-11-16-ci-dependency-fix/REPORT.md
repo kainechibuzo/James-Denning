@@ -43,3 +43,12 @@ The four upstream failures expect unsafe wildcard-repeat behavior that this cons
 **Zero npm audit findings does not mean upstream has fixed the advisory.** npm does not independently assess this local backport. The dedicated regression/integrity gate, published patch and maintainer review are required alongside the registry audit. This is not a proof that all possible regex-complexity problems are eliminated. Repository maintainers own the temporary patch until a tested fixed upstream release replaces it.
 
 Existing Vite config-format and large spreadsheet-chunk warnings remain nonfatal. Application backend and production services were not changed or exercised. Remote verification of the new branch is recorded separately after push; do not confuse prior master/PR verification with this patch's CI result. No merge or production acceptance is authorised by this record.
+
+## Remote verification after push
+
+**Web CI passed** on code commit `c329b70b8f88f61f4bdf74e87f39392c5f13378e`:
+https://github.com/kainechibuzo/James-Denning/actions/runs/44148979914
+
+The complete job finished successfully in 3m35s, including clean installation, local-patch security tests, the unchanged registry audit, all application/browser tests, web/mobile builds, Deno tests and secured Edge Function type-checks. `github-verification-after.json` retains the GitHub job/step results. This evidence-only follow-up does not change tested code.
+
+Non-failing runner annotations note Node 20 action-runtime deprecation (`checkout@v4`, `setup-node@v4`, forced to run on Node 24) and the Ubuntu-latest image migration. They are not the original audit failure and were not suppressed. No new PR, merge, production deployment or production acceptance was performed in this task. The separate Verify application workflow's added audit gate will run when a PR is opened or the patch reaches master; its prior successful runs do not certify the new gate.
