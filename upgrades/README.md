@@ -10,6 +10,7 @@ This directory is the durable source of truth for JD and James-Denning upgrade w
 - [`CHANGELOG.md`](./CHANGELOG.md) — append-only chronological log of upgrade work.
 - [`TOKEN_USAGE.md`](./TOKEN_USAGE.md) — token-usage accounting policy and ledger format.
 - [`UPGRADE_TEMPLATE.md`](./UPGRADE_TEMPLATE.md) — standard record for each upgrade.
+- [`JD-235-TALENT-INTELLIGENCE-PAYROLLGUARD.md`](./JD-235-TALENT-INTELLIGENCE-PAYROLLGUARD.md) — Talent Intelligence, email recruitment, PayrollGuard, model routing and workforce lifecycle specification.
 
 ## Rules
 

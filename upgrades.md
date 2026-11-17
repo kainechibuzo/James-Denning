@@ -281,3 +281,18 @@ Detailed delivery contract: [JD Batch 02](./upgrades/JD-BATCH-02-AUTONOMOUS-BUSI
 - [x] Record first-token latency and expose average first-token time in the run monitor.
 - [ ] CI, staging stream visibility, checkpoint-resume, private file storage/download and tenant-isolation verification.
 - [ ] Production deployment after all release gates pass.
+
+### JD-235 — Talent Intelligence, Recruitment and PayrollGuard
+Detailed product and engineering specification: [JD-235](./upgrades/JD-235-TALENT-INTELLIGENCE-PAYROLLGUARD.md).
+
+- [ ] Provider-neutral model roles, catalogue validation, intelligent routing, escalation and evaluation benchmark.
+- [ ] Dedicated server-side research credentials and public-portfolio talent discovery.
+- [ ] Evidence-backed candidate profiles, shortlist, privacy controls and opt-out handling.
+- [ ] Direct-email recruitment and AI-discovered candidate outreach with Review Centre approval.
+- [ ] Recruitment pipeline, offer governance and appointment verification.
+- [ ] PayrollGuard funding arrangement, deterministic calculations, approval-bound payment batches and provider reconciliation.
+- [ ] Employee payslips, payment status and outstanding-salary escalation.
+- [ ] Recruitment-to-employee-to-payroll lifecycle integration.
+- [ ] Multi-agent organisation coordination, connector discovery and evidence-backed completion.
+
+**Status:** specification committed; implementation, provider connections, migrations, tests, staging and production verification are outstanding. Model names/IDs must be validated against live provider catalogues; no proposed model alias is assumed to be available.

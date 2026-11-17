@@ -413,3 +413,24 @@ Each item is an owner action on external systems. None can be completed from thi
 | ID | Item | Status | Notes / done when |
 | --- | --- | --- | --- |
 | JD-UPG-234 | Structured visual task/workflow workspace in JD chat | implemented_unverified | Chat renders bounded checklist, workflow, decision-question, execution timeline, department workload and evidence blocks from worker-generated `content_json.visual_workspace`. Checklists call the authenticated `operations.task.transition` action (queued → in_progress → completed); server enforces manager/admin role, tenant scope, valid transitions and optimistic concurrency, and writes audit events. Department definitions come from the latest approved/provisioned `jd_organisation_blueprints.blueprint_json.departments`, including zero-task departments, joined to persisted task counts; if no approved blueprint exists, the dashboard labels its task-derived fallback. Evidence references persisted execution-step and actor audit-event IDs with privacy-safe numeric/boolean result summaries; empty evidence remains pending. Worker suppresses task/department data for non-manager roles. Deno tests and CI coverage added; staging and production worker verification remain outstanding. |
+
+
+## §V. Talent Intelligence, recruitment and PayrollGuard (2026-11-17)
+
+Detailed contract: [JD-235](./JD-235-TALENT-INTELLIGENCE-PAYROLLGUARD.md). All items below are proposed and not implemented unless future evidence is recorded.
+
+| ID | Item | Status | Notes / done when |
+| --- | --- | --- | --- |
+| JD-UPG-235 | Provider-neutral model routing and model evaluation | proposed | Validate configured model IDs against live provider catalogues; add reasoning/execution/escalation/lightweight roles, observability, bounded escalation and repeatable task benchmarks. |
+| JD-UPG-236 | Dedicated talent research credentials | proposed | Separate encrypted server-side research credentials, rotation, least privilege, limits and usage monitoring; never expose secrets. |
+| JD-UPG-237 | Public portfolio discovery and candidate intelligence | proposed | Search permitted public sources; evidence-link every material claim; record source/date; implement privacy, opt-out, retention and deletion controls. |
+| JD-UPG-238 | Direct-email and AI-discovered recruitment outreach | proposed | Draft personalised invitations from approved vacancies; require Review Centre approval before external send; track delivery, replies and opt-outs. |
+| JD-UPG-239 | Recruitment pipeline and offer governance | proposed | Track candidate stages; distinguish invitation, offer, acceptance, verified appointment and active employee. |
+| JD-UPG-240 | PayrollGuard funding and payroll ledger | proposed | Establish regulated-provider payroll reserve arrangement, approved salary records, funding forecast and auditable obligation ledger. |
+| JD-UPG-241 | Deterministic payroll calculations and statutory handling | proposed | Tested payroll calculation engine, effective-dated salary terms, applicable deductions and currency-safe reporting; no LLM arithmetic authority. |
+| JD-UPG-242 | Approval-bound payroll payment and reconciliation | proposed | Sandbox-first, idempotent payment batches, provider-confirmed statuses, partial/failure/reversal handling and settlement reconciliation. |
+| JD-UPG-243 | Employee payslip and salary protection portal | proposed | Employee-scoped payslips/payment history, funding alerts, outstanding salary escalation and immutable audit trail. |
+| JD-UPG-244 | Recruitment-to-workforce-to-payroll integration | proposed | Verified appointments connect to People, Departments, Positions, onboarding and approved compensation; tenant/role/approval tests pass. |
+| JD-UPG-245 | Multi-agent organisation coordination and connector discovery | proposed | Specialist agents coordinate persistent tasks through permissioned tools; connector proposals require explicit connection and approval. |
+
+**Release gate:** No live candidate outreach, employment appointment, credential exposure or financial transfer is enabled by this planning record. Require legal/provider review, sandbox tests, security review, staging verification and explicit production approval before activation.
