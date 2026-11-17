@@ -11,14 +11,14 @@ const PublicLanding=lazy(()=>import("./pages/public-landing.jsx").then(m=>({defa
 const OAuthConsentPage=lazy(()=>import("./pages/oauth-consent.jsx").then(m=>({default:m.OAuthConsentPage})));
 
 function RouteLoading({label="Loading workspace…"}){
- return <div className="jd-route-state" role="status" aria-live="polite" style={{minHeight:"100vh",background:"#090a0c",color:"#d8dce2",display:"grid",placeItems:"center",fontFamily:"'JD Inter',system-ui",fontSize:14}}>{label}</div>;
+ return <div className="jd-route-state" role="status" aria-live="polite" style={{minHeight:"100vh",background:"var(--jd-canvas)",color:"var(--jd-text)",display:"grid",placeItems:"center",fontFamily:"'JD Inter',system-ui",fontSize:14}}>{label}</div>;
 }
 class LazyRouteBoundary extends React.Component{
  constructor(props){super(props);this.state={failed:false};}
  static getDerivedStateFromError(){return {failed:true};}
  componentDidCatch(error){console.error("[JD] Route failed to load:",error);}
  render(){
-  if(this.state.failed)return <main className="jd-route-state" role="alert" style={{minHeight:"100vh",background:"#090a0c",color:"#f5f5f5",display:"grid",placeItems:"center",padding:24,fontFamily:"'JD Inter',system-ui"}}><div style={{maxWidth:420,textAlign:"center"}}><h1 style={{fontSize:22}}>This page couldn’t load</h1><p style={{color:"#a7abb2",lineHeight:1.7}}>Check your connection and reload. Your account data has not been changed.</p><button onClick={()=>window.location.reload()} style={{background:"#fff",color:"#111",border:0,borderRadius:10,padding:"12px 18px",fontWeight:700,cursor:"pointer"}}>Reload page</button></div></main>;
+  if(this.state.failed)return <main className="jd-route-state" role="alert" style={{minHeight:"100vh",background:"var(--jd-canvas)",color:"var(--jd-text)",display:"grid",placeItems:"center",padding:24,fontFamily:"'JD Inter',system-ui"}}><div style={{maxWidth:420,textAlign:"center"}}><h1 style={{fontSize:22}}>This page couldn’t load</h1><p style={{color:"var(--jd-text)",lineHeight:1.7}}>Check your connection and reload. Your account data has not been changed.</p><button onClick={()=>window.location.reload()} style={{background:"var(--jd-card)",color:"var(--jd-text)",border:0,borderRadius:10,padding:"12px 18px",fontWeight:700,cursor:"pointer"}}>Reload page</button></div></main>;
   return this.props.children;
  }
 }
@@ -75,5 +75,5 @@ export default function App(){
  if(screen==="oauth-consent")return <LazyRoute label="Loading secure authorisation…"><OAuthConsentPage/></LazyRoute>;
  if(screen==="app"||isApply)return <LazyRoute label="Opening your workspace…"><AppDemo/></LazyRoute>;
  if(screen==="auth")return <LazyRoute label="Loading secure account access…"><EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated}/></LazyRoute>;
- return <><LazyRoute label="Loading James-Denning…"><PublicLanding onSignIn={()=>{setAuthMode("signin");setScreen("auth")}} onGetStarted={()=>{setAuthMode("signup");setScreen("auth")}}/></LazyRoute>{bootError&&<div role="status" style={{position:"fixed",bottom:12,left:12,right:12,background:"#17191c",color:"#a3a4ad",padding:10,borderRadius:8,fontSize:12}}>{bootError}</div>}</>;
+ return <><LazyRoute label="Loading James-Denning…"><PublicLanding onSignIn={()=>{setAuthMode("signin");setScreen("auth")}} onGetStarted={()=>{setAuthMode("signup");setScreen("auth")}}/></LazyRoute>{bootError&&<div role="status" style={{position:"fixed",bottom:12,left:12,right:12,background:"var(--jd-card)",color:"var(--jd-text)",padding:10,borderRadius:8,fontSize:12}}>{bootError}</div>}</>;
 }

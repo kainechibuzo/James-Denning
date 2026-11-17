@@ -3,8 +3,8 @@ import {blankTask,createTaskWriteController,canManageTasks} from "../chat/operat
 
 const tabStorage={getItem:key=>window.sessionStorage.getItem(key),setItem:(key,value)=>window.sessionStorage.setItem(key,value),removeItem:key=>window.sessionStorage.removeItem(key)};
 const card={background:"var(--jd-card,#fff)",border:"1px solid var(--jd-border,#e7e9ed)",borderRadius:14,padding:18};
-const input={width:"100%",boxSizing:"border-box",padding:"9px 10px",border:"1px solid #dfe2e7",borderRadius:8,background:"var(--jd-input,#fff)",color:"inherit",fontSize:13};
-const button={padding:"10px 13px",border:"1px solid #dfe2e7",borderRadius:8,background:"var(--jd-card,#fff)",color:"inherit",cursor:"pointer",fontSize:12,fontWeight:650};
+const input={width:"100%",boxSizing:"border-box",padding:"9px 10px",border:"1px solid var(--jd-border)",borderRadius:8,background:"var(--jd-input,#fff)",color:"inherit",fontSize:13};
+const button={padding:"10px 13px",border:"1px solid var(--jd-border)",borderRadius:8,background:"var(--jd-card,#fff)",color:"inherit",cursor:"pointer",fontSize:12,fontWeight:650};
 
 export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onTasksChanged,active=true,assignmentMode}) {
   const controller=useMemo(()=>createTaskWriteController(client,{role,schoolId,actorId,storage,assignmentMode}),[client,role,schoolId,actorId,storage,assignmentMode]);
@@ -17,9 +17,9 @@ export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onT
   const canManage=canManageTasks(role),locked=state.busy||!canManage;
   const update=(field,value)=>setDraft(old=>({...old,[field]:value}));
   return <div style={{display:"grid",gap:14}} aria-label="Operational task queue">
-    {state.recoveryError&&<p role="alert" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.recoveryError}</p>}
-    {state.error&&<p role="alert" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.error}</p>}
-    {state.notice&&<p role="status" style={{padding:12,background:"#f1f2f5",color:"#34353b",borderRadius:9}}>{state.notice}</p>}
+    {state.recoveryError&&<p role="alert" style={{padding:12,background:"var(--jd-soft)",color:"var(--jd-text-soft)",borderRadius:9}}>{state.recoveryError}</p>}
+    {state.error&&<p role="alert" style={{padding:12,background:"var(--jd-soft)",color:"var(--jd-text-soft)",borderRadius:9}}>{state.error}</p>}
+    {state.notice&&<p role="status" style={{padding:12,background:"var(--jd-soft)",color:"var(--jd-text-soft)",borderRadius:9}}>{state.notice}</p>}
     <section style={card}><h2 style={{fontSize:17,margin:"0 0 12px"}}>Create operational task</h2>
       {state.attempt?<div>
         <h3 style={{fontSize:14}}>Unresolved creation request: {state.attempt.task.title}</h3>
@@ -47,7 +47,7 @@ export function JDTaskQueue({client,role,schoolId,actorId,storage=tabStorage,onT
         const uncertain=state.needsRefresh.includes(task.id);
         const disabled=locked||!state.ready||uncertain;
         const member=state.team.find(m=>m.id===task.assigned_to);
-        return <article key={task.id} style={{borderTop:"1px solid #e7e9ed",padding:"14px 0",marginTop:10}}>
+        return <article key={task.id} style={{borderTop:"1px solid var(--jd-border)",padding:"14px 0",marginTop:10}}>
           <strong>{task.title}</strong><p style={{fontSize:12,overflowWrap:"anywhere"}}>{task.description||"No description"} · {task.department||"General"} · {task.priority} · {task.due_at?"Due "+new Date(task.due_at).toLocaleString():"No due date"}</p>
           <p style={{fontSize:12}}>{task.status.replaceAll("_"," ")} · {member?.full_name|| (task.assigned_to?"Assigned member (not in returned team list)":"Unassigned")}</p>
           {uncertain&&<p role="status">Update not confirmed. Refresh task records before another change.</p>}

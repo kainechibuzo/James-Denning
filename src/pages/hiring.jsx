@@ -56,24 +56,24 @@ function PresetGrid({ presets, onSelect, compact }) {
           .map(([k]) => k);
         return (
           <div key={p.key} style={{
-            background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 16,
+            background: C.card, border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 16,
             padding: 20, display: "flex", flexDirection: "column", gap: 12,
             boxShadow: C.shadow, transition: "all .18s",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{
                 width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-                background: C.bluePale, border: `1px solid ${C.border}`,
+                background: C.bluePale, border: `1px solid ${"var(--jd-border)"}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <Building2 size={20} color={C.blue}/>
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Business type preset</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--jd-text)" }}>{p.name}</div>
+                <div style={{ fontSize: 11, color: "var(--jd-muted)", marginTop: 2 }}>Business type preset</div>
               </div>
             </div>
-            <div style={{ fontSize: 12.5, color: C.textSoft, lineHeight: 1.55 }}>{p.description}</div>
+            <div style={{ fontSize: 12.5, color: "var(--jd-text-soft)", lineHeight: 1.55 }}>{p.description}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {tools.map(t => (
                 <span key={t} style={{
@@ -83,7 +83,7 @@ function PresetGrid({ presets, onSelect, compact }) {
                 }}>{toolLabel(t)}</span>
               ))}
             </div>
-            <Btn onClick={() => onSelect(p)} color="#17191c" style={{ marginTop: "auto" }}>
+            <Btn onClick={() => onSelect(p)} color="var(--jd-text)" style={{ marginTop: "auto" }}>
               Continue with {p.name} <ArrowRight size={14}/>
             </Btn>
           </div>
@@ -105,14 +105,14 @@ function OrgDetailsForm({ preset, onDone }) {
 
   const inp = (label, key, opts = {}) => (
     <div style={{ marginBottom: 12 }}>
-      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted,
+      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)",
         textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>
         {label}{opts.req && <span style={{ color: C.red }}> *</span>}
       </label>
       <input type={opts.type || "text"} value={form[key]} onChange={e => sf(key, e.target.value)}
         placeholder={opts.placeholder || ""}
-        style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9,
-          fontSize: 13, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+        style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 9,
+          fontSize: 13, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
     </div>
   );
 
@@ -135,19 +135,19 @@ function OrgDetailsForm({ preset, onDone }) {
       {/* Chosen preset summary */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-        background: C.bluePale, border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 16,
+        background: C.bluePale, border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, marginBottom: 16,
       }}>
         <Building2 size={16} color={C.blue}/>
-        <div style={{ fontSize: 12.5, color: C.textSoft }}>
-          <b style={{ color: C.text }}>{preset?.name || "General business"}</b>
+        <div style={{ fontSize: 12.5, color: "var(--jd-text-soft)" }}>
+          <b style={{ color: "var(--jd-text)" }}>{preset?.name || "General business"}</b>
           {" "}preset — tools will be enabled for this organisation on creation.
         </div>
       </div>
 
-      {err && <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
+      {err && <div style={{ background: "var(--jd-soft)", border: "1.5px solid var(--jd-muted)", color: "var(--jd-text-soft)",
         padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 16, fontWeight: 600 }}>{err}</div>}
 
-      <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase",
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase",
         letterSpacing: .7, marginBottom: 10 }}>Organization Details</div>
       {inp("Organization Name", "name", { req: true, placeholder: "e.g. Acme Inc" })}
       {inp("Address", "address", { placeholder: "e.g. 12 Organization Road, Lagos" })}
@@ -155,15 +155,15 @@ function OrgDetailsForm({ preset, onDone }) {
       {inp("Phone", "contact_phone", { placeholder: "e.g. +2348000000000" })}
       {inp("Member ID Prefix", "student_id_prefix", { placeholder: "e.g. ACM (auto-generated if blank)" })}
 
-      <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase",
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase",
         letterSpacing: .7, margin: "16px 0 10px" }}>Admin Account</div>
       {inp("Admin Full Name", "admin_name", { placeholder: "e.g. Organization Administrator" })}
       {inp("Admin Email", "admin_email", { req: true, type: "email", placeholder: "admin@yourbusiness.com" })}
       {inp("Password", "admin_password", { req: true, type: "password", placeholder: "Set a strong password" })}
 
       <button onClick={submit} disabled={saving}
-        style={{ width: "100%", background: saving ? "#dedfe4" : "linear-gradient(135deg,#17191c,#34353b)",
-          color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
+        style={{ width: "100%", background: saving ? "var(--jd-border)" : "linear-gradient(135deg,var(--jd-text),var(--jd-text-soft))",
+          color: "var(--jd-card)", border: "none", padding: "13px", borderRadius: 12, fontSize: 14, fontWeight: 800,
           cursor: saving ? "not-allowed" : "pointer", marginTop: 8, display: "flex", alignItems: "center",
           justifyContent: "center", gap: 8 }}>
         {saving ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Creating workspace…</>
@@ -206,12 +206,12 @@ export function OrgPresetSelectPage({ ctx }) {
               message={error} action={<Btn onClick={() => { setLoading(true); setError(null);
                 db.getOrgPresets().then(({ data, error }) => { if (error) setError(error.message); else setPresets(data || []); setLoading(false); }); }}>Retry</Btn>}/>
           : <>
-              <div style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, color: "var(--jd-muted)", marginBottom: 12 }}>
                 <Sparkles size={13} style={{ verticalAlign: "-2px", marginRight: 4 }}/>
                 Presets are the starting toolset — you can change settings after creation.
               </div>
               <PresetGrid presets={presets} onSelect={choose}/>
-              <div style={{ marginTop: 16, fontSize: 12, color: C.light, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ marginTop: 16, fontSize: 12, color: "var(--jd-muted)", display: "flex", alignItems: "center", gap: 6 }}>
                 <ShieldCheck size={14}/> Creating an organization here registers a brand-new workspace with its own admin login.
               </div>
             </>
@@ -250,7 +250,7 @@ export function OrgCreatePage({ ctx }) {
     return (
       <div style={{ padding: "20px 24px", maxWidth: 900, margin: "0 auto" }}>
         <PageHeader icon="building" title="Register an Organization" subtitle="Pick an industry preset first."/>
-        <EmptyState icon={<Building2 size={28} color={C.muted}/>}
+        <EmptyState icon={<Building2 size={28} color={"var(--jd-muted)"}/>}
           title="No preset selected"
           message="Choose an industry preset before entering organization details."
           action={<Btn onClick={() => setPage("org-create")}><ArrowLeft size={14}/> Back to presets</Btn>}/>
@@ -265,7 +265,7 @@ export function OrgCreatePage({ ctx }) {
       <Card style={{ padding: 22 }}>
         <OrgDetailsForm preset={preset} onDone={done}/>
         <button onClick={() => setPage("org-create")}
-          style={{ marginTop: 14, background: "none", border: "none", color: C.muted,
+          style={{ marginTop: 14, background: "none", border: "none", color: "var(--jd-muted)",
             cursor: "pointer", fontSize: 12.5, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
           <ArrowLeft size={13}/> Change preset
         </button>
@@ -291,21 +291,21 @@ export function OrgSignupModal({ onClose, onSuccess }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", display: "flex",
       alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 16 }}>
-      <div style={{ background: C.white, borderRadius: 20, width: "100%", maxWidth: 520, maxHeight: "90vh",
+      <div style={{ background: "var(--jd-card)", borderRadius: 20, width: "100%", maxWidth: 520, maxHeight: "90vh",
         overflow: "auto", boxShadow: "0 32px 80px rgba(0,0,0,.4)" }}>
-        <div style={{ padding: "24px 24px 0", borderBottom: `1px solid ${C.border}`, paddingBottom: 16,
+        <div style={{ padding: "24px 24px 0", borderBottom: `1px solid ${"var(--jd-border)"}`, paddingBottom: 16,
           display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: C.text }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "var(--jd-text)" }}>
               {step === "preset" ? "Register Your Business" : `Create ${preset?.name || "Your"} Workspace`}
             </div>
-            <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: "var(--jd-muted)", marginTop: 2 }}>
               {step === "preset"
                 ? "Step 1 of 2 — choose your business type"
                 : "Step 2 of 2 — organisation details"}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--jd-muted)" }}>
             <X size={20}/>
           </button>
         </div>
@@ -314,7 +314,7 @@ export function OrgSignupModal({ onClose, onSuccess }) {
             loading
               ? <div style={{ padding: 20 }}><Spinner text="Loading presets…"/></div>
               : <>
-                  <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 12, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 12.5, color: "var(--jd-muted)", marginBottom: 12, lineHeight: 1.5 }}>
                     Your business type decides which tools your workspace starts with.
                   </div>
                   <PresetGrid presets={presets} compact onSelect={(p) => { setPreset(p); setStep("details"); }}/>
@@ -322,7 +322,7 @@ export function OrgSignupModal({ onClose, onSuccess }) {
           ) : (
             <>
               <button onClick={() => setStep("preset")}
-                style={{ background: "none", border: "none", color: C.muted, cursor: "pointer",
+                style={{ background: "none", border: "none", color: "var(--jd-muted)", cursor: "pointer",
                   fontSize: 12, fontWeight: 600, marginBottom: 14, display: "flex", alignItems: "center", gap: 4 }}>
                 <ArrowLeft size={13}/> Change business type
               </button>
@@ -359,7 +359,7 @@ const copyText = async (txt) => {
 };
 
 const statusBadge = (s) => {
-  const color = s === "hired" ? C.green : s === "rejected" || s === "closed" ? C.red : s === "negotiating" ? C.amber : C.blue;
+  const color = s === "hired" ? "var(--jd-text-soft)" : s === "rejected" || s === "closed" ? C.red : s === "negotiating" ? C.amber : C.blue;
   return <Badge color={color}>{HIRING_APP_STATUS[s] || s}</Badge>;
 };
 
@@ -370,7 +370,7 @@ function ThreadView({ messages, onSend, sending, reply, setReply, ownerName, pla
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
         {(!messages || messages.length === 0) && (
-          <div style={{ fontSize: 12.5, color: C.light, textAlign: "center", padding: "18px 0" }}>
+          <div style={{ fontSize: 12.5, color: "var(--jd-muted)", textAlign: "center", padding: "18px 0" }}>
             No messages yet — start the conversation.
           </div>
         )}
@@ -379,8 +379,8 @@ function ThreadView({ messages, onSend, sending, reply, setReply, ownerName, pla
           return (
             <div key={m.id} style={{
               alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%",
-              background: mine ? C.blue : C.offWhite,
-              color: mine ? "#fff" : C.text,
+              background: mine ? C.blue : "var(--jd-canvas)",
+              color: mine ? "var(--jd-card)" : "var(--jd-text)",
               borderRadius: 14, padding: "9px 13px",
               borderTopRightRadius: mine ? 4 : 14, borderTopLeftRadius: mine ? 14 : 4,
             }}>
@@ -398,11 +398,11 @@ function ThreadView({ messages, onSend, sending, reply, setReply, ownerName, pla
       <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
         <textarea value={reply} onChange={e => setReply(e.target.value)} rows={2}
           placeholder={placeholder || "Write a message…"}
-          style={{ flex: 1, padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 10,
-            fontSize: 13, background: C.white, color: C.text, outline: "none", resize: "none",
+          style={{ flex: 1, padding: "9px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10,
+            fontSize: 13, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", resize: "none",
             fontFamily: "inherit" }}/>
         <button onClick={onSend} disabled={!canSend || sending}
-          style={{ background: canSend && !sending ? C.blue : C.light, color: "#fff", border: "none",
+          style={{ background: canSend && !sending ? C.blue : "var(--jd-muted)", color: "var(--jd-card)", border: "none",
             borderRadius: 10, padding: "9px 14px", cursor: canSend && !sending ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, flexShrink: 0 }}>
           {sending ? <Loader2 size={14} style={{ animation: "spin .7s linear infinite" }}/> : <Send size={14}/>}
@@ -504,7 +504,7 @@ export function PublicHireLanding() {
 
   if (loading) {
     return (
-      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--jd-canvas)" }}>
         <Spinner text="Loading…"/>
       </div>
     );
@@ -514,20 +514,20 @@ export function PublicHireLanding() {
   if (thread) {
     const app = thread.application;
     return (
-      <div className="jd-public-application" style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'JD Inter',system-ui,sans-serif" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", background: "var(--jd-canvas)", fontFamily: "'JD Inter',system-ui,sans-serif" }}>
         <ReferenceBrand divided/>
 <div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 16px 48px" }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "#60616b", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "var(--jd-muted)", textTransform: "uppercase", marginBottom: 6 }}>
               {thread.role?.title || "Application"}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#17191c" }}>Application thread</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "var(--jd-text)" }}>Application thread</div>
             <div style={{ marginTop: 8 }}>{statusBadge(app.status)}</div>
           </div>
           <Card style={{ padding: 18, marginBottom: 14 }}>
-            <div style={{ fontSize: 12, color: C.muted, marginBottom: 10, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: "var(--jd-muted)", marginBottom: 10, lineHeight: 1.6 }}>
               This is your private conversation with the school. They can see your qualifications and asking price
-              {app.asking_price != null ? <> — <b style={{ color: C.text }}>{fmtNum(app.asking_price)}</b>{app.asking_price_note ? ` (${app.asking_price_note})` : ""}</> : ""}.
+              {app.asking_price != null ? <> — <b style={{ color: "var(--jd-text)" }}>{fmtNum(app.asking_price)}</b>{app.asking_price_note ? ` (${app.asking_price_note})` : ""}</> : ""}.
             </div>
             <ThreadView messages={thread.messages} onSend={sendReply} sending={sendingReply}
               reply={reply} setReply={setReply} ownerName="School"
@@ -541,10 +541,10 @@ export function PublicHireLanding() {
   // ── Error state ────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F5", padding: 24, fontFamily: "'JD Inter',system-ui,sans-serif" }}>
+      <div className="jd-public-application" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--jd-canvas)", padding: 24, fontFamily: "'JD Inter',system-ui,sans-serif" }}>
         <Card style={{ padding: 32, maxWidth: 420, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 8 }}>Application link</div>
-          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{error}</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "var(--jd-text)", marginBottom: 8 }}>Application link</div>
+          <div style={{ fontSize: 13, color: "var(--jd-muted)", lineHeight: 1.6 }}>{error}</div>
         </Card>
       </div>
     );
@@ -554,60 +554,60 @@ export function PublicHireLanding() {
 
   // ── Role landing page (ad destination) ─────────────────────────────────────
   return (
-    <div className="jd-public-application" style={{ minHeight: "100vh", background: "#F7F7F5", fontFamily: "'JD Inter',system-ui,sans-serif", WebkitTapHighlightColor: "transparent" }}>
+    <div className="jd-public-application" style={{ minHeight: "100vh", background: "var(--jd-canvas)", fontFamily: "'JD Inter',system-ui,sans-serif", WebkitTapHighlightColor: "transparent" }}>
       <ReferenceBrand divided/>
       <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 16px 64px" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "#60616b", textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, color: "var(--jd-muted)", textTransform: "uppercase", marginBottom: 8 }}>
             {role.org_name} is hiring
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#17191c", lineHeight: 1.2, letterSpacing: "-.02em" }}>{role.title}</div>
-          {role.summary && <div style={{ fontSize: 14.5, color: "#34353b", marginTop: 10, lineHeight: 1.6 }}>{role.summary}</div>}
+          <div style={{ fontSize: 28, fontWeight: 900, color: "var(--jd-text)", lineHeight: 1.2, letterSpacing: "-.02em" }}>{role.title}</div>
+          {role.summary && <div style={{ fontSize: 14.5, color: "var(--jd-text-soft)", marginTop: 10, lineHeight: 1.6 }}>{role.summary}</div>}
         </div>
 
         {/* Key facts */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 20 }}>
           {(role.price_min != null || role.price_max != null) && (
-            <span style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 20, padding: "6px 14px",
-              fontSize: 12.5, fontWeight: 700, color: "#17191c", display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Tag size={13} color="#60616b"/>
+            <span style={{ background: "var(--jd-card)", border: "1px solid var(--jd-border)", borderRadius: 20, padding: "6px 14px",
+              fontSize: 12.5, fontWeight: 700, color: "var(--jd-text)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Tag size={13} color="var(--jd-muted)"/>
               {role.price_min != null && role.price_max != null ? `${fmtNum(role.price_min)} – ${fmtNum(role.price_max)}`
                 : role.price_min != null ? `From ${fmtNum(role.price_min)}` : `Up to ${fmtNum(role.price_max)}`}
               {role.price_note ? ` ${role.price_note}` : ""}
             </span>
           )}
           {role.expectations && (
-            <span style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 20, padding: "6px 14px",
-              fontSize: 12.5, fontWeight: 700, color: "#17191c" }}>Goals & expectations included</span>
+            <span style={{ background: "var(--jd-card)", border: "1px solid var(--jd-border)", borderRadius: 20, padding: "6px 14px",
+              fontSize: 12.5, fontWeight: 700, color: "var(--jd-text)" }}>Goals & expectations included</span>
           )}
         </div>
 
         {/* Description */}
         <Card style={{ padding: 20, marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: .8, marginBottom: 10 }}>About the role</div>
-          <div style={{ fontSize: 14, color: C.textSoft, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .8, marginBottom: 10 }}>About the role</div>
+          <div style={{ fontSize: 14, color: "var(--jd-text-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
             {role.description || "No description provided."}
           </div>
         </Card>
 
         {role.expectations && (
           <Card style={{ padding: 20, marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: .8, marginBottom: 10 }}>Goals & expectations</div>
-            <div style={{ fontSize: 14, color: C.textSoft, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{role.expectations}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .8, marginBottom: 10 }}>Goals & expectations</div>
+            <div style={{ fontSize: 14, color: "var(--jd-text-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{role.expectations}</div>
           </Card>
         )}
 
         {/* Apply / success */}
         {applied ? (
           <Card style={{ padding: 24, textAlign: "center" }}>
-            <CheckCircle2 size={36} color={C.green} style={{ margin: "0 auto 12px" }}/>
-            <div style={{ fontSize: 17, fontWeight: 900, color: C.text, marginBottom: 6 }}>Application sent ✓</div>
-            <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>
+            <CheckCircle2 size={36} color={"var(--jd-text-soft)"} style={{ margin: "0 auto 12px" }}/>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "var(--jd-text)", marginBottom: 6 }}>Application sent ✓</div>
+            <div style={{ fontSize: 13, color: "var(--jd-muted)", lineHeight: 1.6, marginBottom: 16 }}>
               The school will review your application and reach out through your private thread.
             </div>
-            <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px",
-              fontSize: 12, color: C.textSoft, wordBreak: "break-all", marginBottom: 10, textAlign: "left", lineHeight: 1.5 }}>
+            <div style={{ background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, padding: "12px 14px",
+              fontSize: 12, color: "var(--jd-text-soft)", wordBreak: "break-all", marginBottom: 10, textAlign: "left", lineHeight: 1.5 }}>
               <b>Your private link (save it):</b><br/>{applied.link}
             </div>
             <Btn onClick={async () => { const ok = await copyText(applied.link); setCopied(ok); setTimeout(() => setCopied(false), 2000); }}>
@@ -616,45 +616,45 @@ export function PublicHireLanding() {
           </Card>
         ) : (
           <Card style={{ padding: 22 }}>
-            <div style={{ fontSize: 16, fontWeight: 900, color: C.text, marginBottom: 4 }}>Apply now</div>
-            <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 16 }}>Tell the school about yourself and your asking price.</div>
-            {submitError && <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
+            <div style={{ fontSize: 16, fontWeight: 900, color: "var(--jd-text)", marginBottom: 4 }}>Apply now</div>
+            <div style={{ fontSize: 12.5, color: "var(--jd-muted)", marginBottom: 16 }}>Tell the school about yourself and your asking price.</div>
+            {submitError && <div style={{ background: "var(--jd-soft)", border: "1.5px solid var(--jd-muted)", color: "var(--jd-text-soft)",
               padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14, fontWeight: 600 }}>{submitError}</div>}
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Full name *</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Full name *</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name"
-                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Email *</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Email *</label>
               <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com"
-                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Phone</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Phone</label>
               <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+234…"
-                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Qualifications & experience</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Qualifications & experience</label>
               <textarea rows={4} value={form.qualifications} onChange={e => setForm(f => ({ ...f, qualifications: e.target.value }))}
                 placeholder="Relevant experience, skills, links, portfolio…"
-                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
+                style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 140px", marginBottom: 12 }}>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Asking price</label>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Asking price</label>
                 <input inputMode="numeric" value={form.asking_price} onChange={e => setForm(f => ({ ...f, asking_price: e.target.value }))} placeholder="e.g. 150000"
-                  style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+                  style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
               </div>
               <div style={{ flex: "2 1 200px", marginBottom: 12 }}>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Price note</label>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Price note</label>
                 <input value={form.price_note} onChange={e => setForm(f => ({ ...f, price_note: e.target.value }))} placeholder="e.g. per month"
-                  style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.white, color: C.text, outline: "none", boxSizing: "border-box" }}/>
+                  style={{ width: "100%", padding: "11px 13px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 14, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box" }}/>
               </div>
             </div>
             <button onClick={submit} disabled={submitting}
-              style={{ width: "100%", background: submitting ? "#dedfe4" : "#17191c", color: "#fff", border: "none",
+              style={{ width: "100%", background: submitting ? "var(--jd-border)" : "var(--jd-text)", color: "var(--jd-card)", border: "none",
                 padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: submitting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               {submitting ? <><Loader2 size={16} style={{ animation: "spin .7s linear infinite" }}/> Sending…</> : <>Submit application</>}
@@ -662,7 +662,7 @@ export function PublicHireLanding() {
           </Card>
         )}
 
-        <div style={{ textAlign: "center", marginTop: 18, fontSize: 11.5, color: "#60616b" }}>
+        <div style={{ textAlign: "center", marginTop: 18, fontSize: 11.5, color: "var(--jd-muted)" }}>
           Powered by JAMES-DENNING — {role.org_name}'s business workspace
         </div>
       </div>
@@ -927,11 +927,11 @@ export function HiringPage({ ctx }) {
         action={<Btn onClick={() => setRoleModal({ edit: null })}><Plus size={14}/> New Role</Btn>}/>
 
       {hiringDisabled && (
-        <div style={{ background: "#fef2f2", border: "1.5px solid #a3a4ad", color: "#34353b",
+        <div style={{ background: "var(--jd-soft)", border: "1.5px solid var(--jd-muted)", color: "var(--jd-text-soft)",
           padding: "12px 16px", borderRadius: 10, fontSize: 12.5, marginBottom: 16, fontWeight: 600,
           display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
           <span>The hiring tool is currently disabled for this school (set by its school preset).</span>
-          <Btn sm color="#17191c" onClick={async () => {
+          <Btn sm color="var(--jd-text)" onClick={async () => {
             const { error } = await db.setOrgTool("hiring", true);
             if (error) notify(error.message, "error"); else { notify("Hiring tool enabled ✓"); db.getOrgTools().then(({ data }) => setTools(data || [])); }
           }}>Enable hiring</Btn>
@@ -939,15 +939,15 @@ export function HiringPage({ ctx }) {
       )}
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 18, borderBottom: `1px solid ${C.border}`, paddingBottom: 0 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, borderBottom: `1px solid ${"var(--jd-border)"}`, paddingBottom: 0 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            style={{ background: tab === t.id ? C.blue : "none", color: tab === t.id ? "#fff" : C.muted,
+            style={{ background: tab === t.id ? C.blue : "none", color: tab === t.id ? "var(--jd-card)" : "var(--jd-muted)",
               border: "none", padding: "9px 18px", borderRadius: "10px 10px 0 0", cursor: "pointer",
               fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
-              borderBottom: tab === t.id ? "none" : `1px solid ${C.border}` }}>
+              borderBottom: tab === t.id ? "none" : `1px solid ${"var(--jd-border)"}` }}>
             {t.label}
-            {!!t.badge && <span style={{ background: C.red, color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 10.5 }}>{t.badge}</span>}
+            {!!t.badge && <span style={{ background: C.red, color: "var(--jd-card)", borderRadius: 10, padding: "1px 7px", fontSize: 10.5 }}>{t.badge}</span>}
           </button>
         ))}
       </div>
@@ -957,7 +957,7 @@ export function HiringPage({ ctx }) {
         rolesLoading
           ? <div style={{ padding: 48, textAlign: "center" }}><Spinner text="Loading…"/></div>
           : roles.length === 0
-            ? <EmptyState icon={<Briefcase size={28} color={C.muted}/>} title="No roles yet"
+            ? <EmptyState icon={<Briefcase size={28} color={"var(--jd-muted)"}/>} title="No roles yet"
                 message="Post your first role — JAMES-DENNING generates a shareable landing page you can point ads at."
                 action={<Btn onClick={() => setRoleModal({ edit: null })}><Plus size={14}/> Post a role</Btn>}/>
             : <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -966,16 +966,16 @@ export function HiringPage({ ctx }) {
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{r.title}</span>
-                          <Badge color={r.is_published ? C.green : C.muted}>{r.is_published ? "Live" : "Draft"}</Badge>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--jd-text)" }}>{r.title}</span>
+                          <Badge color={r.is_published ? "var(--jd-text-soft)" : "var(--jd-muted)"}>{r.is_published ? "Live" : "Draft"}</Badge>
                           <Badge color={r.status === "closed" ? C.red : r.status === "paused" ? C.amber : C.blue}>{r.status}</Badge>
                         </div>
-                        <div style={{ fontSize: 12, color: C.muted, marginTop: 5, display: "flex", gap: 14, flexWrap: "wrap" }}>
+                        <div style={{ fontSize: 12, color: "var(--jd-muted)", marginTop: 5, display: "flex", gap: 14, flexWrap: "wrap" }}>
                           <span>{(r.price_min != null || r.price_max != null)
                             ? `${r.price_min != null ? fmtNum(r.price_min) : "—"} – ${r.price_max != null ? fmtNum(r.price_max) : "—"}${r.price_note ? ` ${r.price_note}` : ""}`
                             : "No price range"}</span>
                           <span>{r.application_count} application{r.application_count === 1 ? "" : "s"}</span>
-                          <span style={{ color: C.light }}>/apply/{r.slug}</span>
+                          <span style={{ color: "var(--jd-muted)" }}>/apply/{r.slug}</span>
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>
@@ -1000,7 +1000,7 @@ export function HiringPage({ ctx }) {
                         <Btn xs outline color={C.red} onClick={() => delRole(r)}><Trash2 size={12}/></Btn>
                       </div>
                     </div>
-                    {r.summary && <div style={{ fontSize: 12.5, color: C.textSoft, marginTop: 8, lineHeight: 1.5 }}>{r.summary}</div>}
+                    {r.summary && <div style={{ fontSize: 12.5, color: "var(--jd-text-soft)", marginTop: 8, lineHeight: 1.5 }}>{r.summary}</div>}
                   </Card>
                 ))}
               </div>
@@ -1011,19 +1011,19 @@ export function HiringPage({ ctx }) {
         appsLoading
           ? <div style={{ padding: 48, textAlign: "center" }}><Spinner text="Loading…"/></div>
           : apps.length === 0
-            ? <EmptyState icon={<Users size={28} color={C.muted}/>} title="No applications yet"
+            ? <EmptyState icon={<Users size={28} color={"var(--jd-muted)"}/>} title="No applications yet"
                 message="Applications from your published landing pages will appear here."/>
             : <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {apps.map(a => (
                   <button key={a.id} onClick={() => { setAppDetail(a); setAppMsgs([]); refreshAppDetail(a.id); }}
-                    style={{ background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "14px 18px",
+                    style={{ background: C.card, border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 14, padding: "14px 18px",
                       cursor: "pointer", textAlign: "left", width: "100%", display: "flex", justifyContent: "space-between",
                       gap: 12, alignItems: "center", transition: "all .15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.boxShadow = C.shadowMd; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--jd-border)"; e.currentTarget.style.boxShadow = "none"; }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>{a.applicant_name}</div>
-                      <div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--jd-text)" }}>{a.applicant_name}</div>
+                      <div style={{ fontSize: 12, color: "var(--jd-muted)", marginTop: 3 }}>
                         {a.hiring_roles?.title || "Role"} · {new Date(a.created_at).toLocaleString("en-NG", { dateStyle: "medium" })}
                         {a.asking_price != null && <> · Asking {fmtNum(a.asking_price)}{a.asking_price_note ? ` ${a.asking_price_note}` : ""}</>}
                       </div>
@@ -1039,7 +1039,7 @@ export function HiringPage({ ctx }) {
         hiresLoading
           ? <div style={{ padding: 48, textAlign: "center" }}><Spinner text="Loading…"/></div>
           : hires.length === 0
-            ? <EmptyState icon={<CheckCircle2 size={28} color={C.muted}/>} title="No hires yet"
+            ? <EmptyState icon={<CheckCircle2 size={28} color={"var(--jd-muted)"}/>} title="No hires yet"
                 message="When you hire from an application, define the quota metric here and start tracking."/>
             : <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {hires.map(h => {
@@ -1051,24 +1051,24 @@ export function HiringPage({ ctx }) {
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{h.hire_name}</span>
-                            <Badge color={h.status === "active" ? C.green : C.muted}>{h.status}</Badge>
+                            <span style={{ fontSize: 15, fontWeight: 800, color: "var(--jd-text)" }}>{h.hire_name}</span>
+                            <Badge color={h.status === "active" ? "var(--jd-text-soft)" : "var(--jd-muted)"}>{h.status}</Badge>
                           </div>
-                          <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
+                          <div style={{ fontSize: 12, color: "var(--jd-muted)", marginTop: 4 }}>
                             {h.hiring_roles?.title || "Role"} · {h.quota_metric} · {h.quota_period}
                           </div>
                         </div>
                         <Btn xs outline onClick={() => { setHireDetail(h); refreshHire(h.id); }}>Open</Btn>
                       </div>
                       <div style={{ marginTop: 12 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 5 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: "var(--jd-muted)", marginBottom: 5 }}>
                           <span>Quota progress</span>
                         </div>
-                        <div style={{ background: C.offWhite, borderRadius: 8, height: 10, overflow: "hidden", border: `1px solid ${C.border}` }}>
-                          <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.green : C.blue, borderRadius: 8, transition: "width .4s" }}/>
+                        <div style={{ background: "var(--jd-canvas)", borderRadius: 8, height: 10, overflow: "hidden", border: `1px solid ${"var(--jd-border)"}` }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? "var(--jd-text-soft)" : C.blue, borderRadius: 8, transition: "width .4s" }}/>
                         </div>
-                        <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>
-                          At <b style={{ color: C.text }}>{pct}%</b> of quota
+                        <div style={{ fontSize: 12, color: "var(--jd-text-soft)", marginTop: 6 }}>
+                          At <b style={{ color: "var(--jd-text)" }}>{pct}%</b> of quota
                           {target > 0 ? <> — logged so far: {fmtNum(total)} of {fmtNum(target)} {h.quota_unit || "units"}</> : ""}
                         </div>
                       </div>
@@ -1085,18 +1085,18 @@ export function HiringPage({ ctx }) {
             <Inp label="Role title *" value={roleForm.title} onChange={v => setRoleForm(f => ({ ...f, title: v }))} placeholder="e.g. Senior Frontend Developer"/>
             <Inp label="Short pitch (landing page hero)" value={roleForm.summary} onChange={v => setRoleForm(f => ({ ...f, summary: v }))} placeholder="One or two lines shown at the top of the landing page"/>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Full description</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Full description</label>
               <textarea rows={6} value={roleForm.description} onChange={e => setRoleForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="What the role involves…"
-                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13,
-                  background: C.white, color: C.text, outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
+                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 9, fontSize: 13,
+                  background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Quota / goal expectations</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Quota / goal expectations</label>
               <textarea rows={3} value={roleForm.expectations} onChange={e => setRoleForm(f => ({ ...f, expectations: e.target.value }))}
                 placeholder="e.g. Complete 40 support tickets per month; quality bar = 4.5+ rating"
-                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13,
-                  background: C.white, color: C.text, outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
+                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 9, fontSize: 13,
+                  background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 120px" }}>
@@ -1109,18 +1109,18 @@ export function HiringPage({ ctx }) {
                 <Inp label="Price note" value={roleForm.price_note} onChange={v => setRoleForm(f => ({ ...f, price_note: v }))} placeholder="e.g. per month"/>
               </div>
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.textSoft, cursor: "pointer" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--jd-text-soft)", cursor: "pointer" }}>
               <input type="checkbox" checked={!!roleForm.is_published} onChange={e => setRoleForm(f => ({ ...f, is_published: e.target.checked }))}/>
               Publish landing page immediately
             </label>
             {roleModal.edit && (
-              <div style={{ fontSize: 12, color: C.light }}>
-                Landing page: <b style={{ color: C.muted }}>{landingUrl(roleModal.edit.slug)}</b>
+              <div style={{ fontSize: 12, color: "var(--jd-muted)" }}>
+                Landing page: <b style={{ color: "var(--jd-muted)" }}>{landingUrl(roleModal.edit.slug)}</b>
               </div>
             )}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
               <Btn outline onClick={() => { setRoleModal(null); setRoleForm(blankRole); }}>Cancel</Btn>
-              <Btn color="#17191c" onClick={saveRole} disabled={roleSaving}>{roleSaving ? "Saving…" : roleModal.edit ? "Save changes" : "Create role"}</Btn>
+              <Btn color="var(--jd-text)" onClick={saveRole} disabled={roleSaving}>{roleSaving ? "Saving…" : roleModal.edit ? "Save changes" : "Create role"}</Btn>
             </div>
           </div>
         </Modal>
@@ -1132,21 +1132,21 @@ export function HiringPage({ ctx }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               {statusBadge(appDetail.status)}
-              <span style={{ fontSize: 12.5, color: C.muted }}>{appDetail.hiring_roles?.title} · {new Date(appDetail.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</span>
+              <span style={{ fontSize: 12.5, color: "var(--jd-muted)" }}>{appDetail.hiring_roles?.title} · {new Date(appDetail.created_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .6 }}>Email</div>
-                <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginTop: 3, wordBreak: "break-all" }}>{appDetail.applicant_email}</div>
+              <div style={{ background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, padding: "10px 14px" }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .6 }}>Email</div>
+                <div style={{ fontSize: 13, color: "var(--jd-text)", fontWeight: 600, marginTop: 3, wordBreak: "break-all" }}>{appDetail.applicant_email}</div>
               </div>
-              <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .6 }}>Phone</div>
-                <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginTop: 3 }}>{appDetail.applicant_phone || "—"}</div>
+              <div style={{ background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, padding: "10px 14px" }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .6 }}>Phone</div>
+                <div style={{ fontSize: 13, color: "var(--jd-text)", fontWeight: 600, marginTop: 3 }}>{appDetail.applicant_phone || "—"}</div>
               </div>
-              <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .6 }}>Asking price</div>
-                <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginTop: 3 }}>
+              <div style={{ background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, padding: "10px 14px" }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .6 }}>Asking price</div>
+                <div style={{ fontSize: 13, color: "var(--jd-text)", fontWeight: 600, marginTop: 3 }}>
                   {appDetail.asking_price != null ? fmtNum(appDetail.asking_price) : "—"}
                   {appDetail.asking_price_note ? ` ${appDetail.asking_price_note}` : ""}
                 </div>
@@ -1155,8 +1155,8 @@ export function HiringPage({ ctx }) {
 
             {appDetail.qualifications && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Qualifications</div>
-                <div style={{ fontSize: 13, color: C.textSoft, lineHeight: 1.6, whiteSpace: "pre-wrap", background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 10, padding: 12 }}>{appDetail.qualifications}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>Qualifications</div>
+                <div style={{ fontSize: 13, color: "var(--jd-text-soft)", lineHeight: 1.6, whiteSpace: "pre-wrap", background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 10, padding: 12 }}>{appDetail.qualifications}</div>
               </div>
             )}
 
@@ -1165,7 +1165,7 @@ export function HiringPage({ ctx }) {
               {appDetail.status === "new" && <Btn sm outline onClick={() => setAppStatus(appDetail.id, "reviewing")}>Start reviewing</Btn>}
               {(appDetail.status === "new" || appDetail.status === "reviewing") && <Btn sm outline color={C.blue} onClick={() => setAppStatus(appDetail.id, "negotiating")}>Start negotiation</Btn>}
               {(appDetail.status === "negotiating" || appDetail.status === "reviewing" || appDetail.status === "new") && (
-                <Btn sm color={C.green} onClick={() => { setHireTarget(appDetail); setHireForm(blankHire); }}><CheckCircle2 size={13}/> Hire…</Btn>
+                <Btn sm color={"var(--jd-text-soft)"} onClick={() => { setHireTarget(appDetail); setHireForm(blankHire); }}><CheckCircle2 size={13}/> Hire…</Btn>
               )}
               {appDetail.status !== "rejected" && appDetail.status !== "closed" && <Btn sm outline color={C.red} onClick={() => setAppStatus(appDetail.id, "rejected")}>Reject</Btn>}
               {appDetail.status !== "closed" && appDetail.status !== "hired" && <Btn sm outline color={C.red} onClick={() => setAppStatus(appDetail.id, "closed")}>Close</Btn>}
@@ -1173,7 +1173,7 @@ export function HiringPage({ ctx }) {
 
             {/* Negotiation thread */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
                 <MessageSquare size={13}/> Negotiation thread
               </div>
               <ThreadView messages={appMsgs} onSend={() => sendOwnerMsg(appDetail.id)} sending={msgSending}
@@ -1187,8 +1187,8 @@ export function HiringPage({ ctx }) {
       {hireTarget && (
         <Modal title={`Hire ${hireTarget.applicant_name}`} onClose={() => setHireTarget(null)} width={560}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>
-              Define the quota/goal this hire will be tracked against. <b style={{ color: C.text }}>You set the metric and how it is measured</b> —
+            <div style={{ fontSize: 12.5, color: "var(--jd-muted)", lineHeight: 1.6 }}>
+              Define the quota/goal this hire will be tracked against. <b style={{ color: "var(--jd-text)" }}>You set the metric and how it is measured</b> —
               JAMES-DENNING only records and displays progress; it never calculates pay.
             </div>
             <Inp label="Quota metric *" value={hireForm.metric} onChange={v => setHireForm(f => ({ ...f, metric: v }))} placeholder="e.g. Deliverables completed"/>
@@ -1214,15 +1214,15 @@ export function HiringPage({ ctx }) {
               </div>
             )}
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>How is it measured?</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 5 }}>How is it measured?</label>
               <textarea rows={3} value={hireForm.measureMethod} onChange={e => setHireForm(f => ({ ...f, measureMethod: e.target.value }))}
                 placeholder="e.g. Count of tickets marked done in the team board each week"
-                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13,
-                  background: C.white, color: C.text, outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
+                style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 9, fontSize: 13,
+                  background: "var(--jd-card)", color: "var(--jd-text)", outline: "none", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}/>
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
               <Btn outline onClick={() => setHireTarget(null)}>Cancel</Btn>
-              <Btn color={C.green} onClick={createHire} disabled={hireSaving}>{hireSaving ? "Hiring…" : "Hire & start quota tracking"}</Btn>
+              <Btn color={"var(--jd-text-soft)"} onClick={createHire} disabled={hireSaving}>{hireSaving ? "Hiring…" : "Hire & start quota tracking"}</Btn>
             </div>
           </div>
         </Modal>
@@ -1233,21 +1233,21 @@ export function HiringPage({ ctx }) {
         <Modal title={hireDetail.hire_name} onClose={() => setHireDetail(null)} width={640}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <Badge color={hireDetail.status === "active" ? C.green : C.muted}>{hireDetail.status}</Badge>
-              <span style={{ fontSize: 12.5, color: C.muted }}>{hireDetail.hiring_roles?.title} · {hireDetail.contact_email || "—"}</span>
+              <Badge color={hireDetail.status === "active" ? "var(--jd-text-soft)" : "var(--jd-muted)"}>{hireDetail.status}</Badge>
+              <span style={{ fontSize: 12.5, color: "var(--jd-muted)" }}>{hireDetail.hiring_roles?.title} · {hireDetail.contact_email || "—"}</span>
             </div>
 
             {/* Quota definition (owner-set) */}
-            <div style={{ background: C.offWhite, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 8 }}>Quota definition</div>
+            <div style={{ background: "var(--jd-canvas)", border: `1px solid ${"var(--jd-border)"}`, borderRadius: 12, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 8 }}>Quota definition</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12.5 }}>
-                <div><span style={{ color: C.muted }}>Metric:</span> <b style={{ color: C.text }}>{hireDetail.quota_metric}</b></div>
-                <div><span style={{ color: C.muted }}>Target:</span> <b style={{ color: C.text }}>{fmtNum(hireDetail.quota_target)} {hireDetail.quota_unit}</b> / {hireDetail.quota_period}</div>
+                <div><span style={{ color: "var(--jd-muted)" }}>Metric:</span> <b style={{ color: "var(--jd-text)" }}>{hireDetail.quota_metric}</b></div>
+                <div><span style={{ color: "var(--jd-muted)" }}>Target:</span> <b style={{ color: "var(--jd-text)" }}>{fmtNum(hireDetail.quota_target)} {hireDetail.quota_unit}</b> / {hireDetail.quota_period}</div>
                 {hireDetail.quota_period === "custom" && hireDetail.quota_start && (
-                  <div><span style={{ color: C.muted }}>Period:</span> <b style={{ color: C.text }}>{hireDetail.quota_start} → {hireDetail.quota_end || "open"}</b></div>
+                  <div><span style={{ color: "var(--jd-muted)" }}>Period:</span> <b style={{ color: "var(--jd-text)" }}>{hireDetail.quota_start} → {hireDetail.quota_end || "open"}</b></div>
                 )}
                 {hireDetail.quota_measure_method && (
-                  <div style={{ gridColumn: "1 / -1" }}><span style={{ color: C.muted }}>How it's measured:</span> <b style={{ color: C.text }}>{hireDetail.quota_measure_method}</b></div>
+                  <div style={{ gridColumn: "1 / -1" }}><span style={{ color: "var(--jd-muted)" }}>How it's measured:</span> <b style={{ color: "var(--jd-text)" }}>{hireDetail.quota_measure_method}</b></div>
                 )}
               </div>
             </div>
@@ -1257,12 +1257,12 @@ export function HiringPage({ ctx }) {
               const { total, target, pct } = quotaProgress(hireDetail, hireEntries);
               return (
                 <div>
-                  <div style={{ background: C.offWhite, borderRadius: 8, height: 12, overflow: "hidden", border: `1px solid ${C.border}` }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? C.green : C.blue, borderRadius: 8, transition: "width .4s" }}/>
+                  <div style={{ background: "var(--jd-canvas)", borderRadius: 8, height: 12, overflow: "hidden", border: `1px solid ${"var(--jd-border)"}` }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? "var(--jd-text-soft)" : C.blue, borderRadius: 8, transition: "width .4s" }}/>
                   </div>
-                  <div style={{ fontSize: 12.5, color: C.textSoft, marginTop: 7, lineHeight: 1.5 }}>
-                    At <b style={{ color: C.text }}>{pct}%</b> of quota
-                    {target > 0 ? <> — <b style={{ color: C.text }}>{fmtNum(total)}</b> of {fmtNum(target)} {hireDetail.quota_unit || "units"} logged</> : ""}.
+                  <div style={{ fontSize: 12.5, color: "var(--jd-text-soft)", marginTop: 7, lineHeight: 1.5 }}>
+                    At <b style={{ color: "var(--jd-text)" }}>{pct}%</b> of quota
+                    {target > 0 ? <> — <b style={{ color: "var(--jd-text)" }}>{fmtNum(total)}</b> of {fmtNum(target)} {hireDetail.quota_unit || "units"} logged</> : ""}.
                     JAMES-DENNING records and displays this data; it does not calculate or guarantee any pay amount.
                   </div>
                 </div>
@@ -1270,22 +1270,22 @@ export function HiringPage({ ctx }) {
             })()}
 
             {/* Log quota entry */}
-            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 8 }}>Log progress</div>
+            <div style={{ borderTop: `1px solid ${"var(--jd-border)"}`, paddingTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 8 }}>Log progress</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <input inputMode="numeric" value={quotaVal} onChange={e => setQuotaVal(e.target.value)} placeholder={`Value (${hireDetail.quota_unit || "units"})`}
-                  style={{ flex: "1 1 120px", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, background: C.white, color: C.text, outline: "none" }}/>
+                  style={{ flex: "1 1 120px", padding: "9px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 13, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none" }}/>
                 <input value={quotaNote} onChange={e => setQuotaNote(e.target.value)} placeholder="Note (optional)"
-                  style={{ flex: "2 1 180px", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, background: C.white, color: C.text, outline: "none" }}/>
-                <Btn color="#17191c" onClick={logQuota} disabled={quotaSaving}>{quotaSaving ? <Loader2 size={14} style={{ animation: "spin .7s linear infinite" }}/> : "Log"}</Btn>
+                  style={{ flex: "2 1 180px", padding: "9px 12px", border: `1.5px solid ${"var(--jd-border)"}`, borderRadius: 10, fontSize: 13, background: "var(--jd-card)", color: "var(--jd-text)", outline: "none" }}/>
+                <Btn color="var(--jd-text)" onClick={logQuota} disabled={quotaSaving}>{quotaSaving ? <Loader2 size={14} style={{ animation: "spin .7s linear infinite" }}/> : "Log"}</Btn>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10, maxHeight: 160, overflowY: "auto" }}>
-                {hireEntries.length === 0 && <div style={{ fontSize: 12, color: C.light }}>No progress logged yet.</div>}
+                {hireEntries.length === 0 && <div style={{ fontSize: 12, color: "var(--jd-muted)" }}>No progress logged yet.</div>}
                 {hireEntries.map(e => (
                   <div key={e.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12.5,
-                    background: C.white, border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: "7px 12px" }}>
-                    <span style={{ color: C.textSoft }}><b style={{ color: C.text }}>{fmtNum(e.value)}</b> {hireDetail.quota_unit}{e.note ? ` — ${e.note}` : ""}</span>
-                    <span style={{ color: C.light, whiteSpace: "nowrap" }}>
+                    background: "var(--jd-card)", border: `1px solid ${C.borderLight}`, borderRadius: 8, padding: "7px 12px" }}>
+                    <span style={{ color: "var(--jd-text-soft)" }}><b style={{ color: "var(--jd-text)" }}>{fmtNum(e.value)}</b> {hireDetail.quota_unit}{e.note ? ` — ${e.note}` : ""}</span>
+                    <span style={{ color: "var(--jd-muted)", whiteSpace: "nowrap" }}>
                       {new Date(e.recorded_at).toLocaleString("en-NG", { dateStyle: "short", timeStyle: "short" })} · {e.recorded_by}
                     </span>
                   </div>
@@ -1294,8 +1294,8 @@ export function HiringPage({ ctx }) {
             </div>
 
             {/* Internal chat (continues the negotiation thread once hired) */}
-            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: .7, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ borderTop: `1px solid ${"var(--jd-border)"}`, paddingTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--jd-muted)", textTransform: "uppercase", letterSpacing: .7, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
                 <MessageSquare size={13}/> Chat with {hireDetail.hire_name}
               </div>
               <ThreadView messages={hireMsgs} onSend={sendHireMsg} sending={hireMsgSending}

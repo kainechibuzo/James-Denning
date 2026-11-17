@@ -23,7 +23,7 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  throw Error('Unexpected API action: '+body.action);
 }}};`;
 const entry=`import '${resolve('src/styles/app.css')}';import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
-import {Menu,HelpCircle,Bell,Moon,Sun} from 'lucide-react';
+import {Menu,HelpCircle,Bell,Moon,Sun,Settings} from 'lucide-react';
 import {PublicLanding} from '${resolve('src/pages/public-landing.jsx')}';
 import {ReferenceBrand} from '${resolve('src/components/reference-brand.jsx')}';
 import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';
@@ -34,7 +34,7 @@ ${darkToggle}
 const AppIcon=({size,color})=><Menu size={size} color={color}/>;
 const NotificationBell=()=> <div><button aria-label="Notifications" onClick={()=>window.__actions.push('notifications')}><Bell/></button></div>;
 const LiveClock=()=>null;
-function WorkspaceFixture(){const page='jd-chat',isMobile=innerWidth<768,user={id:'synthetic',school_id:'synthetic',role:'owner',name:'Kaine Denning'},ctx={},NAV=[];
+function WorkspaceFixture(){const page='jd-chat',isMobile=innerWidth<768,user={id:'synthetic',school_id:'synthetic',role:'owner',name:'Kaine Denning'},ctx={},NAV=[],setPage=()=>window.__actions.push('settings');
 const navigationToggleRef=useRef(null);const [sideOpen,setSide]=useState(false);const setShowTour=()=>window.__actions.push('help'),setShowProfile=()=>window.__actions.push('profile'),setShowLogout=()=>{};
 return <>${header}<ChatHome user={user}/></>;}
 const root=createRoot(document.getElementById('root'));window.__render=()=>root.render(location.pathname==='/workspace'?<WorkspaceFixture/>:<PublicLanding onGetStarted={()=>window.__actions.push('signup')} onSignIn={()=>window.__actions.push('signin')}/>);window.__render();`;
@@ -101,7 +101,8 @@ try{
     await page.getByRole('button',{name:'Close or collapse navigation'}).click();
     await page.getByRole('button',{name:'My profile'}).click();await page.getByRole('button',{name:'Help / Product Tour'}).click();
     await page.getByRole('button',{name:'Notifications',exact:true}).click();
-    assert.deepEqual(await page.evaluate(()=>window.__actions),['profile','help','notifications']);
+    await page.getByRole('button',{name:'Account settings',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>window.__actions),['profile','help','notifications','profile']);
     await page.getByRole('button',{name:'Open chat history and JD tools'}).click();
     await page.getByRole('button',{name:/Saved conversation/}).click();
     await page.getByText('Saved fixture message. No real records were read.').waitFor();

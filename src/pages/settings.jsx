@@ -46,9 +46,9 @@ export function SettingToggle({k,settings,onSet}){
   return(
     <button onClick={()=>onSet(k,on?"false":"true")}
       style={{width:52,height:28,borderRadius:14,border:"none",cursor:"pointer",
-        background:on?C.green:"#dedfe4",transition:"all .2s",position:"relative"}}>
+        background:on?C.green:"var(--jd-border)",transition:"all .2s",position:"relative"}}>
       <div style={{position:"absolute",top:3,left:on?26:3,width:22,height:22,
-        borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}/>
+        borderRadius:"50%",background:"var(--jd-card)",transition:"all .2s",boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}/>
     </button>
   );
 }
@@ -143,16 +143,16 @@ export function SettingsPage({ctx}){
       <div className="jd-page-header" style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
         padding:"20px 28px",marginBottom:24,display:"flex",alignItems:"center",gap:16}}>
         <button onClick={()=>setPage&&setPage("jd-chat")}
-          style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",
+          style={{background:"color-mix(in srgb, var(--jd-card) 18%, transparent)",border:"none",color:"var(--jd-card)",
             borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:700,
             display:"flex",alignItems:"center",gap:6}}>
           <ArrowLeft size={14}/> Back
         </button>
         <div style={{flex:1}}>
-          <div style={{fontWeight:900,fontSize:20,color:"#fff",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{fontWeight:900,fontSize:20,color:"var(--jd-card)",display:"flex",alignItems:"center",gap:10}}>
             <Settings size={20} color={C.text} style={{opacity:.85}}/>Settings
           </div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.7)",marginTop:2}}>Configure your business portal</div>
+          <div style={{fontSize:12,color:"color-mix(in srgb, var(--jd-card) 70%, transparent)",marginTop:2}}>Configure your business portal</div>
         </div>
       </div>
 
@@ -165,7 +165,7 @@ export function SettingsPage({ctx}){
           <button key={t.id} onClick={()=>setTab(t.id)}
             style={{padding:"10px 18px",border:"none",cursor:"pointer",fontSize:13,fontWeight:700,
               background:tab===t.id?C.blue:"transparent",
-              color:tab===t.id?"#fff":C.muted,
+              color:tab===t.id?"var(--jd-card)":C.muted,
               borderRight:`1px solid ${C.border}`,transition:"all .15s"}}>
             {t.label}
           </button>
@@ -207,7 +207,7 @@ export function SettingsPage({ctx}){
                 <input type="file" id="logo-upload" accept="image/jpeg,image/png,image/webp"
                   style={{display:"none"}} onChange={e=>e.target.files[0]&&handleLogoUpload(e.target.files[0])}/>
                 <label htmlFor="logo-upload"
-                  style={{display:"inline-block",padding:"8px 16px",background:C.blue,color:"#fff",
+                  style={{display:"inline-block",padding:"8px 16px",background:C.blue,color:"var(--jd-card)",
                     borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,marginBottom:6}}>
                   Upload Logo (JPG/PNG)
                 </label>
@@ -248,7 +248,7 @@ export function SettingsPage({ctx}){
               <select
                 value={settings.inactivity_timeout_minutes||"5"}
                 onChange={e=>set("inactivity_timeout_minutes",e.target.value)}
-                style={{width:"100%",padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,background:"#fff",outline:"none",cursor:"pointer"}}>
+                style={{width:"100%",padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,background:"var(--jd-card)",outline:"none",cursor:"pointer"}}>
                 {[["5","5 minutes (default)"],["10","10 minutes"],["15","15 minutes"],["20","20 minutes"],["30","30 minutes"],["60","1 hour"],["0","Never (auto-logout disabled)"]].map(([v,l])=>(
                   <option key={v} value={v}>{l}</option>
                 ))}
@@ -328,8 +328,8 @@ export function NotificationsPage({ctx}){
      desc:`Fires when a user exceeds the threshold of failed login attempts (default: 5 within 10 min).`},
   ];
 
-  const SEV_COLOR={critical:"#34353b",warn:"#60616b",info:"#34353b"};
-  const SEV_BG   ={critical:"#fef2f2",warn:"#f1f2f5",info:"#f1f2f5"};
+  const SEV_COLOR={critical:"var(--jd-text-soft)",warn:"var(--jd-muted)",info:"var(--jd-text-soft)"};
+  const SEV_BG   ={critical:"var(--jd-soft)",warn:"var(--jd-soft)",info:"var(--jd-soft)"};
 
   const saveNotif=async()=>{
     setNotifSaving(true);
@@ -365,12 +365,12 @@ export function NotificationsPage({ctx}){
       {/* Page header */}
       <div className="jd-page-header" style={{background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
         padding:"20px 28px",marginBottom:24,display:"flex",alignItems:"center",gap:16,borderRadius:14}}>
-        <div style={{background:"rgba(255,255,255,.18)",borderRadius:10,padding:10,display:"flex"}}>
+        <div style={{background:"color-mix(in srgb, var(--jd-card) 18%, transparent)",borderRadius:10,padding:10,display:"flex"}}>
           <Bell size={22} color={C.text}/>
         </div>
         <div>
-          <h2 style={{color:"#fff",fontWeight:900,fontSize:18,margin:0}}>Notifications</h2>
-          <p style={{color:"rgba(255,255,255,.75)",fontSize:12,margin:"2px 0 0"}}>
+          <h2 style={{color:"var(--jd-card)",fontWeight:900,fontSize:18,margin:0}}>Notifications</h2>
+          <p style={{color:"color-mix(in srgb, var(--jd-card) 75%, transparent)",fontSize:12,margin:"2px 0 0"}}>
             Email alerts and activity digest for portal events
           </p>
         </div>
@@ -443,9 +443,9 @@ export function NotificationsPage({ctx}){
                 background:on?C.white:C.offWhite,opacity:on?1:.7}}>
                 <button onClick={()=>setEvt(ev.key,!on)}
                   style={{flexShrink:0,marginTop:2,width:40,height:22,borderRadius:11,border:"none",
-                    cursor:"pointer",background:on?C.green:"#dedfe4",position:"relative",transition:"all .2s"}}>
+                    cursor:"pointer",background:on?C.green:"var(--jd-border)",position:"relative",transition:"all .2s"}}>
                   <div style={{position:"absolute",top:3,left:on?20:3,width:16,height:16,
-                    borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
+                    borderRadius:"50%",background:"var(--jd-card)",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
                 </button>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
@@ -529,12 +529,12 @@ export function NotificationsPage({ctx}){
               {/* Enable toggle */}
               <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
                 borderRadius:10,border:`2px solid ${dc.enabled?C.blue:C.border}`,
-                background:dc.enabled?"#f1f2f5":C.offWhite,marginBottom:16,cursor:"pointer"}}
+                background:dc.enabled?"var(--jd-soft)":C.offWhite,marginBottom:16,cursor:"pointer"}}
                 onClick={()=>setDc({enabled:!dc.enabled})}>
                 <button style={{flexShrink:0,width:44,height:24,borderRadius:12,border:"none",
-                  cursor:"pointer",background:dc.enabled?C.blue:"#dedfe4",position:"relative",transition:"all .2s"}}>
+                  cursor:"pointer",background:dc.enabled?C.blue:"var(--jd-border)",position:"relative",transition:"all .2s"}}>
                   <div style={{position:"absolute",top:4,left:dc.enabled?22:4,width:16,height:16,
-                    borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
+                    borderRadius:"50%",background:"var(--jd-card)",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
                 </button>
                 <div>
                   <div style={{fontWeight:700,fontSize:13,color:dc.enabled?C.blue:C.muted}}>
@@ -570,7 +570,7 @@ export function NotificationsPage({ctx}){
                         <button key={f} onClick={()=>setDc({frequency:f})}
                           style={{flex:1,padding:"8px 0",border:"none",cursor:"pointer",fontWeight:700,fontSize:12,
                             background:dc.frequency===f?C.blue:"transparent",
-                            color:dc.frequency===f?"#fff":C.muted,transition:"all .15s"}}>
+                            color:dc.frequency===f?"var(--jd-card)":C.muted,transition:"all .15s"}}>
                           {f.charAt(0).toUpperCase()+f.slice(1)}
                         </button>
                       ))}
@@ -587,7 +587,7 @@ export function NotificationsPage({ctx}){
                             style={{flex:1,padding:"6px 0",border:`2px solid ${dc.day_of_week===i?C.blue:C.border}`,
                               borderRadius:6,cursor:"pointer",fontWeight:700,fontSize:11,
                               background:dc.day_of_week===i?C.blue:"transparent",
-                              color:dc.day_of_week===i?"#fff":C.muted,transition:"all .15s"}}>
+                              color:dc.day_of_week===i?"var(--jd-card)":C.muted,transition:"all .15s"}}>
                             {d}
                           </button>
                         ))}
@@ -621,11 +621,11 @@ export function NotificationsPage({ctx}){
                   Include in Digest
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:8,
-                  border:`2px solid ${allOn?C.blue:C.border}`,background:allOn?"#f1f2f5":C.offWhite,
+                  border:`2px solid ${allOn?C.blue:C.border}`,background:allOn?"var(--jd-soft)":C.offWhite,
                   marginBottom:10,cursor:"pointer"}} onClick={()=>setDc({events:allOn?{}:null})}>
                   <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${allOn?C.blue:C.border}`,
                     background:allOn?C.blue:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    {allOn&&<div style={{width:8,height:8,borderRadius:2,background:"#fff"}}/>}
+                    {allOn&&<div style={{width:8,height:8,borderRadius:2,background:"var(--jd-card)"}}/>}
                   </div>
                   <div style={{fontWeight:700,fontSize:13,color:allOn?C.blue:C.text}}>
                     All Events <span style={{fontWeight:400,color:C.muted,fontSize:12}}>— include everything in the digest</span>
@@ -641,7 +641,7 @@ export function NotificationsPage({ctx}){
                           background:on?C.white:C.offWhite,cursor:"pointer",opacity:on?1:.65}}>
                         <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${on?C.blue:C.border}`,
                           background:on?C.blue:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                          {on&&<div style={{width:8,height:8,borderRadius:2,background:"#fff"}}/>}
+                          {on&&<div style={{width:8,height:8,borderRadius:2,background:"var(--jd-card)"}}/>}
                         </div>
                         <div style={{flex:1}}>
                           <div style={{fontWeight:700,fontSize:13,color:C.text}}>{ev.label}</div>

@@ -6,7 +6,7 @@ export const LIGHT={
  orange:"#17191c",orangeDark:"#090a0c",orangePale:"#f1f2f5",orangeLight:"#dddfe5",
  blue:"#17191c",bluePale:"#f1f2f5",blueDark:"#090a0c",blueLight:"#dddfe5",
  white:"#ffffff",offWhite:"#f7f8fb",card:"#ffffff",filter:"#f1f2f5",
- border:"#dedfe4",borderLight:"#ececf0",text:"#101114",textSoft:"#34353b",muted:"#60616b",light:"#7b7d87",
+ border:"#dedfe4",borderLight:"#ececf0",text:"#101114",textSoft:"#34353b",muted:"#60616b",light:"#60616b",
  ...statusLight,shadow:"0 2px 4px rgba(0,0,0,.035)",shadowMd:"0 5px 18px rgba(0,0,0,.055)",shadowLg:"0 14px 36px rgba(0,0,0,.08)",shadowXl:"0 24px 56px rgba(0,0,0,.12)"
 };
 export const DARK={

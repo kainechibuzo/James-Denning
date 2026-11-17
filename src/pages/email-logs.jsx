@@ -148,7 +148,7 @@ export function MailLogsPage({ctx}){
                     </div>
                     {hasStuck&&(
                       <button onClick={()=>retrigger(b)} disabled={retriggeringId===b.batch_id}
-                        style={{background:C.amber,color:"#fff",border:"none",borderRadius:8,padding:"5px 12px",
+                        style={{background:C.amber,color:"var(--jd-card)",border:"none",borderRadius:8,padding:"5px 12px",
                           fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0}}>
                         {retriggeringId===b.batch_id?"Retrying\u2026":"Retry Pending"}
                       </button>
@@ -181,14 +181,14 @@ export function MailLogsPage({ctx}){
             placeholder="Search category or body…"
             style={{flex:2,minWidth:180,padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,outline:"none"}}/>
           <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value);setPage(0);}}
-            style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"#fff",outline:"none"}}>
+            style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"var(--jd-card)",outline:"none"}}>
             <option value="">All Statuses</option>
             <option value="sent">Sent</option>
             <option value="failed">Failed</option>
             <option value="partial">Partial</option>
           </select>
           <select value={filterAge} onChange={e=>{setFilterAge(e.target.value);setPage(0);}}
-            style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"#fff",outline:"none"}}>
+            style={{padding:"8px 12px",border:`2px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.text,background:"var(--jd-card)",outline:"none"}}>
             <option value="">All Time</option>
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -229,10 +229,10 @@ export function MailLogsPage({ctx}){
                     <input type="checkbox" checked={allPageSelected}
                       ref={el=>{if(el)el.indeterminate=somePageSelected;}}
                       onChange={togglePage}
-                      style={{width:15,height:15,cursor:"pointer",accentColor:"#fff"}}/>
+                      style={{width:15,height:15,cursor:"pointer",accentColor:"var(--jd-card)"}}/>
                   </th>
                   {["Category","Recipients","Sent","Status",""].map((h,i)=>(
-                    <th key={i} style={{padding:"9px 12px",color:"#fff",textAlign:"left",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
+                    <th key={i} style={{padding:"9px 12px",color:"var(--jd-card)",textAlign:"left",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -325,14 +325,14 @@ export function MailLogsPage({ctx}){
           {totalPages>1&&(
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:14,flexWrap:"wrap"}}>
               <button onClick={()=>setPage(0)} disabled={page===0}
-                style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"#fff",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:700}}>\u00ab</button>
+                style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"var(--jd-card)",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:700}}>\u00ab</button>
               <button onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={page===0}
-                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"#fff",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:600}}>‹ Prev</button>
+                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===0?C.offWhite:"var(--jd-card)",color:page===0?C.light:C.text,cursor:page===0?"default":"pointer",fontWeight:600}}>‹ Prev</button>
               <span style={{fontSize:12,color:C.muted,padding:"0 6px"}}>Page {page+1} of {totalPages}</span>
               <button onClick={()=>setPage(p=>Math.min(totalPages-1,p+1))} disabled={page===totalPages-1}
-                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"#fff",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:600}}>Next ›</button>
+                style={{padding:"6px 14px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"var(--jd-card)",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:600}}>Next ›</button>
               <button onClick={()=>setPage(totalPages-1)} disabled={page===totalPages-1}
-                style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"#fff",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:700}}>\u00bb</button>
+                style={{padding:"6px 10px",borderRadius:7,border:`1px solid ${C.border}`,background:page===totalPages-1?C.offWhite:"var(--jd-card)",color:page===totalPages-1?C.light:C.text,cursor:page===totalPages-1?"default":"pointer",fontWeight:700}}>\u00bb</button>
             </div>
           )}
         </>
@@ -347,7 +347,7 @@ export function MailLogsPage({ctx}){
             <label style={{fontSize:11,fontWeight:700,color:C.muted,display:"block",marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>Delete logs older than</label>
             {[{v:"30",l:"30 days"},{v:"60",l:"60 days"},{v:"90",l:"90 days (recommended)"},{v:"180",l:"6 months"},{v:"365",l:"1 year"}].map(o=>(
               <label key={o.v} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",border:`2px solid ${purgeAge===o.v?C.red:C.border}`,
-                borderRadius:8,cursor:"pointer",marginBottom:6,background:purgeAge===o.v?C.redPale:"#fff"}}>
+                borderRadius:8,cursor:"pointer",marginBottom:6,background:purgeAge===o.v?C.redPale:"var(--jd-card)"}}>
                 <input type="radio" checked={purgeAge===o.v} onChange={()=>setPurgeAge(o.v)} style={{accentColor:C.red}}/>
                 <span style={{fontSize:13,color:C.text}}>{o.l}</span>
                 <span style={{fontSize:11,color:C.muted,marginLeft:"auto"}}>

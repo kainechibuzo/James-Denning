@@ -1,0 +1,1616 @@
+[
+  {
+    "name": "sidebar-pills",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "chat",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-departments",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-ai-usage",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-review-centre",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-automation-runs",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "conversation-history",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-empty-search",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-error",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-chat",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "product-tour",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "header-settings",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "recruitment",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "email-logs",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "notifications",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "permissions",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "organisation-settings",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "admin-tools",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "register-organisation",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-workspace",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-organization-info",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-security",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-jd-connect",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-about",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-overview",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-saas-agents",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-builder",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-workflow-studio",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-recurring-assignment",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-collaboration",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-platform",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-crm",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sales",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expenses",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-contracts",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-support",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sla-policies",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-documents",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-integrations",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-cash-flow",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-revenue-intelligence",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expense-budgets",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-kpi-trends",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-predictive-analysis",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-executive-reports",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-business-health",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-organisation",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-operations",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-hiring",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-capabilities",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-jd-runs",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-intelligence",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "profile-dialog",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-operations",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-settings",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "workspace-switch-dialog",
+    "width": 320,
+    "documentWidth": 320,
+    "mainWidth": 320,
+    "mainScroll": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signin",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signup",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-reset",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-update",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-invite-sent",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-consent",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "public-application",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "offline",
+    "width": 320,
+    "documentWidth": 320,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "sidebar-pills",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "chat",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-departments",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-ai-usage",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-review-centre",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-automation-runs",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "conversation-history",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-empty-search",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-error",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-chat",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "product-tour",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "header-settings",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "recruitment",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "email-logs",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "notifications",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "permissions",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "organisation-settings",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "admin-tools",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "register-organisation",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-workspace",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-organization-info",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-security",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-jd-connect",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-about",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-overview",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-saas-agents",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-builder",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-workflow-studio",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-recurring-assignment",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-collaboration",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-platform",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-crm",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sales",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expenses",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-contracts",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-support",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sla-policies",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-documents",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-integrations",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-cash-flow",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-revenue-intelligence",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expense-budgets",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-kpi-trends",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-predictive-analysis",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-executive-reports",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-business-health",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-organisation",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-operations",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-hiring",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-capabilities",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-jd-runs",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-intelligence",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "profile-dialog",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-operations",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-settings",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "workspace-switch-dialog",
+    "width": 393,
+    "documentWidth": 393,
+    "mainWidth": 393,
+    "mainScroll": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signin",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signup",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-reset",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-update",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-invite-sent",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-consent",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "public-application",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "offline",
+    "width": 393,
+    "documentWidth": 393,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "sidebar-pills",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "chat",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-departments",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-ai-usage",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-review-centre",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-automation-runs",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "conversation-history",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-empty-search",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "history-error",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "populated-chat",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "product-tour",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "header-settings",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "recruitment",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "email-logs",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "notifications",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "permissions",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "organisation-settings",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "admin-tools",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "register-organisation",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-workspace",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-organization-info",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-security",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-jd-connect",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "settings-about",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-overview",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-saas-agents",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-builder",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-workflow-studio",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-recurring-assignment",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-collaboration",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-business-platform",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-crm",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sales",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expenses",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-contracts",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-support",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-sla-policies",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-documents",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-integrations",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-cash-flow",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-revenue-intelligence",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-expense-budgets",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-kpi-trends",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-predictive-analysis",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-executive-reports",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "business-business-health",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-organisation",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-operations",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-hiring",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-capabilities",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-jd-runs",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "operations-intelligence",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "profile-dialog",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-operations",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "dark-settings",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "workspace-switch-dialog",
+    "width": 1280,
+    "documentWidth": 1280,
+    "mainWidth": 1050,
+    "mainScroll": 1050,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signin",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-signup",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-reset",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-update",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "auth-invite-sent",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-consent",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "public-application",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  },
+  {
+    "name": "offline",
+    "width": 1280,
+    "documentWidth": 1280,
+    "paletteViolations": [],
+    "result": "PASS"
+  }
+]

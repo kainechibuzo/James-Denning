@@ -1,0 +1,17 @@
+/* Soft, fading pills for actual destinations; group headings stay distinct. */
+#workspace-navigation button.jd-nav-pill{background:linear-gradient(100deg,color-mix(in srgb,var(--jd-soft) 80%,var(--jd-surface)),color-mix(in srgb,var(--jd-soft) 25%,var(--jd-surface)))!important;border:1px solid color-mix(in srgb,var(--jd-border) 45%,transparent)!important;border-radius:999px!important;margin:3px 0;min-height:40px;padding:9px 13px!important;color:var(--jd-text)!important;transition:background .18s,border-color .18s}
+#workspace-navigation button.jd-nav-pill:hover,#workspace-navigation button.jd-nav-pill:focus-visible{background:var(--jd-soft)!important;border-color:var(--jd-border)!important}
+#workspace-navigation button.jd-nav-pill[aria-current=page]{background:var(--jd-soft)!important;border-color:var(--jd-accent)!important;font-weight:600}
+#workspace-navigation button.jd-nav-pill[aria-current=page]>div{display:none}
+.reference-workspace-header .reference-header-left{min-width:0!important}
+.reference-workspace-header .reference-brand{min-width:0;overflow:hidden}
+.reference-workspace-header .reference-brand>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.reference-workspace-header button[data-tour='workspace-menu']{flex-shrink:0}
+.reference-workspace-header .reference-settings{display:grid;place-items:center;cursor:pointer}
+/* Tool headers must wrap independently of their body cards on small phones. */
+@media(max-width:650px){.jd-departments-head,.jd-usage-head,.jd-runs-head,.jd-review-head{flex-wrap:wrap}.jd-departments-actions,.jd-usage-controls,.jd-runs-controls,.jd-review-controls{flex-wrap:wrap}.jd-departments-actions button,.jd-usage-controls button,.jd-runs-controls button,.jd-review-controls button{min-height:40px}.jd-command .jd-department-card h3{font-size:16px}.jd-command .jd-department-card>p,.jd-command .jd-department-section ul{font-size:13px;line-height:1.7}.jd-command .jd-department-section>div{font-size:12px}}
+@media(max-width:420px){.reference-workspace-header{padding:0 8px!important}.reference-workspace-header .reference-header-left{gap:8px!important}.reference-workspace-header .reference-brand{font-size:11px;gap:6px}.reference-workspace-header .reference-brand img{width:22px}.reference-workspace-header .reference-header-controls{gap:3px!important}.reference-workspace-header .reference-header-controls>button,.reference-workspace-header .reference-header-controls>div>button{width:29px!important;min-width:29px!important}}
+/* The public reference landing is deliberately light, including after logout. */
+.reference-landing{--jd-text:#101114;--jd-text-soft:#34353b;--jd-muted:#60616b;--jd-card:#fff;--jd-soft:#f1f2f5;--jd-canvas:#f7f8fb;--jd-border:#dedfe4;--jd-action:#17191c;--jd-on-action:#fff;color-scheme:light}
+.reference-landing .reference-brand{color:#101114!important}
+.reference-landing .reference-brand img{filter:none!important}
