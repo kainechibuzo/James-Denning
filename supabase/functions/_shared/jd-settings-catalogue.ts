@@ -30,6 +30,8 @@ export const SECRET_KEY_PATTERN = /(password|secret|token|api.?key|credential|pr
 
 export function buildSettingsCatalogue(rows: SettingRow[]) {
   const byKey = new Map(rows.map((row) => [row.key, row.value]));
+  const educationActive=byKey.get("workspace_type")==="education"&&![false,"false"].includes(byKey.get("education_module_enabled") as any);
+  const academicKeys=new Set(["result_ca_max","result_exam_max","block_reports_if_owing","login_students_disabled","login_teachers_disabled"]);
   const knownKeys = new Set(JD_SETTING_DEFINITIONS.map((item) => item.key));
   const settings = JD_SETTING_DEFINITIONS.map((definition) => {
     const value = byKey.get(definition.key);
@@ -41,7 +43,9 @@ export function buildSettingsCatalogue(rows: SettingRow[]) {
       description: definition.description,
       status: configured ? "configured" : "missing",
       ...(configured && definition.displayValue ? { value: value === "true" ? true : value === "false" ? false : value } : {}),
-      editable_via_jd: false,
+      applies_to_current_workspace: !academicKeys.has(definition.key)||educationActive,
+      editable_via_jd: false, // This catalogue is read-only.
+      review_proposal_supported: ["workspace","identity","security","billing"].includes(definition.category),
       evidence: "school_settings",
     };
   });
@@ -51,6 +55,7 @@ export function buildSettingsCatalogue(rows: SettingRow[]) {
   const missingCount = settings.length - configuredCount;
   return {
     settings,
+    workspace_context: {workspace_type:byKey.get("workspace_type")||"business",education_surfaces_active:educationActive,note:"Stored academic values are not proof that education surfaces are active. Applicability describes presentation, not security enforcement."},
     summary: {
       known_settings: settings.length,
       configured: configuredCount,
@@ -61,7 +66,7 @@ export function buildSettingsCatalogue(rows: SettingRow[]) {
     unclassified_keys: unknownKeys.map((row) => row.key).slice(0, 50),
     limitations: [
       "This catalogue covers the settings explicitly registered in JD's current settings UI; it is not yet a complete inventory of every module or database capability.",
-      "JD can inspect settings only. It cannot change settings through this tool.",
+      "This catalogue is read-only. Owners/admins can request supported changes with submit_workspace_settings_for_review; human review and explicit application in Review Centre are required. Submission is not execution.",
       "Secret-like setting values are excluded from model context.",
     ],
   };

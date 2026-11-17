@@ -1,41 +1,55 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient.js";
 import { RefreshCw, ShieldCheck, Check, X, Clock3, AlertTriangle } from "lucide-react";
 
-export function ReviewCentre({ onClose, onDecision }) {
+import { settingsDiff, applyReviewedSettings } from "./settings-review.mjs";
+
+export function ReviewCentre({ onClose, onDecision, client=supabase }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [decisionNote, setDecisionNote] = useState("");
+  const [confirmApply,setConfirmApply]=useState("");
+  const [needsRefresh,setNeedsRefresh]=useState(false);
+  const lock=useRef(false);
+  const alive=useRef(true);
 
   const load = useCallback(async () => {
-    setLoading(true); setError("");
-    const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-      body: { action: "approvals.list" },
-    });
-    if (invokeError) setError(invokeError.message || "Could not load approval requests.");
-    else setItems(data?.approvals || []);
-    setLoading(false);
-  }, []);
+    setLoading(true); setError("");setConfirmApply("");
+    try {
+      const {data,error:invokeError}=await client.functions.invoke("jd-automation",{body:{action:"approvals.list"}});
+      if(invokeError||data?.error||!Array.isArray(data?.approvals))throw Error();
+      if(alive.current){setItems(data.approvals);setNeedsRefresh(false);}return true;
+    }catch{if(alive.current){setItems([]);setNeedsRefresh(true);setError("Could not confirm approval records. Refresh before making changes.");}return false;}
+    finally{if(alive.current)setLoading(false);}
+  }, [client]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { alive.current=true;load();return()=>{alive.current=false;}; }, [load]);
 
   const decide = async (item, decision) => {
-    if (busyId) return;
-    setBusyId(item.id); setError(""); setNotice("");
-    const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-      body: { action: "approvals.decide", approvalId: item.id, decision, note: decisionNote },
-    });
-    if (invokeError) setError(invokeError.message || "Could not record your decision.");
-    else {
-      setNotice(data?.execution?.message || "Decision recorded.");
-      await load();
-      onDecision?.(decision, item, data, decisionNote);
-      setDecisionNote("");
-    }
-    setBusyId("");
+    if(lock.current||loading||needsRefresh)return;
+    if(decision==='approve'&&item.action_key==='settings.apply'&&!settingsDiff(item)){setError('This settings diff is invalid. Do not approve it; ask JD to prepare a new proposal.');return;}
+    lock.current=true;setBusyId(item.id);setError("");setNotice("");
+    try{
+      const {data,error:invokeError}=await client.functions.invoke("jd-automation",{body:{action:"approvals.decide",approvalId:item.id,decision,note:decisionNote}});
+      if(invokeError||data?.error||data?.approval?.id!==item.id||data.approval.status!==(decision==='approve'?'approved':'rejected'))throw Error();
+      if(!alive.current)return;
+      setNotice(item.action_key==='settings.apply'?'Decision saved. Approval alone does not change settings; apply the approved diff separately.':data?.execution?.message||'Decision recorded.');
+      if(await load()){onDecision?.(decision,item,data,decisionNote);setDecisionNote('');}
+    }catch{if(alive.current){setError('Decision was not confirmed. Refresh before another action; no request was retried.');setNeedsRefresh(true);}}
+    finally{lock.current=false;if(alive.current)setBusyId('');}
+  };
+  const apply = async item=>{
+    if(lock.current||loading||needsRefresh||confirmApply!==item.id)return;
+    lock.current=true;setBusyId(item.id);setNotice('');setError('');
+    try{
+      const result=await applyReviewedSettings(client,item);
+      if(!alive.current)return;
+      if(await load())setNotice(result.message);
+    }catch(error){if(alive.current){setError(error.message);setNeedsRefresh(true);}}
+    finally{lock.current=false;if(alive.current){setBusyId('');setConfirmApply('');}}
   };
 
   const pending = items.filter((item) => item.status === "pending");
@@ -44,7 +58,7 @@ export function ReviewCentre({ onClose, onDecision }) {
     <section className="jd-review">
       <header className="jd-review-head">
         <div><div className="jd-review-eyebrow"><ShieldCheck size={13}/> GOVERNANCE</div><h2>Review Centre</h2><p>Review consequential requests before any external action is considered.</p></div>
-        <div className="jd-review-controls"><button type="button" onClick={load} aria-label="Refresh approvals"><RefreshCw size={15}/></button>{onClose&&<button type="button" onClick={onClose}>Back to JD</button>}</div>
+        <div className="jd-review-controls"><button type="button" onClick={load} disabled={!!busyId||loading} aria-label="Refresh approvals"><RefreshCw size={15}/></button>{onClose&&<button type="button" onClick={onClose}>Back to JD</button>}</div>
       </header>
       {error&&<div className="jd-review-alert error"><AlertTriangle size={14}/>{error}</div>}
       {notice&&<div className="jd-review-alert">{notice}</div>}
@@ -56,7 +70,11 @@ export function ReviewCentre({ onClose, onDecision }) {
             <h3>{item.title||"JD action request"}</h3>
             {item.action_key==="organisation.provision_departments"&&<div className="jd-review-jd-tag">✦ Prepared by JD · {item.proposal_json?.blueprint?.departments?.length||0} proposed departments</div> }
             <p>{item.reason}</p>
-            <div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>
+            {item.action_key!=="settings.apply"&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
+            {item.action_key==="settings.apply"&&(settingsDiff(item)?<section aria-label="Proposed settings changes" className="jd-settings-diff">
+              <p>Review each exact value. JD has not applied these settings. Missing contact details must be supplied, not guessed.</p>
+              {settingsDiff(item).map(change=><div className="jd-settings-diff-row" key={change.key}><strong>{change.label}</strong><div><small>Current at proposal</small><span>{change.before===null?'Not configured':String(change.before)}</span></div><div><small>Proposed</small><span>{String(change.after)}</span></div>{!change.changed&&<small>No change</small>}</div>)}
+            </section>:<div role="alert">Invalid or unsupported settings diff. Reject this request and ask JD to prepare a supported proposal.</div>)}
             {Array.isArray(item.proposal_json?.blueprint?.departments)&&<div className="jd-review-blueprint">
               <div className="jd-review-blueprint-head">
                 <strong>{item.proposal_json.blueprint.name||"Proposed organisation"}</strong>
@@ -74,12 +92,20 @@ export function ReviewCentre({ onClose, onDecision }) {
               ))}
             </div>}
             <div className="jd-review-meta"><span>Risk: {item.risk_level}</span><span>Execution: {item.execution_status?.replaceAll("_"," ")||"not executed"}</span></div>
-            {item.status==="pending"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
-            {item.status==="approved"&&<div className="jd-review-safe-note">{item.execution_status==="completed"?"JD completed the approved setup. Created items are tagged as created by JD.":item.execution_status==="failed"?"Your approval was recorded, but JD could not complete the setup. Ask JD to review the issue before retrying.":"Your approval was recorded. The requested change has not been confirmed as complete."}</div>}
+            {item.status==="pending"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
+            {item.action_key==="settings.apply"&&item.status==="approved"&&settingsDiff(item)&&['not_executed','running'].includes(item.execution_status)&&<div className="jd-review-actions">
+              {confirmApply===item.id?<><span>Apply only the approved values above? Earlier completed steps will not be repeated.</span><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>setConfirmApply('')}>Keep unchanged</button><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>apply(item)}>Confirm apply settings</button></>:<button type="button" disabled={!!busyId||needsRefresh||loading} onClick={()=>setConfirmApply(item.id)}>Apply approved settings</button>}
+            </div>}
+            {item.status==="approved"&&item.action_key==="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==='completed'?'The execution record reports completed. This is not independent verification of a business outcome.':item.execution_status==='failed'?'Execution needs administrator review. Some steps may already have been saved; do not resubmit blindly.':'Approval recorded. No settings change is confirmed until application and read-back succeed.'}</div>}
+            {item.status==="approved"&&item.action_key!=="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==="completed"?"JD completed the approved setup. Created items are tagged as created by JD.":item.execution_status==="failed"?"Your approval was recorded, but JD could not complete the setup. Ask JD to review the issue before retrying.":"Your approval was recorded. The requested change has not been confirmed as complete."}</div>}
           </article>
         ))}
       </div>}
       <style>{`
+        .jd-settings-diff{margin:12px 0;border:1px solid #dfe3e8;border-radius:10px;padding:12px}
+        .jd-settings-diff-row{border-top:1px solid #edf0f3;padding:10px 0;overflow-wrap:anywhere;font-size:12px}
+        .jd-settings-diff-row>div{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,2fr);gap:8px;margin-top:6px}.jd-settings-diff-row small{color:#69727d}
+        .jd-review-actions{flex-wrap:wrap}
         .jd-review-backdrop{position:fixed;inset:0;z-index:60;background:rgba(18,22,28,.42);display:flex;align-items:center;justify-content:center;padding:18px}
         .jd-review{width:min(900px,100%);max-height:min(90dvh,900px);min-height:0;overflow:auto;padding:24px clamp(14px,3vw,32px);background:#f7f8fa;color:#202329;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid rgba(255,255,255,.6);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.24)}
         .jd-review-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;max-width:900px;margin:0 auto 22px}

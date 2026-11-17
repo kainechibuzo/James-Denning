@@ -1,3 +1,4 @@
+import { submitSettingsForReview } from "./jd-settings-review.ts";
 import { CAPABILITY_INTERPRETATION, capabilityEffect } from "./jd-capability-contract.ts";
 import { buildSettingsChangePlan } from "./jd-settings-change-planner.ts";
 import { buildSettingsCatalogue, filterSettingsCatalogue } from "./jd-settings-catalogue.ts";
@@ -646,6 +647,21 @@ const tools: ToolSpec[] = [  {
         value: row.value,
       })));
     },
+  },
+  {
+    name: "submit_workspace_settings_for_review",
+    description: "When an owner/admin asks to change organisation identity, workspace type, education module, security or billing settings, save the exact before-and-after proposal in Review Centre. Use only values the user supplied or confirmed; never invent a legal name, address or phone. This requests human approval only, does not approve itself and does not apply settings. After review, the human must explicitly apply the approved changes in Review Centre. Missing backend support is an error, never a reason to write settings directly.",
+    risk: "low",
+    roles: ["owner","admin"],
+    parameters: {
+      type: "object",
+      properties: {
+        title: {type:"string",maxLength:160},
+        changes: {type:"array",minItems:1,maxItems:20,items:{type:"object",properties:{key:{type:"string"},value:{type:["string","number","boolean"]}},required:["key","value"],additionalProperties:false}},
+      },
+      required:["title","changes"],additionalProperties:false,
+    },
+    execute:submitSettingsForReview,
   },
   {
     name: "create_business_document_draft",

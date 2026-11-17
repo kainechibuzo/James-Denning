@@ -1,0 +1,283 @@
+{
+  "scope": "Local synthetic PGlite only; not live Supabase acceptance",
+  "before": {
+    "school_settings": [
+      {
+        "id": 1,
+        "key": "school_name",
+        "value": "Old synthetic name",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "updated_at": "2026-11-17T09:34:16.673+00:00"
+      },
+      {
+        "id": 2,
+        "key": "education_module_enabled",
+        "value": "true",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "updated_at": "2026-11-17T09:34:16.673+00:00"
+      },
+      {
+        "id": 3,
+        "key": "school_name",
+        "value": "Other synthetic tenant",
+        "school_id": "00000000-0000-4000-8000-000000000003",
+        "updated_at": "2026-11-17T09:34:16.673+00:00"
+      }
+    ],
+    "jd_approvals": [],
+    "jd_settings_execution_steps": [],
+    "jd_audit_events": [],
+    "jd_automation_runs": []
+  },
+  "after": {
+    "school_settings": [
+      {
+        "id": 1,
+        "key": "school_name",
+        "value": "Synthetic Logistics Ltd",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "updated_at": "2026-11-17T09:34:16.727+00:00"
+      },
+      {
+        "id": 2,
+        "key": "education_module_enabled",
+        "value": "false",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "updated_at": "2026-11-17T09:34:16.733+00:00"
+      },
+      {
+        "id": 3,
+        "key": "school_name",
+        "value": "Other synthetic tenant",
+        "school_id": "00000000-0000-4000-8000-000000000003",
+        "updated_at": "2026-11-17T09:34:16.673+00:00"
+      }
+    ],
+    "jd_approvals": [
+      {
+        "id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+        "title": "Synthetic identity and module update",
+        "reason": "Settings changes require administrator review",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "status": "approved",
+        "step_id": null,
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "action_key": "settings.apply",
+        "created_at": "2026-11-17T09:34:16.682+00:00",
+        "decided_at": "2026-11-17T09:34:16.7+00:00",
+        "decided_by": "00000000-0000-4000-8000-000000000001",
+        "expires_at": "2026-11-18T09:34:16.682+00:00",
+        "risk_level": "high",
+        "updated_at": "2026-11-17T09:34:16.733+00:00",
+        "requested_by": "00000000-0000-4000-8000-000000000001",
+        "audience_text": "Review the exact proposed settings diff before any changes are applied.",
+        "decision_note": "",
+        "proposal_hash": "e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c",
+        "proposal_json": {
+          "status": "ready_for_review",
+          "changes": [
+            {
+              "key": "school_name",
+              "after": "Synthetic Logistics Ltd",
+              "label": "Organisation name",
+              "before": "Old synthetic name",
+              "impact": "Official organisation name used across portal surfaces and documents.",
+              "status": "proposed",
+              "category": "identity",
+              "approval_required": true,
+              "confirmation_required": false
+            },
+            {
+              "key": "education_module_enabled",
+              "after": false,
+              "label": "Education module",
+              "before": "true",
+              "impact": "Controls availability of education-specific navigation and workflows.",
+              "status": "proposed",
+              "category": "workspace",
+              "approval_required": true,
+              "confirmation_required": false
+            }
+          ],
+          "summary": {
+            "proposed": 2,
+            "rejected": 0,
+            "no_change": 0,
+            "requested": 2,
+            "approval_required": 2,
+            "confirmation_required": 0
+          },
+          "rejected": [],
+          "execution": {
+            "status": "not_executed",
+            "message": "This is a proposal only. No settings have been changed. A separate approved execution workflow is required.",
+            "performed": false
+          }
+        },
+        "execution_status": "completed",
+        "execution_result_json": {}
+      }
+    ],
+    "jd_settings_execution_steps": [
+      {
+        "id": "172a6c68-6bce-408c-a90e-bdd8ad5d4d65",
+        "status": "completed",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.727+00:00",
+        "error_code": null,
+        "step_index": 0,
+        "after_value": "Synthetic Logistics Ltd",
+        "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+        "setting_key": "school_name",
+        "verified_at": "2026-11-17T09:34:16.727+00:00",
+        "before_value": "Old synthetic name",
+        "error_message": null
+      },
+      {
+        "id": "6e2c1d0b-2c3d-49c0-b1bb-9dfc8d2b9b2b",
+        "status": "completed",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.733+00:00",
+        "error_code": null,
+        "step_index": 1,
+        "after_value": false,
+        "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+        "setting_key": "education_module_enabled",
+        "verified_at": "2026-11-17T09:34:16.733+00:00",
+        "before_value": "true",
+        "error_message": null
+      }
+    ],
+    "jd_audit_events": [
+      {
+        "id": "24ce8708-1611-40ae-a02b-f118f713465c",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "actor_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.733+00:00",
+        "event_json": {
+          "key": "education_module_enabled",
+          "verified": true,
+          "step_index": 1,
+          "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+          "proposal_hash": "e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c"
+        },
+        "event_type": "settings.step_completed"
+      },
+      {
+        "id": "6289dab0-7e16-4d4d-a0c3-4ce077bc7174",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "actor_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.682+00:00",
+        "event_json": {
+          "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+          "proposal_hash": "e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c"
+        },
+        "event_type": "settings.proposal_submitted"
+      },
+      {
+        "id": "a2ef4a3a-8fe3-4382-8fdd-a5ea11fa0241",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "actor_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.727+00:00",
+        "event_json": {
+          "key": "school_name",
+          "verified": true,
+          "step_index": 0,
+          "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+          "proposal_hash": "e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c"
+        },
+        "event_type": "settings.step_completed"
+      },
+      {
+        "id": "ce8aba15-d9a9-46ad-88ca-3f709e993770",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "actor_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.733+00:00",
+        "event_json": {
+          "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+          "proposal_hash": "e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c",
+          "completed_steps": 2
+        },
+        "event_type": "settings.proposal_completed"
+      },
+      {
+        "id": "d29414af-27a2-4041-ab23-8bc766c37048",
+        "run_id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "actor_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.7+00:00",
+        "event_json": {
+          "approval_id": "042c9324-f6ff-4076-9b83-8cee0b567428",
+          "execution_status": "not_executed"
+        },
+        "event_type": "approval.approved"
+      }
+    ],
+    "jd_automation_runs": [
+      {
+        "id": "8f40e431-256a-4097-ae9e-2d695cd04788",
+        "scope": "settings",
+        "status": "completed",
+        "plan_json": [
+          {
+            "status": "ready_for_review",
+            "changes": [
+              {
+                "key": "school_name",
+                "after": "Synthetic Logistics Ltd",
+                "label": "Organisation name",
+                "before": "Old synthetic name",
+                "impact": "Official organisation name used across portal surfaces and documents.",
+                "status": "proposed",
+                "category": "identity",
+                "approval_required": true,
+                "confirmation_required": false
+              },
+              {
+                "key": "education_module_enabled",
+                "after": false,
+                "label": "Education module",
+                "before": "true",
+                "impact": "Controls availability of education-specific navigation and workflows.",
+                "status": "proposed",
+                "category": "workspace",
+                "approval_required": true,
+                "confirmation_required": false
+              }
+            ],
+            "summary": {
+              "proposed": 2,
+              "rejected": 0,
+              "no_change": 0,
+              "requested": 2,
+              "approval_required": 2,
+              "confirmation_required": 0
+            },
+            "rejected": [],
+            "execution": {
+              "status": "not_executed",
+              "message": "This is a proposal only. No settings have been changed. A separate approved execution workflow is required.",
+              "performed": false
+            }
+          }
+        ],
+        "school_id": "00000000-0000-4000-8000-000000000002",
+        "created_at": "2026-11-17T09:34:16.682+00:00",
+        "started_at": null,
+        "updated_at": "2026-11-17T09:34:16.733+00:00",
+        "result_json": {},
+        "completed_at": "2026-11-17T09:34:16.733+00:00",
+        "request_text": "Synthetic identity and module update",
+        "requested_by": "00000000-0000-4000-8000-000000000001",
+        "trigger_type": "manual",
+        "autonomy_mode": "assisted",
+        "conversation_id": null,
+        "idempotency_key": "settings-proposal:e53bcc5b3f8c64749054f2dabf3b67aca7b07bee5d634c7de1078ee0858a110c"
+      }
+    ]
+  }
+}

@@ -51,6 +51,9 @@ jobs:
       - name: Test capability interpretation and role boundaries
         run: npm run test:capabilities
 
+      - name: Test reviewed organisation settings and SQL execution
+        run: npm run test:settings
+
       - name: Test chat layout in Chromium
         run: npm run test:chat-layout
 

@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
    return json({error:"This settings proposal has not been approved"},409);
   const changes=Array.isArray(approval.proposal_json?.changes)?approval.proposal_json.changes:[];
   const actionable=changes.map((change:any,index:number)=>({change,index})).filter((item:{change:any;index:number})=>item.change?.status==="proposed"&&item.change?.approval_required===true);
-  if(!actionable.length) return json({error:"No approved actionable settings changes were found"},400);
+  if(!actionable.length||changes.length>20||changes.some((c:any)=>c?.status==="proposed"&&c.approval_required!==true)) return json({error:"The proposal contains unsupported or missing executable changes; request a new exact diff"},400);
   const results:any[]=[];
   for(const item of actionable){
    const {data:step,error:stepErr}=await admin.rpc("jd_apply_settings_proposal_step",{
@@ -522,11 +522,16 @@ Deno.serve(async (req) => {
    if(step?.status==="conflict"||step?.status==="failed"){
     return json({error:"Settings execution stopped because a setting changed or failed verification",results,failed_step:item.index,partial:results.some(x=>x.status==="step_completed"||x.status==="already_completed"),retry_safe:false},409);
    }
+   if(!step||!["completed","step_completed","already_completed"].includes(step.status)||step.step_index!==item.index||step.key!==item.change.key||!(step.verified===true||(step.status==="already_completed"&&Number.isFinite(Date.parse(step.verified_at)))))
+    return json({error:"Settings step acknowledgement was incomplete; refresh before any retry",results,partial:true,retry_safe:false},500);
   }
   const {data:finalApproval,error:finalErr}=await admin.from("jd_approvals")
    .select("execution_status").eq("id",approvalId).eq("school_id",profile.school_id).single();
-  if(finalErr) return json({error:"Changes were applied but final execution status could not be read",results,partial:true},500);
-  return json({approvalId,execution_status:finalApproval.execution_status,results,partial:finalApproval.execution_status!=="completed",message:finalApproval.execution_status==="completed"?"All approved settings changes were applied and verified.":"Some approved settings changes remain; retry resumes only unfinished steps."});
+  if(finalErr||finalApproval?.execution_status!=="completed") return json({error:"Final settings execution status was not confirmed; refresh and inspect records",results,partial:true},500);
+  const {data:settings,error:readError}=await admin.from("school_settings").select("key,value").eq("school_id",profile.school_id).in("key",actionable.map((item:any)=>item.change.key));
+  if(readError||!Array.isArray(settings)||settings.length!==actionable.length||actionable.some((item:any)=>settings.filter((row:any)=>row.key===item.change.key&&row.value===String(item.change.after)).length!==1))
+   return json({error:"Settings read-back did not match the approved values; changes may have been saved",results,partial:true},409);
+  return json({approvalId,execution_status:"completed",results,settings,partial:false,message:"Approved settings applied and read back. This is not independent verification of a business outcome."});
  }
  if(payload.action==="approvals.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can review approval requests"},403);
