@@ -1,0 +1,19 @@
+> james-denning@1.0.0 build:mobile
+> vite build --config vite.mobile.config.js
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vite.mobile.config.js:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 1762 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-mobile/mobile.html                            1.30 kB │ gzip:  0.69 kB
+dist-mobile/assets/mobile-DU3eN89V.css             8.60 kB │ gzip:  2.33 kB
+dist-mobile/assets/rolldown-runtime-WkwZ5CU-.js    0.59 kB │ gzip:  0.36 kB
+dist-mobile/assets/lucide-CPu1OlYv.js             17.17 kB │ gzip:  6.42 kB
+dist-mobile/assets/mobile-Bh2u_naz.js            134.32 kB │ gzip: 43.82 kB
+dist-mobile/assets/supabase-BHcAqgAp.js          165.29 kB │ gzip: 42.95 kB
+
+✓ built in 528ms

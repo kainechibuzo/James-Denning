@@ -1,3 +1,4 @@
+import { runWithShadowUsage } from "./_shared/jd-usage-observer.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "./_shared/jd-agent-runtime.ts";
 import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
@@ -174,7 +175,11 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const stepIds = new Map<string, string>();
     const events: Record<string, unknown>[] = [];
 
-    const result = await runAgent({
+    const result = await runWithShadowUsage({
+      admin, jobId, schoolId, leaseToken,
+      enabled: Deno.env.get("JD_USAGE_SHADOW_ENABLED") === "true",
+      run: (onUsagePhase: ((phase: "active" | "external_wait") => Promise<void>) | undefined) => runAgent({
+      onUsagePhase,
       message: run.request_text,
       history,
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
@@ -232,6 +237,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
           }
         }
       },
+      }),
     });
 
     persistPartial(true);
