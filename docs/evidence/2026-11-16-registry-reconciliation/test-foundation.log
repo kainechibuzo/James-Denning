@@ -1,0 +1,567 @@
+> james-denning@1.0.0 test:foundation
+> node --experimental-strip-types --test scripts/test-business-foundation.mjs scripts/test-foundation-database.mjs scripts/test-foundation-ui.mjs
+
+TAP version 13
+# (node:1995) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: retail gets distinct unactivated module specification without mandatory departments
+ok 1 - retail gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 4.847633
+  type: 'test'
+  ...
+# Subtest: logistics gets distinct unactivated module specification without mandatory departments
+ok 2 - logistics gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.693349
+  type: 'test'
+  ...
+# Subtest: education gets distinct unactivated module specification without mandatory departments
+ok 3 - education gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.335111
+  type: 'test'
+  ...
+# Subtest: services gets distinct unactivated module specification without mandatory departments
+ok 4 - services gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.228521
+  type: 'test'
+  ...
+# Subtest: software gets distinct unactivated module specification without mandatory departments
+ok 5 - software gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.320839
+  type: 'test'
+  ...
+# Subtest: general gets distinct unactivated module specification without mandatory departments
+ok 6 - general gets distinct unactivated module specification without mandatory departments
+  ---
+  duration_ms: 0.340025
+  type: 'test'
+  ...
+# Subtest: retail, education and logistics do not share one imposed menu
+ok 7 - retail, education and logistics do not share one imposed menu
+  ---
+  duration_ms: 2.552606
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"name":""}
+ok 8 - invalid DNA {"name":""}
+  ---
+  duration_ms: 0.335018
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"industry":"unknown"}
+ok 9 - invalid DNA {"industry":"unknown"}
+  ---
+  duration_ms: 0.314581
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"goals":[""]}
+ok 10 - invalid DNA {"goals":[""]}
+  ---
+  duration_ms: 0.371655
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"goals":["x","x","x","x","x","x","x","x","x","x","x","x","x"]}
+ok 11 - invalid DNA {"goals":["x","x","x","x","x","x","x","x","x","x","x","x","x"]}
+  ---
+  duration_ms: 0.213594
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"constraints":"none"}
+ok 12 - invalid DNA {"constraints":"none"}
+  ---
+  duration_ms: 0.168231
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"description":"ghp_abcdefghijklmnopqrstuvwxyz"}
+ok 13 - invalid DNA {"description":"ghp_abcdefghijklmnopqrstuvwxyz"}
+  ---
+  duration_ms: 0.080006
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"geography":123}
+ok 14 - invalid DNA {"geography":123}
+  ---
+  duration_ms: 0.067902
+  type: 'test'
+  ...
+# Subtest: invalid DNA {"role":"owner"}
+ok 15 - invalid DNA {"role":"owner"}
+  ---
+  duration_ms: 0.092276
+  type: 'test'
+  ...
+# Subtest: catalogue has distinct bounded draft definitions, not fictional 400 evaluated workers
+ok 16 - catalogue has distinct bounded draft definitions, not fictional 400 evaluated workers
+  ---
+  duration_ms: 0.26377
+  type: 'test'
+  ...
+# Subtest: recommendations exclude existing definitions; never hire or estimate invented usage
+ok 17 - recommendations exclude existing definitions; never hire or estimate invented usage
+  ---
+  duration_ms: 0.330501
+  type: 'test'
+  ...
+# Subtest: active-only additive quote excludes all waiting states and deduplicates exact events
+ok 18 - active-only additive quote excludes all waiting states and deduplicates exact events
+  ---
+  duration_ms: 2.434295
+  type: 'test'
+  ...
+# Subtest: parallel employees each contribute active time, not a single wall-clock hour
+ok 19 - parallel employees each contribute active time, not a single wall-clock hour
+  ---
+  duration_ms: 0.190394
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 20 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.108612
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 21 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.391861
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 22 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.142381
+  type: 'test'
+  ...
+# Subtest: ambiguous or conflicting usage cannot become a quote
+ok 23 - ambiguous or conflicting usage cannot become a quote
+  ---
+  duration_ms: 0.071635
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce owner boundary without I/O
+ok 24 - new runtime tools enforce owner boundary without I/O
+  ---
+  duration_ms: 0.642301
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce admin boundary without I/O
+ok 25 - new runtime tools enforce admin boundary without I/O
+  ---
+  duration_ms: 0.27625
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce manager boundary without I/O
+ok 26 - new runtime tools enforce manager boundary without I/O
+  ---
+  duration_ms: 0.3204
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce staff boundary without I/O
+ok 27 - new runtime tools enforce staff boundary without I/O
+  ---
+  duration_ms: 0.279012
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce viewer boundary without I/O
+ok 28 - new runtime tools enforce viewer boundary without I/O
+  ---
+  duration_ms: 0.178206
+  type: 'test'
+  ...
+# Subtest: new runtime tools enforce finance boundary without I/O
+ok 29 - new runtime tools enforce finance boundary without I/O
+  ---
+  duration_ms: 0.146665
+  type: 'test'
+  ...
+# Subtest: missing credentials never send provider requests
+ok 30 - missing credentials never send provider requests
+  ---
+  duration_ms: 0.645976
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 31 - invalid research input blocks network
+  ---
+  duration_ms: 0.127835
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 32 - invalid research input blocks network
+  ---
+  duration_ms: 0.07932
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 33 - invalid research input blocks network
+  ---
+  duration_ms: 0.089066
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 34 - invalid research input blocks network
+  ---
+  duration_ms: 0.062341
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 35 - invalid research input blocks network
+  ---
+  duration_ms: 0.133255
+  type: 'test'
+  ...
+# Subtest: invalid research input blocks network
+ok 36 - invalid research input blocks network
+  ---
+  duration_ms: 0.128104
+  type: 'test'
+  ...
+# Subtest: provider 401 is sanitised and not automatically retried
+ok 37 - provider 401 is sanitised and not automatically retried
+  ---
+  duration_ms: 26.290448
+  type: 'test'
+  ...
+# Subtest: provider 403 is sanitised and not automatically retried
+ok 38 - provider 403 is sanitised and not automatically retried
+  ---
+  duration_ms: 0.386433
+  type: 'test'
+  ...
+# Subtest: provider 429 is sanitised and not automatically retried
+ok 39 - provider 429 is sanitised and not automatically retried
+  ---
+  duration_ms: 0.44153
+  type: 'test'
+  ...
+# Subtest: provider 500 is sanitised and not automatically retried
+ok 40 - provider 500 is sanitised and not automatically retried
+  ---
+  duration_ms: 1.28409
+  type: 'test'
+  ...
+# Subtest: results retain provenance and reject unsafe/secret links; snippets are untrusted
+ok 41 - results retain provenance and reject unsafe/secret links; snippets are untrusted
+  ---
+  duration_ms: 54.819079
+  type: 'test'
+  ...
+# Subtest: provider body quota_exhausted preserves truthful outcome
+ok 42 - provider body quota_exhausted preserves truthful outcome
+  ---
+  duration_ms: 1.028208
+  type: 'test'
+  ...
+# Subtest: provider body invalid_credentials preserves truthful outcome
+ok 43 - provider body invalid_credentials preserves truthful outcome
+  ---
+  duration_ms: 0.873194
+  type: 'test'
+  ...
+# Subtest: provider body invalid_response preserves truthful outcome
+ok 44 - provider body invalid_response preserves truthful outcome
+  ---
+  duration_ms: 0.70207
+  type: 'test'
+  ...
+# Subtest: provider body empty preserves truthful outcome
+ok 45 - provider body empty preserves truthful outcome
+  ---
+  duration_ms: 1.124806
+  type: 'test'
+  ...
+# Subtest: deadline bounds a stalled provider without retries
+ok 46 - deadline bounds a stalled provider without retries
+  ---
+  duration_ms: 50.182453
+  type: 'test'
+  ...
+# Subtest: network exception never exposes request URL or credential
+ok 47 - network exception never exposes request URL or credential
+  ---
+  duration_ms: 15.841571
+  type: 'test'
+  ...
+# Subtest: oversized provider body rejected
+ok 48 - oversized provider body rejected
+  ---
+  duration_ms: 2.046602
+  type: 'test'
+  ...
+# Subtest: client denies nonadmins and does not trust arbitrary successful save receipts
+ok 49 - client denies nonadmins and does not trust arbitrary successful save receipts
+  ---
+  duration_ms: 1.265448
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 50 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.202345
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 51 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.067281
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 52 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.05622
+  type: 'test'
+  ...
+# Subtest: usage requires identified, valid UTC intervals
+ok 53 - usage requires identified, valid UTC intervals
+  ---
+  duration_ms: 0.059381
+  type: 'test'
+  ...
+# (node:2003) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-foundation-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: save creates immutable version, pending existing approval, run and audit atomically
+ok 54 - save creates immutable version, pending existing approval, run and audit atomically
+  ---
+  duration_ms: 2282.8207
+  type: 'test'
+  ...
+# Subtest: same operation replays one version; conflicting reuse is rejected
+ok 55 - same operation replays one version; conflicting reuse is rejected
+  ---
+  duration_ms: 73.657533
+  type: 'test'
+  ...
+# Subtest: new revision uses expected version; stale revision and other-tenant edits are denied
+ok 56 - new revision uses expected version; stale revision and other-tenant edits are denied
+  ---
+  duration_ms: 49.235903
+  type: 'test'
+  ...
+# Subtest: direct anon cannot call privileged RPC with forged actor
+ok 57 - direct anon cannot call privileged RPC with forged actor
+  ---
+  duration_ms: 26.27595
+  type: 'test'
+  ...
+# Subtest: direct authenticated cannot call privileged RPC with forged actor
+ok 58 - direct authenticated cannot call privileged RPC with forged actor
+  ---
+  duration_ms: 26.114836
+  type: 'test'
+  ...
+# Subtest: staff profile cannot save via service RPC
+ok 59 - staff profile cannot save via service RPC
+  ---
+  duration_ms: 34.522845
+  type: 'test'
+  ...
+# Subtest: versions cannot be mutated even by the service role
+ok 60 - versions cannot be mutated even by the service role
+  ---
+  duration_ms: 25.685268
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000001
+ok 61 - actual RLS visibility for 00000000-0000-4000-8000-000000000001
+  ---
+  duration_ms: 22.983729
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000004
+ok 62 - actual RLS visibility for 00000000-0000-4000-8000-000000000004
+  ---
+  duration_ms: 36.963266
+  type: 'test'
+  ...
+# Subtest: actual RLS visibility for 00000000-0000-4000-8000-000000000005
+ok 63 - actual RLS visibility for 00000000-0000-4000-8000-000000000005
+  ---
+  duration_ms: 18.185119
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back document, version, approval and run
+ok 64 - audit failure rolls back document, version, approval and run
+  ---
+  duration_ms: 39.808814
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 65 - unsafe document contract is rejected
+  ---
+  duration_ms: 11.497904
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 66 - unsafe document contract is rejected
+  ---
+  duration_ms: 14.483653
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 67 - unsafe document contract is rejected
+  ---
+  duration_ms: 13.263621
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 68 - unsafe document contract is rejected
+  ---
+  duration_ms: 12.552708
+  type: 'test'
+  ...
+# Subtest: unsafe document contract is rejected
+ok 69 - unsafe document contract is rejected
+  ---
+  duration_ms: 15.98277
+  type: 'test'
+  ...
+# Subtest: credential mutation is audited; rate reservation is tenant/version scoped and bounded
+ok 70 - credential mutation is audited; rate reservation is tenant/version scoped and bounded
+  ---
+  duration_ms: 73.554755
+  type: 'test'
+  ...
+# Subtest: actual HTTP + SQL + client confirms saved content through read-back
+ok 71 - actual HTTP + SQL + client confirms saved content through read-back
+  ---
+  duration_ms: 32.864468
+  type: 'test'
+  ...
+# Subtest: actual HTTP role boundary null
+ok 72 - actual HTTP role boundary null
+  ---
+  duration_ms: 15.774454
+  type: 'test'
+  ...
+# Subtest: actual HTTP role boundary 00000000-0000-4000-8000-000000000005
+ok 73 - actual HTTP role boundary 00000000-0000-4000-8000-000000000005
+  ---
+  duration_ms: 20.638486
+  type: 'test'
+  ...
+# Subtest: other tenant cannot load or restore a saved design
+ok 74 - other tenant cannot load or restore a saved design
+  ---
+  duration_ms: 36.075354
+  type: 'test'
+  ...
+# Subtest: restore copies content into new pending version without carrying prior approval
+ok 75 - restore copies content into new pending version without carrying prior approval
+  ---
+  duration_ms: 46.603485
+  type: 'test'
+  ...
+# Subtest: HTTP live research is release-gated before reading secrets or network
+ok 76 - HTTP live research is release-gated before reading secrets or network
+  ---
+  duration_ms: 13.89108
+  type: 'test'
+  ...
+# Subtest: enabled research stores sanitised provenance and exposes metadata but never credentials
+ok 77 - enabled research stores sanitised provenance and exposes metadata but never credentials
+  ---
+  duration_ms: 40.764985
+  type: 'test'
+  ...
+# Subtest: actual human approval route records decision but cannot execute blueprint or grant permissions
+ok 78 - actual human approval route records decision but cannot execute blueprint or grant permissions
+  ---
+  duration_ms: 60.51368
+  type: 'test'
+  ...
+# Subtest: 24-hour research cap includes failed and reserved attempts, not only successes
+ok 79 - 24-hour research cap includes failed and reserved attempts, not only successes
+  ---
+  duration_ms: 73.288798
+  type: 'test'
+  ...
+# Subtest: copied encrypted credential envelope cannot be used by another tenant
+ok 80 - copied encrypted credential envelope cannot be used by another tenant
+  ---
+  duration_ms: 17.797166
+  type: 'test'
+  ...
+# Subtest: advisor context reads only current approved content, never stale approval or another tenant
+ok 81 - advisor context reads only current approved content, never stale approval or another tenant
+  ---
+  duration_ms: 61.561241
+  type: 'test'
+  ...
+# Subtest: schema rollback refuses to discard retained records
+ok 82 - schema rollback refuses to discard retained records
+  ---
+  duration_ms: 18.526198
+  type: 'test'
+  ...
+# Subtest: empty-schema rollback and reapply succeed without removing existing control-plane tables
+ok 83 - empty-schema rollback and reapply succeed without removing existing control-plane tables
+  ---
+  duration_ms: 48.208952
+  type: 'test'
+  ...
+# Subtest: business DNA preview has industry-specific modules without pretending activation or research
+ok 84 - business DNA preview has industry-specific modules without pretending activation or research
+  ---
+  duration_ms: 152.389376
+  type: 'test'
+  ...
+# Subtest: workspace switch clears drafts and ignores pending previous-workspace preview
+ok 85 - workspace switch clears drafts and ignores pending previous-workspace preview
+  ---
+  duration_ms: 61.629615
+  type: 'test'
+  ...
+# Subtest: draft catalogue exposes true count and disables hiring
+ok 86 - draft catalogue exposes true count and disables hiring
+  ---
+  duration_ms: 57.060366
+  type: 'test'
+  ...
+# Subtest: billing policy preserves platform subscription and distinguishes disabled additional employee charges
+ok 87 - billing policy preserves platform subscription and distinguishes disabled additional employee charges
+  ---
+  duration_ms: 17.509921
+  type: 'test'
+  ...
+# Subtest: provider credentials clear from input even on failure; stored key never displayed
+ok 88 - provider credentials clear from input even on failure; stored key never displayed
+  ---
+  duration_ms: 26.486907
+  type: 'test'
+  ...
+# Subtest: failed preview does not fabricate local success or save controls
+ok 89 - failed preview does not fabricate local success or save controls
+  ---
+  duration_ms: 25.472857
+  type: 'test'
+  ...
+# Subtest: role downgrade removes secret input, design and controls
+ok 90 - role downgrade removes secret input, design and controls
+  ---
+  duration_ms: 37.009006
+  type: 'test'
+  ...
+# Subtest: duplicate pending submissions use one request
+ok 91 - duplicate pending submissions use one request
+  ---
+  duration_ms: 34.183083
+  type: 'test'
+  ...
+1..91
+# tests 91
+# suites 0
+# pass 91
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5264.916934

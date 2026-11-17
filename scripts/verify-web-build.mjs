@@ -9,8 +9,6 @@ const app = read("src/App.jsx");
 const landing = read("src/pages/public-landing.jsx");
 const auth = read("src/pages/saas-entry.jsx");
 const product = read("src/config/product.js");
-const grading = read("src/pages/grading.jsx");
-const reportCards = read("src/pages/reportcards.jsx");
 const tour = read("src/AppDemo.jsx");
 const jdChat = read("src/chat/ChatHome.jsx");
 const jdVisual = read("src/chat/JDVisualWorkspace.jsx");
@@ -23,11 +21,9 @@ assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable err
 
 // Multi-industry product identity and mobile regression guards.
 assert.match(product, /defaultIndustry:\s*"business"/, "General business is the default workspace type");
-assert.match(product, /defaultModule:\s*"core"/, "Education must be enabled by default");
+assert.match(product, /defaultModule:\s*"core"/, "The core module is the default");
 assert.match(landing, /Meet JD, your AI-powered operations assistant/i, "Landing page must position JD as the AI operations assistant");
 assert.match(landing, /Revenue/, "Landing preview must show business metrics");
-assert.match(grading, /repeat\(auto-fit,minmax\(min\(100%,320px\),1fr\)\)/, "CAE layout must collapse on mobile");
-assert.match(reportCards, /jd-report-preview-overlay/, "Report preview needs responsive layout hooks");
 assert.match(tour, /if\(isMobile \|\| left < 12\)/, "Tour tooltip must stay inside mobile viewport");
 assert.match(auth, /james-denning-james-projects-57651351\.vercel\.app/, "Auth redirects must use the verified production deployment URL");
 assert.doesNotMatch(auth, /rgs-portal-master\.vercel\.app/, "Auth must not redirect to the retired school-portal deployment URL");

@@ -1,0 +1,55 @@
+Download https://esm.sh/docx@8.5.0
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/pptxgenjs@3.12.0
+error: The lockfile is out of date. Run `deno install --frozen=false`, or rerun with `--frozen=false` to update it.
+changes:
+  12 | +    "npm:@modelcontextprotocol/server@2": "2.4.0",
+  13 | +    "npm:@supabase/middleware@1": "1.0.0",
+  14 | +    "npm:@supabase/server@1": "1.9.2_@supabase+supabase-js@2.119.0",
+  15 | +    "npm:@supabase/supabase-js@2": "2.119.0",
+     | ...
+  23 | -    "npm:vite@^8.3.8": "8.3.8"
+  27 | +    "npm:vite@^8.3.8": "8.3.8",
+  28 | +    "npm:zod@^4.3.6": "4.6.7"
+     | ...
+ 489 | +    "@modelcontextprotocol/core@2.4.0": {
+ 490 | +      "integrity": "sha512-z8QBKqdfXLPzkLQuG4xp8hrVEMm1PZ1IgxMN2sMbJiFiAKOWXnAzogXn2W4aqIBlP1ea6U5yiqVquvUNM1Cj6Q==",
+ 491 | +      "dependencies": [
+ 492 | +        "zod"
+ 493 | +      ]
+ 494 | +    },
+ 495 | +    "@modelcontextprotocol/server@2.4.0": {
+ 496 | +      "integrity": "sha512-rgR9yxSaAJ+bcsi/XroT/S2AfPiIWloXAnrdfYSCms9ivVju0ishu/wW0J21Ho6+ZOR1r7RyeRbjiRuF87ix5Q==",
+ 497 | +      "dependencies": [
+ 498 | +        "@modelcontextprotocol/core",
+ 499 | +        "zod"
+ 500 | +      ]
+ 501 | +    },
+     | ...
+ 619 | +    "@supabase/middleware@1.0.0": {
+ 620 | +      "integrity": "sha512-ecA+z/o5E9sB+quuupGt8d7QjrnD4BBwZr+Qthm0uj6CtL/+yvAUTDlknhGuTbUidvx5CxBHJ1R3H96UjDpgyg==",
+ 621 | +      "dependencies": [
+ 622 | +        "std-env"
+ 623 | +      ]
+ 624 | +    },
+     | ...
+ 641 | +    "@supabase/server@1.9.2_@supabase+supabase-js@2.119.0": {
+ 642 | +      "integrity": "sha512-zkvU157ivZ268Ffs+2aEaYvavfchZ8IiB/Rt5tW4JTfew2JeX0TN46Do3XD5U8ganGhfAJr3BUsMHswY56+iLA==",
+ 643 | +      "dependencies": [
+ 644 | +        "@supabase/middleware",
+ 645 | +        "@supabase/supabase-js",
+ 646 | +        "jose"
+ 647 | +      ]
+ 648 | +    },
+     | ...
+1713 | +    "jose@6.2.17": {
+1714 | +      "integrity": "sha512-wOuK9V1yujQFH5S0ZWmLcDZN7+IKh9bUCC2ZPCf2HDlol3WWHy+PPyNjEI75FXRLMp3vDKQcupP59xhVU95hcg=="
+1715 | +    },
+     | ...
+2446 | +    "std-env@4.3.0": {
+2447 | +      "integrity": "sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag=="
+2448 | +    },
+     | ...
+2876 | +    },
+2877 | +    "zod@4.6.7": {
+2878 | +      "integrity": "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="

@@ -5,19 +5,19 @@ import {workspaceIdentity} from '../src/auth/workspace-identity.mjs';
 import {buildWorkspaceNavigation,canOpenOperations,canAdministerOperations} from '../src/config/workspace-navigation.mjs';
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const input=(role='owner')=>({user:{id:id(1),email:'synthetic@example.invalid'},profile:{id:id(1),school_id:id(2),role,full_name:'Synthetic owner'},school:{id:id(2)}});
-for(const role of ['owner','admin','manager','staff','finance','hr','contractor','viewer','teacher','student','bursar'])test(`identity preserves ${role} without aliasing to admin`,()=>{
+for(const role of ['owner','admin','manager','staff','finance','hr','contractor','viewer'])test(`identity preserves ${role} without aliasing to admin`,()=>{
  const user=workspaceIdentity(input(role));assert.equal(user.role,role);assert.equal(user.id,user._authUserId);assert.equal(user.school_id,id(2));
 });
-for(const role of [undefined,null,'','superadmin','OWNER',' admin '])test(`missing/unsupported role ${String(role)} cannot become admin`,()=>{
+for(const role of [undefined,null,'','superadmin','OWNER',' admin ','teacher','student','bursar'])test(`missing/unsupported role ${String(role)} cannot become admin`,()=>{
  const value=input();value.profile.role=role;assert.throws(()=>workspaceIdentity(value),/role is missing or unsupported/);
 });
 test('profile, authenticated actor and workspace identities must agree before persistence',()=>{
  for(const mutate of [v=>v.user=null,v=>v.profile=null,v=>v.school=null,v=>v.profile.id=id(3),v=>v.profile.school_id=id(3),v=>v.user.id='bad',v=>v.school.id='bad']){const v=input();mutate(v);assert.throws(()=>workspaceIdentity(v),/workspace association/);}
  const source=readFileSync('src/App.jsx','utf8');assert.ok(source.indexOf('const user=workspaceIdentity(')<source.indexOf('db.setSchool(school.id'));assert.doesNotMatch(source,/profile\.role\|\|"admin"/);
- assert.match(source,/from\("teachers"\).*eq\("school_id",school.id\)/);assert.match(source,/from\("students"\).*eq\("school_id",school.id\)/);
+ assert.doesNotMatch(source,/from\("(teachers|students|student_profiles)"\)/);
 });
-for(const education of [false,true])test(`owner gets JD-only routes with explicit denial preserved (${education?'education':'business'})`,()=>{
- const build=canAccess=>buildWorkspaceNavigation({role:'owner',workspaceType:education?'education':'business',educationModuleEnabled:education,canAccess});
+test('owner gets JD-only routes with explicit denial preserved',()=>{
+ const build=canAccess=>buildWorkspaceNavigation({role:'owner',canAccess});
  assert.deepEqual(build(()=>true).map(n=>n.id),['jd-chat','jd-operations']);
  assert.deepEqual(build(id=>id!=='jd-operations').map(n=>n.id),['jd-chat']);
  assert.deepEqual(build(()=>false),[]);

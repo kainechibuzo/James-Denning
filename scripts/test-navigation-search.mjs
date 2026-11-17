@@ -9,7 +9,7 @@ const nav = Object.freeze([
   { id: "members", label: "Team directory", gid: "g-people" },
   { id: "hiring", label: "Vacancies", gid: "g-people" },
   { id: "g-finance", group: "Finance" },
-  { id: "fee-tracker", label: "Payment Tracker", gid: "g-finance" },
+  { id: "payment-tracker", label: "Payment Tracker", gid: "g-finance" },
   { id: "g-empty", group: "Empty group" },
 ].map(Object.freeze));
 const ids = (entries) => entries.map((entry) => entry.id);
@@ -19,20 +19,20 @@ test("blank query preserves existing order and identity", () => {
   assert.equal(searchNavigation(nav, "   "), nav);
 });
 test("case-insensitive label search preserves the matching group", () => {
-  assert.deepEqual(ids(searchNavigation(nav, "  PAYment  ")), ["g-finance", "fee-tracker"]);
+  assert.deepEqual(ids(searchNavigation(nav, "  PAYment  ")), ["g-finance", "payment-tracker"]);
 });
 test("department search finds only its supplied children", () => {
   assert.deepEqual(ids(searchNavigation(nav, "recruitment")), ["g-people", "members", "hiring"]);
 });
 test("all search words must match label plus department", () => {
-  assert.deepEqual(ids(searchNavigation(nav, "finance tracker")), ["g-finance", "fee-tracker"]);
+  assert.deepEqual(ids(searchNavigation(nav, "finance tracker")), ["g-finance", "payment-tracker"]);
   assert.deepEqual(searchNavigation(nav, "finance vacancies"), []);
 });
 test("ungrouped JD Assistant remains searchable", () => {
   assert.deepEqual(ids(searchNavigation(nav, "assistant")), ["jd-chat"]);
 });
 test("search never restores routes excluded by permission filtering", () => {
-  const allowed = nav.filter((entry) => !["hiring", "g-finance", "fee-tracker"].includes(entry.id));
+  const allowed = nav.filter((entry) => !["hiring", "g-finance", "payment-tracker"].includes(entry.id));
   assert.deepEqual(searchNavigation(allowed, "payment"), []);
   assert.deepEqual(ids(searchNavigation(allowed, "recruitment")), ["g-people", "members"]);
 });
@@ -42,10 +42,10 @@ test("role-visible children can be searched when their group header is absent", 
 test("empty group headers are not search results", () => {
   assert.deepEqual(searchNavigation(nav, "empty"), []);
 });
-test("education labels are searched as presented without rewriting routes", () => {
-  const education = [{ id: "g-people", group: "Academic" }, { id: "members", label: "Students", gid: "g-people" }];
-  assert.deepEqual(ids(searchNavigation(education, "students")), ["g-people", "members"]);
-  assert.deepEqual(searchNavigation(education, "team"), []);
+test("custom labels are searched as presented without rewriting routes", () => {
+  const custom = [{ id: "g-people", group: "Talent" }, { id: "hiring", label: "Candidates", gid: "g-people" }];
+  assert.deepEqual(ids(searchNavigation(custom, "candidates")), ["g-people", "hiring"]);
+  assert.deepEqual(searchNavigation(custom, "team"), []);
 });
 test("search treats punctuation literally rather than as a regex", () => {
   assert.deepEqual(searchNavigation(nav, ".*"), []);
@@ -77,10 +77,9 @@ test("mobile closed drawer is inert, scroll is bounded, binding has lifecycle cl
   assert.match(shell, /inert=\{isMobile&&!sideOpen \? "" : undefined\}/);
   assert.match(shell, /minHeight:0,padding:"8px 6px",overflowY:"auto"/);
   assert.match(shell, /return bindMobileNavigation\(sidebarRef\.current/);
-  assert.match(shell, /\[isMobile,sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id,platformAdmin,pdfDoc\]/);
+  assert.match(shell, /\[isMobile,sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id\]/);
   assert.match(shell, /useState\("jd-chat"\)/);
 });
-test("demo tenant must not promise isolated staging or publish shared credentials", () => {
-  assert.doesNotMatch(shell, /STAGING SANDBOX|safe to break|admin password: "sandbox"/);
-  assert.match(shell, /DEMO WORKSPACE — staging isolation not verified/);
+test("shell has no legacy demo tenant, sandbox banner or shared credentials", () => {
+  assert.doesNotMatch(shell, /STAGING SANDBOX|safe to break|admin password: "sandbox"|DEMO WORKSPACE|SCHOOL_SLUGS|\?school=/);
 });

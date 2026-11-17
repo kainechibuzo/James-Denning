@@ -15,15 +15,6 @@ const supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-// Teachers/students log in with a Staff ID / Student ID, not an email, but
-// Supabase Auth requires an email. We generate a synthetic one — invisible
-// to the user, who only ever sees/types their ID — scoped by school_id
-// since auth.users.email is unique platform-wide, not per-school.
-function syntheticEmail(kind: "staff" | "student", localId: string, schoolId: string) {
-  const clean = localId.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return `${kind}-${clean}--${schoolId}@login.internal`;
-}
-
 async function getCallerProfile(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return null;
@@ -73,9 +64,10 @@ serve(async (req) => {
       }
 
       // Validate any selected industry preset before creating anything.
-      // Core business is the default; education is selected with the
-      // dedicated school_management preset.
+      // Core business is the default. The legacy school_management preset is
+      // retired and cannot be used for new organisations.
       let preset = null;
+      if (presetKey === "school_management") return json({ error: "This preset is no longer available" }, 400);
       if (presetKey) {
         const { data, error: presetErr } = await supabaseAdmin
           .from("org_presets").select("*").eq("key", presetKey).maybeSingle();
@@ -187,149 +179,19 @@ serve(async (req) => {
       return json({ error: "Not authorized — admin login required" }, 403);
     }
 
-    // ── Create a teacher/staff account on behalf of the school ────────────
-    if (action === "create_teacher") {
-      const { staffId, fullName, email, phone, gender, password } = payload;
-      if (!staffId || !fullName || !password) return json({ error: "staffId, fullName, password required" }, 400);
-
-      const authEmail = syntheticEmail("staff", staffId, caller.school_id);
-      const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
-        email: authEmail, password, email_confirm: true,
-      });
-      if (authErr || !authUser?.user) return json({ error: authErr?.message ?? "Failed to create account" }, 400);
-
-      const { data: teacher, error: teacherErr } = await supabaseAdmin
-        .from("teachers")
-        .insert({
-          school_id: caller.school_id, staff_id: staffId, full_name: fullName,
-          email, phone, gender, profile_id: authUser.user.id, role: "teacher", status: "active",
-        })
-        .select().single();
-      if (teacherErr) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
-        return json({ error: teacherErr.message }, 400);
-      }
-
-      await supabaseAdmin.from("profiles").upsert({
-        id: authUser.user.id, email: authEmail, full_name: fullName, role: "teacher", school_id: caller.school_id,
-      });
-
-      return json({ teacher });
-    }
-
-    // ── Create a student/member account on behalf of the school ───────────
-    if (action === "create_student") {
-      const { studentId, fullName, classId, gender, dob, password } = payload;
-      if (!studentId || !fullName || !password) return json({ error: "studentId, fullName, password required" }, 400);
-
-      const authEmail = syntheticEmail("student", studentId, caller.school_id);
-      const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
-        email: authEmail, password, email_confirm: true,
-      });
-      if (authErr || !authUser?.user) return json({ error: authErr?.message ?? "Failed to create account" }, 400);
-
-      const { data: student, error: studentErr } = await supabaseAdmin
-        .from("students")
-        .insert({
-          id: studentId, school_id: caller.school_id, name: fullName,
-          class_id: classId, gender, dob, status: "active",
-        })
-        .select().single();
-      if (studentErr) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
-        return json({ error: studentErr.message }, 400);
-      }
-
-      await supabaseAdmin.from("profiles").upsert({
-        id: authUser.user.id, email: authEmail, full_name: fullName, role: "student", school_id: caller.school_id,
-      });
-      await supabaseAdmin.from("student_profiles").insert({ student_id: studentId, profile_id: authUser.user.id });
-
-      return json({ student });
-    }
-
-    // ── Reset a teacher/student's password (admin action) ─────────────────
+    // ── Reset a workspace member's password (admin action) ─────────────────
     if (action === "reset_password") {
       const { targetProfileId, newPassword } = payload;
       if (!targetProfileId || !newPassword) return json({ error: "targetProfileId, newPassword required" }, 400);
 
       const { data: targetProfile } = await supabaseAdmin.from("profiles").select("school_id").eq("id", targetProfileId).single();
       if (!targetProfile || targetProfile.school_id !== caller.school_id) {
-        return json({ error: "Cannot reset a password outside your own school" }, 403);
+        return json({ error: "Cannot reset a password outside your own workspace" }, 403);
       }
 
       const { error } = await supabaseAdmin.auth.admin.updateUserById(targetProfileId, { password: newPassword });
       if (error) return json({ error: error.message }, 400);
       return json({ success: true });
-    }
-
-    // ── ONE-TIME BACKFILL: bootstrap real auth accounts for a school that
-    // already has data (created before real Auth was wired up) but has no
-    // real admin auth account yet. Gated by that check so it can't be used
-    // to hijack a school that already has a real admin — safe to leave in,
-    // but intended to be run once per pre-migration school, then ignored.
-    if (action === "backfill_existing_school") {
-      const { schoolId, tempPassword } = payload;
-      if (!schoolId || !tempPassword) return json({ error: "schoolId, tempPassword required" }, 400);
-      if (schoolId !== caller.school_id) return json({ error: "Cannot backfill an organization outside your own workspace" }, 403);
-
-      const { count: existingAdmins } = await supabaseAdmin
-        .from("profiles").select("id", { count: "exact", head: true })
-        .eq("school_id", schoolId).eq("role", "admin");
-      if ((existingAdmins ?? 0) > 0) {
-        return json({ error: "This school already has a real admin account — backfill already done or not needed." }, 400);
-      }
-
-      const { data: school } = await supabaseAdmin.from("schools").select("*").eq("id", schoolId).single();
-      if (!school) return json({ error: "School not found" }, 404);
-
-      const results: { admin: string | null; teachers: string[]; students: string[]; errors: string[] } = { admin: null, teachers: [], students: [], errors: [] };
-
-      // Admin
-      if (school.admin_email) {
-        const { data: adminAuth, error: adminErr } = await supabaseAdmin.auth.admin.createUser({
-          email: school.admin_email, password: tempPassword, email_confirm: true,
-        });
-        if (adminErr) results.errors.push(`admin: ${adminErr.message}`);
-        else {
-          await supabaseAdmin.from("profiles").upsert({
-            id: adminAuth.user.id, email: school.admin_email, full_name: school.admin_name, role: "admin", school_id: schoolId,
-          });
-          results.admin = school.admin_email;
-        }
-      }
-
-      // Teachers
-      const { data: teachers } = await supabaseAdmin.from("teachers").select("*").eq("school_id", schoolId);
-      for (const t of teachers ?? []) {
-        const authEmail = syntheticEmail("staff", t.staff_id, schoolId);
-        const { data: tAuth, error: tErr } = await supabaseAdmin.auth.admin.createUser({
-          email: authEmail, password: tempPassword, email_confirm: true,
-        });
-        if (tErr) { results.errors.push(`teacher ${t.staff_id}: ${tErr.message}`); continue; }
-        await supabaseAdmin.from("teachers").update({ profile_id: tAuth.user.id }).eq("id", t.id);
-        await supabaseAdmin.from("profiles").upsert({
-          id: tAuth.user.id, email: authEmail, full_name: t.full_name, role: "teacher", school_id: schoolId,
-        });
-        results.teachers.push(t.staff_id);
-      }
-
-      // Students
-      const { data: students } = await supabaseAdmin.from("students").select("*").eq("school_id", schoolId);
-      for (const s of students ?? []) {
-        const authEmail = syntheticEmail("student", s.id, schoolId);
-        const { data: sAuth, error: sErr } = await supabaseAdmin.auth.admin.createUser({
-          email: authEmail, password: tempPassword, email_confirm: true,
-        });
-        if (sErr) { results.errors.push(`student ${s.id}: ${sErr.message}`); continue; }
-        await supabaseAdmin.from("profiles").upsert({
-          id: sAuth.user.id, email: authEmail, full_name: s.name, role: "student", school_id: schoolId,
-        });
-        await supabaseAdmin.from("student_profiles").insert({ student_id: s.id, profile_id: sAuth.user.id });
-        results.students.push(s.id);
-      }
-
-      return json(results);
     }
 
     return json({ error: "Unknown action" }, 400);

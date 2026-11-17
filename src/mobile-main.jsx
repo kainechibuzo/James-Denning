@@ -1,10 +1,4 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './styles/system.css';
-import { MobileApp } from './MobileApp.jsx';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <MobileApp />
-  </React.StrictMode>
-);
+// The Capacitor build renders the same app as the web entry: public landing,
+// Supabase sign-in, then the JD workspace. Native status-bar setup lives in
+// main.jsx and is a no-op on the web.
+import './main.jsx';

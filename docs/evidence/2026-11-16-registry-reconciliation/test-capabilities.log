@@ -1,0 +1,365 @@
+> james-denning@1.0.0 test:capabilities
+> node --experimental-strip-types --test scripts/test-capability-contract.mjs
+
+TAP version 13
+# (node:2335) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-capability-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owner: reported callable tools match actual server definitions without writes
+ok 1 - owner: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 2.64365
+  type: 'test'
+  ...
+# Subtest: admin: reported callable tools match actual server definitions without writes
+ok 2 - admin: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 1.247372
+  type: 'test'
+  ...
+# Subtest: manager: reported callable tools match actual server definitions without writes
+ok 3 - manager: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.224012
+  type: 'test'
+  ...
+# Subtest: staff: reported callable tools match actual server definitions without writes
+ok 4 - staff: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.261689
+  type: 'test'
+  ...
+# Subtest: contractor: reported callable tools match actual server definitions without writes
+ok 5 - contractor: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.231509
+  type: 'test'
+  ...
+# Subtest: viewer: reported callable tools match actual server definitions without writes
+ok 6 - viewer: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.178053
+  type: 'test'
+  ...
+# Subtest: finance: reported callable tools match actual server definitions without writes
+ok 7 - finance: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.225166
+  type: 'test'
+  ...
+# Subtest: hr: reported callable tools match actual server definitions without writes
+ok 8 - hr: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 4.353165
+  type: 'test'
+  ...
+# Subtest: teacher: inventory remains role restricted
+ok 9 - teacher: inventory remains role restricted
+  ---
+  duration_ms: 0.901938
+  type: 'test'
+  ...
+# Subtest: student: inventory remains role restricted
+ok 10 - student: inventory remains role restricted
+  ---
+  duration_ms: 0.46665
+  type: 'test'
+  ...
+# Subtest: unknown: inventory remains role restricted
+ok 11 - unknown: inventory remains role restricted
+  ---
+  duration_ms: 0.162215
+  type: 'test'
+  ...
+# Subtest: saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+ok 12 - saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+  ---
+  duration_ms: 0.421584
+  type: 'test'
+  ...
+# Subtest: a callable read can return scoped persisted data while independent verification is unknown
+ok 13 - a callable read can return scoped persisted data while independent verification is unknown
+  ---
+  duration_ms: 0.640272
+  type: 'test'
+  ...
+# Subtest: runtime errors remain errors, never converted to evidence of success
+ok 14 - runtime errors remain errors, never converted to evidence of success
+  ---
+  duration_ms: 0.169969
+  type: 'test'
+  ...
+# Subtest: unverified inventory never grants a restricted role access to a callable owner tool
+ok 15 - unverified inventory never grants a restricted role access to a callable owner tool
+  ---
+  duration_ms: 0.22546
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 0
+ok 16 - verification requires all five explicit positive evidence fields: 0
+  ---
+  duration_ms: 0.197752
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 1
+ok 17 - verification requires all five explicit positive evidence fields: 1
+  ---
+  duration_ms: 0.076223
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 2
+ok 18 - verification requires all five explicit positive evidence fields: 2
+  ---
+  duration_ms: 0.059924
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 3
+ok 19 - verification requires all five explicit positive evidence fields: 3
+  ---
+  duration_ms: 0.06087
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 4
+ok 20 - verification requires all five explicit positive evidence fields: 4
+  ---
+  duration_ms: 0.056653
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 5
+ok 21 - verification requires all five explicit positive evidence fields: 5
+  ---
+  duration_ms: 0.054501
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 6
+ok 22 - verification requires all five explicit positive evidence fields: 6
+  ---
+  duration_ms: 0.052373
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 7
+ok 23 - verification requires all five explicit positive evidence fields: 7
+  ---
+  duration_ms: 0.052102
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 8
+ok 24 - verification requires all five explicit positive evidence fields: 8
+  ---
+  duration_ms: 0.05578
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 9
+ok 25 - verification requires all five explicit positive evidence fields: 9
+  ---
+  duration_ms: 0.118184
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 10
+ok 26 - verification requires all five explicit positive evidence fields: 10
+  ---
+  duration_ms: 0.065917
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 11
+ok 27 - verification requires all five explicit positive evidence fields: 11
+  ---
+  duration_ms: 0.063638
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 12
+ok 28 - verification requires all five explicit positive evidence fields: 12
+  ---
+  duration_ms: 0.055008
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 13
+ok 29 - verification requires all five explicit positive evidence fields: 13
+  ---
+  duration_ms: 0.053398
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 14
+ok 30 - verification requires all five explicit positive evidence fields: 14
+  ---
+  duration_ms: 0.053226
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 15
+ok 31 - verification requires all five explicit positive evidence fields: 15
+  ---
+  duration_ms: 0.055571
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 16
+ok 32 - verification requires all five explicit positive evidence fields: 16
+  ---
+  duration_ms: 0.052523
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 17
+ok 33 - verification requires all five explicit positive evidence fields: 17
+  ---
+  duration_ms: 0.051215
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 18
+ok 34 - verification requires all five explicit positive evidence fields: 18
+  ---
+  duration_ms: 0.05101
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 19
+ok 35 - verification requires all five explicit positive evidence fields: 19
+  ---
+  duration_ms: 0.132934
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 20
+ok 36 - verification requires all five explicit positive evidence fields: 20
+  ---
+  duration_ms: 0.084028
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 21
+ok 37 - verification requires all five explicit positive evidence fields: 21
+  ---
+  duration_ms: 0.067131
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 22
+ok 38 - verification requires all five explicit positive evidence fields: 22
+  ---
+  duration_ms: 0.070232
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 23
+ok 39 - verification requires all five explicit positive evidence fields: 23
+  ---
+  duration_ms: 0.649708
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 24
+ok 40 - verification requires all five explicit positive evidence fields: 24
+  ---
+  duration_ms: 0.098006
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 25
+ok 41 - verification requires all five explicit positive evidence fields: 25
+  ---
+  duration_ms: 0.126147
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 26
+ok 42 - verification requires all five explicit positive evidence fields: 26
+  ---
+  duration_ms: 0.068449
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 27
+ok 43 - verification requires all five explicit positive evidence fields: 27
+  ---
+  duration_ms: 0.058422
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 28
+ok 44 - verification requires all five explicit positive evidence fields: 28
+  ---
+  duration_ms: 0.060956
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 29
+ok 45 - verification requires all five explicit positive evidence fields: 29
+  ---
+  duration_ms: 0.058391
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 30
+ok 46 - verification requires all five explicit positive evidence fields: 30
+  ---
+  duration_ms: 0.350307
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 31
+ok 47 - verification requires all five explicit positive evidence fields: 31
+  ---
+  duration_ms: 0.062672
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence "true" cannot verify or clear gaps
+ok 48 - truthy or malformed evidence "true" cannot verify or clear gaps
+  ---
+  duration_ms: 0.139266
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence 1 cannot verify or clear gaps
+ok 49 - truthy or malformed evidence 1 cannot verify or clear gaps
+  ---
+  duration_ms: 0.11796
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence {} cannot verify or clear gaps
+ok 50 - truthy or malformed evidence {} cannot verify or clear gaps
+  ---
+  duration_ms: 0.06454
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence [] cannot verify or clear gaps
+ok 51 - truthy or malformed evidence [] cannot verify or clear gaps
+  ---
+  duration_ms: 0.089277
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence null cannot verify or clear gaps
+ok 52 - truthy or malformed evidence null cannot verify or clear gaps
+  ---
+  duration_ms: 0.05816
+  type: 'test'
+  ...
+# Subtest: absence of evidence is unknown, not disabled or failed
+ok 53 - absence of evidence is unknown, not disabled or failed
+  ---
+  duration_ms: 0.219314
+  type: 'test'
+  ...
+# Subtest: current agent prompt receives the interpretation and retains approval gates
+ok 54 - current agent prompt receives the interpretation and retains approval gates
+  ---
+  duration_ms: 6.683682
+  type: 'test'
+  ...
+# Subtest: owner: evidence HTTP route ignores caller-supplied verification and role claims
+ok 55 - owner: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 6.017587
+  type: 'test'
+  ...
+# Subtest: admin: evidence HTTP route ignores caller-supplied verification and role claims
+ok 56 - admin: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.93821
+  type: 'test'
+  ...
+# Subtest: manager: evidence HTTP route ignores caller-supplied verification and role claims
+ok 57 - manager: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.559325
+  type: 'test'
+  ...
+# Subtest: viewer: evidence HTTP route ignores caller-supplied verification and role claims
+ok 58 - viewer: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.694585
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 460.048298

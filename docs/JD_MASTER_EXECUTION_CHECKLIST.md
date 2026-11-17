@@ -60,7 +60,7 @@ Phases 1–4 form one foundation programme, delivered sequentially in small, tes
 | 7 | NaijaHaul operational completion | 6 | Owner + operations, finance, HR and professional advisers | Verified documents, authorised hiring and signed launch gates |
 | 8 | Production readiness and final acceptance | 7, 8 | Engineering/security + owner | Recovery rehearsal, performance/accessibility results and 9/9 reviewed scorecard |
 
-Do not start a replacement queue, permission system or approval system until existing implementations have been mapped and their gaps demonstrated. Preserve useful modules and education-tenant compatibility while removing irrelevant school terminology from general business workspaces.
+Do not start a replacement queue, permission system or approval system until existing implementations have been mapped and their gaps demonstrated. Preserve useful business modules and tenant data. The legacy school features have been removed at the owner's direction; see [docs/LEGACY_SCHEMA.md](LEGACY_SCHEMA.md).
 
 ## Confirmed merged changes — not production acceptance
 
@@ -83,7 +83,7 @@ Do not start a replacement queue, permission system or approval system until exi
 
 **Start here.** Initial inspection is partial; the phase is not complete.
 
-- [ ] P1-01 Verify latest `master`, relevant GitHub Actions and their actual coverage.
+- [x] P1-01 Verify latest `master`, relevant GitHub Actions and their actual coverage.
 - [ ] P1-02 Verify Vercel production deployment, commit identity and live application behaviour.
 - [ ] P1-03 Test authentication, login, logout and session persistence.
 - [ ] P1-04 Test role and permission enforcement, including denied operations.
