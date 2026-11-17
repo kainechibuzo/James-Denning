@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "kind": "jd-cancellation-evidence-plan",
+  "source": {
+    "sha": "f760b8bf8e80e2c1ede779e45e0f213164d58eb8",
+    "dirty": true,
+    "files": {
+      "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql": "049c447e50613bcbe4ce0c5988b57e29dc5918f5d5d8448c0aaa298937c88bf1",
+      "supabase/rollback/20261117220000_jd_atomic_execution_cancel.rollback.sql": "5e8b71dfccfabff4c6bb256a4adeac0d0f363c2f98a463e16574314b15e4cf9d",
+      "supabase/functions/jd-automation/index.ts": "b35d0be692f4933213c8a558d7f8d666771c5425f2ddcf79f770b34f4c83122f",
+      "supabase/functions/_shared/jd-execution-cancellation.mjs": "47fccb3221f71587c2a0d43130c53094baaccfee4bbf0a1a420597a2f8b48843",
+      "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql": "39a457280a64e597e18f974cf60d5f4e04e7a5a821b1ff1f18306dae4ab2fc08",
+      "src/chat/execution-monitor.mjs": "05c0a1fee60b00fe25db8f1915b3f9044250ebe6393ddb20b92482d2e4276ec2",
+      "scripts/lib/jd-cancellation-evidence.mjs": "5163d4af5724680544953c356f089e2be185039ebf1d4ce56d1e1765a3d3a8f5",
+      "scripts/jd-cancellation-acceptance.mjs": "04a9787e4b6616e2b989b01323cdb3da31958b5f1abba86f04e9ec66bd7f9466"
+    }
+  },
+  "environment": {
+    "kind": "unconfigured",
+    "projectRef": null
+  },
+  "cases": [
+    {
+      "id": "owner-queued",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "admin-retry-wait",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "manager-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "staff-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "viewer-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "finance-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "hr-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "contractor-denied",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "outside-tenant",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "missing-session",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "stale-version",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "audit-rollback",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "run-rollback",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "duplicate-replay",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "running-job",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "terminal-run",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "legacy-client-checked-server",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    },
+    {
+      "id": "checked-client-legacy-server",
+      "outcome": "not-run",
+      "observation": null,
+      "attachments": []
+    }
+  ],
+  "reviewGates": [
+    {
+      "id": "isolation-and-schema",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "sessions-and-grants",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "concurrent-claim-cancel",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "real-queue-redelivery",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "failure-injection",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "lost-ack-and-new-session",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "state-and-version-matrix",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    },
+    {
+      "id": "emergency-disable",
+      "outcome": "not-run",
+      "observedAt": null,
+      "actual": null,
+      "attachments": []
+    }
+  ]
+}

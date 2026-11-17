@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "f760b8bf8e80e2c1ede779e45e0f213164d58eb8",
+  "state": "blocked",
+  "observationChecks": [
+    {
+      "caseId": "owner-queued",
+      "result": "not-run"
+    },
+    {
+      "caseId": "admin-retry-wait",
+      "result": "not-run"
+    },
+    {
+      "caseId": "manager-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "staff-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "viewer-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "finance-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "hr-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "contractor-denied",
+      "result": "not-run"
+    },
+    {
+      "caseId": "outside-tenant",
+      "result": "not-run"
+    },
+    {
+      "caseId": "missing-session",
+      "result": "not-run"
+    },
+    {
+      "caseId": "stale-version",
+      "result": "not-run"
+    },
+    {
+      "caseId": "audit-rollback",
+      "result": "not-run"
+    },
+    {
+      "caseId": "run-rollback",
+      "result": "not-run"
+    },
+    {
+      "caseId": "duplicate-replay",
+      "result": "not-run"
+    },
+    {
+      "caseId": "running-job",
+      "result": "not-run"
+    },
+    {
+      "caseId": "terminal-run",
+      "result": "not-run"
+    },
+    {
+      "caseId": "legacy-client-checked-server",
+      "result": "not-run"
+    },
+    {
+      "caseId": "checked-client-legacy-server",
+      "result": "not-run"
+    }
+  ],
+  "issues": [
+    "Source checkout was or is dirty; prepare a fresh plan for the reviewed commit",
+    "No isolated staging evidence: local/unconfigured inputs cannot establish live acceptance",
+    "owner-queued: not-run",
+    "admin-retry-wait: not-run",
+    "manager-denied: not-run",
+    "staff-denied: not-run",
+    "viewer-denied: not-run",
+    "finance-denied: not-run",
+    "hr-denied: not-run",
+    "contractor-denied: not-run",
+    "outside-tenant: not-run",
+    "missing-session: not-run",
+    "stale-version: not-run",
+    "audit-rollback: not-run",
+    "run-rollback: not-run",
+    "duplicate-replay: not-run",
+    "running-job: not-run",
+    "terminal-run: not-run",
+    "legacy-client-checked-server: not-run",
+    "checked-client-legacy-server: not-run",
+    "isolation-and-schema: not-run",
+    "sessions-and-grants: not-run",
+    "concurrent-claim-cancel: not-run",
+    "real-queue-redelivery: not-run",
+    "failure-injection: not-run",
+    "lost-ack-and-new-session: not-run",
+    "state-and-version-matrix: not-run",
+    "emergency-disable: not-run"
+  ],
+  "liveAcceptanceVerified": false,
+  "productionApproved": false,
+  "limitation": "Offline consistency checks only. Supplied timestamps, source/project labels, attachments and manual outcomes are untrusted operator records, not proof of execution. Review authentic deployed/session/queue evidence independently. This tool cannot approve a release or set approval variables."
+}
