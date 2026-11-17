@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {executeJdMcpTool,getJdMcpToolDefinitions} from '../supabase/functions/_shared/jd-agent-runtime.ts';
 import {buildSettingsCatalogue} from '../supabase/functions/_shared/jd-settings-catalogue.ts';
 import {applyReviewedSettings,settingsDiff} from '../src/chat/settings-review.mjs';
-import {showEducationSettings,configuredProjectLabel} from '../src/config/settings-presentation.mjs';
+import {configuredProjectLabel} from '../src/config/settings-presentation.mjs';
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),school=id(2),approvalId=id(3),run=id(4);
 const changes=[{key:'school_name',value:'Synthetic Logistics Ltd'},{key:'workspace_type',value:'business'},{key:'education_module_enabled',value:false}];
@@ -34,7 +34,6 @@ for(const patch of [{error:true},{receipt:{}},{receipt:{id:approvalId,status:'co
 test('catalogue distinguishes stored academic settings from business applicability',()=>{
  const rows=[{key:'workspace_type',value:'business'},{key:'education_module_enabled',value:'true'},{key:'result_ca_max',value:'40'},{key:'smtp_password',value:'PRIVATE_DIAGNOSTIC'}];const r=buildSettingsCatalogue(rows);assert.equal(r.workspace_context.education_surfaces_active,false);assert.equal(r.settings.find(s=>s.key==='result_ca_max').applies_to_current_workspace,false);assert.equal(r.settings.find(s=>s.key==='school_name').review_proposal_supported,true);assert.doesNotMatch(JSON.stringify(r),/PRIVATE_DIAGNOSTIC/);
 });
-for(const [settings,expected] of [[{},false],[{workspace_type:'business',education_module_enabled:'true'},false],[{workspace_type:'education'},true],[{workspace_type:'education',education_module_enabled:false},false],[{workspace_type:'education',education_module_enabled:'false'},false],[{workspace_type:'education',education_module_enabled:'true'},true]])test(`education presentation ${JSON.stringify(settings)}`,()=>assert.equal(showEducationSettings(settings),expected));
 test('configured project info is derived, not hard-coded legacy metadata',()=>{
  assert.equal(configuredProjectLabel('https://abcdefghijklmnopqrst.supabase.co'),'abcdefghijklmnopqrst');assert.equal(configuredProjectLabel(undefined),'Not available');assert.equal(configuredProjectLabel('https://example.com'),'Custom or local endpoint');assert.equal(configuredProjectLabel('https://user:secret@abcdefghijklmnopqrst.supabase.co'),'Custom or local endpoint');
 });

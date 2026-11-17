@@ -1,9 +1,9 @@
 /**
  * Product identity and terminology.
  *
- * The database retains legacy school-oriented names for backwards compatibility.
- * The product is a multi-industry operations workspace: core business operations
- * are the default, while education is an explicitly selectable vertical.
+ * JAMES-DENNING is a multi-industry business operations workspace. Some database
+ * tables and columns keep their original names (see docs/LEGACY_SCHEMA.md); the
+ * product surface always uses the business terminology below.
  */
 
 export const PRODUCT = {
@@ -23,22 +23,13 @@ export const INDUSTRIES = [
   { value: "retail", label: "Retail and commerce", description: "People, locations, products, and payments." },
   { value: "nonprofit", label: "Nonprofit", description: "Members, programs, contributions, and reporting." },
   { value: "healthcare", label: "Health and wellness", description: "People, practitioners, schedules, and records." },
-  { value: "education", label: "Educational institutions", description: "Students, educators, academic programmes, attendance, fees and reporting." },
   { value: "other", label: "Other", description: "Use the core workspace with your own terminology." },
 ];
-
-export const EDUCATION_NAV_LABELS = {
-  dashboard:"Dashboard", "g-academic":"Academic", members:"Members", students:"Students", teachers:"Staff", classes:"Classes", subjects:"Subjects", sections:"Sections", calendar:"Academic Calendar", timetable:"Timetable", broadsheet:"Broadsheet", "g-results":"Results", assignments:"Assignments", results:"Results", "report-cards":"Report Cards", transcript:"Transcript", "academic-summary":"Academic Analytics", "report-card-settings":"Report Card Settings", grading:"Grading & CAE", "g-fees":"Fees", "fee-items":"Fee Items", "fee-templates":"Templates", "fee-generate":"Generate Bills", "fee-tracker":"Payment Tracker", "fee-stats":"Statistics", announce:"Announcements", attendance:"Attendance", "mail-compose":"Send Email", "mail-logs":"Email Logs", "g-admin":"Administration", "g-approvals":"Approvals", approvals:"Member Approvals", "access-requests":"Access Requests", "my-classes":"My Classes", "results-teach":"Upload Results", "add-students":"Add Students", "my-results":"My Report Card", "my-payments":"My Payments", "my-bill":"My Bill",
-};
 
 export const MODULES = {
   core: {
     label: "Core operations",
-    description: "People, staff, groups, communication, billing, activity, and reporting.",
-  },
-  education: {
-    label: "Education module",
-    description: "Academic periods, grading, results, report cards, transcripts, and attendance.",
+    description: "AI workforce, operations, approvals, people and reporting.",
   },
 };
 
@@ -73,39 +64,8 @@ export const BUSINESS_TERMS = {
   id: "Member ID",
 };
 
-/** Original education labels remain available for education tenants. */
-export const EDUCATION_TERMS = {
-  organization: "School",
-  organizations: "Schools",
-  people: "Students",
-  person: "Student",
-  member: "Student",
-  members: "Students",
-  staff: "Teachers",
-  group: "Class",
-  groups: "Classes",
-  category: "Subject",
-  categories: "Subjects",
-  cycle: "Session",
-  cycles: "Sessions",
-  period: "Term",
-  periods: "Terms",
-  performance: "Results",
-  performances: "Results",
-  report: "Report Card",
-  reports: "Report Cards",
-  billing: "Fees",
-  payment: "Payment",
-  payments: "Payments",
-  finance: "Bursary",
-  notice: "Announcement",
-  notices: "Announcements",
-  activity: "Activity",
-  id: "Student ID",
-};
-
-export function getTerms(workspaceType = PRODUCT.defaultIndustry) {
-  return workspaceType === "education" ? EDUCATION_TERMS : BUSINESS_TERMS;
+export function getTerms() {
+  return BUSINESS_TERMS;
 }
 
 export function getIndustryLabel(value) {

@@ -66,8 +66,6 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Test CSP-safe CAE arithmetic evaluator
-        run: deno test --node-modules-dir=auto supabase/functions/_shared/arithmetic.test.ts
 
       - name: Test JD Connect execution truthfulness and MCP evidence tools
         run: |

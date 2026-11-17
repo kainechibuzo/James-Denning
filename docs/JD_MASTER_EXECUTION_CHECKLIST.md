@@ -60,7 +60,7 @@ Phases 1–4 form one foundation programme, delivered sequentially in small, tes
 | 7 | NaijaHaul operational completion | 6 | Owner + operations, finance, HR and professional advisers | Verified documents, authorised hiring and signed launch gates |
 | 8 | Production readiness and final acceptance | 7, 8 | Engineering/security + owner | Recovery rehearsal, performance/accessibility results and 9/9 reviewed scorecard |
 
-Do not start a replacement queue, permission system or approval system until existing implementations have been mapped and their gaps demonstrated. Preserve useful modules and education-tenant compatibility while removing irrelevant school terminology from general business workspaces.
+Do not start a replacement queue, permission system or approval system until existing implementations have been mapped and their gaps demonstrated. Preserve useful business modules and tenant data. The legacy school features have been removed at the owner's direction; see [docs/LEGACY_SCHEMA.md](LEGACY_SCHEMA.md).
 
 ## Confirmed merged changes — not production acceptance
 

@@ -32,16 +32,8 @@ export default function App(){
  const isOAuthConsent=typeof window!=="undefined"&&window.location.pathname==="/oauth/consent";
  const activate=async({user:authUser,profile,school})=>{
   const user=workspaceIdentity({user:authUser,profile,school});
-  db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||"");
+  db.setSchool(school.id,school.student_id_prefix||"SCH",school.name||""); // legacy column names, see docs/LEGACY_SCHEMA.md
   saveSelectedSchool(school);
-  if(["teacher","manager","bursar"].includes(user.role)){
-   const t=await supabase.from("teachers").select("*").eq("profile_id",authUser.id).eq("school_id",school.id).maybeSingle();
-   if(t.data){user.staff_id=t.data.staff_id;user.teacher_db_id=t.data.id;user.name=t.data.display_name||t.data.full_name||user.name;user._userType="teacher";}
-  }
-  if(user.role==="student"){
-   const link=await supabase.from("student_profiles").select("student_id").eq("profile_id",authUser.id).maybeSingle();
-   if(link.data){const st=await supabase.from("students").select("*").eq("id",link.data.student_id).eq("school_id",school.id).maybeSingle();if(st.data){user.student_id=st.data.id;user.class_id=st.data.class_id;user.name=st.data.display_name||st.data.name||user.name;user._userType="student";}}
-  }
   saveSession(user);setScreen(isOAuthConsent?"oauth-consent":"app");
  };
  useEffect(()=>{
@@ -82,7 +74,6 @@ export default function App(){
  if(screen==="loading")return <RouteLoading label="Loading James-Denning…"/>;
  if(screen==="oauth-consent")return <LazyRoute label="Loading secure authorisation…"><OAuthConsentPage/></LazyRoute>;
  if(screen==="app"||isApply)return <LazyRoute label="Opening your workspace…"><AppDemo/></LazyRoute>;
- if(screen==="legacy")return <LazyRoute label="Opening school portal…"><AppDemo/></LazyRoute>;
  if(screen==="auth")return <LazyRoute label="Loading secure account access…"><EmailAuthPage key={authMode} mode={authMode} onBack={()=>setScreen("landing")} onAuthenticated={onAuthenticated}/></LazyRoute>;
  return <><LazyRoute label="Loading James-Denning…"><PublicLanding onSignIn={()=>{setAuthMode("signin");setScreen("auth")}} onGetStarted={()=>{setAuthMode("signup");setScreen("auth")}}/></LazyRoute>{bootError&&<div role="status" style={{position:"fixed",bottom:12,left:12,right:12,background:"#351b1b",color:"#ffb3b3",padding:10,borderRadius:8,fontSize:12}}>{bootError}</div>}</>;
 }

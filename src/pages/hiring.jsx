@@ -7,7 +7,7 @@
  *   OrgPresetSelectPage — admin page (nav route "org-create"): pick a preset.
  *   OrgCreatePage        — admin page (route "org-create-details"): org form
  *                          bound to the chosen preset (via ctx.pageParam).
- *   OrgSignupModal       — pre-auth modal used from the school-select screen.
+ *   OrgSignupModal       — pre-auth organisation sign-up modal.
  *   PublicHireLanding    — mobile-first public landing page for a role,
  *                          served at /apply/<slug> (ad destination). Renders
  *                          inside the SPA shell (App.jsx path check) AND as a
@@ -20,11 +20,7 @@
  * the same pattern as the login_lookup_* functions.
  */
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  AlertTriangle, ArrowLeft, ArrowRight, Building2, Briefcase, CheckCircle2, Clipboard,
-  Code2, Copy, ExternalLink, Eye, EyeOff, FileText, Loader2, MessageSquare, Pencil,
-  Plus, Send, ShieldCheck, Sparkles, Tag, Trash2, Users, X,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Building2, Briefcase, CheckCircle2, Copy, ExternalLink, Eye, EyeOff, Loader2, MessageSquare, Pencil, Plus, Send, ShieldCheck, Sparkles, Tag, Trash2, Users, X } from "lucide-react";
 import { db } from "../supabaseClient.js";
 import { C } from "../config/theme.js";
 import { useConfirm } from "../contexts/confirm.jsx";
@@ -69,7 +65,7 @@ function PresetGrid({ presets, onSelect, compact }) {
                 background: C.bluePale, border: `1px solid ${C.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                {p.key === "school_management" ? <Code2 size={20} color={C.blue}/> : <Building2 size={20} color={C.blue}/>}
+                <Building2 size={20} color={C.blue}/>
               </div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{p.name}</div>
@@ -140,9 +136,7 @@ function OrgDetailsForm({ preset, onDone }) {
         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
         background: C.bluePale, border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 16,
       }}>
-        {preset?.key === "school_management"
-          ? <Code2 size={16} color={C.blue}/>
-          : <Building2 size={16} color={C.blue}/>}
+        <Building2 size={16} color={C.blue}/>
         <div style={{ fontSize: 12.5, color: C.textSoft }}>
           <b style={{ color: C.text }}>{preset?.name || "General business"}</b>
           {" "}preset — tools will be enabled for this organisation on creation.

@@ -1,6 +1,6 @@
 // Presentation identity only. Supabase session, API checks and RLS remain the
 // authority; never manufacture admin or remap a role to gain UI access.
-const roles=new Set(['owner','admin','manager','staff','finance','hr','contractor','viewer','teacher','student','bursar']);
+const roles=new Set(['owner','admin','manager','staff','finance','hr','contractor','viewer']);
 const isId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 export function workspaceIdentity({user,profile,school}={}){
  if(!isId(user?.id)||profile?.id!==user.id||!isId(school?.id)||profile?.school_id!==school.id)throw Error('Your account is missing a valid workspace association. Please contact your administrator.');
