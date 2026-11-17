@@ -13,6 +13,7 @@ Built as a single-page React application backed by Supabase.
 - [Reconciled checklist status](docs/JD_CHECKLIST_STATUS.md) — every item mapped to relevant code/evidence, gaps and next actions; no guessed implementation percentage.
 - [Assignment integrity and truthful run history](docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md) — current branch validation and required staging/release order.
 - [Owner identity and execution reliability](docs/evidence/2026-11-16-owner-execution/REPORT.md) — fail-closed owner access, guarded execution controls and staged retry SQL repair.
+- [Capability meaning and mobile chat](docs/evidence/2026-11-17-capability-mobile/REPORT.md) — separate availability, approval and verification; real-browser layout checks and backend release boundaries.
 - [Initial Phase 1 verification report](docs/evidence/2026-11-16-phase-1/REPORT.md) — dated findings, passing checks, unresolved failures and testing limitations.
 - [Safe staging setup](documentation/STAGING_SETUP.md) — isolated infrastructure and server-only privileged secrets.
 

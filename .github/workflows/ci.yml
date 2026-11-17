@@ -45,6 +45,12 @@ jobs:
       - name: Test navigation search and mobile drawer behaviour
         run: npm run test:navigation
 
+      - name: Test capability interpretation and role boundaries
+        run: npm run test:capabilities
+
+      - name: Test chat layout in Chromium
+        run: npm run test:chat-layout
+
       - name: Validate checklist coverage and evidence integrity
         run: npm run test:checklist
 

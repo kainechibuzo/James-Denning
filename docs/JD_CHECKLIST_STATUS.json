@@ -1,22 +1,24 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "f37ee68e4443cca3e194537c0914f20d73aac688",
-  "branch": "arena/a32a0393-james-denning",
-  "scope": "Repository/evidence reconciliation updated with owner Operations access, fail-closed identity activation, guarded execution monitoring and a reproduced retry SQL fix. These changes are not deployed or independently accepted. Audited assignment remains disabled; isolated staging and business approval gates remain open.",
+  "baseCommit": "b193215e30c363e6753d8aba069cd61e870b904a",
+  "branch": "arena/93cd7fc6-james-denning",
+  "scope": "Foundation follow-up from supplied mobile screenshots: capability availability/effect/verification distinctions and real-browser chat layout checks. PR #91 frontend production metadata is confirmed; this new slice is not production-deployed or independently accepted. Backend rollout, isolated staging and business approval gates remain open; assignment remains legacy.",
   "items": [
     {
       "id": "P1-01",
       "requirement": "Verify latest `master`, relevant GitHub Actions and their actual coverage.",
       "implementation": "partial",
-      "assessment": "Merged PRs 80\u201383 and 85\u201389 plus post-merge CI are evidenced. Current branch changes still need their own review/CI; CI is not complete runtime coverage.",
+      "assessment": "PR #91 exact-merge post-merge Verify application run 44028020225 passed. The current branch adds capability contracts and actual Chromium layout checks to CI; its own remote results are separate evidence. CI is not runtime/business acceptance.",
       "sources": [
         ".github/workflows/verify.yml",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        ".github/workflows/ci.yml"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
-        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
+        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify latest `master`, relevant GitHub Actions and their actual coverage. Retain expected/actual results and independent review.",
@@ -28,14 +30,15 @@
       "id": "P1-02",
       "requirement": "Verify Vercel production deployment, commit identity and live application behaviour.",
       "implementation": "partial",
-      "assessment": "Production metadata at merge 15a3d1b is READY/PROMOTED. Authenticated browser behaviour is not established by this metadata.",
+      "assessment": "Vercel metadata confirms exact PR #91 merge b193215e as READY/PROMOTED production, including screenshot alias rgs-portal-master.vercel.app. This establishes deployment identity, not authenticated behaviour or backend deployment.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
-        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md"
+        "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify Vercel production deployment, commit identity and live application behaviour. Retain expected/actual results and independent review.",
@@ -484,14 +487,17 @@
       "id": "P2-N11",
       "requirement": "Improve mobile navigation and scrolling.",
       "implementation": "implemented \u2014 unverified",
-      "assessment": "Mobile drawer focus, scroll locking and Escape handling have local tests; device/browser acceptance is pending.",
+      "assessment": "Chat utility controls moved outside the scrollport; bounded markdown/table layout, readable column widths and focusable horizontal scrolling tested with actual ChatHome in Chromium at six viewport sizes. Physical-device, screen-reader and full authenticated shell acceptance remain open.",
       "sources": [
         "src/AppDemo.jsx",
         "src/config/workspace-navigation.mjs",
-        "scripts/test-workspace-navigation.mjs"
+        "scripts/test-workspace-navigation.mjs",
+        "src/chat/ChatHome.jsx",
+        "scripts/test-chat-layout.mjs"
       ],
       "evidence": [
-        "docs/evidence/2026-11-16-phase2-departments/REPORT.md"
+        "docs/evidence/2026-11-16-phase2-departments/REPORT.md",
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Improve mobile navigation and scrolling. Retain expected/actual results and independent review.",
@@ -1897,15 +1903,19 @@
       "id": "P4-E11",
       "requirement": "Never mark work complete solely because an AI claims completion.",
       "implementation": "partial",
-      "assessment": "Selected task writes require persisted acknowledgements; no universal independent verification gate is established.",
+      "assessment": "Runtime and evidence contracts now separate callable tools, saved records, approval and independent verification. Actual-registry/HTTP/provider-stub tests pass; missing evidence does not imply disabled execution and task ticks still do not prove business outcomes. Live model compliance and independent acceptance remain unverified.",
       "sources": [
         "src/chat/JDVisualWorkspace.jsx",
-        "src/chat/operational-task-records.mjs"
+        "src/chat/operational-task-records.mjs",
+        "supabase/functions/_shared/jd-capability-contract.ts",
+        "supabase/functions/_shared/jd-capability-intelligence.ts",
+        "scripts/test-capability-contract.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-workspace/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Never mark work complete solely because an AI claims completion. Retain expected/actual results and independent review.",
@@ -3984,15 +3994,17 @@
       "id": "P8-12",
       "requirement": "Add accessible mobile layouts and test keyboard/screen-reader operation.",
       "implementation": "partial",
-      "assessment": "Mobile navigation/focus tests exist; keyboard/screen-reader audit across all surfaces remains outstanding.",
+      "assessment": "Six actual ChatHome Chromium layouts cover bounded content, toolbar/composer separation, last-paragraph reachability, table focus and keyboard scrolling. This is scoped foundation hardening, not completion of Phase 8 or full accessibility/device acceptance.",
       "sources": [
         "src/chat/ChatHome.jsx",
         "src/chat/JDVisualWorkspace.jsx",
-        "scripts/verify-web-build.mjs"
+        "scripts/verify-web-build.mjs",
+        "scripts/test-chat-layout.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-workspace/REPORT.md"
+        "docs/evidence/2026-11-16-task-workspace/REPORT.md",
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Add accessible mobile layouts and test keyboard/screen-reader operation. Retain expected/actual results and independent review.",

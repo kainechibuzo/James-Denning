@@ -1,3 +1,4 @@
+import { CAPABILITY_INTERPRETATION } from "./jd-capability-contract.ts";
 export type CapabilityState = "implemented" | "deployed" | "configured" | "partial" | "missing" | "unverified";
 export type CapabilityEvidence = { code?: boolean; migration?: boolean; deployment?: boolean; configuration?: boolean; smokeTest?: boolean };
 export type Capability = { key:string; label:string; area:string; evidence:CapabilityEvidence; state:CapabilityState; gaps:string[] };
@@ -8,24 +9,35 @@ const catalog = [
  ["hiring.planner","Workforce planner","hiring"],["hiring.vacancies","Vacancy generator","hiring"],["hiring.pipeline","Recruitment pipeline","hiring"],["hiring.assistant","Recruitment assistant","hiring"],["hiring.campaigns","Hiring campaign manager","hiring"],
 ] as const;
 export function classifyCapability(e:CapabilityEvidence):CapabilityState {
- if(e.smokeTest && e.deployment && e.configuration) return "deployed";
- if(e.deployment && e.configuration) return "configured";
- if(e.code && e.migration) return "implemented";
- if(e.code || e.migration) return "partial";
- if(Object.keys(e).length===0) return "unverified";
- return "missing";
+ if(e.code === true && e.migration === true && e.smokeTest === true && e.deployment === true && e.configuration === true) return "deployed";
+ if(e.deployment === true && e.configuration === true) return "configured";
+ if(e.code === true && e.migration === true) return "implemented";
+ if(e.code === true || e.migration === true) return "partial";
+ if([e.code,e.migration,e.deployment,e.configuration,e.smokeTest].some(value=>value===false)) return "missing";
+ return "unverified";
 }
 export function buildCapabilityReport(evidence:Record<string,CapabilityEvidence>):Capability[] {
  return catalog.map(([key,label,area])=>{
   const e=evidence[key]||{};
   const state=classifyCapability(e);
   const gaps:string[]=[];
-  if(!e.code) gaps.push("implementation evidence");
-  if(!e.migration) gaps.push("database migration evidence");
-  if(!e.deployment) gaps.push("deployment evidence");
-  if(!e.configuration) gaps.push("configuration evidence");
-  if(!e.smokeTest) gaps.push("authenticated smoke-test evidence");
+  if(e.code !== true) gaps.push("implementation evidence");
+  if(e.migration !== true) gaps.push("database migration evidence");
+  if(e.deployment !== true) gaps.push("deployment evidence");
+  if(e.configuration !== true) gaps.push("configuration evidence");
+  if(e.smokeTest !== true) gaps.push("authenticated smoke-test evidence");
   return {key,label,area,evidence:e,state,gaps};
  });
 }
 export const JD_BATCH_01_CAPABILITY_KEYS = catalog.map(([key])=>key);
+
+// An evidence report is not the assistant's tool registry or an execution gate.
+export function buildCapabilityAssessment(evidence:Record<string,CapabilityEvidence>) {
+ return {
+  report_kind: "capability_verification_evidence",
+  execution_availability: "not_assessed",
+  interpretation: CAPABILITY_INTERPRETATION,
+  capabilities: buildCapabilityReport(evidence),
+  environment: {database_schema_observed:false,deployment:"not_verified",authenticated_smoke_test:"not_run"},
+ };
+}

@@ -1,6 +1,6 @@
 import { handleTaskAssignment } from "../_shared/jd-task-assignment.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
-import { buildCapabilityReport } from "../_shared/jd-capability-intelligence.ts";
+import { buildCapabilityAssessment } from "../_shared/jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
 import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskStatus } from "../_shared/jd-operations.ts";
 import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
   // Capability status is intentionally unverified until migrations, deployment and smoke tests
   // are observed by a trusted deployment inventory. Do not infer live status from source code.
   const evidence:Record<string,any>={};
-  return json({capabilities:buildCapabilityReport(evidence),environment:{database_schema_observed:false,deployment:"not_verified",authenticated_smoke_test:"not_run"}});
+  return json(buildCapabilityAssessment(evidence));
  }
 
  if(payload.action==="organisation.departments.list"){
