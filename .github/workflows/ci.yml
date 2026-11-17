@@ -54,7 +54,10 @@ jobs:
       - name: Test reviewed organisation settings and SQL execution
         run: npm run test:settings
 
-      - name: Test chat layout in Chromium
+      - name: Test SaaS agent design contracts and access boundaries
+        run: npm run test:agents
+
+      - name: Test chat, settings and SaaS agent layouts in Chromium
         run: npm run test:chat-layout
 
       - name: Validate checklist coverage and evidence integrity

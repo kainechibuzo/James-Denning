@@ -1,0 +1,59 @@
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/docx@8.5.0
+Download https://esm.sh/pptxgenjs@3.12.0
+Download https://registry.npmjs.org/@modelcontextprotocol%2fserver
+Download https://registry.npmjs.org/@supabase%2fmiddleware
+Download https://registry.npmjs.org/@supabase%2fserver
+Download https://registry.npmjs.org/zod
+Download https://registry.npmjs.org/@modelcontextprotocol%2fcore
+Download https://registry.npmjs.org/std-env
+Download https://registry.npmjs.org/typescript
+Download https://registry.npmjs.org/@nestjs%2fcommon
+Download https://registry.npmjs.org/elysia
+Download https://registry.npmjs.org/h3
+Download https://registry.npmjs.org/hono
+Download https://registry.npmjs.org/jose
+Download https://registry.npmjs.org/pg
+Download https://registry.npmjs.org/@supabase/server/-/server-1.9.2.tgz
+Download https://registry.npmjs.org/@modelcontextprotocol/server/-/server-2.4.0.tgz
+Download https://registry.npmjs.org/@supabase/middleware/-/middleware-1.0.0.tgz
+Download https://registry.npmjs.org/zod/-/zod-4.6.7.tgz
+Download https://registry.npmjs.org/jose/-/jose-6.2.17.tgz
+Download https://registry.npmjs.org/@modelcontextprotocol/core/-/core-2.4.0.tgz
+Download https://registry.npmjs.org/std-env/-/std-env-4.3.0.tgz
+Check supabase/functions/jd-automation/index.ts
+Check supabase/functions/jd-execution-worker/index.ts
+Check supabase/functions/jd-mcp/index.ts
+TS2307 [ERROR]: Cannot find module 'file:///home/user/James-Denning/supabase/functions/jd-execution-worker/_shared/jd-agent-runtime.ts'.
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:2:26
+
+TS2307 [ERROR]: Cannot find module 'file:///home/user/James-Denning/supabase/functions/jd-execution-worker/_shared/jd-visual-workspace.ts'.
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:3:40
+
+TS2307 [ERROR]: Cannot find module 'file:///home/user/James-Denning/supabase/functions/jd-execution-worker/_shared/jd-agent-routing.ts'.
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:4:31
+
+TS2307 [ERROR]: Cannot find module 'file:///home/user/James-Denning/supabase/functions/jd-execution-worker/_shared/jd-secrets.ts'.
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:5:29
+
+TS2307 [ERROR]: Cannot find module 'file:///home/user/James-Denning/supabase/functions/jd-execution-worker/_shared/jd-execution-worker-helpers.ts'.
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:13:84
+
+TS7006 [ERROR]: Parameter 'state' implicitly has an 'any' type.
+      onCheckpoint: async (state) => {
+                           ~~~~~
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:185:28
+
+TS7006 [ERROR]: Parameter 'delta' implicitly has an 'any' type.
+      onTextDelta: (delta) => { partialText += delta; persistPartial(false); },
+                    ~~~~~
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:197:21
+
+TS7006 [ERROR]: Parameter 'event' implicitly has an 'any' type.
+      onToolEvent: async (event) => {
+                          ~~~~~
+    at file:///home/user/James-Denning/supabase/functions/jd-execution-worker/index.ts:198:27
+
+Found 8 errors.
+
+error: Type checking failed.
