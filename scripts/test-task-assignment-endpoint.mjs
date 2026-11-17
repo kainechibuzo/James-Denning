@@ -38,7 +38,7 @@ test('missing/cross-tenant exact read is not found and errors do not leak',async
 });
 test('edge wiring routes all assignment contracts after authentication and removes direct update path',()=>{
  const source=readFileSync(new URL('../supabase/functions/jd-automation/index.ts',import.meta.url),'utf8');
- assert.ok(source.indexOf('auth.auth.getUser(token)')<source.indexOf('return handleTaskAssignment('));
+ assert.ok(source.indexOf('auth.auth.getUser(token)')<source.indexOf('return handleReleasedTaskAssignment('));
  assert.match(source,/\["operations.task.assign","operations.task.assign_checked","operations.task.get"\]\.includes\(payload.action\)/);
  assert.doesNotMatch(source,/update\(\{assigned_to:assigneeId/);
 });

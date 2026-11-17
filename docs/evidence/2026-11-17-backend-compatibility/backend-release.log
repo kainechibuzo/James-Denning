@@ -1,0 +1,482 @@
+
+> james-denning@1.0.0 test:backend-release
+> node --test scripts/test-backend-assignment-release.mjs scripts/test-backend-release-plan.mjs
+
+TAP version 13
+# Subtest: reproduces shipping-client failure against the previous checked-only backend
+ok 1 - reproduces shipping-client failure against the previous checked-only backend
+  ---
+  duration_ms: 9.332829
+  type: 'test'
+  ...
+# Subtest: both shipping releases remain legacy; request JSON cannot select release
+ok 2 - both shipping releases remain legacy; request JSON cannot select release
+  ---
+  duration_ms: 1.228298
+  type: 'test'
+  ...
+# Subtest: owner: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+ok 3 - owner: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+  ---
+  duration_ms: 2.978384
+  type: 'test'
+  ...
+# Subtest: admin: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+ok 4 - admin: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+  ---
+  duration_ms: 2.159044
+  type: 'test'
+  ...
+# Subtest: manager: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+ok 5 - manager: actual shipping client -> authenticated HTTP handler -> legacy update -> list read-back
+  ---
+  duration_ms: 1.025419
+  type: 'test'
+  ...
+# Subtest: staff: forged owner body cannot authorize either release
+ok 6 - staff: forged owner body cannot authorize either release
+  ---
+  duration_ms: 3.011057
+  type: 'test'
+  ...
+# Subtest: viewer: forged owner body cannot authorize either release
+ok 7 - viewer: forged owner body cannot authorize either release
+  ---
+  duration_ms: 6.054389
+  type: 'test'
+  ...
+# Subtest: contractor: forged owner body cannot authorize either release
+ok 8 - contractor: forged owner body cannot authorize either release
+  ---
+  duration_ms: 1.353512
+  type: 'test'
+  ...
+# Subtest: finance: forged owner body cannot authorize either release
+ok 9 - finance: forged owner body cannot authorize either release
+  ---
+  duration_ms: 3.569888
+  type: 'test'
+  ...
+# Subtest: hr: forged owner body cannot authorize either release
+ok 10 - hr: forged owner body cannot authorize either release
+  ---
+  duration_ms: 1.523214
+  type: 'test'
+  ...
+# Subtest: teacher: forged owner body cannot authorize either release
+ok 11 - teacher: forged owner body cannot authorize either release
+  ---
+  duration_ms: 1.389715
+  type: 'test'
+  ...
+# Subtest: student: forged owner body cannot authorize either release
+ok 12 - student: forged owner body cannot authorize either release
+  ---
+  duration_ms: 4.201243
+  type: 'test'
+  ...
+# Subtest: unknown: forged owner body cannot authorize either release
+ok 13 - unknown: forged owner body cannot authorize either release
+  ---
+  duration_ms: 6.259278
+  type: 'test'
+  ...
+# Subtest: cross-tenant task: cannot write
+ok 14 - cross-tenant task: cannot write
+  ---
+  duration_ms: 0.66212
+  type: 'test'
+  ...
+# Subtest: cross-tenant assignee: cannot write
+ok 15 - cross-tenant assignee: cannot write
+  ---
+  duration_ms: 0.365008
+  type: 'test'
+  ...
+# Subtest: invalid task: cannot write
+ok 16 - invalid task: cannot write
+  ---
+  duration_ms: 0.456472
+  type: 'test'
+  ...
+# Subtest: invalid assignee: cannot write
+ok 17 - invalid assignee: cannot write
+  ---
+  duration_ms: 0.319569
+  type: 'test'
+  ...
+# Subtest: owner: eligible assignee preserves existing role contract
+ok 18 - owner: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.52944
+  type: 'test'
+  ...
+# Subtest: admin: eligible assignee preserves existing role contract
+ok 19 - admin: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.362511
+  type: 'test'
+  ...
+# Subtest: manager: eligible assignee preserves existing role contract
+ok 20 - manager: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.332498
+  type: 'test'
+  ...
+# Subtest: staff: eligible assignee preserves existing role contract
+ok 21 - staff: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.474356
+  type: 'test'
+  ...
+# Subtest: finance: eligible assignee preserves existing role contract
+ok 22 - finance: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.402452
+  type: 'test'
+  ...
+# Subtest: hr: eligible assignee preserves existing role contract
+ok 23 - hr: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 0.78439
+  type: 'test'
+  ...
+# Subtest: contractor: eligible assignee preserves existing role contract
+ok 24 - contractor: eligible assignee preserves existing role contract
+  ---
+  duration_ms: 2.078323
+  type: 'test'
+  ...
+# Subtest: viewer: ineligible assignee cannot be assigned
+ok 25 - viewer: ineligible assignee cannot be assigned
+  ---
+  duration_ms: 0.540452
+  type: 'test'
+  ...
+# Subtest: student: ineligible assignee cannot be assigned
+ok 26 - student: ineligible assignee cannot be assigned
+  ---
+  duration_ms: 0.582129
+  type: 'test'
+  ...
+# Subtest: teacher: ineligible assignee cannot be assigned
+ok 27 - teacher: ineligible assignee cannot be assigned
+  ---
+  duration_ms: 0.601353
+  type: 'test'
+  ...
+# Subtest: unknown: ineligible assignee cannot be assigned
+ok 28 - unknown: ineligible assignee cannot be assigned
+  ---
+  duration_ms: 0.57812
+  type: 'test'
+  ...
+# Subtest: write and both eligibility reads are explicitly tenant constrained
+ok 29 - write and both eligibility reads are explicitly tenant constrained
+  ---
+  duration_ms: 0.764
+  type: 'test'
+  ...
+# Subtest: fails closed {"dbError":true}
+ok 30 - fails closed {"dbError":true}
+  ---
+  duration_ms: 0.878883
+  type: 'test'
+  ...
+# Subtest: fails closed {"deleteAtWrite":true}
+ok 31 - fails closed {"deleteAtWrite":true}
+  ---
+  duration_ms: 0.585176
+  type: 'test'
+  ...
+# Subtest: fails closed {"session":false}
+ok 32 - fails closed {"session":false}
+  ---
+  duration_ms: 0.320278
+  type: 'test'
+  ...
+# Subtest: fails closed {"release":"auto-detect"}
+ok 33 - fails closed {"release":"auto-detect"}
+  ---
+  duration_ms: 0.439526
+  type: 'test'
+  ...
+# Subtest: lost legacy write acknowledgement blocks repeat and preserves refresh recovery in actual controller
+ok 34 - lost legacy write acknowledgement blocks repeat and preserves refresh recovery in actual controller
+  ---
+  duration_ms: 2.724897
+  type: 'test'
+  ...
+# Subtest: checked release explicitly retires legacy without reading a fresh version or falling back
+ok 35 - checked release explicitly retires legacy without reading a fresh version or falling back
+  ---
+  duration_ms: 0.402809
+  type: 'test'
+  ...
+# Subtest: explicit checked client and backend retain the service-only audited contract
+ok 36 - explicit checked client and backend retain the service-only audited contract
+  ---
+  duration_ms: 1.061912
+  type: 'test'
+  ...
+# Subtest: checked RPC PGRST202 never falls back to an unchecked write
+ok 37 - checked RPC PGRST202 never falls back to an unchecked write
+  ---
+  duration_ms: 0.563997
+  type: 'test'
+  ...
+# Subtest: checked RPC 40001 never falls back to an unchecked write
+ok 38 - checked RPC 40001 never falls back to an unchecked write
+  ---
+  duration_ms: 0.273767
+  type: 'test'
+  ...
+# Subtest: checked RPC 42501 never falls back to an unchecked write
+ok 39 - checked RPC 42501 never falls back to an unchecked write
+  ---
+  duration_ms: 0.210663
+  type: 'test'
+  ...
+# Subtest: checked RPC XX000 never falls back to an unchecked write
+ok 40 - checked RPC XX000 never falls back to an unchecked write
+  ---
+  duration_ms: 0.199123
+  type: 'test'
+  ...
+# Subtest: malformed authenticated identity and unknown actions are denied before access
+ok 41 - malformed authenticated identity and unknown actions are denied before access
+  ---
+  duration_ms: 0.257915
+  type: 'test'
+  ...
+# Subtest: release refuses missing stage
+ok 42 - release refuses missing stage
+  ---
+  duration_ms: 1.885538
+  type: 'test'
+  ...
+# Subtest: release refuses unknown stage
+ok 43 - release refuses unknown stage
+  ---
+  duration_ms: 0.165267
+  type: 'test'
+  ...
+# Subtest: release refuses short SHA
+ok 44 - release refuses short SHA
+  ---
+  duration_ms: 0.094321
+  type: 'test'
+  ...
+# Subtest: release refuses different source SHA
+ok 45 - release refuses different source SHA
+  ---
+  duration_ms: 0.064071
+  type: 'test'
+  ...
+# Subtest: release refuses missing approval
+ok 46 - release refuses missing approval
+  ---
+  duration_ms: 0.064894
+  type: 'test'
+  ...
+# Subtest: release refuses wrong approved SHA
+ok 47 - release refuses wrong approved SHA
+  ---
+  duration_ms: 0.061095
+  type: 'test'
+  ...
+# Subtest: release refuses missing confirmation
+ok 48 - release refuses missing confirmation
+  ---
+  duration_ms: 0.064022
+  type: 'test'
+  ...
+# Subtest: release refuses missing evidence reference
+ok 49 - release refuses missing evidence reference
+  ---
+  duration_ms: 0.099167
+  type: 'test'
+  ...
+# Subtest: release refuses unrelated repository evidence
+ok 50 - release refuses unrelated repository evidence
+  ---
+  duration_ms: 0.193302
+  type: 'test'
+  ...
+# Subtest: release refuses URL instead of project ref
+ok 51 - release refuses URL instead of project ref
+  ---
+  duration_ms: 0.254717
+  type: 'test'
+  ...
+# Subtest: release refuses target flag injection
+ok 52 - release refuses target flag injection
+  ---
+  duration_ms: 0.095982
+  type: 'test'
+  ...
+# Subtest: release refuses missing independent staging allowlist
+ok 53 - release refuses missing independent staging allowlist
+  ---
+  duration_ms: 0.102674
+  type: 'test'
+  ...
+# Subtest: release refuses mismatched staging allowlist
+ok 54 - release refuses mismatched staging allowlist
+  ---
+  duration_ms: 0.047302
+  type: 'test'
+  ...
+# Subtest: release refuses production as staging
+ok 55 - release refuses production as staging
+  ---
+  duration_ms: 0.041702
+  type: 'test'
+  ...
+# Subtest: release refuses legacy production as staging
+ok 56 - release refuses legacy production as staging
+  ---
+  duration_ms: 0.053209
+  type: 'test'
+  ...
+# Subtest: production refuses missing same-SHA staging acceptance
+ok 57 - production refuses missing same-SHA staging acceptance
+  ---
+  duration_ms: 0.100723
+  type: 'test'
+  ...
+# Subtest: production refuses different tested SHA
+ok 58 - production refuses different tested SHA
+  ---
+  duration_ms: 0.041938
+  type: 'test'
+  ...
+# Subtest: production refuses different production target
+ok 59 - production refuses different production target
+  ---
+  duration_ms: 0.03864
+  type: 'test'
+  ...
+# Subtest: production refuses unapproved SHA
+ok 60 - production refuses unapproved SHA
+  ---
+  duration_ms: 0.037845
+  type: 'test'
+  ...
+# Subtest: valid staged and production plans are narrow source-pinned attestations, not deployments
+ok 61 - valid staged and production plans are narrow source-pinned attestations, not deployments
+  ---
+  duration_ms: 0.55367
+  type: 'test'
+  ...
+# Subtest: real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions
+ok 62 - real source bundle includes current fixes and nested worker dependencies but no SQL/secrets/unrelated functions
+  ---
+  duration_ms: 34.940462
+  type: 'test'
+  ...
+# Subtest: packaging refuses frontend switched early
+ok 63 - packaging refuses frontend switched early
+  ---
+  duration_ms: 5.939373
+  type: 'test'
+  ...
+# Subtest: packaging refuses backend switched early
+ok 64 - packaging refuses backend switched early
+  ---
+  duration_ms: 5.879877
+  type: 'test'
+  ...
+# Subtest: packaging refuses JWT changed
+ok 65 - packaging refuses JWT changed
+  ---
+  duration_ms: 5.62571
+  type: 'test'
+  ...
+# Subtest: packaging refuses router bypassed
+ok 66 - packaging refuses router bypassed
+  ---
+  duration_ms: 6.64537
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed source file
+ok 67 - artifact verification rejects changed source file
+  ---
+  duration_ms: 14.287429
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects extra migration
+ok 68 - artifact verification rejects extra migration
+  ---
+  duration_ms: 18.491341
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects missing file
+ok 69 - artifact verification rejects missing file
+  ---
+  duration_ms: 11.674896
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed target
+ok 70 - artifact verification rejects changed target
+  ---
+  duration_ms: 10.442064
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects changed hash
+ok 71 - artifact verification rejects changed hash
+  ---
+  duration_ms: 16.434863
+  type: 'test'
+  ...
+# Subtest: artifact verification rejects symlink
+ok 72 - artifact verification rejects symlink
+  ---
+  duration_ms: 12.102107
+  type: 'test'
+  ...
+# Subtest: output parent symlink cannot redirect artifact writes
+ok 73 - output parent symlink cannot redirect artifact writes
+  ---
+  duration_ms: 4.650704
+  type: 'test'
+  ...
+# Subtest: source symlink is rejected before output creation
+ok 74 - source symlink is rejected before output creation
+  ---
+  duration_ms: 3.167045
+  type: 'test'
+  ...
+# Subtest: CLI with no approvals fails before artifact creation and has no network/deploy API
+ok 75 - CLI with no approvals fails before artifact creation and has no network/deploy API
+  ---
+  duration_ms: 64.803514
+  type: 'test'
+  ...
+# Subtest: manual workflow defaults to artifact-only; exact SHA, independent approvals and narrow deployment are retained
+ok 76 - manual workflow defaults to artifact-only; exact SHA, independent approvals and narrow deployment are retained
+  ---
+  duration_ms: 0.591998
+  type: 'test'
+  ...
+# Subtest: CLI preparation on clean synthetic checkout
+ok 77 - CLI preparation on clean synthetic checkout
+  ---
+  duration_ms: 104.055649
+  type: 'test'
+  ...
+# Subtest: CLI preparation on dirty synthetic checkout
+ok 78 - CLI preparation on dirty synthetic checkout
+  ---
+  duration_ms: 46.311714
+  type: 'test'
+  ...
+1..78
+# tests 78
+# suites 0
+# pass 78
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 713.304391

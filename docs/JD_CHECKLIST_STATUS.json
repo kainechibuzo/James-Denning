@@ -1,24 +1,27 @@
 {
   "schemaVersion": 1,
   "assessedAt": "2026-11-16",
-  "baseCommit": "b193215e30c363e6753d8aba069cd61e870b904a",
-  "branch": "arena/93cd7fc6-james-denning",
-  "scope": "Foundation follow-up from supplied mobile screenshots: capability availability/effect/verification distinctions and real-browser chat layout checks. PR #91 frontend production metadata is confirmed; this new slice is not production-deployed or independently accepted. Backend rollout, isolated staging and business approval gates remain open; assignment remains legacy.",
+  "baseCommit": "4c2b93b52b371e0df08a9bc31fc6cd28fb62b879",
+  "branch": "arena/fbef563f-james-denning",
+  "scope": "Foundation backend release follow-up: shipping legacy assignment compatibility restored in source, checked writes remain gated, and the manual release workflow is narrowed to a source-pinned three-function artifact with independent approval/staging attestations. PR #92 frontend production identity is confirmed. No backend deployment, isolated staging acceptance, migration application or business verification is established.",
   "items": [
     {
       "id": "P1-01",
       "requirement": "Verify latest `master`, relevant GitHub Actions and their actual coverage.",
       "implementation": "partial",
-      "assessment": "PR #91 exact-merge post-merge Verify application run 44028020225 passed. The current branch adds capability contracts and actual Chromium layout checks to CI; its own remote results are separate evidence. CI is not runtime/business acceptance.",
+      "assessment": "PR #92 exact-merge post-merge Verify application run 44042566423 passed. This slice adds client-to-handler backend compatibility and release artifact/approval guard tests. Independent review and runtime acceptance remain separate.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "scripts/test-backend-assignment-release.mjs",
+        "scripts/test-backend-release-plan.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify latest `master`, relevant GitHub Actions and their actual coverage. Retain expected/actual results and independent review.",
@@ -30,7 +33,7 @@
       "id": "P1-02",
       "requirement": "Verify Vercel production deployment, commit identity and live application behaviour.",
       "implementation": "partial",
-      "assessment": "Vercel metadata confirms exact PR #91 merge b193215e as READY/PROMOTED production, including screenshot alias rgs-portal-master.vercel.app. This establishes deployment identity, not authenticated behaviour or backend deployment.",
+      "assessment": "Vercel metadata confirms exact PR #92 merge 4c2b93b5 as READY/PROMOTED production with no alias error. This establishes frontend deployment identity/status, not authenticated behaviour or backend deployment.",
       "sources": [
         ".github/workflows/verify.yml",
         "docs/evidence/2026-11-16-phase-1/REPORT.md"
@@ -38,7 +41,8 @@
       "evidence": [
         "docs/evidence/2026-11-16-phase-1/REPORT.md",
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-17-capability-mobile/REPORT.md"
+        "docs/evidence/2026-11-17-capability-mobile/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Verify Vercel production deployment, commit identity and live application behaviour. Retain expected/actual results and independent review.",
@@ -1025,14 +1029,17 @@
       "id": "P3-E05",
       "requirement": "Implement department assignment.",
       "implementation": "partial",
-      "assessment": "Department fields and auto-assignment exist; shared assignment transaction added here covers manual assignees, not all routing.",
+      "assessment": "Existing task assignment retained. New server-owned legacy release mode matches the shipping client and rejects checked writes before DB access; explicit checked mode preserves CAS/audit and never falls back. Synthetic actual client/HTTP-handler tests pass. Legacy eligibility/update races, transactional audit and full departmental assignment acceptance remain open.",
       "sources": [
         "supabase/functions/jd-execution-worker/index.ts",
-        "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql"
+        "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql",
+        "supabase/functions/_shared/jd-task-assignment-release.mjs",
+        "scripts/test-backend-assignment-release.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-task-writes/REPORT.md"
+        "docs/evidence/2026-11-16-task-writes/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Implement department assignment. Retain expected/actual results and independent review.",
@@ -2028,15 +2035,18 @@
       "id": "P4-T06",
       "requirement": "Check database constraints and deployed migration/function versions.",
       "implementation": "partial",
-      "assessment": "Local repository SQL demonstrates existing retry error 23502 and a staged migration repair. Actual deployed migration/function versions and real pgmq acceptance remain outstanding.",
+      "assessment": "Earlier retry SQL defect remains staged. This slice prevents the known legacy-client/checked-only-backend release mismatch and forbids SQL in the narrowed function artifact. Live migration reconciliation, deployed schema checks and isolated acceptance remain open.",
       "sources": [
         "scripts/test-execution-retry-database.mjs",
-        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql"
+        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql",
+        "scripts/jd-backend-release.mjs",
+        "documentation/JD_BACKEND_RELEASE.md"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-writes/REPORT.md",
-        "docs/evidence/2026-11-16-owner-execution/REPORT.md"
+        "docs/evidence/2026-11-16-owner-execution/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Check database constraints and deployed migration/function versions. Retain expected/actual results and independent review.",
@@ -2109,16 +2119,18 @@
       "id": "P4-T10",
       "requirement": "Test creation, assignment, progress updates and completion end to end.",
       "implementation": "partial",
-      "assessment": "Local SQL/controller/mounted UI cover creation, assignment and transitions; not an authenticated browser-to-Supabase end-to-end test. Release update: the frontend defaults to the existing legacy contract; checked assignment is implemented but not activated.",
+      "assessment": "Creation/transition/assignment suites pass locally; assignment now runs through the actual shipping adapter and HTTP handler with synthetic records in both explicit release modes. Lost-ack refresh and tenant/role denials are tested. This is not deployed JWT/RLS or authenticated persisted end-to-end acceptance.",
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql",
+        "scripts/test-backend-assignment-release.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
         "docs/evidence/2026-11-16-task-writes/REPORT.md",
-        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md"
+        "docs/evidence/2026-11-16-assignment-release-gate/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "unverified",
       "nextAction": "In isolated staging, demonstrate: Test creation, assignment, progress updates and completion end to end. Retain expected/actual results and independent review.",
@@ -3622,14 +3634,18 @@
       "id": "P7-11",
       "requirement": "Test migrations in staging.",
       "implementation": "partial",
-      "assessment": "No approved isolated target. SQL subset tests do not constitute full migration ordering/extension rehearsal.",
+      "assessment": "New scoped backend workflow cannot apply migrations and blocks known production targets as staging. Source/artifact guards pass locally. Genuine isolated staging, schema-history reconciliation and migration rehearsal remain external prerequisites.",
       "sources": [
         "documentation/STAGING_SETUP.md",
-        "scripts/verify-jd-business-staging.mjs"
+        "scripts/verify-jd-business-staging.mjs",
+        ".github/workflows/deploy.yml",
+        "scripts/jd-backend-release.mjs",
+        "documentation/JD_BACKEND_RELEASE.md"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "blocked",
       "nextAction": "Owner to approve an actually isolated Supabase target and preview-only configuration. Confirm canonical project identity and synthetic fixtures before any test writes; do not provision paid resources or use production as staging.",
@@ -3679,14 +3695,17 @@
       "id": "P7-14",
       "requirement": "Establish deployment rollback procedures and rehearse them in staging.",
       "implementation": "partial",
-      "assessment": "Selected rollback files exist, including assignment rollback; no isolated rollback/redeploy rehearsal yet.",
+      "assessment": "Documented exact-source artifacts, partial three-function deployment boundaries and independently approved rollback requirements. Generic deploy-all, blind migration push and automatic cancellation were removed. No production release or real rollback rehearsal was performed; remote dependency ranges remain a reproducibility limitation.",
       "sources": [
         "documentation/STAGING_SETUP.md",
-        "scripts/verify-jd-business-staging.mjs"
+        "scripts/verify-jd-business-staging.mjs",
+        "documentation/JD_BACKEND_RELEASE.md",
+        "scripts/jd-backend-release.mjs"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
-        "docs/evidence/2026-11-16-phase-1/REPORT.md"
+        "docs/evidence/2026-11-16-phase-1/REPORT.md",
+        "docs/evidence/2026-11-17-backend-compatibility/REPORT.md"
       ],
       "acceptance": "blocked",
       "nextAction": "In isolated staging, demonstrate: Establish deployment rollback procedures and rehearse them in staging. Retain expected/actual results and independent review.",

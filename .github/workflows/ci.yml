@@ -45,6 +45,9 @@ jobs:
       - name: Test navigation search and mobile drawer behaviour
         run: npm run test:navigation
 
+      - name: Test backend assignment compatibility and release safety
+        run: npm run test:backend-release
+
       - name: Test capability interpretation and role boundaries
         run: npm run test:capabilities
 

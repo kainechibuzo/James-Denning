@@ -17,6 +17,7 @@
     "test:guards": "node scripts/test-verification-guards.mjs",
     "test:tasks": "node --test scripts/test-operational-task-client.mjs scripts/test-operational-task-database.mjs scripts/test-task-assignment-endpoint.mjs scripts/test-task-assignment-release.mjs scripts/test-operational-task-records.mjs scripts/test-task-workspace-ui.mjs scripts/test-operational-task-writes.mjs scripts/test-task-queue-ui.mjs",
     "test:checklist": "node --test scripts/test-execution-checklist.mjs && node scripts/check-execution-checklist.mjs",
+    "test:backend-release": "node --test scripts/test-backend-assignment-release.mjs scripts/test-backend-release-plan.mjs",
     "test:capabilities": "node --experimental-strip-types --test scripts/test-capability-contract.mjs",
     "test:chat-layout": "node scripts/test-chat-layout.mjs",
     "test:execution": "node --test scripts/test-execution-monitor.mjs scripts/test-execution-monitor-ui.mjs scripts/test-execution-endpoint.mjs scripts/test-execution-retry-database.mjs",

@@ -1,4 +1,4 @@
-import { handleTaskAssignment } from "../_shared/jd-task-assignment.mjs";
+import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityAssessment } from "../_shared/jd-capability-intelligence.ts";
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
@@ -378,7 +378,7 @@ Deno.serve(async (req) => {
    return json({schedule});
   }
  if(["operations.task.assign","operations.task.assign_checked","operations.task.get"].includes(payload.action)){
-  return handleTaskAssignment({admin,profile,actorId:authData.user.id,payload,json});
+  return handleReleasedTaskAssignment({admin,profile,actorId:authData.user.id,payload,json});
  }
  if(payload.action==="operations.task.create"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to create operational tasks"},403);

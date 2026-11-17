@@ -60,3 +60,7 @@ Use `npm run test:guards` to exercise these refusal paths with stubbed networkin
 ## 6. Recovery
 
 If a service-role key was ever added to a `VITE_*` variable or otherwise exposed to a browser build, remove the variable, rotate the affected service-role key in Supabase, update trusted server-side secrets, and redeploy. Treat it as compromised; deleting the frontend variable alone does not invalidate an exposed key.
+
+## 7. Scoped JD backend compatibility releases
+
+Use the [reviewed JD backend release procedure](JD_BACKEND_RELEASE.md) for the three runtime consumers. The manual deployment workflow now defaults to preparing an exact-source artifact and does not apply SQL or deploy unrelated functions. Its independent approval/project variables and same-SHA staging marker are mandatory; they do not provision staging or replace real review. Never use the retired broad deploy-all/migration-push procedure.
