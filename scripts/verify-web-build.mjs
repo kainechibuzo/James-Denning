@@ -8,6 +8,7 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 const app = read("src/App.jsx");
 const landing = read("src/pages/public-landing.jsx");
 const auth = read("src/pages/saas-entry.jsx");
+const profileMigration = read("supabase/migrations/20261118190000_profiles_authenticated_update_full_name.sql");
 const product = read("src/config/product.js");
 const tour = read("src/AppDemo.jsx");
 const jdChat = read("src/chat/ChatHome.jsx");
