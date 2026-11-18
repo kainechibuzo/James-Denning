@@ -40,7 +40,7 @@ function Harness({client,scope="org-a:user-a:conversation-a",ui=workspace(),copi
 for(const item of [task("completed"),{id:"draft-1",title:"Draft task",status:"completed"},{title:"No ID task",status:"completed"}]){
   test(`draft ${item.id||"without ID"} never claims saved completion or dispatches a mutation`,async()=>{
     let calls=0;const m=await mount(view({ui:workspace(false,item),taskRecords:ready("completed"),onTaskToggle:()=>calls++}));
-    try{assert.match(content(),/0\/1 local ticks/);assert.match(content(),/Local checklist — no saved record confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");
+    try{assert.match(content(),/0\/1 local ticks/);assert.match(content(),/This is a draft checklist, not an active job/);assert.equal(check().getAttribute("aria-pressed"),"false");
       await act(async()=>check().click());assert.match(content(),/1\/1 local ticks/);assert.match(content(),/Locally checked/);assert.equal(calls,0);assert.doesNotMatch(content(),/Record complete|records complete|Status saved with audit/);
     }finally{await m.cleanup();}
   });
@@ -85,7 +85,7 @@ test("mounted hook/card integrates read → start → complete → remount/readb
   }}};
   const m=await mount(React.createElement(Harness,{client}));
   try{assert.ok(!check().disabled);await act(async()=>check().click());assert.match(content(),/In progress/);assert.match(content(),/Status saved with audit evidence/);
-    await act(async()=>check().click());assert.match(content(),/Complete/);assert.match(content(),/not verified external execution or approval/);
+    await act(async()=>check().click());assert.match(content(),/Complete/);assert.match(content(),/does not independently verify an external business outcome/);
     await m.render(React.createElement(Harness,{client,key:"remount"}));assert.match(content(),/Complete/);assert.ok(check().disabled);assert.doesNotMatch(content(),/Status saved with audit evidence/);
     assert.deepEqual(calls.map(c=>c.action),["operations.task.list","operations.task.transition","operations.task.transition","operations.task.list"]);
   }finally{await m.cleanup();}
@@ -117,7 +117,7 @@ test("account/conversation scope changes discard late reads from the previous sc
 test("StrictMode replay still leaves mounted task records usable",async()=>{
   const client={functions:{invoke:async()=>({data:{tasks:[task()]}})}};
   const m=await mount(React.createElement(React.StrictMode,null,React.createElement(Harness,{client})));
-  try{assert.ok(!check().disabled);assert.match(content(),/Saved record — refreshed/);}finally{await m.cleanup();}
+  try{assert.ok(!check().disabled);assert.match(content(),/Task statuses refresh automatically/);}finally{await m.cleanup();}
 });
 test("chat wiring keys local state by account/workspace/conversation and offers read reconciliation",()=>{
   const source=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
@@ -135,7 +135,7 @@ test("saved task checklist starts collapsed and opening it does not mutate a rec
   let writes=0;const m=await mount(view({taskRecords:ready(),onTaskToggle:()=>writes++}));
   try{const details=document.querySelector("details.jd-task-disclosure");assert.ok(details);assert.equal(details.open,false);
     await act(async()=>details.querySelector("summary").click());assert.equal(details.open,true);assert.equal(writes,0);
-    assert.match(content(),/Changing a record here does not execute its task/);
+    assert.match(content(),/Task status shows recorded progress/);
   }finally{await m.cleanup();}
 });
 test("focus refresh reads new server status, skips hidden tabs and never executes tasks",async()=>{
