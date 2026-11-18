@@ -1,4 +1,4 @@
-import React,{useEffect,useId,useRef,useState} from 'react';
+import React,{useEffect,useId,useLayoutEffect,useRef,useState} from 'react';
 import {AtSign,ChevronRight,Link2,Plus,Search,X} from 'lucide-react';
 import {supabase} from '../supabaseClient.js';
 import {canManageConnectors} from '../connectors/catalogue.mjs';
@@ -7,10 +7,22 @@ import './composer-tools.css';
 
 export function ComposerTools({draft,setDraft,onSend,isWorking,role,actions,onNavigate,children}){
  const [mode,setMode]=useState(null),[query,setQuery]=useState(''),[mention,setMention]=useState(null),[active,setActive]=useState(0),[remote,setRemote]=useState([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(0);
- const input=useRef(null),root=useRef(null),search=useRef(null),id=useId();
+ const input=useRef(null),root=useRef(null),search=useRef(null),restoreInput=useRef(null),id=useId();
+ // Restore focus/selection with the React commit, before the next input event.
+ // A queued animation frame can otherwise overwrite a newer select-all/caret
+ // move or steal focus after the user has already left the composer.
+ useLayoutEffect(()=>{
+  const restore=restoreInput.current;
+  restoreInput.current=null;
+  const element=input.current;
+  if(!restore||!element)return;
+  if(restore.text!==undefined&&element.value!==restore.text)return;
+  element.focus();
+  if(restore.caret!==undefined)element.setSelectionRange(restore.caret,restore.caret);
+ });
  const open=Boolean(mode),allowed=canManageConnectors(role);
  const choices=[...actions.map((a,i)=>({id:'native:'+i,label:a.label,prompt:a.prompt,detail:'JD prompt shortcut',kind:'native'})),...(allowed&&!loading&&!error?remote:[])].filter(c=>`${c.label} ${c.detail}`.toLowerCase().includes(query.toLowerCase().trim())).slice(0,40);
- const close=(focus=false)=>{setMode(null);setMention(null);setQuery('');setRemote([]);if(focus)requestAnimationFrame(()=>input.current?.focus());};
+ const close=(focus=false)=>{restoreInput.current=focus?{}:null;setMode(null);setMention(null);setQuery('');setRemote([]);};
  useEffect(()=>{if(!open)return;const outside=e=>{if(!root.current?.contains(e.target))close();};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[open]);
  useEffect(()=>{if(!open)return;let alive=true;setRemote([]);setError('');setLoading(allowed);
   if(allowed)Promise.all([supabase.functions.invoke('jd-connect',{body:{action:'servers.list'}}),supabase.functions.invoke('jd-connect',{body:{action:'tools.list'}})]).then(([s,t])=>{if(!alive)return;if(s.error||t.error||s.data?.error||t.data?.error||!Array.isArray(s.data?.servers)||!Array.isArray(t.data?.tools))throw Error('unavailable');setRemote(connectedChoices(s.data.servers,t.data.tools));}).catch(()=>{if(alive)setError('Connected tools could not be loaded. No connection status has been assumed.');}).finally(()=>{if(alive)setLoading(false);});
@@ -20,7 +32,7 @@ export function ComposerTools({draft,setDraft,onSend,isWorking,role,actions,onNa
  useEffect(()=>{if(!draft)close();},[draft]);
  useEffect(()=>{if(mode==='menu')search.current?.focus();},[mode]);
  useEffect(()=>{if(open)document.getElementById(`${id}-option-${active}`)?.scrollIntoView({block:'nearest'});},[active,open,id]);
- const choose=item=>{if(!item)return;const selection=mode==='mention'?mention:{start:input.current?.selectionStart??draft.length,end:input.current?.selectionEnd??draft.length};const next=insertComposerText(draft,selection,item.prompt);setDraft(next.text);close();requestAnimationFrame(()=>{input.current?.focus();input.current?.setSelectionRange(next.caret,next.caret);});};
+ const choose=item=>{if(!item)return;const selection=mode==='mention'?mention:{start:input.current?.selectionStart??draft.length,end:input.current?.selectionEnd??draft.length};const next=insertComposerText(draft,selection,item.prompt);setDraft(next.text);close();restoreInput.current={text:next.text,caret:next.caret};};
  const keydown=e=>{if(e.nativeEvent.isComposing||e.keyCode===229)return;
   if(open){if(e.key==='Escape'){e.preventDefault();close(true);return;}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();setActive(n=>choices.length?(n+(e.key==='ArrowDown'?1:-1)+choices.length)%choices.length:0);return;}if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();choose(choices[active]);return;}if(e.key==='Tab'&&mode==='mention'&&choices[active]){e.preventDefault();choose(choices[active]);return;}}
   if(e.target===input.current&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();onSend();}

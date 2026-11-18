@@ -1,0 +1,18 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Please Give me an overview of people/. Input:
+
+'Summarise billing, payments and outstanding balances. Please Give me an overview of people, teams and outstanding people-related work. '
+
+    at file:///home/user/James-Denning/scripts/test-composer-connectors-layout.mjs:27:117 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'Summarise billing, payments and outstanding balances. Please Give me an overview of people, teams and outstanding people-related work. ',
+  expected: /^Please Give me an overview of people/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v22.22.3
