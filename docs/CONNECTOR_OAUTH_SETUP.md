@@ -80,3 +80,21 @@ Configuration is not deployment, deployment is not sign-in success, and successf
 ## Rollback
 
 Apply additive migrations before code deployment. To roll back, disable new sign-in starts, retain private-connection visibility checks, and disable/revoke new OAuth connections under an approved procedure. **Do not deploy an old gateway that ignores `access_owner_user_id` while private connection history exists**: merely hiding the frontend or deleting tokens would not protect stored execution results. Keep additive consent/history columns and review any data migration separately. Native refresh leases can remain unused safely if its reader changes are reverted.
+
+## Recorded direct test-DB rollout
+
+The owner subsequently confirmed `thklwiybjuhrjqrrxyid` is the intended test database and explicitly requested deployment without separate staging. The application source from `19ce0114653f01e5e356c77f6ff1c1eba7ee5f10` was deployed through the scoped CLI release in GitHub Actions run **44290386627**. This exception does not amend the separate staged production-release procedure.
+
+Seven functions were compiled/uploaded: `jd-connect-oauth`, `jd-connect`, `jd-business-platform`, `jd-business-oauth-callback`, `jd-automation`, `jd-execution-worker`, `jd-mcp`. Existing JWT settings were retained. The MCP callback URL was configured; existing encryption/worker credentials were preserved. Provider clients and MCP host allowlisting remain unverified (separate configuration variables were absent; existing bundled secret contents were not read), so this is **not** live OAuth acceptance.
+
+The management API recorded migration timestamps different from the repository filenames. Their trimmed SQL hashes were checked against the repository and matched exactly:
+
+| Repository migration | Applied history version |
+|---|---|
+| `20261118080000_jd_workspace_read_services.sql` | `20261118105244` |
+| `20261118100000_jd_connector_oauth.sql` | `20261118105306` |
+| `20261118100001_jd_workspace_refresh_leases.sql` | `20261118105315` |
+
+Do not blindly reapply these migrations based on differing timestamps. Reconcile this mapping before any future migration automation. No unrelated pending migrations were applied.
+
+See `docs/evidence/oauth-direct-deployment/` for source hashes, deployed versions/code hashes, schema/privilege observations, failed attempts, successful release and HTTP smoke receipts. The current OAuth test-DB workflow is **verification-only**; the one-shot deployment trigger was removed after recovery. A metadata status of ACTIVE is insufficient: the initial connector upload failed at startup and was superseded by the successful compiled CLI deployment.
