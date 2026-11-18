@@ -30,8 +30,8 @@ jobs:
             "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")"
           if [ "$auth_status" = "401" ] || [ "$auth_status" = "403" ]; then
-            echo "::notice::Supabase Management API rejected SUPABASE_ACCESS_TOKEN (HTTP $auth_status). Replace it with a valid token with access to this project, then rerun this workflow."
-            exit 0
+            echo "::error::Supabase Management API rejected SUPABASE_ACCESS_TOKEN (HTTP $auth_status). Replace it with a valid token with access to this project, then rerun this workflow."
+            exit 1
           fi
           if [ "$auth_status" != "200" ]; then
             echo "::error::Could not read Supabase Auth settings (HTTP $auth_status)."
