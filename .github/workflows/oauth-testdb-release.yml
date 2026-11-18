@@ -12,7 +12,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event.head_commit.message == 'Deploy approved OAuth test database release'
+    # Commits include Arena's co-author trailer after the subject.
+    if: startsWith(github.event.head_commit.message, 'Deploy approved OAuth test database release')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
