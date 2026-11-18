@@ -1,0 +1,128 @@
+[
+  {
+    "name": "jd-connect",
+    "method": "GET",
+    "invalidJwt": false,
+    "expected": 405,
+    "actual": 405,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect",
+    "method": "OPTIONS",
+    "invalidJwt": false,
+    "expected": 200,
+    "actual": 200,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-business-oauth-callback",
+    "method": "GET",
+    "invalidJwt": false,
+    "expected": 400,
+    "actual": 400,
+    "cors": null,
+    "pass": true
+  },
+  {
+    "name": "jd-business-platform",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-automation",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-execution-worker",
+    "method": "GET",
+    "invalidJwt": false,
+    "expected": 405,
+    "actual": 405,
+    "cors": null,
+    "pass": true
+  },
+  {
+    "name": "jd-execution-worker",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": null,
+    "pass": true
+  },
+  {
+    "name": "jd-mcp",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect-oauth",
+    "method": "GET",
+    "invalidJwt": false,
+    "expected": 400,
+    "actual": 400,
+    "cors": null,
+    "pass": true
+  },
+  {
+    "name": "jd-connect-oauth",
+    "method": "POST",
+    "invalidJwt": false,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect-oauth",
+    "method": "OPTIONS",
+    "invalidJwt": false,
+    "expected": 200,
+    "actual": 200,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect",
+    "method": "POST",
+    "invalidJwt": true,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  },
+  {
+    "name": "jd-connect-oauth",
+    "method": "POST",
+    "invalidJwt": true,
+    "expected": 401,
+    "actual": 401,
+    "cors": "*",
+    "pass": true
+  }
+]

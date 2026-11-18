@@ -1,0 +1,144 @@
+{
+  "projectRef": "thklwiybjuhrjqrrxyid",
+  "ownerConfirmedTestDatabase": true,
+  "ownerRequestedNoSeparateStaging": true,
+  "applicationSource": "19ce0114653f01e5e356c77f6ff1c1eba7ee5f10",
+  "bundleCommit": "8b51d63089623042caf859afbbabd3afcead7311",
+  "migrationsApplied": [
+    {
+      "sourceVersion": "20261118080000",
+      "liveVersion": "20261118105244",
+      "name": "jd_workspace_read_services",
+      "requestId": "89ffa1d9-a25e-4913-bcfe-89264587f7d4"
+    },
+    {
+      "sourceVersion": "20261118100000",
+      "liveVersion": "20261118105306",
+      "name": "jd_connector_oauth",
+      "requestId": "b90f5752-725a-4c55-b777-a43079d0ae67"
+    },
+    {
+      "sourceVersion": "20261118100001",
+      "liveVersion": "20261118105315",
+      "name": "jd_workspace_refresh_leases",
+      "requestId": "3dc66d05-13cb-49cf-90d1-143c8a5fbdc0"
+    }
+  ],
+  "schemaVerification": {
+    "requestId": "591ae9bd-499f-418c-be60-0b7ea39505dc",
+    "requiredNewColumns": 8,
+    "oauthStateAndTokenRlsEnabled": true,
+    "grantRequestId": "7eaf96d5-b0d7-4f5d-a479-86cf7252245b",
+    "checkedRpcs": 10,
+    "allServiceRoleOnly": true,
+    "allSecurityDefinerWithEmptySearchPath": true,
+    "tableGrantRequestId": "c23379ca-1eff-48a7-b70e-17c2a8a829b1",
+    "oauthTablesDenyAnonAndAuthenticatedSelect": true,
+    "sqlHashRequestId": "921560b1-f71a-4204-91eb-d2d4a7024200",
+    "appliedSqlMatchesRepository": true
+  },
+  "initialConnectorDeployment": {
+    "method": "Single-body connector API with immutable remote module imports",
+    "metadataReportedActive": true,
+    "runtimeStatus": "FAILED: BOOT_ERROR observed on jd-connect-oauth and jd-connect",
+    "completeRollbackArtifactAvailable": false,
+    "functions": [
+      {
+        "name": "jd-connect-oauth",
+        "version": 1,
+        "requestId": "8250605c-2d6b-4b16-b010-b615082a3023"
+      },
+      {
+        "name": "jd-connect",
+        "version": 10,
+        "requestId": "ccd50003-ad0d-4269-827c-6c788a63c954"
+      },
+      {
+        "name": "jd-business-platform",
+        "version": 11,
+        "requestId": "c94a8fa0-cd14-472e-a447-622dc631eb9b"
+      },
+      {
+        "name": "jd-business-oauth-callback",
+        "version": 9,
+        "requestId": "7fee71b7-ff5c-450e-83ab-482586ca062e"
+      },
+      {
+        "name": "jd-automation",
+        "version": 12,
+        "requestId": "cd9c7ab7-1be9-451b-938c-cdf56a180ada"
+      },
+      {
+        "name": "jd-execution-worker",
+        "version": 18,
+        "requestId": "285f3c71-7eaa-442f-8179-c463e14fd3c1"
+      },
+      {
+        "name": "jd-mcp",
+        "version": 9,
+        "requestId": "9657904c-4216-4e90-bb8d-e7c12901c64f"
+      }
+    ]
+  },
+  "recovery": "Succeeded: supported Supabase CLI 3.2.0 --use-api compiled all seven bundles. Run 44290386627 completed with 12/12 live HTTP checks passing.",
+  "providerSetup": {
+    "secretMetadataRequestId": "c05e4deb-cd40-48c0-a0f8-467f673a16b0",
+    "mcpClientRegistrationsConfigured": null,
+    "mcpHostAllowlistConfigured": null,
+    "mcpCallbackConfigured": true,
+    "googleAndMicrosoftClientSecretsPresent": null,
+    "existingEncryptionBundlePresent": true,
+    "existingSecretValuesReadOrChanged": false,
+    "callbackUpdateRequestId": "fca29fda-e4f4-4dd8-924c-834fce28664e",
+    "callbackUrl": "https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-connect-oauth",
+    "readiness": "Not verified. Metadata lists no separate provider-client or MCP allowlist variables; existing JD_SECRETS_JSON contents were not retrieved."
+  },
+  "finalMetadataRequestId": "72ed6c30-df0f-4698-a9ea-fc6db3518bf2",
+  "finalFunctions": [
+    {
+      "name": "jd-connect-oauth",
+      "version": 3,
+      "verifyJwt": false,
+      "sha256": "38ef52184d0915b4e8cf9d58345fdedcce3d5ed063734fad662115755571d71b"
+    },
+    {
+      "name": "jd-connect",
+      "version": 12,
+      "verifyJwt": false,
+      "sha256": "35ea2d25e1bc7d8bb030465f781e9f4d821e0304c4fbcf460e8a3d287de32c2c"
+    },
+    {
+      "name": "jd-business-platform",
+      "version": 13,
+      "verifyJwt": true,
+      "sha256": "3bf2f5eb95a1b318b584af81c0e94acd268776726ba3d2f5632223dfb3893672"
+    },
+    {
+      "name": "jd-business-oauth-callback",
+      "version": 11,
+      "verifyJwt": false,
+      "sha256": "f3ef87fe8d20669fd5bb11ab494d1e01435c9a2a6797cf6773bf34a8c6b3204e"
+    },
+    {
+      "name": "jd-automation",
+      "version": 14,
+      "verifyJwt": true,
+      "sha256": "f71e6ee18516c7a49462fcb59bdf8f521c1706ee764e0476beae6bce18b22783"
+    },
+    {
+      "name": "jd-execution-worker",
+      "version": 20,
+      "verifyJwt": false,
+      "sha256": "79a4359a885820f161c1ebd4cb78c64133f32913db3c8f7072db1018d85ee53e"
+    },
+    {
+      "name": "jd-mcp",
+      "version": 11,
+      "verifyJwt": false,
+      "sha256": "81845da760cadd2e7c91ed8ced0843c2f33d075311e88571279b071d1add4b8f"
+    }
+  ],
+  "versionNote": "The callback environment variable update incremented function metadata versions project-wide; unchanged unrelated function code hashes were observed.",
+  "verificationRun": 44290986020,
+  "liveHttpChecksPassed": 14
+}

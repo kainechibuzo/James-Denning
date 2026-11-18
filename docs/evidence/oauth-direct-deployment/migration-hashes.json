@@ -1,0 +1,20 @@
+[
+  {
+    "source": "20261118080000_jd_workspace_read_services.sql",
+    "localTrimmedSqlMd5": "e86b35e772a3f6229b5b46731929c60b",
+    "liveSqlMd5": "e86b35e772a3f6229b5b46731929c60b",
+    "matches": true
+  },
+  {
+    "source": "20261118100000_jd_connector_oauth.sql",
+    "localTrimmedSqlMd5": "80ca86e18bddb10286ad24c16e59ae9d",
+    "liveSqlMd5": "80ca86e18bddb10286ad24c16e59ae9d",
+    "matches": true
+  },
+  {
+    "source": "20261118100001_jd_workspace_refresh_leases.sql",
+    "localTrimmedSqlMd5": "fc13f5957c617e8297af75faea3d488d",
+    "liveSqlMd5": "fc13f5957c617e8297af75faea3d488d",
+    "matches": true
+  }
+]

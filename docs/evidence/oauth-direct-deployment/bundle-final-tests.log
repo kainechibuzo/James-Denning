@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: jd-connect-oauth: immutable artifact and source integrity
+ok 1 - jd-connect-oauth: immutable artifact and source integrity
+  ---
+  duration_ms: 14.772515
+  type: 'test'
+  ...
+# Subtest: jd-connect-oauth: bundled handler denies unauthenticated requests without network or data access
+ok 2 - jd-connect-oauth: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 17.082077
+  type: 'test'
+  ...
+# Subtest: jd-connect: immutable artifact and source integrity
+ok 3 - jd-connect: immutable artifact and source integrity
+  ---
+  duration_ms: 15.193887
+  type: 'test'
+  ...
+# Subtest: jd-connect: bundled handler denies unauthenticated requests without network or data access
+ok 4 - jd-connect: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 3.417839
+  type: 'test'
+  ...
+# Subtest: jd-business-platform: immutable artifact and source integrity
+ok 5 - jd-business-platform: immutable artifact and source integrity
+  ---
+  duration_ms: 26.116413
+  type: 'test'
+  ...
+# Subtest: jd-business-platform: bundled handler denies unauthenticated requests without network or data access
+ok 6 - jd-business-platform: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 6.516118
+  type: 'test'
+  ...
+# Subtest: jd-business-oauth-callback: immutable artifact and source integrity
+ok 7 - jd-business-oauth-callback: immutable artifact and source integrity
+  ---
+  duration_ms: 6.815214
+  type: 'test'
+  ...
+# Subtest: jd-business-oauth-callback: bundled handler denies unauthenticated requests without network or data access
+ok 8 - jd-business-oauth-callback: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 0.964451
+  type: 'test'
+  ...
+# Subtest: jd-automation: immutable artifact and source integrity
+ok 9 - jd-automation: immutable artifact and source integrity
+  ---
+  duration_ms: 54.395053
+  type: 'test'
+  ...
+# Subtest: jd-automation: bundled handler denies unauthenticated requests without network or data access
+ok 10 - jd-automation: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 7.142538
+  type: 'test'
+  ...
+# Subtest: jd-execution-worker: immutable artifact and source integrity
+ok 11 - jd-execution-worker: immutable artifact and source integrity
+  ---
+  duration_ms: 63.443055
+  type: 'test'
+  ...
+# Subtest: jd-execution-worker: bundled handler denies unauthenticated requests without network or data access
+ok 12 - jd-execution-worker: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 5.324691
+  type: 'test'
+  ...
+# Subtest: jd-mcp: immutable artifact and source integrity
+ok 13 - jd-mcp: immutable artifact and source integrity
+  ---
+  duration_ms: 60.793759
+  type: 'test'
+  ...
+# Subtest: jd-mcp: bundled handler denies unauthenticated requests without network or data access
+ok 14 - jd-mcp: bundled handler denies unauthenticated requests without network or data access
+  ---
+  duration_ms: 5.105325
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 349.440862

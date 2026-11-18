@@ -1,0 +1,46 @@
+# Read-only verification after the owner-authorized direct test-DB deployment.
+# The one-shot deploy implementation is retained in commit f69b78a92d852431a0d98a90e7b0eebe52e386f0.
+# No credentials, schema mutations, functions deploy or worker dispatch here.
+name: Verify deployed OAuth test DB backend
+on:
+  workflow_dispatch:
+  push:
+    branches: [arena/3fc25aaf-james-denning]
+    paths: [.github/workflows/oauth-testdb-release.yml]
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Verify deployed OAuth test database release')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check startup, authentication and CORS without credentials
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const base='https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/';
+          const cases=[['jd-connect','GET',405],['jd-connect','POST',401],['jd-connect','OPTIONS',200],['jd-business-oauth-callback','GET',400],['jd-business-platform','POST',401],['jd-automation','POST',401],['jd-execution-worker','GET',405],['jd-execution-worker','POST',401],['jd-mcp','POST',401],['jd-connect-oauth','GET',400],['jd-connect-oauth','POST',401],['jd-connect-oauth','OPTIONS',200],['jd-connect','POST',401,'invalid-test-jwt'],['jd-connect-oauth','POST',401,'invalid-test-jwt']];
+          const results=[];
+          for(const [name,method,expected,bearer] of cases){
+            const response=await fetch(base+name,{method,headers:{Origin:'https://james-denning.com.ng','Content-Type':'application/json',...(bearer?{Authorization:'Bearer '+bearer}:{})},...(method==='POST'?{body:'{}'}:{}),signal:AbortSignal.timeout(45000)});
+            const body=await response.text();const cors=response.headers.get('access-control-allow-origin');
+            results.push({name,method,invalidJwt:Boolean(bearer),expected,actual:response.status,cors,body:body.slice(0,1000),pass:response.status===expected&&!body.includes('BOOT_ERROR')&&(method!=='OPTIONS'||cors==='*')});
+          }
+          fs.writeFileSync('http-smoke.json',JSON.stringify(results,null,2)+'\n');
+          // Public unauthenticated responses only. Annotations are retrievable
+          // even where the runner's redirected archive host is unavailable.
+          // One annotation avoids GitHub's ten-notices-per-step limit. Raw
+          // public response bodies remain in the uploaded artifact.
+          console.log('::notice::'+JSON.stringify({checks:results.map(({body,...result})=>result)}).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A'));
+          if(results.some(r=>!r.pass))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oauth-backend-http-verification
+          path: http-smoke.json
+          retention-days: 30
