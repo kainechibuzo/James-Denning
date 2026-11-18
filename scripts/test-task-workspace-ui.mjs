@@ -75,7 +75,7 @@ test("local ticks do not carry to changed item content or remounted workspace",a
 });
 test("references are hidden by default and revealed in explicit evidence details",async()=>{
   const ui={blocks:[{type:"evidence",title:"Audit evidence",items:[{label:"Task updated",reference:audit}]}]};const m=await mount(view({ui}));
-  try{assert.ok(!content().includes(audit));await act(async()=>document.querySelector("button.jd-viz-expand").click());assert.ok(content().includes(audit));}
+  try{const panel=document.querySelector("details.jd-task-disclosure");assert.ok(panel);assert.equal(panel.open,false);await act(async()=>panel.querySelector("summary").click());assert.ok(!content().includes(audit));await act(async()=>document.querySelector("button.jd-viz-expand").click());assert.ok(content().includes(audit));}
   finally{await m.cleanup();}
 });
 test("mounted hook/card integrates read → start → complete → remount/readback with a synthetic server",async()=>{
@@ -156,4 +156,28 @@ test("asking JD to work is an explicit request, not a task status transition",as
   try{assert.equal(requests.length,0);await act(async()=>document.querySelector("details summary").click());assert.equal(requests.length,0);
     await act(async()=>document.querySelector(".jd-task-work").click());assert.equal(requests.length,1);assert.equal(requests[0].id,id);assert.equal(writes,0);assert.equal(check().getAttribute("aria-pressed"),"false");
   }finally{await m.cleanup();}
+});
+
+test("timeline and evidence stay collapsed behind plain-language details",async()=>{
+ const ui={blocks:[
+  {type:"timeline",title:"Persisted execution activity",events:[{title:"Completed a workspace check",status:"completed",detail:"tools_count: 46"}]},
+  {type:"evidence",title:"Execution evidence",status:"completed",items:[{label:"Workspace activity recorded",detail:"tools_count: 46"}]}
+ ]};
+ const m=await mount(view({ui}));
+ try{
+  const panels=[...document.querySelectorAll("details.jd-task-disclosure")];
+  assert.equal(panels.length,2);
+  assert.ok(panels.every(panel=>panel.open===false));
+  assert.match(panels[0].querySelector("summary").textContent,/Activity details/);
+  assert.match(panels[1].querySelector("summary").textContent,/Execution records/);
+  assert.doesNotMatch(panels.map(panel=>panel.querySelector("summary").textContent).join(" "),/Persisted execution activity/);
+ }finally{await m.cleanup();}
+});
+test("saved task card avoids repeated implementation disclaimers",async()=>{
+ const m=await mount(view({taskRecords:ready()}));
+ try{
+  assert.match(content(),/Track work across your organisation/);
+  assert.match(content(),/Task statuses refresh automatically/);
+  assert.doesNotMatch(content(),/These are saved task statuses|Status is checked every 30 seconds|Saved record — refreshed from workspace/);
+ }finally{await m.cleanup();}
 });
