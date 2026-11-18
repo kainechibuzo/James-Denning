@@ -40,19 +40,19 @@ function Harness({client,scope="org-a:user-a:conversation-a",ui=workspace(),copi
 for(const item of [task("completed"),{id:"draft-1",title:"Draft task",status:"completed"},{title:"No ID task",status:"completed"}]){
   test(`draft ${item.id||"without ID"} never claims saved completion or dispatches a mutation`,async()=>{
     let calls=0;const m=await mount(view({ui:workspace(false,item),taskRecords:ready("completed"),onTaskToggle:()=>calls++}));
-    try{assert.match(content(),/0\/1 local ticks/);assert.match(content(),/Local checklist — no saved record confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");
+    try{assert.match(content(),/0\/1 local ticks/);assert.match(content(),/This is a draft checklist, not an active job/);assert.equal(check().getAttribute("aria-pressed"),"false");
       await act(async()=>check().click());assert.match(content(),/1\/1 local ticks/);assert.match(content(),/Locally checked/);assert.equal(calls,0);assert.doesNotMatch(content(),/Record complete|records complete|Status saved with audit/);
     }finally{await m.cleanup();}
   });
 }
 test("snapshot completion is unverified and inert until a matching authorised read",async()=>{
   const m=await mount(view({ui:workspace(true,task("completed")),onTaskToggle:()=>assert.fail("must not write")}));
-  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.match(content(),/Status not confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");}
+  try{assert.ok(check().disabled);assert.match(content(),/Not confirmed/);assert.match(content(),/Status not confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");}
   finally{await m.cleanup();}
 });
 test("invalid saved ID never becomes a local toggle",async()=>{
   const m=await mount(view({ui:workspace(true,{id:"draft-1",title:"Malformed saved task"}),onTaskToggle:()=>assert.fail("must not write")}));
-  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.doesNotMatch(content(),/local ticks/);}finally{await m.cleanup();}
+  try{assert.ok(check().disabled);assert.match(content(),/Not confirmed/);assert.doesNotMatch(content(),/local ticks/);}finally{await m.cleanup();}
 });
 for(const role of ["viewer","contractor","teacher",undefined]){
   test(`${role} cannot turn a saved task into a local completion`,async()=>{
@@ -75,7 +75,7 @@ test("local ticks do not carry to changed item content or remounted workspace",a
 });
 test("references are hidden by default and revealed in explicit evidence details",async()=>{
   const ui={blocks:[{type:"evidence",title:"Audit evidence",items:[{label:"Task updated",reference:audit}]}]};const m=await mount(view({ui}));
-  try{assert.ok(!content().includes(audit));await act(async()=>document.querySelector("button.jd-viz-expand").click());assert.ok(content().includes(audit));}
+  try{const panel=document.querySelector("details.jd-task-disclosure");assert.ok(panel);assert.equal(panel.open,false);await act(async()=>panel.querySelector("summary").click());assert.ok(!content().includes(audit));await act(async()=>document.querySelector("button.jd-viz-expand").click());assert.ok(content().includes(audit));}
   finally{await m.cleanup();}
 });
 test("mounted hook/card integrates read → start → complete → remount/readback with a synthetic server",async()=>{
@@ -85,8 +85,8 @@ test("mounted hook/card integrates read → start → complete → remount/readb
   }}};
   const m=await mount(React.createElement(Harness,{client}));
   try{assert.ok(!check().disabled);await act(async()=>check().click());assert.match(content(),/In progress/);assert.match(content(),/Status saved with audit evidence/);
-    await act(async()=>check().click());assert.match(content(),/Record complete/);assert.match(content(),/not verified external execution or approval/);
-    await m.render(React.createElement(Harness,{client,key:"remount"}));assert.match(content(),/Record complete/);assert.ok(check().disabled);assert.doesNotMatch(content(),/Status saved with audit evidence/);
+    await act(async()=>check().click());assert.match(content(),/Complete/);assert.match(content(),/does not independently verify an external business outcome/);
+    await m.render(React.createElement(Harness,{client,key:"remount"}));assert.match(content(),/Complete/);assert.ok(check().disabled);assert.doesNotMatch(content(),/Status saved with audit evidence/);
     assert.deepEqual(calls.map(c=>c.action),["operations.task.list","operations.task.transition","operations.task.transition","operations.task.list"]);
   }finally{await m.cleanup();}
 });
@@ -105,19 +105,19 @@ test("unconfirmed write blocks mounted retry until explicit read-only refresh re
   }}};
   const m=await mount(React.createElement(Harness,{client}));
   try{await act(async()=>check().click());assert.ok(check().disabled);assert.match(content(),/Update not confirmed/);assert.doesNotMatch(content(),/Record complete/);
-    await act(async()=>check().click());assert.equal(writes,1);await act(async()=>document.querySelector("#refresh").click());assert.match(content(),/Record complete/);assert.equal(writes,1);
+    await act(async()=>check().click());assert.equal(writes,1);await act(async()=>document.querySelector("#refresh").click());assert.match(content(),/Complete/);assert.equal(writes,1);
   }finally{await m.cleanup();}
 });
 test("account/conversation scope changes discard late reads from the previous scope",async()=>{
   const old=deferred();let reads=0;const client={functions:{invoke:async()=>++reads===1?old.promise:{data:{tasks:[]}}}};
   const m=await mount(React.createElement(Harness,{client}));
-  try{await m.render(React.createElement(Harness,{client,scope:"org-b:user-b:conversation-b"}));await act(async()=>old.resolve({data:{tasks:[task("completed")]}}));assert.match(content(),/Unverified snapshot/);assert.doesNotMatch(content(),/Record complete/);assert.ok(check().disabled);}
+  try{await m.render(React.createElement(Harness,{client,scope:"org-b:user-b:conversation-b"}));await act(async()=>old.resolve({data:{tasks:[task("completed")]}}));assert.match(content(),/Not confirmed/);assert.doesNotMatch(content(),/Record complete/);assert.ok(check().disabled);}
   finally{await m.cleanup();}
 });
 test("StrictMode replay still leaves mounted task records usable",async()=>{
   const client={functions:{invoke:async()=>({data:{tasks:[task()]}})}};
   const m=await mount(React.createElement(React.StrictMode,null,React.createElement(Harness,{client})));
-  try{assert.ok(!check().disabled);assert.match(content(),/Saved record — refreshed/);}finally{await m.cleanup();}
+  try{assert.ok(!check().disabled);assert.match(content(),/Task statuses refresh automatically/);}finally{await m.cleanup();}
 });
 test("chat wiring keys local state by account/workspace/conversation and offers read reconciliation",()=>{
   const source=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
@@ -135,7 +135,7 @@ test("saved task checklist starts collapsed and opening it does not mutate a rec
   let writes=0;const m=await mount(view({taskRecords:ready(),onTaskToggle:()=>writes++}));
   try{const details=document.querySelector("details.jd-task-disclosure");assert.ok(details);assert.equal(details.open,false);
     await act(async()=>details.querySelector("summary").click());assert.equal(details.open,true);assert.equal(writes,0);
-    assert.match(content(),/Changing a record here does not execute its task/);
+    assert.match(content(),/Task status shows recorded progress/);
   }finally{await m.cleanup();}
 });
 test("focus refresh reads new server status, skips hidden tabs and never executes tasks",async()=>{
@@ -146,7 +146,7 @@ test("focus refresh reads new server status, skips hidden tabs and never execute
     assert.equal(reads,1);status="completed";visibility="hidden";
     await act(async()=>window.dispatchEvent(new window.Event("focus")));assert.equal(reads,1);assert.doesNotMatch(content(),/Record complete/);
     visibility="visible";await act(async()=>document.dispatchEvent(new window.Event("visibilitychange")));
-    assert.equal(reads,2);assert.match(content(),/Record complete/);assert.ok(calls.every(a=>a==="operations.task.list"));
+    assert.equal(reads,2);assert.match(content(),/Complete/);assert.ok(calls.every(a=>a==="operations.task.list"));
   }finally{await m.cleanup();}
 });
 
@@ -156,4 +156,28 @@ test("asking JD to work is an explicit request, not a task status transition",as
   try{assert.equal(requests.length,0);await act(async()=>document.querySelector("details summary").click());assert.equal(requests.length,0);
     await act(async()=>document.querySelector(".jd-task-work").click());assert.equal(requests.length,1);assert.equal(requests[0].id,id);assert.equal(writes,0);assert.equal(check().getAttribute("aria-pressed"),"false");
   }finally{await m.cleanup();}
+});
+
+test("timeline and evidence stay collapsed behind plain-language details",async()=>{
+ const ui={blocks:[
+  {type:"timeline",title:"Persisted execution activity",events:[{title:"Completed a workspace check",status:"completed",detail:"tools_count: 46"}]},
+  {type:"evidence",title:"Execution evidence",status:"completed",items:[{label:"Workspace activity recorded",detail:"tools_count: 46"}]}
+ ]};
+ const m=await mount(view({ui}));
+ try{
+  const panels=[...document.querySelectorAll("details.jd-task-disclosure")];
+  assert.equal(panels.length,2);
+  assert.ok(panels.every(panel=>panel.open===false));
+  assert.match(panels[0].querySelector("summary").textContent,/Activity details/);
+  assert.match(panels[1].querySelector("summary").textContent,/Execution records/);
+  assert.doesNotMatch(panels.map(panel=>panel.querySelector("summary").textContent).join(" "),/Persisted execution activity/);
+ }finally{await m.cleanup();}
+});
+test("saved task card avoids repeated implementation disclaimers",async()=>{
+ const m=await mount(view({taskRecords:ready()}));
+ try{
+  assert.match(content(),/Track work across your organisation/);
+  assert.match(content(),/Task statuses refresh automatically/);
+  assert.doesNotMatch(content(),/These are saved task statuses|Status is checked every 30 seconds|Saved record — refreshed from workspace/);
+ }finally{await m.cleanup();}
 });

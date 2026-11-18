@@ -2,7 +2,7 @@ import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
+import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
@@ -512,7 +512,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility">{messages.length>0 && <button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setHistoryOpen(true)}><Menu size={18}/></button>}<button type="button" className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} aria-label={messages.length===0 ? "Open chat history and JD tools" : "Workspace status and chat tools"} title="Open chat history and JD tools" onClick={()=>setHistoryOpen(true)}>{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</button></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} role="status">{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
