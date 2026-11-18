@@ -34,7 +34,7 @@ try{for(const width of [320,393,708,1280]){
   await navigate(label);await page.locator(selector).waitFor();await save('menu-'+label.toLowerCase().replaceAll(' ','-'));await page.locator(selector).getByRole('button',{name:/^Back/}).click();
  }
  await navigate('Conversation history');await page.getByRole('button',{name:'Saved operations conversation'}).click();
- await page.locator('.jd-task-disclosure summary').getByText('19/30 records complete').waitFor();
+ await page.locator('.jd-task-disclosure summary').getByText('19 of 30 tasks complete').waitFor();
  const details=page.locator('.jd-task-disclosure');
  for(const theme of ['light','dark']){
   if(theme==='dark')await page.getByRole('button',{name:'Switch to dark mode',exact:true}).click();
