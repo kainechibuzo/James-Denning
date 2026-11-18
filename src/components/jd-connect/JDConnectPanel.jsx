@@ -58,7 +58,7 @@ export function JDConnectPanel({notify=()=>{},initialName="",initialEndpoint="",
  return <div style={{color:"var(--jd-text,#17191c)"}}>
   <div className="jd-page-header" style={{...card,background:"linear-gradient(135deg,var(--jd-text),var(--jd-text))",color:"var(--jd-card)",border:0}}>
    <div style={{display:"flex",alignItems:"center",gap:10}}><Link2 size={22}/><div style={{fontSize:17,fontWeight:900}}>JD Connect</div><span style={{marginLeft:"auto",fontSize:10,opacity:.75}}>MCP GATEWAY</span></div>
-   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Sign in through the directory, then review discovered tools. OAuth connections require explicit human approval for write-capable actions; signing in never approves a production deployment.</p>
+   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Connect through the directory, then review discovered tools. Personal connections require explicit human approval for write-capable actions; signing in never approves a production deployment.</p>
   </div>
   {error&&<div role="alert" style={{...card,borderColor:"var(--jd-border)",background:"var(--jd-soft)",color:"var(--jd-text)",fontSize:12}}>{error}</div>}
   {success&&<div role="status" style={{...card,borderColor:"var(--jd-border)",background:"var(--jd-soft)",color:"var(--jd-text-soft)",fontSize:12}}>{success}</div>}
@@ -78,17 +78,17 @@ export function JDConnectPanel({notify=()=>{},initialName="",initialEndpoint="",
    <p style={{fontSize:11,lineHeight:1.6,color:"var(--jd-muted,#60616b)"}}>The server hostname must be explicitly allowlisted by the JD operator. Use only trusted servers. Credentials are encrypted at rest.</p>
    <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setShowRegister(false);setToken("");}} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>Cancel</button><button disabled={!!busy||!name.trim()||!endpoint.trim()||authBlocked||(tokenRequired&&!token.trim())} onClick={register} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)"}}>{busy==="register"?"Connecting…":"Connect and discover tools"}</button></div>
   </div>}
-  {!servers.length&&!showRegister&&<div style={{...card,textAlign:"center",padding:28}}><Link2 size={25} style={{opacity:.5}}/><div style={{fontWeight:800,marginTop:8}}>No MCP servers connected</div><p style={{fontSize:12,color:"var(--jd-muted,#60616b)"}}>Choose a service in the directory and sign in. No API key is needed in the normal connection flow.</p></div>}
+  {!servers.length&&!showRegister&&<div style={{...card,textAlign:"center",padding:28}}><Link2 size={25} style={{opacity:.5}}/><div style={{fontWeight:800,marginTop:8}}>No MCP servers connected</div><p style={{fontSize:12,color:"var(--jd-muted,#60616b)"}}>Choose a service in the directory for its token instructions or account sign-in.</p></div>}
   {servers.map(server=>{
    const list=tools.filter(t=>t.server_id===server.id);
    return <div key={server.id} style={card}>
     <div style={{display:"flex",alignItems:"center",gap:9}}>
-     <ConnectorLogo id={server.oauth_provider_id||connectorForEndpoint(server.endpoint_url)?.id} name={server.name}/>
+     <ConnectorLogo id={server.oauth_provider_id?.replace(/^token:/,'')||connectorForEndpoint(server.endpoint_url)?.id} name={server.name}/>
      <div style={{flex:1,minWidth:0}}><div style={{fontWeight:800,fontSize:13}}>{server.name}</div><div style={{fontSize:10,color:"var(--jd-muted,#60616b)",overflowWrap:"anywhere"}}>{server.host}</div></div>
      <span style={{fontSize:10,fontWeight:800,color:statusColor(server.status)}}>{server.status.toUpperCase()}</span>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginTop:12,padding:"10px 0",borderTop:"1px solid var(--jd-border,#e5e7eb)"}}>
-     <div style={{fontSize:11,fontWeight:800}}>JD access</div>{server.oauth_provider_id&&<span style={{fontSize:11}}>OAuth · {server.access_owner_user_id?"Personal":"Shared with workspace managers"} · write actions require approval</span>}{!["owner","admin"].includes(role)&&<span style={{fontSize:11}}>Only owners and admins can widen access.</span>}
+     <div style={{fontSize:11,fontWeight:800}}>JD access</div>{server.oauth_provider_id&&<span style={{fontSize:11}}>{server.oauth_provider_id.startsWith('token:')?'Token':'OAuth'} · {server.access_owner_user_id?"Personal":"Shared with workspace managers"} · write actions require approval</span>}{!["owner","admin"].includes(role)&&<span style={{fontSize:11}}>Only owners and admins can widen access.</span>}
      {!server.oauth_provider_id&&<select aria-label={`JD access for ${server.name}`} value={server.grant?.access_level||"read_only"} disabled={!!busy||!["owner","admin"].includes(role)} onChange={e=>run("grant:"+server.id,()=>call("grants.set",{serverId:server.id,accessLevel:e.target.value}))} style={{...field,width:"auto",minWidth:170,padding:"8px"}}>
       <option value="read_only">Read only</option><option value="read_write">Read and write</option><option value="full_control">Full control</option>
      </select>}
@@ -100,7 +100,7 @@ export function JDConnectPanel({notify=()=>{},initialName="",initialEndpoint="",
      {server.status==="connected"&&<><button onClick={()=>refresh(server.id)} disabled={!!busy} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>{busy==="refresh:"+server.id?"Refreshing…":"Refresh tools"}</button>
      <button onClick={()=>disconnect(server.id)} disabled={!!busy} style={{...button,background:"var(--jd-soft)",color:"var(--jd-text)"}}>{busy==="disconnect:"+server.id?"Disconnecting…":"Disconnect"}</button></>}
      {!server.oauth_provider_id&&allowCustomSetup&&server.status!=="connected"&&<div style={{display:"flex",gap:6,flexBasis:"100%"}}><input type="password" autoComplete="new-password" style={{...field,flex:1}} value={reconnectTokens[server.id]||""} onChange={e=>setReconnectTokens(p=>({...p,[server.id]:e.target.value}))} placeholder="New bearer token (optional for public servers)"/><button onClick={()=>reconnect(server.id)} disabled={!!busy} style={{...button,background:"var(--jd-text-soft)",color:"var(--jd-card)"}}>{busy==="reconnect:"+server.id?"Connecting…":"Reconnect"}</button></div>}
-     {server.oauth_provider_id&&<button disabled={!!busy} onClick={()=>onSignIn(server.oauth_provider_id)} style={{...button,background:"var(--jd-soft)",color:"inherit"}}>Sign in again</button>}
+     {server.oauth_provider_id&&<button disabled={!!busy} onClick={()=>onSignIn(server.oauth_provider_id)} style={{...button,background:"var(--jd-soft)",color:"inherit"}}>{server.oauth_provider_id.startsWith('token:')?'Replace token':'Sign in again'}</button>}
      {!allowCustomSetup&&server.status!=="connected"&&<><button disabled={!!busy} onClick={()=>refresh(server.id)} style={{...button,background:"var(--jd-soft)",color:"inherit"}}>Retry discovery</button><button disabled={!!busy} onClick={()=>disconnect(server.id)} style={{...button,background:"var(--jd-soft)",color:"inherit"}}>Disconnect</button></>}
     </div>
     {expanded===server.id&&<div style={{marginTop:12,borderTop:"1px solid var(--jd-border,#e5e7eb)",paddingTop:10}}>

@@ -1,0 +1,35 @@
+# Read-only checks for the deployed token flow. No deployment credentials.
+# Completed one-shot deploy: run 44295806961, source 3dbacea77a6773f06559f36272784f5b3f633acf.
+name: Verify token popup backend
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Live credential-free gateway smoke checks
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const url='https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-connect';
+          const cases=[['GET',null,405],['OPTIONS',null,200],['POST',{action:'servers.token_setup',providerId:'github'},401],['POST',{action:'servers.token_connect',providerId:'github',confirm:true},401],['POST',{action:'servers.token_connect',providerId:'github',confirm:true},401,'invalid-test-jwt']];
+          const checks=[];
+          for(const [method,body,expected,jwt] of cases){
+            const r=await fetch(url,{method,headers:{Origin:'https://james-denning.com.ng','Content-Type':'application/json',...(jwt?{Authorization:'Bearer '+jwt}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(45000)});
+            const text=await r.text();checks.push({method,action:body?.action,invalidJwt:Boolean(jwt),expected,actual:r.status,cors:r.headers.get('access-control-allow-origin'),pass:r.status===expected&&!text.includes('BOOT_ERROR')});
+          }
+          fs.writeFileSync('token-http-smoke.json',JSON.stringify(checks,null,2));console.log('::notice::'+JSON.stringify({checks}));
+          if(checks.some(c=>!c.pass))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: token-backend-http-smoke
+          path: token-http-smoke.json
+          retention-days: 30

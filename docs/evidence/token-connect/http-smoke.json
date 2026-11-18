@@ -1,0 +1,47 @@
+{
+  "checks": [
+    {
+      "method": "GET",
+      "invalidJwt": false,
+      "expected": 405,
+      "actual": 405,
+      "cors": "*",
+      "pass": true
+    },
+    {
+      "method": "OPTIONS",
+      "invalidJwt": false,
+      "expected": 200,
+      "actual": 200,
+      "cors": "*",
+      "pass": true
+    },
+    {
+      "method": "POST",
+      "action": "servers.token_setup",
+      "invalidJwt": false,
+      "expected": 401,
+      "actual": 401,
+      "cors": "*",
+      "pass": true
+    },
+    {
+      "method": "POST",
+      "action": "servers.token_connect",
+      "invalidJwt": false,
+      "expected": 401,
+      "actual": 401,
+      "cors": "*",
+      "pass": true
+    },
+    {
+      "method": "POST",
+      "action": "servers.token_connect",
+      "invalidJwt": true,
+      "expected": 401,
+      "actual": 401,
+      "cors": "*",
+      "pass": true
+    }
+  ]
+}

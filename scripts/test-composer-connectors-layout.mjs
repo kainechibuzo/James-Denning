@@ -1,3 +1,4 @@
+import {tokenConnector} from '../supabase/functions/_shared/jd-connector-token-policy.mjs';
 import {oauthProviderId} from '../supabase/functions/_shared/jd-connector-oauth-policy.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
@@ -33,25 +34,25 @@ try{for(const width of [320,393,1280])for(const theme of ['light','dark']){
  await page.evaluate(()=>{window.__connectorFailure=true;});await page.getByRole('button',{name:'Add tools and connectors'}).click();await page.getByRole('alert').waitFor();assert.equal(await page.getByRole('option',{name:/lookup_customer/}).count(),0);await check('tool-load-error','.jd-tool-picker');await page.evaluate(()=>{window.__connectorFailure=false;});await page.getByRole('button',{name:'Retry',exact:true}).click();await page.getByRole('option',{name:/lookup_customer/}).waitFor();
  await page.getByRole('button',{name:/Connectors Explore apps/}).click();await page.getByRole('heading',{name:'Your business, connected.'}).waitFor();assert.equal(await page.locator('.jd-connectors-grid article').count(),22);await check('directory','.jd-connectors');
  await page.getByRole('searchbox',{name:'Search connectors'}).fill('Supabase');assert.equal(await page.locator('.jd-connectors-grid article').count(),1);await page.getByLabel('Connector category',{exact:true}).selectOption('Finance & accounting');assert.equal(await page.locator('.jd-connectors-grid article').count(),0);await page.getByRole('button',{name:'Clear filters'}).click();await page.getByLabel('Sort connectors',{exact:true}).selectOption('category');
- await page.getByRole('searchbox',{name:'Search connectors'}).fill('GitHub');await page.getByRole('button',{name:'View setup for GitHub',exact:true}).click();await check('setup-details','.jd-connector-setup');
+ await page.getByRole('searchbox',{name:'Search connectors'}).fill('Notion');await page.getByRole('button',{name:'View setup for Notion',exact:true}).click();await check('setup-details','.jd-connector-setup');
  assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.args?.action==='servers.register').length),0);
  await page.getByRole('button',{name:'Set up sign-in'}).click();await page.getByText('Operator setup required.',{exact:true}).waitFor();await check('oauth-operator-setup','.jd-connector-setup');
  assert.equal(await page.locator('input[type="password"]').count(),0);
  await page.evaluate(()=>{window.__oauthConfigured=true;window.open=()=>{const popup={opener:window,location:{replace:url=>{window.__oauthDestination=url;}},close:()=>{window.__popupClosed=true;}};return popup;};});
- await page.getByRole('button',{name:'Close sign-in setup'}).click();await page.getByRole('button',{name:'Connect GitHub',exact:true}).click();
- const consent=page.getByRole('checkbox',{name:/I authorise this connection/}),continueGitHub=page.getByRole('button',{name:'Continue with GitHub',exact:true});await consent.waitFor();
- assert.equal(await page.getByLabel('Connection sharing').inputValue(),'personal');assert.equal(await continueGitHub.isDisabled(),true);
+ await page.getByRole('button',{name:'Close sign-in setup'}).click();await page.getByRole('button',{name:'Connect Notion',exact:true}).click();
+ const consent=page.getByRole('checkbox',{name:/I authorise this connection/}),continueNotion=page.getByRole('button',{name:'Continue with Notion',exact:true});await consent.waitFor();
+ assert.equal(await page.getByLabel('Connection sharing').inputValue(),'personal');assert.equal(await continueNotion.isDisabled(),true);
  assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.name==='jd-connect-oauth'&&c.args.action==='start').length),0);
- await consent.check();await check('github-oauth-consent','.jd-connector-setup');await continueGitHub.click();await page.getByText('Synthetic provider sign-in failure; no provider contacted',{exact:true}).waitFor();await check('oauth-failure','.jd-connector-setup');assert.equal(await page.evaluate(()=>window.__popupClosed),true);
- await page.evaluate(()=>{window.__oauthSuccess=true;});await continueGitHub.click();await page.getByText(/Finish sign-in in the new tab/).waitFor();assert.match(await page.evaluate(()=>window.__oauthDestination),/^https:\/\/github.com\/login\/oauth\/authorize/);
- const startCalls=await page.evaluate(()=>window.__siteCalls.filter(c=>c.name==='jd-connect-oauth'&&c.args.action==='start'));assert.deepEqual(startCalls.at(-1).args,{action:'start',providerId:'github',sharing:'personal',confirm:true});
+ await consent.check();await check('github-oauth-consent','.jd-connector-setup');await continueNotion.click();await page.getByText('Synthetic provider sign-in failure; no provider contacted',{exact:true}).waitFor();await check('oauth-failure','.jd-connector-setup');assert.equal(await page.evaluate(()=>window.__popupClosed),true);
+ await page.evaluate(()=>{window.__oauthSuccess=true;});await continueNotion.click();await page.getByText(/Finish sign-in in the new tab/).waitFor();assert.match(await page.evaluate(()=>window.__oauthDestination),/^https:\/\/github.com\/login\/oauth\/authorize/);
+ const startCalls=await page.evaluate(()=>window.__siteCalls.filter(c=>c.name==='jd-connect-oauth'&&c.args.action==='start'));assert.deepEqual(startCalls.at(-1).args,{action:'start',providerId:'notion',sharing:'personal',confirm:true});
  await page.getByRole('button',{name:'Back to JD',exact:true}).click();assert.match(await input.inputValue(),/^@/);
  const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await page.locator('#workspace-navigation').getByRole('button',{name:'Connectors',exact:true}).click();await page.locator('.jd-connectors-grid').waitFor();
  const githubLogo=page.getByRole('img',{name:'GitHub logo',exact:true});await githubLogo.scrollIntoViewIfNeeded();await githubLogo.evaluate(img=>img.decode());assert.ok(await githubLogo.evaluate(img=>img.naturalWidth>0));
- await page.getByLabel('Connector setup',{exact:true}).selectOption('signin');assert.equal(await page.locator('.jd-connectors-grid article').count(),25);
+ await page.getByLabel('Connector setup',{exact:true}).selectOption('signin');assert.equal(await page.locator('.jd-connectors-grid article').count(),22);
  await page.getByLabel('Connector setup',{exact:true}).selectOption('public');assert.equal(await page.locator('.jd-connectors-grid article').count(),2);
  await page.getByRole('button',{name:'View setup for Exa',exact:true}).click();await page.getByRole('button',{name:'Connect limited public access'}).click();await page.getByText('Synthetic public service allowlist failure',{exact:true}).waitFor();
- await page.getByLabel('Connector setup',{exact:true}).selectOption('all');await page.getByRole('searchbox',{name:'Search connectors'}).fill('Resend');await page.getByRole('button',{name:'View setup for Resend',exact:true}).click();await page.getByText('Not available in the no-key connection flow yet.',{exact:true}).waitFor();await check('key-only-unavailable','.jd-connector-setup');assert.equal(await page.locator('input[type="password"]').count(),0);
+ await page.getByLabel('Connector setup',{exact:true}).selectOption('all');await page.getByRole('searchbox',{name:'Search connectors'}).fill('Bankstatemently');await page.getByRole('button',{name:'View setup for Bankstatemently',exact:true}).click();await page.getByText('No supported token connection yet.',{exact:true}).waitFor();await check('key-only-unavailable','.jd-connector-setup');assert.equal(await page.locator('input[type="password"]').count(),0);
  await page.getByRole('button',{name:'Work apps',exact:true}).click();await page.getByRole('checkbox',{name:/Gmail/}).waitFor();
  assert.equal(await page.getByRole('button',{name:'Continue with Google'}).isDisabled(),true);await check('workspace-setup-required','.jd-workspace-apps');
  await page.evaluate(()=>{window.__workspaceFailure=true;});await page.getByRole('button',{name:'Close app setup'}).click();await page.getByRole('button',{name:'Work apps',exact:true}).click();await page.getByRole('alert').waitFor();await check('workspace-backend-error','.jd-workspace-apps');
@@ -64,7 +65,7 @@ try{for(const width of [320,393,1280])for(const theme of ['light','dark']){
  await page.getByRole('button',{name:'Close app setup'}).click();
 
  // Every OAuth provider hands off to sign-in, never a PAT form.
- if(width===393&&theme==='light')for(const entry of CONNECTOR_CATALOGUE.filter(e=>oauthProviderId(e.id))){
+ if(width===393&&theme==='light')for(const entry of CONNECTOR_CATALOGUE.filter(e=>oauthProviderId(e.id)&&!tokenConnector(e.id))){
   await page.getByRole('button',{name:/^Explore/}).click();await page.getByLabel('Connector setup',{exact:true}).selectOption('all');await page.getByRole('searchbox',{name:'Search connectors'}).fill(entry.name);
   await page.getByRole('button',{name:`Connect ${entry.name}`,exact:true}).click();await page.getByRole('checkbox',{name:/I authorise this connection/}).waitFor();assert.equal(await page.locator('input[type="password"]').count(),0);
  }
@@ -72,7 +73,7 @@ try{for(const width of [320,393,1280])for(const theme of ['light','dark']){
  assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.args?.action==='grants.set'||c.args?.action==='tools.call'||c.args?.action==='submit').length),0);
  // Standalone role fixtures use real components with the same fail-closed API.
  await page.evaluate(()=>{window.__mountConnectorRole('manager');});await page.getByRole('button',{name:'My connections',exact:true}).click();await page.getByLabel('JD access for Sample business').waitFor();assert.equal(await page.getByLabel('JD access for Sample business').isDisabled(),true);
- await page.getByRole('button',{name:/^Explore/}).click();await page.getByRole('button',{name:'Connect GitHub',exact:true}).click();await page.getByLabel('Connection sharing').waitFor();assert.equal(await page.getByRole('option',{name:'Share with authorised workspace managers'}).count(),0);
+ await page.getByRole('button',{name:/^Explore/}).click();await page.getByRole('button',{name:'Connect Notion',exact:true}).click();await page.getByLabel('Connection sharing').waitFor();assert.equal(await page.getByRole('option',{name:'Share with authorised workspace managers'}).count(),0);
  await page.evaluate(()=>{window.__mountConnectorRole('owner');});await page.getByRole('button',{name:'My connections',exact:true}).click();await page.getByLabel('JD access for Sample business').waitFor();assert.equal(await page.getByLabel('JD access for Sample business').isDisabled(),false);
  await page.evaluate(()=>{window.__siteCalls=[];window.__mountConnectorRole('viewer');});await page.getByRole('button',{name:'My connections',exact:true}).click();await page.getByText('Managed by your workspace',{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Custom MCP server'}).count(),0);assert.equal(await page.evaluate(()=>window.__siteCalls.length),0);
  await page.evaluate(()=>{window.__mountComposerRole('viewer');});await page.getByRole('button',{name:'Add tools and connectors'}).click();await page.getByText('Connected tools require a workspace owner, admin or manager.').waitFor();assert.equal(await page.evaluate(()=>window.__siteCalls.length),0);

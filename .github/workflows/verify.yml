@@ -36,6 +36,9 @@ jobs:
       - name: Test connector OAuth, token rotation, private access and brand assets
         run: npm run test:connector-oauth
 
+      - name: Test pasted-token policy, encrypted persistence and private access
+        run: npm run test:connector-tokens
+
       - name: Test workspace app consent, isolation and read-only adapters
         run: npm run test:work-apps
 

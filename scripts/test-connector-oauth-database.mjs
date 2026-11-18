@@ -13,6 +13,7 @@ before(async()=>{
  await db.exec(sql('20261114091134_jd_connect_mcp_platform.sql'));
  await db.exec(sql('20261114094036_jd_connector_permission_grants.sql'));
  await db.exec(sql('20261118100000_jd_connector_oauth.sql'));
+ await db.exec(sql('20261118120000_jd_connector_pasted_tokens.sql'));
 });
 beforeEach(async()=>{await db.exec('reset role;truncate jd_connector_servers cascade;');await db.query("update profiles set role='manager',school_id=$2 where id=$1",[manager,school]);});
 after(()=>db.close());
@@ -53,3 +54,36 @@ for(const role of ['anon','authenticated'])test(`${role} cannot read tokens/stat
 });
 
 test("reconnect cannot expose private history by changing account sharing",async()=>{await begin(owner,false);await assert.rejects(begin(owner,true,"shared-state"),/Sharing scope cannot change/);assert.equal((await db.query("select access_owner_user_id from jd_connector_servers")).rows[0].access_owner_user_id,owner);});
+
+async function paste(actor=manager,provider='github'){
+ return (await db.query("select * from jd_save_connector_pasted_token($1,$2,'SYNTHETIC_ENCRYPTED_BUNDLE')",[actor,provider])).rows[0];
+}
+test('pasted token is private, generation-bound, encrypted storage only, not connected before discovery',async()=>{
+ const r=await paste();const s=(await db.query('select * from jd_connector_servers where id=$1',[r.server_id])).rows[0];
+ assert.equal(s.access_owner_user_id,manager);assert.equal(s.oauth_provider_id,'token:github');assert.equal(s.status,'error');assert.equal(s.oauth_generation,1);
+ assert.equal((await db.query('select expires_at from jd_connector_oauth_tokens')).rows[0].expires_at,null);
+ assert.equal(await discover(s.id),true);
+});
+test('token replacement resets grants, invalidates old discovery and pending OAuth state',async()=>{
+ const server=await begin();await finish(server);await discover(server);
+ await db.query("insert into jd_connector_grants(server_id,school_id,access_level,granted_by) values($1,$2,'full_control',$3)",[server,school,owner]);
+ const r=await paste();assert.equal(r.server_id,server);assert.equal(r.generation,2);assert.equal(await finish(server),false);assert.equal(await discover(server,1),false);assert.equal(await discover(server,2),true);
+ assert.equal((await db.query('select count(*)::int as n from jd_connector_grants')).rows[0].n,0);
+ assert.equal((await db.query("select * from jd_consume_connector_oauth('state-one')")).rows.length,0);
+});
+test('token actor checks: another user/shared history cannot be overwritten; tenants remain isolated',async()=>{
+ const own=await paste();await assert.rejects(paste(owner),/another user|shared history/);
+ const otherTenant=await paste(other);assert.notEqual(own.server_id,otherTenant.server_id);
+ await db.exec('truncate jd_connector_servers cascade;');await begin(owner,true);await assert.rejects(paste(owner),/shared history/);
+});
+test('staff, missing actor and unknown provider fail closed for pasted tokens',async()=>{
+ await assert.rejects(paste(staff),/permission/);await assert.rejects(paste(id(999)),/permission/);await assert.rejects(paste(manager,'notion'),/Unsupported/);
+ assert.equal((await db.query('select count(*)::int as n from jd_connector_servers')).rows[0].n,0);
+});
+test('token disconnect blocks stale discovery and removes encrypted credentials',async()=>{
+ const r=await paste();await discover(r.server_id);assert.equal((await db.query('select jd_disconnect_connector_oauth($1,$2) as ok',[r.server_id,manager])).rows[0].ok,true);
+ assert.equal(await discover(r.server_id,r.generation),false);assert.equal((await db.query('select count(*)::int as n from jd_connector_oauth_tokens')).rows[0].n,0);
+});
+for(const role of ['anon','authenticated'])test(`${role} cannot call pasted token persistence RPC`,async()=>{
+ await db.exec('set role '+role);await assert.rejects(paste(),/permission denied/);await db.exec('reset role');
+});

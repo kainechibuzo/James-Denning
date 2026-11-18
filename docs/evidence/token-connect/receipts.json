@@ -1,0 +1,37 @@
+{
+  "projectRef": "thklwiybjuhrjqrrxyid",
+  "sourceCommit": "3dbacea77a6773f06559f36272784f5b3f633acf",
+  "deploymentWorkflowCommit": "2f6ad3a6f211be511592724807681cb32b5addc0",
+  "deploymentRun": 44295806961,
+  "migration": {
+    "name": "jd_connector_pasted_tokens",
+    "sourceVersion": "20261118120000",
+    "liveVersion": "20261118113318",
+    "requestId": "59a939ba-6136-4638-b8c5-fb09a6282216",
+    "verificationRequestId": "e2cd58dc-6262-4e2c-9bbd-d48f57e75807",
+    "appliedSqlReadRequestId": "5a8592a4-4f50-4ef1-ad67-c0420cad0a7a",
+    "fileAndLiveSqlMd5": "0d31faa48936ba751d026c0c558bea87",
+    "fileSha256": "eedd140f87a7d5d1c1f038673fdaa9fcfada5be38d1df2271ab8e274482bc253",
+    "securityDefiner": true,
+    "emptySearchPath": true,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "serviceRoleExecute": true
+  },
+  "function": {
+    "name": "jd-connect",
+    "version": 13,
+    "verifyJwt": false,
+    "status": "ACTIVE",
+    "ezbrSha256": "431bc0cb4d179830c616ee4111407a0c6007d98dc81c7e2d1f00dfebf89e6db4",
+    "metadataRequestId": "73099c02-90b1-43a2-b85e-56a2400847ae"
+  },
+  "remoteMutations": [
+    "one additive RPC migration",
+    "jd-connect compiled deployment only"
+  ],
+  "secretChanges": false,
+  "realProviderCredentialsUsed": false,
+  "authenticatedWorkerInvoked": false,
+  "realTokenInteroperabilityVerified": false
+}

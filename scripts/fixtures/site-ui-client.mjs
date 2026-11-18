@@ -40,6 +40,13 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(name==='jd-connect'&&body.action==='servers.token_setup')return window.__tokenSetupFailure?{error:{message:'synthetic failure'}}:{data:{ready:true,providerId:body.providerId}};
+  if(name==='jd-connect'&&body.action==='servers.token_connect'){
+   if(window.__holdTokenRequest)await new Promise(resolve=>{window.__releaseTokenRequest=resolve;});
+   if(!window.__tokenSuccess)return{error:{message:'Untrusted reflection '+body.bearerToken}};
+   window.__sampleServers=[{id:'token-server',name:'GitHub',host:'api.githubcopilot.com',endpoint_url:'https://api.githubcopilot.com/mcp/',status:'connected',oauth_provider_id:'token:github',access_owner_user_id:'synthetic-owner'}];
+   return{data:{server:window.__sampleServers[0],tools:[]}};
+  }
   if(name==='jd-connect-oauth'){
    if(body.action==='providers')return window.__oauthBackendError?{error:{name:'FunctionsFetchError',message:'Failed to send a request to the Edge Function'}}:{data:{providers:Object.entries(MCP_OAUTH_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__oauthConfigured),scopes:['synthetic:read']}))}};
    if(body.action==='start')return window.__oauthSuccess?{data:{authorization_url:'https://github.com/login/oauth/authorize?state=synthetic&code_challenge_method=S256',authorization_origin:'https://github.com'}}:{error:{message:'Synthetic provider sign-in failure; no provider contacted'}};
