@@ -61,7 +61,13 @@ jobs:
             exit 1
           fi
           for name in jd-connect jd-business-oauth-callback jd-business-platform jd-automation jd-execution-worker jd-mcp jd-connect-oauth; do
-            supabase functions deploy "$name" --use-api --project-ref thklwiybjuhrjqrrxyid --workdir build/oauth-testdb-release
+            if ! supabase functions deploy "$name" --use-api --project-ref thklwiybjuhrjqrrxyid --workdir build/oauth-testdb-release > deploy-output.log 2>&1; then
+              # Expose only redacted CLI diagnostics through check annotations;
+              # the sandbox cannot download GitHub's redirected log archives.
+              node --input-type=module -e "import fs from 'node:fs'; let text=fs.readFileSync('deploy-output.log','utf8').replaceAll(process.env.SUPABASE_ACCESS_TOKEN,'[REDACTED]'); console.log('::error::'+text.slice(-2500).replaceAll('%','%25').replaceAll('\\r','%0D').replaceAll('\\n','%0A'));"
+              exit 1
+            fi
+            cat deploy-output.log
           done
       - name: Check deployed startup and unauthenticated HTTP boundaries
         run: |
