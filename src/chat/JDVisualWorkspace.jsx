@@ -73,7 +73,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
         const done = saved ? items.filter(item=>isSavedTaskCard(ui,item) && records[item.id]?.status === "completed").length : 0;
         const localTicks = saved ? 0 : items.filter((item,i)=>checked[localKey(item,i)]).length;
         const pct = items.length ? Math.round((saved?done:localTicks) / items.length * 100) : 0;
-        return <Panel collapsible key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? statusConfirmed ? `${done}/${items.length} records complete` : "Status not confirmed" : `${localTicks}/${items.length} local ticks`}</span>}>
+        return <Panel collapsible key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? statusConfirmed ? `${done} of ${items.length} tasks complete` : "Status not confirmed" : `${localTicks}/${items.length} local ticks`}</span>}>
           <p className="jd-task-explanation">{saved ? "Track work across your organisation. Ask JD to work on a task when you want it to take the next authorised step." : "This is a draft checklist, not an active job. Local ticks do not perform work or save progress."}</p>
           {saved && <div className="jd-task-actions">
             {onRefreshTasks && <button type="button" onClick={onRefreshTasks} disabled={taskRecords?.phase==="loading"||Boolean(taskRecords?.pending?.length)}>{taskRecords?.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>}
