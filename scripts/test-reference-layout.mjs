@@ -103,7 +103,7 @@ try{
     await page.getByRole('button',{name:'Notifications',exact:true}).click();
     await page.getByRole('button',{name:'Account settings',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>window.__actions),['profile','help','notifications','profile']);
-    await page.getByRole('button',{name:'Open chat history and JD tools'}).click();
+    await page.getByRole('button',{name:'Open conversation history'}).click();
     await page.getByRole('button',{name:/Saved conversation/}).click();
     await page.getByText('Saved fixture message. No real records were read.').waitFor();
     await input.fill('A synthetic message');await input.press('Shift+Enter');await input.press('X');
