@@ -6,7 +6,7 @@ import {taskTransitionAction} from "./operational-task-client.mjs";
 
 const text = (value, fallback = "") => typeof value === "string" ? value.slice(0, 500) : fallback;
 const list = (value, max = 30) => Array.isArray(value) ? value.slice(0, max) : [];
-const statusLabel = (status) => ({ completed: "Complete", running: "Running", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", queued: "Queued", awaiting_approval: "Awaiting approval", cancelled: "Cancelled" }[status] || "Pending");
+const statusLabel = (status) => ({ completed: "Complete", running: "In progress", in_progress: "In progress", blocked: "Blocked", failed: "Failed", pending: "Not started", queued: "Queued", awaiting_approval: "Awaiting approval", cancelled: "Cancelled" }[status] || "Pending");
 
 function Status({ value }) {
   const status = String(value || "pending");
@@ -57,7 +57,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
       .jd-viz-option{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:9px;padding:8px 10px;font-size:10px;color:var(--jd-text);cursor:pointer}
       .jd-viz-option:hover{border-color:var(--jd-border);background:var(--jd-soft)}
       .jd-viz-timeline{display:grid;gap:0}.jd-viz-event{display:grid;grid-template-columns:17px 1fr auto;gap:8px;align-items:start;padding:7px 0}.jd-viz-event>span:first-child{color:var(--jd-muted);padding-top:1px}.jd-viz-event strong{font-size:10px;color:var(--jd-text)}.jd-viz-event small{display:block;font-size:9px;color:var(--jd-muted);margin-top:3px;line-height:1.45}
-      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid var(--jd-border);background:var(--jd-soft);border-radius:10px;padding:10px}.jd-viz-metric small{display:block;font-size:9px;color:var(--jd-muted)}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:var(--jd-text);margin-top:4px}
+      .jd-viz-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}.jd-viz-metric{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:10px;padding:11px;min-width:0}.jd-viz-metric small{display:block;font-size:9px;color:var(--jd-muted)}.jd-viz-metric strong{display:block;font-size:18px;letter-spacing:-.6px;color:var(--jd-text);margin-top:4px}.jd-viz-department-detail{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;margin-top:5px}
       .jd-viz-evidence{display:flex;flex-wrap:wrap;gap:7px}.jd-viz-evidence-item{display:flex;flex-direction:column;gap:4px;border:1px solid var(--jd-border);border-radius:8px;padding:7px 9px;font-size:9px;color:var(--jd-text);background:var(--jd-soft);overflow-wrap:anywhere;min-width:0}.jd-viz-evidence-item small{font-size:9px;line-height:1.45;color:var(--jd-muted)}
       .jd-viz-expand{border:0;background:transparent;color:var(--jd-muted);font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 0}
       @media(max-width:420px){.jd-viz-panel{padding:11px}.jd-viz-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -74,12 +74,12 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
         const localTicks = saved ? 0 : items.filter((item,i)=>checked[localKey(item,i)]).length;
         const pct = items.length ? Math.round((saved?done:localTicks) / items.length * 100) : 0;
         return <Panel collapsible key={key} title={text(block.title, "Task checklist")} icon={ClipboardList} aside={<span className="jd-viz-status">{saved ? statusConfirmed ? `${done}/${items.length} records complete` : "Status not confirmed" : `${localTicks}/${items.length} local ticks`}</span>}>
-          <p className="jd-task-explanation">{saved ? "These are saved task statuses, not proof that JD performed the work. JD executes authorised jobs through available tools; approvals, missing inputs or work outside those tools can still require you. Changing a record here does not execute its task." : "This is a draft checklist, not an active job. Local ticks do not perform work or save progress."}</p>
+          <p className="jd-task-explanation">{saved ? "Track work across your organisation. Ask JD to work on a task when you want it to take the next authorised step." : "This is a draft checklist, not an active job. Local ticks do not perform work or save progress."}</p>
           {saved && <div className="jd-task-actions">
             {onRefreshTasks && <button type="button" onClick={onRefreshTasks} disabled={taskRecords?.phase==="loading"||Boolean(taskRecords?.pending?.length)}>{taskRecords?.phase==="loading"?"Refreshing task records…":"Refresh task records"}</button>}
             {onViewRuns && <button type="button" onClick={onViewRuns}>View JD execution runs</button>}
           </div>}
-          {saved && <p className="jd-task-explanation">Status is checked every 30 seconds while this conversation is visible. Refresh only reads records; it never retries a write. Execution evidence remains a conversation snapshot.</p>}
+          {saved && <p className="jd-task-explanation">Task statuses refresh automatically while this conversation is open. Refreshing checks records; it does not start work.</p>}
           {saved && taskRecords?.error && <p role="alert">{taskRecords.error}</p>}
           <div className="jd-viz-progress" aria-label={saved?"Refreshed record completion":"Local draft ticks only"}><span style={{ width: pct + "%" }}/></div>
           {items.map((item, i) => {
@@ -111,11 +111,11 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
                 {list(item?.dependencies,8).length>0&&<small>Depends on: {list(item.dependencies,8).map(dependency=>text(dependency)).join(", ")}</small>}
                 {item?.approval_required&&<small style={{color:"var(--jd-text-soft)"}}>Owner approval required before action: {text(item.approval_reason,"Approval required")}</small>}
               </div>
-              {record ? record.status === "completed" ? <span className="jd-viz-status good">Record complete</span> : <Status value={record.status}/> : <span className="jd-viz-status">{saved?"Unverified snapshot":localChecked?"Locally checked":"Draft"}</span>}
+              {record ? record.status === "completed" ? <span className="jd-viz-status good">Complete</span> : <Status value={record.status}/> : <span className="jd-viz-status">{saved?"Not confirmed":localChecked?"Locally checked":"Draft"}</span>}
             </div>;
           })}
           {block.sample_truncated&&<small style={{color:"var(--jd-text-soft)",fontSize:9}}>Only a sample of tasks is shown.</small>}
-          <small style={{color:"var(--jd-muted)",fontSize:10}}>Local ticks do not save tasks. A completed record is checklist progress, not verified external execution or approval.</small>
+          <small style={{color:"var(--jd-muted)",fontSize:10}}>{saved ? "Task status shows recorded progress. It does not independently verify an external business outcome." : "Local ticks do not save tasks."}</small>
         </Panel>;
       }
       if (block.type === "workflow") return <Panel key={key} title={text(block.title, "Workflow")} icon={GitBranch} aside={<Status value={block.status}/>}>
@@ -125,14 +125,14 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
       if (block.type === "question") return <Panel key={key} title={text(block.title, "Decision required")} icon={MessageSquare}>
         <div className="jd-viz-question"><p>{text(block.prompt, "JD needs a decision before continuing.")}</p><div className="jd-viz-options">{list(block.options, 8).map((option, i) => <button className="jd-viz-option" type="button" key={i} onClick={() => onAnswer?.(text(option?.value, text(option?.label))) }>{text(option?.label, "Choose option")}</button>)}</div></div>
       </Panel>;
-      if (block.type === "timeline") return <Panel key={key} title={text(block.title, "Execution timeline")} icon={Activity}>
+      if (block.type === "timeline") return <Panel collapsible key={key} title="Activity details" icon={Activity}>
         <div className="jd-viz-timeline">{!list(block.events, 30).length&&<p className="jd-viz-empty">No activity details were included in this snapshot.</p>}{list(block.events, 30).map((event, i) => <div className="jd-viz-event" key={i}><span>{event?.status === "completed" ? <CheckCircle2 size={14}/> : event?.status === "failed" ? <AlertCircle size={14}/> : event?.status === "running" ? <Activity size={14}/> : <Clock3 size={14}/>}</span><div><strong>{text(event?.title, "Activity")}</strong>{event?.detail && <small>{text(event.detail)}</small>}</div><Status value={event?.status}/></div>)}</div>
       </Panel>;
       if (block.type === "departments") return <Panel key={key} title={text(block.title, "Departments")} icon={Building2}>
-        <div className="jd-viz-metrics jd-viz-departments">{list(block.items, 20).map((item, i) => <div className="jd-viz-metric" key={i}><small>{text(item?.name, "Department")}</small><strong>{text(item?.metric, "—")}</strong>{item?.detail && <small>{text(item.detail)}</small>}{Number(item?.total ?? item?.total_tasks ?? item?.task_count ?? (String(item?.detail || "").match(/(\d+) total/i)?.[1])) === 0 ? <span className="jd-viz-status">No tasks assigned</span> : <Status value={item?.status}/>}</div>)}</div>
+        <div className="jd-viz-metrics jd-viz-departments">{list(block.items, 20).map((item, i) => <div className="jd-viz-metric" key={i}><small>{text(item?.name, "Department")}</small><strong>{text(item?.metric, "—")}</strong>{item?.detail && <small className="jd-viz-department-detail">{text(item.detail)}</small>}{Number(item?.total ?? item?.total_tasks ?? item?.task_count ?? (String(item?.detail || "").match(/(\d+) total/i)?.[1])) === 0 ? <span className="jd-viz-status">No tasks assigned</span> : <Status value={item?.status}/>}</div>)}</div>
       </Panel>;
       const evidence = list(block.items, 30);
-      return <Panel key={key} title={text(block.title, "Evidence and verification")} icon={FileCheck2} aside={<Status value={block.status}/>}>
+      return <Panel collapsible key={key} title="Execution records" icon={FileCheck2} aside={<Status value={block.status}/>}>
         <div className="jd-viz-evidence">{evidence.map((item, i) => <span className="jd-viz-evidence-item" key={i}><span>{text(item?.label, "Evidence")}</span>{item?.detail && <small>{text(item.detail)}</small>}</span>)}</div>
         {block.summary && <p style={{ fontSize: 10, lineHeight: 1.55, color: "var(--jd-muted)", margin: "9px 0 0" }}>{text(block.summary)}</p>}
         {(list(block.details, 12).length > 0 || evidence.some(item=>item?.reference)) && <><button type="button" className="jd-viz-expand" onClick={() => toggle(key)}>{expanded[key] ? <ChevronUp size={13}/> : <ChevronDown size={13}/>} {expanded[key] ? "Hide details" : "Show details"}<ArrowRight size={11}/></button>{expanded[key] && <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--jd-muted)", fontSize: 10, lineHeight: 1.7 }}>{list(block.details, 12).map((detail, i) => <li key={i}>{text(detail)}</li>)}{evidence.filter(item=>item?.reference).map((item,i)=><li key={"ref-"+i}>{text(item.label,"Evidence")} — reference: {text(item.reference)}</li>)}</ul>}</>}
