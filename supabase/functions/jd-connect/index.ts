@@ -1,3 +1,4 @@
+import {tokenConnector,tokenEndpoint,validateConnectorToken} from "../_shared/jd-connector-token-policy.mjs";
 import {connectorOAuthToken,connectorOAuthKey,prepareConnectorRevocation} from "../_shared/jd-connector-oauth.ts";
 import {canUseConnector,MCP_OAUTH_PROVIDERS} from "../_shared/jd-connector-oauth-policy.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -55,7 +56,8 @@ Deno.serve(async req=>{
   return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,requireEncryptionKey()):"";
  };
  const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string)=>{
-  validateMcpEndpoint(endpoint,allowed);
+  // Fixed reviewed token endpoints do not require arbitrary-host setup.
+  validateMcpEndpoint(endpoint,tokenEndpoint(endpoint)?[new URL(endpoint).hostname]:allowed);
   const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
   const headers:Record<string,string>={"Content-Type":"application/json","Accept":"application/json, text/event-stream","MCP-Protocol-Version":"2025-06-18"};
   if(token)headers.Authorization=`Bearer ${token}`;if(sessionId)headers["Mcp-Session-Id"]=sessionId;
@@ -76,7 +78,8 @@ Deno.serve(async req=>{
  const refreshTools=async(server:any,token:string)=>{
   const session=await connect(server,token);
   const listed=await rpc(server.endpoint_url,token,"tools/list",{},session.sessionId||undefined);
-  const raw=Array.isArray(listed.result.tools)?listed.result.tools:[];
+  if(!Array.isArray(listed.result.tools))throw new Error("MCP server omitted the tool catalogue");
+  const raw=listed.result.tools;
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
   const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
@@ -184,6 +187,36 @@ Deno.serve(async req=>{
    try{const tools=await refreshTools(server,"");await audit("connector.public.connected",{server_id:server.id,provider_id:body.providerId});return send({server,tools});}
    catch{throw new Error("Public tool discovery failed. No working connection confirmed. Inspect My connections.");}
   }
+  if(body.action==="servers.token_setup"){
+   const preset=tokenConnector(body.providerId);
+   if(!preset)return send({error:"Token setup is not supported for this service"},400);
+   return send({ready:Boolean(key),providerId:body.providerId,error:key?null:"Secure token storage needs operator configuration. Do not paste a token yet."});
+  }
+  if(body.action==="servers.token_connect"){
+   if(internal||body.confirm!==true)return send({error:"Confirm token access as a signed-in person"},403);
+   const preset=tokenConnector(body.providerId);
+   if(!preset)return send({error:"Token setup is not supported for this service"},400);
+   let token:string;try{token=validateConnectorToken(body.bearerToken);}catch{return send({error:"Paste only a valid provider token, without a Bearer prefix or URL."},400);}
+   if(!key)return send({error:"Secure token storage is not configured. Contact your workspace operator."},503);
+   // Ciphertext only crosses the DB boundary. No plaintext in audit/errors.
+   const encrypted=await encryptSecret(JSON.stringify({access_token:token,refresh_token:null,expires_at:null}),key);
+   const {data:saved,error:saveError}=await db.rpc("jd_save_connector_pasted_token",{p_actor:actor,p_provider:body.providerId,p_bundle:encrypted});
+   if(saveError||!saved?.[0]?.server_id)return send({error:"Could not save this private connection. The endpoint may already belong to another user or shared connection. Check My connections or ask your operator to verify the token backend deployment."},409);
+   const id=saved[0].server_id,generation=saved[0].generation;
+   try{
+    const server=await getServer(id);
+    if(server.oauth_generation!==generation)throw Error("Connection changed");
+    const tools=await refreshTools(server,token);
+    await audit("connector.token.connected",{server_id:id,provider_id:body.providerId,tool_count:tools.length});
+    return send({server:{id,name:preset.name,status:"connected"},tools,notice:"Token saved securely and tools discovered."},201);
+   }catch{
+    // Failed/abandoned discovery never retains this generation's credential or
+    // erases a replacement token. Returning a fixed error prevents token echo.
+    await db.from("jd_connector_oauth_tokens").delete().eq("server_id",id).eq("school_id",school).eq("generation",generation);
+    await db.from("jd_connector_servers").update({status:"error",last_error_code:"TOKEN_DISCOVERY_FAILED"}).eq("id",id).eq("school_id",school).eq("oauth_generation",generation);
+    return send({error:"Connection not confirmed. Check the token, its expiry, permissions and organisation approval, then try again. Provider availability may also be the cause."},502);
+   }
+  }
   if(body.action==="servers.register"){
    if(internal||!["owner","admin"].includes(String(profile.role))||Deno.env.get("JD_MCP_ALLOW_CUSTOM_SETUP")!=="true")return send({error:"Custom credential setup is operator-only. Use provider sign-in in the directory."},403);
    if(!allowed.length)return send({error:"No MCP hosts are enabled. Configure JD_MCP_ALLOWED_HOSTS before registering a server."},503);
@@ -201,13 +234,14 @@ Deno.serve(async req=>{
    const id=clip(body.serverId,64);const server=await getServer(id);
    if(internal)return send({error:"Disconnect must be requested by a signed-in person"},403);
    if(server.oauth_provider_id){
-    const revocation=await prepareConnectorRevocation(db,server);
+    const pasted=server.oauth_provider_id.startsWith("token:");
+    const revocation=pasted?null:await prepareConnectorRevocation(db,server);
     const {data:done,error}=await db.rpc("jd_disconnect_connector_oauth",{p_server:id,p_actor:actor});
     if(error||done!==true)throw new Error("Could not disconnect safely");
     let revocationAccepted=false;
     if(revocation)try{const response=await fetch(revocation.url,revocation.request);revocationAccepted=response.ok;await response.body?.cancel();}catch{/* Local deletion must never depend on provider availability. */}
     await audit("connector.oauth.disconnected",{server_id:id,local_credentials_erased:true,provider_revocation_accepted:revocationAccepted});
-    return send({disconnected:true,providerRevocationAccepted:revocationAccepted,notice:revocationAccepted?"JD credentials removed. Provider accepted the token revocation request; review its authorised apps to confirm any remaining grants. In-flight requests may still finish.":"JD access and stored credentials removed. Provider revocation was unavailable or unconfirmed; remove JD in the provider’s authorised apps too. In-flight requests may still finish."});
+    return send({disconnected:true,providerRevocationAccepted:revocationAccepted,notice:pasted?"Token removed from JD. Revoke it on the provider’s token page too. In-flight requests may still finish.":revocationAccepted?"JD credentials removed. Provider accepted the token revocation request; review its authorised apps to confirm any remaining grants. In-flight requests may still finish.":"JD access and stored credentials removed. Provider revocation was unavailable or unconfirmed; remove JD in the provider’s authorised apps too. In-flight requests may still finish."});
    }
    const [{error:credentialError},{error:toolError},{error:approvalError},{error:serverError}]=await Promise.all([
     db.from("jd_connector_credentials").delete().eq("server_id",id).eq("school_id",school),

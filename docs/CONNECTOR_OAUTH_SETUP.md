@@ -1,4 +1,8 @@
-# JD OAuth-first connectors — operator setup
+# JD connectors — OAuth and user-pasted tokens
+
+## Latest user-directed token flow
+
+The owner subsequently requested that users paste their own tokens through a provider-guided popup. The directory now prefers that method for **GitHub, Linear, Airtable, Resend, Apify and Context7**. See `CONNECTOR_TOKEN_SETUP.md` for the scoped backend migration and deployment. The OAuth design below remains applicable to other OAuth routes and historical connections, not a ban on the new token flow.
 
 ## User contract
 

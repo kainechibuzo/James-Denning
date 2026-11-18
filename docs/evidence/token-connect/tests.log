@@ -1,0 +1,1698 @@
+TAP version 13
+# Subtest: 78 distinct directory entries, eight business areas, no fabricated connection
+ok 1 - 78 distinct directory entries, eight business areas, no fabricated connection
+  ---
+  duration_ms: 1.657318
+  type: 'test'
+  ...
+# Subtest: directory search, category intersection and deterministic sorting
+ok 2 - directory search, category intersection and deterministic sorting
+  ---
+  duration_ms: 8.054492
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: owner
+ok 3 - connector UI follows existing backend role boundary: owner
+  ---
+  duration_ms: 0.171741
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: admin
+ok 4 - connector UI follows existing backend role boundary: admin
+  ---
+  duration_ms: 0.159019
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: manager
+ok 5 - connector UI follows existing backend role boundary: manager
+  ---
+  duration_ms: 0.097413
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: staff
+ok 6 - connector UI follows existing backend role boundary: staff
+  ---
+  duration_ms: 0.124102
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: viewer
+ok 7 - connector UI follows existing backend role boundary: viewer
+  ---
+  duration_ms: 0.157447
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: contractor
+ok 8 - connector UI follows existing backend role boundary: contractor
+  ---
+  duration_ms: 0.112119
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: undefined
+ok 9 - connector UI follows existing backend role boundary: undefined
+  ---
+  duration_ms: 0.266712
+  type: 'test'
+  ...
+# Subtest: @ recognises the caret query, not email addresses or earlier text
+ok 10 - @ recognises the caret query, not email addresses or earlier text
+  ---
+  duration_ms: 1.162517
+  type: 'test'
+  ...
+# Subtest: mention insertion preserves text after the caret and never submits
+ok 11 - mention insertion preserves text after the caret and never submits
+  ---
+  duration_ms: 0.365252
+  type: 'test'
+  ...
+# Subtest: only discovered tools belonging to currently connected servers are mentionable
+ok 12 - only discovered tools belonging to currently connected servers are mentionable
+  ---
+  duration_ms: 0.323646
+  type: 'test'
+  ...
+# Subtest: all 24 published endpoint presets have source evidence, no credentials and no live-verified claim
+ok 13 - all 24 published endpoint presets have source evidence, no credentials and no live-verified claim
+  ---
+  duration_ms: 1.167135
+  type: 'test'
+  ...
+# Subtest: known hosted authentication remains distinct from availability and manual setup
+ok 14 - known hosted authentication remains distinct from availability and manual setup
+  ---
+  duration_ms: 0.247769
+  type: 'test'
+  ...
+# Subtest: endpoint recognition preserves auth requirements across harmless URL variations
+ok 15 - endpoint recognition preserves auth requirements across harmless URL variations
+  ---
+  duration_ms: 0.448278
+  type: 'test'
+  ...
+# Subtest: default personal consent stores only hashed state, scopes tenant/actor and is one-time
+ok 16 - default personal consent stores only hashed state, scopes tenant/actor and is one-time
+  ---
+  duration_ms: 1733.636586
+  type: 'test'
+  ...
+# Subtest: expired OAuth state cannot be consumed
+ok 17 - expired OAuth state cannot be consumed
+  ---
+  duration_ms: 17.980212
+  type: 'test'
+  ...
+# Subtest: OAuth credentials do not imply connected; discovery resets provider annotations to untrusted
+ok 18 - OAuth credentials do not imply connected; discovery resets provider annotations to untrusted
+  ---
+  duration_ms: 30.375559
+  type: 'test'
+  ...
+# Subtest: manager cannot share; owner must explicitly choose organisation
+ok 19 - manager cannot share; owner must explicitly choose organisation
+  ---
+  duration_ms: 16.884202
+  type: 'test'
+  ...
+# Subtest: staff/missing actor cannot start a grant
+ok 20 - staff/missing actor cannot start a grant
+  ---
+  duration_ms: 14.784573
+  type: 'test'
+  ...
+# Subtest: another actor cannot overwrite a connection slot, another tenant remains independent
+ok 21 - another actor cannot overwrite a connection slot, another tenant remains independent
+  ---
+  duration_ms: 28.149229
+  type: 'test'
+  ...
+# Subtest: callback completion rechecks membership: role='staff'
+ok 22 - callback completion rechecks membership: role='staff'
+  ---
+  duration_ms: 19.996796
+  type: 'test'
+  ...
+# Subtest: callback completion rechecks membership: school_id='00000000-0000-4000-8000-000000000011'
+ok 23 - callback completion rechecks membership: school_id='00000000-0000-4000-8000-000000000011'
+  ---
+  duration_ms: 20.361833
+  type: 'test'
+  ...
+# Subtest: disconnect blocks pending callbacks and stale discovery; credential deletion is atomic
+ok 24 - disconnect blocks pending callbacks and stale discovery; credential deletion is atomic
+  ---
+  duration_ms: 23.993543
+  type: 'test'
+  ...
+# Subtest: private account cannot be disconnected by another manager or tenant
+ok 25 - private account cannot be disconnected by another manager or tenant
+  ---
+  duration_ms: 20.244623
+  type: 'test'
+  ...
+# Subtest: reconnect invalidates older state/generation and does not inherit grants
+ok 26 - reconnect invalidates older state/generation and does not inherit grants
+  ---
+  duration_ms: 46.478283
+  type: 'test'
+  ...
+# Subtest: refresh lease serializes rotation and CAS cannot resurrect disconnected credentials
+ok 27 - refresh lease serializes rotation and CAS cannot resurrect disconnected credentials
+  ---
+  duration_ms: 25.289029
+  type: 'test'
+  ...
+# Subtest: anon cannot read tokens/state or execute new OAuth RPCs
+ok 28 - anon cannot read tokens/state or execute new OAuth RPCs
+  ---
+  duration_ms: 17.11647
+  type: 'test'
+  ...
+# Subtest: authenticated cannot read tokens/state or execute new OAuth RPCs
+ok 29 - authenticated cannot read tokens/state or execute new OAuth RPCs
+  ---
+  duration_ms: 18.048403
+  type: 'test'
+  ...
+# Subtest: reconnect cannot expose private history by changing account sharing
+ok 30 - reconnect cannot expose private history by changing account sharing
+  ---
+  duration_ms: 14.742523
+  type: 'test'
+  ...
+# Subtest: pasted token is private, generation-bound, encrypted storage only, not connected before discovery
+ok 31 - pasted token is private, generation-bound, encrypted storage only, not connected before discovery
+  ---
+  duration_ms: 19.498248
+  type: 'test'
+  ...
+# Subtest: token replacement resets grants, invalidates old discovery and pending OAuth state
+ok 32 - token replacement resets grants, invalidates old discovery and pending OAuth state
+  ---
+  duration_ms: 28.346188
+  type: 'test'
+  ...
+# Subtest: token actor checks: another user/shared history cannot be overwritten; tenants remain isolated
+ok 33 - token actor checks: another user/shared history cannot be overwritten; tenants remain isolated
+  ---
+  duration_ms: 37.837029
+  type: 'test'
+  ...
+# Subtest: staff, missing actor and unknown provider fail closed for pasted tokens
+ok 34 - staff, missing actor and unknown provider fail closed for pasted tokens
+  ---
+  duration_ms: 14.211419
+  type: 'test'
+  ...
+# Subtest: token disconnect blocks stale discovery and removes encrypted credentials
+ok 35 - token disconnect blocks stale discovery and removes encrypted credentials
+  ---
+  duration_ms: 28.786883
+  type: 'test'
+  ...
+# Subtest: anon cannot call pasted token persistence RPC
+ok 36 - anon cannot call pasted token persistence RPC
+  ---
+  duration_ms: 12.371969
+  type: 'test'
+  ...
+# Subtest: authenticated cannot call pasted token persistence RPC
+ok 37 - authenticated cannot call pasted token persistence RPC
+  ---
+  duration_ms: 11.956363
+  type: 'test'
+  ...
+# (node:2918) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-oauth-crypto.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: human OAuth start records exact sharing and tenant actor, returns PKCE URL without secrets
+ok 38 - human OAuth start records exact sharing and tenant actor, returns PKCE URL without secrets
+  ---
+  duration_ms: 14.430212
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"role":"staff"},{"action":"providers"}]
+ok 39 - start/catalog gate: [{"role":"staff"},{"action":"providers"}]
+  ---
+  duration_ms: 0.846333
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"invalidJwt":true},{"action":"providers"}]
+ok 40 - start/catalog gate: [{"invalidJwt":true},{"action":"providers"}]
+  ---
+  duration_ms: 0.568661
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{},{"action":"start","providerId":"github","confirm":true,"sharing":"organisation"}]
+ok 41 - start/catalog gate: [{},{"action":"start","providerId":"github","confirm":true,"sharing":"organisation"}]
+  ---
+  duration_ms: 0.658333
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{},{"action":"start","providerId":"github","sharing":"personal"}]
+ok 42 - start/catalog gate: [{},{"action":"start","providerId":"github","sharing":"personal"}]
+  ---
+  duration_ms: 0.972461
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"configured":false},{"action":"start","providerId":"github","confirm":true,"sharing":"personal"}]
+ok 43 - start/catalog gate: [{"configured":false},{"action":"start","providerId":"github","confirm":true,"sharing":"personal"}]
+  ---
+  duration_ms: 0.614197
+  type: 'test'
+  ...
+# Subtest: provider catalog never exposes client credentials
+ok 44 - provider catalog never exposes client credentials
+  ---
+  duration_ms: 1.087907
+  type: 'test'
+  ...
+# Subtest: callback exchanges code, persists encrypted bundle and confirms discovery before connected
+ok 45 - callback exchanges code, persists encrypted bundle and confirms discovery before connected
+  ---
+  duration_ms: 24.937408
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"stateRow":null}
+ok 46 - callback fails closed: {"stateRow":null}
+  ---
+  duration_ms: 1.75609
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"tenant":"another"}
+ok 47 - callback fails closed: {"tenant":"another"}
+  ---
+  duration_ms: 1.302585
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"role":"staff"}
+ok 48 - callback fails closed: {"role":"staff"}
+  ---
+  duration_ms: 1.071416
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"save":false}
+ok 49 - callback fails closed: {"save":false}
+  ---
+  duration_ms: 2.171114
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"discovery":false}
+ok 50 - callback fails closed: {"discovery":false}
+  ---
+  duration_ms: 2.606049
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"providerFailure":true}
+ok 51 - callback fails closed: {"providerFailure":true}
+  ---
+  duration_ms: 3.516161
+  type: 'test'
+  ...
+# Subtest: declined consent consumes state without exchanging code
+ok 52 - declined consent consumes state without exchanging code
+  ---
+  duration_ms: 1.426457
+  type: 'test'
+  ...
+# Subtest: gateway servers.list excludes another user’s private connection
+ok 53 - gateway servers.list excludes another user’s private connection
+  ---
+  duration_ms: 5.108472
+  type: 'test'
+  ...
+# Subtest: gateway tools.list excludes another user’s private connection
+ok 54 - gateway tools.list excludes another user’s private connection
+  ---
+  duration_ms: 1.130225
+  type: 'test'
+  ...
+# Subtest: gateway approvals.list excludes another user’s private connection
+ok 55 - gateway approvals.list excludes another user’s private connection
+  ---
+  duration_ms: 0.823289
+  type: 'test'
+  ...
+# Subtest: gateway executions.list excludes another user’s private connection
+ok 56 - gateway executions.list excludes another user’s private connection
+  ---
+  duration_ms: 0.597446
+  type: 'test'
+  ...
+# Subtest: gateway tools.call denies private access even for owner role
+ok 57 - gateway tools.call denies private access even for owner role
+  ---
+  duration_ms: 0.794036
+  type: 'test'
+  ...
+# Subtest: gateway tools.set_read_only denies private access even for owner role
+ok 58 - gateway tools.set_read_only denies private access even for owner role
+  ---
+  duration_ms: 0.570785
+  type: 'test'
+  ...
+# Subtest: gateway approvals.get denies private access even for owner role
+ok 59 - gateway approvals.get denies private access even for owner role
+  ---
+  duration_ms: 0.512993
+  type: 'test'
+  ...
+# Subtest: gateway approvals.resolve denies private access even for owner role
+ok 60 - gateway approvals.resolve denies private access even for owner role
+  ---
+  duration_ms: 0.543364
+  type: 'test'
+  ...
+# Subtest: gateway tools.refresh denies private access even for owner role
+ok 61 - gateway tools.refresh denies private access even for owner role
+  ---
+  duration_ms: 0.684781
+  type: 'test'
+  ...
+# Subtest: gateway servers.disconnect denies private access even for owner role
+ok 62 - gateway servers.disconnect denies private access even for owner role
+  ---
+  duration_ms: 1.112047
+  type: 'test'
+  ...
+# Subtest: OAuth writes request approval even when a legacy full_control grant exists
+ok 63 - OAuth writes request approval even when a legacy full_control grant exists
+  ---
+  duration_ms: 20.401398
+  type: 'test'
+  ...
+# Subtest: service-role runtime cannot approve its own actions or disconnect accounts
+ok 64 - service-role runtime cannot approve its own actions or disconnect accounts
+  ---
+  duration_ms: 1.125108
+  type: 'test'
+  ...
+# Subtest: legacy PAT setup is disabled by default in gateway, not only hidden in UI
+ok 65 - legacy PAT setup is disabled by default in gateway, not only hidden in UI
+  ---
+  duration_ms: 0.859904
+  type: 'test'
+  ...
+# Subtest: claimed approval cannot dispatch with a newer account connection generation
+ok 66 - claimed approval cannot dispatch with a newer account connection generation
+  ---
+  duration_ms: 1.038169
+  type: 'test'
+  ...
+# Subtest: gateway catalogue describes OAuth approval boundaries, not blanket full control
+ok 67 - gateway catalogue describes OAuth approval boundaries, not blanket full control
+  ---
+  duration_ms: 0.643179
+  type: 'test'
+  ...
+# Subtest: disconnect erases locally before optional revocation, provider failure cannot restore access: false
+ok 68 - disconnect erases locally before optional revocation, provider failure cannot restore access: false
+  ---
+  duration_ms: 0.774797
+  type: 'test'
+  ...
+# Subtest: disconnect erases locally before optional revocation, provider failure cannot restore access: true
+ok 69 - disconnect erases locally before optional revocation, provider failure cannot restore access: true
+  ---
+  duration_ms: 0.634057
+  type: 'test'
+  ...
+# Subtest: token setup exposes readiness, not encryption material
+ok 70 - token setup exposes readiness, not encryption material
+  ---
+  duration_ms: 0.6658
+  type: 'test'
+  ...
+# Subtest: pasted token handler stores only encrypted bundle, pins endpoint and returns discovery
+ok 71 - pasted token handler stores only encrypted bundle, pins endpoint and returns discovery
+  ---
+  duration_ms: 11.38384
+  type: 'test'
+  ...
+# Subtest: token denial before write {"role":"staff"}
+ok 72 - token denial before write {"role":"staff"}
+  ---
+  duration_ms: 0.422052
+  type: 'test'
+  ...
+# Subtest: token denial before write {"invalidJwt":true}
+ok 73 - token denial before write {"invalidJwt":true}
+  ---
+  duration_ms: 0.275496
+  type: 'test'
+  ...
+# Subtest: token denial before write {"missingKey":true}
+ok 74 - token denial before write {"missingKey":true}
+  ---
+  duration_ms: 0.346553
+  type: 'test'
+  ...
+# Subtest: token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"SYNTHETIC_PASTED_TOKEN","confirm":true}
+ok 75 - token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"SYNTHETIC_PASTED_TOKEN","confirm":true}
+  ---
+  duration_ms: 0.383155
+  type: 'test'
+  ...
+# Subtest: token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"SYNTHETIC_PASTED_TOKEN"}
+ok 76 - token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"SYNTHETIC_PASTED_TOKEN"}
+  ---
+  duration_ms: 0.360803
+  type: 'test'
+  ...
+# Subtest: token route rejects unauthorised/invalid input {"providerId":"notion","bearerToken":"SYNTHETIC_PASTED_TOKEN","confirm":true}
+ok 77 - token route rejects unauthorised/invalid input {"providerId":"notion","bearerToken":"SYNTHETIC_PASTED_TOKEN","confirm":true}
+  ---
+  duration_ms: 0.330602
+  type: 'test'
+  ...
+# Subtest: token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"bad\\nheader","confirm":true}
+ok 78 - token route rejects unauthorised/invalid input {"providerId":"github","bearerToken":"bad\\nheader","confirm":true}
+  ---
+  duration_ms: 0.420425
+  type: 'test'
+  ...
+# Subtest: token persistence conflicts do not leak database errors
+ok 79 - token persistence conflicts do not leak database errors
+  ---
+  duration_ms: 2.975853
+  type: 'test'
+  ...
+# Subtest: token discovery failure cleans up only failed generation, never echoes credentials
+ok 80 - token discovery failure cleans up only failed generation, never echoes credentials
+  ---
+  duration_ms: 1.78912
+  type: 'test'
+  ...
+# Subtest: pasted token disconnect deletes locally without OAuth revocation
+ok 81 - pasted token disconnect deletes locally without OAuth revocation
+  ---
+  duration_ms: 0.630875
+  type: 'test'
+  ...
+# Subtest: actionable transport error: Failed to send a request to the Edge Function
+ok 82 - actionable transport error: Failed to send a request to the Edge Function
+  ---
+  duration_ms: 1.156396
+  type: 'test'
+  ...
+# Subtest: actionable transport error: Failed to fetch
+ok 83 - actionable transport error: Failed to fetch
+  ---
+  duration_ms: 0.241048
+  type: 'test'
+  ...
+# Subtest: actionable transport error: NetworkError
+ok 84 - actionable transport error: NetworkError
+  ---
+  duration_ms: 0.113697
+  type: 'test'
+  ...
+# Subtest: HTTP 401 is explained without raw diagnostics
+ok 85 - HTTP 401 is explained without raw diagnostics
+  ---
+  duration_ms: 0.196747
+  type: 'test'
+  ...
+# Subtest: HTTP 403 is explained without raw diagnostics
+ok 86 - HTTP 403 is explained without raw diagnostics
+  ---
+  duration_ms: 0.195702
+  type: 'test'
+  ...
+# Subtest: HTTP 404 is explained without raw diagnostics
+ok 87 - HTTP 404 is explained without raw diagnostics
+  ---
+  duration_ms: 0.098368
+  type: 'test'
+  ...
+# Subtest: HTTP 503 is explained without raw diagnostics
+ok 88 - HTTP 503 is explained without raw diagnostics
+  ---
+  duration_ms: 0.148844
+  type: 'test'
+  ...
+# Subtest: HTTP 400 is explained without raw diagnostics
+ok 89 - HTTP 400 is explained without raw diagnostics
+  ---
+  duration_ms: 0.092761
+  type: 'test'
+  ...
+# Subtest: application errors and generic fallback remain visible
+ok 90 - application errors and generic fallback remain visible
+  ---
+  duration_ms: 0.41695
+  type: 'test'
+  ...
+# (node:2938) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-connector-oauth.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all agreed OAuth providers are explicit, Jira/Confluence share one provider
+ok 91 - all agreed OAuth providers are explicit, Jira/Confluence share one provider
+  ---
+  duration_ms: 1.266188
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL http://github.com/auth
+ok 92 - reject unsafe OAuth URL http://github.com/auth
+  ---
+  duration_ms: 0.289003
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://user:pass@github.com/auth
+ok 93 - reject unsafe OAuth URL https://user:pass@github.com/auth
+  ---
+  duration_ms: 0.111147
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://127.0.0.1/auth
+ok 94 - reject unsafe OAuth URL https://127.0.0.1/auth
+  ---
+  duration_ms: 0.10311
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://[::1]/
+ok 95 - reject unsafe OAuth URL https://[::1]/
+  ---
+  duration_ms: 0.127322
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://localhost
+ok 96 - reject unsafe OAuth URL https://localhost
+  ---
+  duration_ms: 0.096019
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://service.internal
+ok 97 - reject unsafe OAuth URL https://service.internal
+  ---
+  duration_ms: 0.120293
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://service.local
+ok 98 - reject unsafe OAuth URL https://service.local
+  ---
+  duration_ms: 0.099206
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://github.com:8443/auth
+ok 99 - reject unsafe OAuth URL https://github.com:8443/auth
+  ---
+  duration_ms: 0.303475
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://github.com/auth\#x
+ok 100 - reject unsafe OAuth URL https://github.com/auth\#x
+  ---
+  duration_ms: 0.42787
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"token_endpoint":"https://evil.test/token"}
+ok 101 - operator config fails closed {"token_endpoint":"https://evil.test/token"}
+  ---
+  duration_ms: 0.256479
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"authorization_endpoint":"https://github.com/login?secret=x"}
+ok 102 - operator config fails closed {"authorization_endpoint":"https://github.com/login?secret=x"}
+  ---
+  duration_ms: 0.111371
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"resource":"https://other.test/mcp"}
+ok 103 - operator config fails closed {"resource":"https://other.test/mcp"}
+  ---
+  duration_ms: 0.163117
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"authorization_parameters":{"redirect_uri":"https://evil.test"}}
+ok 104 - operator config fails closed {"authorization_parameters":{"redirect_uri":"https://evil.test"}}
+  ---
+  duration_ms: 0.159739
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"scopes":["repo send"]}
+ok 105 - operator config fails closed {"scopes":["repo send"]}
+  ---
+  duration_ms: 0.151054
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"token_endpoint_auth_method":"client_secret_jwt"}
+ok 106 - operator config fails closed {"token_endpoint_auth_method":"client_secret_jwt"}
+  ---
+  duration_ms: 0.098831
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"client_secret":""}
+ok 107 - operator config fails closed {"client_secret":""}
+  ---
+  duration_ms: 0.092219
+  type: 'test'
+  ...
+# Subtest: OAuth unavailable rather than a token fallback when app registration is missing
+ok 108 - OAuth unavailable rather than a token fallback when app registration is missing
+  ---
+  duration_ms: 0.277771
+  type: 'test'
+  ...
+# Subtest: PKCE/state/resource and reviewed scopes are used, secrets never enter browser authorization URL
+ok 109 - PKCE/state/resource and reviewed scopes are used, secrets never enter browser authorization URL
+  ---
+  duration_ms: 0.774421
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: none
+ok 110 - OAuth token client authentication: none
+  ---
+  duration_ms: 0.137963
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: client_secret_post
+ok 111 - OAuth token client authentication: client_secret_post
+  ---
+  duration_ms: 0.075968
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: client_secret_basic
+ok 112 - OAuth token client authentication: client_secret_basic
+  ---
+  duration_ms: 0.922829
+  type: 'test'
+  ...
+# Subtest: expiry and rotation validated; omitted new refresh token preserves existing token
+ok 113 - expiry and rotation validated; omitted new refresh token preserves existing token
+  ---
+  duration_ms: 0.618491
+  type: 'test'
+  ...
+# Subtest: OAuth errors are sanitized and JSON responses bounded
+ok 114 - OAuth errors are sanitized and JSON responses bounded
+  ---
+  duration_ms: 25.187894
+  type: 'test'
+  ...
+# Subtest: private/shared access check never shares a private account with another manager
+ok 115 - private/shared access check never shares a private account with another manager
+  ---
+  duration_ms: 0.136717
+  type: 'test'
+  ...
+# Subtest: every priority service has a real sourced local logo, not generated initials
+ok 116 - every priority service has a real sourced local logo, not generated initials
+  ---
+  duration_ms: 0.6363
+  type: 'test'
+  ...
+# Subtest: expired token refreshes once, stores encrypted rotated credentials with generation/lease CAS
+ok 117 - expired token refreshes once, stores encrypted rotated credentials with generation/lease CAS
+  ---
+  duration_ms: 28.82516
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"claim":false}
+ok 118 - failed/contended refresh is not a connection success {"claim":false}
+  ---
+  duration_ms: 1.891427
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"refresh":null}
+ok 119 - failed/contended refresh is not a connection success {"refresh":null}
+  ---
+  duration_ms: 1.427702
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"save":false}
+ok 120 - failed/contended refresh is not a connection success {"save":false}
+  ---
+  duration_ms: 1.557146
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"status":401}
+ok 121 - failed/contended refresh is not a connection success {"status":401}
+  ---
+  duration_ms: 1.319699
+  type: 'test'
+  ...
+# Subtest: unexpired access token needs no refresh request
+ok 122 - unexpired access token needs no refresh request
+  ---
+  duration_ms: 0.9286
+  type: 'test'
+  ...
+# Subtest: Slack uses documented confidential user OAuth, not legacy bot-token endpoints
+ok 123 - Slack uses documented confidential user OAuth, not legacy bot-token endpoints
+  ---
+  duration_ms: 0.495523
+  type: 'test'
+  ...
+# Subtest: GitHub remote OAuth requires operator-registered confidential credentials, never a public-client fallback
+ok 124 - GitHub remote OAuth requires operator-registered confidential credentials, never a public-client fallback
+  ---
+  duration_ms: 0.179425
+  type: 'test'
+  ...
+# Subtest: github: pinned endpoint and sourced token instructions
+ok 125 - github: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 1.2391
+  type: 'test'
+  ...
+# Subtest: linear: pinned endpoint and sourced token instructions
+ok 126 - linear: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 0.255622
+  type: 'test'
+  ...
+# Subtest: airtable: pinned endpoint and sourced token instructions
+ok 127 - airtable: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 0.12468
+  type: 'test'
+  ...
+# Subtest: resend: pinned endpoint and sourced token instructions
+ok 128 - resend: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 0.10846
+  type: 'test'
+  ...
+# Subtest: apify: pinned endpoint and sourced token instructions
+ok 129 - apify: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 0.230731
+  type: 'test'
+  ...
+# Subtest: context7: pinned endpoint and sourced token instructions
+ok 130 - context7: pinned endpoint and sourced token instructions
+  ---
+  duration_ms: 0.132164
+  type: 'test'
+  ...
+# Subtest: notion: no fabricated token route
+ok 131 - notion: no fabricated token route
+  ---
+  duration_ms: 0.29227
+  type: 'test'
+  ...
+# Subtest: slack: no fabricated token route
+ok 132 - slack: no fabricated token route
+  ---
+  duration_ms: 0.091279
+  type: 'test'
+  ...
+# Subtest: gmail: no fabricated token route
+ok 133 - gmail: no fabricated token route
+  ---
+  duration_ms: 0.287585
+  type: 'test'
+  ...
+# Subtest: vercel: no fabricated token route
+ok 134 - vercel: no fabricated token route
+  ---
+  duration_ms: 0.314468
+  type: 'test'
+  ...
+# Subtest: constructor: no fabricated token route
+ok 135 - constructor: no fabricated token route
+  ---
+  duration_ms: 0.167725
+  type: 'test'
+  ...
+# Subtest: __proto__: no fabricated token route
+ok 136 - __proto__: no fabricated token route
+  ---
+  duration_ms: 0.068624
+  type: 'test'
+  ...
+# Subtest: null: no fabricated token route
+ok 137 - null: no fabricated token route
+  ---
+  duration_ms: 0.050577
+  type: 'test'
+  ...
+# Subtest: reject malformed token 
+ok 138 - reject malformed token 
+  ---
+  duration_ms: 0.238091
+  type: 'test'
+  ...
+# Subtest: reject malformed token null
+ok 139 - reject malformed token null
+  ---
+  duration_ms: 0.065819
+  type: 'test'
+  ...
+# Subtest: reject malformed token short
+ok 140 - reject malformed token short
+  ---
+  duration_ms: 0.059344
+  type: 'test'
+  ...
+# Subtest: reject malformed token Bearer abcdefghijkl
+ok 141 - reject malformed token Bearer abcdefghijkl
+  ---
+  duration_ms: 0.124803
+  type: 'test'
+  ...
+# Subtest: reject malformed token https://example.com/
+ok 142 - reject malformed token https://example.com/
+  ---
+  duration_ms: 0.152659
+  type: 'test'
+  ...
+# Subtest: reject malformed token abc\\r\\ndefghijkl
+ok 143 - reject malformed token abc\\r\\ndefghijkl
+  ---
+  duration_ms: 0.07003
+  type: 'test'
+  ...
+# Subtest: reject malformed token aaaaaaaaaaaaaaaaaaaa
+ok 144 - reject malformed token aaaaaaaaaaaaaaaaaaaa
+  ---
+  duration_ms: 0.060584
+  type: 'test'
+  ...
+# Subtest: accept opaque token and trim surrounding whitespace only
+ok 145 - accept opaque token and trim surrounding whitespace only
+  ---
+  duration_ms: 0.102373
+  type: 'test'
+  ...
+# Subtest: token dialog never persists credentials or renders provider errors
+ok 146 - token dialog never persists credentials or renders provider errors
+  ---
+  duration_ms: 0.325612
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap preserves verified owner identity and opens workspace
+ok 147 - mounted bootstrap preserves verified owner identity and opens workspace
+  ---
+  duration_ms: 85.923199
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role null as admin
+ok 148 - mounted bootstrap never persists missing/unsupported role null as admin
+  ---
+  duration_ms: 20.70591
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role  as admin
+ok 149 - mounted bootstrap never persists missing/unsupported role  as admin
+  ---
+  duration_ms: 28.760883
+  type: 'test'
+  ...
+# Subtest: mounted bootstrap never persists missing/unsupported role unknown as admin
+ok 150 - mounted bootstrap never persists missing/unsupported role unknown as admin
+  ---
+  duration_ms: 9.48456
+  type: 'test'
+  ...
+# Subtest: mounted identity mismatch stops before cached workspace writes {"profileId":"00000000-0000-4000-8000-000000000003"}
+ok 151 - mounted identity mismatch stops before cached workspace writes {"profileId":"00000000-0000-4000-8000-000000000003"}
+  ---
+  duration_ms: 10.26854
+  type: 'test'
+  ...
+# Subtest: mounted identity mismatch stops before cached workspace writes {"schoolId":"00000000-0000-4000-8000-000000000003"}
+ok 152 - mounted identity mismatch stops before cached workspace writes {"schoolId":"00000000-0000-4000-8000-000000000003"}
+  ---
+  duration_ms: 8.299219
+  type: 'test'
+  ...
+# Subtest: restored session requires server-confirmed identity {"verifiedId":"00000000-0000-4000-8000-000000000009"}
+ok 153 - restored session requires server-confirmed identity {"verifiedId":"00000000-0000-4000-8000-000000000009"}
+  ---
+  duration_ms: 8.108942
+  type: 'test'
+  ...
+# Subtest: restored session requires server-confirmed identity {"authError":true}
+ok 154 - restored session requires server-confirmed identity {"authError":true}
+  ---
+  duration_ms: 7.930734
+  type: 'test'
+  ...
+# Subtest: bootstrap transport diagnostics are not exposed
+ok 155 - bootstrap transport diagnostics are not exposed
+  ---
+  duration_ms: 12.783506
+  type: 'test'
+  ...
+# Subtest: old identity connections have empty app selection, never an implicit new grant
+ok 156 - old identity connections have empty app selection, never an implicit new grant
+  ---
+  duration_ms: 1614.973059
+  type: 'test'
+  ...
+# Subtest: state consumption returns stored app selection once and rejects expired/replayed state
+ok 157 - state consumption returns stored app selection once and rejects expired/replayed state
+  ---
+  duration_ms: 10.31045
+  type: 'test'
+  ...
+# Subtest: anon: new state RPC not executable by clients
+ok 158 - anon: new state RPC not executable by clients
+  ---
+  duration_ms: 3.131189
+  type: 'test'
+  ...
+# Subtest: authenticated: new state RPC not executable by clients
+ok 159 - authenticated: new state RPC not executable by clients
+  ---
+  duration_ms: 1.587163
+  type: 'test'
+  ...
+# Subtest: database blocks concurrent OAuth upsert from replacing another active account owner
+ok 160 - database blocks concurrent OAuth upsert from replacing another active account owner
+  ---
+  duration_ms: 8.106359
+  type: 'test'
+  ...
+# Subtest: explicit local disconnect allows a new owner, without inheriting previous app selection
+ok 161 - explicit local disconnect allows a new owner, without inheriting previous app selection
+  ---
+  duration_ms: 5.732906
+  type: 'test'
+  ...
+# Subtest: native refresh lease serializes rotation and cannot resurrect erased credentials
+ok 162 - native refresh lease serializes rotation and cannot resurrect erased credentials
+  ---
+  duration_ms: 17.739591
+  type: 'test'
+  ...
+# Subtest: anon: native refresh RPC is service-only
+ok 163 - anon: native refresh RPC is service-only
+  ---
+  duration_ms: 2.382189
+  type: 'test'
+  ...
+# Subtest: authenticated: native refresh RPC is service-only
+ok 164 - authenticated: native refresh RPC is service-only
+  ---
+  duration_ms: 10.574563
+  type: 'test'
+  ...
+# (node:2977) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-workspace-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+ok 165 - shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+  ---
+  duration_ms: 1.523201
+  type: 'test'
+  ...
+# Subtest: google-workspace: least-privilege selected scopes only, no write scopes
+ok 166 - google-workspace: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 1.482262
+  type: 'test'
+  ...
+# Subtest: microsoft-365: least-privilege selected scopes only, no write scopes
+ok 167 - microsoft-365: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 0.579749
+  type: 'test'
+  ...
+# Subtest: gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 168 - gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 1.119507
+  type: 'test'
+  ...
+# Subtest: google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 169 - google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.327802
+  type: 'test'
+  ...
+# Subtest: google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 170 - google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.301911
+  type: 'test'
+  ...
+# Subtest: google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 171 - google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.316967
+  type: 'test'
+  ...
+# Subtest: google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 172 - google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.276537
+  type: 'test'
+  ...
+# Subtest: outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 173 - outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.416013
+  type: 'test'
+  ...
+# Subtest: onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 174 - onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.473181
+  type: 'test'
+  ...
+# Subtest: excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 175 - excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.225848
+  type: 'test'
+  ...
+# Subtest: word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 176 - word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.288041
+  type: 'test'
+  ...
+# Subtest: outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 177 - outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.293741
+  type: 'test'
+  ...
+# Subtest: microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 178 - microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.096092
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+ok 179 - untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+  ---
+  duration_ms: 0.571239
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"method":"POST"}
+ok 180 - untrusted route arguments fail before DB/network: {"method":"POST"}
+  ---
+  duration_ms: 1.468404
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"action":"send"}
+ok 181 - untrusted route arguments fail before DB/network: {"action":"send"}
+  ---
+  duration_ms: 0.101096
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+ok 182 - untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+  ---
+  duration_ms: 0.237939
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+ok 183 - untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+  ---
+  duration_ms: 0.167933
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+ok 184 - untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+  ---
+  duration_ms: 0.096254
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":".."}
+ok 185 - untrusted route arguments fail before DB/network: {"resourceId":".."}
+  ---
+  duration_ms: 0.112673
+  type: 'test'
+  ...
+# Subtest: staff: API and actual runtime reject reads before credential lookup
+ok 186 - staff: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.474183
+  type: 'test'
+  ...
+# Subtest: viewer: API and actual runtime reject reads before credential lookup
+ok 187 - viewer: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.277303
+  type: 'test'
+  ...
+# Subtest: contractor: API and actual runtime reject reads before credential lookup
+ok 188 - contractor: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.116755
+  type: 'test'
+  ...
+# Subtest: finance: API and actual runtime reject reads before credential lookup
+ok 189 - finance: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.112439
+  type: 'test'
+  ...
+# Subtest: unknown: API and actual runtime reject reads before credential lookup
+ok 190 - unknown: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.112379
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"connected_by":"other"}
+ok 191 - no provider call with absent permission: {"connected_by":"other"}
+  ---
+  duration_ms: 0.270804
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"scopes":[]}
+ok 192 - no provider call with absent permission: {"scopes":[]}
+  ---
+  duration_ms: 0.180393
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"enabled_read_services":[]}
+ok 193 - no provider call with absent permission: {"enabled_read_services":[]}
+  ---
+  duration_ms: 0.136498
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"status":"revoked"}
+ok 194 - no provider call with absent permission: {"status":"revoked"}
+  ---
+  duration_ms: 0.106578
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"token_expires_at":null}
+ok 195 - no provider call with absent permission: {"token_expires_at":null}
+  ---
+  duration_ms: 0.137399
+  type: 'test'
+  ...
+# Subtest: actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+ok 196 - actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+  ---
+  duration_ms: 53.549982
+  type: 'test'
+  ...
+# Subtest: audit failure means no external request
+ok 197 - audit failure means no external request
+  ---
+  duration_ms: 3.2886
+  type: 'test'
+  ...
+# Subtest: HTTP 401 remains failure without provider error/secret leakage
+ok 198 - HTTP 401 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 1.555957
+  type: 'test'
+  ...
+# Subtest: HTTP 403 remains failure without provider error/secret leakage
+ok 199 - HTTP 403 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 0.996576
+  type: 'test'
+  ...
+# Subtest: HTTP 429 remains failure without provider error/secret leakage
+ok 200 - HTTP 429 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 0.952013
+  type: 'test'
+  ...
+# Subtest: HTTP 500 remains failure without provider error/secret leakage
+ok 201 - HTTP 500 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 4.994101
+  type: 'test'
+  ...
+# Subtest: provider response body limit enforced
+ok 202 - provider response body limit enforced
+  ---
+  duration_ms: 6.259826
+  type: 'test'
+  ...
+# Subtest: Gmail projection excludes raw body, attachments and provider error fields
+ok 203 - Gmail projection excludes raw body, attachments and provider error fields
+  ---
+  duration_ms: 0.252721
+  type: 'test'
+  ...
+# Subtest: Sheets output is row/column/cell bounded, Docs output is text only
+ok 204 - Sheets output is row/column/cell bounded, Docs output is text only
+  ---
+  duration_ms: 0.566088
+  type: 'test'
+  ...
+# Subtest: provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+ok 205 - provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+  ---
+  duration_ms: 0.273063
+  type: 'test'
+  ...
+# Subtest: runtime inventory exposes both read tools, catalog contains no credential columns
+ok 206 - runtime inventory exposes both read tools, catalog contains no credential columns
+  ---
+  duration_ms: 0.687015
+  type: 'test'
+  ...
+# Subtest: identity preserves owner without aliasing to admin
+ok 207 - identity preserves owner without aliasing to admin
+  ---
+  duration_ms: 1.573042
+  type: 'test'
+  ...
+# Subtest: identity preserves admin without aliasing to admin
+ok 208 - identity preserves admin without aliasing to admin
+  ---
+  duration_ms: 0.237399
+  type: 'test'
+  ...
+# Subtest: identity preserves manager without aliasing to admin
+ok 209 - identity preserves manager without aliasing to admin
+  ---
+  duration_ms: 0.129973
+  type: 'test'
+  ...
+# Subtest: identity preserves staff without aliasing to admin
+ok 210 - identity preserves staff without aliasing to admin
+  ---
+  duration_ms: 0.109044
+  type: 'test'
+  ...
+# Subtest: identity preserves finance without aliasing to admin
+ok 211 - identity preserves finance without aliasing to admin
+  ---
+  duration_ms: 0.305262
+  type: 'test'
+  ...
+# Subtest: identity preserves hr without aliasing to admin
+ok 212 - identity preserves hr without aliasing to admin
+  ---
+  duration_ms: 0.111353
+  type: 'test'
+  ...
+# Subtest: identity preserves contractor without aliasing to admin
+ok 213 - identity preserves contractor without aliasing to admin
+  ---
+  duration_ms: 0.153855
+  type: 'test'
+  ...
+# Subtest: identity preserves viewer without aliasing to admin
+ok 214 - identity preserves viewer without aliasing to admin
+  ---
+  duration_ms: 0.08894
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role undefined cannot become admin
+ok 215 - missing/unsupported role undefined cannot become admin
+  ---
+  duration_ms: 0.718183
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role null cannot become admin
+ok 216 - missing/unsupported role null cannot become admin
+  ---
+  duration_ms: 0.450345
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  cannot become admin
+ok 217 - missing/unsupported role  cannot become admin
+  ---
+  duration_ms: 0.1915
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role superadmin cannot become admin
+ok 218 - missing/unsupported role superadmin cannot become admin
+  ---
+  duration_ms: 0.10384
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role OWNER cannot become admin
+ok 219 - missing/unsupported role OWNER cannot become admin
+  ---
+  duration_ms: 0.080023
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role  admin  cannot become admin
+ok 220 - missing/unsupported role  admin  cannot become admin
+  ---
+  duration_ms: 0.07475
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role teacher cannot become admin
+ok 221 - missing/unsupported role teacher cannot become admin
+  ---
+  duration_ms: 0.070781
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role student cannot become admin
+ok 222 - missing/unsupported role student cannot become admin
+  ---
+  duration_ms: 0.082257
+  type: 'test'
+  ...
+# Subtest: missing/unsupported role bursar cannot become admin
+ok 223 - missing/unsupported role bursar cannot become admin
+  ---
+  duration_ms: 1.400085
+  type: 'test'
+  ...
+# Subtest: profile, authenticated actor and workspace identities must agree before persistence
+ok 224 - profile, authenticated actor and workspace identities must agree before persistence
+  ---
+  duration_ms: 0.681198
+  type: 'test'
+  ...
+# Subtest: owner gets JD-only routes with explicit denial preserved
+ok 225 - owner gets JD-only routes with explicit denial preserved
+  ---
+  duration_ms: 1.139379
+  type: 'test'
+  ...
+# Subtest: owner access is additive and scoped, not blanket legacy admin access
+ok 226 - owner access is additive and scoped, not blanket legacy admin access
+  ---
+  duration_ms: 0.949592
+  type: 'test'
+  ...
+# Subtest: owner permission reads use the authenticated profile ID, not an undefined staff/student ID
+ok 227 - owner permission reads use the authenticated profile ID, not an undefined staff/student ID
+  ---
+  duration_ms: 1.165438
+  type: 'test'
+  ...
+# Subtest: owner permission load errors or malformed overrides never become an empty permissive result
+ok 228 - owner permission load errors or malformed overrides never become an empty permissive result
+  ---
+  duration_ms: 1.145526
+  type: 'test'
+  ...
+# Subtest: owner override metadata must match the requested tenant, role and actor
+ok 229 - owner override metadata must match the requested tenant, role and actor
+  ---
+  duration_ms: 0.592733
+  type: 'test'
+  ...
+# Subtest: catalogue contains only JD workspace routes; legacy portal routes are gone
+ok 230 - catalogue contains only JD workspace routes; legacy portal routes are gone
+  ---
+  duration_ms: 3.069117
+  type: 'test'
+  ...
+# Subtest: admin sees every route, grouped
+ok 231 - admin sees every route, grouped
+  ---
+  duration_ms: 0.789655
+  type: 'test'
+  ...
+# Subtest: owner / allow only gets permitted JD routes
+ok 232 - owner / allow only gets permitted JD routes
+  ---
+  duration_ms: 0.260812
+  type: 'test'
+  ...
+# Subtest: owner / deny only gets permitted JD routes
+ok 233 - owner / deny only gets permitted JD routes
+  ---
+  duration_ms: 0.229137
+  type: 'test'
+  ...
+# Subtest: owner / subset only gets permitted JD routes
+ok 234 - owner / subset only gets permitted JD routes
+  ---
+  duration_ms: 0.128899
+  type: 'test'
+  ...
+# Subtest: manager / allow only gets permitted JD routes
+ok 235 - manager / allow only gets permitted JD routes
+  ---
+  duration_ms: 0.10508
+  type: 'test'
+  ...
+# Subtest: manager / deny only gets permitted JD routes
+ok 236 - manager / deny only gets permitted JD routes
+  ---
+  duration_ms: 0.173082
+  type: 'test'
+  ...
+# Subtest: manager / subset only gets permitted JD routes
+ok 237 - manager / subset only gets permitted JD routes
+  ---
+  duration_ms: 0.153215
+  type: 'test'
+  ...
+# Subtest: unsupported and legacy roles get no implicit grant, even with a permissive resolver
+ok 238 - unsupported and legacy roles get no implicit grant, even with a permissive resolver
+  ---
+  duration_ms: 0.435013
+  type: 'test'
+  ...
+# Subtest: every individual non-admin denial removes that route and it cannot reappear in search
+ok 239 - every individual non-admin denial removes that route and it cannot reappear in search
+  ---
+  duration_ms: 0.783568
+  type: 'test'
+  ...
+# Subtest: groups start compact, active group expands, search keeps groups reachable
+ok 240 - groups start compact, active group expands, search keeps groups reachable
+  ---
+  duration_ms: 0.316958
+  type: 'test'
+  ...
+# Subtest: shell wires role resolver, group resets, account access and reauthentication
+ok 241 - shell wires role resolver, group resets, account access and reauthentication
+  ---
+  duration_ms: 1.730956
+  type: 'test'
+  ...
+# (node:3003) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-oauth-crypto.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+ok 242 - OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+  ---
+  duration_ms: 20.473037
+  type: 'test'
+  ...
+# Subtest: invalid selection undefined never issues OAuth state
+ok 243 - invalid selection undefined never issues OAuth state
+  ---
+  duration_ms: 1.041213
+  type: 'test'
+  ...
+# Subtest: invalid selection [] never issues OAuth state
+ok 244 - invalid selection [] never issues OAuth state
+  ---
+  duration_ms: 0.829901
+  type: 'test'
+  ...
+# Subtest: invalid selection ["outlook"] never issues OAuth state
+ok 245 - invalid selection ["outlook"] never issues OAuth state
+  ---
+  duration_ms: 0.780695
+  type: 'test'
+  ...
+# Subtest: invalid selection ["send"] never issues OAuth state
+ok 246 - invalid selection ["send"] never issues OAuth state
+  ---
+  duration_ms: 0.964148
+  type: 'test'
+  ...
+# Subtest: invalid selection ["__proto__"] never issues OAuth state
+ok 247 - invalid selection ["__proto__"] never issues OAuth state
+  ---
+  duration_ms: 0.591866
+  type: 'test'
+  ...
+# Subtest: missing provider secret and another active account owner block new OAuth state
+ok 248 - missing provider secret and another active account owner block new OAuth state
+  ---
+  duration_ms: 1.409115
+  type: 'test'
+  ...
+# Subtest: staff: handler fails before service or OAuth calls
+ok 249 - staff: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.434432
+  type: 'test'
+  ...
+# Subtest: viewer: handler fails before service or OAuth calls
+ok 250 - viewer: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.531047
+  type: 'test'
+  ...
+# Subtest: contractor: handler fails before service or OAuth calls
+ok 251 - contractor: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.100594
+  type: 'test'
+  ...
+# Subtest: invalid JWT cannot load workspace provider metadata
+ok 252 - invalid JWT cannot load workspace provider metadata
+  ---
+  duration_ms: 0.457372
+  type: 'test'
+  ...
+# Subtest: owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+ok 253 - owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+  ---
+  duration_ms: 0.971857
+  type: 'test'
+  ...
+# Subtest: legacy refresh/verify/disconnect cannot manage another person’s Google account
+ok 254 - legacy refresh/verify/disconnect cannot manage another person’s Google account
+  ---
+  duration_ms: 1.067305
+  type: 'test'
+  ...
+# Subtest: local disconnect erases selection and credentials only for current workspace and actor
+ok 255 - local disconnect erases selection and credentials only for current workspace and actor
+  ---
+  duration_ms: 0.822733
+  type: 'test'
+  ...
+# Subtest: callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+ok 256 - callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+  ---
+  duration_ms: 23.95798
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":null}
+ok 257 - callback invalid state or changed membership rejects before token exchange: {"state":null}
+  ---
+  duration_ms: 0.924444
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xf9113337d28028c3b38e9e4ff5827444e50fa4e46dbc2599f09f289bb3c23255ae48b333c88fcc54cfe7e7d674af"},"school":"moved-workspace"}
+ok 258 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xf9113337d28028c3b38e9e4ff5827444e50fa4e46dbc2599f09f289bb3c23255ae48b333c88fcc54cfe7e7d674af"},"school":"moved-workspace"}
+  ---
+  duration_ms: 1.680011
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xf9113337d28028c3b38e9e4ff5827444e50fa4e46dbc2599f09f289bb3c23255ae48b333c88fcc54cfe7e7d674af"},"role":"viewer"}
+ok 259 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xf9113337d28028c3b38e9e4ff5827444e50fa4e46dbc2599f09f289bb3c23255ae48b333c88fcc54cfe7e7d674af"},"role":"viewer"}
+  ---
+  duration_ms: 0.705204
+  type: 'test'
+  ...
+# Subtest: provider denial consumes state but never stores credentials
+ok 260 - provider denial consumes state but never stores credentials
+  ---
+  duration_ms: 0.854768
+  type: 'test'
+  ...
+# (node:3016) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-workspace-refresh.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native refresh securely rotates tokens and keeps personal selected-app consent
+ok 261 - native refresh securely rotates tokens and keeps personal selected-app consent
+  ---
+  duration_ms: 38.171374
+  type: 'test'
+  ...
+# Subtest: native refresh fails closed: {"claim":false}
+ok 262 - native refresh fails closed: {"claim":false}
+  ---
+  duration_ms: 2.225663
+  type: 'test'
+  ...
+# Subtest: native refresh fails closed: {"save":false}
+ok 263 - native refresh fails closed: {"save":false}
+  ---
+  duration_ms: 2.180122
+  type: 'test'
+  ...
+# Subtest: native refresh fails closed: {"owner":"other"}
+ok 264 - native refresh fails closed: {"owner":"other"}
+  ---
+  duration_ms: 0.928627
+  type: 'test'
+  ...
+# Subtest: native refresh fails closed: {"status":"revoked"}
+ok 265 - native refresh fails closed: {"status":"revoked"}
+  ---
+  duration_ms: 2.944638
+  type: 'test'
+  ...
+# Subtest: native refresh fails closed: {"providerStatus":401}
+ok 266 - native refresh fails closed: {"providerStatus":401}
+  ---
+  duration_ms: 3.327446
+  type: 'test'
+  ...
+# Subtest: authorised read automatically refreshes expired credentials then uses new access token
+ok 267 - authorised read automatically refreshes expired credentials then uses new access token
+  ---
+  duration_ms: 5.210162
+  type: 'test'
+  ...
+# Subtest: narrower refreshed scopes block content read
+ok 268 - narrower refreshed scopes block content read
+  ---
+  duration_ms: 3.177261
+  type: 'test'
+  ...
+# Subtest: switch clears local identity and workspace only after acknowledged local signout
+ok 269 - switch clears local identity and workspace only after acknowledged local signout
+  ---
+  duration_ms: 1.783201
+  type: 'test'
+  ...
+# Subtest: switch fails closed on returned error
+ok 270 - switch fails closed on returned error
+  ---
+  duration_ms: 1.054333
+  type: 'test'
+  ...
+# Subtest: switch fails closed on thrown error
+ok 271 - switch fails closed on thrown error
+  ---
+  duration_ms: 0.285292
+  type: 'test'
+  ...
+# Subtest: switch fails closed on missing acknowledgement
+ok 272 - switch fails closed on missing acknowledgement
+  ---
+  duration_ms: 0.155913
+  type: 'test'
+  ...
+# Subtest: no clearing while signout is pending
+ok 273 - no clearing while signout is pending
+  ---
+  duration_ms: 0.236828
+  type: 'test'
+  ...
+# Subtest: mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+ok 274 - mounted dialog names/describes intent, escapes organisation text and focuses safe cancel
+  ---
+  duration_ms: 110.460929
+  type: 'test'
+  ...
+# Subtest: mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+ok 275 - mounted dialog wraps keyboard focus, Escape/cancel have no signout side effects
+  ---
+  duration_ms: 34.507901
+  type: 'test'
+  ...
+# Subtest: mounted dialog prevents duplicate submission and closing during signout
+ok 276 - mounted dialog prevents duplicate submission and closing during signout
+  ---
+  duration_ms: 22.350643
+  type: 'test'
+  ...
+# Subtest: mounted dialog reports failure without raw error details and allows retry
+ok 277 - mounted dialog reports failure without raw error details and allows retry
+  ---
+  duration_ms: 41.808286
+  type: 'test'
+  ...
+# Subtest: unmount restores focus and pre-existing scroll style
+ok 278 - unmount restores focus and pre-existing scroll style
+  ---
+  duration_ms: 14.915349
+  type: 'test'
+  ...
+1..278
+# tests 278
+# suites 0
+# pass 278
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7378.589951

@@ -1,0 +1,170 @@
+[
+  {
+    "name": "token-ready",
+    "width": 320,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 320,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 320,
+    "theme": "light",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 320,
+    "theme": "light",
+    "checked": 23,
+    "findings": []
+  },
+  {
+    "name": "token-ready",
+    "width": 320,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 320,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 320,
+    "theme": "dark",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 320,
+    "theme": "dark",
+    "checked": 23,
+    "findings": []
+  },
+  {
+    "name": "token-ready",
+    "width": 393,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 393,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 393,
+    "theme": "light",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 393,
+    "theme": "light",
+    "checked": 23,
+    "findings": []
+  },
+  {
+    "name": "token-ready",
+    "width": 393,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 393,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 393,
+    "theme": "dark",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 393,
+    "theme": "dark",
+    "checked": 23,
+    "findings": []
+  },
+  {
+    "name": "token-ready",
+    "width": 1280,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 1280,
+    "theme": "light",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 1280,
+    "theme": "light",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 1280,
+    "theme": "light",
+    "checked": 23,
+    "findings": []
+  },
+  {
+    "name": "token-ready",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-failure",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 24,
+    "findings": []
+  },
+  {
+    "name": "token-connected",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 36,
+    "findings": []
+  },
+  {
+    "name": "token-backend-unavailable",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 23,
+    "findings": []
+  }
+]
