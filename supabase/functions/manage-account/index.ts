@@ -6,9 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are auto-injected into every
-// Edge Function's environment by Supabase — never set these manually as
-// secrets, and NEVER expose this client or its key to the frontend.
+// v12: student/teacher account creation and the legacy backfill are retired (those roles no longer exist).
+// Callers may be owner or admin. Owners' passwords can only be reset by an owner.
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -29,6 +28,14 @@ async function getCallerProfile(req: Request) {
   return profile ?? null;
 }
 
+async function allowRegistration(req: Request) {
+  const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown").split(",")[0].trim().slice(0, 80);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip + "|register_school"));
+  const key = Array.from(new Uint8Array(digest)).map(x => x.toString(16).padStart(2, "0")).join("");
+  const { data, error } = await supabaseAdmin.rpc("consume_public_endpoint_rate_limit", { p_bucket_key: key, p_limit: 3, p_window_seconds: 3600 });
+  return !error && data === true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const json = (body: unknown, status = 200) =>
@@ -37,8 +44,9 @@ serve(async (req) => {
   try {
     const { action, ...payload } = await req.json();
 
-    // ── PUBLIC: register a brand-new school + its admin account ───────────
+    // PUBLIC: register a brand-new workspace + its first account (rate limited: 3 per hour per IP)
     if (action === "register_school") {
+      if (!await allowRegistration(req)) return json({ error: "Too many registration attempts. Try again later." }, 429);
       const { schoolName, address, state, phone, studentIdPrefix, adminName, adminEmail, redirectTo, presetKey } = payload;
       if (!schoolName?.trim() || !adminName?.trim() || !adminEmail?.trim()) {
         return json({ error: "schoolName, adminName, and adminEmail are required" }, 400);
@@ -47,9 +55,13 @@ serve(async (req) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return json({ error: "Enter a valid email address" }, 400);
       }
-      const defaultOrigin = "https://james-denning-james-projects-57651351.vercel.app";
+      // Production uses the verified custom domain. Keep the legacy Vercel
+      // production alias available during the transition; preview origins must
+      // be explicitly listed in JD_APP_ORIGINS rather than accepted broadly.
+      const defaultOrigin = "https://james-denning.com.ng";
       const allowedRedirects = new Set([
         defaultOrigin,
+        "https://james-denning-james-projects-57651351.vercel.app",
         ...(Deno.env.get("JD_APP_ORIGINS") || "").split(",").map((x) => x.trim().replace(/\/$/, "")).filter(Boolean),
       ]);
       let inviteRedirect = `${defaultOrigin}/?invite=1`;
@@ -63,11 +75,7 @@ serve(async (req) => {
         }
       }
 
-      // Validate any selected industry preset before creating anything.
-      // Core business is the default. The legacy school_management preset is
-      // retired and cannot be used for new organisations.
       let preset = null;
-      if (presetKey === "school_management") return json({ error: "This preset is no longer available" }, 400);
       if (presetKey) {
         const { data, error: presetErr } = await supabaseAdmin
           .from("org_presets").select("*").eq("key", presetKey).maybeSingle();
@@ -76,8 +84,6 @@ serve(async (req) => {
         preset = data;
       }
 
-      // Invitation creates an unconfirmed identity and sends the verification
-      // email. The user chooses their password after opening the invite link.
       const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
         normalizedEmail,
         {
@@ -104,7 +110,6 @@ serve(async (req) => {
           name: schoolName, address, state, phone,
           student_id_prefix: studentIdPrefix, admin_name: adminName.trim(), admin_email: normalizedEmail,
           setup_done: true,
-          // Null for classic (non-preset) registrations — existing behavior.
           preset_key: preset?.key ?? null,
           onboarding_step: preset ? "complete" : null,
         })
@@ -122,10 +127,6 @@ serve(async (req) => {
         return json({ error: profileErr.message }, 400);
       }
 
-      // Seed the organization settings with the service-role client. The
-      // browser is still unauthenticated after registration, so attempting
-      // this insert from the frontend would be blocked by RLS and silently
-      // leave the new workspace without its identity settings.
       const settingsSeed = preset?.settings_seed && typeof preset.settings_seed === "object"
         ? Object.entries(preset.settings_seed).map(([key, value]) => ({ school_id: school.id, key, value: String(value) }))
         : [];
@@ -143,8 +144,6 @@ serve(async (req) => {
         return json({ error: settingsErr.message }, 400);
       }
 
-      // Phase 1: record the org submission + seed org_tools from the preset.
-      // Same service-role reasoning as the settings above.
       if (preset) {
         const { error: submissionErr } = await supabaseAdmin
           .from("org_submissions")
@@ -173,20 +172,27 @@ serve(async (req) => {
       return json({ school, userId: authUser.user.id, verificationEmailSent: true });
     }
 
-    // ── ADMIN-ONLY from here down: verify the caller is a real admin ──────
+    // ADMIN-ONLY from here down: caller must be a real owner or admin
     const caller = await getCallerProfile(req);
-    if (!caller || caller.role !== "admin") {
+    if (!caller || !["owner", "admin"].includes(String(caller.role))) {
       return json({ error: "Not authorized — admin login required" }, 403);
     }
 
-    // ── Reset a workspace member's password (admin action) ─────────────────
+    if (action === "create_teacher" || action === "create_student" || action === "backfill_existing_school") {
+      return json({ error: "This action has been retired. Invite members with a business role (owner, admin, manager, finance, hr, staff, contractor or viewer)." }, 410);
+    }
+
     if (action === "reset_password") {
       const { targetProfileId, newPassword } = payload;
       if (!targetProfileId || !newPassword) return json({ error: "targetProfileId, newPassword required" }, 400);
+      if (String(newPassword).length < 10) return json({ error: "Password must be at least 10 characters" }, 400);
 
-      const { data: targetProfile } = await supabaseAdmin.from("profiles").select("school_id").eq("id", targetProfileId).single();
+      const { data: targetProfile } = await supabaseAdmin.from("profiles").select("school_id,role").eq("id", targetProfileId).single();
       if (!targetProfile || targetProfile.school_id !== caller.school_id) {
         return json({ error: "Cannot reset a password outside your own workspace" }, 403);
+      }
+      if (targetProfile.role === "owner" && caller.role !== "owner") {
+        return json({ error: "Only an owner can reset an owner's password" }, 403);
       }
 
       const { error } = await supabaseAdmin.auth.admin.updateUserById(targetProfileId, { password: newPassword });
