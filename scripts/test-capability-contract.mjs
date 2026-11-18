@@ -74,6 +74,9 @@ test('current agent prompt receives the interpretation and retains approval gate
   assert.match(captured.instructions,/No vehicle purchases, hiring decisions/);
   assert.match(captured.instructions,/without explicit owner approval/);
   assert.match(captured.instructions,/Do not describe every saved record as a draft/);
+  assert.match(captured.instructions,/1–3 short sentences/);
+  assert.match(captured.instructions,/raw tool names, UUIDs, event logs/);
+  assert.match(captured.instructions,/Never hide a real failure/);
   assert.ok(captured.tools.some(t=>t.name==='get_jd_capability_inventory'));
  }finally{globalThis.fetch=oldFetch;if(oldDeno===undefined)delete globalThis.Deno;else globalThis.Deno=oldDeno;}
 });
