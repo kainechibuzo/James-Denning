@@ -514,9 +514,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </header>
         <div className="jd-utility">{messages.length>0 && <button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setHistoryOpen(true)}><Menu size={18}/></button>}<button type="button" className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} aria-label={messages.length===0 ? "Open chat history and JD tools" : "Workspace status and chat tools"} title="Open chat history and JD tools" onClick={()=>setHistoryOpen(true)}>{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</button></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
-            <div className="jd-spark"><img src="/design/jd-tile.png" alt="James-Denning" width="108" height="108"/></div>
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
-            <div className="jd-welcome-divider" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C14 8 16 10 24 12C16 14 14 16 12 24C10 16 8 14 0 12C8 10 10 8 12 0Z"/></svg></div>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">

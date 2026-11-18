@@ -41,7 +41,7 @@ export const supabase={
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
   if(name==='jd-connect-oauth'){
-   if(body.action==='providers')return window.__oauthBackendError?{error:{message:'Synthetic sign-in backend unavailable'}}:{data:{providers:Object.entries(MCP_OAUTH_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__oauthConfigured),scopes:['synthetic:read']}))}};
+   if(body.action==='providers')return window.__oauthBackendError?{error:{name:'FunctionsFetchError',message:'Failed to send a request to the Edge Function'}}:{data:{providers:Object.entries(MCP_OAUTH_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__oauthConfigured),scopes:['synthetic:read']}))}};
    if(body.action==='start')return window.__oauthSuccess?{data:{authorization_url:'https://github.com/login/oauth/authorize?state=synthetic&code_challenge_method=S256',authorization_origin:'https://github.com'}}:{error:{message:'Synthetic provider sign-in failure; no provider contacted'}};
   }
   if(name==='jd-business-platform'&&body.action==='workspace.catalog')return window.__workspaceFailure?{error:{message:'Synthetic workspace backend unavailable'}}:{data:{providers:Object.entries(WORKSPACE_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__workspaceConfigured),services:WORKSPACE_SERVICES.filter(s=>s.provider===id).map(s=>({...s,access:'not_connected'}))}))}};

@@ -1,0 +1,14 @@
+{
+  "method": "Supabase connector list_projects then list_edge_functions; read-only metadata",
+  "project": "thklwiybjuhrjqrrxyid",
+  "projectName": "James-Denning",
+  "projectStatus": "ACTIVE_HEALTHY",
+  "functionListRequestId": "ca929c42-eb52-45d2-b618-5d7ed5b09af4",
+  "listedFunctionCount": 20,
+  "jdConnectOAuthPresent": false,
+  "jdConnectVersion": 9,
+  "jdBusinessPlatformVersion": 10,
+  "conclusion": "The OAuth endpoint invoked by the new frontend is absent from the production function list. Deployment and provider registration remain release gates; browser transport errors alone cannot distinguish a missing endpoint from network/CORS failure.",
+  "productionWrites": false,
+  "secretsRetrieved": false
+}

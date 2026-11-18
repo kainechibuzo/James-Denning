@@ -884,6 +884,27 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
     return()=>{ window.removeEventListener("resize",recalc); window.removeEventListener("scroll",recalc,true); };
   },[show, current]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(()=>{
+    if(!show) return;
+    const trigger=document.activeElement;
+    return()=>{if(trigger?.isConnected)trigger.focus();};
+  },[show]);
+  useEffect(()=>{
+    if(!show || !ready) return;
+    const card=overlayRef.current?.querySelector('.jd-tour-card');
+    card?.focus();
+    const keydown=e=>{
+      if(e.key==='Escape'){e.preventDefault();onClose();return;}
+      if(e.key!=='Tab'||!card)return;
+      const buttons=[...card.querySelectorAll('button:not(:disabled)')];
+      const first=buttons[0],last=buttons.at(-1);
+      if(e.shiftKey&&(document.activeElement===first||document.activeElement===card)){e.preventDefault();last?.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+    };
+    document.addEventListener('keydown',keydown);
+    return()=>document.removeEventListener('keydown',keydown);
+  },[show,ready,step,onClose]);
+
   if(!show || !current || !ready) return null;
 
   const PAD = 8;
@@ -893,10 +914,10 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
   } : null;
 
   // Tooltip positioning
-  const TOOLTIP_W = isMobile ? Math.min(window.innerWidth - 32, 320) : 340;
+  const TOOLTIP_W = Math.min(window.innerWidth - 32, 340);
   const placement = current.placement || "bottom";
   let tooltipStyle = {};
-  if(!spotRect || placement==="center"){
+  if(isMobile || !spotRect || placement==="center"){
     tooltipStyle = {
       position:"fixed", top:"50%", left:"50%",
       transform:"translate(-50%,-50%)",
@@ -969,12 +990,12 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
       )}
 
       {/* Tooltip card */}
-      <div style={{...tooltipStyle, pointerEvents:"auto",
+      <div className="jd-tour-card" role="dialog" aria-modal="true" tabIndex={-1} aria-label={current.title} style={{...tooltipStyle, pointerEvents:"auto",
         background: "var(--jd-card)",
         borderRadius:16, boxShadow:"0 24px 48px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)",
         border:`1px solid ${C.border}`,
         animation:"tourFadeIn .25s ease both",
-        overflow:"hidden"}}>
+        maxHeight:"calc(100dvh - 32px)",overflowY:"auto",overflowX:"hidden"}}>
 
         {/* Progress bar */}
         <div style={{height:3, background:C.borderLight}}>
@@ -996,7 +1017,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
                 {current.title}
               </h3>
             </div>
-            <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
+            <button aria-label="Close product tour" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
               color:C.muted,padding:4,borderRadius:6,display:"flex",alignItems:"center",
               flexShrink:0,marginLeft:8,marginTop:-2}}>
               <X size={15}/>
@@ -1011,7 +1032,7 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
           {/* Step dots */}
           <div style={{display:"flex",gap:4,justifyContent:"center",margin:"14px 0 0"}}>
             {filteredSteps.map((_,i)=>(
-              <button key={i} onClick={()=>setStep(i)}
+              <button className="jd-tour-step" aria-label={`Go to tour step ${i+1}`} aria-current={i===step?"step":undefined} key={i} onClick={()=>setStep(i)}
                 style={{width:i===step?18:6,height:6,borderRadius:99,border:"none",cursor:"pointer",
                   background:i===step?C.orange:i<step?C.orange+"60":C.borderLight,
                   padding:0,transition:"all .2s"}}/>
@@ -1568,7 +1589,7 @@ function AppInner(){
         @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-        @keyframes tourFadeIn{from{opacity:0;transform:scale(.95) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes tourFadeIn{from{opacity:0}to{opacity:1}}
         @keyframes tourPulse{0%,100%{box-shadow:0 0 0 4px rgba(112,112,112,.3)}50%{box-shadow:0 0 0 8px rgba(112,112,112,.15),0 0 0 4px rgba(112,112,112,.4)}}
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:10px}

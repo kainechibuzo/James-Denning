@@ -1,11 +1,13 @@
 import React,{useEffect,useState} from 'react';
 import {supabase} from '../supabaseClient.js';
+import {connectorSignInError} from './oauth-errors.mjs';
 import {ConnectorLogo} from './ConnectorLogo.jsx';
 import {oauthProviderId} from '../../supabase/functions/_shared/jd-connector-oauth-policy.mjs';
-async function call(body){const {data,error}=await supabase.functions.invoke('jd-connect-oauth',{body});if(error||data?.error)throw Error(data?.error||error?.message||'Sign-in request failed');return data;}
+async function call(body){const {data,error}=await supabase.functions.invoke('jd-connect-oauth',{body});if(error||data?.error)throw Error(await connectorSignInError(error,data));return data;}
 export function OAuthConnectPanel({entry,role,onClose,onConnections}){
- const providerId=oauthProviderId(entry.id),[provider,setProvider]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[sharing,setSharing]=useState('personal'),[confirm,setConfirm]=useState(false);
- useEffect(()=>{let active=true;call({action:'providers'}).then(d=>{if(!active)return;const p=d?.providers?.find(p=>p.id===providerId);if(!p)throw Error('Provider sign-in backend needs deployment.');setProvider(p);}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[providerId]);
+ const providerId=oauthProviderId(entry.id),[provider,setProvider]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[sharing,setSharing]=useState('personal'),[confirm,setConfirm]=useState(false),[attempt,setAttempt]=useState(0);
+ const retry=()=>{setProvider(null);setError('');setLoading(true);setConfirm(false);setAttempt(n=>n+1);};
+ useEffect(()=>{let active=true;call({action:'providers'}).then(d=>{if(!active)return;const p=d?.providers?.find(p=>p.id===providerId);if(!p)throw Error('Provider sign-in backend needs deployment.');setProvider(p);}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[providerId,attempt]);
  const start=async()=>{
   // Open synchronously on the user's click; never expose provider credentials to JS.
   const popup=window.open('about:blank','_blank');if(!popup){setError('Allow the sign-in popup and try again.');return;}popup.opener=null;
@@ -16,7 +18,7 @@ export function OAuthConnectPanel({entry,role,onClose,onConnections}){
   <div className="jd-connector-setup-head"><div className="jd-provider-title"><ConnectorLogo id={entry.id} name={entry.name}/><h2>Connect {entry.name}</h2></div><button onClick={onClose}>Close sign-in setup</button></div>
   <p>Sign in with {provider?.name||entry.name} and approve access. No PAT or API key to find or paste.</p>
   {loading&&<p role="status">Checking provider setup…</p>}
-  {error&&<p role="alert">{error}</p>}
+  {error&&<div className="jd-oauth-error" role="alert"><strong>Sign-in unavailable</strong><p>{error}</p>{!provider&&<button type="button" onClick={retry} disabled={loading}>Retry setup check</button>}</div>}
   {notice&&<p role="status">{notice}</p>}
   {provider&&!provider.configured&&<p role="status"><strong>Operator setup required.</strong> JD’s provider app registration, OAuth configuration and deployment must be completed first. You do not need to supply a secret.</p>}
   {provider?.configured&&<>
