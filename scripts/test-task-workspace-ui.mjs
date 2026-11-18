@@ -47,12 +47,12 @@ for(const item of [task("completed"),{id:"draft-1",title:"Draft task",status:"co
 }
 test("snapshot completion is unverified and inert until a matching authorised read",async()=>{
   const m=await mount(view({ui:workspace(true,task("completed")),onTaskToggle:()=>assert.fail("must not write")}));
-  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.match(content(),/Status not confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");}
+  try{assert.ok(check().disabled);assert.match(content(),/Not confirmed/);assert.match(content(),/Status not confirmed/);assert.equal(check().getAttribute("aria-pressed"),"false");}
   finally{await m.cleanup();}
 });
 test("invalid saved ID never becomes a local toggle",async()=>{
   const m=await mount(view({ui:workspace(true,{id:"draft-1",title:"Malformed saved task"}),onTaskToggle:()=>assert.fail("must not write")}));
-  try{assert.ok(check().disabled);assert.match(content(),/Unverified snapshot/);assert.doesNotMatch(content(),/local ticks/);}finally{await m.cleanup();}
+  try{assert.ok(check().disabled);assert.match(content(),/Not confirmed/);assert.doesNotMatch(content(),/local ticks/);}finally{await m.cleanup();}
 });
 for(const role of ["viewer","contractor","teacher",undefined]){
   test(`${role} cannot turn a saved task into a local completion`,async()=>{
@@ -85,8 +85,8 @@ test("mounted hook/card integrates read → start → complete → remount/readb
   }}};
   const m=await mount(React.createElement(Harness,{client}));
   try{assert.ok(!check().disabled);await act(async()=>check().click());assert.match(content(),/In progress/);assert.match(content(),/Status saved with audit evidence/);
-    await act(async()=>check().click());assert.match(content(),/Record complete/);assert.match(content(),/not verified external execution or approval/);
-    await m.render(React.createElement(Harness,{client,key:"remount"}));assert.match(content(),/Record complete/);assert.ok(check().disabled);assert.doesNotMatch(content(),/Status saved with audit evidence/);
+    await act(async()=>check().click());assert.match(content(),/Complete/);assert.match(content(),/not verified external execution or approval/);
+    await m.render(React.createElement(Harness,{client,key:"remount"}));assert.match(content(),/Complete/);assert.ok(check().disabled);assert.doesNotMatch(content(),/Status saved with audit evidence/);
     assert.deepEqual(calls.map(c=>c.action),["operations.task.list","operations.task.transition","operations.task.transition","operations.task.list"]);
   }finally{await m.cleanup();}
 });
@@ -105,13 +105,13 @@ test("unconfirmed write blocks mounted retry until explicit read-only refresh re
   }}};
   const m=await mount(React.createElement(Harness,{client}));
   try{await act(async()=>check().click());assert.ok(check().disabled);assert.match(content(),/Update not confirmed/);assert.doesNotMatch(content(),/Record complete/);
-    await act(async()=>check().click());assert.equal(writes,1);await act(async()=>document.querySelector("#refresh").click());assert.match(content(),/Record complete/);assert.equal(writes,1);
+    await act(async()=>check().click());assert.equal(writes,1);await act(async()=>document.querySelector("#refresh").click());assert.match(content(),/Complete/);assert.equal(writes,1);
   }finally{await m.cleanup();}
 });
 test("account/conversation scope changes discard late reads from the previous scope",async()=>{
   const old=deferred();let reads=0;const client={functions:{invoke:async()=>++reads===1?old.promise:{data:{tasks:[]}}}};
   const m=await mount(React.createElement(Harness,{client}));
-  try{await m.render(React.createElement(Harness,{client,scope:"org-b:user-b:conversation-b"}));await act(async()=>old.resolve({data:{tasks:[task("completed")]}}));assert.match(content(),/Unverified snapshot/);assert.doesNotMatch(content(),/Record complete/);assert.ok(check().disabled);}
+  try{await m.render(React.createElement(Harness,{client,scope:"org-b:user-b:conversation-b"}));await act(async()=>old.resolve({data:{tasks:[task("completed")]}}));assert.match(content(),/Not confirmed/);assert.doesNotMatch(content(),/Record complete/);assert.ok(check().disabled);}
   finally{await m.cleanup();}
 });
 test("StrictMode replay still leaves mounted task records usable",async()=>{
@@ -146,7 +146,7 @@ test("focus refresh reads new server status, skips hidden tabs and never execute
     assert.equal(reads,1);status="completed";visibility="hidden";
     await act(async()=>window.dispatchEvent(new window.Event("focus")));assert.equal(reads,1);assert.doesNotMatch(content(),/Record complete/);
     visibility="visible";await act(async()=>document.dispatchEvent(new window.Event("visibilitychange")));
-    assert.equal(reads,2);assert.match(content(),/Record complete/);assert.ok(calls.every(a=>a==="operations.task.list"));
+    assert.equal(reads,2);assert.match(content(),/Complete/);assert.ok(calls.every(a=>a==="operations.task.list"));
   }finally{await m.cleanup();}
 });
 
