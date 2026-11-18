@@ -35,7 +35,7 @@ try{
   await page.setContent('<!doctype html><html><head><style>*{box-sizing:border-box}body{margin:0}#shell-header{height:49px}#root{min-width:0}</style></head><body><header id="shell-header">Synthetic workspace shell · JD Assistant</header><main id="root"></main></body></html>');
   await page.addStyleTag({content:css});
   await page.addScriptTag({content:script,type:'module'});
-  await page.getByRole('button',{name:'Open chat history and JD tools'}).click();
+  await page.getByRole('button',{name:'Toggle sidebar'}).click();
   await page.getByRole('button',{name:/Synthetic capability report/}).click();
   await page.locator('.jd-table').waitFor();
   const measure=()=>page.evaluate(()=>{
