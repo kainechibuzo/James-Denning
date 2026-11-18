@@ -33,7 +33,9 @@ jobs:
           fs.writeFileSync('http-smoke.json',JSON.stringify(results,null,2)+'\n');
           // Public unauthenticated responses only. Annotations are retrievable
           // even where the runner's redirected archive host is unavailable.
-          for(const result of results)console.log('::notice::'+JSON.stringify(result).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A'));
+          // One annotation avoids GitHub's ten-notices-per-step limit. Raw
+          // public response bodies remain in the uploaded artifact.
+          console.log('::notice::'+JSON.stringify({checks:results.map(({body,...result})=>result)}).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A'));
           if(results.some(r=>!r.pass))process.exitCode=1;
           NODE
       - uses: actions/upload-artifact@v4
