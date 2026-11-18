@@ -100,7 +100,7 @@ export function JDVisualWorkspace({ ui, onAnswer, onTaskToggle, taskRecords, tas
                 {isDone?<CheckCircle2 size={17}/>:<Circle size={17}/>}
               </button>
               <div className="jd-viz-copy"><strong>{title}</strong>{description&&<small>{text(description)}</small>}
-                <small>{saved ? record ? "Saved record — refreshed from workspace" : "Saved snapshot — current record not confirmed" : "Local checklist — no saved record confirmed. Ticks stay only in this view."}</small>
+                {!saved && <small>Local draft — changes stay in this view.</small>}{saved && !record && <small>Current task status could not be confirmed.</small>}
                 {saved&&!record&&<small>Refresh task records to check status. Missing records may be outside the returned list or no longer accessible.</small>}
                 {saved&&record&&!taskTransitionAction(taskRole)&&<small>Read-only for your role.</small>}
                 {isPending&&<small role="status">Saving record status…</small>}
