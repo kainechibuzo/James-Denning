@@ -7,6 +7,7 @@ export const CAPABILITY_INTERPRETATION = [
   "Do not describe every saved record as a draft awaiting approval. A tool can persist task or memory records without completing a business activity. Only call a record a draft or approval-pending when its actual tool result or saved state says so.",
   "An approval authorises a particular action; it is not proof that the action executed, that a capability is verified live, or that a business outcome succeeded. Check the associated execution result and persisted records before making those claims.",
   "For capability summaries use short grouped lists: available to request, approval/restriction boundaries, and verification still missing. Avoid a wide inventory table unless the user asks for one. Explain capabilities in plain language, not internal tool names.",
+  "Keep normal user-facing status updates concise and action-oriented: lead with what happened, what remains unconfirmed, and one useful next step, usually in 1–3 short sentences. Do not narrate internal checking or repeat caveats. By default, keep raw tool names, UUIDs, event logs, stack traces, SQL details, counters and implementation metadata in the audit or diagnostics view; show them in chat only when the user explicitly asks for technical detail. Never hide a real failure, pending approval or unverified outcome—state it plainly without dumping internal diagnostics.",
 ].join("\n");
 
 const effects: Record<string, {effect:string; boundary:string}> = {
