@@ -58,6 +58,11 @@ try{for(const width of [320,393,1280]){
     if(await toggle.count())await toggle.evaluate(el=>el.click());
     else await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;document.body.dataset.theme=theme;},theme);
     await settle();const audit=await contrastAudit(page);contrastResults.push({name,width,theme,...audit});
+    if(theme==='dark'&&name!=='offline'){
+     const frames=await page.evaluate(()=>[...document.querySelectorAll('header,aside,section,article,div,button,summary,details,input:not([type="checkbox"]):not([type="radio"]),select,textarea')].filter(e=>e.getClientRects().length&&!e.closest('.reference-landing')).flatMap(e=>{
+      const s=getComputedStyle(e);return ['Top','Right','Bottom','Left'].filter(side=>parseFloat(s['border'+side+'Width'])>0&&s['border'+side+'Style']!=='none'&&!['transparent','rgba(0, 0, 0, 0)'].includes(s['border'+side+'Color'])).map(side=>({tag:e.tagName,class:e.className,side,color:s['border'+side+'Color']}));
+     }));assert.deepEqual(frames,[],`${name}: dark decorative frames`);
+    }
     if(audit.findings.length)console.log('CONTRAST',name,width,theme,JSON.stringify(audit.findings));
     if(dir&&width===393&&['sidebar-pills','populated-departments','conversation-history','history-error','populated-ai-usage','populated-review-centre','populated-automation-runs'].includes(name))await page.screenshot({path:resolve(dir,`${name}-${theme}-${width}.png`),fullPage:true});
    }

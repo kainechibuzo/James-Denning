@@ -1,0 +1,15 @@
+{
+  "package.json": "9a327b71aad0d788753cc0f86eb27c75d19a9dc73c7a29bd1697c042533f06c1",
+  "scripts/fixtures/conversation-records.mjs": "58b727fc8a303e8d2214da7d51735e18a790ba5d64597c1797164816519daf00",
+  "scripts/fixtures/site-ui-client.mjs": "6695f30cbac75876ccb247a7090c9904d9c8bf8f6d0dc83875bcad42f6ceec89",
+  "scripts/test-connector-oauth-errors.mjs": "cf6afcb0b53591a592e764b03f2eaf2a3f13f34d4b894d969cb8d05381278247",
+  "scripts/test-mobile-polish-layout.mjs": "136c186b3fb835482607b862edc17e89b7477413a7037ecdd4649a406568ebab",
+  "scripts/test-site-design-layout.mjs": "cd41a4184ed0b81c011a71435e158912994c5b2eed3d5e2f3527ab17250ca858",
+  "src/AppDemo.jsx": "f7a61414a90d93138f5b875836a06f4e174b8e131bd6e49118c6e5642c551f53",
+  "src/chat/ChatHome.jsx": "203fac9023594fcc42fe4b1855c746874198d2c4fdcd4ca52257d12e27c3a759",
+  "src/chat/JDVisualWorkspace.jsx": "901cf4132cb636f717b0bcf85b1ef5e7d05173d35657c168bfbd7634f7054513",
+  "src/connectors/OAuthConnectPanel.jsx": "4c057edad3dc3e628473084b57565be7153dc50fe8b3ed4c210a1cc40ce0263b",
+  "src/connectors/oauth-errors.mjs": "b6acebfbf2412fd6bab68ed64255b9cda7ac5b03e1233d3a255728fb7916ed82",
+  "src/styles/app.css": "5f0653867276f0ed6b13ad7a51f38cf1dcf77fea4c8cdd3a2fe4ee65869f3ab0",
+  "src/styles/minimal-surfaces.css": "ce977d856b17c758006fbd7aa1277dde5e21ec94df49339bb6e1acb0a64fef36"
+}

@@ -1,0 +1,53 @@
+/* Quiet surfaces: dark mode uses spacing and tonal fills, not decorative frames.
+   Border widths are retained to avoid layout shifts when switching themes.
+   Native selection controls, focus outlines, charts and tour spotlights keep
+   their functional indicators. Light-mode framing is deliberately unchanged. */
+:root[data-theme='dark']{--jd-border:transparent}
+:root[data-theme='dark'] :is(#root,body) :where(header,aside,main,section,article,nav,footer,div,form,fieldset,legend,button,a,summary,details,label,li,table,thead,tbody,tr,th,td,hr,span,select,textarea,input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color'])):not(:where(.reference-landing,.reference-landing *)){
+ border-color:transparent!important;
+}
+:root[data-theme='dark'] :is(.jd-connectors-tabs button:not([aria-current='page']),.jd-ui-button.is-outline){background:var(--jd-soft)!important}
+/* Keyboard users must still see where they are. Do not suppress :focus-visible
+   or the composer/search focus-within indicator in either theme. */
+:root[data-theme='dark'] :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline-color:var(--jd-accent)}
+
+/* The chat greeting stands alone; the brand remains in the workspace header. */
+body .jd-command.reference-command{background-image:none!important}
+.reference-command .jd-welcome{gap:0;transform:translateY(-28px)}
+.reference-command .jd-welcome .jd-subtitle{margin:18px 0 5px}
+.reference-command .jd-welcome-description{max-width:420px;margin:0 auto;line-height:1.7}
+
+/* Tour animation is opacity-only: it must never replace centering transforms. */
+.jd-tour-card{box-sizing:border-box;overscroll-behavior:contain;overflow-wrap:anywhere}
+.jd-tour-card button{min-height:36px}
+.jd-tour-card .jd-tour-step{position:relative;width:24px!important;height:28px!important;min-width:24px!important;min-height:28px!important;padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important}
+.jd-tour-step::after{content:'';position:absolute;left:9px;top:11px;width:6px;height:6px;border-radius:999px;background:var(--jd-muted);opacity:.4}
+.jd-tour-step[aria-current='step']::after{left:4px;width:16px;background:var(--jd-text);opacity:1}
+
+/* Descriptive department cards are not tiny KPI tiles. */
+.jd-visual-workspace .jd-viz-departments{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.jd-visual-workspace .jd-viz-departments .jd-viz-metric{padding:16px}
+.jd-visual-workspace .jd-viz-departments small{font-size:12px;line-height:1.7}
+.jd-visual-workspace .jd-viz-departments strong{font-size:20px;margin:8px 0}
+.jd-visual-workspace .jd-viz-departments .jd-viz-status{margin-top:10px}
+.jd-viz-empty{font-size:12px;color:var(--jd-muted);line-height:1.65;margin:0}
+
+.jd-connectors .jd-oauth-error{padding:16px;background:var(--jd-soft);border-radius:12px;margin:16px 0}
+.jd-connectors .jd-oauth-error strong{font-size:14px}
+.jd-connectors .jd-oauth-error p{margin:8px 0 14px}
+@media(max-width:580px){
+ .jd-connectors .jd-connectors-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .jd-connectors .jd-connectors-filters>label{min-width:0}
+ .jd-connectors .jd-connectors-filters .jd-connectors-search,.jd-connectors .jd-connectors-filters>label:nth-child(2){grid-column:1/-1}
+ .jd-connectors .jd-connectors-filters select{width:100%;font-size:14px}
+ .jd-connectors .jd-connector-setup-head{align-items:flex-start;flex-wrap:wrap}
+ .jd-connectors .jd-provider-title h2{font-size:20px;overflow-wrap:anywhere}
+ .jd-visual-workspace .jd-viz-departments{grid-template-columns:1fr}
+}
+@media(max-height:650px){.reference-command .jd-welcome{transform:none}}
+@media(forced-colors:active){
+ /* High-contrast OS modes need real edges where surface fills are suppressed. */
+ :root[data-theme='dark'] :is(#root,body) :is(button,input,select,textarea,summary,[role='dialog']){border-color:ButtonText!important}
+}
+/* The selected sidebar pill has an ID + state selector in the legacy sheet. */
+:root[data-theme='dark'] #workspace-navigation button.jd-nav-pill[aria-current='page']{border-color:transparent!important}

@@ -1,0 +1,422 @@
+[
+  {
+    "name": "minimal-greeting",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 393,
+    "height": 860,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 393,
+    "height": 860,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 708,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 708,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 1280,
+    "height": 900,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 1280,
+    "height": 900,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 393,
+    "height": 460,
+    "theme": "light",
+    "result": "PASS"
+  },
+  {
+    "name": "minimal-greeting",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-welcome",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "tour-finished",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "department-cards",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "connector-directory",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  },
+  {
+    "name": "oauth-unavailable",
+    "width": 393,
+    "height": 460,
+    "theme": "dark",
+    "result": "PASS"
+  }
+]
