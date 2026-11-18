@@ -1,3 +1,4 @@
+import {refreshWorkspaceConnection} from "../_shared/jd-workspace-refresh.ts";
 import {workspaceCatalog,readWorkspaceApp} from "../_shared/jd-workspace-service.ts";
 import {WORKSPACE_PROVIDERS,selectedWorkspaceServices,workspaceScopes} from "../_shared/jd-workspace-connectors.mjs";
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
@@ -27,7 +28,7 @@ Deno.serve(async req=>{
  const {data:p,error:pe}=await db.from("profiles").select("id,school_id,role").eq("id",user.user.id).maybeSingle();
  if(pe||!p?.school_id)return send({error:"Workspace required"},403);if(!["owner","admin","manager"].includes(p.role))return send({error:"Manager permission required"},403);
  let b:any;try{b=await req.json();}catch{return send({error:"Invalid JSON"},400);}const school=p.school_id,actor=user.user.id;
- if(p.role==="owner"&&!["workspace.catalog","workspace.read","workspace.disconnect","oauth.start"].includes(b?.action))return send({error:"Manager permission required for this business action"},403);
+ if(p.role==="owner"&&!(b?.action==="oauth.refresh"&&Object.hasOwn(WORKSPACE_PROVIDERS,str(b.providerId,60)))&&!["workspace.catalog","workspace.read","workspace.disconnect","oauth.start"].includes(b?.action))return send({error:"Manager permission required for this business action"},403);
  const audit=async(type:string,meta:any)=>{await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});};
  const list=async(k:string)=>{if(!tables[k])throw new Error("Unsupported type");const {data,error}=await db.from(tables[k]).select(columns[k]).eq("school_id",school).order("created_at",{ascending:false}).limit(200);if(error)throw error;return (data||[]) as any[];};
  try{
@@ -171,6 +172,10 @@ Deno.serve(async req=>{
   if(["oauth.refresh","oauth.verify","oauth.disconnect"].includes(b.action)&&Object.hasOwn(WORKSPACE_PROVIDERS,str(b.providerId,60))){
    const {data:owner,error}=await db.from("jd_business_oauth_connections").select("connected_by").eq("school_id",school).eq("provider_id",str(b.providerId,60)).maybeSingle();
    if(error||owner?.connected_by!==actor)return send({error:"Only the account owner may manage this workspace provider connection"},403);
+  }
+  if(b.action==="oauth.refresh"&&Object.hasOwn(WORKSPACE_PROVIDERS,str(b.providerId,60))){
+   const connection=await refreshWorkspaceConnection({admin:db,schoolId:school,userId:actor,role:p.role},str(b.providerId,60));
+   return send({provider_id:connection.provider_id,status:connection.status,token_expires_at:connection.token_expires_at});
   }
   if(b.action==="oauth.refresh"){
    const providerId=str(b.providerId,60),config:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={

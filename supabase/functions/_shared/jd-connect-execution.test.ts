@@ -36,7 +36,7 @@ Deno.test("JD Connect read and evidence endpoints do not require encryption mate
 Deno.test("JD Connect records an execution before connecting to the remote server", () => {
   const start = source.indexOf("const execute=");
   const insert = source.indexOf('from("jd_connector_executions").insert', start);
-  const token = source.indexOf("getToken(server.id)", start);
+  const token = source.indexOf("getToken(server.id,server.oauth_generation)", start);
   assertEquals(start >= 0 && insert > start && token > insert, true);
 });
 
@@ -49,10 +49,12 @@ Deno.test("JD Connect supports per-provider read-only, read-write and full-contr
 Deno.test("JD Connect enforces granted write scopes and preserves destructive approval gates", () => {
   assertMatch(source, /const elevated=level==="read_write"\|\|level==="full_control"/);
   assertMatch(source, /const unrestricted=level==="full_control"/);
-  assertMatch(source, /const requiresApproval=!readOnly&&\(!elevated\|\|\(!unrestricted&&\(asObject\(tool\.annotations\)\.destructiveHint===true\|\|asObject\(tool\.annotations\)\.openWorldHint===true\)\)\)/);
+  assertMatch(source, /const legacyRequiresApproval=!readOnly&&\(!elevated\|\|\(!unrestricted&&\(asObject\(tool\.annotations\)\.destructiveHint===true\|\|asObject\(tool\.annotations\)\.openWorldHint===true\)\)\)/);
   assertMatch(source, /permissionLevel:level/);
 });
 Deno.test("JD Connect returns to read-only when a provider grant is missing or expired", () => {
   assertMatch(source, /grant&&\(!grant\.expires_at\|\|new Date\(grant\.expires_at\)\.getTime\(\)>Date\.now\(\)\)\?grant:null/);
   assertMatch(source, /activeGrant\?\.access_level\|\|"read_only"/);
 });
+
+Deno.test("OAuth never bypasses per-action approval through legacy elevated grants",()=>{assertMatch(source,/const requiresApproval=server\.oauth_provider_id\?\(!readOnly\|\|tool\.read_only!==true\):legacyRequiresApproval/);});

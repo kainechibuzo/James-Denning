@@ -1,3 +1,5 @@
+import {connectorOAuthToken,connectorOAuthKey,prepareConnectorRevocation} from "../_shared/jd-connector-oauth.ts";
+import {canUseConnector,MCP_OAUTH_PROVIDERS} from "../_shared/jd-connector-oauth-policy.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { decryptSecret, encryptSecret, importAesKey } from "../_shared/jd-oauth-crypto.ts";
 import { isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
@@ -33,20 +35,27 @@ Deno.serve(async req=>{
  if(!["owner","admin","manager"].includes(String(profile.role)))return send({error:"Manager permission required for JD Connect"},403);
  const school=profile.school_id,actor=actorId;
  const allowed=(Deno.env.get("JD_MCP_ALLOWED_HOSTS")||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
- const encoded=Deno.env.get("JD_OAUTH_ENCRYPTION_KEY")||"";
+ const encoded=connectorOAuthKey();
  const key=encoded?await importAesKey(encoded).catch(()=>null):null;
  const requireEncryptionKey=()=>{if(!key)throw new Error("JD_OAUTH_ENCRYPTION_KEY is missing or invalid; configure the 32-byte base64 encryption key before storing credentials or approving write-capable connector calls");return key;};
  const audit=async(type:string,meta:Record<string,unknown>)=>await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});
  const getServer=async(id:string)=>{
-  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info").eq("id",id).eq("school_id",school).maybeSingle();
-  if(error||!data)throw new Error("Connector not found");return data as any;
+  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info,oauth_provider_id,access_owner_user_id,oauth_actor_id,oauth_generation").eq("id",id).eq("school_id",school).maybeSingle();
+  if(error||!data||!canUseConnector(data,actor))throw new Error("Connector not found or not shared with you");return data as any;
  };
- const getToken=async(id:string)=>{
+ const visibleServerIds=async()=>{
+  const {data,error}=await db.from("jd_connector_servers").select("id,access_owner_user_id").eq("school_id",school);
+  if(error)throw new Error("Could not check connector visibility");return (data||[]).filter((s:any)=>canUseConnector(s,actor)).map((s:any)=>s.id);
+ };
+ const getToken=async(id:string,expectedGeneration?:number)=>{
+  const server=await getServer(id);
+  if(server.oauth_provider_id){if(expectedGeneration!==undefined&&server.oauth_generation!==expectedGeneration)throw new Error("Connection changed before execution. Request approval again.");return connectorOAuthToken(db,server);}
   const {data,error}=await db.from("jd_connector_credentials").select("encrypted_bearer_token").eq("server_id",id).eq("school_id",school).maybeSingle();
   if(error)throw new Error("Could not load connector credentials");
   return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,requireEncryptionKey()):"";
  };
  const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string)=>{
+  validateMcpEndpoint(endpoint,allowed);
   const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
   const headers:Record<string,string>={"Content-Type":"application/json","Accept":"application/json, text/event-stream","MCP-Protocol-Version":"2025-06-18"};
   if(token)headers.Authorization=`Bearer ${token}`;if(sessionId)headers["Mcp-Session-Id"]=sessionId;
@@ -73,6 +82,10 @@ Deno.serve(async req=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
    return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:false};
   });
+  if(server.oauth_provider_id){
+   const {data:saved,error}=await db.rpc("jd_save_connector_oauth_discovery",{p_server:server.id,p_school:school,p_generation:server.oauth_generation,p_tools:tools,p_protocol:session.protocolVersion,p_info:session.serverInfo});
+   if(error||saved!==true)throw new Error("Connection changed during discovery. Refresh connections.");return tools;
+  }
   const {error:deleteError}=await db.from("jd_connector_tools").delete().eq("server_id",server.id).eq("school_id",school);
   if(deleteError)throw new Error("Could not replace connector tool catalogue");
   if(tools.length){const {error}=await db.from("jd_connector_tools").insert(tools);if(error)throw new Error("Could not save discovered MCP tools");}
@@ -85,7 +98,7 @@ Deno.serve(async req=>{
   if(insertError||!run)throw new Error("Could not create connector execution record");
   let remoteResult:unknown=null;
   try{
-   const token=await getToken(server.id),session=await connect(server,token);
+   const token=await getToken(server.id,server.oauth_generation),session=await connect(server,token);
    const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
@@ -112,6 +125,7 @@ Deno.serve(async req=>{
    if(auditError)warnings.push("Execution succeeded and evidence was saved, but the audit event could not be recorded.");
    return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:!auditError,approval_status_persisted:approvalStatusPersisted},warnings};
   }catch(e){
+   if(server.oauth_provider_id&&/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:"OAUTH_RECONNECT_REQUIRED"}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
    const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
    const failureMessage=e instanceof Error?e.message:"Connector operation failed";
    const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:"failed",result_json:remoteResult,error_code:code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
@@ -126,21 +140,22 @@ Deno.serve(async req=>{
   }
  };
  try{
-  if(body.action==="catalog")return send({protocol:"MCP Streamable HTTP",transport:"HTTPS",approvalPolicy:"Per-server read_only, read_write and full_control grants; destructive/open-world calls remain approval-gated unless full_control is explicitly granted",providers:["Google Workspace","Microsoft 365","Slack","Notion","GitHub","Paystack","Custom allowlisted MCP servers"],hostAllowlistConfigured:allowed.length>0});
+  if(body.action==="catalog")return send({protocol:"MCP Streamable HTTP",transport:"HTTPS",approvalPolicy:"OAuth connections require human approval for every untrusted or write-capable tool. Legacy/custom grants retain their existing separate policy.",providers:Object.values(MCP_OAUTH_PROVIDERS).map(p=>p.name),nativeApps:["Google Workspace","Microsoft 365"],hostAllowlistConfigured:allowed.length>0});
   if(body.action==="servers.list"){
-   const {data,error}=await db.from("jd_connector_servers").select("id,name,host,endpoint_url,status,protocol_version,server_info,last_connected_at,last_error_code,created_at").eq("school_id",school).order("created_at",{ascending:false});
+   const {data,error}=await db.from("jd_connector_servers").select("id,name,host,endpoint_url,status,protocol_version,server_info,last_connected_at,last_error_code,created_at,oauth_provider_id,access_owner_user_id,oauth_actor_id").eq("school_id",school).order("created_at",{ascending:false});
    if(error)throw error;
-   const ids=(data||[]).map((s:any)=>s.id);
+   const visible=(data||[]).filter((s:any)=>canUseConnector(s,actor)),ids=visible.map((s:any)=>s.id);
    const {data:grants, error:grantError}=ids.length?await db.from("jd_connector_grants").select("server_id,access_level,granted_by,granted_at,expires_at").eq("school_id",school).in("server_id",ids):{data:[],error:null};
    if(grantError)throw grantError;
    const byServer=new Map((grants||[]).map((g:any)=>[g.server_id,g]));
-   return send({servers:(data||[]).map((server:any)=>({...server,grant:byServer.get(server.id)||{access_level:"read_only",granted_at:null,expires_at:null}}))});
+   return send({servers:visible.map((server:any)=>({...server,grant:byServer.get(server.id)||{access_level:"read_only",granted_at:null,expires_at:null}}))});
   }
   if(body.action==="grants.set"){
    // Connector permissions are a human decision: never from the agent runtime (service-key calls) and only owners/admins may widen access.
    if(internal)return send({error:"Connector permissions must be changed by a signed-in person"},403);
    if(!["owner","admin"].includes(String(profile.role)))return send({error:"Only an owner or admin can change connector permissions"},403);
    const server=await getServer(clip(body.serverId,64));
+   if(server.oauth_provider_id&&body.accessLevel!=="read_only")return send({error:"OAuth write actions require per-action human approval"},400);
    const level=body.accessLevel;
    if(!["read_only","read_write","full_control"].includes(level))return send({error:"Access level must be read_only, read_write or full_control"},400);
    const expiresAt=body.expiresAt?new Date(body.expiresAt):null;
@@ -159,7 +174,18 @@ Deno.serve(async req=>{
    if(auditResult.error)throw new Error("Permission was revoked but its audit event could not be recorded");
    return send({revoked:true,serverId:server.id});
   }
+  if(body.action==="servers.public_connect"){
+   if(internal||body.confirm!==true)return send({error:"Confirm public access as a signed-in person"},403);
+   const presets:Record<string,{name:string;endpoint:string}>={exa:{name:"Exa",endpoint:"https://mcp.exa.ai/mcp"},firecrawl:{name:"Firecrawl",endpoint:"https://mcp.firecrawl.dev/v2/mcp"}};
+   if(!Object.hasOwn(presets,body.providerId))return send({error:"No keyless access configured for this provider"},400);
+   const preset=presets[body.providerId],endpoint=validateMcpEndpoint(preset.endpoint,allowed);
+   const {data:server,error}=await db.from("jd_connector_servers").insert({school_id:school,name:preset.name,endpoint_url:endpoint.toString(),host:endpoint.hostname,status:"error",created_by:actor,access_owner_user_id:actor}).select("id,name,endpoint_url,host").single();
+   if(error||!server)throw new Error("Could not register public access; inspect existing connections before retrying");
+   try{const tools=await refreshTools(server,"");await audit("connector.public.connected",{server_id:server.id,provider_id:body.providerId});return send({server,tools});}
+   catch{throw new Error("Public tool discovery failed. No working connection confirmed. Inspect My connections.");}
+  }
   if(body.action==="servers.register"){
+   if(internal||!["owner","admin"].includes(String(profile.role))||Deno.env.get("JD_MCP_ALLOW_CUSTOM_SETUP")!=="true")return send({error:"Custom credential setup is operator-only. Use provider sign-in in the directory."},403);
    if(!allowed.length)return send({error:"No MCP hosts are enabled. Configure JD_MCP_ALLOWED_HOSTS before registering a server."},503);
    const endpoint=validateMcpEndpoint(body.endpoint,allowed),name=clip(body.name,100);
    if(!name)return send({error:"Connector name is required"},400);
@@ -173,6 +199,16 @@ Deno.serve(async req=>{
   }
   if(body.action==="servers.disconnect"){
    const id=clip(body.serverId,64);const server=await getServer(id);
+   if(internal)return send({error:"Disconnect must be requested by a signed-in person"},403);
+   if(server.oauth_provider_id){
+    const revocation=await prepareConnectorRevocation(db,server);
+    const {data:done,error}=await db.rpc("jd_disconnect_connector_oauth",{p_server:id,p_actor:actor});
+    if(error||done!==true)throw new Error("Could not disconnect safely");
+    let revocationAccepted=false;
+    if(revocation)try{const response=await fetch(revocation.url,revocation.request);revocationAccepted=response.ok;await response.body?.cancel();}catch{/* Local deletion must never depend on provider availability. */}
+    await audit("connector.oauth.disconnected",{server_id:id,local_credentials_erased:true,provider_revocation_accepted:revocationAccepted});
+    return send({disconnected:true,providerRevocationAccepted:revocationAccepted,notice:revocationAccepted?"JD credentials removed. Provider accepted the token revocation request; review its authorised apps to confirm any remaining grants. In-flight requests may still finish.":"JD access and stored credentials removed. Provider revocation was unavailable or unconfirmed; remove JD in the provider’s authorised apps too. In-flight requests may still finish."});
+   }
    const [{error:credentialError},{error:toolError},{error:approvalError},{error:serverError}]=await Promise.all([
     db.from("jd_connector_credentials").delete().eq("server_id",id).eq("school_id",school),
     db.from("jd_connector_tools").delete().eq("server_id",id).eq("school_id",school),
@@ -183,8 +219,10 @@ Deno.serve(async req=>{
    await audit("connector.server.disconnected",{server_id:id,host:server.host,credentials_deleted:true});return send({disconnected:true,history_preserved:true});
   }
   if(body.action==="servers.reconnect"){
+   if(internal||!["owner","admin"].includes(String(profile.role))||Deno.env.get("JD_MCP_ALLOW_CUSTOM_SETUP")!=="true")return send({error:"Use provider sign-in to reconnect. Custom token setup is operator-only."},403);
    const id=clip(body.serverId,64),token=clip(body.bearerToken,8000);if(token&&token.length<12)return send({error:"Bearer token is too short"},400);
    const server=await getServer(id);
+   if(server.oauth_provider_id)return send({error:"Reconnect this provider with OAuth from the directory"},400);
    const credentialResult=token
     ?await db.from("jd_connector_credentials").upsert({server_id:id,school_id:school,encrypted_bearer_token:await encryptSecret(token,requireEncryptionKey()),key_version:"aes-gcm-v1",updated_at:new Date().toISOString()},{onConflict:"server_id"})
     :await db.from("jd_connector_credentials").delete().eq("server_id",id).eq("school_id",school);
@@ -194,13 +232,16 @@ Deno.serve(async req=>{
    const tools=await refreshTools(server,token);await audit("connector.server.reconnected",{server_id:id,host:server.host,tool_count:tools.length});return send({reconnected:true,tools});
   }
   if(body.action==="tools.refresh"){
-   const server=await getServer(clip(body.serverId,64)),token=await getToken(server.id);
-   const tools=await refreshTools(server,token);await audit("connector.tools.refreshed",{server_id:server.id,tool_count:tools.length});return send({tools});
+   const server=await getServer(clip(body.serverId,64)),token=await getToken(server.id,server.oauth_generation);
+   try{const tools=await refreshTools(server,token);await audit("connector.tools.refreshed",{server_id:server.id,tool_count:tools.length});return send({tools});}
+   catch(e){if(server.oauth_provider_id)await db.from("jd_connector_servers").update({status:"error",last_error_code:/HTTP (401|403)/.test(safeError(e))?"OAUTH_RECONNECT_REQUIRED":"DISCOVERY_FAILED"}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);throw e;}
   }
   if(body.action==="tools.set_read_only"){
    const id=clip(body.toolId,64),enabled=body.enabled===true;
    const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,annotations").eq("id",id).eq("school_id",school).maybeSingle();
    if(error||!tool)return send({error:"MCP tool not found"},404);
+   await getServer(tool.server_id);
+   if(internal)return send({error:"Tool trust requires a signed-in person"},403);
    if(enabled&&!isReadOnlyTool({name:tool.name,annotations:asObject(tool.annotations)}))return send({error:"This MCP tool is not explicitly annotated as read-only and cannot be trusted for automatic execution"},400);
    const {error:updateError}=await db.from("jd_connector_tools").update({read_only:enabled}).eq("id",id).eq("school_id",school);
    if(updateError)throw new Error("Could not update tool permission");
@@ -208,7 +249,8 @@ Deno.serve(async req=>{
    return send({toolId:id,automaticReadOnly:enabled});
   }
   if(body.action==="tools.list"){
-   const query=db.from("jd_connector_tools").select("id,server_id,name,description,input_schema,annotations,read_only,discovered_at").eq("school_id",school).order("name");
+   const ids=await visibleServerIds();if(!ids.length)return send({tools:[]});
+   const query=db.from("jd_connector_tools").select("id,server_id,name,description,input_schema,annotations,read_only,discovered_at").eq("school_id",school).in("server_id",ids).order("name");
    const serverId=clip(body.serverId,64);if(serverId)query.eq("server_id",serverId);
    const {data,error}=await query;if(error)throw error;return send({tools:data||[]});
   }
@@ -217,6 +259,7 @@ Deno.serve(async req=>{
    const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations").eq("id",toolId).eq("school_id",school).maybeSingle();
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
+   if(server.status!=="connected")return send({error:"Provider is not connected. Sign in or refresh tools first."},409);
    const {data:grant,error:grantError}=await db.from("jd_connector_grants").select("access_level,expires_at").eq("server_id",server.id).eq("school_id",school).maybeSingle();
    if(grantError)throw new Error("Could not verify connector permissions");
    const activeGrant=grant&&(!grant.expires_at||new Date(grant.expires_at).getTime()>Date.now())?grant:null;
@@ -224,7 +267,8 @@ Deno.serve(async req=>{
    const readOnly=isReadOnlyTool({name:tool.name,annotations:asObject(tool.annotations)});
    const elevated=level==="read_write"||level==="full_control";
    const unrestricted=level==="full_control";
-   const requiresApproval=!readOnly&&(!elevated||(!unrestricted&&(asObject(tool.annotations).destructiveHint===true||asObject(tool.annotations).openWorldHint===true)));
+   const legacyRequiresApproval=!readOnly&&(!elevated||(!unrestricted&&(asObject(tool.annotations).destructiveHint===true||asObject(tool.annotations).openWorldHint===true)));
+   const requiresApproval=server.oauth_provider_id?(!readOnly||tool.read_only!==true):legacyRequiresApproval;
    if(requiresApproval){
     const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
@@ -235,7 +279,8 @@ Deno.serve(async req=>{
    const result=await execute(server,tool.name,args,null);return send({requiresApproval:false,permissionLevel:level,...result});
   }
   if(body.action==="approvals.list"){
-   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).eq("status","pending").order("created_at",{ascending:false}).limit(100);
+   const ids=await visibleServerIds();if(!ids.length)return send({approvals:[]});
+   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).in("server_id",ids).eq("status","pending").order("created_at",{ascending:false}).limit(100);
    if(error)throw error;
    const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey())))})));
    return send({approvals});
@@ -247,6 +292,7 @@ Deno.serve(async req=>{
     .select("id,server_id,requested_by,tool_name,status,resolved_by,resolved_at,expires_at,execution_id,created_at")
     .eq("id",id).eq("school_id",school).maybeSingle();
    if(error||!approval)return send({error:"Approval request not found"},404);
+   await getServer(approval.server_id);
    let execution=null;
    if(approval.execution_id){
     const {data,error:executionError}=await db.from("jd_connector_executions")
@@ -264,17 +310,22 @@ Deno.serve(async req=>{
    if(!decision)return send({error:"Decision must be approve or deny"},400);
    const {data:approval,error}=await db.from("jd_connector_approvals").select("*").eq("id",id).eq("school_id",school).eq("status","pending").maybeSingle();
    if(error||!approval)return send({error:"Pending approval not found"},404);
+   const approvalServer=await getServer(approval.server_id);
+   if(approvalServer.status!=="connected")return send({error:"Provider is no longer connected"},409);
    if(new Date(approval.expires_at).getTime()<Date.now()){await db.from("jd_connector_approvals").update({status:"expired"}).eq("id",id);return send({error:"Approval expired"},410);}
    const {data:claimed,error:claimError}=await db.from("jd_connector_approvals").update({status:decision,resolved_by:actor,resolved_at:new Date().toISOString()}).eq("id",id).eq("school_id",school).eq("status","pending").select("id").maybeSingle();
    if(claimError||!claimed)return send({error:"Approval was already resolved"},409);
    if(decision==="denied"){await audit("connector.approval.denied",{approval_id:id,tool_name:approval.tool_name});return send({approved:false,denied:true});}
    try{
-    const server=await getServer(approval.server_id),raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
+    const server=await getServer(approval.server_id);
+    if(server.status!=="connected"||(server.oauth_provider_id&&server.oauth_generation!==approvalServer.oauth_generation))throw new Error("Connection changed after approval. Request approval again.");
+    const raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
    }catch(e){await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school);throw e;}
   }
   if(body.action==="executions.list"){
-   const {data,error}=await db.from("jd_connector_executions").select("id,server_id,approval_id,requested_by,tool_name,status,result_json,error_code,duration_ms,created_at,completed_at").eq("school_id",school).order("created_at",{ascending:false}).limit(100);
+   const ids=await visibleServerIds();if(!ids.length)return send({executions:[]});
+   const {data,error}=await db.from("jd_connector_executions").select("id,server_id,approval_id,requested_by,tool_name,status,result_json,error_code,duration_ms,created_at,completed_at").eq("school_id",school).in("server_id",ids).order("created_at",{ascending:false}).limit(100);
    if(error)throw error;return send({executions:data||[]});
   }
   return send({error:"Unknown JD Connect action"},400);

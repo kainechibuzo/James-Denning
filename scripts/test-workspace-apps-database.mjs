@@ -7,7 +7,7 @@ const db=new PGlite(),read=name=>readFileSync('supabase/migrations/'+name,'utf8'
 const base=read('20261112073746_jd_business_platform.sql');
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 before(async()=>{
- await db.exec('create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);');
+ await db.exec('create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key,school_id uuid,role text);');
  for(const table of ['jd_business_integration_catalog','jd_business_oauth_connections','jd_business_oauth_states']){
   const ddl=base.match(new RegExp(`create table if not exists public\\.${table} \\([\\s\\S]*?\\n\\);`,'i'));assert.ok(ddl);await db.exec(ddl[0]);
  }
@@ -17,6 +17,8 @@ before(async()=>{
  // Historical record predates the new migration: must receive zero enabled apps.
  await db.query("insert into jd_business_oauth_connections(school_id,provider_id,status,connected_by) values($1,'google-workspace','connected',$2)",[id(3),id(1)]);
  await db.exec(read('20261118080000_jd_workspace_read_services.sql'));
+ await db.exec(read('20261118100001_jd_workspace_refresh_leases.sql'));
+ await db.query("insert into profiles values($1,$2,'manager')",[id(1),id(3)]);
 });
 after(async()=>db.close());
 test('old identity connections have empty app selection, never an implicit new grant',async()=>{
@@ -44,3 +46,13 @@ test('explicit local disconnect allows a new owner, without inheriting previous 
  await db.query("update jd_business_oauth_connections set status='connected',connected_by=$2,enabled_read_services=array['google-drive'] where school_id=$1",[id(3),id(2)]);
  const r=(await db.query('select connected_by,enabled_read_services from jd_business_oauth_connections where school_id=$1',[id(3)])).rows[0];assert.equal(r.connected_by,id(2));assert.deepEqual(r.enabled_read_services,['google-drive']);
 });
+
+test('native refresh lease serializes rotation and cannot resurrect erased credentials',async()=>{
+ await db.query("update jd_business_oauth_connections set status='revoked' where school_id=$1",[id(3)]);
+ await db.query("update jd_business_oauth_connections set status='connected',connected_by=$2,encrypted_credentials=decode('abcd','hex') where school_id=$1",[id(3),id(1)]);
+ const lease=id(20),otherLease=id(21);
+ for(const [l,want] of [[lease,true],[otherLease,false]])assert.equal((await db.query("select jd_claim_workspace_refresh($1,$2,'google-workspace',decode('abcd','hex'),$3) as ok",[id(3),id(1),l])).rows[0].ok,want);
+ await db.query("update jd_business_oauth_connections set status='revoked',encrypted_credentials=null where school_id=$1",[id(3)]);
+ assert.equal((await db.query("select jd_save_workspace_refresh($1,$2,'google-workspace',decode('abcd','hex'),$3,decode('abce','hex'),now()+interval '1 hour',array['openid']) as ok",[id(3),id(1),lease])).rows[0].ok,false);
+});
+for(const role of ['anon','authenticated'])test(`${role}: native refresh RPC is service-only`,async()=>{await db.exec(`set role ${role}`);try{await assert.rejects(db.query("select jd_claim_workspace_refresh($1,$2,'google-workspace',null,$3)",[id(3),id(1),id(20)]),/permission denied/);}finally{await db.exec('reset role');}});

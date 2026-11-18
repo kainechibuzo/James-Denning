@@ -1,0 +1,7 @@
+Warning failed to parse npm overrides: Failed to parse override value "file:vendor/picomatch" for key "picomatch": Invalid version requirement
+Download https://deno.land/std@0.224.0/assert/mod.ts
+error: Import 'https://deno.land/std@0.224.0/assert/mod.ts' failed.
+    0: error sending request for url (https://deno.land/std@0.224.0/assert/mod.ts): client error (Connect): tls handshake eof
+    1: client error (Connect)
+    2: tls handshake eof
+    at file:///home/user/James-Denning/supabase/functions/_shared/jd-connect-execution.test.ts:1:43

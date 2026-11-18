@@ -55,3 +55,7 @@ allow_dynamic_registration = true
 [functions.jd-mcp]
 # OAuth discovery and token verification are handled by @supabase/server.
 verify_jwt = false
+
+[functions.jd-connect-oauth]
+# Public callback consumes one-time state; POST validates a human user JWT.
+verify_jwt = false

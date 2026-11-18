@@ -1,0 +1,478 @@
+TAP version 13
+# Subtest: default personal consent stores only hashed state, scopes tenant/actor and is one-time
+ok 1 - default personal consent stores only hashed state, scopes tenant/actor and is one-time
+  ---
+  duration_ms: 1603.952836
+  type: 'test'
+  ...
+# Subtest: expired OAuth state cannot be consumed
+ok 2 - expired OAuth state cannot be consumed
+  ---
+  duration_ms: 16.30893
+  type: 'test'
+  ...
+# Subtest: OAuth credentials do not imply connected; discovery resets provider annotations to untrusted
+ok 3 - OAuth credentials do not imply connected; discovery resets provider annotations to untrusted
+  ---
+  duration_ms: 22.701534
+  type: 'test'
+  ...
+# Subtest: manager cannot share; owner must explicitly choose organisation
+ok 4 - manager cannot share; owner must explicitly choose organisation
+  ---
+  duration_ms: 16.317971
+  type: 'test'
+  ...
+# Subtest: staff/missing actor cannot start a grant
+ok 5 - staff/missing actor cannot start a grant
+  ---
+  duration_ms: 16.798828
+  type: 'test'
+  ...
+# Subtest: another actor cannot overwrite a connection slot, another tenant remains independent
+not ok 6 - another actor cannot overwrite a connection slot, another tenant remains independent
+  ---
+  duration_ms: 22.799819
+  type: 'test'
+  location: '/home/user/James-Denning/scripts/test-connector-oauth-database.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: 'duplicate key value violates unique constraint "jd_connector_oauth_states_pkey"'
+  code: '23505'
+  name: 'error'
+  stack: |-
+    ye.Ve (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:17616)
+    ye.nt (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:15003)
+    ye.parse (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/chunk-3WWIVTCY.js:1:13755)
+    file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:191801
+    wasm://wasm/021cbcb2:wasm-function[3707]:0x27cef1
+    wasm://wasm/021cbcb2:wasm-function[3717]:0x27d268
+    wasm://wasm/021cbcb2:wasm-function[9494]:0x509d72
+    wasm://wasm/021cbcb2:wasm-function[175]:0x598a3
+    invoke_v (file:///home/user/James-Denning/node_modules/@electric-sql/pglite/dist/index.js:3:176458)
+    wasm://wasm/021cbcb2:wasm-function[178]:0x5a0e8
+  ...
+# Subtest: callback completion rechecks membership: role='staff'
+ok 7 - callback completion rechecks membership: role='staff'
+  ---
+  duration_ms: 22.26733
+  type: 'test'
+  ...
+# Subtest: callback completion rechecks membership: school_id='00000000-0000-4000-8000-000000000011'
+ok 8 - callback completion rechecks membership: school_id='00000000-0000-4000-8000-000000000011'
+  ---
+  duration_ms: 17.407954
+  type: 'test'
+  ...
+# Subtest: disconnect blocks pending callbacks and stale discovery; credential deletion is atomic
+ok 9 - disconnect blocks pending callbacks and stale discovery; credential deletion is atomic
+  ---
+  duration_ms: 25.148748
+  type: 'test'
+  ...
+# Subtest: private account cannot be disconnected by another manager or tenant
+ok 10 - private account cannot be disconnected by another manager or tenant
+  ---
+  duration_ms: 27.874227
+  type: 'test'
+  ...
+# Subtest: reconnect invalidates older state/generation and does not inherit grants
+ok 11 - reconnect invalidates older state/generation and does not inherit grants
+  ---
+  duration_ms: 43.473576
+  type: 'test'
+  ...
+# Subtest: refresh lease serializes rotation and CAS cannot resurrect disconnected credentials
+ok 12 - refresh lease serializes rotation and CAS cannot resurrect disconnected credentials
+  ---
+  duration_ms: 19.489238
+  type: 'test'
+  ...
+# Subtest: anon cannot read tokens/state or execute new OAuth RPCs
+ok 13 - anon cannot read tokens/state or execute new OAuth RPCs
+  ---
+  duration_ms: 16.899541
+  type: 'test'
+  ...
+# Subtest: authenticated cannot read tokens/state or execute new OAuth RPCs
+ok 14 - authenticated cannot read tokens/state or execute new OAuth RPCs
+  ---
+  duration_ms: 14.553415
+  type: 'test'
+  ...
+# (node:2503) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-oauth-crypto.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: human OAuth start records exact sharing and tenant actor, returns PKCE URL without secrets
+ok 15 - human OAuth start records exact sharing and tenant actor, returns PKCE URL without secrets
+  ---
+  duration_ms: 13.541175
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"role":"staff"},{"action":"providers"}]
+ok 16 - start/catalog gate: [{"role":"staff"},{"action":"providers"}]
+  ---
+  duration_ms: 0.774565
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"invalidJwt":true},{"action":"providers"}]
+ok 17 - start/catalog gate: [{"invalidJwt":true},{"action":"providers"}]
+  ---
+  duration_ms: 0.509191
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{},{"action":"start","providerId":"github","confirm":true,"sharing":"organisation"}]
+ok 18 - start/catalog gate: [{},{"action":"start","providerId":"github","confirm":true,"sharing":"organisation"}]
+  ---
+  duration_ms: 0.700809
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{},{"action":"start","providerId":"github","sharing":"personal"}]
+ok 19 - start/catalog gate: [{},{"action":"start","providerId":"github","sharing":"personal"}]
+  ---
+  duration_ms: 0.903466
+  type: 'test'
+  ...
+# Subtest: start/catalog gate: [{"configured":false},{"action":"start","providerId":"github","confirm":true,"sharing":"personal"}]
+ok 20 - start/catalog gate: [{"configured":false},{"action":"start","providerId":"github","confirm":true,"sharing":"personal"}]
+  ---
+  duration_ms: 0.656186
+  type: 'test'
+  ...
+# Subtest: provider catalog never exposes client credentials
+ok 21 - provider catalog never exposes client credentials
+  ---
+  duration_ms: 1.074401
+  type: 'test'
+  ...
+# Subtest: callback exchanges code, persists encrypted bundle and confirms discovery before connected
+ok 22 - callback exchanges code, persists encrypted bundle and confirms discovery before connected
+  ---
+  duration_ms: 11.296718
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"stateRow":null}
+ok 23 - callback fails closed: {"stateRow":null}
+  ---
+  duration_ms: 2.557637
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"tenant":"another"}
+ok 24 - callback fails closed: {"tenant":"another"}
+  ---
+  duration_ms: 2.021905
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"role":"staff"}
+ok 25 - callback fails closed: {"role":"staff"}
+  ---
+  duration_ms: 2.058682
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"save":false}
+ok 26 - callback fails closed: {"save":false}
+  ---
+  duration_ms: 2.847272
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"discovery":false}
+ok 27 - callback fails closed: {"discovery":false}
+  ---
+  duration_ms: 6.749093
+  type: 'test'
+  ...
+# Subtest: callback fails closed: {"providerFailure":true}
+ok 28 - callback fails closed: {"providerFailure":true}
+  ---
+  duration_ms: 4.265723
+  type: 'test'
+  ...
+# Subtest: declined consent consumes state without exchanging code
+ok 29 - declined consent consumes state without exchanging code
+  ---
+  duration_ms: 0.962154
+  type: 'test'
+  ...
+# Subtest: gateway servers.list excludes another user’s private connection
+ok 30 - gateway servers.list excludes another user’s private connection
+  ---
+  duration_ms: 3.780367
+  type: 'test'
+  ...
+# Subtest: gateway tools.list excludes another user’s private connection
+ok 31 - gateway tools.list excludes another user’s private connection
+  ---
+  duration_ms: 0.685076
+  type: 'test'
+  ...
+# Subtest: gateway approvals.list excludes another user’s private connection
+ok 32 - gateway approvals.list excludes another user’s private connection
+  ---
+  duration_ms: 0.788133
+  type: 'test'
+  ...
+# Subtest: gateway executions.list excludes another user’s private connection
+ok 33 - gateway executions.list excludes another user’s private connection
+  ---
+  duration_ms: 0.583364
+  type: 'test'
+  ...
+# Subtest: gateway tools.call denies private access even for owner role
+ok 34 - gateway tools.call denies private access even for owner role
+  ---
+  duration_ms: 0.741307
+  type: 'test'
+  ...
+# Subtest: gateway tools.set_read_only denies private access even for owner role
+ok 35 - gateway tools.set_read_only denies private access even for owner role
+  ---
+  duration_ms: 0.431829
+  type: 'test'
+  ...
+# Subtest: gateway approvals.get denies private access even for owner role
+ok 36 - gateway approvals.get denies private access even for owner role
+  ---
+  duration_ms: 0.583751
+  type: 'test'
+  ...
+# Subtest: gateway approvals.resolve denies private access even for owner role
+ok 37 - gateway approvals.resolve denies private access even for owner role
+  ---
+  duration_ms: 0.446537
+  type: 'test'
+  ...
+# Subtest: gateway tools.refresh denies private access even for owner role
+ok 38 - gateway tools.refresh denies private access even for owner role
+  ---
+  duration_ms: 0.546455
+  type: 'test'
+  ...
+# Subtest: gateway servers.disconnect denies private access even for owner role
+ok 39 - gateway servers.disconnect denies private access even for owner role
+  ---
+  duration_ms: 0.888622
+  type: 'test'
+  ...
+# Subtest: OAuth writes request approval even when a legacy full_control grant exists
+ok 40 - OAuth writes request approval even when a legacy full_control grant exists
+  ---
+  duration_ms: 3.947191
+  type: 'test'
+  ...
+# Subtest: service-role runtime cannot approve its own actions or disconnect accounts
+ok 41 - service-role runtime cannot approve its own actions or disconnect accounts
+  ---
+  duration_ms: 0.902446
+  type: 'test'
+  ...
+# Subtest: legacy PAT setup is disabled by default in gateway, not only hidden in UI
+ok 42 - legacy PAT setup is disabled by default in gateway, not only hidden in UI
+  ---
+  duration_ms: 0.729949
+  type: 'test'
+  ...
+# (node:2516) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-connector-oauth.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all agreed OAuth providers are explicit, Jira/Confluence share one provider
+ok 43 - all agreed OAuth providers are explicit, Jira/Confluence share one provider
+  ---
+  duration_ms: 1.194639
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL http://github.com/auth
+ok 44 - reject unsafe OAuth URL http://github.com/auth
+  ---
+  duration_ms: 0.283657
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://user:pass@github.com/auth
+ok 45 - reject unsafe OAuth URL https://user:pass@github.com/auth
+  ---
+  duration_ms: 0.111181
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://127.0.0.1/auth
+ok 46 - reject unsafe OAuth URL https://127.0.0.1/auth
+  ---
+  duration_ms: 0.110897
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://[::1]/
+ok 47 - reject unsafe OAuth URL https://[::1]/
+  ---
+  duration_ms: 0.107366
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://localhost
+ok 48 - reject unsafe OAuth URL https://localhost
+  ---
+  duration_ms: 0.114264
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://service.internal
+ok 49 - reject unsafe OAuth URL https://service.internal
+  ---
+  duration_ms: 0.08838
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://service.local
+ok 50 - reject unsafe OAuth URL https://service.local
+  ---
+  duration_ms: 0.096669
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://github.com:8443/auth
+ok 51 - reject unsafe OAuth URL https://github.com:8443/auth
+  ---
+  duration_ms: 0.294556
+  type: 'test'
+  ...
+# Subtest: reject unsafe OAuth URL https://github.com/auth\#x
+ok 52 - reject unsafe OAuth URL https://github.com/auth\#x
+  ---
+  duration_ms: 0.439969
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"token_endpoint":"https://evil.test/token"}
+ok 53 - operator config fails closed {"token_endpoint":"https://evil.test/token"}
+  ---
+  duration_ms: 0.265228
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"authorization_endpoint":"https://github.com/login?secret=x"}
+ok 54 - operator config fails closed {"authorization_endpoint":"https://github.com/login?secret=x"}
+  ---
+  duration_ms: 0.113083
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"resource":"https://other.test/mcp"}
+ok 55 - operator config fails closed {"resource":"https://other.test/mcp"}
+  ---
+  duration_ms: 0.160893
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"authorization_parameters":{"redirect_uri":"https://evil.test"}}
+ok 56 - operator config fails closed {"authorization_parameters":{"redirect_uri":"https://evil.test"}}
+  ---
+  duration_ms: 0.190662
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"scopes":["repo send"]}
+ok 57 - operator config fails closed {"scopes":["repo send"]}
+  ---
+  duration_ms: 0.1052
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"token_endpoint_auth_method":"client_secret_jwt"}
+ok 58 - operator config fails closed {"token_endpoint_auth_method":"client_secret_jwt"}
+  ---
+  duration_ms: 0.106694
+  type: 'test'
+  ...
+# Subtest: operator config fails closed {"client_secret":""}
+ok 59 - operator config fails closed {"client_secret":""}
+  ---
+  duration_ms: 0.099879
+  type: 'test'
+  ...
+# Subtest: OAuth unavailable rather than a token fallback when app registration is missing
+ok 60 - OAuth unavailable rather than a token fallback when app registration is missing
+  ---
+  duration_ms: 0.280972
+  type: 'test'
+  ...
+# Subtest: PKCE/state/resource and reviewed scopes are used, secrets never enter browser authorization URL
+ok 61 - PKCE/state/resource and reviewed scopes are used, secrets never enter browser authorization URL
+  ---
+  duration_ms: 0.843309
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: none
+ok 62 - OAuth token client authentication: none
+  ---
+  duration_ms: 0.133825
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: client_secret_post
+ok 63 - OAuth token client authentication: client_secret_post
+  ---
+  duration_ms: 0.076622
+  type: 'test'
+  ...
+# Subtest: OAuth token client authentication: client_secret_basic
+ok 64 - OAuth token client authentication: client_secret_basic
+  ---
+  duration_ms: 0.184198
+  type: 'test'
+  ...
+# Subtest: expiry and rotation validated; omitted new refresh token preserves existing token
+ok 65 - expiry and rotation validated; omitted new refresh token preserves existing token
+  ---
+  duration_ms: 0.577247
+  type: 'test'
+  ...
+# Subtest: OAuth errors are sanitized and JSON responses bounded
+ok 66 - OAuth errors are sanitized and JSON responses bounded
+  ---
+  duration_ms: 23.54008
+  type: 'test'
+  ...
+# Subtest: private/shared access check never shares a private account with another manager
+ok 67 - private/shared access check never shares a private account with another manager
+  ---
+  duration_ms: 0.146212
+  type: 'test'
+  ...
+# Subtest: every priority service has a real sourced local logo, not generated initials
+ok 68 - every priority service has a real sourced local logo, not generated initials
+  ---
+  duration_ms: 0.664533
+  type: 'test'
+  ...
+# Subtest: expired token refreshes once, stores encrypted rotated credentials with generation/lease CAS
+ok 69 - expired token refreshes once, stores encrypted rotated credentials with generation/lease CAS
+  ---
+  duration_ms: 34.189831
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"claim":false}
+ok 70 - failed/contended refresh is not a connection success {"claim":false}
+  ---
+  duration_ms: 1.247563
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"refresh":null}
+ok 71 - failed/contended refresh is not a connection success {"refresh":null}
+  ---
+  duration_ms: 0.924836
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"save":false}
+ok 72 - failed/contended refresh is not a connection success {"save":false}
+  ---
+  duration_ms: 1.87737
+  type: 'test'
+  ...
+# Subtest: failed/contended refresh is not a connection success {"status":401}
+ok 73 - failed/contended refresh is not a connection success {"status":401}
+  ---
+  duration_ms: 1.268642
+  type: 'test'
+  ...
+# Subtest: unexpired access token needs no refresh request
+ok 74 - unexpired access token needs no refresh request
+  ---
+  duration_ms: 0.882818
+  type: 'test'
+  ...
+1..74
+# tests 74
+# suites 0
+# pass 73
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2505.449112

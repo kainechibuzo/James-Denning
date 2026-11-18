@@ -1,3 +1,4 @@
+import {MCP_OAUTH_PROVIDERS} from '../../supabase/functions/_shared/jd-connector-oauth-policy.mjs';
 import {WORKSPACE_SERVICES,WORKSPACE_PROVIDERS} from '../../supabase/functions/_shared/jd-workspace-connectors.mjs';
 import {populatedAutomation,populatedBusiness} from "./populated-theme.mjs";
 import {conversationTasks,conversationHistory} from "./conversation-records.mjs";
@@ -39,10 +40,15 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(name==='jd-connect-oauth'){
+   if(body.action==='providers')return window.__oauthBackendError?{error:{message:'Synthetic sign-in backend unavailable'}}:{data:{providers:Object.entries(MCP_OAUTH_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__oauthConfigured),scopes:['synthetic:read']}))}};
+   if(body.action==='start')return window.__oauthSuccess?{data:{authorization_url:'https://github.com/login/oauth/authorize?state=synthetic&code_challenge_method=S256',authorization_origin:'https://github.com'}}:{error:{message:'Synthetic provider sign-in failure; no provider contacted'}};
+  }
   if(name==='jd-business-platform'&&body.action==='workspace.catalog')return window.__workspaceFailure?{error:{message:'Synthetic workspace backend unavailable'}}:{data:{providers:Object.entries(WORKSPACE_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__workspaceConfigured),services:WORKSPACE_SERVICES.filter(s=>s.provider===id).map(s=>({...s,access:'not_connected'}))}))}};
   if(name==='jd-business-platform'&&body.action==='oauth.start')return{error:{message:'Synthetic OAuth setup failure; no provider contacted'}};
   if(name==='jd-connect'&&window.__connectorFixture){
    if(window.__connectorFailure)return{error:{message:'Synthetic connector unavailable'}};
+   if(body.action==='servers.public_connect')return{error:{message:'Synthetic public service allowlist failure'}};
    if(body.action==='servers.list')return{data:{servers:window.__sampleServers||[{id:'sample-server',name:'Sample business',host:'mcp.example.test',status:'connected',grant:{access_level:'read_only'}},{id:'disabled-server',name:'Disabled service',host:'disabled.example.test',status:'disabled'}]}};
    if(body.action==='tools.list')return{data:{tools:[{id:'sample-tool',server_id:'sample-server',name:'lookup_customer',description:'Synthetic lookup',input_schema:{type:'object'},read_only:true},{id:'disabled-tool',server_id:'disabled-server',name:'disabled_tool',read_only:true}]}};
    if(body.action==='servers.register'&&window.__connectorRegisterFailure)return{data:{error:'Synthetic registration rejected by host allowlist'}};

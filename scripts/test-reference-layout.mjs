@@ -61,7 +61,7 @@ try{
    await page.route('**/*',async route=>{
     const url=new URL(route.request().url());
     if(url.hostname!=='reference.test')return route.abort();
-    if(url.pathname.startsWith('/design/')||url.pathname.startsWith('/fonts/')){
+    if(url.pathname.startsWith('/design/')||url.pathname.startsWith('/fonts/')||url.pathname.startsWith('/connectors/')){
      const file=resolve('public','.'+url.pathname);if(!existsSync(file))throw Error('Missing asset: '+file);
      const types={'.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2'};
      return route.fulfill({body:readFileSync(file),contentType:types[extname(file)]});

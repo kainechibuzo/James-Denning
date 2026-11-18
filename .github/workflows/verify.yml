@@ -33,6 +33,9 @@ jobs:
       - name: Test backend assignment compatibility and release safety
         run: npm run test:backend-release
 
+      - name: Test connector OAuth, token rotation, private access and brand assets
+        run: npm run test:connector-oauth
+
       - name: Test workspace app consent, isolation and read-only adapters
         run: npm run test:work-apps
 
@@ -85,5 +88,6 @@ jobs:
         run: |
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-connect-oauth/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-mcp/index.ts
