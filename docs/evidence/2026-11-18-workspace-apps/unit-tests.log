@@ -1,0 +1,618 @@
+TAP version 13
+# (node:5245) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-capability-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owner: reported callable tools match actual server definitions without writes
+ok 1 - owner: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 2.265106
+  type: 'test'
+  ...
+# Subtest: admin: reported callable tools match actual server definitions without writes
+ok 2 - admin: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.857334
+  type: 'test'
+  ...
+# Subtest: manager: reported callable tools match actual server definitions without writes
+ok 3 - manager: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.156859
+  type: 'test'
+  ...
+# Subtest: staff: reported callable tools match actual server definitions without writes
+ok 4 - staff: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 2.389075
+  type: 'test'
+  ...
+# Subtest: contractor: reported callable tools match actual server definitions without writes
+ok 5 - contractor: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.21747
+  type: 'test'
+  ...
+# Subtest: viewer: reported callable tools match actual server definitions without writes
+ok 6 - viewer: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.111188
+  type: 'test'
+  ...
+# Subtest: finance: reported callable tools match actual server definitions without writes
+ok 7 - finance: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.18926
+  type: 'test'
+  ...
+# Subtest: hr: reported callable tools match actual server definitions without writes
+ok 8 - hr: reported callable tools match actual server definitions without writes
+  ---
+  duration_ms: 0.113478
+  type: 'test'
+  ...
+# Subtest: teacher: inventory remains role restricted
+ok 9 - teacher: inventory remains role restricted
+  ---
+  duration_ms: 0.595952
+  type: 'test'
+  ...
+# Subtest: student: inventory remains role restricted
+ok 10 - student: inventory remains role restricted
+  ---
+  duration_ms: 0.434878
+  type: 'test'
+  ...
+# Subtest: unknown: inventory remains role restricted
+ok 11 - unknown: inventory remains role restricted
+  ---
+  duration_ms: 0.158464
+  type: 'test'
+  ...
+# Subtest: saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+ok 12 - saved tasks and memory are not falsely called unsaved previews or approval-pending drafts
+  ---
+  duration_ms: 0.119463
+  type: 'test'
+  ...
+# Subtest: a callable read can return scoped persisted data while independent verification is unknown
+ok 13 - a callable read can return scoped persisted data while independent verification is unknown
+  ---
+  duration_ms: 0.563857
+  type: 'test'
+  ...
+# Subtest: runtime errors remain errors, never converted to evidence of success
+ok 14 - runtime errors remain errors, never converted to evidence of success
+  ---
+  duration_ms: 0.158963
+  type: 'test'
+  ...
+# Subtest: unverified inventory never grants a restricted role access to a callable owner tool
+ok 15 - unverified inventory never grants a restricted role access to a callable owner tool
+  ---
+  duration_ms: 0.141851
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 0
+ok 16 - verification requires all five explicit positive evidence fields: 0
+  ---
+  duration_ms: 0.137029
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 1
+ok 17 - verification requires all five explicit positive evidence fields: 1
+  ---
+  duration_ms: 0.119614
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 2
+ok 18 - verification requires all five explicit positive evidence fields: 2
+  ---
+  duration_ms: 0.05877
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 3
+ok 19 - verification requires all five explicit positive evidence fields: 3
+  ---
+  duration_ms: 0.090524
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 4
+ok 20 - verification requires all five explicit positive evidence fields: 4
+  ---
+  duration_ms: 0.065505
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 5
+ok 21 - verification requires all five explicit positive evidence fields: 5
+  ---
+  duration_ms: 0.054338
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 6
+ok 22 - verification requires all five explicit positive evidence fields: 6
+  ---
+  duration_ms: 0.054809
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 7
+ok 23 - verification requires all five explicit positive evidence fields: 7
+  ---
+  duration_ms: 0.053989
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 8
+ok 24 - verification requires all five explicit positive evidence fields: 8
+  ---
+  duration_ms: 0.055285
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 9
+ok 25 - verification requires all five explicit positive evidence fields: 9
+  ---
+  duration_ms: 0.061145
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 10
+ok 26 - verification requires all five explicit positive evidence fields: 10
+  ---
+  duration_ms: 0.054413
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 11
+ok 27 - verification requires all five explicit positive evidence fields: 11
+  ---
+  duration_ms: 0.052361
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 12
+ok 28 - verification requires all five explicit positive evidence fields: 12
+  ---
+  duration_ms: 0.049398
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 13
+ok 29 - verification requires all five explicit positive evidence fields: 13
+  ---
+  duration_ms: 0.048983
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 14
+ok 30 - verification requires all five explicit positive evidence fields: 14
+  ---
+  duration_ms: 0.049903
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 15
+ok 31 - verification requires all five explicit positive evidence fields: 15
+  ---
+  duration_ms: 0.049785
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 16
+ok 32 - verification requires all five explicit positive evidence fields: 16
+  ---
+  duration_ms: 0.052763
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 17
+ok 33 - verification requires all five explicit positive evidence fields: 17
+  ---
+  duration_ms: 0.061973
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 18
+ok 34 - verification requires all five explicit positive evidence fields: 18
+  ---
+  duration_ms: 0.063466
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 19
+ok 35 - verification requires all five explicit positive evidence fields: 19
+  ---
+  duration_ms: 0.11733
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 20
+ok 36 - verification requires all five explicit positive evidence fields: 20
+  ---
+  duration_ms: 0.063637
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 21
+ok 37 - verification requires all five explicit positive evidence fields: 21
+  ---
+  duration_ms: 0.05209
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 22
+ok 38 - verification requires all five explicit positive evidence fields: 22
+  ---
+  duration_ms: 0.050953
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 23
+ok 39 - verification requires all five explicit positive evidence fields: 23
+  ---
+  duration_ms: 0.091051
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 24
+ok 40 - verification requires all five explicit positive evidence fields: 24
+  ---
+  duration_ms: 0.060407
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 25
+ok 41 - verification requires all five explicit positive evidence fields: 25
+  ---
+  duration_ms: 0.053532
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 26
+ok 42 - verification requires all five explicit positive evidence fields: 26
+  ---
+  duration_ms: 0.050176
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 27
+ok 43 - verification requires all five explicit positive evidence fields: 27
+  ---
+  duration_ms: 0.048669
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 28
+ok 44 - verification requires all five explicit positive evidence fields: 28
+  ---
+  duration_ms: 0.051328
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 29
+ok 45 - verification requires all five explicit positive evidence fields: 29
+  ---
+  duration_ms: 0.073162
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 30
+ok 46 - verification requires all five explicit positive evidence fields: 30
+  ---
+  duration_ms: 0.120037
+  type: 'test'
+  ...
+# Subtest: verification requires all five explicit positive evidence fields: 31
+ok 47 - verification requires all five explicit positive evidence fields: 31
+  ---
+  duration_ms: 0.055747
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence "true" cannot verify or clear gaps
+ok 48 - truthy or malformed evidence "true" cannot verify or clear gaps
+  ---
+  duration_ms: 0.130157
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence 1 cannot verify or clear gaps
+ok 49 - truthy or malformed evidence 1 cannot verify or clear gaps
+  ---
+  duration_ms: 0.062296
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence {} cannot verify or clear gaps
+ok 50 - truthy or malformed evidence {} cannot verify or clear gaps
+  ---
+  duration_ms: 0.051917
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence [] cannot verify or clear gaps
+ok 51 - truthy or malformed evidence [] cannot verify or clear gaps
+  ---
+  duration_ms: 0.049634
+  type: 'test'
+  ...
+# Subtest: truthy or malformed evidence null cannot verify or clear gaps
+ok 52 - truthy or malformed evidence null cannot verify or clear gaps
+  ---
+  duration_ms: 0.048152
+  type: 'test'
+  ...
+# Subtest: absence of evidence is unknown, not disabled or failed
+ok 53 - absence of evidence is unknown, not disabled or failed
+  ---
+  duration_ms: 0.181874
+  type: 'test'
+  ...
+# Subtest: current agent prompt receives the interpretation and retains approval gates
+ok 54 - current agent prompt receives the interpretation and retains approval gates
+  ---
+  duration_ms: 5.420688
+  type: 'test'
+  ...
+# Subtest: owner: evidence HTTP route ignores caller-supplied verification and role claims
+ok 55 - owner: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 4.955784
+  type: 'test'
+  ...
+# Subtest: admin: evidence HTTP route ignores caller-supplied verification and role claims
+ok 56 - admin: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.806034
+  type: 'test'
+  ...
+# Subtest: manager: evidence HTTP route ignores caller-supplied verification and role claims
+ok 57 - manager: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.478421
+  type: 'test'
+  ...
+# Subtest: viewer: evidence HTTP route ignores caller-supplied verification and role claims
+ok 58 - viewer: evidence HTTP route ignores caller-supplied verification and role claims
+  ---
+  duration_ms: 0.501032
+  type: 'test'
+  ...
+# (node:5254) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-workspace-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+ok 59 - shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+  ---
+  duration_ms: 1.203183
+  type: 'test'
+  ...
+# Subtest: google-workspace: least-privilege selected scopes only, no write scopes
+ok 60 - google-workspace: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 1.215399
+  type: 'test'
+  ...
+# Subtest: microsoft-365: least-privilege selected scopes only, no write scopes
+ok 61 - microsoft-365: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 0.38868
+  type: 'test'
+  ...
+# Subtest: gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 62 - gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.845919
+  type: 'test'
+  ...
+# Subtest: google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 63 - google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.303982
+  type: 'test'
+  ...
+# Subtest: google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 64 - google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.232047
+  type: 'test'
+  ...
+# Subtest: google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 65 - google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.168437
+  type: 'test'
+  ...
+# Subtest: google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 66 - google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.242883
+  type: 'test'
+  ...
+# Subtest: outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 67 - outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.35548
+  type: 'test'
+  ...
+# Subtest: onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 68 - onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.34728
+  type: 'test'
+  ...
+# Subtest: excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 69 - excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.213718
+  type: 'test'
+  ...
+# Subtest: word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 70 - word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.22341
+  type: 'test'
+  ...
+# Subtest: outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 71 - outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.223965
+  type: 'test'
+  ...
+# Subtest: microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 72 - microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.079031
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+ok 73 - untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+  ---
+  duration_ms: 0.385982
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"method":"POST"}
+ok 74 - untrusted route arguments fail before DB/network: {"method":"POST"}
+  ---
+  duration_ms: 0.144935
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"action":"send"}
+ok 75 - untrusted route arguments fail before DB/network: {"action":"send"}
+  ---
+  duration_ms: 0.08218
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+ok 76 - untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+  ---
+  duration_ms: 0.153889
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+ok 77 - untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+  ---
+  duration_ms: 0.098777
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+ok 78 - untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+  ---
+  duration_ms: 0.211733
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":".."}
+ok 79 - untrusted route arguments fail before DB/network: {"resourceId":".."}
+  ---
+  duration_ms: 0.084208
+  type: 'test'
+  ...
+# Subtest: staff: API and actual runtime reject reads before credential lookup
+ok 80 - staff: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.443445
+  type: 'test'
+  ...
+# Subtest: viewer: API and actual runtime reject reads before credential lookup
+ok 81 - viewer: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.192732
+  type: 'test'
+  ...
+# Subtest: contractor: API and actual runtime reject reads before credential lookup
+ok 82 - contractor: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.089645
+  type: 'test'
+  ...
+# Subtest: finance: API and actual runtime reject reads before credential lookup
+ok 83 - finance: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.080617
+  type: 'test'
+  ...
+# Subtest: unknown: API and actual runtime reject reads before credential lookup
+ok 84 - unknown: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.077642
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"connected_by":"other"}
+ok 85 - no provider call with absent permission: {"connected_by":"other"}
+  ---
+  duration_ms: 0.24061
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"scopes":[]}
+ok 86 - no provider call with absent permission: {"scopes":[]}
+  ---
+  duration_ms: 0.101988
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"enabled_read_services":[]}
+ok 87 - no provider call with absent permission: {"enabled_read_services":[]}
+  ---
+  duration_ms: 0.091547
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"status":"revoked"}
+ok 88 - no provider call with absent permission: {"status":"revoked"}
+  ---
+  duration_ms: 0.074168
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"token_expires_at":null}
+ok 89 - no provider call with absent permission: {"token_expires_at":null}
+  ---
+  duration_ms: 0.107202
+  type: 'test'
+  ...
+# Subtest: actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+ok 90 - actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+  ---
+  duration_ms: 42.275745
+  type: 'test'
+  ...
+# Subtest: audit failure means no external request
+ok 91 - audit failure means no external request
+  ---
+  duration_ms: 0.930551
+  type: 'test'
+  ...
+# Subtest: HTTP 401 remains failure without provider error/secret leakage
+ok 92 - HTTP 401 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 5.886176
+  type: 'test'
+  ...
+# Subtest: HTTP 403 remains failure without provider error/secret leakage
+ok 93 - HTTP 403 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 0.710888
+  type: 'test'
+  ...
+# Subtest: HTTP 429 remains failure without provider error/secret leakage
+ok 94 - HTTP 429 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 1.26369
+  type: 'test'
+  ...
+# Subtest: HTTP 500 remains failure without provider error/secret leakage
+ok 95 - HTTP 500 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 0.584661
+  type: 'test'
+  ...
+# Subtest: provider response body limit enforced
+ok 96 - provider response body limit enforced
+  ---
+  duration_ms: 5.973128
+  type: 'test'
+  ...
+# Subtest: Gmail projection excludes raw body, attachments and provider error fields
+ok 97 - Gmail projection excludes raw body, attachments and provider error fields
+  ---
+  duration_ms: 0.18882
+  type: 'test'
+  ...
+# Subtest: Sheets output is row/column/cell bounded, Docs output is text only
+ok 98 - Sheets output is row/column/cell bounded, Docs output is text only
+  ---
+  duration_ms: 0.395059
+  type: 'test'
+  ...
+# Subtest: provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+ok 99 - provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+  ---
+  duration_ms: 0.202511
+  type: 'test'
+  ...
+# Subtest: runtime inventory exposes both read tools, catalog contains no credential columns
+ok 100 - runtime inventory exposes both read tools, catalog contains no credential columns
+  ---
+  duration_ms: 0.439332
+  type: 'test'
+  ...
+1..100
+# tests 100
+# suites 0
+# pass 100
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 542.804397

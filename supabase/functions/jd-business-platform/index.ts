@@ -1,3 +1,5 @@
+import {workspaceCatalog,readWorkspaceApp} from "../_shared/jd-workspace-service.ts";
+import {WORKSPACE_PROVIDERS,selectedWorkspaceServices,workspaceScopes} from "../_shared/jd-workspace-connectors.mjs";
 import {base64Url,decryptSecret,encryptSecret,importAesKey,sha256Hex} from "../_shared/jd-oauth-crypto.ts";
 import {getJdSecret} from "../_shared/jd-secrets.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
@@ -23,8 +25,9 @@ Deno.serve(async req=>{
  const {data:user,error:authErr}=await auth.auth.getUser(token);if(authErr||!user.user)return send({error:"Invalid session"},401);
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:p,error:pe}=await db.from("profiles").select("id,school_id,role").eq("id",user.user.id).maybeSingle();
- if(pe||!p?.school_id)return send({error:"Workspace required"},403);if(!["admin","manager"].includes(p.role))return send({error:"Manager permission required"},403);
+ if(pe||!p?.school_id)return send({error:"Workspace required"},403);if(!["owner","admin","manager"].includes(p.role))return send({error:"Manager permission required"},403);
  let b:any;try{b=await req.json();}catch{return send({error:"Invalid JSON"},400);}const school=p.school_id,actor=user.user.id;
+ if(p.role==="owner"&&!["workspace.catalog","workspace.read","workspace.disconnect","oauth.start"].includes(b?.action))return send({error:"Manager permission required for this business action"},403);
  const audit=async(type:string,meta:any)=>{await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});};
  const list=async(k:string)=>{if(!tables[k])throw new Error("Unsupported type");const {data,error}=await db.from(tables[k]).select(columns[k]).eq("school_id",school).order("created_at",{ascending:false}).limit(200);if(error)throw error;return (data||[]) as any[];};
  try{
@@ -128,6 +131,14 @@ Deno.serve(async req=>{
    await audit("business.monitor.completed",{providers:results.length,down:results.filter(x=>x.status==="down").length});
    return send({checks:results,notice:"Checks verify public endpoint reachability only; they do not prove that your OAuth credentials or business integration are connected."});
   }
+  if(b.action==="workspace.catalog")return send(await workspaceCatalog({admin:db,schoolId:school,userId:actor,role:p.role}));
+  if(b.action==="workspace.read")return send(await readWorkspaceApp(b,{admin:db,schoolId:school,userId:actor,role:p.role}));
+  if(b.action==="workspace.disconnect"){
+   const providerId=str(b.providerId,60);if(!Object.hasOwn(WORKSPACE_PROVIDERS,providerId))return send({error:"Unsupported workspace provider"},400);
+   const {error}=await db.from("jd_business_oauth_connections").update({status:"revoked",encrypted_credentials:null,enabled_read_services:[],token_expires_at:null,key_version:null,updated_at:new Date().toISOString()}).eq("school_id",school).eq("provider_id",providerId).eq("connected_by",actor);
+   if(error)throw error;await audit("workspace.disconnected",{provider_id:providerId});
+   return send({notice:"JD credentials erased locally. Remove JD in your provider account permissions to revoke the provider grant too."});
+  }
   if(b.action==="oauth.start"){
    const providerId=str(b.providerId,60),providerConfig:Record<string,{authUrl:string;clientIdEnv:string}>={
     "google-workspace":{authUrl:"https://accounts.google.com/o/oauth2/v2/auth",clientIdEnv:"JD_OAUTH_GOOGLE_CLIENT_ID"},
@@ -140,12 +151,26 @@ Deno.serve(async req=>{
    if(!clientId||!callback||!encodedKey)return send({error:"OAuth provider credentials, callback URL or encryption key are not configured"},503);
    const callbackUrl=new URL(callback);if(callbackUrl.protocol!=="https:"&&callbackUrl.hostname!=="localhost")return send({error:"OAuth callback URL must use HTTPS"},503);
    const {data:catalog,error:catalogError}=await db.from("jd_business_integration_catalog").select("required_scopes").eq("id",providerId).eq("enabled",true).maybeSingle();if(catalogError||!catalog)return send({error:"Integration is unavailable"},404);
+   let enabledServices:string[]=[],requestedScopes=catalog.required_scopes||[];
+   if(Object.hasOwn(WORKSPACE_PROVIDERS,providerId)){
+    try{enabledServices=selectedWorkspaceServices(providerId,b.services);requestedScopes=workspaceScopes(providerId,enabledServices);}catch{return send({error:"Select supported read-only apps in JD Connect before authorising."},400);}
+    if(!Deno.env.get(WORKSPACE_PROVIDERS[providerId as keyof typeof WORKSPACE_PROVIDERS].clientSecretEnv))return send({error:"Provider app secret is not configured"},503);
+    // The current schema has one connection per provider/workspace. Never silently
+    // replace another manager's personal mailbox/files connection.
+    const {data:existing,error:existingError}=await db.from("jd_business_oauth_connections").select("connected_by,status").eq("school_id",school).eq("provider_id",providerId).maybeSingle();
+    if(existingError)throw existingError;
+    if(existing?.status==="connected"&&existing.connected_by!==actor)return send({error:"This workspace provider slot belongs to another user. Ask that user to disconnect first."},409);
+   }
    const state=base64Url(crypto.getRandomValues(new Uint8Array(32))),verifier=base64Url(crypto.getRandomValues(new Uint8Array(32))),challenge=base64Url(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(verifier))));
    const key=await importAesKey(encodedKey),encryptedVerifier=await encryptSecret(verifier,key),stateHash=await sha256Hex(state),expiresAt=new Date(Date.now()+10*60*1000).toISOString();
-   const {error:stateError}=await db.from("jd_business_oauth_states").insert({school_id:school,provider_id:providerId,actor_id:actor,state_hash:stateHash,pkce_verifier_encrypted:encryptedVerifier,redirect_uri:callback,expires_at:expiresAt});if(stateError)throw stateError;
-   const authUrl=new URL(config.authUrl);authUrl.searchParams.set("client_id",clientId);authUrl.searchParams.set("redirect_uri",callback);authUrl.searchParams.set("response_type","code");authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(" "));authUrl.searchParams.set("state",state);authUrl.searchParams.set("code_challenge",challenge);authUrl.searchParams.set("code_challenge_method","S256");
+   const {error:stateError}=await db.from("jd_business_oauth_states").insert({school_id:school,provider_id:providerId,actor_id:actor,state_hash:stateHash,pkce_verifier_encrypted:encryptedVerifier,redirect_uri:callback,expires_at:expiresAt,enabled_read_services:enabledServices});if(stateError)throw stateError;
+   const authUrl=new URL(config.authUrl);authUrl.searchParams.set("client_id",clientId);authUrl.searchParams.set("redirect_uri",callback);authUrl.searchParams.set("response_type","code");authUrl.searchParams.set("scope",requestedScopes.join(" "));authUrl.searchParams.set("state",state);authUrl.searchParams.set("code_challenge",challenge);authUrl.searchParams.set("code_challenge_method","S256");
    if(providerId==="google-workspace"){authUrl.searchParams.set("access_type","offline");authUrl.searchParams.set("prompt","consent");}if(providerId==="slack"){authUrl.searchParams.set("scope",(catalog.required_scopes||[]).join(","));}
    await audit("business.oauth.started",{provider_id:providerId,expires_at:expiresAt});return send({authorization_url:authUrl.toString(),expires_at:expiresAt});
+  }
+  if(["oauth.refresh","oauth.verify","oauth.disconnect"].includes(b.action)&&Object.hasOwn(WORKSPACE_PROVIDERS,str(b.providerId,60))){
+   const {data:owner,error}=await db.from("jd_business_oauth_connections").select("connected_by").eq("school_id",school).eq("provider_id",str(b.providerId,60)).maybeSingle();
+   if(error||owner?.connected_by!==actor)return send({error:"Only the account owner may manage this workspace provider connection"},403);
   }
   if(b.action==="oauth.refresh"){
    const providerId=str(b.providerId,60),config:Record<string,{tokenUrl:string;clientIdEnv:string;clientSecretEnv:string}>={

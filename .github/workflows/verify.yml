@@ -33,6 +33,9 @@ jobs:
       - name: Test backend assignment compatibility and release safety
         run: npm run test:backend-release
 
+      - name: Test workspace app consent, isolation and read-only adapters
+        run: npm run test:work-apps
+
       - name: Test capability interpretation and role boundaries
         run: npm run test:capabilities
 
@@ -80,5 +83,7 @@ jobs:
           deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/functions/_shared/jd-agent-runtime.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
       - name: Type-check JD MCP functions
         run: |
+          deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-mcp/index.ts

@@ -1,0 +1,380 @@
+[
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "light",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "light",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 320,
+    "theme": "light",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 320,
+    "theme": "light",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 320,
+    "theme": "light",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 320,
+    "theme": "light",
+    "checked": 48,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "dark",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "dark",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 320,
+    "theme": "dark",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 320,
+    "theme": "dark",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 320,
+    "theme": "dark",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 320,
+    "theme": "dark",
+    "checked": 48,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "light",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "light",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 393,
+    "theme": "light",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 393,
+    "theme": "light",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 393,
+    "theme": "light",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 393,
+    "theme": "light",
+    "checked": 48,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "dark",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "dark",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 393,
+    "theme": "dark",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 393,
+    "theme": "dark",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 393,
+    "theme": "dark",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 393,
+    "theme": "dark",
+    "checked": 48,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "light",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "light",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 1280,
+    "theme": "light",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 1280,
+    "theme": "light",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 1280,
+    "theme": "light",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 1280,
+    "theme": "light",
+    "checked": 48,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 479,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 13,
+    "findings": []
+  },
+  {
+    "name": "server-form",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 66,
+    "findings": []
+  },
+  {
+    "name": "cloudflare-prefilled",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 54,
+    "findings": []
+  },
+  {
+    "name": "oauth-gated",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 52,
+    "findings": []
+  },
+  {
+    "name": "custom-endpoint",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 48,
+    "findings": []
+  }
+]

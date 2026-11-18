@@ -1,3 +1,4 @@
+import {WORKSPACE_SERVICES,WORKSPACE_PROVIDERS} from '../../supabase/functions/_shared/jd-workspace-connectors.mjs';
 import {populatedAutomation,populatedBusiness} from "./populated-theme.mjs";
 import {conversationTasks,conversationHistory} from "./conversation-records.mjs";
 // Local rendering fixture only. Unknown calls fail closed; the populated-chat
@@ -38,10 +39,13 @@ export const supabase={
  },
  functions:{invoke:async(name,{body})=>{
   record('edge',name,body);
+  if(name==='jd-business-platform'&&body.action==='workspace.catalog')return window.__workspaceFailure?{error:{message:'Synthetic workspace backend unavailable'}}:{data:{providers:Object.entries(WORKSPACE_PROVIDERS).map(([id,p])=>({id,name:p.name,configured:Boolean(window.__workspaceConfigured),services:WORKSPACE_SERVICES.filter(s=>s.provider===id).map(s=>({...s,access:'not_connected'}))}))}};
+  if(name==='jd-business-platform'&&body.action==='oauth.start')return{error:{message:'Synthetic OAuth setup failure; no provider contacted'}};
   if(name==='jd-connect'&&window.__connectorFixture){
    if(window.__connectorFailure)return{error:{message:'Synthetic connector unavailable'}};
    if(body.action==='servers.list')return{data:{servers:window.__sampleServers||[{id:'sample-server',name:'Sample business',host:'mcp.example.test',status:'connected',grant:{access_level:'read_only'}},{id:'disabled-server',name:'Disabled service',host:'disabled.example.test',status:'disabled'}]}};
    if(body.action==='tools.list')return{data:{tools:[{id:'sample-tool',server_id:'sample-server',name:'lookup_customer',description:'Synthetic lookup',input_schema:{type:'object'},read_only:true},{id:'disabled-tool',server_id:'disabled-server',name:'disabled_tool',read_only:true}]}};
+   if(body.action==='servers.register'&&window.__connectorRegisterFailure)return{data:{error:'Synthetic registration rejected by host allowlist'}};
    if(body.action==='servers.register'&&window.__allowConnectorRegister){window.__sampleServers=[{id:'new-sample-server',name:body.name,host:new URL(body.endpoint).host,status:'connected',grant:{access_level:'read_only'}}];return{data:{server:window.__sampleServers[0],tools:[],notice:'Synthetic server connected. No external service contacted.'}};}
   }
   if(window.__historyFailure&&['history','history.list'].includes(body.action))return{error:{message:'Synthetic history unavailable'}};

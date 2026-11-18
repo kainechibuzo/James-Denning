@@ -1,0 +1,164 @@
+TAP version 13
+# Subtest: old identity connections have empty app selection, never an implicit new grant
+ok 1 - old identity connections have empty app selection, never an implicit new grant
+  ---
+  duration_ms: 1374.400869
+  type: 'test'
+  ...
+# Subtest: state consumption returns stored app selection once and rejects expired/replayed state
+ok 2 - state consumption returns stored app selection once and rejects expired/replayed state
+  ---
+  duration_ms: 8.959814
+  type: 'test'
+  ...
+# Subtest: anon: new state RPC not executable by clients
+ok 3 - anon: new state RPC not executable by clients
+  ---
+  duration_ms: 2.387548
+  type: 'test'
+  ...
+# Subtest: authenticated: new state RPC not executable by clients
+ok 4 - authenticated: new state RPC not executable by clients
+  ---
+  duration_ms: 1.582187
+  type: 'test'
+  ...
+# Subtest: database blocks concurrent OAuth upsert from replacing another active account owner
+ok 5 - database blocks concurrent OAuth upsert from replacing another active account owner
+  ---
+  duration_ms: 6.530313
+  type: 'test'
+  ...
+# Subtest: explicit local disconnect allows a new owner, without inheriting previous app selection
+ok 6 - explicit local disconnect allows a new owner, without inheriting previous app selection
+  ---
+  duration_ms: 3.419517
+  type: 'test'
+  ...
+# (node:5470) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-oauth-crypto.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+ok 7 - OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+  ---
+  duration_ms: 16.082405
+  type: 'test'
+  ...
+# Subtest: invalid selection undefined never issues OAuth state
+ok 8 - invalid selection undefined never issues OAuth state
+  ---
+  duration_ms: 1.214804
+  type: 'test'
+  ...
+# Subtest: invalid selection [] never issues OAuth state
+ok 9 - invalid selection [] never issues OAuth state
+  ---
+  duration_ms: 1.056339
+  type: 'test'
+  ...
+# Subtest: invalid selection ["outlook"] never issues OAuth state
+ok 10 - invalid selection ["outlook"] never issues OAuth state
+  ---
+  duration_ms: 1.036503
+  type: 'test'
+  ...
+# Subtest: invalid selection ["send"] never issues OAuth state
+ok 11 - invalid selection ["send"] never issues OAuth state
+  ---
+  duration_ms: 1.388114
+  type: 'test'
+  ...
+# Subtest: invalid selection ["__proto__"] never issues OAuth state
+ok 12 - invalid selection ["__proto__"] never issues OAuth state
+  ---
+  duration_ms: 0.822815
+  type: 'test'
+  ...
+# Subtest: missing provider secret and another active account owner block new OAuth state
+ok 13 - missing provider secret and another active account owner block new OAuth state
+  ---
+  duration_ms: 1.925503
+  type: 'test'
+  ...
+# Subtest: staff: handler fails before service or OAuth calls
+ok 14 - staff: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.912586
+  type: 'test'
+  ...
+# Subtest: viewer: handler fails before service or OAuth calls
+ok 15 - viewer: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.490094
+  type: 'test'
+  ...
+# Subtest: contractor: handler fails before service or OAuth calls
+ok 16 - contractor: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.573797
+  type: 'test'
+  ...
+# Subtest: invalid JWT cannot load workspace provider metadata
+ok 17 - invalid JWT cannot load workspace provider metadata
+  ---
+  duration_ms: 0.686992
+  type: 'test'
+  ...
+# Subtest: owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+ok 18 - owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+  ---
+  duration_ms: 1.254474
+  type: 'test'
+  ...
+# Subtest: legacy refresh/verify/disconnect cannot manage another person’s Google account
+ok 19 - legacy refresh/verify/disconnect cannot manage another person’s Google account
+  ---
+  duration_ms: 1.616529
+  type: 'test'
+  ...
+# Subtest: local disconnect erases selection and credentials only for current workspace and actor
+ok 20 - local disconnect erases selection and credentials only for current workspace and actor
+  ---
+  duration_ms: 0.87786
+  type: 'test'
+  ...
+# Subtest: callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+ok 21 - callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+  ---
+  duration_ms: 22.037714
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":null}
+ok 22 - callback invalid state or changed membership rejects before token exchange: {"state":null}
+  ---
+  duration_ms: 1.129775
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xd7f1ed417e522089f7036f8d1117e59e25081314e7a1189513bcc2f046969f395e141cad2c08a0ff1934781d60cc"},"school":"moved-workspace"}
+ok 23 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xd7f1ed417e522089f7036f8d1117e59e25081314e7a1189513bcc2f046969f395e141cad2c08a0ff1934781d60cc"},"school":"moved-workspace"}
+  ---
+  duration_ms: 0.920082
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xd7f1ed417e522089f7036f8d1117e59e25081314e7a1189513bcc2f046969f395e141cad2c08a0ff1934781d60cc"},"role":"viewer"}
+ok 24 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\xd7f1ed417e522089f7036f8d1117e59e25081314e7a1189513bcc2f046969f395e141cad2c08a0ff1934781d60cc"},"role":"viewer"}
+  ---
+  duration_ms: 0.788982
+  type: 'test'
+  ...
+# Subtest: provider denial consumes state but never stores credentials
+ok 25 - provider denial consumes state but never stores credentials
+  ---
+  duration_ms: 1.821573
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1822.424536

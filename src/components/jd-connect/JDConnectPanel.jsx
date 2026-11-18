@@ -1,15 +1,19 @@
-import React,{useCallback,useEffect,useState} from "react";
+import React,{useCallback,useEffect,useRef,useState} from "react";
 import {supabase} from "../../supabaseClient.js";
+import {connectorForEndpoint,supportsHostedAuth} from "../../connectors/catalogue.mjs";
 import {Activity,CheckCircle2,ChevronDown,ChevronRight,Clock,Link2,Loader2,Plus,RefreshCw,ShieldCheck,Unplug,XCircle} from "lucide-react";
 
 const card={background:"var(--jd-card,#fff)",border:"1px solid var(--jd-border,#e5e7eb)",borderRadius:12,padding:16,marginBottom:12};
 const field={width:"100%",padding:"10px 12px",border:"1px solid var(--jd-border,#d1d5db)",borderRadius:8,fontSize:13,background:"var(--jd-input,#fff)",color:"var(--jd-text,#17191c)"};
 const button={border:0,borderRadius:8,padding:"9px 12px",fontSize:12,fontWeight:700,cursor:"pointer"};
-export function JDConnectPanel({notify=()=>{},initialName="",openRegistration=false,role}){
+export function JDConnectPanel({notify=()=>{},initialName="",initialEndpoint="",openRegistration=false,role}){
  const [servers,setServers]=useState([]),[tools,setTools]=useState([]),[approvals,setApprovals]=useState([]),[executions,setExecutions]=useState([]);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(""),[error,setError]=useState(""),[success,setSuccess]=useState("");
- const [name,setName]=useState(initialName),[endpoint,setEndpoint]=useState(""),[token,setToken]=useState("");
+ const [name,setName]=useState(initialName),[endpoint,setEndpoint]=useState(initialEndpoint),[token,setToken]=useState("");
+ const preset=connectorForEndpoint(endpoint),authBlocked=Boolean(preset&&!supportsHostedAuth(preset)),tokenRequired=preset?.connection.auth==="bearer";
  const [showRegister,setShowRegister]=useState(openRegistration),[expanded,setExpanded]=useState(""),[toolArgs,setToolArgs]=useState({}),[argErrors,setArgErrors]=useState({}),[reconnectTokens,setReconnectTokens]=useState({});
+ const registrationForm=useRef(null);
+ useEffect(()=>{if(!loading&&showRegister)registrationForm.current?.scrollIntoView({block:"start"});},[loading,showRegister]);
  const call=useCallback(async(action,extra={})=>{
   const {data,error}=await supabase.functions.invoke("jd-connect",{body:{action,...extra}});
   if(error)throw new Error(error.message||"JD Connect request failed");
@@ -32,7 +36,9 @@ export function JDConnectPanel({notify=()=>{},initialName="",openRegistration=fa
  const register=()=>run("register",async()=>{
   let url;try{url=new URL(endpoint.trim());}catch{throw new Error("Enter a valid HTTPS MCP endpoint.");}
   if(url.protocol!=="https:"||url.username||url.password)throw new Error("Use an HTTPS endpoint without embedded credentials. Put credentials in the token field.");
-  const r=await call("servers.register",{name:name.trim(),endpoint:url.toString(),bearerToken:token});
+  if(authBlocked)throw new Error("This provider's authentication method is not supported by JD yet. Review the connection guide.");
+  if(tokenRequired&&!token.trim())throw new Error("Enter the provider token before connecting.");
+  const r=await call("servers.register",{name:name.trim(),endpoint:url.toString(),bearerToken:token.trim()});
   if(!r.server?.id||!Array.isArray(r.tools))throw new Error("Connection outcome not confirmed. Refresh connections before retrying.");
   setName("");setEndpoint("");setToken("");setShowRegister(false);setSuccess(r.notice||"Connector registered");return r;
  });
@@ -51,7 +57,7 @@ export function JDConnectPanel({notify=()=>{},initialName="",openRegistration=fa
  return <div style={{color:"var(--jd-text,#17191c)"}}>
   <div className="jd-page-header" style={{...card,background:"linear-gradient(135deg,var(--jd-text),var(--jd-text))",color:"var(--jd-card)",border:0}}>
    <div style={{display:"flex",alignItems:"center",gap:10}}><Link2 size={22}/><div style={{fontSize:17,fontWeight:900}}>JD Connect</div><span style={{marginLeft:"auto",fontSize:10,opacity:.75}}>MCP GATEWAY</span></div>
-   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Connect remote MCP servers and grant JD read-only, read/write or full-control access separately for each service. Write access is enabled only after an authorized manager grants it.</p>
+   <p style={{fontSize:12,lineHeight:1.7,opacity:.82,margin:"9px 0 0"}}>Connect remote MCP servers and grant JD read-only, read/write or full-control access separately for each service. Write access is enabled only after an authorized owner or admin grants it.</p>
   </div>
   {error&&<div role="alert" style={{...card,borderColor:"var(--jd-border)",background:"var(--jd-soft)",color:"var(--jd-text)",fontSize:12}}>{error}</div>}
   {success&&<div role="status" style={{...card,borderColor:"var(--jd-border)",background:"var(--jd-soft)",color:"var(--jd-text-soft)",fontSize:12}}>{success}</div>}
@@ -62,13 +68,14 @@ export function JDConnectPanel({notify=()=>{},initialName="",openRegistration=fa
     <button onClick={()=>{setShowRegister(v=>!v);setToken("");}} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",display:"flex",alignItems:"center",gap:6}}><Plus size={14}/> Add server</button>
    </div>
   </div>
-  {showRegister&&<div style={card}>
-   <div style={{fontWeight:800,fontSize:13,marginBottom:12}}>Register remote MCP server</div>
+  {showRegister&&<div ref={registrationForm} style={{...card,scrollMarginTop:12}}>
+   <div style={{fontWeight:800,fontSize:13,marginBottom:12}}>{preset?`Connect ${preset.name}`:'Register remote MCP server'}</div>
+   {preset&&<div className="jd-connect-preset"><strong>{authBlocked?'Authentication support required':'Published URL ready'}</strong><p>{preset.connection.note}</p><a href={preset.connection.docsUrl} target="_blank" rel="noopener noreferrer">Provider connection guide</a><p>Opening this form does not connect this service. The operator must allowlist <strong>{new URL(preset.endpoint).hostname}</strong>. Connection is confirmed only after tool discovery succeeds.</p></div>}
    <label style={{display:"block",fontSize:11,fontWeight:700,marginBottom:5}}>Display name</label><input aria-label="MCP server display name" style={field} value={name} onChange={e=>setName(e.target.value)} placeholder="Team knowledge server"/>
-   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>HTTPS MCP endpoint</label><input aria-label="HTTPS MCP endpoint" type="url" style={field} value={endpoint} onChange={e=>setEndpoint(e.target.value)} placeholder="https://mcp.example.com/mcp" autoCapitalize="none"/>
-   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>Bearer token <span style={{fontWeight:400,color:"var(--jd-muted,#60616b)"}}>(optional)</span></label><input aria-label="MCP bearer token" type="password" autoComplete="new-password" style={field} value={token} onChange={e=>setToken(e.target.value)} placeholder="Stored encrypted; never shown again"/>
+   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>HTTPS MCP endpoint</label><input aria-label="HTTPS MCP endpoint" type="url" style={field} value={endpoint} onChange={e=>{setEndpoint(e.target.value);setToken("");}} placeholder="https://mcp.example.com/mcp" autoCapitalize="none"/>
+   <label style={{display:"block",fontSize:11,fontWeight:700,margin:"12px 0 5px"}}>{preset?.connection.credentialLabel||'Bearer token'} <span style={{fontWeight:400,color:"var(--jd-muted,#60616b)"}}>({authBlocked?'not supported yet':tokenRequired?'required':'optional'})</span></label><input aria-label="MCP bearer token" type="password" autoComplete="new-password" disabled={authBlocked} style={field} value={token} onChange={e=>setToken(e.target.value)} placeholder={authBlocked?'Provider sign-in or header support required':'Stored encrypted; never shown again'}/>
    <p style={{fontSize:11,lineHeight:1.6,color:"var(--jd-muted,#60616b)"}}>The server hostname must be explicitly allowlisted by the JD operator. Use only trusted servers. Credentials are encrypted at rest.</p>
-   <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setShowRegister(false);setToken("");}} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>Cancel</button><button disabled={!!busy||!name.trim()||!endpoint.trim()} onClick={register} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)",opacity:busy?0.6:1}}>{busy==="register"?"Connecting…":"Connect and discover tools"}</button></div>
+   <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setShowRegister(false);setToken("");}} style={{...button,background:"var(--jd-soft,#f3f4f6)",color:"inherit"}}>Cancel</button><button disabled={!!busy||!name.trim()||!endpoint.trim()||authBlocked||(tokenRequired&&!token.trim())} onClick={register} style={{...button,background:"var(--jd-text)",color:"var(--jd-card)"}}>{busy==="register"?"Connecting…":"Connect and discover tools"}</button></div>
   </div>}
   {!servers.length&&!showRegister&&<div style={{...card,textAlign:"center",padding:28}}><Link2 size={25} style={{opacity:.5}}/><div style={{fontWeight:800,marginTop:8}}>No MCP servers connected</div><p style={{fontSize:12,color:"var(--jd-muted,#60616b)"}}>Add an allowlisted remote MCP server to discover its available tools.</p></div>}
   {servers.map(server=>{

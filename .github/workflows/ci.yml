@@ -53,6 +53,9 @@ jobs:
       - name: Test backend assignment compatibility and release safety
         run: npm run test:backend-release
 
+      - name: Test workspace app consent, isolation and read-only adapters
+        run: npm run test:work-apps
+
       - name: Test capability interpretation and role boundaries
         run: npm run test:capabilities
 

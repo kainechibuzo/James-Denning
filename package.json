@@ -33,7 +33,8 @@
     "test:dependency-security": "node --test scripts/test-picomatch-security.mjs",
     "test:conversation-layout": "node scripts/test-conversation-layout.mjs",
     "test:theme-layout": "JD_THEME_AUDIT=1 node scripts/test-site-design-layout.mjs",
-    "test:connectors": "node --test scripts/test-composer-connectors.mjs && node scripts/test-composer-focus-layout.mjs && node scripts/test-composer-connectors-layout.mjs"
+    "test:connectors": "node --test scripts/test-composer-connectors.mjs && node scripts/test-composer-focus-layout.mjs && node scripts/test-composer-connectors-layout.mjs",
+    "test:work-apps": "node --experimental-strip-types --test scripts/test-workspace-apps.mjs scripts/test-workspace-apps-database.mjs scripts/test-workspace-oauth-endpoint.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

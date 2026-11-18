@@ -1,0 +1,562 @@
+[
+  {
+    "id": "pipedrive",
+    "source": "https://github.com/ckalima/pipedrive-mcp-server",
+    "readmeSha256": "6d38d2a81efd5f7ce882e1c6dd9b3658a3a4538a5a9f7e38e70de4d7a64d5102",
+    "endpoint": "https://mcp.pipedrive.ai/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "zendesk",
+    "source": "https://github.com/michaelrice/zendesk-mcp",
+    "readmeSha256": "34a13313eb8be4e5d1d06f1214935479bb912ee8c1af8ea330ac88492f495251",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "freshdesk",
+    "source": "https://github.com/effytech/freshdesk_mcp",
+    "readmeSha256": "8dc4e3e7056f690904cd7131d65ad20546944aff13a4bce04320c8ec89b1a3af",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "attio",
+    "source": "https://github.com/hmk/attio-mcp-server",
+    "readmeSha256": "ebfe542338f2ba90fd7e212ca133c57c6778c5840ac381d5c7838438876d6947",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "apollo",
+    "source": "https://github.com/louis030195/apollo-io-mcp",
+    "readmeSha256": "f97409e5b6bdb435a2b7d347695b0924702920416be39976877390a6b30870c9",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "shopify-storefront",
+    "source": "https://github.com/QuentinCody/shopify-storefront-mcp-server",
+    "readmeSha256": "9d38bf5dd95ad65070440c3a8590e0fc75159b5e15d4d5c92170d36ed3cda5a1",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "woocommerce",
+    "source": "https://github.com/wppoland/woocommerce-mcp",
+    "readmeSha256": "f28aa0c39d2003be6f7feb1726766efd18dc36e075bfec5454101f978d9b18aa",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "xero",
+    "source": "https://github.com/XeroAPI/xero-mcp-server",
+    "readmeSha256": "40a3be8915579ad801cf684092b90c05f8de08586801d754e9acb5e92774a134",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "bankstatemently",
+    "source": "https://github.com/bankstatemently/plugins",
+    "readmeSha256": "a6eb1370a51486cf75f5c372769315f542dd17079dc3b8d4564051225ee73ca7",
+    "endpoint": "https://api.bankstatemently.com/mcp",
+    "setup": "hosted",
+    "auth": "unsupported"
+  },
+  {
+    "id": "invoice-maker",
+    "source": "https://github.com/InnarM/blank-invoice-maker-mcp",
+    "readmeSha256": "b75c5edaece5d831694eca9a1c9fb8308590041059fa8d26f3be20315fba98a3",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "camt-053-statements",
+    "source": "https://github.com/sebastienrousseau/camt053-mcp",
+    "readmeSha256": "2635f4b967d16f23eea0895b58ba50cd857a2acd86bcf054331512648bb4f04b",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "synder-importer",
+    "source": "https://github.com/SynderAccounting/gl-importer-plugin",
+    "readmeSha256": "c138e006e5c6a8c8db4e43b804c3445110faed2d43f49be9ae6ceefce88aec44",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "slack",
+    "source": "https://github.com/korotovsky/slack-mcp-server",
+    "readmeSha256": "fe5c4cb415eaa4cab4c52dd679214defa2067cc2550bf9b0e7fc39dac9595efd",
+    "endpoint": "https://mcp.slack.com/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "microsoft-teams",
+    "source": "https://github.com/InditexTech/mcp-teams-server",
+    "readmeSha256": "cb79cada83760ebab5c609bcdbf1061654031d296b77ac9f16eac9b573aee96b",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "gmail",
+    "source": "https://github.com/A1-x-Tech/mcp-google-gmail",
+    "readmeSha256": "3b7fc02697804bb58a7f2ef0412e79c1edccd2162ad7a75670d43208f72fb269",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "outlook",
+    "source": "https://github.com/dockndevai/mcp-outlook",
+    "readmeSha256": "5fd64244addd309e01d5b49a653e9faba0995ee3f8ae43b2e56d5286ae8d9dd9",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "google-calendar",
+    "source": "https://github.com/takumi0706/google-calendar-mcp",
+    "readmeSha256": "0c3eda39f124d513a47c8cac2a000dcfcec099084cd377d15cd1ea755bd70e40",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "resend",
+    "source": "https://github.com/helbertparanhos/resend-email-mcp",
+    "readmeSha256": "e0256187c9074f5e1d53bcc63e2ba8fbbf9309a1d749e600a222f91fbdabda39",
+    "endpoint": "https://mcp.resend.com/mcp",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "sendgrid",
+    "source": "https://github.com/Choppaaahh/sendgrid-mcp-secure",
+    "readmeSha256": "0e754885d22ffaad7a02a7c61caf6330bc677988aeb96ca3028919914a1658d8",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "mailchimp",
+    "source": "https://github.com/damientilman/mailchimp-mcp-server",
+    "readmeSha256": "65948b63dfe6cfbd27b27b8cf41a85a17792bf8f6b29acccbda43d7b4ec6ac2e",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "discord",
+    "source": "https://github.com/jaimenbell/discord-mcp",
+    "readmeSha256": "ef5a80d49749ebaa5276afce99aaaf99dccd5fd75801c05efcfe00096a443c87",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "google-chat",
+    "source": "https://github.com/A1-x-Tech/mcp-google-chat",
+    "readmeSha256": "ff951c394e8911222813818d76154852dc1cc18923f46ccd39b6d2dff7355a9d",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "notion",
+    "source": "https://github.com/Grey-Iris/easy-notion-mcp",
+    "readmeSha256": "991121bc8e6eefda14f2ecc185b9340e767d3802502a8b4702cde9aef2ae6e94",
+    "endpoint": "https://mcp.notion.com/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "asana",
+    "source": "https://github.com/roychri/mcp-server-asana",
+    "readmeSha256": "592cc867697f3f73f6ad80f742b99afe1e37855be76375d816f95c8b7d9a5ae2",
+    "endpoint": "https://mcp.asana.com/v2/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "linear",
+    "source": "https://github.com/tacticlaunch/mcp-linear",
+    "readmeSha256": "a6e76d3e923ef4a4766a6eb6f826f4e415f08601ea646646fbd0775cae59c634",
+    "endpoint": "https://mcp.linear.app/mcp/readonly",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "clickup",
+    "source": "https://github.com/nicholasbester/clickup-cli",
+    "readmeSha256": "ce2e033075b5e43336c8dd83d59ccbcc1f6320be847cc81c4614a471ffb0a8f2",
+    "endpoint": "https://mcp.clickup.com/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "trello",
+    "source": "https://github.com/agrath/Trello-Desktop-MCP",
+    "readmeSha256": "4ece789178eb5fd739ea210fb2df59a8e7ebad744bd4f3ecd23bc50acddc5168",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "todoist",
+    "source": "https://github.com/christulino/todoist-v1-mcp-server",
+    "readmeSha256": "6da9988e74a13f877c34ffabe0bd4ea95e1c12966b8ef3386b091341589c8f06",
+    "endpoint": "https://ai.todoist.net/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "airtable",
+    "source": "https://github.com/domdomegg/airtable-mcp-server",
+    "readmeSha256": "64a7da8ef9b14556f016bd531b26582e5ad21a70ebf33e39d927c8152246607d",
+    "endpoint": "https://mcp.airtable.com/mcp",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "confluence",
+    "source": "https://github.com/aashari/mcp-server-atlassian-confluence",
+    "readmeSha256": "653c2def1c729d1a5d565c882f18531f4ca75c51f0952b4c116a252c7b916487",
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "jira",
+    "source": "https://github.com/aashari/mcp-server-atlassian-jira",
+    "readmeSha256": "46e7c6c68e510e17fc80a97e74bd54e035ca3cc5c438f30df6979d07c7e3374c",
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "setup": "hosted",
+    "auth": "oauth"
+  },
+  {
+    "id": "google-tasks",
+    "source": "https://github.com/arpitbatra123/mcp-googletasks",
+    "readmeSha256": "f5ccd8b3ebedfeb6fec1b496448ea0f58dc46da333baca9e5187026a2bdeb471",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "github",
+    "source": "https://github.com/github/github-mcp-server",
+    "readmeSha256": "d7ca350534f33a0f50992a4e376cf2904e0b593ad8e2a35f3a2269d84ea89ca0",
+    "endpoint": "https://api.githubcopilot.com/mcp/",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "gitlab",
+    "source": "https://github.com/jmrplens/gitlab-mcp-server",
+    "readmeSha256": "75cc56b65b662645369e4632d958db71b7bbf04f9df3c1b019b7ec0c6814043c",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "supabase",
+    "source": "https://github.com/supabase-community/supabase-mcp",
+    "readmeSha256": "c5e7ca47186714ad300080b6426e989514c340a1a12394e20d11dd05d573ddf9",
+    "endpoint": "https://mcp.supabase.com/mcp",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "neon",
+    "source": "https://github.com/neondatabase/mcp-server-neon",
+    "readmeSha256": "3b0f2ff5872615d1f3fbe0d6632a96fd594334517a7835141cb65d34af17f70c",
+    "endpoint": "https://mcp.neon.tech/mcp?readonly=true",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "redis",
+    "source": "https://github.com/redis/mcp-redis",
+    "readmeSha256": "309e08fb19c365606d52810cf0c5e2659874c9fe1c03d6c343999488b8a68636",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "cloudflare",
+    "source": "https://github.com/cloudflare/mcp-server-cloudflare",
+    "readmeSha256": "6e79c8c11bd111e95917c001e756d1458854099caf0655b46cfeb16243a7dd3d",
+    "endpoint": "https://mcp.cloudflare.com/mcp",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "sentry",
+    "source": "https://github.com/getsentry/sentry-mcp",
+    "readmeSha256": "d0e00054ecf0e7df2fcb898b83214e764882d9834e7c48987aba1bcc3f3af232",
+    "endpoint": "https://mcp.sentry.dev/mcp",
+    "setup": "hosted",
+    "auth": "unsupported"
+  },
+  {
+    "id": "playwright",
+    "source": "https://github.com/microsoft/playwright-mcp",
+    "readmeSha256": "e4e6b8ba835b5aa7d8845fdee2173dd291bc50cd8b29ebb33df893223cf52d27",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "azure",
+    "source": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server",
+    "readmeSha256": "8ce7c6fcddcd5be875697f1b9193e7c312e5d4ef9fae3ad2dc58812200d38130",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "markitdown",
+    "source": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp",
+    "readmeSha256": "7d27ea30126c35a18fb7392454a30da72f62def2cc0cd222926e6207ac82a9d8",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "postgresql",
+    "source": "https://github.com/crystaldba/postgres-mcp",
+    "readmeSha256": "6f78d8e5094298aa109de5ed269e6db4f0eb5c11ab0f20ef21d11d9dcc08a026",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "mongodb-lens",
+    "source": "https://github.com/furey/mongodb-lens",
+    "readmeSha256": "da5577ef2a10b461acd0df27ec1a48ea5651c6e80a39e30abed34ba726e6c673",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "snowflake",
+    "source": "https://github.com/isaacwasserman/mcp-snowflake-server",
+    "readmeSha256": "3835ec423a681ae052735010c2d6fef715e51a3e71171361cc9430201fe116c4",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "clickhouse",
+    "source": "https://github.com/ClickHouse/mcp-clickhouse",
+    "readmeSha256": "eb4db3a8042738208d7cbeb15f780f1183e6487bfdd32226d7eae24afa62ac83",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "bigquery",
+    "source": "https://github.com/ergut/mcp-bigquery-server",
+    "readmeSha256": "a10ceeb45d804c61d6b64011b2e974dbca26b5242eb1a50ee69b4b3e750a028c",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "databricks",
+    "source": "https://github.com/JordiNeil/mcp-databricks-server",
+    "readmeSha256": "2dd391e314b65a2a0d4e6a9aa622da2129b05c7b761dd43b989789808d204937",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "metabase",
+    "source": "https://github.com/1luvc0d3/metabase-mcp",
+    "readmeSha256": "86a88b364c998dcf705eac487c0c5c29998d72c38b4471846042c6ab00f67344",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "duckdb",
+    "source": "https://github.com/ktanaka101/mcp-server-duckdb",
+    "readmeSha256": "2fd9b3acd347eca718e5ee358638fb625b0d6b516c79f294fe61b9747498f2e2",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "sqlite",
+    "source": "https://github.com/jparkerweb/mcp-sqlite",
+    "readmeSha256": "3af9946700e8566f80fa0407af522ebcd9ed46f6c10bd4f92a4e582bd0e04ce1",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "qdrant",
+    "source": "https://github.com/qdrant/mcp-server-qdrant",
+    "readmeSha256": "86db62be5f455243ae26a01793bf9501b26ace8dd39b729bc678d5a6fc1af362",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "brave-search",
+    "source": "https://github.com/brave/brave-search-mcp-server",
+    "readmeSha256": "8f55e7cee0a70235cfe89b5f6dd1fdaaf1041cf0383fbcaadc024c517c14b5a2",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "exa",
+    "source": "https://github.com/exa-labs/exa-mcp-server",
+    "readmeSha256": "56f016f4ef996295ff5de9a8c385c5ab10876698f9c6e52a2262922b55eaff93",
+    "endpoint": "https://mcp.exa.ai/mcp",
+    "setup": "hosted",
+    "auth": "optional_bearer"
+  },
+  {
+    "id": "firecrawl",
+    "source": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "readmeSha256": "07a2dc66430c2f88a32a9563fd2570339bc13ec3ac1f7b6fed912789edc7a405",
+    "endpoint": "https://mcp.firecrawl.dev/v2/mcp",
+    "setup": "hosted",
+    "auth": "optional_bearer"
+  },
+  {
+    "id": "tavily",
+    "source": "https://github.com/Tomatio13/mcp-server-tavily",
+    "readmeSha256": "396b1a5b6567b213a646ea2b9bf52acaf6d380817ba100f9b6422227fe9b6e2f",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "perplexity",
+    "source": "https://github.com/tanigami/mcp-server-perplexity",
+    "readmeSha256": "b86319a163d6b3ee5741136445c16d5573f858da7e79d78472dd358622e8041c",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "apify",
+    "source": "https://github.com/apify/actors-mcp-server",
+    "readmeSha256": "45f206e2eeb4040810046c58b5f8813ee265a6d44ad08e3bb186394b6bd75034",
+    "endpoint": "https://mcp.apify.com",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "context7",
+    "source": "https://github.com/upstash/context7",
+    "readmeSha256": "a23306f5d9a04eb8588b619071a418d901f27549ace077ecbb28f21161a46912",
+    "endpoint": "https://mcp.context7.com/mcp",
+    "setup": "hosted",
+    "auth": "bearer"
+  },
+  {
+    "id": "arxiv",
+    "source": "https://github.com/blazickjp/arxiv-mcp-server",
+    "readmeSha256": "0e537bf180b0ad5301d6e1aafef154521135f24f1b2a81580dd53b82014bd0ec",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "searxng",
+    "source": "https://github.com/ihor-sokoliuk/mcp-searxng",
+    "readmeSha256": "ea4790187bc822f70255724958ac0a3c5ae42904bc5a5e134c75cd299e68a325",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "trackmage",
+    "source": "https://github.com/trackmage/trackmage-mcp-server",
+    "readmeSha256": "217a954f4f6b2f72cd9ff00176530e37509bbcf3e4552dcb5892480efb64240a",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "stadia-maps",
+    "source": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts",
+    "readmeSha256": "dbc8185075c7deb6a376d0d242b57c18a2308508b219098bcde83f826dd5e67c",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "openstreetmap",
+    "source": "https://github.com/jagan-shanmugam/open-streetmap-mcp",
+    "readmeSha256": "bf94c230f066f6ee01e0b574f8ce13ae3ee52a290423dc881acd4bece7478302",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "google-maps-via-hasdata",
+    "source": "https://github.com/HasData/google-maps-mcp",
+    "readmeSha256": "5f82fde22cf973c806bc13f35f5b1794d152d5da66971dfbf9488cd4575871a9",
+    "endpoint": "https://mcp.hasdata.com/mcp?apis=google_maps",
+    "setup": "hosted",
+    "auth": "unsupported"
+  },
+  {
+    "id": "weatherapi",
+    "source": "https://github.com/devilcoder01/weather-mcp-server",
+    "readmeSha256": "75c34c0b00c9f430fd258636f759a0bef5259f7b6f45872e1e24d94ae57ac9ca",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "nigeria-postcodes",
+    "source": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp",
+    "readmeSha256": "62da4e697d167239c3add7188269a7da80618b22ea00d2f9159fa64286ff93c9",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "timezone-tools",
+    "source": "https://github.com/SecretiveShell/MCP-timeserver",
+    "readmeSha256": "7e2cefacc5098fc0335d6d1d748cea30950aab78e0cd00c1efe547a15e19409f",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "ip-find",
+    "source": "https://github.com/ipfind/ipfind-mcp-server",
+    "readmeSha256": "2814c5b6db2eb89278f49a0cb7b347114fa3c5c1571cc26a5cb4ce8d27412bf2",
+    "endpoint": null,
+    "setup": "manual",
+    "auth": "custom"
+  },
+  {
+    "id": "ip2location",
+    "source": "https://github.com/ip2location/mcp-ip2location-io",
+    "readmeSha256": "f5ea4622f7423afb12b0fbc115361a4b2223469e81be5f1fadd3c6e266899d2e",
+    "endpoint": "https://mcp.ip2location.io/",
+    "setup": "hosted",
+    "auth": "unsupported"
+  }
+]
