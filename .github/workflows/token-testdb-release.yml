@@ -1,44 +1,18 @@
-# One-shot owner-requested token rollout to the previously confirmed test DB.
-# No database push, secret updates, runtime worker invocation or new services.
-name: Deploy approved token popup backend
+# Read-only checks for the deployed token flow. No deployment credentials.
+# Completed one-shot deploy: run 44295806961, source 3dbacea77a6773f06559f36272784f5b3f633acf.
+name: Verify token popup backend
 on:
-  push:
-    branches: [arena/915cabf4-james-denning]
-    paths: [.github/workflows/token-testdb-release.yml]
+  workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: supabase-jd-backend-release
-  cancel-in-progress: false
 jobs:
-  deploy:
-    if: startsWith(github.event.head_commit.message, 'Deploy approved token popup backend')
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: 3dbacea77a6773f06559f36272784f5b3f633acf
-          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run test:connector-tokens
-      - uses: supabase/setup-cli@v3
-        with:
-          version: 3.2.0
-      - name: Deploy only the pinned gateway with existing JWT setting
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          set -euo pipefail
-          test -n "$SUPABASE_ACCESS_TOKEN"
-          if ! supabase functions deploy jd-connect --use-api --remote=thklwiybjuhrjqrrxyid --yes > deploy-output.log 2>&1; then
-            node --input-type=module -e "import fs from 'node:fs'; let text=fs.readFileSync('deploy-output.log','utf8').replaceAll(process.env.SUPABASE_ACCESS_TOKEN,'[REDACTED]'); console.log('::error::'+text.slice(-2500).replaceAll('%','%25').replaceAll('\\r','%0D').replaceAll('\\n','%0A'));"
-            exit 1
-          fi
       - name: Live credential-free gateway smoke checks
         run: |
           node --input-type=module <<'NODE'
