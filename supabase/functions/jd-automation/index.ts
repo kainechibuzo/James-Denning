@@ -9,7 +9,7 @@ import { buildCapabilityAssessment } from "../_shared/jd-capability-intelligence
 import { validateOrganisationBlueprint } from "../_shared/jd-organisation-blueprint.ts";
 import { makeIdempotencyKey, normaliseTaskInput, canTransitionTask, type TaskStatus } from "../_shared/jd-operations.ts";
 import { validateVacancy, candidateStageTransition, type HiringStage } from "../_shared/jd-hiring.ts";
-import { summariseScores, summariseTaskStatuses } from "../_shared/jd-business-intelligence.ts";
+import { ANNOUNCEMENT_INTELLIGENCE_COLUMNS, summariseScores, summariseTaskStatuses } from "../_shared/jd-business-intelligence.ts";
 import { validateWorkflowDefinition } from "../_shared/jd-workflow-definition.ts";
 import { nextScheduleAt } from "../_shared/jd-scheduler.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
   const [{data:people,error:peopleErr},{data:bills,error:billsErr},{data:announcements,error:annErr},{data:emails,error:emailErr},{data:tasks,error:tasksErr},{data:session,error:sessionErr},{data:terms,error:termsErr}]=await Promise.all([
    admin.from("profiles").select("role").eq("school_id",profile.school_id).limit(5000),
    admin.from("fee_bills").select("total_amount,amount_paid,balance,status").eq("school_id",profile.school_id).limit(5000),
-   admin.from("announcements").select("title,audience,target_audience,created_at,is_active").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(8),
+   admin.from("announcements").select(ANNOUNCEMENT_INTELLIGENCE_COLUMNS).eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(8),
    admin.from("email_logs").select("subject,recipient_count,status,error_message,sent_at").eq("school_id",profile.school_id).order("sent_at",{ascending:false}).limit(20),
    admin.from("jd_operational_tasks").select("status,priority").eq("school_id",profile.school_id).limit(5000),
    admin.from("sessions").select("id,name").eq("school_id",profile.school_id).eq("is_active",true).limit(1).maybeSingle(),
