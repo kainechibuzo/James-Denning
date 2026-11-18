@@ -60,8 +60,8 @@ assert.match(app, /onAuthenticated=\{onAuthenticated\}/, "Successful auth must h
 assert.match(auth, /confirmPassword/, "Invitation and recovery password setup must require confirmation");
 assert.match(auth, /password.length<10/, "Password setup must enforce the 10-character minimum");
 assert.match(auth, /Create password & continue/, "Invitation activation must explicitly create a password before continuing");
-assert.match(tour, /supabase\\.auth\\.updateUser\\(\\{password:pw\\}\\)/, "Profile password changes must use Supabase Auth");
-assert.match(profileMigration, /grant update \\(full_name\\) on table public\\.profiles to authenticated/i, "Authenticated profile updates must be narrowly granted to the full_name column");
+assert.ok(tour.includes("supabase.auth.updateUser({password:pw})"), "Profile password changes must use Supabase Auth");
+assert.ok(profileMigration.toLowerCase().includes("grant update (full_name) on table public.profiles to authenticated"), "Authenticated profile updates must be narrowly granted to the full_name column");
 assert.match(app, /authListener\.subscription\.unsubscribe\(\)/, "Auth listener must be cleaned up");
 
 // ── Responsive layout foundation guard ───────────────────────────────────────
