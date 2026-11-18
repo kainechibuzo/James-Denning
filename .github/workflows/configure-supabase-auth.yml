@@ -42,7 +42,7 @@ jobs:
 
           existing="$(printf '%s' "$current" | jq -r '.uri_allow_list // ""')"
           filtered="$(printf '%s' "$existing" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -Ev 'localhost|james-denning-james-projects-57651351\.vercel\.app' || true)"
-          allow_list="$(printf '%s\n' "$filtered" "https://james-denning.com.ng" "https://james-denning.com.ng/**" "https://*-james-projects-57651351.vercel.app/**" | sed '/^$/d' | awk '!seen[$0]++' | paste -sd, -)"
+          allow_list="$(printf '%s\n' "$filtered" "https://james-denning.com.ng" "https://james-denning.com.ng/**" "https://james-denning-james-projects-57651351.vercel.app/**" "https://*-james-projects-57651351.vercel.app/**" | sed '/^$/d' | awk '!seen[$0]++' | paste -sd, -)"
 
           payload="$(jq -n --arg site_url "$SITE_URL" --arg uri_allow_list "$allow_list" \
             '{site_url:$site_url, uri_allow_list:$uri_allow_list, password_hibp_enabled:true}')"
