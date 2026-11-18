@@ -1,0 +1,20 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: menu-enter must not retain the previous prompt
++ actual - expected
+
++ 'Review billing. Please @People'
+- 'Please @People'
+
+    at file:///home/user/James-Denning/scripts/test-composer-focus-layout.mjs:65:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'Review billing. Please @People',
+  expected: 'Please @People',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.22.3

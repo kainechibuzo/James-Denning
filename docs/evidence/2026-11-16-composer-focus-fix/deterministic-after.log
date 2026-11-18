@@ -1,0 +1,4 @@
+menu-enter: replacement, caret, dismissal and no-execution checks PASS
+menu-click: replacement, caret, dismissal and no-execution checks PASS
+mention-enter: replacement, caret, dismissal and no-execution checks PASS
+mention-tab: replacement, caret, dismissal and no-execution checks PASS
