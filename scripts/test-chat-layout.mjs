@@ -20,7 +20,7 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  if(body.action==='approvals.list')return{data:{approvals:[]}};
  throw Error('Unexpected API action: '+body.action);
 }}};`;
-const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';window.__requests=[];createRoot(document.getElementById('root')).render(<ChatHome user={{id:'synthetic-owner',school_id:'synthetic-workspace',role:'owner',name:'Test owner'}}/>);`;
+const entry=`import '${resolve('src/styles/app.css')}';import React from 'react';import {createRoot} from 'react-dom/client';import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';window.__requests=[];const navigationRequest={view:'history'};createRoot(document.getElementById('root')).render(<ChatHome navigationRequest={navigationRequest} user={{id:'synthetic-owner',school_id:'synthetic-workspace',role:'owner',name:'Test owner'}}/>);`;
 const bundle=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'synthetic-chat',enforce:'pre',resolveId(id){if(id.endsWith('virtual:chat-fixture'))return '\0chat-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0synthetic-client';},load(id){if(id==='\0chat-fixture.jsx')return entry;if(id==='\0synthetic-client')return stub;}}],build:{write:false,minify:false,lib:{entry:'virtual:chat-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});
 const output=(Array.isArray(bundle)?bundle[0]:bundle).output;
 const script=output.find(o=>o.type==='chunk').code;
@@ -35,7 +35,7 @@ try{
   await page.setContent('<!doctype html><html><head><style>*{box-sizing:border-box}body{margin:0}#shell-header{height:49px}#root{min-width:0}</style></head><body><header id="shell-header">Synthetic workspace shell · JD Assistant</header><main id="root"></main></body></html>');
   await page.addStyleTag({content:css});
   await page.addScriptTag({content:script,type:'module'});
-  await page.locator('.jd-top').waitFor({state:'visible'});await page.locator('.jd-top .jd-icon-btn').click();
+  await page.getByRole('button',{name:/Synthetic capability report/}).waitFor({state:'visible'});
   await page.getByRole('button',{name:/Synthetic capability report/}).click();
   await page.locator('.jd-table').waitFor();
   const measure=()=>page.evaluate(()=>{
