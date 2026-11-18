@@ -1,0 +1,61 @@
+# One-shot owner-requested token rollout to the previously confirmed test DB.
+# No database push, secret updates, runtime worker invocation or new services.
+name: Deploy approved token popup backend
+on:
+  push:
+    branches: [arena/915cabf4-james-denning]
+    paths: [.github/workflows/token-testdb-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: supabase-jd-backend-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: startsWith(github.event.head_commit.message, 'Deploy approved token popup backend')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3dbacea77a6773f06559f36272784f5b3f633acf
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:connector-tokens
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 3.2.0
+      - name: Deploy only the pinned gateway with existing JWT setting
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          if ! supabase functions deploy jd-connect --use-api --remote=thklwiybjuhrjqrrxyid --yes > deploy-output.log 2>&1; then
+            node --input-type=module -e "import fs from 'node:fs'; let text=fs.readFileSync('deploy-output.log','utf8').replaceAll(process.env.SUPABASE_ACCESS_TOKEN,'[REDACTED]'); console.log('::error::'+text.slice(-2500).replaceAll('%','%25').replaceAll('\\r','%0D').replaceAll('\\n','%0A'));"
+            exit 1
+          fi
+      - name: Live credential-free gateway smoke checks
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const url='https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/jd-connect';
+          const cases=[['GET',null,405],['OPTIONS',null,200],['POST',{action:'servers.token_setup',providerId:'github'},401],['POST',{action:'servers.token_connect',providerId:'github',confirm:true},401],['POST',{action:'servers.token_connect',providerId:'github',confirm:true},401,'invalid-test-jwt']];
+          const checks=[];
+          for(const [method,body,expected,jwt] of cases){
+            const r=await fetch(url,{method,headers:{Origin:'https://james-denning.com.ng','Content-Type':'application/json',...(jwt?{Authorization:'Bearer '+jwt}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(45000)});
+            const text=await r.text();checks.push({method,action:body?.action,invalidJwt:Boolean(jwt),expected,actual:r.status,cors:r.headers.get('access-control-allow-origin'),pass:r.status===expected&&!text.includes('BOOT_ERROR')});
+          }
+          fs.writeFileSync('token-http-smoke.json',JSON.stringify(checks,null,2));console.log('::notice::'+JSON.stringify({checks}));
+          if(checks.some(c=>!c.pass))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: token-backend-http-smoke
+          path: token-http-smoke.json
+          retention-days: 30
