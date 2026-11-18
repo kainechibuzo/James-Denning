@@ -7,7 +7,14 @@
     "sourceUrl": "https://github.com/ckalima/pipedrive-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.pipedrive.ai/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Pipedrive sign-in",
+      "docsUrl": "https://support.pipedrive.com/en/article/mcp-chatgpt",
+      "note": "Uses the provider-hosted Pipedrive server. Provider sign-in is not yet available in JD."
+    }
   },
   {
     "id": "zendesk",
@@ -17,7 +24,14 @@
     "sourceUrl": "https://github.com/michaelrice/zendesk-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/michaelrice/zendesk-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "freshdesk",
@@ -27,7 +41,14 @@
     "sourceUrl": "https://github.com/effytech/freshdesk_mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/effytech/freshdesk_mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "attio",
@@ -37,7 +58,14 @@
     "sourceUrl": "https://github.com/hmk/attio-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/hmk/attio-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "apollo",
@@ -47,7 +75,14 @@
     "sourceUrl": "https://github.com/louis030195/apollo-io-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/louis030195/apollo-io-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "shopify-storefront",
@@ -57,7 +92,14 @@
     "sourceUrl": "https://github.com/QuentinCody/shopify-storefront-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/QuentinCody/shopify-storefront-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "woocommerce",
@@ -67,7 +109,14 @@
     "sourceUrl": "https://github.com/wppoland/woocommerce-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/wppoland/woocommerce-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "xero",
@@ -77,7 +126,14 @@
     "sourceUrl": "https://github.com/XeroAPI/xero-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/XeroAPI/xero-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "bankstatemently",
@@ -87,7 +143,14 @@
     "sourceUrl": "https://github.com/bankstatemently/plugins",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://api.bankstatemently.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "unsupported",
+      "credentialLabel": "X-API-Key",
+      "docsUrl": "https://github.com/bankstatemently/plugins",
+      "note": "This endpoint requires X-API-Key or provider sign-in. JD currently sends only Bearer tokens; this authentication method is not supported yet."
+    }
   },
   {
     "id": "invoice-maker",
@@ -97,7 +160,14 @@
     "sourceUrl": "https://github.com/InnarM/blank-invoice-maker-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/InnarM/blank-invoice-maker-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "camt-053-statements",
@@ -107,7 +177,14 @@
     "sourceUrl": "https://github.com/sebastienrousseau/camt053-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/sebastienrousseau/camt053-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "synder-importer",
@@ -117,7 +194,14 @@
     "sourceUrl": "https://github.com/SynderAccounting/gl-importer-plugin",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/SynderAccounting/gl-importer-plugin",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "slack",
@@ -127,7 +211,14 @@
     "sourceUrl": "https://github.com/korotovsky/slack-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.slack.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Slack app sign-in",
+      "docsUrl": "https://docs.slack.dev/ai/slack-mcp-server/",
+      "note": "Requires a registered internal or Marketplace Slack app and provider OAuth. JD does not yet implement this flow."
+    }
   },
   {
     "id": "microsoft-teams",
@@ -137,7 +228,14 @@
     "sourceUrl": "https://github.com/InditexTech/mcp-teams-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/InditexTech/mcp-teams-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "gmail",
@@ -147,7 +245,14 @@
     "sourceUrl": "https://github.com/A1-x-Tech/mcp-google-gmail",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/A1-x-Tech/mcp-google-gmail",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "outlook",
@@ -157,7 +262,14 @@
     "sourceUrl": "https://github.com/dockndevai/mcp-outlook",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/dockndevai/mcp-outlook",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "google-calendar",
@@ -167,7 +279,14 @@
     "sourceUrl": "https://github.com/takumi0706/google-calendar-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/takumi0706/google-calendar-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "resend",
@@ -177,7 +296,14 @@
     "sourceUrl": "https://github.com/helbertparanhos/resend-email-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.resend.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Resend API key",
+      "docsUrl": "https://github.com/resend/resend-mcp",
+      "note": "Uses the provider-hosted Resend server, not the community implementation. Use a scoped Resend API key; sending email requires explicit authorization."
+    }
   },
   {
     "id": "sendgrid",
@@ -187,7 +313,14 @@
     "sourceUrl": "https://github.com/Choppaaahh/sendgrid-mcp-secure",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/Choppaaahh/sendgrid-mcp-secure",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "mailchimp",
@@ -197,7 +330,14 @@
     "sourceUrl": "https://github.com/damientilman/mailchimp-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/damientilman/mailchimp-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "discord",
@@ -207,7 +347,14 @@
     "sourceUrl": "https://github.com/jaimenbell/discord-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/jaimenbell/discord-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "google-chat",
@@ -217,7 +364,14 @@
     "sourceUrl": "https://github.com/A1-x-Tech/mcp-google-chat",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/A1-x-Tech/mcp-google-chat",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "notion",
@@ -227,7 +381,14 @@
     "sourceUrl": "https://github.com/Grey-Iris/easy-notion-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.notion.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Notion sign-in",
+      "docsUrl": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
+      "note": "Provider OAuth sign-in is not yet available in JD. A Notion integration token is not a substitute for the hosted-server sign-in."
+    }
   },
   {
     "id": "asana",
@@ -237,7 +398,14 @@
     "sourceUrl": "https://github.com/roychri/mcp-server-asana",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.asana.com/v2/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Asana sign-in",
+      "docsUrl": "https://developers.asana.com/docs/using-asanas-mcp-server",
+      "note": "Requires provider OAuth sign-in and may require a registered client. JD does not yet implement this sign-in flow."
+    }
   },
   {
     "id": "linear",
@@ -247,7 +415,14 @@
     "sourceUrl": "https://github.com/tacticlaunch/mcp-linear",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.linear.app/mcp/readonly",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Linear API key",
+      "docsUrl": "https://linear.app/docs/mcp",
+      "note": "Read-only hosted endpoint. Use a scoped Linear API key. This uses the provider server rather than the community implementation."
+    }
   },
   {
     "id": "clickup",
@@ -257,7 +432,14 @@
     "sourceUrl": "https://github.com/nicholasbester/clickup-cli",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.clickup.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "ClickUp sign-in",
+      "docsUrl": "https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server",
+      "note": "ClickUp only supports OAuth here, not API keys. Provider sign-in is not yet available in JD."
+    }
   },
   {
     "id": "trello",
@@ -267,7 +449,14 @@
     "sourceUrl": "https://github.com/agrath/Trello-Desktop-MCP",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/agrath/Trello-Desktop-MCP",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "todoist",
@@ -277,7 +466,14 @@
     "sourceUrl": "https://github.com/christulino/todoist-v1-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://ai.todoist.net/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Todoist sign-in",
+      "docsUrl": "https://github.com/Doist/todoist-ai",
+      "note": "Uses the provider-hosted Todoist server instead of the community implementation. Provider OAuth sign-in is not yet available in JD."
+    }
   },
   {
     "id": "airtable",
@@ -287,7 +483,14 @@
     "sourceUrl": "https://github.com/domdomegg/airtable-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.airtable.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Airtable personal access token",
+      "docsUrl": "https://airtable.com/developers/agents/mcp/other",
+      "note": "Use an Airtable personal access token scoped to the required bases and permissions. This uses the provider-hosted server."
+    }
   },
   {
     "id": "confluence",
@@ -297,7 +500,14 @@
     "sourceUrl": "https://github.com/aashari/mcp-server-atlassian-confluence",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Atlassian sign-in",
+      "docsUrl": "https://support.atlassian.com/atlassian-ai-gateway/docs/get-started-with-the-atlassian-remote-mcp-server/",
+      "note": "The shared Atlassian endpoint covers multiple products. JD does not yet implement its OAuth sign-in or alternative API-token authentication. Do not register it twice for Jira and Confluence."
+    }
   },
   {
     "id": "jira",
@@ -307,7 +517,14 @@
     "sourceUrl": "https://github.com/aashari/mcp-server-atlassian-jira",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Atlassian sign-in",
+      "docsUrl": "https://support.atlassian.com/atlassian-ai-gateway/docs/get-started-with-the-atlassian-remote-mcp-server/",
+      "note": "The shared Atlassian endpoint covers multiple products. JD does not yet implement its OAuth sign-in or alternative API-token authentication. Do not register it twice for Jira and Confluence."
+    }
   },
   {
     "id": "google-tasks",
@@ -317,7 +534,14 @@
     "sourceUrl": "https://github.com/arpitbatra123/mcp-googletasks",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/arpitbatra123/mcp-googletasks",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "github",
@@ -327,7 +551,14 @@
     "sourceUrl": "https://github.com/github/github-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://api.githubcopilot.com/mcp/",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "GitHub personal access token",
+      "docsUrl": "https://github.com/github/github-mcp-server",
+      "note": "Use a GitHub personal access token with only the repositories and scopes needed. GitHub Enterprise may require a different endpoint."
+    }
   },
   {
     "id": "gitlab",
@@ -337,7 +568,14 @@
     "sourceUrl": "https://github.com/jmrplens/gitlab-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/jmrplens/gitlab-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "supabase",
@@ -347,7 +585,14 @@
     "sourceUrl": "https://github.com/supabase-community/supabase-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.supabase.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Supabase personal access token",
+      "docsUrl": "https://github.com/supabase-community/supabase-mcp",
+      "note": "Use a scoped personal access token, not an anon or service-role key. Add project_ref and read_only=true to limit access. Prefer a non-production project."
+    }
   },
   {
     "id": "neon",
@@ -357,7 +602,14 @@
     "sourceUrl": "https://github.com/neondatabase/mcp-server-neon",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.neon.tech/mcp?readonly=true",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Neon API key",
+      "docsUrl": "https://github.com/neondatabase/mcp-server-neon",
+      "note": "Read-only endpoint by default. Use a scoped Neon API key; add a projectId parameter to limit the project."
+    }
   },
   {
     "id": "redis",
@@ -367,7 +619,14 @@
     "sourceUrl": "https://github.com/redis/mcp-redis",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/redis/mcp-redis",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "cloudflare",
@@ -377,7 +636,14 @@
     "sourceUrl": "https://github.com/cloudflare/mcp-server-cloudflare",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.cloudflare.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Cloudflare API token",
+      "docsUrl": "https://github.com/cloudflare/mcp",
+      "note": "Uses the provider-hosted Cloudflare API server. Create a least-privilege Cloudflare API token. OAuth sign-in is not implemented in JD."
+    }
   },
   {
     "id": "sentry",
@@ -387,7 +653,14 @@
     "sourceUrl": "https://github.com/getsentry/sentry-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.sentry.dev/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "unsupported",
+      "credentialLabel": "Sentry-Bearer",
+      "docsUrl": "https://github.com/getsentry/sentry-mcp",
+      "note": "Sentry API tokens require the Sentry-Bearer scheme, not ordinary Bearer. JD has not implemented this scheme or provider OAuth sign-in."
+    }
   },
   {
     "id": "playwright",
@@ -397,7 +670,14 @@
     "sourceUrl": "https://github.com/microsoft/playwright-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/microsoft/playwright-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "azure",
@@ -407,7 +687,14 @@
     "sourceUrl": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "markitdown",
@@ -417,7 +704,14 @@
     "sourceUrl": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "postgresql",
@@ -427,7 +721,14 @@
     "sourceUrl": "https://github.com/crystaldba/postgres-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/crystaldba/postgres-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "mongodb-lens",
@@ -437,7 +738,14 @@
     "sourceUrl": "https://github.com/furey/mongodb-lens",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/furey/mongodb-lens",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "snowflake",
@@ -447,7 +755,14 @@
     "sourceUrl": "https://github.com/isaacwasserman/mcp-snowflake-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/isaacwasserman/mcp-snowflake-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "clickhouse",
@@ -457,7 +772,14 @@
     "sourceUrl": "https://github.com/ClickHouse/mcp-clickhouse",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/ClickHouse/mcp-clickhouse",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "bigquery",
@@ -467,7 +789,14 @@
     "sourceUrl": "https://github.com/ergut/mcp-bigquery-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/ergut/mcp-bigquery-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "databricks",
@@ -477,7 +806,14 @@
     "sourceUrl": "https://github.com/JordiNeil/mcp-databricks-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/JordiNeil/mcp-databricks-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "metabase",
@@ -487,7 +823,14 @@
     "sourceUrl": "https://github.com/1luvc0d3/metabase-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/1luvc0d3/metabase-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "duckdb",
@@ -497,7 +840,14 @@
     "sourceUrl": "https://github.com/ktanaka101/mcp-server-duckdb",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/ktanaka101/mcp-server-duckdb",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "sqlite",
@@ -507,7 +857,14 @@
     "sourceUrl": "https://github.com/jparkerweb/mcp-sqlite",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/jparkerweb/mcp-sqlite",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "qdrant",
@@ -517,7 +874,14 @@
     "sourceUrl": "https://github.com/qdrant/mcp-server-qdrant",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/qdrant/mcp-server-qdrant",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "brave-search",
@@ -527,7 +891,14 @@
     "sourceUrl": "https://github.com/brave/brave-search-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/brave/brave-search-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "exa",
@@ -537,7 +908,14 @@
     "sourceUrl": "https://github.com/exa-labs/exa-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.exa.ai/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "optional_bearer",
+      "credentialLabel": "Exa API key",
+      "docsUrl": "https://github.com/exa-labs/exa-mcp-server",
+      "note": "Anonymous access is rate-limited. Add an Exa API key for higher limits and authenticated tools."
+    }
   },
   {
     "id": "firecrawl",
@@ -547,7 +925,14 @@
     "sourceUrl": "https://github.com/firecrawl/firecrawl-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.firecrawl.dev/v2/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "optional_bearer",
+      "credentialLabel": "Firecrawl API key",
+      "docsUrl": "https://github.com/firecrawl/firecrawl-mcp-server",
+      "note": "The keyless tier has limited tools and rate limits. Add a Firecrawl API key for authenticated features; provider charges may apply."
+    }
   },
   {
     "id": "tavily",
@@ -557,7 +942,14 @@
     "sourceUrl": "https://github.com/Tomatio13/mcp-server-tavily",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/Tomatio13/mcp-server-tavily",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "perplexity",
@@ -567,7 +959,14 @@
     "sourceUrl": "https://github.com/tanigami/mcp-server-perplexity",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/tanigami/mcp-server-perplexity",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "apify",
@@ -577,7 +976,14 @@
     "sourceUrl": "https://github.com/apify/actors-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.apify.com",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Apify API token",
+      "docsUrl": "https://github.com/apify/actors-mcp-server",
+      "note": "Use an Apify API token. Running Actors can incur charges. Review discovered tools before granting access."
+    }
   },
   {
     "id": "context7",
@@ -587,7 +993,14 @@
     "sourceUrl": "https://github.com/upstash/context7",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.context7.com/mcp",
+    "connection": {
+      "kind": "hosted",
+      "auth": "bearer",
+      "credentialLabel": "Context7 API key",
+      "docsUrl": "https://github.com/upstash/context7",
+      "note": "Use a Context7 API key in the secure token field. Review the provider documentation for current usage limits."
+    }
   },
   {
     "id": "arxiv",
@@ -597,7 +1010,14 @@
     "sourceUrl": "https://github.com/blazickjp/arxiv-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/blazickjp/arxiv-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "searxng",
@@ -607,7 +1027,14 @@
     "sourceUrl": "https://github.com/ihor-sokoliuk/mcp-searxng",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/ihor-sokoliuk/mcp-searxng",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "trackmage",
@@ -617,7 +1044,14 @@
     "sourceUrl": "https://github.com/trackmage/trackmage-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/trackmage/trackmage-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "stadia-maps",
@@ -627,7 +1061,14 @@
     "sourceUrl": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/stadiamaps/stadiamaps-mcp-server-ts",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "openstreetmap",
@@ -637,7 +1078,14 @@
     "sourceUrl": "https://github.com/jagan-shanmugam/open-streetmap-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/jagan-shanmugam/open-streetmap-mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "google-maps-via-hasdata",
@@ -647,7 +1095,14 @@
     "sourceUrl": "https://github.com/HasData/google-maps-mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.hasdata.com/mcp?apis=google_maps",
+    "connection": {
+      "kind": "hosted",
+      "auth": "unsupported",
+      "credentialLabel": "x-api-key",
+      "docsUrl": "https://github.com/HasData/google-maps-mcp",
+      "note": "Hosted by HasData, not Google. Requires x-api-key or provider sign-in, which JD does not yet support."
+    }
   },
   {
     "id": "weatherapi",
@@ -657,7 +1112,14 @@
     "sourceUrl": "https://github.com/devilcoder01/weather-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/devilcoder01/weather-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "nigeria-postcodes",
@@ -667,7 +1129,14 @@
     "sourceUrl": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/Adeniyikayodee/ng-postcode/tree/main/mcp",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "timezone-tools",
@@ -677,7 +1146,14 @@
     "sourceUrl": "https://github.com/SecretiveShell/MCP-timeserver",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/SecretiveShell/MCP-timeserver",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "ip-find",
@@ -687,7 +1163,14 @@
     "sourceUrl": "https://github.com/ipfind/ipfind-mcp-server",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": null,
+    "connection": {
+      "kind": "manual",
+      "auth": "custom",
+      "credentialLabel": "Bearer token",
+      "docsUrl": "https://github.com/ipfind/ipfind-mcp-server",
+      "note": "No shared hosted URL has been verified for this listing. Use the project setup guide to obtain or deploy your own HTTPS MCP endpoint. A repository URL is not an MCP endpoint."
+    }
   },
   {
     "id": "ip2location",
@@ -697,6 +1180,30 @@
     "sourceUrl": "https://github.com/ip2location/mcp-ip2location-io",
     "listingStatus": "community_listed",
     "compatibility": "not_verified",
-    "endpoint": null
+    "endpoint": "https://mcp.ip2location.io/",
+    "connection": {
+      "kind": "hosted",
+      "auth": "unsupported",
+      "credentialLabel": "X-API-Key",
+      "docsUrl": "https://github.com/ip2location/mcp-ip2location-io",
+      "note": "Requires the X-API-Key header. JD currently sends only Bearer tokens; this header is not supported yet."
+    }
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel",
+    "category": "Engineering & cloud",
+    "description": "Projects, deployments and deployment logs",
+    "sourceUrl": "https://vercel.com/docs/agent-resources/vercel-mcp",
+    "listingStatus": "provider_documented",
+    "compatibility": "not_verified",
+    "endpoint": "https://mcp.vercel.com",
+    "connection": {
+      "kind": "hosted",
+      "auth": "oauth",
+      "credentialLabel": "Vercel sign-in",
+      "docsUrl": "https://vercel.com/docs/agent-resources/vercel-mcp",
+      "note": "Official Vercel MCP requires OAuth with CIMD or a reviewed client. JD\u2019s remote-MCP gateway does not yet implement this sign-in. A Vercel API token is not a substitute. Production deployments require explicit approval."
+    }
   }
 ]

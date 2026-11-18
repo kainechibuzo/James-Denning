@@ -1,0 +1,424 @@
+
+> james-denning@1.0.0 test:work-apps
+> node --experimental-strip-types --test scripts/test-workspace-apps.mjs scripts/test-workspace-apps-database.mjs scripts/test-workspace-oauth-endpoint.mjs
+
+TAP version 13
+# Subtest: old identity connections have empty app selection, never an implicit new grant
+ok 1 - old identity connections have empty app selection, never an implicit new grant
+  ---
+  duration_ms: 1297.000209
+  type: 'test'
+  ...
+# Subtest: state consumption returns stored app selection once and rejects expired/replayed state
+ok 2 - state consumption returns stored app selection once and rejects expired/replayed state
+  ---
+  duration_ms: 10.358095
+  type: 'test'
+  ...
+# Subtest: anon: new state RPC not executable by clients
+ok 3 - anon: new state RPC not executable by clients
+  ---
+  duration_ms: 2.781701
+  type: 'test'
+  ...
+# Subtest: authenticated: new state RPC not executable by clients
+ok 4 - authenticated: new state RPC not executable by clients
+  ---
+  duration_ms: 1.792788
+  type: 'test'
+  ...
+# Subtest: database blocks concurrent OAuth upsert from replacing another active account owner
+ok 5 - database blocks concurrent OAuth upsert from replacing another active account owner
+  ---
+  duration_ms: 10.377625
+  type: 'test'
+  ...
+# Subtest: explicit local disconnect allows a new owner, without inheriting previous app selection
+ok 6 - explicit local disconnect allows a new owner, without inheriting previous app selection
+  ---
+  duration_ms: 3.003812
+  type: 'test'
+  ...
+# (node:7788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-workspace-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+ok 7 - shortlist has every agreed app once, and no duplicate legacy Gmail/Teams entries
+  ---
+  duration_ms: 1.203856
+  type: 'test'
+  ...
+# Subtest: google-workspace: least-privilege selected scopes only, no write scopes
+ok 8 - google-workspace: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 1.134024
+  type: 'test'
+  ...
+# Subtest: microsoft-365: least-privilege selected scopes only, no write scopes
+ok 9 - microsoft-365: least-privilege selected scopes only, no write scopes
+  ---
+  duration_ms: 0.46163
+  type: 'test'
+  ...
+# Subtest: gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 10 - gmail: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.822444
+  type: 'test'
+  ...
+# Subtest: google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 11 - google-drive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.273985
+  type: 'test'
+  ...
+# Subtest: google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 12 - google-sheets: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.273636
+  type: 'test'
+  ...
+# Subtest: google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 13 - google-docs: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.186129
+  type: 'test'
+  ...
+# Subtest: google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 14 - google-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.247542
+  type: 'test'
+  ...
+# Subtest: outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 15 - outlook: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.229802
+  type: 'test'
+  ...
+# Subtest: onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 16 - onedrive: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.333435
+  type: 'test'
+  ...
+# Subtest: excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 17 - excel: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.148723
+  type: 'test'
+  ...
+# Subtest: word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 18 - word: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.161076
+  type: 'test'
+  ...
+# Subtest: outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 19 - outlook-calendar: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.184778
+  type: 'test'
+  ...
+# Subtest: microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+ok 20 - microsoft-teams: fixed HTTPS GET endpoint and consent/owner/expiry gates
+  ---
+  duration_ms: 0.065572
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+ok 21 - untrusted route arguments fail before DB/network: {"url":"https://evil.test"}
+  ---
+  duration_ms: 0.373258
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"method":"POST"}
+ok 22 - untrusted route arguments fail before DB/network: {"method":"POST"}
+  ---
+  duration_ms: 0.079713
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"action":"send"}
+ok 23 - untrusted route arguments fail before DB/network: {"action":"send"}
+  ---
+  duration_ms: 0.064
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+ok 24 - untrusted route arguments fail before DB/network: {"resourceId":"../other"}
+  ---
+  duration_ms: 0.140912
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+ok 25 - untrusted route arguments fail before DB/network: {"resourceId":"a/b"}
+  ---
+  duration_ms: 0.088254
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+ok 26 - untrusted route arguments fail before DB/network: {"resourceId":"a?token=x"}
+  ---
+  duration_ms: 0.78118
+  type: 'test'
+  ...
+# Subtest: untrusted route arguments fail before DB/network: {"resourceId":".."}
+ok 27 - untrusted route arguments fail before DB/network: {"resourceId":".."}
+  ---
+  duration_ms: 0.134997
+  type: 'test'
+  ...
+# Subtest: staff: API and actual runtime reject reads before credential lookup
+ok 28 - staff: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.529643
+  type: 'test'
+  ...
+# Subtest: viewer: API and actual runtime reject reads before credential lookup
+ok 29 - viewer: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.234936
+  type: 'test'
+  ...
+# Subtest: contractor: API and actual runtime reject reads before credential lookup
+ok 30 - contractor: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.130625
+  type: 'test'
+  ...
+# Subtest: finance: API and actual runtime reject reads before credential lookup
+ok 31 - finance: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.106751
+  type: 'test'
+  ...
+# Subtest: unknown: API and actual runtime reject reads before credential lookup
+ok 32 - unknown: API and actual runtime reject reads before credential lookup
+  ---
+  duration_ms: 0.100218
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"connected_by":"other"}
+ok 33 - no provider call with absent permission: {"connected_by":"other"}
+  ---
+  duration_ms: 0.307029
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"scopes":[]}
+ok 34 - no provider call with absent permission: {"scopes":[]}
+  ---
+  duration_ms: 0.118646
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"enabled_read_services":[]}
+ok 35 - no provider call with absent permission: {"enabled_read_services":[]}
+  ---
+  duration_ms: 0.113534
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"status":"revoked"}
+ok 36 - no provider call with absent permission: {"status":"revoked"}
+  ---
+  duration_ms: 0.09061
+  type: 'test'
+  ...
+# Subtest: no provider call with absent permission: {"token_expires_at":null}
+ok 37 - no provider call with absent permission: {"token_expires_at":null}
+  ---
+  duration_ms: 0.088402
+  type: 'test'
+  ...
+# Subtest: actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+ok 38 - actual adapter decrypts only server-side, scopes tenant and owner, audits before bounded GET
+  ---
+  duration_ms: 46.594693
+  type: 'test'
+  ...
+# Subtest: audit failure means no external request
+ok 39 - audit failure means no external request
+  ---
+  duration_ms: 3.891092
+  type: 'test'
+  ...
+# Subtest: HTTP 401 remains failure without provider error/secret leakage
+ok 40 - HTTP 401 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 5.93756
+  type: 'test'
+  ...
+# Subtest: HTTP 403 remains failure without provider error/secret leakage
+ok 41 - HTTP 403 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 1.418585
+  type: 'test'
+  ...
+# Subtest: HTTP 429 remains failure without provider error/secret leakage
+ok 42 - HTTP 429 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 2.050839
+  type: 'test'
+  ...
+# Subtest: HTTP 500 remains failure without provider error/secret leakage
+ok 43 - HTTP 500 remains failure without provider error/secret leakage
+  ---
+  duration_ms: 0.947863
+  type: 'test'
+  ...
+# Subtest: provider response body limit enforced
+ok 44 - provider response body limit enforced
+  ---
+  duration_ms: 4.943289
+  type: 'test'
+  ...
+# Subtest: Gmail projection excludes raw body, attachments and provider error fields
+ok 45 - Gmail projection excludes raw body, attachments and provider error fields
+  ---
+  duration_ms: 0.251931
+  type: 'test'
+  ...
+# Subtest: Sheets output is row/column/cell bounded, Docs output is text only
+ok 46 - Sheets output is row/column/cell bounded, Docs output is text only
+  ---
+  duration_ms: 0.416733
+  type: 'test'
+  ...
+# Subtest: provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+ok 47 - provider redirect allowlist blocks arbitrary destinations and missing PKCE/state
+  ---
+  duration_ms: 0.218332
+  type: 'test'
+  ...
+# Subtest: runtime inventory exposes both read tools, catalog contains no credential columns
+ok 48 - runtime inventory exposes both read tools, catalog contains no credential columns
+  ---
+  duration_ms: 0.560868
+  type: 'test'
+  ...
+# (node:7800) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-oauth-crypto.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+ok 49 - OAuth start stores encrypted PKCE and selected apps server-side; no token or code-verifier in response
+  ---
+  duration_ms: 15.205709
+  type: 'test'
+  ...
+# Subtest: invalid selection undefined never issues OAuth state
+ok 50 - invalid selection undefined never issues OAuth state
+  ---
+  duration_ms: 0.875026
+  type: 'test'
+  ...
+# Subtest: invalid selection [] never issues OAuth state
+ok 51 - invalid selection [] never issues OAuth state
+  ---
+  duration_ms: 0.656514
+  type: 'test'
+  ...
+# Subtest: invalid selection ["outlook"] never issues OAuth state
+ok 52 - invalid selection ["outlook"] never issues OAuth state
+  ---
+  duration_ms: 0.63396
+  type: 'test'
+  ...
+# Subtest: invalid selection ["send"] never issues OAuth state
+ok 53 - invalid selection ["send"] never issues OAuth state
+  ---
+  duration_ms: 0.774271
+  type: 'test'
+  ...
+# Subtest: invalid selection ["__proto__"] never issues OAuth state
+ok 54 - invalid selection ["__proto__"] never issues OAuth state
+  ---
+  duration_ms: 0.464902
+  type: 'test'
+  ...
+# Subtest: missing provider secret and another active account owner block new OAuth state
+ok 55 - missing provider secret and another active account owner block new OAuth state
+  ---
+  duration_ms: 1.184283
+  type: 'test'
+  ...
+# Subtest: staff: handler fails before service or OAuth calls
+ok 56 - staff: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.181086
+  type: 'test'
+  ...
+# Subtest: viewer: handler fails before service or OAuth calls
+ok 57 - viewer: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.425967
+  type: 'test'
+  ...
+# Subtest: contractor: handler fails before service or OAuth calls
+ok 58 - contractor: handler fails before service or OAuth calls
+  ---
+  duration_ms: 1.043691
+  type: 'test'
+  ...
+# Subtest: invalid JWT cannot load workspace provider metadata
+ok 59 - invalid JWT cannot load workspace provider metadata
+  ---
+  duration_ms: 0.462261
+  type: 'test'
+  ...
+# Subtest: owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+ok 60 - owner workspace actions retain verified actor and tenant, without widening unrelated business APIs
+  ---
+  duration_ms: 0.862527
+  type: 'test'
+  ...
+# Subtest: legacy refresh/verify/disconnect cannot manage another person’s Google account
+ok 61 - legacy refresh/verify/disconnect cannot manage another person’s Google account
+  ---
+  duration_ms: 1.106616
+  type: 'test'
+  ...
+# Subtest: local disconnect erases selection and credentials only for current workspace and actor
+ok 62 - local disconnect erases selection and credentials only for current workspace and actor
+  ---
+  duration_ms: 0.799859
+  type: 'test'
+  ...
+# Subtest: callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+ok 63 - callback rechecks membership then persists encrypted credentials with stored, not URL-supplied, apps
+  ---
+  duration_ms: 15.821908
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":null}
+ok 64 - callback invalid state or changed membership rejects before token exchange: {"state":null}
+  ---
+  duration_ms: 0.889259
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\x9a75104c368f8f8951a736b11f1c3fa244e60933563922a10fc96904496d358ad01d386f676e31d0b7412f2916e4"},"school":"moved-workspace"}
+ok 65 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\x9a75104c368f8f8951a736b11f1c3fa244e60933563922a10fc96904496d358ad01d386f676e31d0b7412f2916e4"},"school":"moved-workspace"}
+  ---
+  duration_ms: 2.801232
+  type: 'test'
+  ...
+# Subtest: callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\x9a75104c368f8f8951a736b11f1c3fa244e60933563922a10fc96904496d358ad01d386f676e31d0b7412f2916e4"},"role":"viewer"}
+ok 66 - callback invalid state or changed membership rejects before token exchange: {"state":{"id":"state-id","school_id":"workspace","actor_id":"actor","provider_id":"google-workspace","redirect_uri":"https://supabase.example.test/functions/v1/jd-business-oauth-callback","enabled_read_services":["gmail"],"pkce_verifier_encrypted":"\\\\x9a75104c368f8f8951a736b11f1c3fa244e60933563922a10fc96904496d358ad01d386f676e31d0b7412f2916e4"},"role":"viewer"}
+  ---
+  duration_ms: 0.668811
+  type: 'test'
+  ...
+# Subtest: provider denial consumes state but never stores credentials
+ok 67 - provider denial consumes state but never stores credentials
+  ---
+  duration_ms: 0.853849
+  type: 'test'
+  ...
+1..67
+# tests 67
+# suites 0
+# pass 67
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1928.165062

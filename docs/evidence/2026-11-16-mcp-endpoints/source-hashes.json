@@ -1,0 +1,10 @@
+{
+  "src/connectors/catalogue.json": "ca61d6a3ffd3d588c9475c66968f76d9fc0a646259f953a7121e9f595bdb5cee",
+  "src/connectors/catalogue.mjs": "0a33226abcdc71f39b9916f0f84e668d05dd120d4e77842cff6136486e68461f",
+  "src/connectors/ConnectorDirectory.jsx": "f254a59d8edd7c3d5dfcf12eb0316a524560de184cac277f0a69cc1a8af6e8d8",
+  "src/connectors/connectors.css": "30516b8085c4012cc24ed5e2c490e1060576cad67db55be05cbe92462dcf2cf9",
+  "src/components/jd-connect/JDConnectPanel.jsx": "6ed5dd3991e462a112cbd3126423b4af3ce1e9caeb4532c9a75a5d250d2d8a30",
+  "scripts/test-composer-connectors.mjs": "b653153ef4ff865ddd61c99be18d4c9493ebde01ce5de18582b2980603994f73",
+  "scripts/test-composer-connectors-layout.mjs": "6076788e3140c8ebc3c5caf923bd46c79b521c0c464ba449dc1c453f423a45ab",
+  "scripts/fixtures/site-ui-client.mjs": "de09a26b76e0fab600e5da8c3ba60ab835280a4882494d64168dde7ce65f1d6d"
+}

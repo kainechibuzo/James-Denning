@@ -1,0 +1,211 @@
+[
+  {
+    "id": "cloudflare",
+    "endpoint": "https://mcp.cloudflare.com/mcp",
+    "auth": "bearer",
+    "source": "https://github.com/cloudflare/mcp",
+    "excerpt": "## Get Started\n\nMCP URL: `https://mcp.cloudflare.com/mcp`\n\n### Option 1: OAuth (Recommended)\n\n### Option 1: OAuth (Recommended)\n| Bearer Token | Your [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens) |\nWhen Cloudflare refuses a call because the OAuth connection lacks a scope, the server asks the client to re-authorize with that scope added to the ones it already has. Claude and other clients that follow the [MCP authorization spec](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization#scope-challenge-handling) get a `403 insufficient_scope` challenge. Codex and ChatGPT get it in the tool result, which is where they look for it. Either way, the tool error says which scope is missing. Some endpoints, such as `GET /zones`, don't refuse: they answer with an empty list when the scope is missing. An empty list from a read the connection holds no accepted scope for is refused the same way, so it isn't mistaken for an empty account.",
+    "readmeSha256": "b654557f8d597814139668e170babde24228e74e4dad70b9b83a9b5754af1760",
+    "runtimeVerified": false
+  },
+  {
+    "id": "github",
+    "endpoint": "https://api.githubcopilot.com/mcp/",
+    "auth": "bearer",
+    "source": "https://github.com/github/github-mcp-server",
+    "excerpt": "    \"github\": {\n      \"type\": \"http\",\n      \"url\": \"https://api.githubcopilot.com/mcp/\"\n    }\n  }\n}\nFor quick installation, use one of the one-click install buttons above. Once you complete that flow, toggle Agent mode (located by the Copilot Chat text input) and the server will start. Make sure you're using [VS Code 1.101](https://code.visualstudio.com/updates/v1_101) or [later](https://code.visualstudio.com/updates) for remote MCP and OAuth support.\n<tr><th>Using OAuth</th><th>Using a GitHub PAT</th></tr>\n        \"Authorization\": \"Bearer ${input:github_mcp_pat}\"\n> **Note:** Each MCP host application needs to configure a GitHub App or OAuth App to support remote access via OAuth. Any host application that supports remote MCP servers should support the remote GitHub server with PAT authentication. Configuration details and support levels vary by host. Make sure to refer to the host application's documentation for more info.\n        \"Authorization\": \"Bearer ${input:github_mcp_pat}\"\n> **Note:** When using OAuth with GitHub Enterprise with VS Code and GitHub Copilot, you also need to configure your VS Code settings to point to your GitHub Enterprise instance - see [Authenticate from VS Code](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/configure-personal-settings/authenticate-to-ghecom)\n3. **Authentication.** On github.com you don't need to create anything up front — the one-click buttons above log you in with OAuth on first use (a browser-based flow; the token is kept in memory only). The Docker buttons publish a fixed callback port (`127.0.0.1:8085`) so the container's login callback is reachable. See **[Local Server OAuth Login](docs/oauth-login.md)** for how it works, headless/device-code fallback, and bringing your own OAuth or GitHub App (required for GitHub Enterprise Server and `ghe.com`).\n   Prefer a token? You can still authenticate with a [GitHub Personal Access Token](https://github.com/settings/personal-access-tokens/new) by setting `GITHUB_PERSONAL_ACCESS_TOKEN` instead (it takes precedence over OAuth). The MCP server can use many of the GitHub APIs, so enable the permissions that you feel comfortable granting your AI tools (to learn more about access tokens, please check out the [documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)).\n**Log in with OAuth (no token to create or store).** On github.com the official image already includes the app credentials, so you provide none yourself: it runs a browser-based login on first use and keeps the re",
+    "readmeSha256": "d7ca350534f33a0f50992a4e376cf2904e0b593ad8e2a35f3a2269d84ea89ca0",
+    "runtimeVerified": false
+  },
+  {
+    "id": "neon",
+    "endpoint": "https://mcp.neon.tech/mcp?readonly=true",
+    "auth": "bearer",
+    "source": "https://github.com/neondatabase/mcp-server-neon",
+    "excerpt": "  \"mcpServers\": {\n    \"Neon\": {\n      \"url\": \"https://mcp.neon.tech/mcp?readonly=true\"\n    }\n  }\n}\n2. **Remote MCP Server (OAuth Based Authentication):** Connect to Neon's managed MCP server using OAuth for authentication. This method is more convenient as it eliminates the need to manage API keys. Additionally, you will automatically receive the latest features and improvements as soon as they are released.\n3. **Remote MCP Server (API Key Based Authentication):** Connect to Neon's managed MCP server using API key for authentication. This method is useful if you want to connect a remote agent to Neon where OAuth is not available. Additionally, you will automatically receive the latest features and improvements as soon as they are released.\nThis works with Cursor, VS Code (GitHub Copilot), and Claude Code. It will authenticate via OAuth, create a Neon API key for you, and configure your editor automatically.\n### Option 2. Remote Hosted MCP Server (OAuth Based Authentication)\nConnect to Neon's managed MCP server using OAuth for authentication. This is the easiest setup, requires no local installation of this server, and doesn't need a Neon API key configured in the client.\n- An OAuth window will open in your browser. Follow the prompts to authorize your MCP client to access your Neon account.\n> With OAuth-based authentication, the MCP server will, by default, operate on projects under your personal Neon account. To access or manage projects that belong to an organization, you must explicitly provide either the `org_id` or the `project_id` in your prompt to MCP client.\nnpx add-mcp \"https://mcp.neon.tech/mcp?category=projects&category=branches&category=endpoints&category=querying&category=schema\" --header \"Authorization: Bearer <$NEON_API_KEY>\"\n        \"Authorization\": \"Bearer <$NEON_API_KEY>\"\nNeon MCP advertises OAuth scopes `read` and `write`. Your MCP client can request these, or you can make the selection in the OAuth permissions UI. `*` is treated as write if a client still sends it.\n- **API key flow:** `readonly=true` is the way to enable read-only mode (there is no OAuth scope exchange in this flow). URL changes apply on the next request.\n- **OAuth flow:** `projectId`, `category`, `readonly`, `roleName`, and `secrets` on the MCP URL are a fixed grant confirmed at authorization. `readonly=true` cannot be widened to writes on that page. After a token is issued, changing the URL does not widen that token; authorize again.\nFor OAuth registration, `x-read-only` is an initial Allow-writes default on editable consent. It does not lock confirmation, and it d",
+    "readmeSha256": "3b0f2ff5872615d1f3fbe0d6632a96fd594334517a7835141cb65d34af17f70c",
+    "runtimeVerified": false
+  },
+  {
+    "id": "supabase",
+    "endpoint": "https://mcp.supabase.com/mcp",
+    "auth": "bearer",
+    "source": "https://github.com/supabase-community/supabase-mcp",
+    "excerpt": "    \"supabase\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.supabase.com/mcp\"\n    }\n  }\n}\nIf you're running Supabase locally with [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started), you can access the MCP server at `http://localhost:54321/mcp`. Currently, the MCP Server in CLI environments offers a limited subset of tools and no OAuth 2.1.\nFor [self-hosted Supabase](https://supabase.com/docs/guides/self-hosting/docker), check the [Enabling MCP server](https://supabase.com/docs/guides/self-hosting/enable-mcp) page. Currently, the MCP Server in self-hosted environments offers a limited subset of tools and no OAuth 2.1.",
+    "readmeSha256": "c5e7ca47186714ad300080b6426e989514c340a1a12394e20d11dd05d573ddf9",
+    "runtimeVerified": false,
+    "authenticationSource": "https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/ai-tools/mcp.mdx",
+    "authenticationExcerpt": "To authenticate the MCP server in a CI environment, create a personal access token (PAT) and pass it as a header to the MCP server."
+  },
+  {
+    "id": "context7",
+    "endpoint": "https://mcp.context7.com/mcp",
+    "auth": "bearer",
+    "source": "https://github.com/upstash/context7",
+    "excerpt": "To remove the generated setup later, run `npx ctx7 remove`. If you globally installed the CLI with `npm install -g ctx7`, remove that package separately with `npm uninstall -g ctx7`.\n\nTo configure manually, use the Context7 server URL `https://mcp.context7.com/mcp` with your MCP client and pass your API key via the `Authorization: Bearer YOUR_API_KEY` header. See the link below for client-specific setup instructions.\n\n**[Manual Installation / Other Clients →](https://context7.com/docs/resources/all-clients)**\n\nAuthenticates via OAuth, generates an API key, and installs the appropriate skill. You can choose between CLI + Skills or MCP mode. Use `--cursor`, `--claude`, or `--opencode` to target a specific agent.\nTo configure manually, use the Context7 server URL `https://mcp.context7.com/mcp` with your MCP client and pass your API key via the `Authorization: Bearer YOUR_API_KEY` header. See the link below for client-specific setup instructions.",
+    "readmeSha256": "a23306f5d9a04eb8588b619071a418d901f27549ace077ecbb28f21161a46912",
+    "runtimeVerified": false
+  },
+  {
+    "id": "exa",
+    "endpoint": "https://mcp.exa.ai/mcp",
+    "auth": "optional_bearer",
+    "source": "https://github.com/exa-labs/exa-mcp-server",
+    "excerpt": "\n```\nhttps://mcp.exa.ai/mcp\n```\n\nOr use a plugin when your client supports one.\nExa Agent requires authentication (OAuth or an [API key](https://dashboard.exa.ai/api-keys)).\nThe hosted MCP server works anonymously with rate limits. For higher limits and access to Exa Agent, use either OAuth or an API key.\n**OAuth** is preferred: most clients prompt you to sign in to Exa. To force the login flow (useful for shared connectors and plugins), use `https://mcp.exa.ai/mcp?login` or `https://mcp.exa.ai/mcp/oauth`.\nIf you prefer, you can get an API key from the [dashboard](https://dashboard.exa.ai/api-keys) and pass it on the URL as `?exaApiKey=…`. You can also send it as a `Authorization: Bearer …` header or an `x-api-key` header.",
+    "readmeSha256": "56f016f4ef996295ff5de9a8c385c5ab10876698f9c6e52a2262922b55eaff93",
+    "runtimeVerified": false
+  },
+  {
+    "id": "firecrawl",
+    "endpoint": "https://mcp.firecrawl.dev/v2/mcp",
+    "auth": "optional_bearer",
+    "source": "https://github.com/firecrawl/firecrawl-mcp-server",
+    "excerpt": "- Consider something else when you need to hold a browser session open across many of your own steps with your own retry and termination logic: each `firecrawl_interact` call runs one `prompt` or `code` turn to completion and returns control. The session can persist across calls via `scrapeId` and ends with `firecrawl_interact_stop`, but you cannot drive it interactively step-by-step from the client side within a single call.\n\nThis server lists 34 tools when the full profile registers with default settings (feedback tools included, not running in local-keyless mode). Setting `FIRECRAWL_NO_SEARCH_FEEDBACK=1` and/or `FIRECRAWL_NO_ENDPOINT_FEEDBACK=1` removes the corresponding feedback tools and reduces this count, as does local keyless startup. For clients with a tool-slot limit: the hosted keyless endpoint (`https://mcp.firecrawl.dev/v2/mcp`, no API key) exposes only 3 (`firecrawl_scrape`, `firecrawl_search`, `firecrawl_parse`), and the dedicated [search-only endpoint](#search-only-endpoint) (`https://mcp.firecrawl.dev/v2/mcp-search`) exposes a fixed set of 12 tools (search, developer, government, and research search, Alexandria catalogue lookup and execution, people and company search and enrichment, and job postings).\n\n## Installation\n\nThis server lists 34 tools when the full profile registers with default settings (feedback tools included, not running in local-keyless mode). Setting `FIRECRAWL_NO_SEARCH_FEEDBACK=1` and/or `FIRECRAWL_NO_ENDPOINT_FEEDBACK=1` removes the corresponding feedback tools and reduces this count, as does local keyless startup. For clients with a tool-slot limit: the hosted keyless endpoint (`https://mcp.firecrawl.dev/v2/mcp`, no API key) exposes only 3 (`firecrawl_scrape`, `firecrawl_search`, `firecrawl_parse`), and the dedicated [search-only endpoint](#search-only-endpoint) (`https://mcp.firecrawl.dev/v2/mcp-search`) exposes a fixed set of 12 tools (search, developer, government, and research search, Alexandria catalogue lookup and execution, people and company search and enrichment, and job postings).\nPrefer OAuth or an API key whenever the human can sign up. It unlocks the full tool set and higher limits.\nAuthorization: Bearer <FIRECRAWL_API_KEY>\n  - Over stdio, Alexandria tools are sent to this endpoint even when no API key is set here, and it answers for the account. [Firecrawl Local](https://github.com/firecrawl/firecrawl/tree/main/apps/local) signs them with the login it holds\n#### MCP OAuth (Bearer access tokens)\nFirecrawl issues OAuth **access tokens** (`fco_…`) via the authorization server on [firecrawl.dev](https://firecrawl.dev). This MCP server forwards whichever credential it resolves to the Firecrawl API as `Authorization: Bearer …`.\n- **HTTP stream transports** (`CLOUD_SERVICE=true`, `HTTP_STREAMABLE_SERVER=true`, or `SSE_LOCAL=true`): Clients should send `Authorization: Bearer <fco_access_token>` on MCP requests. An OAuth bearer token takes precedence over `x-firecrawl-api-key` / `x-api-key` when both are present.\n`CLOUD_SERVICE=true` serves the tools over streamable HTTP on `PORT` (default `3000`, bound to `0.0.0.0`) with stricter defaults: every request must carry a credential (an API key or an OAuth access token), scrape is read-only (see the scrape tool below), and `firecrawl_parse` accepts uploads only.\nPeople and company search and enrichment over Alexandria's B2B data providers. Both tools are listed wherever the server has a credential: they are not listed in local keyless mode or to keyless sessions. The [search-only endpoint](#search-only-endpoint) includes them too. They need a Firecrawl credential (an API key or OAuth access) on a team with Alexandria access.\n| `oauth.protectedResource` | Serve OAuth protected-resource metadata. |",
+    "readmeSha256": "07a2dc66430c2f88a32a9563fd2570339bc13ec3ac1f7b6fed912789edc7a405",
+    "runtimeVerified": false
+  },
+  {
+    "id": "apify",
+    "endpoint": "https://mcp.apify.com",
+    "auth": "bearer",
+    "source": "https://github.com/apify/actors-mcp-server",
+    "excerpt": "<p align=\"center\">\n    <a href=\"https://mcp.apify.com\">\n        <img alt=\"Apify MCP server\" src=\"docs/apify-mcp-server-header.png\" width=\"100%\">\n    </a>\n</p>\nYour agent searches Apify Store, checks an Actor's input and pricing, runs it, and reads the structured results, so you don't install a separate MCP server for every site. Connect to the hosted server with OAuth, or run it locally over stdio with the [`@apify/actors-mcp-server`](https://www.npmjs.com/package/@apify/actors-mcp-server) npm package.\nThe hosted endpoint is `https://mcp.apify.com`. If your client can't use OAuth, send your [Apify API token](https://docs.apify.com/integrations/api#api-token) in an `Authorization: Bearer <APIFY_TOKEN>` header instead. Treat the token like a password and keep it out of repositories. [Create a token in Apify Console](https://console.apify.com/settings/integrations) and copy it right after creating it. It is shown only once.\n2. Name it `Apify`, enter `https://mcp.apify.com` as the server URL, and choose **OAuth** authentication.\nMost clients that support remote servers and OAuth accept a configuration like this:\nThe hosted remote MCP server with OAuth is the recommended option. Use the local server when you want to run the MCP process on your own machine; Actors still run and store their results on the Apify platform in both modes. If your client supports only stdio, you can also bridge it to the hosted server with [`mcp-remote`](https://www.npmjs.com/package/mcp-remote): `npx mcp-remote https://mcp.apify.com`.\n| Authentication | OAuth or Bearer token | `APIFY_TOKEN` environment variable or Apify CLI login |\n> 🪙 **Agentic payments (experimental).** Agents can pay for Actor runs without an Apify account. [AGI](https://agi.apify.com) sells a prepaid, spend-capped Apify API token for an x402, MPP, or Skyfire payment. The agent then uses it as a normal Bearer token against `mcp.apify.com`, with any Actor that uses limited permissions. See the [agentic payments documentation](https://docs.apify.com/agents/payments) for supported methods and limits, and [agi.apify.com/AGENTS.md](https://agi.apify.com/AGENTS.md) for protocol details.\n- **Authentication fails.** Reconnect so the client repeats the OAuth flow, or switch to a Bearer token. For the local server, check that `APIFY_TOKEN` is set in the client's server configuration, not only in your shell.\n- **VS Code says the OAuth app is not registered.** Run **Authentication: Remove Dynamic Authentication Providers**, select Apify, and sign in again.\n- **Client features vary.** Any MCP client can connect, but support for dynamic tool lists, OAuth, and MCP Apps differs between",
+    "readmeSha256": "45f206e2eeb4040810046c58b5f8813ee265a6d44ad08e3bb186394b6bd75034",
+    "runtimeVerified": false
+  },
+  {
+    "id": "resend",
+    "endpoint": "https://mcp.resend.com/mcp",
+    "auth": "bearer",
+    "source": "https://github.com/resend/resend-mcp",
+    "excerpt": "\n```\nhttps://mcp.resend.com/mcp\n```\n\nConnect any MCP client that supports remote servers (Streamable HTTP). There's nothing to install and no local process to run, which makes it the best option for web-based clients like Claude and hosted agent platforms.\nWhen you connect, your client opens a browser window to log in to Resend and approve access using OAuth.\nThen run `/mcp` in Claude Code and select **resend** to complete the OAuth login.\nIf your client runs somewhere a browser login isn't possible (a server, CI, or a headless agent), pass a [Resend API key](https://resend.com/api-keys) as a Bearer token instead of using OAuth.\nclaude mcp add --transport http resend https://mcp.resend.com/mcp --header \"Authorization: Bearer re_xxxxxxxxx\"\n        \"Authorization\": \"Bearer re_xxxxxxxxx\"\nRun the server over HTTP for remote or web-based integrations, for example behind your own tunnel or reverse proxy, instead of using Resend's [hosted remote MCP server](#remote-mcp-server). In HTTP mode, each client authenticates by passing their Resend API key as a Bearer token in the `Authorization` header.\nclaude mcp add resend --transport http http://127.0.0.1:3000/mcp --header \"Authorization: Bearer re_xxxxxxxxx\"\n        \"Authorization\": \"Bearer re_xxxxxxxxx\"\nThe HTTP transport is also exported so it can be embedded in another service instead of being run via the CLI. Each connecting client authenticates with its own Resend API key passed as a Bearer token.\nserver is protected by the per-request Bearer API key, set `host` to `0.0.0.0`\n- `--key`: Your Resend API key (stdio mode only, since HTTP mode uses the Bearer token from the client)\n- `RESEND_API_KEY`: Your Resend API key (required for stdio, optional for HTTP since clients pass it via Bearer token)\nclaude mcp add resend --transport http http://127.0.0.1:3000/mcp --header \"Authorization: Bearer re_xxxxxxxxx\"\n        \"Authorization\": \"Bearer re_xxxxxxxxx\"\n   - Add a custom header: `Authorization: Bearer re_your_key_here` and activate the toggle.",
+    "readmeSha256": "92defc09520824532ed2a0ed5d2138a3c2608fc18e5222cc72406c9e78ebfbcc",
+    "runtimeVerified": false
+  },
+  {
+    "id": "bankstatemently",
+    "endpoint": "https://api.bankstatemently.com/mcp",
+    "auth": "unsupported",
+    "source": "https://github.com/bankstatemently/plugins",
+    "excerpt": "\n```bash\nclaude mcp add --transport http bankstatemently https://api.bankstatemently.com/mcp\n```\n\nFor a headless setup, pass an API key in the `X-API-Key` header instead (the server rejects `Authorization: Bearer`):\nFor a headless setup, pass an API key in the `X-API-Key` header instead (the server rejects `Authorization: Bearer`):\n  --header \"X-API-Key: <your-bsk_live_key>\"\nCodex has native OAuth support. This one command detects our server's discovery metadata and opens your browser to sign in — no key is ever stored:\ncodex mcp add bankstatemently -- npx -y mcp-remote@latest https://api.bankstatemently.com/mcp --header \"X-API-Key: ${BANKSTATEMENTLY_API_KEY}\"",
+    "readmeSha256": "a6eb1370a51486cf75f5c372769315f542dd17079dc3b8d4564051225ee73ca7",
+    "runtimeVerified": false
+  },
+  {
+    "id": "sentry",
+    "endpoint": "https://mcp.sentry.dev/mcp",
+    "auth": "unsupported",
+    "source": "https://github.com/getsentry/sentry-mcp",
+    "excerpt": "  \"mcpServers\": {\n    \"sentry\": {\n      \"url\": \"https://mcp.sentry.dev/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Sentry-Bearer ${SENTRY_ACCESS_TOKEN}\"\n      }\n        \"Authorization\": \"Sentry-Bearer ${SENTRY_ACCESS_TOKEN}\"\n`Sentry-Bearer` is intentionally separate from `Bearer`: `Bearer` is reserved\nfor MCP OAuth access tokens. With `Sentry-Bearer`, the worker does not store,\nthe same Sentry API calls used by OAuth-backed sessions, and the client or\nNote: If you have issues with your OAuth flow when accessing the inspector on `127.0.0.1`, try using `localhost` instead by visiting `http://localhost:6274`.\n2. **Create an OAuth App in Sentry** (Settings => API => [Applications](https://sentry.io/settings/account/api/applications/)):\n- **Remote testing:** See `docs/testing/remote.md` for complete guide on testing the remote server (OAuth, web UI, CLI client)",
+    "readmeSha256": "d0e00054ecf0e7df2fcb898b83214e764882d9834e7c48987aba1bcc3f3af232",
+    "runtimeVerified": false
+  },
+  {
+    "id": "google-maps-via-hasdata",
+    "endpoint": "https://mcp.hasdata.com/mcp?apis=google_maps",
+    "auth": "unsupported",
+    "source": "https://github.com/HasData/google-maps-mcp",
+    "excerpt": "\n```\nhttps://mcp.hasdata.com/mcp?apis=google_maps\n```\n\n[![Glama score](https://glama.ai/mcp/servers/HasData/google-maps-mcp/badges/score.svg)](https://glama.ai/mcp/servers/HasData/google-maps-mcp)\n| Auth header | `x-api-key: HASDATA_API_KEY` |\nClients with OAuth support can add the same URL as a connector and sign in without putting a key in a config file.\n  --header \"x-api-key: HASDATA_API_KEY\"\nA client with OAuth support can instead add the URL as a custom connector and skip the launcher.\n      \"headers\": { \"x-api-key\": \"HASDATA_API_KEY\" }\n      \"headers\": { \"x-api-key\": \"HASDATA_API_KEY\" }\n      \"headers\": { \"x-api-key\": \"HASDATA_API_KEY\" },\n      \"headers\": { \"x-api-key\": \"HASDATA_API_KEY\" }\n      \"headers\": { \"x-api-key\": \"HASDATA_API_KEY\" }",
+    "readmeSha256": "5f82fde22cf973c806bc13f35f5b1794d152d5da66971dfbf9488cd4575871a9",
+    "runtimeVerified": false
+  },
+  {
+    "id": "ip2location",
+    "endpoint": "https://mcp.ip2location.io/",
+    "auth": "unsupported",
+    "source": "https://github.com/ip2location/mcp-ip2location-io",
+    "excerpt": "    \"ip2location\": {\n      \"type\": \"http\",\n      \"url\": \"https://mcp.ip2location.io/\",\n      \"headers\": {\n        \"X-API-Key\": \"YOUR_API_KEY\"\n      }\n        \"X-API-Key\": \"YOUR_API_KEY\"\nclaude mcp add --transport http ip2location https://mcp.ip2location.io/ --header \"X-API-Key: YOUR_API_KEY\"\n        \"X-API-Key:YOUR_API_KEY\"\n**Authentication:** The hosted connection uses the `X-API-Key` HTTP header; the local Python server reads the `IP2LOCATION_API_KEY` environment variable. Never commit keys to a repository or print them in logs.\n- **Cloud-hosted:** Connect to `https://mcp.ip2location.io/` over HTTP and authenticate using the `X-API-Key` request header.\n        headers={\"X-API-Key\": os.environ[\"IP2LOCATION_API_KEY\"]},\n        headers={\"X-API-Key\": os.environ[\"IP2LOCATION_API_KEY\"]},\n            headers={\"X-API-Key\": os.environ[\"IP2LOCATION_API_KEY\"]},\n| Authentication error | Check the API key and use `X-API-Key` for hosted HTTP or `IP2LOCATION_API_KEY` locally. |",
+    "readmeSha256": "f5ea4622f7423afb12b0fbc115361a4b2223469e81be5f1fadd3c6e266899d2e",
+    "runtimeVerified": false
+  },
+  {
+    "id": "todoist",
+    "endpoint": "https://ai.todoist.net/mcp",
+    "auth": "oauth",
+    "source": "https://github.com/Doist/todoist-ai",
+    "excerpt": "The Todoist MCP server is available as a streamable HTTP service for easy integration with various AI clients:\n\n**Primary URL (Streamable HTTP):** `https://ai.todoist.net/mcp`\n\n#### Claude Desktop\n\n2. Enter `https://ai.todoist.net/mcp` and complete OAuth authentication\nOAuth runs in your browser the first time you use a Todoist tool. See [Anthropic's plugin docs](https://code.claude.com/docs/en/plugins-reference) for more.\nStart or restart Gemini CLI, then run `/mcp auth todoist` and sign in with your Todoist account. Todoist hosts the server; no API key or local server is needed.",
+    "readmeSha256": "837bddf250792ec2d4fc46c1fd46199e98fce7d3a5c08c986b4f04eacfa9c842",
+    "runtimeVerified": false
+  },
+  {
+    "id": "linear",
+    "endpoint": "https://mcp.linear.app/mcp/readonly",
+    "auth": "bearer",
+    "source": "https://linear.app/docs/mcp",
+    "excerpt": "For read-only access, connect to https://mcp.linear.app/mcp/readonly, which only ever exposes read tools. You can also authenticate directly with a bearer token or Linear API key.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "airtable",
+    "endpoint": "https://mcp.airtable.com/mcp",
+    "auth": "bearer",
+    "source": "https://airtable.com/developers/agents/mcp/other",
+    "excerpt": "url: https://mcp.airtable.com/mcp; headers: Authorization: Bearer ${AIRTABLE_PAT}",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "notion",
+    "endpoint": "https://mcp.notion.com/mcp",
+    "auth": "oauth",
+    "source": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
+    "excerpt": "The remote server URL is https://mcp.notion.com/mcp. Complete the OAuth flow to connect your Notion workspace.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "asana",
+    "endpoint": "https://mcp.asana.com/v2/mcp",
+    "auth": "oauth",
+    "source": "https://developers.asana.com/docs/using-asanas-mcp-server",
+    "excerpt": "The Asana MCP V2 server is available at https://mcp.asana.com/v2/mcp. Ensure your client supports OAuth authentication and Streamable HTTP transport.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "clickup",
+    "endpoint": "https://mcp.clickup.com/mcp",
+    "auth": "oauth",
+    "source": "https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server",
+    "excerpt": "Our MCP server URL is https://mcp.clickup.com/mcp. No, you cannot authenticate using your own API keys or Auth access tokens. We only support OAuth for authentication.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "slack",
+    "endpoint": "https://mcp.slack.com/mcp",
+    "auth": "oauth",
+    "source": "https://docs.slack.dev/ai/slack-mcp-server/",
+    "excerpt": "Slack supports JSON-RPC 2.0 over Streamable HTTP at https://mcp.slack.com/mcp. Only directory-published apps or internal apps may use MCP. Slack supports confidential OAuth for MCP clients.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "pipedrive",
+    "endpoint": "https://mcp.pipedrive.ai/mcp",
+    "auth": "oauth",
+    "source": "https://support.pipedrive.com/en/article/mcp-chatgpt",
+    "excerpt": "In the Connection field enter https://mcp.pipedrive.ai/mcp. After creating the app, you will be redirected to Pipedrive to complete the installation.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "jira",
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "auth": "oauth",
+    "source": "https://support.atlassian.com/atlassian-ai-gateway/docs/get-started-with-the-atlassian-remote-mcp-server/",
+    "excerpt": "Use this server URL: https://mcp.atlassian.com/v2/mcp. Atlassian MCP is powered by secure OAuth 2.1 authorization. Authentication via API token is also available as optional.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  },
+  {
+    "id": "confluence",
+    "endpoint": "https://mcp.atlassian.com/v2/mcp",
+    "auth": "oauth",
+    "source": "https://support.atlassian.com/atlassian-ai-gateway/docs/get-started-with-the-atlassian-remote-mcp-server/",
+    "excerpt": "Use this server URL: https://mcp.atlassian.com/v2/mcp. Atlassian MCP is powered by secure OAuth 2.1 authorization. Authentication via API token is also available as optional.",
+    "readmeSha256": null,
+    "runtimeVerified": false
+  }
+]

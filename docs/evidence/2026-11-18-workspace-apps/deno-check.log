@@ -1,0 +1,8 @@
+Warning failed to parse npm overrides: Failed to parse override value "file:vendor/picomatch" for key "picomatch": Invalid version requirement
+Download https://esm.sh/docx@8.5.0
+Download https://esm.sh/xlsx@0.18.5
+Download https://esm.sh/pptxgenjs@3.12.0
+Check supabase/functions/_shared/jd-workspace-service.ts
+Check supabase/functions/jd-business-platform/index.ts
+Check supabase/functions/jd-business-oauth-callback/index.ts
+Check supabase/functions/_shared/jd-agent-runtime.ts

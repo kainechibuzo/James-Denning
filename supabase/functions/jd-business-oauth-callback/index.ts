@@ -20,6 +20,9 @@ Deno.serve(async req=>{
   const stateHash=await sha256Hex(state);
   const {data,error}=await db.rpc("jd_consume_business_oauth_state",{p_state_hash:stateHash});
   const row:any=(data||[])[0];if(error||!row)return reply("OAuth state expired, invalid or already used",400);
+  // Reject state issued before membership/role changed.
+  const {data:actor,error:actorError}=await db.from("profiles").select("school_id,role").eq("id",row.actor_id).maybeSingle();
+  if(actorError||actor?.school_id!==row.school_id||!["owner","admin","manager"].includes(actor?.role))return reply("Workspace permission changed. Start again with an authorised account.",403);
   const provider=providers[row.provider_id];if(!provider)return reply("OAuth provider is not supported",400);
   if(incoming.searchParams.get("error"))return reply("Provider authorization was not completed. Start the connection again.",400);
   if(!code)return reply("Authorization code missing",400);
@@ -35,7 +38,7 @@ Deno.serve(async req=>{
   const expires=Number(token.expires_in),expiresAt=Number.isFinite(expires)&&expires>0?new Date(Date.now()+expires*1000).toISOString():null;
   const bundle=JSON.stringify({access_token:token.access_token,refresh_token:token.refresh_token||null,token_type:token.token_type||"Bearer",scope:scopes,issued_at:new Date().toISOString()});
   const encrypted=await encryptSecret(bundle,aesKey);
-  const {error:saveError}=await db.from("jd_business_oauth_connections").upsert({school_id:row.school_id,provider_id:row.provider_id,status:"connected",scopes,connected_by:row.actor_id,connected_at:new Date().toISOString(),token_expires_at:expiresAt,encrypted_credentials:encrypted,key_version:"aes-gcm-v1",last_error_code:null,last_checked_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:"school_id,provider_id"});
+  const {error:saveError}=await db.from("jd_business_oauth_connections").upsert({school_id:row.school_id,provider_id:row.provider_id,status:"connected",scopes,connected_by:row.actor_id,connected_at:new Date().toISOString(),token_expires_at:expiresAt,encrypted_credentials:encrypted,enabled_read_services:row.enabled_read_services||[],key_version:"aes-gcm-v1",last_error_code:null,last_checked_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:"school_id,provider_id"});
   if(saveError)return reply("Connection could not be stored securely",500);
   await db.rpc("jd_business_audit",{p_school_id:row.school_id,p_actor_id:row.actor_id,p_event_type:"business.oauth.connected",p_event:{provider_id:row.provider_id,scopes}});
   const destination=Deno.env.get("JD_OAUTH_SUCCESS_REDIRECT");
