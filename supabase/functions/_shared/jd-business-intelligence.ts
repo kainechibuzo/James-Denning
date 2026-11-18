@@ -1,3 +1,4 @@
+export const ANNOUNCEMENT_INTELLIGENCE_COLUMNS = "title,audience,created_at,expires_at";
 export type ScoreSummary={count:number;average:number;passRate:number;highest:number|null;lowest:number|null;gradeDistribution:Record<string,number>;};
 export function summariseScores(values:unknown[]):ScoreSummary{
  const scores=values.map(Number).filter(v=>Number.isFinite(v)&&v>=0&&v<=100);
