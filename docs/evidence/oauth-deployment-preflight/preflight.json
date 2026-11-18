@@ -1,0 +1,46 @@
+{
+  "releaseSource": "19ce0114653f01e5e356c77f6ff1c1eba7ee5f10",
+  "branch": "arena/3fc25aaf-james-denning",
+  "userAuthorizedDeployment": true,
+  "deploymentPerformed": false,
+  "productionWrites": false,
+  "projectRef": "thklwiybjuhrjqrrxyid",
+  "projectStatus": "ACTIVE_HEALTHY",
+  "isolatedStagingIdentified": false,
+  "projectBranchCount": 0,
+  "requiredGithubEnvironmentsPresent": false,
+  "liveFunctions": {
+    "jd-connect-oauth": null,
+    "jd-connect": 9,
+    "jd-business-platform": 10,
+    "jd-automation": 11,
+    "jd-execution-worker": 17,
+    "jd-mcp": 8
+  },
+  "schemaObservation": {
+    "connectorOAuthColumnsPresent": false,
+    "connectorOAuthTablesPresent": false,
+    "workspaceRefreshLeaseColumnsPresent": false,
+    "existingNativeEncryptedCredentialType": "bytea"
+  },
+  "secretsRetrieved": false,
+  "providerRegistrationVerified": false,
+  "requestIds": {
+    "projects": "6ec02999-a33d-4d2d-8960-886d16cf55a9",
+    "branches": "cf054b5d-6cd8-4bd9-bcb3-ee86fa05b62f",
+    "schema": "d0b31ba9-ad99-45df-8fc9-12f0bf6f184f",
+    "functions": "742f55ce-12f8-48cd-8a49-f7514497b4c7"
+  },
+  "candidateFileHashes": {
+    "supabase/migrations/20261118080000_jd_workspace_read_services.sql": "ef213be616054ca01f6fdf0c002cbdb4dd5d1125422209d04661cae7e5204ef2",
+    "supabase/migrations/20261118100000_jd_connector_oauth.sql": "646ac36cf776cb845cda69a21706a8a3dd475324e5706a28a7c337aeb1ba811f",
+    "supabase/migrations/20261118100001_jd_workspace_refresh_leases.sql": "b249a202352188ed48ba3a736a5da5ca108efd2802007a3b86feac827180d74e",
+    "supabase/functions/jd-connect-oauth/index.ts": "36981b36a109ed0e34796039b9290f6241aa154ee3c6172698467e4d3b6e0091",
+    "supabase/functions/jd-connect/index.ts": "d5bdcaad52eb915716f2514a1415e97c40dc51b6a28ba254c40e3ec2498d9fda",
+    "supabase/functions/jd-business-platform/index.ts": "f24e55ae2cb63734a0890d3e2c681eba57e722c3079de8c2bc792b33d00ba1e6",
+    "supabase/functions/jd-automation/index.ts": "3a79721b7c8209252db97b4fe09a515f76a1b68462862561ccbf2b0eb84cc8ba",
+    "supabase/functions/jd-execution-worker/index.ts": "b6f32c33583a2f04e51171e127388c85818c18179a856970df659ef63db552c3",
+    "supabase/functions/jd-mcp/index.ts": "01db4a56b06d28f2eb98a6506182b213dee134a7238c47d2f32321b669c1f171"
+  },
+  "hashCaveat": "These are selected source files, not a complete deployable bundle or dependency lock."
+}

@@ -1,0 +1,547 @@
+{
+  "sourceSha": "19ce0114653f01e5e356c77f6ff1c1eba7ee5f10",
+  "projectRef": "thklwiybjuhrjqrrxyid",
+  "authorization": "Owner confirmed this exact existing project is the test DB and instructed direct deployment without separate staging.",
+  "compiler": "esbuild@0.25.12",
+  "dependencyBoundary": "Local modules bundled; original npm/HTTPS imports remain external. Their remote dependency resolution is not fully locked by this manifest.",
+  "functions": {
+    "jd-connect-oauth": {
+      "entry": "supabase/functions/jd-connect-oauth/index.ts",
+      "verifyJwt": false,
+      "bundleSha256": "41e220c50f661920c4baecbbdae7837d3a025d28be8c260927727430817f3ccd",
+      "bytes": 19705,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth-policy.mjs",
+          "sha256": "2519edf10e218cee0c7b93f43c8c85ad6f9ad369df2a9d10b227f79956803682"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth.ts",
+          "sha256": "962cfc8ab26ebb1f545095a32e22baaec23e9f58dc2b0aab9d4b145809d79b14"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/jd-connect-oauth/index.ts",
+          "sha256": "36981b36a109ed0e34796039b9290f6241aa154ee3c6172698467e4d3b6e0091"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "jd-connect": {
+      "entry": "supabase/functions/jd-connect/index.ts",
+      "verifyJwt": false,
+      "bundleSha256": "8418ecea7460e1b0ebecaf3fb7787c56c1a999e6681fdde74b95ffe2e8fe6a9d",
+      "bytes": 49896,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth-policy.mjs",
+          "sha256": "2519edf10e218cee0c7b93f43c8c85ad6f9ad369df2a9d10b227f79956803682"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth.ts",
+          "sha256": "962cfc8ab26ebb1f545095a32e22baaec23e9f58dc2b0aab9d4b145809d79b14"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-mcp-core.ts",
+          "sha256": "b8889ebd3abd682fe2a22d689fcb22f6e2bbb26d1e25e040989e04c8dbd85d51"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/jd-connect/index.ts",
+          "sha256": "d5bdcaad52eb915716f2514a1415e97c40dc51b6a28ba254c40e3ec2498d9fda"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "jd-business-platform": {
+      "entry": "supabase/functions/jd-business-platform/index.ts",
+      "verifyJwt": true,
+      "bundleSha256": "fa331bc5deff354785cd92a7a827f526ace84d05e3e431609bb70ec6c26529ff",
+      "bytes": 124757,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-business-forecast.ts",
+          "sha256": "45244038a40fb0a1e9a2cf23f6c3ba4f770823f2da2b852ba20638ea069b36b3"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth-policy.mjs",
+          "sha256": "2519edf10e218cee0c7b93f43c8c85ad6f9ad369df2a9d10b227f79956803682"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-document-security.ts",
+          "sha256": "fd168ff60e64a95620228878d790d2d825a10ad4c68793d96b9f9aad0b8d94e7"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-expense-anomalies.ts",
+          "sha256": "b0b258b19695e70034a4d9041c7595bc721193bf33fa104fd808cb43d7e0fa38"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-kpi-trends.ts",
+          "sha256": "fe8fca11251106f84230f54b4596bbef384d73a0996814c1f50f76a9d6eedbc5"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-connectors.mjs",
+          "sha256": "4895f6594bfea133a1b68639d7afe1abd3fe8f1ee55b126da50d473a74050c70"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-refresh.ts",
+          "sha256": "a16ced77d6df217ae31271f51d8184d585bee71870821ac5398b180e37595db2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-service.ts",
+          "sha256": "0168431c89e484f20bf64a9855c93034948215c7a382be1952e028433b8e50f7"
+        },
+        {
+          "path": "supabase/functions/jd-business-platform/index.ts",
+          "sha256": "f24e55ae2cb63734a0890d3e2c681eba57e722c3079de8c2bc792b33d00ba1e6"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "jd-business-oauth-callback": {
+      "entry": "supabase/functions/jd-business-oauth-callback/index.ts",
+      "verifyJwt": false,
+      "bundleSha256": "28df688f60e058e00fa5c66f22a1fb3c94ab9f2559d869265bd8b8d42dd480aa",
+      "bytes": 8283,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/jd-business-oauth-callback/index.ts",
+          "sha256": "1bcfb81082daca51823880ce73dfd7dc840bb744606e402b173bc9d7c5be01c9"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "jd-automation": {
+      "entry": "supabase/functions/jd-automation/index.ts",
+      "verifyJwt": true,
+      "bundleSha256": "318aab466800ad9ebc6566b2fc0e2d2ca1abeb22cb0c2ae1c1452e5d664135d5",
+      "bytes": 159255,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-agent-architect.mjs",
+          "sha256": "7a6d6e1881cc985551c8cb5fd42aeed06102a0d57abf50e0d21a64aa6cfaf9f9"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-registry-service.ts",
+          "sha256": "0d85b48dfdf2a7f6d6325d469b9ada8d6189d26c6e033ec08128de21c6b1b5ad"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-registry.mjs",
+          "sha256": "6942b3e9d4acb8fcae2fc219c0d5a6013d67ab7bb3899d10b4075d1bca6bf9e2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-foundation.mjs",
+          "sha256": "d1781471c5b03fd8de64307120d1c5a2c8990f9725830dd7a3da3afc2174832a"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-intelligence.ts",
+          "sha256": "e63ae505d375c42c4c3e061d1a420de921ff1a6de31996297f9236b26dffd261"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-capability-contract.ts",
+          "sha256": "7e71cd856c2bccc351496443c10f9274df5663072006ed58207647a4f4740aa2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-capability-intelligence.ts",
+          "sha256": "c57f1e82aed1c6d044e20bdfe528ea5930d1edc0d3d5017730b4ad1fc38a6319"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-execution-cancellation.mjs",
+          "sha256": "47fccb3221f71587c2a0d43130c53094baaccfee4bbf0a1a420597a2f8b48843"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-foundation-service.ts",
+          "sha256": "26acbadaacd09a1732dc0c8d13d1f117a44d1667b52db390264398f13cff2d35"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-hiring.ts",
+          "sha256": "aac23242c0478d043051bb75b153593b9773e84526a84f89cdb8d6d3ffe1ef75"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-operations.ts",
+          "sha256": "26a3380431761774dc551b757bafda2bb421101e68e9663a900ff9d5a5908a55"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-organisation-blueprint.ts",
+          "sha256": "47b8d9f768d5822cb3ff4f1785a34dadf1aaeaa45a2b8e37369fdd27e43235fa"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-research-provider.mjs",
+          "sha256": "4499373d7c59f874d383da8f31465e01987e1982e21aac5c94d14e9ca8474593"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-scheduler.ts",
+          "sha256": "ba1c8590ca48e27f2ab05f1520d9437a3fa11e7361753d21c4932ff11631467f"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-catalogue.ts",
+          "sha256": "bec14611df496709eb22be561ea140e6cb1462a0f765f5afdedb09781faf0466"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-change-planner.ts",
+          "sha256": "5cc1229189a5d02e3d36819dc4e04cb5a868e87ae92e9175f9fdbdd149f4f85f"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-task-assignment-release.mjs",
+          "sha256": "83940cec72dbf556310f49378108860397d921da68e35c26f55aa52f625da7bb"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-task-assignment.mjs",
+          "sha256": "7827776e10fd00faf92d8f8b46783d304b9781eb7ad67fa306549f5ae2178987"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-usage-service.ts",
+          "sha256": "0aa71554fb448408ed1939be280413fb788037012c81bad2d4c3c16f3ce16a78"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workflow-definition.ts",
+          "sha256": "2b0cfafa5c2ed8688f87dfb2f7052ca05e00b6b3d8e1b5ba1243258452abdae4"
+        },
+        {
+          "path": "supabase/functions/jd-automation/index.ts",
+          "sha256": "3a79721b7c8209252db97b4fe09a515f76a1b68462862561ccbf2b0eb84cc8ba"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "jd-execution-worker": {
+      "entry": "supabase/functions/jd-execution-worker/index.ts",
+      "verifyJwt": false,
+      "bundleSha256": "357d19f90bd4a67e2875adcf69e89b7877e67bcdf7a50599046b08d974e67aa8",
+      "bytes": 216718,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-agent-architect.mjs",
+          "sha256": "7a6d6e1881cc985551c8cb5fd42aeed06102a0d57abf50e0d21a64aa6cfaf9f9"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-file-generator.ts",
+          "sha256": "dba5d73e530aa533c91e7a99ca7979fa92336921a43e594a70a0ab9141a17cf7"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-routing.ts",
+          "sha256": "fcfcf16137d95cc4acf77d35f70ce5d970b68b2eca0cd0a3736ddcbb87c1ca37"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-runtime.ts",
+          "sha256": "af792f2b7edc3350e30cef91253eba17c06562b8694e3be200dd9594f8d86986"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-stream.ts",
+          "sha256": "6d7c298c2ca67109c03509a60f5596095b63ba5dcd56be7e52e420c6e49472de"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-foundation.mjs",
+          "sha256": "d1781471c5b03fd8de64307120d1c5a2c8990f9725830dd7a3da3afc2174832a"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-intelligence.ts",
+          "sha256": "e63ae505d375c42c4c3e061d1a420de921ff1a6de31996297f9236b26dffd261"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-capability-contract.ts",
+          "sha256": "7e71cd856c2bccc351496443c10f9274df5663072006ed58207647a4f4740aa2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth-policy.mjs",
+          "sha256": "2519edf10e218cee0c7b93f43c8c85ad6f9ad369df2a9d10b227f79956803682"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-execution-worker-helpers.ts",
+          "sha256": "1480468552f070f679b8e1a7fbdcec0e7a09d1f56a03424ae086e41590a9a217"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-expense-anomalies.ts",
+          "sha256": "b0b258b19695e70034a4d9041c7595bc721193bf33fa104fd808cb43d7e0fa38"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-foundation-service.ts",
+          "sha256": "26acbadaacd09a1732dc0c8d13d1f117a44d1667b52db390264398f13cff2d35"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-hiring.ts",
+          "sha256": "aac23242c0478d043051bb75b153593b9773e84526a84f89cdb8d6d3ffe1ef75"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-kpi-trends.ts",
+          "sha256": "fe8fca11251106f84230f54b4596bbef384d73a0996814c1f50f76a9d6eedbc5"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-organisation-blueprint.ts",
+          "sha256": "47b8d9f768d5822cb3ff4f1785a34dadf1aaeaa45a2b8e37369fdd27e43235fa"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-research-provider.mjs",
+          "sha256": "4499373d7c59f874d383da8f31465e01987e1982e21aac5c94d14e9ca8474593"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-catalogue.ts",
+          "sha256": "bec14611df496709eb22be561ea140e6cb1462a0f765f5afdedb09781faf0466"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-change-planner.ts",
+          "sha256": "5cc1229189a5d02e3d36819dc4e04cb5a868e87ae92e9175f9fdbdd149f4f85f"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-review.ts",
+          "sha256": "87bcfdc0756a8e2b44421c5645b6dbe91fc1c542590ea99aa28b7cfb4bea47a5"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-usage-observer.mjs",
+          "sha256": "c23e148682fdcd9e0ed195107aacbab9fe8a10303e3ce3cdca5e0344cd5673e0"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-visual-workspace.ts",
+          "sha256": "ca49bd06b98067b8446e83ad609cc81383175df55b3a740481508f562e8de6e8"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-connectors.mjs",
+          "sha256": "4895f6594bfea133a1b68639d7afe1abd3fe8f1ee55b126da50d473a74050c70"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-refresh.ts",
+          "sha256": "a16ced77d6df217ae31271f51d8184d585bee71870821ac5398b180e37595db2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-service.ts",
+          "sha256": "0168431c89e484f20bf64a9855c93034948215c7a382be1952e028433b8e50f7"
+        },
+        {
+          "path": "supabase/functions/jd-execution-worker/index.ts",
+          "sha256": "b6f32c33583a2f04e51171e127388c85818c18179a856970df659ef63db552c3"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        },
+        {
+          "path": "https://esm.sh/xlsx@0.18.5",
+          "kind": "dynamic-import"
+        },
+        {
+          "path": "https://esm.sh/pptxgenjs@3.12.0",
+          "kind": "dynamic-import"
+        },
+        {
+          "path": "https://esm.sh/docx@8.5.0",
+          "kind": "dynamic-import"
+        }
+      ]
+    },
+    "jd-mcp": {
+      "entry": "supabase/functions/jd-mcp/index.ts",
+      "verifyJwt": false,
+      "bundleSha256": "cd8115d5eb752de779efbe4cb9faa9baf581f6ed28b34d8db8c21fddcd8bb8d3",
+      "bytes": 183484,
+      "sources": [
+        {
+          "path": "supabase/functions/_shared/jd-agent-architect.mjs",
+          "sha256": "7a6d6e1881cc985551c8cb5fd42aeed06102a0d57abf50e0d21a64aa6cfaf9f9"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-file-generator.ts",
+          "sha256": "dba5d73e530aa533c91e7a99ca7979fa92336921a43e594a70a0ab9141a17cf7"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-runtime.ts",
+          "sha256": "af792f2b7edc3350e30cef91253eba17c06562b8694e3be200dd9594f8d86986"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-agent-stream.ts",
+          "sha256": "6d7c298c2ca67109c03509a60f5596095b63ba5dcd56be7e52e420c6e49472de"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-foundation.mjs",
+          "sha256": "d1781471c5b03fd8de64307120d1c5a2c8990f9725830dd7a3da3afc2174832a"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-business-intelligence.ts",
+          "sha256": "e63ae505d375c42c4c3e061d1a420de921ff1a6de31996297f9236b26dffd261"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-capability-contract.ts",
+          "sha256": "7e71cd856c2bccc351496443c10f9274df5663072006ed58207647a4f4740aa2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-connector-oauth-policy.mjs",
+          "sha256": "2519edf10e218cee0c7b93f43c8c85ad6f9ad369df2a9d10b227f79956803682"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-expense-anomalies.ts",
+          "sha256": "b0b258b19695e70034a4d9041c7595bc721193bf33fa104fd808cb43d7e0fa38"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-foundation-service.ts",
+          "sha256": "26acbadaacd09a1732dc0c8d13d1f117a44d1667b52db390264398f13cff2d35"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-hiring.ts",
+          "sha256": "aac23242c0478d043051bb75b153593b9773e84526a84f89cdb8d6d3ffe1ef75"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-kpi-trends.ts",
+          "sha256": "fe8fca11251106f84230f54b4596bbef384d73a0996814c1f50f76a9d6eedbc5"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-mcp-schema.ts",
+          "sha256": "5000488e6a2038e48d0b7283bdd0250ea3ac6c8f622ecdb302e259125a430e73"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-oauth-crypto.ts",
+          "sha256": "4f9fff0da492fb257ab9ea2257c1bc521ecc312d104a37dbfa222b990f38a59b"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-organisation-blueprint.ts",
+          "sha256": "47b8d9f768d5822cb3ff4f1785a34dadf1aaeaa45a2b8e37369fdd27e43235fa"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-research-provider.mjs",
+          "sha256": "4499373d7c59f874d383da8f31465e01987e1982e21aac5c94d14e9ca8474593"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-secrets.ts",
+          "sha256": "80b2f6a16fd3529d2f16f6ee1f90b77c9e058442c8413a4248835ca3986a8097"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-catalogue.ts",
+          "sha256": "bec14611df496709eb22be561ea140e6cb1462a0f765f5afdedb09781faf0466"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-change-planner.ts",
+          "sha256": "5cc1229189a5d02e3d36819dc4e04cb5a868e87ae92e9175f9fdbdd149f4f85f"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-settings-review.ts",
+          "sha256": "87bcfdc0756a8e2b44421c5645b6dbe91fc1c542590ea99aa28b7cfb4bea47a5"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-connectors.mjs",
+          "sha256": "4895f6594bfea133a1b68639d7afe1abd3fe8f1ee55b126da50d473a74050c70"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-refresh.ts",
+          "sha256": "a16ced77d6df217ae31271f51d8184d585bee71870821ac5398b180e37595db2"
+        },
+        {
+          "path": "supabase/functions/_shared/jd-workspace-service.ts",
+          "sha256": "0168431c89e484f20bf64a9855c93034948215c7a382be1952e028433b8e50f7"
+        },
+        {
+          "path": "supabase/functions/jd-mcp/index.ts",
+          "sha256": "01db4a56b06d28f2eb98a6506182b213dee134a7238c47d2f32321b669c1f171"
+        }
+      ],
+      "externalImports": [
+        {
+          "path": "npm:@supabase/supabase-js@2",
+          "kind": "import-statement"
+        },
+        {
+          "path": "npm:@modelcontextprotocol/server@^2.0.0",
+          "kind": "import-statement"
+        },
+        {
+          "path": "npm:@supabase/middleware@1",
+          "kind": "import-statement"
+        },
+        {
+          "path": "npm:@supabase/server@1",
+          "kind": "import-statement"
+        },
+        {
+          "path": "npm:zod@^4.3.6",
+          "kind": "import-statement"
+        },
+        {
+          "path": "https://esm.sh/xlsx@0.18.5",
+          "kind": "dynamic-import"
+        },
+        {
+          "path": "https://esm.sh/pptxgenjs@3.12.0",
+          "kind": "dynamic-import"
+        },
+        {
+          "path": "https://esm.sh/docx@8.5.0",
+          "kind": "dynamic-import"
+        },
+        {
+          "path": "npm:zod@^4.3.6",
+          "kind": "import-statement"
+        }
+      ]
+    }
+  }
+}
