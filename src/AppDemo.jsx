@@ -658,17 +658,26 @@ function ProfileModal({user,onClose,notify,onUpdated}){
   const [pw2,setPw2]=useState("");
   const [saving,setSaving]=useState(false);
 
-  // Name lives on the profile row; the password is owned by Supabase Auth.
+  // Profile data is stored in public.profiles; credentials are managed only by Supabase Auth.
   const save=async()=>{
-    if(pw&&pw.length<8){notify("Password must be at least 8 characters","error");return;}
+    const cleanName=name.trim();
+    if(!cleanName){notify("Display name is required","error");return;}
+    if(pw&&pw.length<10){notify("Password must be at least 10 characters","error");return;}
     if(pw&&pw!==pw2){notify("Passwords do not match","error");return;}
     setSaving(true);
     try{
-      const {error}=await supabase.from("profiles").update({full_name:name.trim()}).eq("id",user._authUserId||user.id);
-      if(error)throw error;
-      if(pw){const {error:pwError}=await supabase.auth.updateUser({password:pw});if(pwError)throw pwError;}
-      notify("Profile updated");
-      onUpdated({...user,name:name.trim()});
+      const [profileResult,passwordResult]=await Promise.all([
+        supabase.from("profiles").update({full_name:cleanName}).eq("id",user._authUserId||user.id),
+        ...(pw?[supabase.auth.updateUser({password:pw})]:[])
+      ]);
+      if(profileResult.error){
+        if(pw&&passwordResult?.error===null)notify("Password changed, but your display name could not be saved: "+profileResult.error.message,"error");
+        else throw profileResult.error;
+        return;
+      }
+      if(passwordResult?.error)throw new Error("Display name saved, but password was not changed: "+passwordResult.error.message);
+      notify(pw?"Profile and password updated":"Profile updated");
+      onUpdated({...user,name:cleanName});
       onClose();
     }catch(e){notify(e?.message||"Profile could not be saved","error");}
     finally{setSaving(false);}
@@ -694,7 +703,7 @@ function ProfileModal({user,onClose,notify,onUpdated}){
       <Inp label="Display Name" value={name} onChange={setName} placeholder="Your full name"/>
       <div style={{borderTop:`1px solid ${C.border}`,marginTop:4,paddingTop:14}}>
         <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Change Password</div>
-        <Inp label="New Password" type="password" value={pw} onChange={setPw} placeholder="Leave blank to keep current"/>
+        <Inp label="New Password" type="password" value={pw} onChange={setPw} placeholder="At least 10 characters; leave blank to keep current"/>
         {pw&&<Inp label="Confirm Password" type="password" value={pw2} onChange={setPw2} placeholder="Repeat new password"/>}
       </div>
       <div style={{display:"flex",gap:10,marginTop:6}}>
