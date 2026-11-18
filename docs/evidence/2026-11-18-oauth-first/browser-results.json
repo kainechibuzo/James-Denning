@@ -1,0 +1,506 @@
+[
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "light",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 320,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 320,
+    "theme": "light",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 320,
+    "theme": "light",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 320,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 320,
+    "theme": "light",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 320,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 320,
+    "theme": "light",
+    "checked": 65,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 320,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 320,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 320,
+    "theme": "dark",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 320,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 320,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 320,
+    "theme": "dark",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 320,
+    "theme": "dark",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 320,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 320,
+    "theme": "dark",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 320,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 320,
+    "theme": "dark",
+    "checked": 65,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "light",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 393,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 393,
+    "theme": "light",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 393,
+    "theme": "light",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 393,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 393,
+    "theme": "light",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 393,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 393,
+    "theme": "light",
+    "checked": 65,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 393,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 393,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 393,
+    "theme": "dark",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 393,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 393,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 393,
+    "theme": "dark",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 393,
+    "theme": "dark",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 393,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 393,
+    "theme": "dark",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 393,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 393,
+    "theme": "dark",
+    "checked": 65,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "light",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "light",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 1280,
+    "theme": "light",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 1280,
+    "theme": "light",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 1280,
+    "theme": "light",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 1280,
+    "theme": "light",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 1280,
+    "theme": "light",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 1280,
+    "theme": "light",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 1280,
+    "theme": "light",
+    "checked": 65,
+    "findings": []
+  },
+  {
+    "name": "plus-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "mention-menu",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "tool-load-error",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 30,
+    "findings": []
+  },
+  {
+    "name": "directory",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 153,
+    "findings": []
+  },
+  {
+    "name": "setup-details",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "oauth-operator-setup",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 11,
+    "findings": []
+  },
+  {
+    "name": "github-oauth-consent",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 16,
+    "findings": []
+  },
+  {
+    "name": "oauth-failure",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 17,
+    "findings": []
+  },
+  {
+    "name": "key-only-unavailable",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 5,
+    "findings": []
+  },
+  {
+    "name": "workspace-setup-required",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 64,
+    "findings": []
+  },
+  {
+    "name": "workspace-backend-error",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 6,
+    "findings": []
+  },
+  {
+    "name": "workspace-app-selection",
+    "width": 1280,
+    "theme": "dark",
+    "checked": 65,
+    "findings": []
+  }
+]

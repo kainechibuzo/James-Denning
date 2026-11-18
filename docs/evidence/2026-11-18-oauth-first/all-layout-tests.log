@@ -1,0 +1,517 @@
+
+> james-denning@1.0.0 test:chat-layout
+> node scripts/test-chat-layout.mjs && node scripts/test-settings-layout.mjs && node scripts/test-agent-studio-layout.mjs && node scripts/test-foundation-layout.mjs && node scripts/test-agent-registry-layout.mjs && npm run test:reference-layout && npm run test:site-layout && npm run test:conversation-layout && npm run test:theme-layout && npm run test:connectors
+
+Browser: 153.0.8010.0
+Layout 320x740: PASS
+Layout 360x800: PASS
+Layout 393x852: PASS
+Layout 708x900: PASS
+Layout 1280x900: PASS
+Layout 393x460: PASS
+Settings + review 360: PASS
+Settings + review 393: PASS
+Settings + review 708: PASS
+Settings + review 1280: PASS
+Agent Studio 360: PASS
+Agent Studio 393: PASS
+Agent Studio 708: PASS
+Agent Studio 1280: PASS
+Business foundation 360: PASS
+Business foundation 393: PASS
+Business foundation 708: PASS
+Business foundation 1280: PASS
+Agent registry 360: PASS
+Agent registry 393: PASS
+Agent registry 708: PASS
+Agent registry 1280: PASS
+
+> james-denning@1.0.0 test:reference-layout
+> node scripts/test-reference-layout.mjs
+
+Browser: 153.0.8010.0
+landing 320x740: PASS
+workspace 320x740: PASS
+landing 360x800: PASS
+workspace 360x800: PASS
+landing 393x780: PASS
+workspace 393x780: PASS
+landing 708x900: PASS
+workspace 708x900: PASS
+landing 1280x900: PASS
+workspace 1280x900: PASS
+landing 393x460: PASS
+workspace 393x460: PASS
+
+> james-denning@1.0.0 test:site-layout
+> node scripts/test-site-design-layout.mjs
+
+320 chat: PASS
+320 recruitment: PASS
+320 email-logs: PASS
+320 notifications: PASS
+320 permissions: PASS
+320 organisation-settings: PASS
+320 admin-tools: PASS
+320 register-organisation: PASS
+320 settings-workspace: PASS
+320 settings-organization-info: PASS
+320 settings-security: PASS
+320 settings-jd-connect: PASS
+320 settings-about: PASS
+320 operations-overview: PASS
+320 operations-saas-agents: PASS
+320 operations-business-builder: PASS
+320 operations-workflow-studio: PASS
+320 operations-recurring-assignment: PASS
+320 operations-collaboration: PASS
+320 operations-business-platform: PASS
+320 business-crm: PASS
+320 business-sales: PASS
+320 business-expenses: PASS
+320 business-contracts: PASS
+320 business-support: PASS
+320 business-sla-policies: PASS
+320 business-documents: PASS
+320 business-integrations: PASS
+320 business-cash-flow: PASS
+320 business-revenue-intelligence: PASS
+320 business-expense-budgets: PASS
+320 business-kpi-trends: PASS
+320 business-predictive-analysis: PASS
+320 business-executive-reports: PASS
+320 business-business-health: PASS
+320 operations-organisation: PASS
+320 operations-operations: PASS
+320 operations-hiring: PASS
+320 operations-capabilities: PASS
+320 operations-jd-runs: PASS
+320 operations-intelligence: PASS
+320 profile-dialog: PASS
+320 dark-operations: PASS
+320 dark-settings: PASS
+320 workspace-switch-dialog: PASS
+320 auth-signin: PASS
+320 auth-signup: PASS
+320 auth-reset: PASS
+320 auth-update: PASS
+320 auth-invite-sent: PASS
+320 oauth-consent: PASS
+320 public-application: PASS
+320 offline: PASS
+393 chat: PASS
+393 recruitment: PASS
+393 email-logs: PASS
+393 notifications: PASS
+393 permissions: PASS
+393 organisation-settings: PASS
+393 admin-tools: PASS
+393 register-organisation: PASS
+393 settings-workspace: PASS
+393 settings-organization-info: PASS
+393 settings-security: PASS
+393 settings-jd-connect: PASS
+393 settings-about: PASS
+393 operations-overview: PASS
+393 operations-saas-agents: PASS
+393 operations-business-builder: PASS
+393 operations-workflow-studio: PASS
+393 operations-recurring-assignment: PASS
+393 operations-collaboration: PASS
+393 operations-business-platform: PASS
+393 business-crm: PASS
+393 business-sales: PASS
+393 business-expenses: PASS
+393 business-contracts: PASS
+393 business-support: PASS
+393 business-sla-policies: PASS
+393 business-documents: PASS
+393 business-integrations: PASS
+393 business-cash-flow: PASS
+393 business-revenue-intelligence: PASS
+393 business-expense-budgets: PASS
+393 business-kpi-trends: PASS
+393 business-predictive-analysis: PASS
+393 business-executive-reports: PASS
+393 business-business-health: PASS
+393 operations-organisation: PASS
+393 operations-operations: PASS
+393 operations-hiring: PASS
+393 operations-capabilities: PASS
+393 operations-jd-runs: PASS
+393 operations-intelligence: PASS
+393 profile-dialog: PASS
+393 dark-operations: PASS
+393 dark-settings: PASS
+393 workspace-switch-dialog: PASS
+393 auth-signin: PASS
+393 auth-signup: PASS
+393 auth-reset: PASS
+393 auth-update: PASS
+393 auth-invite-sent: PASS
+393 oauth-consent: PASS
+393 public-application: PASS
+393 offline: PASS
+1280 chat: PASS
+1280 recruitment: PASS
+1280 email-logs: PASS
+1280 notifications: PASS
+1280 permissions: PASS
+1280 organisation-settings: PASS
+1280 admin-tools: PASS
+1280 register-organisation: PASS
+1280 settings-workspace: PASS
+1280 settings-organization-info: PASS
+1280 settings-security: PASS
+1280 settings-jd-connect: PASS
+1280 settings-about: PASS
+1280 operations-overview: PASS
+1280 operations-saas-agents: PASS
+1280 operations-business-builder: PASS
+1280 operations-workflow-studio: PASS
+1280 operations-recurring-assignment: PASS
+1280 operations-collaboration: PASS
+1280 operations-business-platform: PASS
+1280 business-crm: PASS
+1280 business-sales: PASS
+1280 business-expenses: PASS
+1280 business-contracts: PASS
+1280 business-support: PASS
+1280 business-sla-policies: PASS
+1280 business-documents: PASS
+1280 business-integrations: PASS
+1280 business-cash-flow: PASS
+1280 business-revenue-intelligence: PASS
+1280 business-expense-budgets: PASS
+1280 business-kpi-trends: PASS
+1280 business-predictive-analysis: PASS
+1280 business-executive-reports: PASS
+1280 business-business-health: PASS
+1280 operations-organisation: PASS
+1280 operations-operations: PASS
+1280 operations-hiring: PASS
+1280 operations-capabilities: PASS
+1280 operations-jd-runs: PASS
+1280 operations-intelligence: PASS
+1280 profile-dialog: PASS
+1280 dark-operations: PASS
+1280 dark-settings: PASS
+1280 workspace-switch-dialog: PASS
+1280 auth-signin: PASS
+1280 auth-signup: PASS
+1280 auth-reset: PASS
+1280 auth-update: PASS
+1280 auth-invite-sent: PASS
+1280 oauth-consent: PASS
+1280 public-application: PASS
+1280 offline: PASS
+
+> james-denning@1.0.0 test:conversation-layout
+> node scripts/test-conversation-layout.mjs
+
+48 populated conversation / sidebar / landing checks passed.
+
+> james-denning@1.0.0 test:theme-layout
+> JD_THEME_AUDIT=1 node scripts/test-site-design-layout.mjs
+
+320 sidebar-pills: PASS
+320 chat: PASS
+320 populated-departments: PASS
+320 populated-ai-usage: PASS
+320 populated-review-centre: PASS
+320 populated-automation-runs: PASS
+320 conversation-history: PASS
+320 history-empty-search: PASS
+320 history-error: PASS
+320 populated-chat: PASS
+320 product-tour: PASS
+320 header-settings: PASS
+320 recruitment: PASS
+320 email-logs: PASS
+320 notifications: PASS
+320 permissions: PASS
+320 organisation-settings: PASS
+320 admin-tools: PASS
+320 register-organisation: PASS
+320 settings-workspace: PASS
+320 settings-organization-info: PASS
+320 settings-security: PASS
+320 settings-jd-connect: PASS
+320 settings-about: PASS
+320 operations-overview: PASS
+320 operations-saas-agents: PASS
+320 operations-business-builder: PASS
+320 operations-workflow-studio: PASS
+320 operations-recurring-assignment: PASS
+320 operations-collaboration: PASS
+320 operations-business-platform: PASS
+320 business-crm: PASS
+320 business-sales: PASS
+320 business-expenses: PASS
+320 business-contracts: PASS
+320 business-support: PASS
+320 business-sla-policies: PASS
+320 business-documents: PASS
+320 business-integrations: PASS
+320 business-cash-flow: PASS
+320 business-revenue-intelligence: PASS
+320 business-expense-budgets: PASS
+320 business-kpi-trends: PASS
+320 business-predictive-analysis: PASS
+320 business-executive-reports: PASS
+320 business-business-health: PASS
+320 operations-organisation: PASS
+320 operations-operations: PASS
+320 operations-hiring: PASS
+320 operations-capabilities: PASS
+320 operations-jd-runs: PASS
+320 operations-intelligence: PASS
+320 profile-dialog: PASS
+320 dark-operations: PASS
+320 dark-settings: PASS
+320 workspace-switch-dialog: PASS
+320 auth-signin: PASS
+320 auth-signup: PASS
+320 auth-reset: PASS
+320 auth-update: PASS
+320 auth-invite-sent: PASS
+320 oauth-consent: PASS
+320 public-application: PASS
+320 offline: PASS
+393 sidebar-pills: PASS
+393 chat: PASS
+393 populated-departments: PASS
+393 populated-ai-usage: PASS
+393 populated-review-centre: PASS
+393 populated-automation-runs: PASS
+393 conversation-history: PASS
+393 history-empty-search: PASS
+393 history-error: PASS
+393 populated-chat: PASS
+393 product-tour: PASS
+393 header-settings: PASS
+393 recruitment: PASS
+393 email-logs: PASS
+393 notifications: PASS
+393 permissions: PASS
+393 organisation-settings: PASS
+393 admin-tools: PASS
+393 register-organisation: PASS
+393 settings-workspace: PASS
+393 settings-organization-info: PASS
+393 settings-security: PASS
+393 settings-jd-connect: PASS
+393 settings-about: PASS
+393 operations-overview: PASS
+393 operations-saas-agents: PASS
+393 operations-business-builder: PASS
+393 operations-workflow-studio: PASS
+393 operations-recurring-assignment: PASS
+393 operations-collaboration: PASS
+393 operations-business-platform: PASS
+393 business-crm: PASS
+393 business-sales: PASS
+393 business-expenses: PASS
+393 business-contracts: PASS
+393 business-support: PASS
+393 business-sla-policies: PASS
+393 business-documents: PASS
+393 business-integrations: PASS
+393 business-cash-flow: PASS
+393 business-revenue-intelligence: PASS
+393 business-expense-budgets: PASS
+393 business-kpi-trends: PASS
+393 business-predictive-analysis: PASS
+393 business-executive-reports: PASS
+393 business-business-health: PASS
+393 operations-organisation: PASS
+393 operations-operations: PASS
+393 operations-hiring: PASS
+393 operations-capabilities: PASS
+393 operations-jd-runs: PASS
+393 operations-intelligence: PASS
+393 profile-dialog: PASS
+393 dark-operations: PASS
+393 dark-settings: PASS
+393 workspace-switch-dialog: PASS
+393 auth-signin: PASS
+393 auth-signup: PASS
+393 auth-reset: PASS
+393 auth-update: PASS
+393 auth-invite-sent: PASS
+393 oauth-consent: PASS
+393 public-application: PASS
+393 offline: PASS
+1280 sidebar-pills: PASS
+1280 chat: PASS
+1280 populated-departments: PASS
+1280 populated-ai-usage: PASS
+1280 populated-review-centre: PASS
+1280 populated-automation-runs: PASS
+1280 conversation-history: PASS
+1280 history-empty-search: PASS
+1280 history-error: PASS
+1280 populated-chat: PASS
+1280 product-tour: PASS
+1280 header-settings: PASS
+1280 recruitment: PASS
+1280 email-logs: PASS
+1280 notifications: PASS
+1280 permissions: PASS
+1280 organisation-settings: PASS
+1280 admin-tools: PASS
+1280 register-organisation: PASS
+1280 settings-workspace: PASS
+1280 settings-organization-info: PASS
+1280 settings-security: PASS
+1280 settings-jd-connect: PASS
+1280 settings-about: PASS
+1280 operations-overview: PASS
+1280 operations-saas-agents: PASS
+1280 operations-business-builder: PASS
+1280 operations-workflow-studio: PASS
+1280 operations-recurring-assignment: PASS
+1280 operations-collaboration: PASS
+1280 operations-business-platform: PASS
+1280 business-crm: PASS
+1280 business-sales: PASS
+1280 business-expenses: PASS
+1280 business-contracts: PASS
+1280 business-support: PASS
+1280 business-sla-policies: PASS
+1280 business-documents: PASS
+1280 business-integrations: PASS
+1280 business-cash-flow: PASS
+1280 business-revenue-intelligence: PASS
+1280 business-expense-budgets: PASS
+1280 business-kpi-trends: PASS
+1280 business-predictive-analysis: PASS
+1280 business-executive-reports: PASS
+1280 business-business-health: PASS
+1280 operations-organisation: PASS
+1280 operations-operations: PASS
+1280 operations-hiring: PASS
+1280 operations-capabilities: PASS
+1280 operations-jd-runs: PASS
+1280 operations-intelligence: PASS
+1280 profile-dialog: PASS
+1280 dark-operations: PASS
+1280 dark-settings: PASS
+1280 workspace-switch-dialog: PASS
+1280 auth-signin: PASS
+1280 auth-signup: PASS
+1280 auth-reset: PASS
+1280 auth-update: PASS
+1280 auth-invite-sent: PASS
+1280 oauth-consent: PASS
+1280 public-application: PASS
+1280 offline: PASS
+
+> james-denning@1.0.0 test:connectors
+> node --test scripts/test-composer-connectors.mjs && node scripts/test-composer-focus-layout.mjs && node scripts/test-composer-connectors-layout.mjs
+
+TAP version 13
+# Subtest: 78 distinct directory entries, eight business areas, no fabricated connection
+ok 1 - 78 distinct directory entries, eight business areas, no fabricated connection
+  ---
+  duration_ms: 1.699892
+  type: 'test'
+  ...
+# Subtest: directory search, category intersection and deterministic sorting
+ok 2 - directory search, category intersection and deterministic sorting
+  ---
+  duration_ms: 7.93586
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: owner
+ok 3 - connector UI follows existing backend role boundary: owner
+  ---
+  duration_ms: 0.187862
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: admin
+ok 4 - connector UI follows existing backend role boundary: admin
+  ---
+  duration_ms: 0.15608
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: manager
+ok 5 - connector UI follows existing backend role boundary: manager
+  ---
+  duration_ms: 0.94755
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: staff
+ok 6 - connector UI follows existing backend role boundary: staff
+  ---
+  duration_ms: 0.088394
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: viewer
+ok 7 - connector UI follows existing backend role boundary: viewer
+  ---
+  duration_ms: 0.137412
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: contractor
+ok 8 - connector UI follows existing backend role boundary: contractor
+  ---
+  duration_ms: 0.069814
+  type: 'test'
+  ...
+# Subtest: connector UI follows existing backend role boundary: undefined
+ok 9 - connector UI follows existing backend role boundary: undefined
+  ---
+  duration_ms: 0.252922
+  type: 'test'
+  ...
+# Subtest: @ recognises the caret query, not email addresses or earlier text
+ok 10 - @ recognises the caret query, not email addresses or earlier text
+  ---
+  duration_ms: 1.1557
+  type: 'test'
+  ...
+# Subtest: mention insertion preserves text after the caret and never submits
+ok 11 - mention insertion preserves text after the caret and never submits
+  ---
+  duration_ms: 0.260356
+  type: 'test'
+  ...
+# Subtest: only discovered tools belonging to currently connected servers are mentionable
+ok 12 - only discovered tools belonging to currently connected servers are mentionable
+  ---
+  duration_ms: 0.288735
+  type: 'test'
+  ...
+# Subtest: all 24 published endpoint presets have source evidence, no credentials and no live-verified claim
+ok 13 - all 24 published endpoint presets have source evidence, no credentials and no live-verified claim
+  ---
+  duration_ms: 1.017349
+  type: 'test'
+  ...
+# Subtest: known hosted authentication remains distinct from availability and manual setup
+ok 14 - known hosted authentication remains distinct from availability and manual setup
+  ---
+  duration_ms: 0.293544
+  type: 'test'
+  ...
+# Subtest: endpoint recognition preserves auth requirements across harmless URL variations
+ok 15 - endpoint recognition preserves auth requirements across harmless URL variations
+  ---
+  duration_ms: 0.393909
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 84.765221
+menu-enter: replacement, caret, dismissal and no-execution checks PASS
+menu-click: replacement, caret, dismissal and no-execution checks PASS
+mention-enter: replacement, caret, dismissal and no-execution checks PASS
+mention-tab: replacement, caret, dismissal and no-execution checks PASS
+72 composer/connector theme states passed, plus navigation, no-write and role checks.

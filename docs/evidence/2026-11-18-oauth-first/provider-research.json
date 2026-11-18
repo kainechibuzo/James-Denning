@@ -1,0 +1,6 @@
+[
+ {"provider":"github","url":"https://github.com/github/github-mcp-server/blob/main/docs/host-integration.md","method":"GitHub API contents fetch","excerpt":"Remote GitHub MCP recommends OAuth. Dynamic Client Registration is not supported. Register a GitHub App or OAuth App; client secrets belong in the host application backend.","runtimeVerified":false},
+ {"provider":"slack","url":"https://docs.slack.dev/ai/slack-mcp-server/","method":"Fetched provider documentation","excerpt":"Confidential OAuth. Registered internal or Marketplace app. User-token authorization endpoint https://slack.com/oauth/v2_user/authorize; token endpoint https://slack.com/api/oauth.v2.user.access. No DCR.","runtimeVerified":false},
+ {"provider":"slack","url":"https://docs.slack.dev/reference/methods/oauth.v2.user.access/","method":"Fetched provider documentation","excerpt":"Documented user-only token response uses top-level access_token, token_type user, and authed_user.scope. Supports code_verifier and refresh_token. JD normalises this token type only for Slack.","runtimeVerified":false},
+ {"provider":"notion","url":"https://developers.notion.com/guides/mcp/get-started-with-mcp","method":"Fetched provider documentation","excerpt":"Remote MCP URL https://mcp.notion.com/mcp; complete provider OAuth to connect. Not an integration-token substitute.","runtimeVerified":false}
+]

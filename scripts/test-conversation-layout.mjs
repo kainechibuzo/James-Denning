@@ -18,7 +18,7 @@ try{for(const width of [320,393,708,1280]){
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{
   const u=new URL(route.request().url());if(u.hostname!=='ui.test')return route.abort();
-  if(u.pathname.startsWith('/design/')||u.pathname.startsWith('/fonts/')){const path=resolve('public','.'+u.pathname);return route.fulfill({body:readFileSync(path),contentType:({'.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2'})[extname(path)]});}
+  if(u.pathname.startsWith('/design/')||u.pathname.startsWith('/fonts/')||u.pathname.startsWith('/connectors/')){const path=resolve('public','.'+u.pathname);return route.fulfill({body:readFileSync(path),contentType:({'.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2'})[extname(path)]});}
   return route.fulfill({body:'<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div></body></html>',contentType:'text/html'});
  });
  await page.goto('http://ui.test/');await page.evaluate(()=>{window.__conversationFixture=true;});await page.addStyleTag({content:css});await page.addScriptTag({content:js,type:'module'});

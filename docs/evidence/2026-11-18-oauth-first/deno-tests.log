@@ -1,0 +1,15 @@
+Check supabase/functions/_shared/jd-connect-execution.test.ts
+running 10 tests from ./supabase/functions/_shared/jd-connect-execution.test.ts
+JD Connect treats MCP tool-level errors as failed executions ... ok (439µs)
+JD Connect persists successful results before returning success ... ok (77µs)
+JD Connect reports audit and approval persistence warnings without falsifying remote outcome ... ok (62µs)
+JD Connect exposes tenant-scoped approval status and execution evidence ... ok (122µs)
+JD Connect read and evidence endpoints do not require encryption material ... ok (452µs)
+JD Connect records an execution before connecting to the remote server ... ok (76µs)
+JD Connect supports per-provider read-only, read-write and full-control grants ... ok (63µs)
+JD Connect enforces granted write scopes and preserves destructive approval gates ... ok (85µs)
+JD Connect returns to read-only when a provider grant is missing or expired ... ok (67µs)
+OAuth never bypasses per-action approval through legacy elevated grants ... ok (56µs)
+
+ok | 10 passed | 0 failed (7ms)
+

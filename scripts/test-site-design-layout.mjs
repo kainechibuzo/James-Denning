@@ -21,7 +21,7 @@ try{for(const width of [320,393,1280]){
  page.on('console',msg=>{if(msg.type()==='error')console.error('Browser console:',msg.text());});
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());if(u.hostname!=='site.test')return route.abort();
-  if(u.pathname.startsWith('/design/')||u.pathname.startsWith('/fonts/')||u.pathname==='/offline.html'){
+  if(u.pathname.startsWith('/design/')||u.pathname.startsWith('/fonts/')||u.pathname.startsWith('/connectors/')||u.pathname==='/offline.html'){
    const path=resolve('public','.'+u.pathname);assert.ok(existsSync(path),path);
    return route.fulfill({body:readFileSync(path),contentType:({'.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.html':'text/html'})[extname(path)]});
   }

@@ -1,55 +1,55 @@
 import React,{useState} from 'react';
-import {ArrowLeft,ArrowUpRight,Check,Link2,Plus,Search,ShieldCheck,X} from 'lucide-react';
-import {CONNECTOR_CATALOGUE,CONNECTOR_CATEGORIES,HOSTED_CONNECTOR_COUNT,filterConnectors,canManageConnectors,connectionLabel,supportsHostedAuth} from './catalogue.mjs';
+import {ArrowLeft,ArrowUpRight,Link2,Search,ShieldCheck,X} from 'lucide-react';
+import {CONNECTOR_CATALOGUE,CONNECTOR_CATEGORIES,filterConnectors,canManageConnectors,PRIORITY_CONNECTOR_IDS} from './catalogue.mjs';
+import {oauthProviderId} from '../../supabase/functions/_shared/jd-connector-oauth-policy.mjs';
 import {JDConnectPanel} from '../components/jd-connect/JDConnectPanel.jsx';
 import {WorkspaceConnectPanel} from './WorkspaceConnectPanel.jsx';
-import {PRIORITY_CONNECTOR_IDS} from './catalogue.mjs';
+import {OAuthConnectPanel} from './OAuthConnectPanel.jsx';
+import {ConnectorLogo} from './ConnectorLogo.jsx';
+import {supabase} from '../supabaseClient.js';
 import './connectors.css';
-
+const route=e=>e.connection.kind==='native'?'work':oauthProviderId(e.id)?'oauth':['exa','firecrawl'].includes(e.id)?'public':'unavailable';
+const label=e=>({work:'Account sign-in',oauth:'Account sign-in',public:'Limited public access',unavailable:'Not available yet'})[route(e)];
 export function ConnectorDirectory({role,onBack,organizationName='Current workspace'}){
- const [tab,setTab]=useState('explore'),[query,setQuery]=useState(''),[category,setCategory]=useState('All'),[sort,setSort]=useState('name'),[selected,setSelected]=useState(null),[setup,setSetup]=useState(null),[availability,setAvailability]=useState('priority'),[appSetup,setAppSetup]=useState(null);
+ const [tab,setTab]=useState('explore'),[query,setQuery]=useState(''),[category,setCategory]=useState('All'),[sort,setSort]=useState('name'),[selected,setSelected]=useState(null),[availability,setAvailability]=useState('priority'),[appSetup,setAppSetup]=useState(null),[oauth,setOAuth]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const allowed=canManageConnectors(role);
- const entries=filterConnectors({query,category,sort}).filter(e=>availability==='all'||(availability==='priority'?PRIORITY_CONNECTOR_IDS.includes(e.id):availability==='native'?e.connection.kind==='native':availability==='hosted'?Boolean(e.endpoint):e.connection.kind==='manual'));
- const configure=(entry)=>{if(entry?.connection.kind==='native'){setSelected(null);setAppSetup(entry.id);setTab('apps');return;}setSelected(null);setSetup({name:entry?.name||'',endpoint:entry?.endpoint||'',key:Date.now()});setTab('connected');};
- const viewDetails=entry=>{if(entry.connection.kind==='native'){configure(entry);return;}setSelected(entry);requestAnimationFrame(()=>document.querySelector('.jd-connector-setup')?.scrollIntoView({block:'nearest'}));};
+ const entries=filterConnectors({query,category,sort}).filter(e=>availability==='all'||(availability==='priority'?PRIORITY_CONNECTOR_IDS.includes(e.id):availability==='signin'?['oauth','work'].includes(route(e)):availability==='public'?route(e)==='public':route(e)==='unavailable'));
+ const configure=entry=>{setError('');setSelected(null);if(route(entry)==='work'){setAppSetup(entry.id);setTab('apps');}else if(route(entry)==='oauth'){setOAuth(entry);setTab('oauth');}else setSelected(entry);};
+ const publicConnect=async entry=>{setBusy(true);setError('');try{const {data,error}=await supabase.functions.invoke('jd-connect',{body:{action:'servers.public_connect',providerId:entry.id,confirm:true}});if(error||data?.error)throw Error(data?.error||error.message);if(!data?.server?.id||!Array.isArray(data.tools))throw Error('Connection not confirmed.');setTab('connected');}catch(e){setError(e.message);}finally{setBusy(false);}};
+ const details=entry=>{setSelected(entry);requestAnimationFrame(()=>document.querySelector('.jd-connector-setup')?.scrollIntoView({block:'nearest'}));};
  return <section className="jd-connectors" aria-labelledby="jd-connectors-title"><div className="jd-connectors-inner">
-  <header className="jd-connectors-head"><div><p className="jd-connectors-eyebrow">JD CONNECT</p><h1 id="jd-connectors-title">Your business, connected.</h1><p>Bring the services you use into the work you do with JD.</p></div>{onBack&&<button type="button" onClick={onBack}><ArrowLeft size={16}/> Back to JD</button>}</header>
-  <p className="jd-connectors-count">Connections are scoped to {organizationName}. Switch organisations to manage another business.</p>
+  <header className="jd-connectors-head"><div><p className="jd-connectors-eyebrow">JD CONNECT</p><h1 id="jd-connectors-title">Your business, connected.</h1><p>Sign in to the services you use. No API keys to chase.</p></div>{onBack&&<button type="button" onClick={onBack}><ArrowLeft size={16}/> Back to JD</button>}</header>
+  <p className="jd-connectors-count">Connections are scoped to {organizationName}. Personal accounts stay private unless explicitly shared.</p>
   <nav className="jd-connectors-tabs" aria-label="Connector views">
    <button type="button" aria-current={tab==='explore'?'page':undefined} onClick={()=>setTab('explore')}>Explore <span>{CONNECTOR_CATALOGUE.length}</span></button>
    <button type="button" aria-current={tab==='connected'?'page':undefined} onClick={()=>setTab('connected')}>My connections</button>
    <button type="button" aria-current={tab==='apps'?'page':undefined} onClick={()=>{setAppSetup(null);setTab('apps');}}>Work apps</button>
-   {allowed&&<button className="jd-connectors-add" type="button" onClick={()=>configure(null)}><Plus size={16}/> Custom MCP server</button>}
   </nav>
   {tab==='explore'?<>
-   <div className="jd-connectors-notice"><ShieldCheck size={18}/><p><strong>Everyday work apps, alongside your developer tools.</strong> Google and Microsoft apps use selected read-only API permissions. {HOSTED_CONNECTOR_COUNT} other listings have documented hosted MCP endpoints. The remote-MCP gateway supports Bearer tokens, not provider OAuth or custom auth headers; Slack, Notion and Vercel sign-in are still gated. A listing is not a connection: host allowlisting, permissions and explicit confirmation still apply.</p></div>
+   <div className="jd-connectors-notice"><ShieldCheck size={18}/><p><strong>Sign in. Review access. Connect.</strong> JD handles provider credentials securely. Provider app registration and deployment may still need operator setup. Key-only services remain unavailable instead of asking you for a secret. A directory listing is not a live connection or permission to take consequential actions.</p></div>
    <div className="jd-connectors-filters">
     <label className="jd-connectors-search"><Search size={17}/><input type="search" aria-label="Search connectors" placeholder="Search services or business needs" value={query} onChange={e=>setQuery(e.target.value)}/></label>
     <label>Business area<select aria-label="Connector category" value={category} onChange={e=>setCategory(e.target.value)}><option>All</option>{CONNECTOR_CATEGORIES.map(c=><option key={c}>{c}</option>)}</select></label>
-    <label>Setup<select aria-label="Connector setup" value={availability} onChange={e=>setAvailability(e.target.value)}><option value="priority">Useful shortlist</option><option value="all">All setups</option><option value="native">Read-only work apps</option><option value="hosted">Hosted URL</option><option value="custom">Custom endpoint</option></select></label>
+    <label>Setup<select aria-label="Connector setup" value={availability} onChange={e=>setAvailability(e.target.value)}><option value="priority">Useful shortlist</option><option value="all">All setups</option><option value="signin">Account sign-in</option><option value="public">Limited public access</option><option value="unavailable">Not available yet</option></select></label>
     <label>Sort by<select aria-label="Sort connectors" value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Name A–Z</option><option value="category">Business area</option></select></label>
    </div>
-   <p className="jd-connectors-count" role="status">{entries.length} of {CONNECTOR_CATALOGUE.length} directory entries · workspace connections are managed separately</p>
+   <p className="jd-connectors-count" role="status">{entries.length} of {CONNECTOR_CATALOGUE.length} directory entries · setup and connection status are separate</p>
+   {error&&<p role="alert">{error}</p>}
    {selected&&<section className="jd-connector-setup" aria-label={`Setup ${selected.name}`}>
-    <div className="jd-connector-setup-head"><h2>{selected.name}</h2><button type="button" aria-label="Close connector details" onClick={()=>setSelected(null)}><X size={17}/></button></div>
-    <p>{selected.description}.</p>
-    {selected.endpoint&&<label className="jd-published-endpoint">Published MCP URL<input aria-label="Published MCP URL" readOnly value={selected.endpoint}/></label>}
-    <p>{selected.connection.note}</p>
-    <ol><li>Review the provider’s setup, permissions and any charges.</li><li>{selected.endpoint?'The URL is prefilled. Complete the required authentication before connecting.':'Obtain a compatible HTTPS MCP endpoint from your operator or deployment. A repository URL is not an endpoint.'}</li><li>Ask your JD operator to allowlist the host. Connect explicitly and inspect discovered tools before granting access.</li></ol>
-    <p>Hosted presets may use the provider’s server rather than the community project below. Published URLs have not been runtime-tested with your account. No code is installed and no service is connected by browsing.</p>
-    <div className="jd-connector-setup-actions">
-     <a href={selected.connection.docsUrl} target="_blank" rel="noopener noreferrer">Connection guide <ArrowUpRight size={15}/></a>
-     <a href={selected.sourceUrl} target="_blank" rel="noopener noreferrer">Project source <ArrowUpRight size={15}/></a>
-     {allowed?<button type="button" onClick={()=>configure(selected)}><Check size={15}/>{selected.endpoint?'Use hosted URL':'I have an endpoint'}</button>:<span>Ask a workspace owner, admin or manager to connect this service.</span>}
+    <div className="jd-connector-setup-head"><div className="jd-provider-title"><ConnectorLogo id={selected.id} name={selected.name}/><h2>{selected.name}</h2></div><button type="button" aria-label="Close connector details" onClick={()=>setSelected(null)}><X size={17}/></button></div>
+    <p>{selected.description}</p>
+    {route(selected)==='unavailable'?<p><strong>Not available in the no-key connection flow yet.</strong> JD will not ask you for a PAT or API key. Operator-managed access would need a separate provider, cost and data-handling decision. No managed credentials or billing have been enabled.</p>:route(selected)==='public'?<p>Limited anonymous access, with provider rate limits and tool restrictions. No account or key is needed. Your operator must enable the host. Connect explicitly to discover tools; do not submit private data to a public service without authorisation.</p>:<p>Use provider sign-in and review the requested access. No token to copy. Operator registration and provider approval may be prerequisites. Connection is confirmed only after the applicable verification succeeds.</p>}
+    <div className="jd-connector-setup-actions"><a href={selected.connection.docsUrl} target="_blank" rel="noopener noreferrer">Provider guide <ArrowUpRight size={15}/></a>
+     {allowed&&route(selected)!=='unavailable'&&<button disabled={busy} onClick={()=>route(selected)==='public'?publicConnect(selected):configure(selected)}>{busy?'Connecting…':route(selected)==='public'?'Connect limited public access':'Set up sign-in'}</button>}
+     {!allowed&&<span>Ask a workspace owner, admin or manager to connect this service.</span>}
     </div>
    </section>}
    {entries.length?<div className="jd-connectors-grid">{entries.map(entry=><article key={entry.id}>
-    <div className="jd-connector-card-top"><span className="jd-connector-monogram" aria-hidden="true">{entry.name.slice(0,2).toUpperCase()}</span><span className="jd-connector-label">{connectionLabel(entry)}</span></div>
+    <div className="jd-connector-card-top"><ConnectorLogo id={entry.id} name={entry.name}/><span className="jd-connector-label">{label(entry)}</span></div>
     <p className="jd-connector-category">{entry.category}</p><h2>{entry.name}</h2><p className="jd-connector-description">{entry.description}</p>
-    {entry.endpoint&&<p className="jd-connector-host">{new URL(entry.endpoint).hostname}</p>}
-    {allowed&&(entry.connection.kind==='native'||entry.endpoint&&supportsHostedAuth(entry))&&<button className="jd-connector-connect" type="button" aria-label={`Connect ${entry.name}`} onClick={()=>configure(entry)}><Link2 size={15}/> Connect</button>}
-    <button type="button" aria-label={`View setup for ${entry.name}`} onClick={()=>viewDetails(entry)}>View setup <ArrowUpRight size={15}/></button>
-   </article>)}</div>:<div className="jd-connectors-empty"><Search size={25}/><h2>No matching connectors</h2><p>Try another name or business area, or add your own MCP server.</p><button type="button" onClick={()=>{setQuery('');setCategory('All');setAvailability('all');}}>Clear filters</button></div>}
-  </>:tab==='apps'?(allowed?<WorkspaceConnectPanel key={appSetup||'work-apps'} initialService={appSetup} onClose={()=>setTab('explore')}/>:<div className="jd-connectors-empty"><h2>Managed by your workspace</h2><p>Ask a workspace owner, admin or manager to connect work apps.</p></div>):allowed?<JDConnectPanel role={role} key={setup?.key||'connections'} initialName={setup?.name} initialEndpoint={setup?.endpoint} openRegistration={Boolean(setup)}/>:<div className="jd-connectors-empty"><Link2 size={25}/><h2>Managed by your workspace</h2><p>Only workspace owners, admins and managers can inspect or change MCP connections. You can still explore the directory.</p></div>}
+    {allowed&&['work','oauth'].includes(route(entry))&&<button className="jd-connector-connect" type="button" aria-label={`Connect ${entry.name}`} onClick={()=>configure(entry)}><Link2 size={15}/> Connect</button>}
+    <button type="button" aria-label={`View setup for ${entry.name}`} onClick={()=>details(entry)}>View setup <ArrowUpRight size={15}/></button>
+   </article>)}</div>:<div className="jd-connectors-empty"><Search size={25}/><h2>No matching connectors</h2><p>Try another name or business area.</p><button type="button" onClick={()=>{setQuery('');setCategory('All');setAvailability('all');}}>Clear filters</button></div>}
+  </>:!allowed?<div className="jd-connectors-empty"><Link2 size={25}/><h2>Managed by your workspace</h2><p>Ask a workspace owner, admin or manager to connect services.</p></div>:tab==='apps'?<WorkspaceConnectPanel key={appSetup||'work-apps'} initialService={appSetup} onClose={()=>setTab('explore')}/>:tab==='oauth'&&oauth?<OAuthConnectPanel key={oauth.id} entry={oauth} role={role} onClose={()=>setTab('explore')} onConnections={()=>setTab('connected')}/>:<JDConnectPanel role={role} onSignIn={id=>{const entry=CONNECTOR_CATALOGUE.find(e=>oauthProviderId(e.id)===id);if(entry)configure(entry);else setTab('explore');}}/>}
  </div></section>;
 }

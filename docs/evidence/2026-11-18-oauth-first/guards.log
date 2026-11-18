@@ -1,0 +1,53 @@
+
+> james-denning@1.0.0 test:guards
+> node scripts/test-verification-guards.mjs
+
+
+probe-edge-functions.mjs
+  PASS  all functions fail closed (healthy) → exit 0
+  PASS  endpoint open to unauthenticated calls → exit 1
+  PASS  endpoint crashes instead of rejecting → exit 1
+  PASS  function not deployed → exit 1
+  PASS  CI without JD_WORKER_SECRET (assertion would be skipped) → exit 2
+  PASS  no SUPABASE_URL → exit 2
+
+verify-jd-business-staging.mjs
+  PASS  isolation holds (healthy) → exit 0
+  PASS  empty tables (isolation would pass vacuously) → exit 1
+  PASS  vacuity is reported by name, not as a generic error
+  PASS  tenant B can read tenant A's fixture → exit 1
+  PASS  tenant B can write tenant A's fixture → exit 1
+  PASS  cross-tenant write is called out as an isolation failure
+  PASS  tenant B blocked by session auth, not school scope → exit 1
+  PASS  a 403 is reported as inconclusive rather than as passing isolation
+  PASS  missing credentials → exit 2
+  PASS  no project allowlist → exit 2
+  PASS  no project allowlist stops before authentication/network
+  PASS  no explicit write acknowledgement → exit 2
+  PASS  no explicit write acknowledgement stops before authentication/network
+  PASS  production ref even when allowlisted → exit 2
+  PASS  production ref even when allowlisted stops before authentication/network
+  PASS  legacy production ref even when allowlisted → exit 2
+  PASS  legacy production ref even when allowlisted stops before authentication/network
+  PASS  production URL with staging allowlist → exit 2
+  PASS  production URL with staging allowlist stops before authentication/network
+  PASS  different project URL → exit 2
+  PASS  different project URL stops before authentication/network
+  PASS  invalid URL → exit 2
+  PASS  invalid URL stops before authentication/network
+  PASS  HTTP target → exit 2
+  PASS  HTTP target stops before authentication/network
+  PASS  suffix spoofing → exit 2
+  PASS  suffix spoofing stops before authentication/network
+  PASS  URL credentials → exit 2
+  PASS  URL credentials stops before authentication/network
+  PASS  URL path → exit 2
+  PASS  URL path stops before authentication/network
+  PASS  URL query → exit 2
+  PASS  URL query stops before authentication/network
+  PASS  URL fragment → exit 2
+  PASS  URL fragment stops before authentication/network
+  PASS  nonstandard port → exit 2
+  PASS  nonstandard port stops before authentication/network
+
+All verification guards behave as intended.

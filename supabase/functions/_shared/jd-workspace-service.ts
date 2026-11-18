@@ -1,3 +1,4 @@
+import {refreshWorkspaceConnection} from "./jd-workspace-refresh.ts";
 import {decryptSecret,importAesKey} from './jd-oauth-crypto.ts';
 import {getJdSecret} from './jd-secrets.ts';
 import {WORKSPACE_SERVICES,WORKSPACE_PROVIDERS,workspaceService,workspaceAccess,workspaceReadRequest,projectWorkspaceResponse} from './jd-workspace-connectors.mjs';
@@ -21,9 +22,15 @@ export async function readWorkspaceApp(args:any,ctx:WorkspaceContext,dependencie
  authorised(ctx);const service=workspaceService(args.service_id);if(!service)throw Error('Unsupported workspace app.');
  // Validate before touching credentials or the network; arbitrary URLs/actions fail.
  const request=workspaceReadRequest(service.id,args.arguments||{},new Date(dependencies.now??Date.now()));
- const {data:connection,error}=await ctx.admin.from('jd_business_oauth_connections').select(fields+',encrypted_credentials').eq('school_id',ctx.schoolId).eq('provider_id',service.provider).eq('connected_by',ctx.userId).maybeSingle();
+ const {data:loadedConnection,error}=await ctx.admin.from('jd_business_oauth_connections').select(fields+',encrypted_credentials').eq('school_id',ctx.schoolId).eq('provider_id',service.provider).eq('connected_by',ctx.userId).maybeSingle();
  if(error)throw Error('Could not load workspace connection.');
- const access=workspaceAccess(service,connection,ctx.userId,dependencies.now??Date.now());
+ let connection=loadedConnection;
+ const now=dependencies.now??Date.now();
+ // Refresh only an explicitly selected/authorised app, never as a way to bypass
+ // missing consent or a different account owner. Recheck scopes after rotation.
+ const consent=workspaceAccess(service,{...connection,token_expires_at:new Date(now+3600000).toISOString()},ctx.userId,now);
+ if(consent==='read_access'&&connection?.token_expires_at&&Date.parse(connection.token_expires_at)<=now+60000)connection=await refreshWorkspaceConnection(ctx,service.provider,dependencies);
+ const access=workspaceAccess(service,connection,ctx.userId,now);
  if(access!=='read_access')throw Error('App read access unavailable: '+access+'. Select this app and reconnect in Connectors.');
  const key=dependencies.key??getJdSecret('JD_OAUTH_ENCRYPTION_KEY');if(!key)throw Error('Provider credential encryption is not configured.');
  let stored:any;try{stored=JSON.parse(await decryptSecret(connection.encrypted_credentials,await importAesKey(key)));}catch{throw Error('Stored provider credentials are unavailable. Reconnect.');}
