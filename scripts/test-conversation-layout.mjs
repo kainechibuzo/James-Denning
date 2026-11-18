@@ -69,7 +69,7 @@ try{for(const width of [320,393,708,1280]){
  await navigate('New conversation');await navigate('Conversation history');await page.getByRole('button',{name:'Saved operations conversation'}).click();
  await page.locator('.jd-task-disclosure summary').getByText('19 of 30 tasks complete').waitFor();
  await page.evaluate(()=>{window.__fixtureTaskCompleted=true;});await page.clock.fastForward(31000);
- await page.locator('.jd-task-disclosure summary').getByText('20/30 records complete').waitFor();
+ await page.locator('.jd-task-disclosure summary').getByText('20 of 30 tasks complete').waitFor();
  assert.equal(await page.locator('.jd-task-disclosure').getAttribute('open'),null);
  const calls=await page.evaluate(()=>window.__siteCalls.filter(c=>c.kind==='edge').map(c=>c.args.action));
  assert.ok(calls.filter(a=>a==='operations.task.list').length>=3);
