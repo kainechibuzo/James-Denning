@@ -512,7 +512,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility">{messages.length>0 && <button className="jd-history-trigger" type="button" aria-label="Open chat history and JD tools" onClick={()=>setHistoryOpen(true)}><History size={18}/></button>}<span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} role="status">{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</span></div><div className="jd-scroll">
+        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} role="status">{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</span></div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
