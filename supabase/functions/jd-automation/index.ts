@@ -406,9 +406,17 @@ Deno.serve(async (req) => {
   }
   if(!created?.task||created.auditRecorded!==true&&created.reused!==true)
    return json({error:"Task creation did not return persisted evidence"},500);
-  if(created.task?.id&&!created.reused) await admin.from("jd_operational_tasks").update({created_by_agent:true}).eq("id",created.task.id).eq("school_id",profile.school_id);
+  // The atomic RPC returns its row before this provenance flag is normalised.
+  // Re-read the row after the idempotent update so create and replay responses
+  // exactly match the persisted database value.
+  const {data:persistedTask,error:provenanceError}=await admin.from("jd_operational_tasks")
+   .update({created_by_agent:true})
+   .eq("id",created.task.id).eq("school_id",profile.school_id)
+   .select("*").single();
+  if(provenanceError||!persistedTask||persistedTask.created_by_agent!==true)
+   return json({error:"Task was saved, but its creator provenance could not be verified"},500);
   return json({
-   task:created.task,
+   task:persistedTask,
    reused:created.reused===true,
    auditRecorded:created.auditRecorded===true,
    auditId:created.auditId||null
