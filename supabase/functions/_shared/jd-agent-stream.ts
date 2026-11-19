@@ -171,6 +171,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
     buffer += decoder.decode();
     if (buffer.trim()) consumeLine(buffer);
     const calls = [...toolCalls.values()];
+    if (!finishReason) throw new Error("Gemini stream ended without a terminal completion marker");
     if (!content && !calls.length) throw new Error("Gemini stream ended without a readable response or tool call");
     const output: any[] = [];
     if (content) output.push({ type: "message", role: "assistant", content: [{ type: "output_text", text: content }] });
