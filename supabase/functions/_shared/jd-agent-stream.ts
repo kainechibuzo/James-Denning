@@ -129,7 +129,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
   const toolCalls = new Map<number, any>();
   let usage: any = undefined;
   const consumeLine = (raw: string) => {
-    const line = raw.endsWith("\\r") ? raw.slice(0, -1) : raw;
+    const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
     if (!line.startsWith("data:")) return;
     const payload = line.slice(5).trim();
     if (!payload || payload === "[DONE]") return;
@@ -162,7 +162,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
       let newline;
-      while ((newline = buffer.indexOf("\\n")) !== -1) {
+      while ((newline = buffer.indexOf("\n")) !== -1) {
         const line = buffer.slice(0, newline);
         buffer = buffer.slice(newline + 1);
         consumeLine(line);
