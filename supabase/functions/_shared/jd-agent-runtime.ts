@@ -1165,6 +1165,10 @@ export async function runAgent(input: {
     }
     if (turn === maxToolRounds) break;
 
+    // Persist the assistant's tool-call request before any side effect begins.
+    // The worker can then reconcile a crash from the durable step journal.
+    conversationInput.push(...output);
+    await persistCheckpoint();
     let fileDraftClaimedThisRound = false;
     await input.onUsagePhase?.("external_wait");
     const outputs = await Promise.all(calls.map(async (call: any) => {
@@ -1193,17 +1197,19 @@ export async function runAgent(input: {
           result_keys: Object.keys(result).slice(0, 12).join(","),
         };
         if (!evidence.result_nonempty) throw new Error("Tool returned no result evidence; completion was not verified");
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence });
-        return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: true, result }) };
+        const toolOutput = JSON.stringify({ ok: true, result });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence, toolOutput: toolOutput.slice(0, 80000) });
+        return { type: "function_call_output", call_id: call.call_id, output: toolOutput };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "failed", risk: tool.risk, error: message.slice(0, 240) });
-        return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: false, error: message }) };
+        const toolOutput = JSON.stringify({ ok: false, error: message.slice(0, 240) });
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "failed", risk: tool.risk, error: message.slice(0, 240), toolOutput });
+        return { type: "function_call_output", call_id: call.call_id, output: toolOutput };
       }
     }));
 
     await input.onUsagePhase?.("active");
-    conversationInput.push(...output, ...outputs);
+    conversationInput.push(...outputs);
     await persistCheckpoint();
     response = await requestModel({
       model: input.model,
