@@ -981,11 +981,14 @@ export async function runJdMcpToolWithAudit<T>(
   const resultRecord = resultValue && typeof resultValue === "object" && !Array.isArray(resultValue)
     ? resultValue as Record<string, unknown>
     : {};
-  const approval = resultRecord.approval && typeof resultRecord.approval === "object"
-    ? resultRecord.approval as Record<string, unknown>
+  const nestedResult = resultRecord.result && typeof resultRecord.result === "object" && !Array.isArray(resultRecord.result)
+    ? resultRecord.result as Record<string, unknown>
     : {};
-  const approvalRequested = resultRecord.requiresApproval === true;
-  const executionId = typeof resultRecord.executionId === "string" ? resultRecord.executionId : null;
+  const approvalValue = resultRecord.approval ?? nestedResult.approval;
+  const approval = approvalValue && typeof approvalValue === "object" ? approvalValue as Record<string, unknown> : {};
+  const approvalRequested = resultRecord.requiresApproval === true || nestedResult.requiresApproval === true;
+  const executionValue = resultRecord.executionId ?? nestedResult.executionId;
+  const executionId = typeof executionValue === "string" ? executionValue : null;
   const approvalId = typeof approval.id === "string" ? approval.id : null;
   try {
     await writeAudit("mcp.tool.completed", {
