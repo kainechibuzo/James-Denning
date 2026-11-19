@@ -105,9 +105,13 @@ Deno.serve(async req=>{
   const {data:run,error:insertError}=await db.from("jd_connector_executions").insert({school_id:school,server_id:server.id,approval_id:approvalId,requested_by:actor,tool_name:toolName,status:"running"}).select("id").single();
   if(insertError||!run)throw new Error("Could not create connector execution record");
   let remoteResult:unknown=null;
+  let remoteRequestDispatched=false;
+  let remoteResultReceived=false;
   try{
    const token=await getToken(server.id,server.oauth_generation),session=await connect(server,token);
+   remoteRequestDispatched=true;
    const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
+   remoteResultReceived=true;
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
    if(resultObject.isError===true){
@@ -141,14 +145,20 @@ Deno.serve(async req=>{
    if(/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:server.oauth_provider_id?"OAUTH_RECONNECT_REQUIRED":"CONNECTOR_AUTH_OR_PERMISSION_FAILED",updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
    const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
    const failureMessage=e instanceof Error?e.message:"Connector operation failed";
-   const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:"failed",result_json:remoteResult,error_code:code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
+   // A timeout, dropped connection, empty provider result, or failed evidence write
+   // cannot prove that the remote side effect did not happen. Never label it a
+   // clean failure that a caller might safely retry.
+   const outcomeUnknown=remoteRequestDispatched&&(!remoteResultReceived||!hasMeaningfulMcpResult(remoteResult));
+   const terminalStatus=outcomeUnknown?"outcome_unknown":"failed";
+   const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
    if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
    if(approvalId){
-    const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
+    const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:outcomeUnknown?"outcome_unknown":"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
     if(approvalFailureError)throw new Error(failureMessage+"; approval failure status could not be persisted");
    }
-   const {error:auditFailureError}=await audit("connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:code});
+   const {error:auditFailureError}=await audit(outcomeUnknown?"connector.tool.outcome_unknown":"connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code});
    if(auditFailureError)throw new Error(failureMessage+"; failure audit event could not be persisted");
+   if(outcomeUnknown)throw new Error("The provider may have performed the action, but JD could not verify and save its result. Do not retry automatically; inspect the provider and execution history first.");
    throw e;
   }
  };
@@ -365,7 +375,12 @@ Deno.serve(async req=>{
     if(server.status!=="connected"||(server.oauth_provider_id&&server.oauth_generation!==approvalServer.oauth_generation))throw new Error("Connection changed after approval. Request approval again.");
     const raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
-   }catch(e){await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school);throw e;}
+   }catch(e){
+    // execute() records a confirmed failure or outcome_unknown itself. Only
+    // mark failures that happened before an execution record was created.
+    await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school).eq("status","approved");
+    throw e;
+   }
   }
   if(body.action==="executions.list"){
    const ids=await visibleServerIds();if(!ids.length)return send({executions:[]});
