@@ -32,7 +32,7 @@ export function JDConnectPanel({notify=()=>{},initialName="",initialEndpoint="",
  useEffect(()=>{load();},[load]);
  const run=async(key,fn)=>{
   setBusy(key);setError("");setSuccess("");
-  try{const result=await fn();if(result?.requiresApproval)setSuccess("Approval requested. Nothing has been executed yet.");else if(result?.executionId)setSuccess("Tool executed and result recorded.");else if(result?.notice)setSuccess(result.notice);await load();return result;}
+  try{const result=await fn();if(result?.requiresApproval)setSuccess("Approval requested. Nothing has been executed yet.");else if(Array.isArray(result?.warnings)&&result.warnings.length)setSuccess("The tool returned successfully and its result was saved. "+result.warnings.join(" "));else if(result?.executionId)setSuccess("Tool executed and result recorded.");else if(result?.notice)setSuccess(result.notice);await load();return result;}
   catch(e){const message=e.message||"Operation failed";await load();setError(message);return null;}
   finally{setBusy("");}
  };
