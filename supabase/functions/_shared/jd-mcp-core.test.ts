@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
+import { hasExplicitMcpFailure, hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
 Deno.test("MCP endpoint requires exact HTTPS host allowlist", () => {
   assertEquals(validateMcpEndpoint("https://mcp.example.com/mcp", ["mcp.example.com"]).hostname, "mcp.example.com");
   assertThrows(() => validateMcpEndpoint("http://mcp.example.com/mcp", ["mcp.example.com"]));
@@ -32,6 +32,11 @@ Deno.test("MCP tool result must contain meaningful evidence", () => {
   assertEquals(hasMeaningfulMcpResult({ok:false,result:{id:"123"}}), false);
   assertEquals(hasMeaningfulMcpResult({success:false,id:"123"}), false);
   assertEquals(hasMeaningfulMcpResult({status:"failed",id:"123"}), false);
+  assertEquals(hasMeaningfulMcpResult({status:"outcome_unknown",id:"123"}), false);
+  assertEquals(hasMeaningfulMcpResult({structuredContent:{ok:false,error:"denied"}}), false);
+  assertEquals(hasExplicitMcpFailure({structuredContent:{ok:false,error:"denied"}}), true);
+  assertEquals(hasExplicitMcpFailure({status:"outcome_unknown"}), true);
+  assertEquals(hasExplicitMcpFailure({id:"123",status:"succeeded"}), false);
   assertEquals(hasMeaningfulMcpResult({error:"Provider rejected request"}), false);
   assertEquals(hasMeaningfulMcpResult({structuredContent:{id:123}}), true);
   assertEquals(hasMeaningfulMcpResult([{type:"text",text:"ok"}]), true);
