@@ -630,6 +630,7 @@ const tools: ToolSpec[] = [
         const actor = actorById.get(row.actor_id);
         const eventDescriptions: Record<string, string> = {
           "connector.approval.requested": "Approval requested; the external action was not executed",
+          "approval.requested": "Approval requested; no settings changes have been applied",
           "approval.approved": "Approval granted",
           "approval.rejected": "Approval rejected",
           "approval.expired": "Approval expired before a decision",
