@@ -104,7 +104,7 @@ Deno.test("Gemini stream rejects uncorrelatable tool fragments as non-retryable"
   let caught: unknown = null;
   try {
     await readChatCompletionsStream(sseResponse([
-      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_one","type":"function","function":{"name":"lookup","arguments":"{}"}}]},"finish_reason":null}]}\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_one","type":"function","function":{"name":"lookup","arguments":"{}"}},{"index":1,"id":"call_two","type":"function","function":{"name":"lookup_other","arguments":"{}"}}]},"finish_reason":null}]}\n',
       'data: {"choices":[{"delta":{"tool_calls":[{"function":{"arguments":"{}"}}]},"finish_reason":null}]}\n',
       'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
       "data: [DONE]\n",
