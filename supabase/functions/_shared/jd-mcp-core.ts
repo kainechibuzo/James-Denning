@@ -11,12 +11,22 @@ export function validateMcpEndpoint(value: unknown, allowedHosts: string[]): URL
   return url;
 }
 const READ_ONLY_HINT_DENYLIST = new Set(["run_secret_scanning"]);
+const GITHUB_READ_ONLY_TOOL_ALLOWLIST = new Set([
+  "get_commit", "get_file_contents", "get_label", "get_latest_release", "get_me",
+  "get_release_by_tag", "get_tag", "get_team_members", "get_teams", "issue_read",
+  "list_branches", "list_commits", "list_issue_fields", "list_issue_types", "list_issues",
+  "list_pull_requests", "list_releases", "list_repository_collaborators", "list_tags",
+  "pull_request_read", "search_code", "search_commits", "search_issues",
+  "search_pull_requests", "search_repositories", "search_users", "ui_get",
+]);
 
-export function isReadOnlyTool(tool: McpTool): boolean {
+export function isReadOnlyTool(tool: McpTool, provider?: string): boolean {
   const a = tool.annotations || {};
   const name = typeof tool.name === "string" ? tool.name.toLowerCase() : "";
   if (READ_ONLY_HINT_DENYLIST.has(name)) return false;
-  return a.readOnlyHint === true && a.destructiveHint !== true && a.openWorldHint !== true;
+  if (a.readOnlyHint !== true || a.destructiveHint === true || a.openWorldHint === true) return false;
+  if (provider === "github" || provider === "token:github") return GITHUB_READ_ONLY_TOOL_ALLOWLIST.has(name);
+  return true;
 }
 export function parseMcpPayload(body: string, contentType: string): any {
   if (contentType.includes("text/event-stream")) {
