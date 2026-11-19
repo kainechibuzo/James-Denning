@@ -176,17 +176,43 @@ Deno.serve(
           async ({ limit }: any) => {
             const { data, error } = await admin
               .from("jd_automation_steps")
-              .select("id,tool_key,status,error_message,started_at,completed_at")
+              .select("tool_key,status,error_message,started_at,completed_at,output_json")
               .eq("school_id", schoolId)
               .order("started_at", { ascending: false })
               .limit(limit || 20);
             if (error) throw new Error("Could not read persisted execution activity");
             return jsonText({
-              steps: (data || []).map((step) => ({
-                ...step,
-                error_message: clip(step.error_message, 300),
-              })),
+              steps: (data || []).map((step: any) => {
+                const evidence = asObject(asObject(step.output_json).evidence);
+                const approvalRequested = evidence.approval_requested === true;
+                const connectorExecutionRecorded = evidence.connector_execution_recorded === true || typeof evidence.connector_execution_id === "string";
+                const statusMeaning = approvalRequested
+                  ? "Approval was requested; the provider action has not executed."
+                  : connectorExecutionRecorded
+                  ? "A provider execution record exists; its outcome still needs verification."
+                  : step.status === "failed"
+                  ? "The tool invocation failed."
+                  : step.status === "outcome_unknown"
+                  ? "The outcome is unknown; inspect saved records before retrying."
+                  : step.status === "completed"
+                  ? "The tool invocation completed; this record alone does not prove an external action."
+                  : "The tool invocation is still in progress.";
+                return {
+                  tool_key: step.tool_key,
+                  status: step.status,
+                  status_meaning: statusMeaning,
+                  approval_requested: approvalRequested,
+                  approval_reference_available: typeof evidence.approval_id === "string",
+                  connector_execution_recorded: connectorExecutionRecorded,
+                  execution_reference_available: typeof evidence.connector_execution_id === "string",
+                  external_outcome_verified: evidence.external_outcome_verified === true,
+                  error_message: clip(step.error_message, 300),
+                  started_at: step.started_at,
+                  completed_at: step.completed_at,
+                };
+              }),
               source: "persisted jd_automation_steps",
+              ids_hidden: true,
             });
           },
         );
