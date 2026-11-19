@@ -47,7 +47,8 @@ begin
    safe_read_only :=
      coalesce(t->'annotations'->'readOnlyHint','false'::jsonb)='true'::jsonb
      and coalesce(t->'annotations'->'destructiveHint','false'::jsonb)<>'true'::jsonb
-     and coalesce(t->'annotations'->'openWorldHint','false'::jsonb)<>'true'::jsonb;
+     and coalesce(t->'annotations'->'openWorldHint','false'::jsonb)<>'true'::jsonb
+     and lower(coalesce(t->>'name',''))<>'run_secret_scanning';
 
    insert into public.jd_connector_tools(
      school_id,server_id,name,description,input_schema,annotations,read_only
@@ -83,6 +84,7 @@ set read_only =
   coalesce(t.annotations->'readOnlyHint','false'::jsonb)='true'::jsonb
   and coalesce(t.annotations->'destructiveHint','false'::jsonb)<>'true'::jsonb
   and coalesce(t.annotations->'openWorldHint','false'::jsonb)<>'true'::jsonb
+  and lower(coalesce(t.name,''))<>'run_secret_scanning'
 from public.jd_connector_servers s
 where s.id=t.server_id
   and s.school_id=t.school_id
