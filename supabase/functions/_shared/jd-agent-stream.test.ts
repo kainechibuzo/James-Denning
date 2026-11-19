@@ -71,7 +71,7 @@ Deno.test("Gemini request adapter preserves instructions, tool outputs and funct
   const messages = responsesInputToChatMessages([
     { role: "user", content: "Check staff" },
     { type: "function_call", call_id: "call_1", name: "get_people_intelligence", arguments: "{}" },
-    { type: "function_call_output", call_id: "call_1", output: "{\\"ok\\":true}" },
+    { type: "function_call_output", call_id: "call_1", output: JSON.stringify({ ok: true }) },
   ], "You are JD");
   equal(messages[0].role, "system", "system instructions");
   equal(messages[1].role, "user", "user message");
