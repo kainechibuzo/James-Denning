@@ -13,6 +13,8 @@ Deno.test("worker blocks automatic retries when a tool was started but its outco
   assertMatch(worker, /JD will not repeat it automatically/);
   assertMatch(worker, /recovery_blocked_duplicate/);
   assertMatch(worker, /recoveredIncomplete/);
+  assertMatch(worker, /outcome: "not_started"/);
+  assertMatch(worker, /No action was executed/);
 });
 
 Deno.test("runtime checkpoints tool-call requests before executing side effects", () => {
@@ -25,4 +27,5 @@ Deno.test("runtime checkpoints tool-call requests before executing side effects"
 Deno.test("runtime journals the tool response before its final conversation checkpoint", () => {
   assertMatch(runtime, /toolOutput: toolOutput\.slice\(0, 80000\)/);
   assertMatch(worker, /tool_output: typeof event\.toolOutput === "string"/);
+  assertMatch(worker, /event.status === "failed" \|\| event.status === "outcome_unknown"/);
 });
