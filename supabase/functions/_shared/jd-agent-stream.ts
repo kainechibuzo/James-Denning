@@ -106,7 +106,7 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
       const args = String(value.arguments || "{}");
       if (!id || !name) throw new Error("Gemini tool-call history is missing its call ID or function name");
       let parsed: unknown;
-      try { parsed = JSON.parse(args); } catch { throw new Error("Gemini tool-call history contains invalid arguments"); }
+      try { parsed = JSON.parse(args); } catch { throw malformedAgentResponse("Gemini tool-call history contains invalid arguments"); }
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw malformedAgentResponse("Gemini tool-call arguments must be a JSON object");
       pendingToolCalls.push({ id, type: "function", function: { name, arguments: args } });
       continue;
