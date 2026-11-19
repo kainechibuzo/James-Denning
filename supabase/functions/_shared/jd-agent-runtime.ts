@@ -13,6 +13,7 @@ import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
 import { analyseKpiTrends } from "./jd-kpi-trends.ts";
 import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
+import { isSuccessfulToolResult } from "./jd-tool-evidence.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -1184,10 +1185,11 @@ export async function runAgent(input: {
       try {
         await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "started", risk: tool.risk });
         const result = await tool.execute(args, input.context);
+        if (!isSuccessfulToolResult(result)) throw new Error("Tool did not return an explicitly successful result; completion was not verified");
         const evidenceSummary = summariseToolEvidence(result);
         const evidence = {
           ...evidenceSummary,
-          result_nonempty: Object.keys(result).length > 0,
+          result_nonempty: true,
           result_keys: Object.keys(result).slice(0, 12).join(","),
         };
         if (!evidence.result_nonempty) throw new Error("Tool returned no result evidence; completion was not verified");
