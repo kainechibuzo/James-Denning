@@ -8,3 +8,11 @@ export function isSuccessfulToolResult(value: unknown): value is Record<string, 
   if (typeof result.status === "string" && ["failed", "failure", "error", "rejected", "cancelled"].includes(result.status.toLowerCase())) return false;
   return true;
 }
+
+/** Identify a tool result that explicitly says its side effect may have happened without verification. */
+export function isUnknownToolResult(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const result = value as Record<string, unknown>;
+  if (result.outcome === "unknown" || result.status === "outcome_unknown" || result.status === "unknown") return true;
+  return isUnknownToolResult(result.result) || isUnknownToolResult(result.structuredContent);
+}
