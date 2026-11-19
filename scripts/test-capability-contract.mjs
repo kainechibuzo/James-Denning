@@ -9,7 +9,7 @@ import {transformWithOxc} from 'vite';
 import {CAPABILITY_INTERPRETATION,capabilityEffect} from '../supabase/functions/_shared/jd-capability-contract.ts';
 import {buildCapabilityReport,buildCapabilityAssessment,classifyCapability} from '../supabase/functions/_shared/jd-capability-intelligence.ts';
 import {executeJdMcpTool,getJdMcpToolDefinitions,runAgent} from '../supabase/functions/_shared/jd-agent-runtime.ts';
-const context=role=>({role,userId:'synthetic-actor',schoolId:'synthetic-workspace',admin:{from(){assert.fail('inventory must not read or mutate business records');}}});
+const context=role=>({role,userId:'synthetic-actor',schoolId:'synthetic-workspace',admin:{from(table){if(table==='jd_audit_events')return{insert:async()=>({error:null})};assert.fail('inventory must not read or mutate business records');}}});
 for(const role of ['owner','admin','manager','staff','contractor','viewer','finance','hr'])test(`${role}: reported callable tools match actual server definitions without writes`,async()=>{
  const ctx=context(role);const inventory=await executeJdMcpTool('get_jd_capability_inventory',{},ctx);
  assert.equal(inventory.report_kind,'runtime_tool_availability');
@@ -31,13 +31,13 @@ test('saved tasks and memory are not falsely called unsaved previews or approval
 });
 test('a callable read can return scoped persisted data while independent verification is unknown',async()=>{
  const calls=[];const query={select(){return query;},eq(k,v){calls.push([k,v]);return query;},async limit(){return{data:[{status:'completed',priority:'normal'},{status:'queued',priority:'high'}]};}};
- const result=await executeJdMcpTool('get_operations_intelligence',{}, {...context('owner'),admin:{from(name){calls.push(name);return query;}}});
+ const result=await executeJdMcpTool('get_operations_intelligence',{}, {...context('owner'),admin:{from(name){if(name==='jd_audit_events')return{insert:async()=>({error:null})};calls.push(name);return query;}}});
  assert.ok(result);assert.ok(calls.some(c=>Array.isArray(c)&&c[0]==='school_id'&&c[1]==='synthetic-workspace'));
  assert.equal(buildCapabilityAssessment({}).capabilities.every(c=>c.state==='unverified'),true);
 });
 test('runtime errors remain errors, never converted to evidence of success',async()=>{
  const q={select(){return q;},eq(){return q;},async limit(){return{data:null,error:{message:'synthetic failure'}};}};
- await assert.rejects(executeJdMcpTool('get_operations_intelligence',{}, {...context('owner'),admin:{from(){return q;}}}),/Could not read/);
+ await assert.rejects(executeJdMcpTool('get_operations_intelligence',{}, {...context('owner'),admin:{from(table){if(table==='jd_audit_events')return{insert:async()=>({error:null})};return q;}}}),/Could not read/);
 });
 test('unverified inventory never grants a restricted role access to a callable owner tool',async()=>{
  await assert.rejects(executeJdMcpTool('create_operational_setup_tasks',{role:'owner'},context('viewer')),/not available/);
