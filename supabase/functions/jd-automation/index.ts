@@ -583,7 +583,14 @@ Deno.serve(async (req) => {
    if(code==="42501") return json({error:"Only workspace admins can decide approval requests"},403);
    return json({error:"Could not record the approval decision and audit event"},500);
   }
-  if(result?.status==="expired") return json({error:"This approval request has expired",approval:result},410);
+  if(result?.status==="expired"){
+   const {error:auditError}=await admin.from("jd_audit_events").insert({
+    school_id:profile.school_id,actor_id:authData.user.id,run_id:before.run_id,
+    event_type:"approval.expired",event_json:{approval_id:approvalId,expired_by:"decision_guard"}
+   });
+   if(auditError)return json({error:"Approval expired, but its audit event could not be confirmed",approval:result},500);
+   return json({error:"This approval request has expired",approval:result},410);
+  }
   let execution:any={status:"not_executed",message:decision==="approved"?"Approved. The requested change is not yet available for automatic completion.":"Rejected. No changes were made."};
   if(decision==="approved"&&before.action_key==="organisation.provision_departments"){
    const {data:provisioned,error:provisionError}=await admin.rpc("jd_provision_approved_departments",{p_approval_id:approvalId,p_actor_id:authData.user.id});
