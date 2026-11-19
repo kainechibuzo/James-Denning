@@ -95,8 +95,8 @@ Deno.test("Gemini adapter groups parallel function calls into one assistant mess
     { role: "user", content: "Check staff and operations" },
     { type: "function_call", call_id: "call_people", name: "get_people_intelligence", arguments: "{}" },
     { type: "function_call", call_id: "call_ops", name: "get_operations_intelligence", arguments: "{}" },
-    { type: "function_call_output", call_id: "call_people", output: "{\\"ok\\":true}" },
-    { type: "function_call_output", call_id: "call_ops", output: "{\\"ok\\":true}" },
+    { type: "function_call_output", call_id: "call_people", output: '{"ok":true}' },
+    { type: "function_call_output", call_id: "call_ops", output: '{"ok":true}' },
   ]);
   equal(messages[2].role, "assistant", "parallel assistant role");
   equal(messages[2].tool_calls.length, 2, "parallel tool calls grouped");
@@ -117,8 +117,8 @@ Deno.test("Gemini stream rejects malformed tool-call arguments", async () => {
   const body = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(
-        'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_bad","function":{"name":"lookup","arguments":"not-json"}}]},"finish_reason":null}]}\\n' +
-        'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\\n'
+        'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_bad","function":{"name":"lookup","arguments":"not-json"}}]},"finish_reason":null}]}\n' +
+        'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n'
       ));
       controller.close();
     },
