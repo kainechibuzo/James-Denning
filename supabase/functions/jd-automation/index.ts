@@ -555,6 +555,8 @@ Deno.serve(async (req) => {
  }
  if(payload.action==="approvals.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can review approval requests"},403);
+  const {error:expiryError}=await admin.rpc("jd_expire_stale_approvals");
+  if(expiryError) return json({error:"Could not refresh expired approval states"},503);
   const {data,error}=await admin.from("jd_approvals")
    .select("id,run_id,requested_by,status,reason,title,action_key,risk_level,proposal_json,audience_text,execution_status,execution_result_json,decision_note,decided_by,decided_at,expires_at,created_at")
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
