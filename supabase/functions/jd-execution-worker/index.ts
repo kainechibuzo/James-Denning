@@ -172,7 +172,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const events: Record<string, unknown>[] = [];
     const recoveredState: any = checkpointRow?.state_version === 1 && checkpointRow.runtime_state_json
       ? structuredClone(checkpointRow.runtime_state_json)
-      : { version: 1, conversationInput: history.map((item: any) => ({ role: item.role, content: item.content })), completedCalls: [] };
+      : { version: 1, conversationInput: [...history.map((item: any) => ({ role: item.role, content: item.content })), { role: "user", content: run.request_text }], completedCalls: [] };
     recoveredState.conversationInput = Array.isArray(recoveredState.conversationInput) ? recoveredState.conversationInput : [];
     recoveredState.completedCalls = Array.isArray(recoveredState.completedCalls) ? recoveredState.completedCalls : [];
     const recoveredCallIds = new Set<string>(recoveredState.completedCalls.map(String));
