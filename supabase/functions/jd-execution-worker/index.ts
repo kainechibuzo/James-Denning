@@ -1,4 +1,5 @@
 import { runWithShadowUsage } from "./_shared/jd-usage-observer.mjs";
+import { NonRetryableAgentResponseError } from "../_shared/jd-agent-stream.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "./_shared/jd-agent-runtime.ts";
 import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
@@ -370,6 +371,35 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Execution failed";
     if (leaseLost) return { job_id: jobId, status: "lease_lost" };
+    if (error instanceof NonRetryableAgentResponseError) {
+      const completedAt = new Date().toISOString();
+      const safeMessage = "The model provider returned a malformed response. JD stopped this run without retrying it; review the provider response and start a new request if needed.";
+      const { data: failedRun, error: failedRunError } = await admin.from("jd_automation_runs").update({
+        status: "failed",
+        result_json: { error_code: "invalid_model_response", message: detail.slice(0, MAX_ERROR_LENGTH), retryable: false },
+        completed_at: completedAt,
+      }).eq("id", runId).eq("school_id", schoolId).select("id").maybeSingle();
+      if (failedRunError || !failedRun) throw new Error("Malformed model response was detected, but the run could not be marked failed");
+      const { data: finished, error: finishError } = await admin.rpc("jd_finish_execution_job", {
+        p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "failed",
+      });
+      if (finishError || finished !== true) throw new Error("Malformed model response was detected, but the job could not be finalised");
+      const { data: pendingMessage } = await admin.from("jd_messages").select("id")
+        .eq("school_id", schoolId).contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
+      if (pendingMessage?.id) {
+        await admin.from("jd_messages").update({ content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" } })
+          .eq("id", pendingMessage.id).eq("school_id", schoolId);
+      } else if (streamConversationId) {
+        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" }, created_by_agent: true });
+      }
+      await admin.from("jd_audit_events").insert({
+        school_id: schoolId, actor_id: requestedBy, run_id: runId,
+        event_type: "automation.failed",
+        event_json: { job_id: jobId, error_code: "invalid_model_response", retryable: false },
+      });
+      await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
+      return { job_id: jobId, status: "failed", error_code: "invalid_model_response" };
+    }
     const { data: retryResult, error: retryError } = await admin.rpc("jd_retry_execution_job", {
       p_job_id: jobId,
       p_lease_token: leaseToken,
