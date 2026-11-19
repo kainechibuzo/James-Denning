@@ -26,6 +26,7 @@
     "test:foundation": "node --experimental-strip-types --test scripts/test-business-foundation.mjs scripts/test-foundation-database.mjs scripts/test-foundation-ui.mjs",
     "test:agents": "node --experimental-strip-types --test scripts/test-agent-architect.mjs scripts/test-agent-studio-ui.mjs",
     "test:settings": "node --experimental-strip-types --test scripts/test-settings-review.mjs scripts/test-settings-review-database.mjs",
+    "test:approvals": "node --test scripts/test-approval-expiry-database.mjs",
     "test:execution": "node --test scripts/test-execution-monitor.mjs scripts/test-execution-monitor-ui.mjs scripts/test-execution-endpoint.mjs scripts/test-execution-retry-database.mjs scripts/test-execution-cancellation.mjs scripts/test-cancellation-acceptance.mjs",
     "test:history": "node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs",
     "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs scripts/test-assistant-navigation.mjs",
