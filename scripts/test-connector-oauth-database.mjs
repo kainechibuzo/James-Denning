@@ -22,7 +22,7 @@ async function begin(actor=manager,shared=false,hash='state-one'){
  const r=await db.query("select jd_begin_connector_oauth($1,'github','https://api.githubcopilot.com/mcp/','GitHub',$2,$3,'synthetic-encrypted-verifier','config-hash','https://jd.example.test/callback') as id",[actor,shared,hash]);return r.rows[0].id;
 }
 async function finish(server,actor=manager,generation=1){return (await db.query("select jd_finish_connector_oauth($1,$2,$3,'synthetic-encrypted-token',now()+interval '1 hour') as ok",[server,actor,generation])).rows[0].ok;}
-async function discover(server,generation=1,tools=[{name:'lookup',description:'Synthetic',input_schema:{},annotations:{readOnlyHint:true},read_only:true}]){return (await db.query("select jd_save_connector_oauth_discovery($1,$2,$3,$4,'2025-06-18','{}') as ok",[server,school,generation,JSON.stringify(tools)])).rows[0].ok;}
+async function discover(server,generation=1,tools=[{name:'get_file_contents',description:'Synthetic',input_schema:{},annotations:{readOnlyHint:true},read_only:true}]){return (await db.query("select jd_save_connector_oauth_discovery($1,$2,$3,$4,'2025-06-18','{}') as ok",[server,school,generation,JSON.stringify(tools)])).rows[0].ok;}
 test('default personal consent stores only hashed state, scopes tenant/actor and is one-time',async()=>{
  const server=await begin();const s=(await db.query('select * from jd_connector_servers where id=$1',[server])).rows[0];assert.equal(s.status,'disabled');assert.equal(s.school_id,school);assert.equal(s.access_owner_user_id,manager);
  for(const count of [1,0]){const r=await db.query("select * from jd_consume_connector_oauth('state-one')");assert.equal(r.rows.length,count);if(count)assert.equal(r.rows[0].generation,1);}
@@ -31,19 +31,20 @@ test('expired OAuth state cannot be consumed',async()=>{await begin();await db.e
 test('OAuth discovery trusts only explicit safe read-only annotations',async()=>{
  const server=await begin();assert.equal(await finish(server),true);assert.equal((await db.query('select status from jd_connector_servers where id=$1',[server])).rows[0].status,'error');
  const discovered=[
-  {name:'lookup',description:'Read-only lookup',input_schema:{type:'object'},annotations:{readOnlyHint:true}},
+  {name:'get_file_contents',description:'Read-only GitHub file lookup',input_schema:{type:'object'},annotations:{readOnlyHint:true}},
   {name:'write',description:'Write operation',input_schema:{type:'object'},annotations:{readOnlyHint:false}},
   {name:'destructive',description:'Destructive operation',input_schema:{type:'object'},annotations:{readOnlyHint:true,destructiveHint:true}},
   {name:'open-world',description:'External side effect',input_schema:{type:'object'},annotations:{readOnlyHint:true,openWorldHint:true}},
   {name:'spoofed',description:'Untrusted read_only field',input_schema:{type:'object'},annotations:{},read_only:true},
   {name:'string-spoof',description:'String is not a boolean hint',input_schema:{type:'object'},annotations:{readOnlyHint:'true'}},
   {name:'run_secret_scanning',description:'Triggers a repository scan',input_schema:{type:'object'},annotations:{readOnlyHint:true}},
+  {name:'create_branch',description:'Write operation spoofing a read-only hint',input_schema:{type:'object'},annotations:{readOnlyHint:true}},
  ];
  assert.equal(await discover(server,1,discovered),true);
  const tools=(await db.query('select name,read_only from jd_connector_tools order by name')).rows;
- assert.equal(tools.length,7);
- assert.equal(tools.find(t=>t.name==='lookup').read_only,true);
- for(const name of ['write','destructive','open-world','spoofed','string-spoof','run_secret_scanning'])assert.equal(tools.find(t=>t.name===name).read_only,false,name+' remains approval-gated');
+ assert.equal(tools.length,8);
+ assert.equal(tools.find(t=>t.name==='get_file_contents').read_only,true);
+ for(const name of ['write','destructive','open-world','spoofed','string-spoof','run_secret_scanning','create_branch'])assert.equal(tools.find(t=>t.name===name).read_only,false,name+' remains approval-gated');
  assert.equal((await db.query('select status from jd_connector_servers')).rows[0].status,'connected');
 });
 test('manager cannot share; owner must explicitly choose organisation',async()=>{await assert.rejects(begin(manager,true),/owners\/admins/);const server=await begin(owner,true);assert.equal((await db.query('select access_owner_user_id from jd_connector_servers where id=$1',[server])).rows[0].access_owner_user_id,null);});
