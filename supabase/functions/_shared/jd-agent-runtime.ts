@@ -1183,7 +1183,14 @@ export async function runAgent(input: {
       try {
         await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "started", risk: tool.risk });
         const result = await tool.execute(args, input.context);
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence: summariseToolEvidence(result) });
+        const evidenceSummary = summariseToolEvidence(result);
+        const evidence = {
+          ...evidenceSummary,
+          result_nonempty: Object.keys(result).length > 0,
+          result_keys: Object.keys(result).slice(0, 12).join(","),
+        };
+        if (!evidence.result_nonempty) throw new Error("Tool returned no result evidence; completion was not verified");
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence });
         return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ ok: true, result }) };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
