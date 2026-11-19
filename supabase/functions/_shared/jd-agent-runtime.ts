@@ -1022,7 +1022,7 @@ export async function executeJdMcpTool(
   if (tool.risk !== "low" && tool.name !== "create_business_document_draft") {
     throw new Error("This capability is not available through automatic MCP execution");
   }
-  return await runJdMcpToolWithAudit(context, name, args, () => tool.execute(args, context));
+  return await tool.execute(args, context);
 }
 
 type TokenUsage = {
