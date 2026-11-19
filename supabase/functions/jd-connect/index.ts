@@ -55,12 +55,13 @@ Deno.serve(async req=>{
   if(error)throw new Error("Could not load connector credentials");
   return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,requireEncryptionKey()):"";
  };
- const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string,onResponse?:(response:Response)=>void)=>{
+ const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string,onResponse?:(response:Response)=>void,onDispatch?:()=>void)=>{
   // Fixed reviewed token endpoints do not require arbitrary-host setup.
   validateMcpEndpoint(endpoint,tokenEndpoint(endpoint)?[new URL(endpoint).hostname]:allowed);
   const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
   const headers:Record<string,string>={"Content-Type":"application/json","Accept":"application/json, text/event-stream","MCP-Protocol-Version":"2025-06-18"};
   if(token)headers.Authorization=`Bearer ${token}`;if(sessionId)headers["Mcp-Session-Id"]=sessionId;
+  onDispatch?.();
   const response=await fetch(endpoint,{method:"POST",headers,redirect:"error",signal:AbortSignal.timeout(15000),body:JSON.stringify(notification?{jsonrpc:"2.0",method,params}:{jsonrpc:"2.0",id,method,params})});
   onResponse?.(response);
   const newSession=response.headers.get("Mcp-Session-Id")||sessionId||"";
@@ -112,8 +113,7 @@ Deno.serve(async req=>{
   let remoteToolRejected=false;
   try{
    const token=await getToken(server.id,server.oauth_generation),session=await connect(server,token);
-   remoteRequestDispatched=true;
-   const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined,()=>{remoteResponseReceived=true;});
+   const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined,()=>{remoteResponseReceived=true;},()=>{remoteRequestDispatched=true;});
    remoteResultReceived=true;
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
@@ -152,7 +152,8 @@ Deno.serve(async req=>{
    // A timeout, dropped connection, empty provider result, or failed evidence write
    // cannot prove that the remote side effect did not happen. Never label it a
    // clean failure that a caller might safely retry.
-   const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&(!remoteResponseReceived||(remoteResponseReceived&&!remoteResultReceived&&!/MCP server returned HTTP 4\d\d|MCP protocol error/.test(failureMessage))||(remoteResultReceived&&!hasMeaningfulMcpResult(remoteResult)));
+   const providerRejected=remoteResponseReceived&&!remoteResultReceived&&/MCP server returned HTTP 4\d\d|MCP protocol error/.test(failureMessage);
+   const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&!providerRejected;
    const terminalStatus=outcomeUnknown?"outcome_unknown":"failed";
    const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
    if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
