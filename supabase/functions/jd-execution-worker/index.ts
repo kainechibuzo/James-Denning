@@ -2,7 +2,6 @@ import { runWithShadowUsage } from "./_shared/jd-usage-observer.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "./_shared/jd-agent-runtime.ts";
 import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
-import { selectJdModel } from "./_shared/jd-agent-routing.ts";
 import { getJdSecret } from "./_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
@@ -151,12 +150,11 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .filter((item: any) => item.role === "assistant" || item.role === "user")
       .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
 
-    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-    // Default to OpenRouter's free-only router, which selects an available
-    // free model compatible with the request's tool-calling requirements.
-    const configuredModel = Deno.env.get("JD_MODEL_NAME") || "openrouter/free";
-    const model = selectJdModel(run.request_text, configuredModel, { fast: Deno.env.get("JD_MODEL_FAST_NAME"), reasoning: Deno.env.get("JD_MODEL_REASONING_NAME") });
-    if (!apiKey) throw new Error("OpenRouter API key is not configured");
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    // Keep one predictable Gemini model across all tool rounds and retries.
+    // Provider/model changes are code-controlled, not operator env overrides.
+    const model = "gemini-3.1-flash-lite";
+    if (!apiKey) throw new Error("Gemini API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
       .from("jd_execution_checkpoints")
@@ -185,7 +183,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
       model,
-      baseUrl: Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
       resumeState,
       onCheckpoint: async (state) => {
         if (leaseLost) throw new Error("Execution lease was lost");
