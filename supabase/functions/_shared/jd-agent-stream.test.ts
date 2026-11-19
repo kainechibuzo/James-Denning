@@ -99,11 +99,11 @@ Deno.test("Gemini adapter groups parallel function calls into one assistant mess
     { type: "function_call_output", call_id: "call_people", output: '{"ok":true}' },
     { type: "function_call_output", call_id: "call_ops", output: '{"ok":true}' },
   ]);
-  equal(messages[2].role, "assistant", "parallel assistant role");
-  equal(messages[2].content, "Checking both now.", "assistant text retained with calls");
-  equal(messages[2].tool_calls.length, 2, "parallel tool calls grouped");
-  equal(messages[3].tool_call_id, "call_people", "first parallel result correlation");
-  equal(messages[4].tool_call_id, "call_ops", "second parallel result correlation");
+  equal(messages[1].role, "assistant", "parallel assistant role");
+  equal(messages[1].content, "Checking both now.", "assistant text retained with calls");
+  equal(messages[1].tool_calls.length, 2, "parallel tool calls grouped");
+  equal(messages[2].tool_call_id, "call_people", "first parallel result correlation");
+  equal(messages[3].tool_call_id, "call_ops", "second parallel result correlation");
 });
 
 Deno.test("Gemini adapter rejects malformed or uncorrelated tool history", () => {
