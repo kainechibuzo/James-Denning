@@ -76,10 +76,16 @@ export async function readResponsesStream(
 export function responsesInputToChatMessages(input: unknown, instructions?: string): any[] {
   const messages: any[] = [];
   if (typeof instructions === "string" && instructions.trim()) messages.push({ role: "system", content: instructions });
+  let pendingAssistantText = "";
   let pendingToolCalls: any[] = [];
-  const flushToolCalls = () => {
-    if (!pendingToolCalls.length) return;
-    messages.push({ role: "assistant", content: null, tool_calls: pendingToolCalls });
+  const flushAssistant = () => {
+    if (!pendingAssistantText && !pendingToolCalls.length) return;
+    messages.push({
+      role: "assistant",
+      content: pendingAssistantText || null,
+      ...(pendingToolCalls.length ? { tool_calls: pendingToolCalls } : {}),
+    });
+    pendingAssistantText = "";
     pendingToolCalls = [];
   };
   for (const item of Array.isArray(input) ? input : []) {
@@ -93,33 +99,33 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
       let parsed: unknown;
       try { parsed = JSON.parse(args); } catch { throw new Error("Gemini tool-call history contains invalid arguments"); }
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Gemini tool-call arguments must be a JSON object");
-      pendingToolCalls.push({
-        id,
-        type: "function",
-        function: { name, arguments: args },
-      });
-      continue;
-    }
-    flushToolCalls();
-    if (value.type === "function_call_output") {
-      const callId = String(value.call_id || "");
-      if (!callId) throw new Error("Gemini tool output is missing its call ID");
-      messages.push({ role: "tool", tool_call_id: callId, content: typeof value.output === "string" ? value.output : JSON.stringify(value.output ?? "") });
+      pendingToolCalls.push({ id, type: "function", function: { name, arguments: args } });
       continue;
     }
     if (value.type === "message" && value.role === "assistant") {
       const text = Array.isArray(value.content)
         ? value.content.map((part: any) => typeof part?.text === "string" ? part.text : "").join("")
         : "";
-      messages.push({ role: "assistant", content: text });
+      pendingAssistantText += text;
       continue;
     }
-    if (value.role === "assistant" || value.role === "user" || value.role === "system") {
+    if (value.role === "assistant") {
+      pendingAssistantText += typeof value.content === "string" ? value.content : JSON.stringify(value.content ?? "");
+      continue;
+    }
+    flushAssistant();
+    if (value.type === "function_call_output") {
+      const callId = String(value.call_id || "");
+      if (!callId) throw new Error("Gemini tool output is missing its call ID");
+      messages.push({ role: "tool", tool_call_id: callId, content: typeof value.output === "string" ? value.output : JSON.stringify(value.output ?? "") });
+      continue;
+    }
+    if (value.role === "user" || value.role === "system") {
       const content = typeof value.content === "string" ? value.content : JSON.stringify(value.content ?? "");
       messages.push({ role: value.role, content });
     }
   }
-  flushToolCalls();
+  flushAssistant();
   return messages;
 }
 
