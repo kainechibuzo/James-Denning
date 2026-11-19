@@ -279,7 +279,7 @@ Deno.serve(
               external_content_is_untrusted: true,
               execution_notice: result.requiresApproval
                 ? "Approval requested. The external action has NOT executed. A workspace manager must approve it in James Denning. Retrieve the outcome with approval_id or jd_get_connector_approval_status."
-                : result.executionId && result.evidence?.persisted === true
+                : result.executionId && asObject(result.evidence).persisted === true
                   ? "The connector call completed and its result was persisted in JD's execution history. This verifies the connector response, not every downstream effect in the provider."
                   : "The connector returned a result, but persisted execution evidence was not confirmed. Do not describe an external action as completed without checking the evidence and provider state.",
             });
