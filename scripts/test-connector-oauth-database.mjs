@@ -37,12 +37,13 @@ test('OAuth discovery trusts only explicit safe read-only annotations',async()=>
   {name:'open-world',description:'External side effect',input_schema:{type:'object'},annotations:{readOnlyHint:true,openWorldHint:true}},
   {name:'spoofed',description:'Untrusted read_only field',input_schema:{type:'object'},annotations:{},read_only:true},
   {name:'string-spoof',description:'String is not a boolean hint',input_schema:{type:'object'},annotations:{readOnlyHint:'true'}},
+  {name:'run_secret_scanning',description:'Triggers a repository scan',input_schema:{type:'object'},annotations:{readOnlyHint:true}},
  ];
  assert.equal(await discover(server,1,discovered),true);
  const tools=(await db.query('select name,read_only from jd_connector_tools order by name')).rows;
- assert.equal(tools.length,6);
+ assert.equal(tools.length,7);
  assert.equal(tools.find(t=>t.name==='lookup').read_only,true);
- for(const name of ['write','destructive','open-world','spoofed','string-spoof'])assert.equal(tools.find(t=>t.name===name).read_only,false,name+' remains approval-gated');
+ for(const name of ['write','destructive','open-world','spoofed','string-spoof','run_secret_scanning'])assert.equal(tools.find(t=>t.name===name).read_only,false,name+' remains approval-gated');
  assert.equal((await db.query('select status from jd_connector_servers')).rows[0].status,'connected');
 });
 test('manager cannot share; owner must explicitly choose organisation',async()=>{await assert.rejects(begin(manager,true),/owners\/admins/);const server=await begin(owner,true);assert.equal((await db.query('select access_owner_user_id from jd_connector_servers where id=$1',[server])).rows[0].access_owner_user_id,null);});
