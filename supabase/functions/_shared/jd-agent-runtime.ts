@@ -1169,6 +1169,25 @@ export type AgentRuntimeCheckpoint = {
 
 function summariseToolEvidence(result: Record<string, unknown>) {
   const summary: Record<string, string | number | boolean> = {};
+  const nestedResult = result.result && typeof result.result === "object" && !Array.isArray(result.result)
+    ? result.result as Record<string, unknown>
+    : {};
+  const approvalValue = result.approval ?? nestedResult.approval;
+  const approval = approvalValue && typeof approvalValue === "object" && !Array.isArray(approvalValue)
+    ? approvalValue as Record<string, unknown>
+    : {};
+  const approvalRequested = result.requiresApproval === true || nestedResult.requiresApproval === true;
+  const executionValue = result.executionId ?? result.execution_id ?? nestedResult.executionId ?? nestedResult.execution_id;
+  if (approvalRequested) {
+    summary.approval_requested = true;
+    summary.external_action_executed = false;
+    summary.execution_state = "approval_requested";
+    if (typeof approval.id === "string") summary.approval_id = approval.id;
+  } else if (typeof executionValue === "string") {
+    summary.connector_execution_recorded = true;
+    summary.execution_state = "connector_execution_recorded";
+    summary.connector_execution_id = executionValue;
+  }
   for (const [key, value] of Object.entries(result).slice(0, 30)) {
     if (/count|total|available|truncated|status|valid|persisted|review_required|months_back|sample/i.test(key) &&
       (typeof value === "number" || typeof value === "boolean" || (typeof value === "string" && value.length <= 80))) {
