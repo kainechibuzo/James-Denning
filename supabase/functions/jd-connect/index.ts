@@ -339,8 +339,10 @@ Deno.serve(async req=>{
    const result=await execute(server,tool.name,args,null);return send({requiresApproval:false,permissionLevel:level,...result});
   }
   if(body.action==="approvals.list"){
+   const {error:expiryError}=await db.rpc("jd_expire_stale_approvals");
+   if(expiryError)throw new Error("Could not refresh expired approval states");
    const ids=await visibleServerIds();if(!ids.length)return send({approvals:[]});
-   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).in("server_id",ids).eq("status","pending").order("created_at",{ascending:false}).limit(100);
+   const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).in("server_id",ids).order("created_at",{ascending:false}).limit(100);
    if(error)throw error;
    const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey()))).arguments)})));
    return send({approvals});
