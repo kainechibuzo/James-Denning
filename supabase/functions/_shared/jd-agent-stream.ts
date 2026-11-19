@@ -197,13 +197,14 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
     if (!finishReason) throw new Error("Gemini stream ended without a terminal completion marker");
     if (!["stop", "tool_calls", "length"].includes(finishReason)) throw new Error("Gemini ended with an unsupported finish reason");
     const calls = [...toolCalls.entries()].sort(([a], [b]) => a - b).map(([, call]) => {
+      if (finishReason === "length") return call;
       if (!call.id || !call.function.name || !call.function.arguments) throw new Error("Gemini returned an incomplete tool call");
       let args: unknown;
       try { args = JSON.parse(call.function.arguments); } catch { throw new Error("Gemini returned invalid tool-call arguments"); }
       if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error("Gemini tool-call arguments must be a JSON object");
       return call;
     });
-    if (!content && !calls.length) throw new Error("Gemini stream ended without a readable response or tool call");
+    if (!content && !calls.length && finishReason !== "length") throw new Error("Gemini stream ended without a readable response or tool call");
     if (finishReason === "tool_calls" && !calls.length) throw new Error("Gemini reported tool calls but returned none");
     const output: any[] = [];
     if (content) output.push({ type: "message", role: "assistant", content: [{ type: "output_text", text: content }] });
