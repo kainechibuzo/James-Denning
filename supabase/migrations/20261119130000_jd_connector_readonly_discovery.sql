@@ -48,7 +48,18 @@ begin
      coalesce(t->'annotations'->'readOnlyHint','false'::jsonb)='true'::jsonb
      and coalesce(t->'annotations'->'destructiveHint','false'::jsonb)<>'true'::jsonb
      and coalesce(t->'annotations'->'openWorldHint','false'::jsonb)<>'true'::jsonb
-     and lower(coalesce(t->>'name',''))<>'run_secret_scanning';
+     and lower(coalesce(t->>'name',''))<>'run_secret_scanning'
+     and (
+       coalesce(s.oauth_provider_id,'') not in ('github','token:github')
+       or lower(coalesce(t->>'name','')) in (
+         'get_commit','get_file_contents','get_label','get_latest_release','get_me',
+         'get_release_by_tag','get_tag','get_team_members','get_teams','issue_read',
+         'list_branches','list_commits','list_issue_fields','list_issue_types','list_issues',
+         'list_pull_requests','list_releases','list_repository_collaborators','list_tags',
+         'pull_request_read','search_code','search_commits','search_issues',
+         'search_pull_requests','search_repositories','search_users','ui_get'
+       )
+     );
 
    insert into public.jd_connector_tools(
      school_id,server_id,name,description,input_schema,annotations,read_only
@@ -85,6 +96,17 @@ set read_only =
   and coalesce(t.annotations->'destructiveHint','false'::jsonb)<>'true'::jsonb
   and coalesce(t.annotations->'openWorldHint','false'::jsonb)<>'true'::jsonb
   and lower(coalesce(t.name,''))<>'run_secret_scanning'
+  and (
+    coalesce(s.oauth_provider_id,'') not in ('github','token:github')
+    or lower(coalesce(t.name,'')) in (
+      'get_commit','get_file_contents','get_label','get_latest_release','get_me',
+      'get_release_by_tag','get_tag','get_team_members','get_teams','issue_read',
+      'list_branches','list_commits','list_issue_fields','list_issue_types','list_issues',
+      'list_pull_requests','list_releases','list_repository_collaborators','list_tags',
+      'pull_request_read','search_code','search_commits','search_issues',
+      'search_pull_requests','search_repositories','search_users','ui_get'
+    )
+  )
 from public.jd_connector_servers s
 where s.id=t.server_id
   and s.school_id=t.school_id
