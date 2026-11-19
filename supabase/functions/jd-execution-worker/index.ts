@@ -392,11 +392,6 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       } else if (streamConversationId) {
         await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" }, created_by_agent: true });
       }
-      await admin.from("jd_audit_events").insert({
-        school_id: schoolId, actor_id: requestedBy, run_id: runId,
-        event_type: "automation.failed",
-        event_json: { job_id: jobId, error_code: "invalid_model_response", retryable: false },
-      });
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
       return { job_id: jobId, status: "failed", error_code: "invalid_model_response" };
     }
