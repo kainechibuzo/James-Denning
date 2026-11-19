@@ -26,7 +26,9 @@ Deno.test("MCP tool result must contain meaningful evidence", () => {
   assertEquals(hasMeaningfulMcpResult({}), false);
   assertEquals(hasMeaningfulMcpResult({isError:false,content:[]}), false);
   assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:""}]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:"   "}]}), false);
   assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:"Created repository"}]}), true);
+  assertEquals(hasMeaningfulMcpResult({isError:true,content:[{type:"text",text:"Created repository"}]}), false);
   assertEquals(hasMeaningfulMcpResult({structuredContent:{id:123}}), true);
   assertEquals(hasMeaningfulMcpResult([{type:"text",text:"ok"}]), true);
   assertEquals(hasMeaningfulMcpResult(false), true);
