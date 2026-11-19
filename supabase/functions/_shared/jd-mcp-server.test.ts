@@ -3,6 +3,7 @@ import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/
 const source = await Deno.readTextFile(new URL("../jd-mcp/index.ts", import.meta.url));
 const config = await Deno.readTextFile(new URL("../../config.toml", import.meta.url));
 const runtime = await Deno.readTextFile(new URL("./jd-agent-runtime.ts", import.meta.url));
+const foundation = await Deno.readTextFile(new URL("./jd-foundation-service.ts", import.meta.url));
 
 Deno.test("JD MCP is protected by OAuth discovery and authenticated Supabase user middleware", () => {
   assertMatch(source, /withOAuthProtectedResource\(\)/);
@@ -136,4 +137,11 @@ Deno.test("connected MCP tool notices distinguish approval, persisted execution 
   assertMatch(source, /persisted execution evidence was not confirmed/);
   assertMatch(source, /outcome_unknown means the provider may have acted/);
   assertMatch(source, /never retry automatically/);
+});
+
+Deno.test("business context reports an explicit unavailable state when its reviewed schema is not deployed", () => {
+  assertMatch(foundation, /isMissingRelation/);
+  assertMatch(foundation, /foundation_schema_not_deployed/);
+  assertMatch(foundation, /available:false/);
+  assertMatch(foundation, /reviewed production database migration/);
 });
