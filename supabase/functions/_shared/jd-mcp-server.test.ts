@@ -107,6 +107,7 @@ Deno.test("native MCP blueprint submissions create a reviewable run and preserve
 
 Deno.test("direct MCP tools are audited before and after handler execution", () => {
   assertMatch(source, /createJdMcpAuditedHandler\(agentContext, name, handler\)/);
+  assertMatch(source, /createJdMcpAuditedHandler\(agentContext, toolName, async/);
   assertMatch(runtime, /export function createJdMcpAuditedHandler/);
   assertMatch(runtime, /mcp\.tool\.started/);
   assertMatch(runtime, /mcp\.tool\.completed/);
