@@ -31,6 +31,7 @@ const readers = new Set([
   "get_business_kpi_trends", "get_recent_activity_logs", "get_email_delivery_logs",
   "get_attendance_snapshot", "get_recent_announcements", "get_workspace_settings_catalogue",
   "list_connected_mcp_tools", "list_pending_approvals", "list_workspace_apps", "read_workspace_app",
+  "search_connected_repository_code", "read_connected_repository_file",
 ]);
 export function capabilityEffect(name:string) {
   if (Object.hasOwn(effects,name)) return effects[name];
