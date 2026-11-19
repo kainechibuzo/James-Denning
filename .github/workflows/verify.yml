@@ -91,6 +91,7 @@ jobs:
       - name: Test Gemini, evidence and crash recovery contracts
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-stream.test.ts
+          deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-gemini-runtime.test.ts
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-tool-evidence.test.ts
           deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-execution-worker/index.ts,supabase/functions/_shared/jd-agent-runtime.ts supabase/functions/_shared/jd-execution-recovery.test.ts
           deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119120000_jd_connector_outcome_unknown.sql supabase/functions/_shared/jd-connector-outcome-migration.test.ts
