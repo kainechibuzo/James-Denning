@@ -155,15 +155,16 @@ Deno.serve(async req=>{
    const providerRejected=remoteResponseReceived&&!remoteResultReceived&&/MCP server returned HTTP 4\d\d|MCP protocol error/.test(failureMessage);
    const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&!providerRejected;
    const terminalStatus=outcomeUnknown?"outcome_unknown":"failed";
+   const outcomeMessage=outcomeUnknown?"The provider may have performed the action, but JD could not verify and save its result. Do not retry automatically; inspect the provider and execution history first.":failureMessage;
    const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
-   if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
+   if(failureUpdateError)throw new Error(outcomeMessage+"; failed execution evidence could not be persisted");
    if(approvalId){
     const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:outcomeUnknown?"outcome_unknown":"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
-    if(approvalFailureError)throw new Error(failureMessage+"; approval failure status could not be persisted");
+    if(approvalFailureError)throw new Error(outcomeMessage+"; approval failure status could not be persisted");
    }
    const {error:auditFailureError}=await audit(outcomeUnknown?"connector.tool.outcome_unknown":"connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code});
-   if(auditFailureError)throw new Error(failureMessage+"; failure audit event could not be persisted");
-   if(outcomeUnknown)throw new Error("The provider may have performed the action, but JD could not verify and save its result. Do not retry automatically; inspect the provider and execution history first.");
+   if(auditFailureError)throw new Error(outcomeMessage+"; failure audit event could not be persisted");
+   if(outcomeUnknown)throw new Error(outcomeMessage);
    throw e;
   }
  };
