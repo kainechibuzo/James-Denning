@@ -70,3 +70,12 @@ Deno.test("Approval execution revalidates the provider tool after human approval
   assertMatch(source, /currentToolError\|\|!currentTool/);
   assertMatch(source, /The approved tool is no longer available on this connection/);
 });
+
+Deno.test("Approval payload binds the approved arguments to the exact tool schema and connector generation", () => {
+  assertMatch(source, /tool_schema:tool\.input_schema/);
+  assertMatch(source, /server_updated_at:server\.updated_at/);
+  assertMatch(source, /server_endpoint:server\.endpoint_url/);
+  assertMatch(source, /oauth_generation:server\.oauth_generation/);
+  assertMatch(source, /JSON\.stringify\(raw\.tool_schema\)!==JSON\.stringify\(currentTool\.input_schema\)/);
+  assertMatch(source, /connector, permissions or tool definition changed after approval/);
+});
