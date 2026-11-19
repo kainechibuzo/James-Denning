@@ -377,6 +377,8 @@ Deno.serve(async req=>{
    try{
     const server=await getServer(approval.server_id);
     if(server.status!=="connected"||(server.oauth_provider_id&&server.oauth_generation!==approvalServer.oauth_generation))throw new Error("Connection changed after approval. Request approval again.");
+    const {data:currentTool,error:currentToolError}=await db.from("jd_connector_tools").select("id").eq("school_id",school).eq("server_id",server.id).eq("name",approval.tool_name).maybeSingle();
+    if(currentToolError||!currentTool)throw new Error("The approved tool is no longer available on this connection. Refresh tools and request approval again.");
     const raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
    }catch(e){
