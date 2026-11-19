@@ -5,7 +5,7 @@ const source = await Deno.readTextFile(new URL("../jd-connect/index.ts", import.
 Deno.test("JD Connect treats MCP tool-level errors as failed executions", () => {
   assertMatch(source, /resultObject\.isError===true/);
   assertMatch(source, /MCP_TOOL_ERROR/);
-  assertMatch(source, /status:"failed",result_json:remoteResult,error_code:code/);
+  assertMatch(source, /status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown\?"REMOTE_OUTCOME_UNCONFIRMED":code/);
 });
 
 Deno.test("JD Connect persists successful results before returning success", () => {
@@ -58,3 +58,15 @@ Deno.test("JD Connect returns to read-only when a provider grant is missing or e
 });
 
 Deno.test("OAuth never bypasses per-action approval through legacy elevated grants",()=>{assertMatch(source,/const requiresApproval=server\.oauth_provider_id\?\(!readOnly\|\|tool\.read_only!==true\):legacyRequiresApproval/);});
+
+Deno.test("JD Connect never labels an ambiguous remote outcome as a clean failure", () => {
+  assertMatch(source, /const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected/);
+  assertMatch(source, /status:terminalStatus/);
+  assertMatch(source, /status:outcomeUnknown\?"outcome_unknown":"failed"/);
+  assertMatch(source, /Do not retry automatically; inspect the provider and execution history first/);
+});
+
+Deno.test("Approval execution revalidates the provider tool after human approval", () => {
+  assertMatch(source, /currentToolError\|\|!currentTool/);
+  assertMatch(source, /The approved tool is no longer available on this connection/);
+});
