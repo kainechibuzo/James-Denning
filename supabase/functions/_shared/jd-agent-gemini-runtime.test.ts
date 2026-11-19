@@ -114,3 +114,17 @@ Deno.test("Gemini stream rejects uncorrelatable tool fragments as non-retryable"
   }
   assertEqual(caught instanceof NonRetryableAgentResponseError, true, "malformed provider response is non-retryable");
 });
+
+Deno.test("Gemini stream rejects multiple unindexed calls in the same delta", async () => {
+  let caught: unknown = null;
+  try {
+    await readChatCompletionsStream(sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"type":"function","function":{"name":"lookup","arguments":"{}"}},{"type":"function","function":{"name":"lookup_other","arguments":"{}"}}]},"finish_reason":null}]}\n',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
+      "data: [DONE]\n",
+    ]).body!);
+  } catch (error) {
+    caught = error;
+  }
+  assertEqual(caught instanceof NonRetryableAgentResponseError, true, "parallel calls without correlation metadata are non-retryable");
+});
