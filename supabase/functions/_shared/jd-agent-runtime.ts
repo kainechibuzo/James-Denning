@@ -1129,7 +1129,7 @@ export async function runAgent(input: {
     if (response.status === "incomplete" && calls.length) {
       if (shouldContinueResponse(response, continuationCount)) {
         continuationCount += 1;
-        conversationInput.push(...output, { role: "user", content: "The previous response ended before its tool call was complete. Continue the unfinished call with valid complete arguments, or provide a direct final answer if no tool is needed." });
+        conversationInput.push(...output.filter((item: any) => item?.type !== "function_call"), { role: "user", content: "The previous response ended before its tool call was complete. Do not reuse or execute any partial tool-call arguments. Continue with a complete, valid tool call if needed, or provide a direct final answer." });
         await persistCheckpoint();
         response = await requestModel({ model: input.model, instructions, input: conversationInput, tools: modelTools(input.context), max_output_tokens: 6144,
     tool_choice: "auto", parallel_tool_calls: true, store: false });
