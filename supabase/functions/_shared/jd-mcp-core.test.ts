@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
+import { hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
 Deno.test("MCP endpoint requires exact HTTPS host allowlist", () => {
   assertEquals(validateMcpEndpoint("https://mcp.example.com/mcp", ["mcp.example.com"]).hostname, "mcp.example.com");
   assertThrows(() => validateMcpEndpoint("http://mcp.example.com/mcp", ["mcp.example.com"]));
@@ -19,4 +19,15 @@ Deno.test("MCP SSE and JSON responses are parsed", () => {
 Deno.test("Tool names are constrained", () => {
   assertEquals(validateToolName("gmail.search"), "gmail.search");
   assertThrows(() => validateToolName("bad tool"));
+});
+
+Deno.test("MCP tool result must contain meaningful evidence", () => {
+  assertEquals(hasMeaningfulMcpResult(null), false);
+  assertEquals(hasMeaningfulMcpResult({}), false);
+  assertEquals(hasMeaningfulMcpResult({isError:false,content:[]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:""}]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:"Created repository"}]}), true);
+  assertEquals(hasMeaningfulMcpResult({structuredContent:{id:123}}), true);
+  assertEquals(hasMeaningfulMcpResult([{type:"text",text:"ok"}]), true);
+  assertEquals(hasMeaningfulMcpResult(false), true);
 });
