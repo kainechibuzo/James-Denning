@@ -89,10 +89,10 @@ Deno.test("native MCP calls are audited before and after execution without recor
     admin: { from: (table: string) => ({ insert: async (row: any) => { events.push({ table, row }); return { error: null }; } }) },
   };
   const result = await runJdMcpToolWithAudit(context, "call_connected_mcp_tool", { tool_id: "tool-1", token: "never-log-this" }, async () => ({
-    requiresApproval: true,
-    approval: { id: "approval-1" },
+    capability: "call_connected_mcp_tool",
+    result: { requiresApproval: true, approval: { id: "approval-1" } },
   }));
-  assertEqual((result as any).requiresApproval, true, "tool result preserved");
+  assertEqual((result as any).result.requiresApproval, true, "tool result preserved");
   assertEqual(events.length, 2, "start and completion events written");
   assertEqual(events[0].row.event_type, "mcp.tool.started", "start event");
   assertEqual(events[1].row.event_type, "mcp.tool.completed", "completion event");
