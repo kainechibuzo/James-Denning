@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, runJdMcpToolWithAudit } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -77,4 +77,48 @@ Deno.test("launch checklist batch keys are stable but separate distinct checklis
 Deno.test("business finance intelligence tools are registered in JD", () => {
   assertEqual(JD_AGENT_TOOL_NAMES.includes("get_business_expense_anomalies"), true, "expense anomaly tool registered");
   assertEqual(JD_AGENT_TOOL_NAMES.includes("get_business_kpi_trends"), true, "business KPI trends tool registered");
+});
+
+
+Deno.test("native MCP calls are audited before and after execution without recording argument values", async () => {
+  const events: any[] = [];
+  const context: any = {
+    schoolId: "workspace",
+    userId: "actor",
+    role: "admin",
+    admin: { from: (table: string) => ({ insert: async (row: any) => { events.push({ table, row }); return { error: null }; } }) },
+  };
+  const result = await runJdMcpToolWithAudit(context, "call_connected_mcp_tool", { tool_id: "tool-1", token: "never-log-this" }, async () => ({
+    requiresApproval: true,
+    approval: { id: "approval-1" },
+  }));
+  assertEqual((result as any).requiresApproval, true, "tool result preserved");
+  assertEqual(events.length, 2, "start and completion events written");
+  assertEqual(events[0].row.event_type, "mcp.tool.started", "start event");
+  assertEqual(events[1].row.event_type, "mcp.tool.completed", "completion event");
+  assertEqual(events[0].row.event_json.tool_name, "call_connected_mcp_tool", "tool name recorded");
+  assertEqual(events[0].row.event_json.argument_keys.includes("token"), true, "argument key recorded");
+  assertEqual(JSON.stringify(events).includes("never-log-this"), false, "argument values never recorded");
+  assertEqual(events[1].row.event_json.result_status, "approval_requested", "approval state recorded distinctly");
+  assertEqual(events[1].row.event_json.approval_id, "approval-1", "approval ID linked");
+});
+
+Deno.test("native MCP tool is not invoked when its audit start cannot be persisted", async () => {
+  let invoked = false;
+  const context: any = {
+    schoolId: "workspace",
+    userId: "actor",
+    role: "admin",
+    admin: { from: () => ({ insert: async () => ({ error: new Error("audit unavailable") }) }) },
+  };
+  let message = "";
+  try {
+    await runJdMcpToolWithAudit(context, "read_tool", {}, async () => { invoked = true; return {}; });
+  } catch (error) { message = error instanceof Error ? error.message : String(error); }
+  assertEqual(invoked, false, "handler blocked before execution");
+  assertEqual(message.includes("audit start could not be persisted"), true, "fail-closed audit error");
+});
+
+Deno.test("pending approvals inventory is registered as a read-only native capability", () => {
+  assertEqual(JD_AGENT_TOOL_NAMES.includes("list_pending_approvals"), true, "pending approvals tool registered");
 });
