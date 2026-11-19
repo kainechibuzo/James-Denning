@@ -161,17 +161,54 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .select("runtime_state_json,state_version")
       .eq("job_id", jobId).eq("school_id", schoolId).maybeSingle();
     if (checkpointReadError) throw new Error("Could not load the saved runtime checkpoint");
-    const resumeState = checkpointRow?.state_version === 1
-      ? checkpointRow.runtime_state_json
-      : null;
-
-    const { data: lastStep, error: stepLookupError } = await admin.from("jd_automation_steps")
-      .select("step_index").eq("school_id", schoolId).eq("run_id", runId)
-      .order("step_index", { ascending: false }).limit(1).maybeSingle();
+    const { data: existingSteps, error: stepLookupError } = await admin.from("jd_automation_steps")
+      .select("id,step_index,tool_key,status,input_json,output_json,error_message")
+      .eq("school_id", schoolId).eq("run_id", runId)
+      .order("step_index", { ascending: true }).limit(200);
     if (stepLookupError) throw new Error("Could not inspect existing execution steps");
-    let stepIndex = Number(lastStep?.step_index ?? 0);
+    const stepRows = existingSteps || [];
+    let stepIndex = stepRows.reduce((max: number, step: any) => Math.max(max, Number(step.step_index || 0)), 0);
     const stepIds = new Map<string, string>();
     const events: Record<string, unknown>[] = [];
+    const recoveredState: any = checkpointRow?.state_version === 1 && checkpointRow.runtime_state_json
+      ? structuredClone(checkpointRow.runtime_state_json)
+      : { version: 1, conversationInput: history.map((item: any) => ({ role: item.role, content: item.content })), completedCalls: [] };
+    recoveredState.conversationInput = Array.isArray(recoveredState.conversationInput) ? recoveredState.conversationInput : [];
+    recoveredState.completedCalls = Array.isArray(recoveredState.completedCalls) ? recoveredState.completedCalls : [];
+    const recoveredCallIds = new Set<string>(recoveredState.completedCalls.map(String));
+    const recoveredOutputIds = new Set<string>(
+      recoveredState.conversationInput.filter((item: any) => item?.type === "function_call_output").map((item: any) => String(item.call_id || ""))
+    );
+    let recoveredIncomplete = false;
+    for (const step of stepRows) {
+      const callId = String((step.input_json as any)?.call_id || "");
+      if (!callId || recoveredCallIds.has(callId)) continue;
+      let output: string;
+      if (step.status === "completed" && typeof (step.output_json as any)?.tool_output === "string") {
+        output = String((step.output_json as any).tool_output).slice(0, 80000);
+      } else if (step.status === "failed" && typeof (step.output_json as any)?.tool_output === "string") {
+        output = String((step.output_json as any).tool_output).slice(0, 80000);
+        recoveredIncomplete = true;
+      } else {
+        output = JSON.stringify({ ok: false, outcome: "unknown", error: "This action started before the worker stopped, but its result was not durably recorded. JD will not repeat it automatically. Check the connected service before retrying." });
+        recoveredIncomplete = true;
+        if (step.status === "running") {
+          await admin.from("jd_automation_steps").update({
+            status: "failed",
+            error_message: "Worker stopped before the action result was durably recorded; outcome unknown and automatic retry blocked",
+            output_json: { event: "outcome_unknown", verification: "recovery_blocked_duplicate" },
+            completed_at: new Date().toISOString(),
+          }).eq("id", step.id).eq("school_id", schoolId).eq("run_id", runId).eq("status", "running");
+        }
+      }
+      if (!recoveredOutputIds.has(callId)) {
+        recoveredState.conversationInput.push({ type: "function_call_output", call_id: callId, output });
+        recoveredOutputIds.add(callId);
+      }
+      recoveredState.completedCalls.push(callId);
+      recoveredCallIds.add(callId);
+    }
+    const resumeState = recoveredState;
 
     const result = await runWithShadowUsage({
       admin, jobId, schoolId, leaseToken,
@@ -222,7 +259,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
             status: verifiedResult ? "completed" : "failed",
-            output_json: { event: event.status, evidence, verification: verifiedResult ? "non_empty_tool_result" : "missing_result_evidence" },
+            output_json: { event: event.status, evidence, tool_output: typeof event.toolOutput === "string" ? event.toolOutput.slice(0, 80000) : null, verification: verifiedResult ? "semantic_tool_result" : "missing_result_evidence" },
             error_message: verifiedResult ? null : "Tool returned no verifiable result evidence",
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
@@ -246,7 +283,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
     const hadToolFailure = events.some((event: any) => event.status === "failed");
-    const finalStatus = result.status === "partially_completed" || hadToolFailure ? "partially_completed" : "completed";
+    const finalStatus = result.status === "partially_completed" || hadToolFailure || recoveredIncomplete ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
     const visualTasksQuery = canViewOperationalTasks
