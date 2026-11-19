@@ -43,9 +43,54 @@ function renderInlineMarkdown(value, keyPrefix = "inline") {
   });
 }
 
+let katexAssetPromise;
+function loadKatexAssets() {
+  if (typeof window !== "undefined" && window.katex) return Promise.resolve(window.katex);
+  if (katexAssetPromise) return katexAssetPromise;
+  katexAssetPromise = new Promise((resolve, reject) => {
+    if (!document.getElementById("jd-katex-css")) {
+      const link = document.createElement("link");
+      link.id = "jd-katex-css";
+      link.rel = "stylesheet";
+      link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css";
+      link.crossOrigin = "anonymous";
+      document.head.appendChild(link);
+    }
+    const finish = () => window.katex ? resolve(window.katex) : reject(new Error("KaTeX did not initialise"));
+    const existing = document.getElementById("jd-katex-js");
+    if (existing) {
+      if (window.katex) finish();
+      else {
+        existing.addEventListener("load", finish, { once: true });
+        existing.addEventListener("error", () => reject(new Error("KaTeX could not be loaded")), { once: true });
+      }
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "jd-katex-js";
+    script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js";
+    script.crossOrigin = "anonymous";
+    script.async = true;
+    script.onload = finish;
+    script.onerror = () => reject(new Error("KaTeX could not be loaded"));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    katexAssetPromise = null;
+    throw error;
+  });
+  return katexAssetPromise;
+}
+
 function MathBlock({ value, display = false }) {
-  const rendered = typeof window !== "undefined" && window.katex
-    ? window.katex.renderToString(String(value || ""), { throwOnError: false, strict: "ignore", trust: false, displayMode: display })
+  const [katex, setKatex] = useState(() => typeof window !== "undefined" ? window.katex || null : null);
+  useEffect(() => {
+    if (katex) return;
+    let active = true;
+    loadKatexAssets().then((loaded) => { if (active) setKatex(loaded); }).catch(() => {});
+    return () => { active = false; };
+  }, [katex]);
+  const rendered = katex
+    ? katex.renderToString(String(value || ""), { throwOnError: false, strict: "ignore", trust: false, displayMode: display })
     : null;
   const content = rendered ? <span dangerouslySetInnerHTML={{ __html: rendered }} /> : <code>{value}</code>;
   return display ? <div className="jd-math-display" aria-label={"Mathematical expression: " + value}>{content}</div> : <span className="jd-math-inline" aria-label={"Mathematical expression: " + value}>{content}</span>;
