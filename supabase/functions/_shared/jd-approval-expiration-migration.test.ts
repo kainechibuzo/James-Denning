@@ -20,6 +20,9 @@ Deno.test("approval expiry migration expires both pending queues and writes audi
 });
 
 Deno.test("task creation migration persists agent provenance in the atomic idempotent insert", () => {
+  if (!taskSql.includes("add column if not exists created_by_agent boolean not null default false")) {
+    throw new Error("Legacy task tables must receive the provenance column safely");
+  }
   if (!taskSql.includes("role in ('owner','admin','manager')")) {
     throw new Error("Task creator role matrix must preserve owner, admin and manager");
   }
