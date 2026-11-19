@@ -89,7 +89,7 @@ Deno.serve(async req=>{
    if(seenNames.has(name))throw new Error("MCP server returned duplicate tool names");
    if(!Object.keys(schema).length||schema.type!=="object")throw new Error(`MCP tool ${name} has no valid object input schema`);
    seenNames.add(name);
-   return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:isReadOnlyTool({name,annotations})};
+   return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:isReadOnlyTool({name,annotations},server.oauth_provider_id)};
   });
   if(server.oauth_provider_id){
    const {data:saved,error}=await db.rpc("jd_save_connector_oauth_discovery",{p_server:server.id,p_school:school,p_generation:server.oauth_generation,p_tools:tools,p_protocol:session.protocolVersion,p_info:session.serverInfo});
