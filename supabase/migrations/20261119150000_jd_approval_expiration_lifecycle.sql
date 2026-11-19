@@ -14,10 +14,10 @@ begin
     update public.jd_approvals
     set status = 'expired', updated_at = v_now
     where status = 'pending' and expires_at <= v_now
-    returning id, school_id, requested_by, run_id, expires_at
+    returning id, school_id, run_id, expires_at
   ), audited as (
     insert into public.jd_audit_events(school_id, actor_id, run_id, event_type, event_json)
-    select school_id, requested_by, run_id, 'approval.expired',
+    select school_id, null, run_id, 'approval.expired',
       jsonb_build_object('approval_id', id, 'expired_at', expires_at, 'expired_by', 'system')
     from expired
     returning id
@@ -28,10 +28,10 @@ begin
     update public.jd_connector_approvals
     set status = 'expired', resolved_at = v_now
     where status = 'pending' and expires_at <= v_now
-    returning id, school_id, requested_by, server_id, tool_name, expires_at
+    returning id, school_id, server_id, tool_name, expires_at
   ), audited as (
     insert into public.jd_audit_events(school_id, actor_id, event_type, event_json)
-    select school_id, requested_by, 'connector.approval.expired',
+    select school_id, null, 'connector.approval.expired',
       jsonb_build_object('approval_id', id, 'server_id', server_id, 'tool_name', tool_name, 'expired_at', expires_at, 'expired_by', 'system')
     from expired
     returning id
