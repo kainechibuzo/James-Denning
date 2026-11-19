@@ -21,7 +21,7 @@ declare
 begin
   select school_id into v_school
   from public.profiles
-  where id=p_actor_id and role in ('admin','manager');
+  where id=p_actor_id and role in ('owner','admin','manager');
 
   if v_school is null then
     raise exception 'Manager permission required' using errcode='42501';
