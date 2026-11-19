@@ -10,8 +10,12 @@ export function validateMcpEndpoint(value: unknown, allowedHosts: string[]): URL
   if (!allow.has(host)) throw new Error("This MCP host is not on the server allowlist");
   return url;
 }
+const READ_ONLY_HINT_DENYLIST = new Set(["run_secret_scanning"]);
+
 export function isReadOnlyTool(tool: McpTool): boolean {
   const a = tool.annotations || {};
+  const name = typeof tool.name === "string" ? tool.name.toLowerCase() : "";
+  if (READ_ONLY_HINT_DENYLIST.has(name)) return false;
   return a.readOnlyHint === true && a.destructiveHint !== true && a.openWorldHint !== true;
 }
 export function parseMcpPayload(body: string, contentType: string): any {
