@@ -41,7 +41,7 @@ Deno.serve(async req=>{
  const requireEncryptionKey=()=>{if(!key)throw new Error("JD_OAUTH_ENCRYPTION_KEY is missing or invalid; configure the 32-byte base64 encryption key before storing credentials or approving write-capable connector calls");return key;};
  const audit=async(type:string,meta:Record<string,unknown>)=>await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});
  const getServer=async(id:string)=>{
-  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info,oauth_provider_id,access_owner_user_id,oauth_actor_id,oauth_generation").eq("id",id).eq("school_id",school).maybeSingle();
+  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info,oauth_provider_id,access_owner_user_id,oauth_actor_id,oauth_generation,updated_at").eq("id",id).eq("school_id",school).maybeSingle();
   if(error||!data||!canUseConnector(data,actor))throw new Error("Connector not found or not shared with you");return data as any;
  };
  const visibleServerIds=async()=>{
@@ -314,7 +314,7 @@ Deno.serve(async req=>{
   }
   if(body.action==="tools.call"){
    const toolId=clip(body.toolId,64),args=asObject(body.arguments);
-   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations").eq("id",toolId).eq("school_id",school).maybeSingle();
+   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations,input_schema").eq("id",toolId).eq("school_id",school).maybeSingle();
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
    if(server.status!=="connected")return send({error:"Provider is not connected. Sign in or refresh tools first."},409);
@@ -328,7 +328,7 @@ Deno.serve(async req=>{
    const legacyRequiresApproval=!readOnly&&(!elevated||(!unrestricted&&(asObject(tool.annotations).destructiveHint===true||asObject(tool.annotations).openWorldHint===true)));
    const requiresApproval=server.oauth_provider_id?(!readOnly||tool.read_only!==true):legacyRequiresApproval;
    if(requiresApproval){
-    const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
+    const serializedArgs=JSON.stringify({arguments:args,tool_schema:tool.input_schema,server_updated_at:server.updated_at||null,server_endpoint:server.endpoint_url,oauth_generation:server.oauth_generation??null});if(serializedArgs.length>40000)return send({error:"Tool approval details exceed the 40 KB limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
     if(approvalError||!approval)return send({error:"Could not create approval request"},500);
     await audit("connector.approval.requested",{server_id:server.id,tool_name:tool.name,approval_id:approval.id});
@@ -340,7 +340,7 @@ Deno.serve(async req=>{
    const ids=await visibleServerIds();if(!ids.length)return send({approvals:[]});
    const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).in("server_id",ids).eq("status","pending").order("created_at",{ascending:false}).limit(100);
    if(error)throw error;
-   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey())))})));
+   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey()))).arguments)})));
    return send({approvals});
   }
   if(body.action==="approvals.get"){
@@ -377,9 +377,11 @@ Deno.serve(async req=>{
    try{
     const server=await getServer(approval.server_id);
     if(server.status!=="connected"||(server.oauth_provider_id&&server.oauth_generation!==approvalServer.oauth_generation))throw new Error("Connection changed after approval. Request approval again.");
-    const {data:currentTool,error:currentToolError}=await db.from("jd_connector_tools").select("id").eq("school_id",school).eq("server_id",server.id).eq("name",approval.tool_name).maybeSingle();
+    const {data:currentTool,error:currentToolError}=await db.from("jd_connector_tools").select("id,input_schema").eq("school_id",school).eq("server_id",server.id).eq("name",approval.tool_name).maybeSingle();
     if(currentToolError||!currentTool)throw new Error("The approved tool is no longer available on this connection. Refresh tools and request approval again.");
-    const raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
+    const raw=asObject(JSON.parse(await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey())));
+    if(!raw.arguments||JSON.stringify(raw.tool_schema)!==JSON.stringify(currentTool.input_schema)||raw.server_endpoint!==server.endpoint_url||raw.server_updated_at!==(server.updated_at||null)||raw.oauth_generation!==(server.oauth_generation??null))throw new Error("The connector, permissions or tool definition changed after approval. Request approval again.");
+    const args=asObject(raw.arguments);
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
    }catch(e){
     // execute() records a confirmed failure or outcome_unknown itself. Only
