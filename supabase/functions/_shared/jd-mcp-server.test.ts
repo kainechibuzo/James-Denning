@@ -105,6 +105,16 @@ Deno.test("native MCP blueprint submissions create a reviewable run and preserve
   assertMatch(source, /context\.conversationId = createdConversationId/);
 });
 
+Deno.test("execution activity distinguishes approval requests from provider execution", () => {
+  assertMatch(source, /select\("tool_key,status,error_message,started_at,completed_at,output_json"\)/);
+  assertMatch(source, /approval_requested/);
+  assertMatch(source, /status_meaning/);
+  assertMatch(source, /provider action has not executed/);
+  assertMatch(source, /ids_hidden: true/);
+  assertMatch(runtime, /summary\.external_action_executed = false/);
+  assertMatch(runtime, /summary\.execution_state = "approval_requested"/);
+});
+
 Deno.test("direct MCP tools are audited before and after handler execution", () => {
   assertMatch(source, /createJdMcpAuditedHandler\(agentContext, name, handler\)/);
   assertMatch(source, /createJdMcpAuditedHandler\(agentContext, toolName, async/);
