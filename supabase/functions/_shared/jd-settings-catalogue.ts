@@ -15,6 +15,7 @@ export const JD_SETTING_DEFINITIONS: SettingDefinition[] = [
   { key: "school_address", label: "Organisation address", category: "identity", description: "Physical organisation address used on official documents.", displayValue: true },
   { key: "school_phone", label: "Organisation phone", category: "identity", description: "Main organisation contact number.", displayValue: true },
   { key: "school_motto", label: "Organisation motto", category: "identity", description: "Short organisation motto displayed on supported documents.", displayValue: true },
+  { key: "admin_email", label: "Workspace administrator email", category: "identity", description: "Administrative contact configured for workspace notifications. The address is never returned to the model.", displayValue: false },
   { key: "result_ca_max", label: "Continuous assessment maximum", category: "performance", description: "Maximum score allocated to continuous assessment.", displayValue: true },
   { key: "result_exam_max", label: "Examination maximum", category: "performance", description: "Maximum score allocated to the main examination.", displayValue: true },
   { key: "inactivity_timeout_minutes", label: "Inactivity timeout", category: "security", description: "Session inactivity timeout in minutes.", displayValue: true },
@@ -33,7 +34,7 @@ export function buildSettingsCatalogue(rows: SettingRow[]) {
   const educationActive=byKey.get("workspace_type")==="education"&&![false,"false"].includes(byKey.get("education_module_enabled") as any);
   const academicKeys=new Set(["result_ca_max","result_exam_max","block_reports_if_owing","login_students_disabled","login_teachers_disabled"]);
   const knownKeys = new Set(JD_SETTING_DEFINITIONS.map((item) => item.key));
-  const settings = JD_SETTING_DEFINITIONS.map((definition) => {
+  const settings = JD_SETTING_DEFINITIONS.filter((definition) => !academicKeys.has(definition.key) || educationActive).map((definition) => {
     const value = byKey.get(definition.key);
     const configured = value !== undefined && value !== null && String(value).trim() !== "";
     return {
@@ -62,6 +63,7 @@ export function buildSettingsCatalogue(rows: SettingRow[]) {
       missing: missingCount,
       protected_settings_excluded: protectedKeys.length,
       unclassified_settings: unknownKeys.length,
+      not_applicable_settings_excluded: JD_SETTING_DEFINITIONS.length - settings.length,
     },
     unclassified_keys: unknownKeys.map((row) => row.key).slice(0, 50),
     limitations: [
