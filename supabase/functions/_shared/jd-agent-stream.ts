@@ -76,19 +76,35 @@ export async function readResponsesStream(
 export function responsesInputToChatMessages(input: unknown, instructions?: string): any[] {
   const messages: any[] = [];
   if (typeof instructions === "string" && instructions.trim()) messages.push({ role: "system", content: instructions });
+  let pendingToolCalls: any[] = [];
+  const flushToolCalls = () => {
+    if (!pendingToolCalls.length) return;
+    messages.push({ role: "assistant", content: null, tool_calls: pendingToolCalls });
+    pendingToolCalls = [];
+  };
   for (const item of Array.isArray(input) ? input : []) {
     if (!item || typeof item !== "object") continue;
     const value = item as any;
-    if (value.type === "function_call_output") {
-      messages.push({ role: "tool", tool_call_id: String(value.call_id || ""), content: String(value.output || "") });
+    if (value.type === "function_call") {
+      const id = String(value.call_id || value.id || "");
+      const name = String(value.name || "");
+      const args = String(value.arguments || "{}");
+      if (!id || !name) throw new Error("Gemini tool-call history is missing its call ID or function name");
+      let parsed: unknown;
+      try { parsed = JSON.parse(args); } catch { throw new Error("Gemini tool-call history contains invalid arguments"); }
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Gemini tool-call arguments must be a JSON object");
+      pendingToolCalls.push({
+        id,
+        type: "function",
+        function: { name, arguments: args },
+      });
       continue;
     }
-    if (value.type === "function_call") {
-      messages.push({ role: "assistant", content: null, tool_calls: [{
-        id: String(value.call_id || value.id || crypto.randomUUID()),
-        type: "function",
-        function: { name: String(value.name || ""), arguments: String(value.arguments || "{}") },
-      }] });
+    flushToolCalls();
+    if (value.type === "function_call_output") {
+      const callId = String(value.call_id || "");
+      if (!callId) throw new Error("Gemini tool output is missing its call ID");
+      messages.push({ role: "tool", tool_call_id: callId, content: typeof value.output === "string" ? value.output : JSON.stringify(value.output ?? "") });
       continue;
     }
     if (value.type === "message" && value.role === "assistant") {
@@ -99,9 +115,11 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
       continue;
     }
     if (value.role === "assistant" || value.role === "user" || value.role === "system") {
-      messages.push({ role: value.role, content: typeof value.content === "string" ? value.content : JSON.stringify(value.content ?? "") });
+      const content = typeof value.content === "string" ? value.content : JSON.stringify(value.content ?? "");
+      messages.push({ role: value.role, content });
     }
   }
+  flushToolCalls();
   return messages;
 }
 
@@ -133,7 +151,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
     const payload = line.slice(5).trim();
     if (!payload || payload === "[DONE]") return;
     let chunk: any;
-    try { chunk = JSON.parse(payload); } catch { return; }
+    try { chunk = JSON.parse(payload); } catch { throw new Error("Gemini returned a malformed streaming event"); }
     if (chunk.error) throw new Error("Gemini streamed response failed");
     responseId ||= chunk.id || null;
     model ||= chunk.model || null;
@@ -147,7 +165,8 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
       onTextDelta?.(delta.content);
     }
     for (const part of delta.tool_calls || []) {
-      const index = Number(part.index || 0);
+      const index = Number(part.index);
+      if (!Number.isInteger(index) || index < 0) throw new Error("Gemini returned an invalid tool-call index");
       const current = toolCalls.get(index) || { id: "", type: "function", function: { name: "", arguments: "" } };
       if (part.id) current.id = part.id;
       if (part.function?.name) current.function.name += part.function.name;
@@ -169,16 +188,24 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
     }
     buffer += decoder.decode();
     if (buffer.trim()) consumeLine(buffer);
-    const calls = [...toolCalls.values()];
     if (!finishReason) throw new Error("Gemini stream ended without a terminal completion marker");
+    if (!["stop", "tool_calls", "length"].includes(finishReason)) throw new Error("Gemini ended with an unsupported finish reason");
+    const calls = [...toolCalls.entries()].sort(([a], [b]) => a - b).map(([, call]) => {
+      if (!call.id || !call.function.name || !call.function.arguments) throw new Error("Gemini returned an incomplete tool call");
+      let args: unknown;
+      try { args = JSON.parse(call.function.arguments); } catch { throw new Error("Gemini returned invalid tool-call arguments"); }
+      if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error("Gemini tool-call arguments must be a JSON object");
+      return call;
+    });
     if (!content && !calls.length) throw new Error("Gemini stream ended without a readable response or tool call");
+    if (finishReason === "tool_calls" && !calls.length) throw new Error("Gemini reported tool calls but returned none");
     const output: any[] = [];
     if (content) output.push({ type: "message", role: "assistant", content: [{ type: "output_text", text: content }] });
     for (const call of calls) output.push({
       type: "function_call",
       call_id: call.id,
       name: call.function.name,
-      arguments: call.function.arguments || "{}",
+      arguments: call.function.arguments,
     });
     const status = finishReason === "length" ? "incomplete" : "completed";
     return {
