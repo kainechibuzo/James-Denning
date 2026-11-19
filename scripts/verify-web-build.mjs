@@ -18,6 +18,8 @@ assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/AppDemo\.jsx["']\)\)/, "Wor
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/saas-entry\.jsx["']\)/, "Authentication must be lazy-loaded");
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/public-landing\.jsx["']\)/, "Landing page must be lazy-loaded");
 assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
+assert.match(jdChat, /function loadKatexAssets\(/, "KaTeX must load on demand from the chat math renderer");
+assert.match(jdChat, /jd-katex-css[\s\S]*jd-katex-js/, "KaTeX CSS and JavaScript must be loaded only by the math renderer");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
 
 // Multi-industry product identity and mobile regression guards.
@@ -134,6 +136,7 @@ assert.match(jdVisual, /React text|aria-label/, "Visual renderer must use access
 const dist = resolve(root, "dist");
 assert.ok(existsSync(join(dist, "index.html")), "Production build must emit dist/index.html");
 const html = readFileSync(join(dist, "index.html"), "utf8");
+assert.doesNotMatch(html, /cdn\.jsdelivr\.net\/npm\/katex/, "The initial HTML must not load KaTeX for visitors who never open mathematical content");
 // Ignore deferred third-party scripts (for example KaTeX). Only the local
 // module entry is part of the initial application bundle and its size budget.
 const scriptAttributes = [...html.matchAll(/<script\b([^>]*)>/g)].map((match) => match[1]);
