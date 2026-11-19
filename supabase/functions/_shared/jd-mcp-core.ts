@@ -38,7 +38,9 @@ export function hasMeaningfulMcpResult(value: unknown): boolean {
   if (Array.isArray(value)) return value.some((item) => hasMeaningfulMcpResult(item));
   if (typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
-  if (record.isError === true) return false;
+  if (record.isError === true || record.ok === false || record.success === false) return false;
+  if (typeof record.error === "string" && record.error.trim()) return false;
+  if (typeof record.status === "string" && ["failed", "failure", "error", "rejected", "cancelled"].includes(record.status.toLowerCase())) return false;
   if (hasMeaningfulMcpResult(record.structuredContent)) return true;
   if (hasMeaningfulMcpResult(record.content)) return true;
   return Object.entries(record).some(([key, item]) =>
