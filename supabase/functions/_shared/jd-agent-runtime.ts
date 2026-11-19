@@ -1167,7 +1167,7 @@ export type AgentRuntimeCheckpoint = {
   continuationCount?: number;
 };
 
-function summariseToolEvidence(result: Record<string, unknown>) {
+export function summariseToolEvidence(result: Record<string, unknown>) {
   const summary: Record<string, string | number | boolean> = {};
   const nestedResult = result.result && typeof result.result === "object" && !Array.isArray(result.result)
     ? result.result as Record<string, unknown>
