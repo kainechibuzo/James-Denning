@@ -83,6 +83,9 @@ Deno.serve(async req=>{
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
   const seenNames=new Set<string>();\n  const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
+   if(seenNames.has(name))throw new Error("MCP server returned duplicate tool names");
+   if(!Object.keys(schema).length||schema.type!=="object")throw new Error(`MCP tool ${name} has no valid object input schema`);
+   seenNames.add(name);
    return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:false};
   });
   if(server.oauth_provider_id){
@@ -92,7 +95,8 @@ Deno.serve(async req=>{
   const {error:deleteError}=await db.from("jd_connector_tools").delete().eq("server_id",server.id).eq("school_id",school);
   if(deleteError)throw new Error("Could not replace connector tool catalogue");
   if(tools.length){const {error}=await db.from("jd_connector_tools").insert(tools);if(error)throw new Error("Could not save discovered MCP tools");}
-  await db.from("jd_connector_servers").update({status:"connected",protocol_version:session.protocolVersion,server_info:session.serverInfo,last_connected_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school);
+  const {error:serverUpdateError}=await db.from("jd_connector_servers").update({status:"connected",protocol_version:session.protocolVersion,server_info:session.serverInfo,last_connected_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school);
+  if(serverUpdateError)throw new Error("Tools were discovered but connector health could not be persisted");
   return tools;
  };
  const execute=async(server:any,toolName:string,args:Record<string,unknown>,approvalId:string|null)=>{
@@ -111,6 +115,11 @@ Deno.serve(async req=>{
     const remoteFailure=new Error(detail||"Remote MCP tool returned isError=true");
     (remoteFailure as Error & {code?:string}).code="MCP_TOOL_ERROR";
     throw remoteFailure;
+   }
+   if(!hasMeaningfulMcpResult(remoteResult)){
+    const missingEvidence=new Error("Provider returned no meaningful result; action is not verified");
+    (missingEvidence as Error & {code?:string}).code="MISSING_RESULT_EVIDENCE";
+    throw missingEvidence;
    }
    const serialized=JSON.stringify(remoteResult);
    if(serialized.length>MAX_RESULT)throw new Error("Connector result exceeds the 90 KB limit");
