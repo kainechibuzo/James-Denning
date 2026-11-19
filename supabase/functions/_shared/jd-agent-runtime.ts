@@ -558,7 +558,7 @@ const tools: ToolSpec[] = [
         ? await ctx.admin.from("profiles").select("id,full_name,role").eq("school_id", ctx.schoolId).in("id", actorIds)
         : { data: [], error: null };
       if (actorError) throw new Error("Could not resolve audit actor labels");
-      const actorById = new Map((actors || []).map((actor: any) => [actor.id, actor]));
+      const actorById = new Map<string, any>((actors || []).map((actor: any) => [String(actor.id), actor] as [string, any]));
       const entries = (data || []).map((row: any) => {
         const metadata = row.event_json && typeof row.event_json === "object" && !Array.isArray(row.event_json) ? row.event_json : {};
         const actor = actorById.get(row.actor_id);
@@ -776,7 +776,7 @@ const tools: ToolSpec[] = [
         (!server.access_owner_user_id || server.access_owner_user_id === ctx.userId) &&
         (!requestedServer || String(server.name || "").toLowerCase() === requestedServer)
       );
-      const serverNames = new Map(visibleServers.map((server: any) => [server.id, server.name || "MCP server"]));
+      const serverNames = new Map<string, string>(visibleServers.map((server: any) => [String(server.id), String(server.name || "MCP server")] as [string, string]));
       const serverIds = visibleServers.map((server: any) => server.id);
       if (!serverIds.length) return { tools: [], total: 0, limit, offset, has_more: false, next_offset: null, schemas_included: includeSchema };
       const columns = includeSchema
@@ -815,7 +815,7 @@ const tools: ToolSpec[] = [
       ]);
       if (businessError || serverError) throw new Error("Could not list pending workspace approvals");
       const visibleServers = (servers || []).filter((server: any) => !server.access_owner_user_id || server.access_owner_user_id === ctx.userId);
-      const serverNames = new Map(visibleServers.map((server: any) => [server.id, server.name || "MCP server"]));
+      const serverNames = new Map<string, string>(visibleServers.map((server: any) => [String(server.id), String(server.name || "MCP server")] as [string, string]));
       const serverIds = visibleServers.map((server: any) => server.id);
       let connectorApprovals: any[] = [];
       if (serverIds.length) {
@@ -994,9 +994,9 @@ export async function runJdMcpToolWithAudit<T>(
 export function createJdMcpAuditedHandler(
   context: AgentContext,
   toolName: string,
-  handler: (args: Record<string, unknown>) => Promise<unknown>,
+  handler: (args: Record<string, unknown>) => Promise<any>,
 ) {
-  return (args: Record<string, unknown>) => runJdMcpToolWithAudit(context, toolName, args || {}, () => handler(args || {}));
+  return (args: Record<string, unknown>): Promise<any> => runJdMcpToolWithAudit(context, toolName, args || {}, () => handler(args || {}));
 }
 
 export async function executeJdMcpTool(
