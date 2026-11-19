@@ -1189,13 +1189,11 @@ export async function runAgent(input: {
       }
       let executionStarted = false;
       let explicitToolFailure = false;
-      let executionSucceeded = false;
       try {
         await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "started", risk: tool.risk });
         executionStarted = true;
         const result = await tool.execute(args, input.context);
-        executionSucceeded = isSuccessfulToolResult(result);
-        if (!executionSucceeded) {
+        if (!isSuccessfulToolResult(result)) {
           explicitToolFailure = true;
           throw new Error("Tool returned an explicit failure result; completion was not verified");
         }
