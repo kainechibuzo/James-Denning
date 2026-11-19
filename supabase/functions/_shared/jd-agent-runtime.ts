@@ -543,7 +543,7 @@ const tools: ToolSpec[] = [
   },
   {
     name: "get_recent_activity_logs",
-    description: "Inspect recent organisation admin audit activity. Returns a bounded, privacy-conscious list of recent actions, entity types, timestamps and actor labels. Use when asked to inspect logs, investigate recent changes, or explain what happened.",
+    description: "Inspect the current append-only workspace audit stream, including MCP tool calls and connector activity. Returns bounded, privacy-conscious actions, timestamps and actor labels without raw UUIDs or argument values.",
     risk: "low",
     roles: ["owner","admin"],
     parameters: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 50 } }, required: [], additionalProperties: false },
