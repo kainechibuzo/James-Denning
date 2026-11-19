@@ -3,7 +3,7 @@ import {connectorOAuthToken,connectorOAuthKey,prepareConnectorRevocation} from "
 import {canUseConnector,MCP_OAUTH_PROVIDERS} from "../_shared/jd-connector-oauth-policy.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { decryptSecret, encryptSecret, importAesKey } from "../_shared/jd-oauth-crypto.ts";
-import { isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
+import { hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
 
 const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
@@ -81,7 +81,7 @@ Deno.serve(async req=>{
   if(!Array.isArray(listed.result.tools))throw new Error("MCP server omitted the tool catalogue");
   const raw=listed.result.tools;
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
-  const tools=raw.map((t:any)=>{
+  const seenNames=new Set<string>();\n  const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
    return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:false};
   });
@@ -128,7 +128,7 @@ Deno.serve(async req=>{
    if(auditError)warnings.push("Execution succeeded and evidence was saved, but the audit event could not be recorded.");
    return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:!auditError,approval_status_persisted:approvalStatusPersisted},warnings};
   }catch(e){
-   if(server.oauth_provider_id&&/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:"OAUTH_RECONNECT_REQUIRED"}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
+   if(/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:server.oauth_provider_id?"OAUTH_RECONNECT_REQUIRED":"CONNECTOR_AUTH_OR_PERMISSION_FAILED",updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
    const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
    const failureMessage=e instanceof Error?e.message:"Connector operation failed";
    const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:"failed",result_json:remoteResult,error_code:code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
