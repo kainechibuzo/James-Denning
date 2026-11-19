@@ -101,7 +101,7 @@ Deno.test("native MCP blueprint submissions create a reviewable run and preserve
 });
 
 Deno.test("connected MCP tool notices distinguish approval, persisted execution and unverified results", () => {
-  assertMatch(source, /result\.executionId && result\.evidence\?\.persisted === true/);
+  assertMatch(source, /result\.executionId && asObject\(result\.evidence\)\.persisted === true/);
   assertMatch(source, /This verifies the connector response, not every downstream effect/);
   assertMatch(source, /persisted execution evidence was not confirmed/);
   assertMatch(source, /outcome_unknown means the provider may have acted/);
