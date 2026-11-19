@@ -25,7 +25,7 @@ Deno.test("runtime checkpoints tool-call requests before executing side effects"
 });
 
 Deno.test("runtime journals the tool response before its final conversation checkpoint", () => {
-  assertMatch(runtime, /toolOutput: toolOutput\.slice\(0, 80000\)/);
+  assertMatch(runtime, /evidence, toolOutput \}\)/);
   assertMatch(worker, /tool_output: typeof event\.toolOutput === "string"/);
   assertMatch(worker, /event.status === "failed" \|\| event.status === "outcome_unknown"/);
 });
