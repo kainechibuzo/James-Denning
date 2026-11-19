@@ -1,4 +1,4 @@
-import { readResponsesStream, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
+import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 
 function equal(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) throw new Error(label + ": expected " + String(expected) + ", received " + String(actual));
@@ -43,4 +43,49 @@ Deno.test("Responses stream fails closed when no terminal event arrives", async 
   let failed = false;
   try { await readResponsesStream(body); } catch { failed = true; }
   equal(failed, true, "missing terminal event rejected");
+});
+
+
+Deno.test("Gemini-compatible stream returns assistant text and complete tool calls", async () => {
+  const encoder = new TextEncoder();
+  const chunks = [
+    'data: {"id":"chatcmpl-1","model":"gemini-3.1-flash-lite","choices":[{"delta":{"content":"Checking "},"finish_reason":null}]}\\n\\n',
+    'data: {"choices":[{"delta":{"content":"now"},"finish_reason":null}]}\\n\\n',
+    'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"get_people_intelligence","arguments":"{}"}}]},"finish_reason":null}]}\\n\\n',
+    'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\\n\\n',
+    'data: [DONE]\\n\\n',
+  ];
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) { for (const chunk of chunks) controller.enqueue(encoder.encode(chunk)); controller.close(); },
+  });
+  const deltas: string[] = [];
+  const result = await readChatCompletionsStream(body, (delta) => deltas.push(delta));
+  equal(deltas.join(""), "Checking now", "Gemini streamed text");
+  equal(result.status, "completed", "Gemini terminal status");
+  equal(responseOutputText(result), "Checking now", "Gemini final text");
+  equal(result.output.filter((item: any) => item.type === "function_call").length, 1, "tool call count");
+  equal(result.output.find((item: any) => item.type === "function_call").name, "get_people_intelligence", "tool name");
+});
+
+Deno.test("Gemini request adapter preserves instructions, tool outputs and function schemas", () => {
+  const messages = responsesInputToChatMessages([
+    { role: "user", content: "Check staff" },
+    { type: "function_call", call_id: "call_1", name: "get_people_intelligence", arguments: "{}" },
+    { type: "function_call_output", call_id: "call_1", output: "{\\"ok\\":true}" },
+  ], "You are JD");
+  equal(messages[0].role, "system", "system instructions");
+  equal(messages[1].role, "user", "user message");
+  equal(messages[2].tool_calls[0].id, "call_1", "assistant tool call id");
+  equal(messages[3].tool_call_id, "call_1", "tool output correlation");
+  const tools = responsesToolsToChatTools([{ type: "function", name: "lookup", description: "Read data", parameters: { type: "object", properties: {} }, strict: true }]);
+  equal(tools[0].function.name, "lookup", "converted tool schema");
+});
+
+Deno.test("Gemini stream rejects missing terminal completion marker", async () => {
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) { controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"partial"},"finish_reason":null}]}\\n')); controller.close(); },
+  });
+  let failed = false;
+  try { await readChatCompletionsStream(body); } catch { failed = true; }
+  equal(failed, true, "incomplete Gemini stream rejected");
 });
