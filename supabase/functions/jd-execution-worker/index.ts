@@ -260,7 +260,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
           const { data, error } = await admin.from("jd_automation_steps").update({
             status: verifiedResult ? "completed" : "failed",
             output_json: { event: event.status, evidence, tool_output: typeof event.toolOutput === "string" ? event.toolOutput.slice(0, 80000) : null, verification: verifiedResult ? "semantic_tool_result" : "missing_result_evidence" },
-            error_message: verifiedResult ? null : "Tool returned no verifiable result evidence",
+            error_message: verifiedResult ? null : String(event.error || (event.status === "outcome_unknown" ? "Action outcome could not be verified" : "Tool returned no verifiable result evidence")).slice(0, 240),
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
             .select("id").maybeSingle();
@@ -282,7 +282,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     persistPartial(true);
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
-    const hadToolFailure = events.some((event: any) => event.status === "failed");
+    const hadToolFailure = events.some((event: any) => event.status !== "completed");
     const finalStatus = result.status === "partially_completed" || hadToolFailure || recoveredIncomplete ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
