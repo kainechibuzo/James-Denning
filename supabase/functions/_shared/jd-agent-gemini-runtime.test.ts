@@ -1,4 +1,5 @@
 import { runAgent } from "./jd-agent-runtime.ts";
+import { readChatCompletionsStream, NonRetryableAgentResponseError } from "./jd-agent-stream.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) throw new Error(label + ": expected " + String(expected) + ", received " + String(actual));
@@ -85,4 +86,45 @@ Deno.test("Gemini runs a real multi-round parallel tool-call cycle with durable 
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+Deno.test("Gemini stream correlates tool calls by stable ID when the provider omits indexes", async () => {
+  const response = await readChatCompletionsStream(sseResponse([
+    'data: {"choices":[{"delta":{"tool_calls":[{"id":"call_stable","type":"function","function":{"name":"lookup","arguments":"{"}}]},"finish_reason":null}]}\n',
+    'data: {"choices":[{"delta":{"tool_calls":[{"id":"call_stable","function":{"arguments":"}"}}]},"finish_reason":null}]}\n',
+    'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
+    "data: [DONE]\n",
+  ]).body!);
+  assertEqual(response.output.length, 1, "one correlated function call");
+  assertEqual(response.output[0].call_id, "call_stable", "stable call ID retained");
+  assertEqual(response.output[0].arguments, "{}", "fragmented arguments combined");
+});
+
+Deno.test("Gemini stream rejects uncorrelatable tool fragments as non-retryable", async () => {
+  let caught: unknown = null;
+  try {
+    await readChatCompletionsStream(sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_one","type":"function","function":{"name":"lookup","arguments":"{}"}},{"index":1,"id":"call_two","type":"function","function":{"name":"lookup_other","arguments":"{}"}}]},"finish_reason":null}]}\n',
+      'data: {"choices":[{"delta":{"tool_calls":[{"function":{"arguments":"{}"}}]},"finish_reason":null}]}\n',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
+      "data: [DONE]\n",
+    ]).body!);
+  } catch (error) {
+    caught = error;
+  }
+  assertEqual(caught instanceof NonRetryableAgentResponseError, true, "malformed provider response is non-retryable");
+});
+
+Deno.test("Gemini stream rejects multiple unindexed calls in the same delta", async () => {
+  let caught: unknown = null;
+  try {
+    await readChatCompletionsStream(sseResponse([
+      'data: {"choices":[{"delta":{"tool_calls":[{"type":"function","function":{"name":"lookup","arguments":"{}"}},{"type":"function","function":{"name":"lookup_other","arguments":"{}"}}]},"finish_reason":null}]}\n',
+      'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
+      "data: [DONE]\n",
+    ]).body!);
+  } catch (error) {
+    caught = error;
+  }
+  assertEqual(caught instanceof NonRetryableAgentResponseError, true, "parallel calls without correlation metadata are non-retryable");
 });

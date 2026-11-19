@@ -11,6 +11,8 @@ Deno.serve(async(req)=>{
  const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  if(!url||!key)return json({error:"Scheduler is not configured"},503);
  const admin=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data:approvalExpiry,error:approvalExpiryError}=await admin.rpc("jd_expire_stale_approvals");
+ if(approvalExpiryError)return json({error:"Could not expire stale approval requests"},503);
  const {data:recovery,error:recoveryError}=await admin.rpc("jd_recover_stale_execution_jobs",{
   p_stale_after_seconds:60,p_batch_size:50
  });
@@ -47,5 +49,5 @@ Deno.serve(async(req)=>{
    .catch((error)=>console.error("JD scheduled worker wake failed",String(error).slice(0,160))));
  }
  return json({checked:(schedules||[]).length,dispatched:outcomes.filter(x=>x?.dispatched).length,outcomes,
-  recovery,queue:queueHealth||null,pending_count:Number(pendingCount||0),worker_wake_requested:workerWakeRequested});
+  approval_expiry:approvalExpiry||null,recovery,queue:queueHealth||null,pending_count:Number(pendingCount||0),worker_wake_requested:workerWakeRequested});
 });

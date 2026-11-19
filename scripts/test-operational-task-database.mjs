@@ -29,6 +29,7 @@ before(async () => {
     create table public.jd_automation_runs (id uuid primary key);
   `);
   await db.exec(tableDDL("20261112084532_jd_batch01_organisation_operations_hiring.sql", "jd_operational_tasks"));
+  await db.exec(read("20261119151000_jd_task_provenance_atomic.sql").split("create or replace function")[0]);
   await db.exec(tableDDL("20261111085143_jd_autonomous_automation.sql", "jd_audit_events"));
   // Apply all definitions of the transition and creation RPCs in migration order, not just the original
   // admin/manager-only definition. Discover uppercase/lowercase CREATE equally.
@@ -156,7 +157,7 @@ async function createTask(actor=actors.manager,patch={},role="service_role") {
 for(const role of ["owner","admin","manager"]){
  test(`${role}: creation replay persists one task and returns the original audit`,async()=>{
   const first=await createTask(actors[role]);const second=await createTask(actors[role]);
-  assert.equal(first.reused,false);assert.equal(second.reused,true);assert.equal(second.task.id,first.task.id);assert.equal(second.auditId,first.auditId);assert.equal(second.auditRecorded,true);
+  assert.equal(first.reused,false);assert.equal(second.reused,true);assert.equal(second.task.id,first.task.id);assert.equal(second.auditId,first.auditId);assert.equal(second.auditRecorded,true);assert.equal(first.task.created_by_agent,true);assert.equal(second.task.created_by_agent,true);
   const rows=await db.query("select id from public.jd_operational_tasks where idempotency_key='creation-test-request'");assert.equal(rows.rows.length,1);
   const audits=await db.query("select id,event_json from public.jd_audit_events where event_type='operational_task.created'");assert.equal(audits.rows.length,1);assert.equal(audits.rows[0].id,first.auditId);assert.equal(audits.rows[0].event_json.task_id,first.task.id);
  });
@@ -182,7 +183,7 @@ test("audit failure rolls back creation, allowing safe retry with the same ident
 });
 test("legacy reused task without original creation audit does not manufacture audit evidence",async()=>{
  await db.exec("update public.jd_operational_tasks set title='Synthetic creation',description='Test only',department='Operations',idempotency_key='creation-test-request'");
- const result=await createTask();assert.equal(result.reused,true);assert.equal(result.auditRecorded,false);assert.equal(result.auditId,null);assert.equal((await db.query("select id from public.jd_audit_events")).rows.length,0);
+ const result=await createTask();assert.equal(result.reused,true);assert.equal(result.task.created_by_agent,true);assert.equal(result.auditRecorded,false);assert.equal(result.auditId,null);assert.equal((await db.query("select id from public.jd_audit_events")).rows.length,0);
 });
 
 const assignmentSignature = 'public.jd_assign_operational_task(uuid,uuid,uuid,uuid,timestamptz)';

@@ -406,9 +406,17 @@ Deno.serve(async (req) => {
   }
   if(!created?.task||created.auditRecorded!==true&&created.reused!==true)
    return json({error:"Task creation did not return persisted evidence"},500);
-  if(created.task?.id&&!created.reused) await admin.from("jd_operational_tasks").update({created_by_agent:true}).eq("id",created.task.id).eq("school_id",profile.school_id);
+  // The atomic RPC returns its row before this provenance flag is normalised.
+  // Re-read the row after the idempotent update so create and replay responses
+  // exactly match the persisted database value.
+  const {data:persistedTask,error:provenanceError}=await admin.from("jd_operational_tasks")
+   .update({created_by_agent:true})
+   .eq("id",created.task.id).eq("school_id",profile.school_id)
+   .select("*").single();
+  if(provenanceError||!persistedTask||persistedTask.created_by_agent!==true)
+   return json({error:"Task was saved, but its creator provenance could not be verified"},500);
   return json({
-   task:created.task,
+   task:persistedTask,
    reused:created.reused===true,
    auditRecorded:created.auditRecorded===true,
    auditId:created.auditId||null
@@ -547,6 +555,8 @@ Deno.serve(async (req) => {
  }
  if(payload.action==="approvals.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can review approval requests"},403);
+  const {error:expiryError}=await admin.rpc("jd_expire_stale_approvals");
+  if(expiryError) return json({error:"Could not refresh expired approval states"},503);
   const {data,error}=await admin.from("jd_approvals")
    .select("id,run_id,requested_by,status,reason,title,action_key,risk_level,proposal_json,audience_text,execution_status,execution_result_json,decision_note,decided_by,decided_at,expires_at,created_at")
    .eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100);
@@ -573,7 +583,14 @@ Deno.serve(async (req) => {
    if(code==="42501") return json({error:"Only workspace admins can decide approval requests"},403);
    return json({error:"Could not record the approval decision and audit event"},500);
   }
-  if(result?.status==="expired") return json({error:"This approval request has expired",approval:result},410);
+  if(result?.status==="expired"){
+   const {error:auditError}=await admin.from("jd_audit_events").insert({
+    school_id:profile.school_id,actor_id:authData.user.id,run_id:before.run_id,
+    event_type:"approval.expired",event_json:{approval_id:approvalId,expired_by:"decision_guard"}
+   });
+   if(auditError)return json({error:"Approval expired, but its audit event could not be confirmed",approval:result},500);
+   return json({error:"This approval request has expired",approval:result},410);
+  }
   let execution:any={status:"not_executed",message:decision==="approved"?"Approved. The requested change is not yet available for automatic completion.":"Rejected. No changes were made."};
   if(decision==="approved"&&before.action_key==="organisation.provision_departments"){
    const {data:provisioned,error:provisionError}=await admin.rpc("jd_provision_approved_departments",{p_approval_id:approvalId,p_actor_id:authData.user.id});
