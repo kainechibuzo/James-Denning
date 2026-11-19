@@ -13,7 +13,7 @@ import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
 import { analyseKpiTrends } from "./jd-kpi-trends.ts";
 import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
-import { isSuccessfulToolResult } from "./jd-tool-evidence.ts";
+import { isExplicitToolFailure, isSuccessfulToolResult } from "./jd-tool-evidence.ts";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -1194,7 +1194,7 @@ export async function runAgent(input: {
         executionStarted = true;
         const result = await tool.execute(args, input.context);
         if (!isSuccessfulToolResult(result)) {
-          explicitToolFailure = true;
+          explicitToolFailure = isExplicitToolFailure(result);
           throw new Error("Tool returned an explicit failure result; completion was not verified");
         }
         const evidenceSummary = summariseToolEvidence(result);
