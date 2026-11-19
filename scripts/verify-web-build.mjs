@@ -157,6 +157,15 @@ assert.ok(entry.length <= maxEntryBytes, `Initial JS entry too large: ${Math.rou
 assert.ok(entryGzip.length <= maxEntryGzipBytes, `Initial gzipped JS entry too large: ${Math.round(entryGzip.length / 1024)} KB (budget 260 KB)`);
 
 const jsAssets = readdirSync(join(dist, "assets")).filter((name) => name.endsWith(".js"));
+const workspaceAsset = jsAssets.find((name) => name.startsWith("AppDemo-"));
+assert.ok(workspaceAsset, "Authenticated workspace must remain a separately loaded route chunk");
+const workspaceGzipBytes = gzipSync(readFileSync(join(dist, "assets", workspaceAsset))).length;
+assert.ok(workspaceGzipBytes <= 120 * 1024, `Workspace route chunk too large: ${Math.round(workspaceGzipBytes / 1024)} KB gzip (budget 120 KB)`);
+const spreadsheetAsset = jsAssets.find((name) => name.startsWith("spreadsheet-vendor-"));
+if (spreadsheetAsset) {
+  const spreadsheetGzipBytes = gzipSync(readFileSync(join(dist, "assets", spreadsheetAsset))).length;
+  assert.ok(spreadsheetGzipBytes <= 300 * 1024, `Deferred spreadsheet importer too large: ${Math.round(spreadsheetGzipBytes / 1024)} KB gzip (budget 300 KB)`);
+}
 assert.ok(jsAssets.length >= 4, `Expected route/vendor splitting; found only ${jsAssets.length} JS asset(s)`);
 assert.ok(existsSync(join(dist, "manifest.json")), "PWA manifest must be included in the web build");
 console.log(`Web verification passed: ${buttonTags.length} landing buttons, ${linkTags.length} links, ${jsAssets.length} JS chunks, entry ${Math.round(entry.length / 1024)} KB (${Math.round(entryGzip.length / 1024)} KB gzip).`);
