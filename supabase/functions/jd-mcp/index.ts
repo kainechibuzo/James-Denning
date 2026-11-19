@@ -217,7 +217,7 @@ Deno.serve(
               ? await admin.from("profiles").select("id,full_name,role").eq("school_id", schoolId).in("id", actorIds)
               : { data: [], error: null };
             if (actorError) throw new Error("Could not resolve audit actor labels");
-            const actorById = new Map((actors || []).map((actor: any) => [actor.id, actor]));
+            const actorById = new Map<string, any>((actors || []).map((actor: any) => [String(actor.id), actor] as [string, any]));
             const events = (data || []).map((row: any) => {
               const metadata = asObject(row.event_json);
               const actor = actorById.get(row.actor_id);
@@ -264,7 +264,7 @@ Deno.serve(
               (!server.access_owner_user_id || server.access_owner_user_id === actorId) &&
               (!requestedServer || String(server.name || "").toLowerCase() === requestedServer)
             );
-            const serverNames = new Map(visibleServers.map((server: any) => [server.id, server.name || "MCP server"]));
+            const serverNames = new Map<string, string>(visibleServers.map((server: any) => [String(server.id), String(server.name || "MCP server")] as [string, string]));
             const serverIds = visibleServers.map((server: any) => server.id);
             if (!serverIds.length) return jsonText({ tools: [], total: 0, limit: pageSize, offset: pageOffset, has_more: false, next_offset: null, schemas_included: includeSchema });
             const columns = includeSchema
