@@ -29,3 +29,8 @@ Deno.test("runtime journals the tool response before its final conversation chec
   assertMatch(worker, /tool_output: typeof event\.toolOutput === "string"/);
   assertMatch(worker, /event.status === "failed" \|\| event.status === "outcome_unknown"/);
 });
+
+Deno.test("incomplete Gemini function calls are removed from continuation history", () => {
+  assertMatch(runtime, /output\.filter\(\(item: any\) => item\?\.type !== "function_call"\)/);
+  assertMatch(runtime, /Do not reuse or execute any partial tool-call arguments/);
+});
