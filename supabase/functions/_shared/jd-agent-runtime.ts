@@ -1204,7 +1204,8 @@ export async function runAgent(input: {
           result_keys: Object.keys(result).slice(0, 12).join(","),
         };
         const toolOutput = JSON.stringify({ ok: true, result });
-        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence, toolOutput: toolOutput.length <= 80000 ? toolOutput : JSON.stringify({ ok: false, outcome: "unknown", error: "The action returned, but its result was too large to persist safely. Inspect the saved records before retrying." }) });
+        if (toolOutput.length > 80000) throw new Error("The action returned, but its result was too large to persist safely");
+        await input.onToolEvent?.({ name: tool.name, callId: call.call_id, status: "completed", risk: tool.risk, evidence, toolOutput });
         return { type: "function_call_output", call_id: call.call_id, output: toolOutput };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Tool execution failed";
