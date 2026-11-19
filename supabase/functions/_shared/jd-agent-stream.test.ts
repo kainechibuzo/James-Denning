@@ -93,12 +93,14 @@ Deno.test("Gemini stream rejects missing terminal completion marker", async () =
 Deno.test("Gemini adapter groups parallel function calls into one assistant message", () => {
   const messages = responsesInputToChatMessages([
     { role: "user", content: "Check staff and operations" },
+    { type: "message", role: "assistant", content: [{ type: "output_text", text: "Checking both now." }] },
     { type: "function_call", call_id: "call_people", name: "get_people_intelligence", arguments: "{}" },
     { type: "function_call", call_id: "call_ops", name: "get_operations_intelligence", arguments: "{}" },
     { type: "function_call_output", call_id: "call_people", output: '{"ok":true}' },
     { type: "function_call_output", call_id: "call_ops", output: '{"ok":true}' },
   ]);
   equal(messages[2].role, "assistant", "parallel assistant role");
+  equal(messages[2].content, "Checking both now.", "assistant text retained with calls");
   equal(messages[2].tool_calls.length, 2, "parallel tool calls grouped");
   equal(messages[3].tool_call_id, "call_people", "first parallel result correlation");
   equal(messages[4].tool_call_id, "call_ops", "second parallel result correlation");
