@@ -45,9 +45,9 @@ begin
 
  for t in select * from jsonb_array_elements(p_tools) loop
    safe_read_only :=
-     coalesce(t->'annotations'->>'readOnlyHint','false')='true'
-     and coalesce(t->'annotations'->>'destructiveHint','false')<>'true'
-     and coalesce(t->'annotations'->>'openWorldHint','false')<>'true';
+     coalesce(t->'annotations'->'readOnlyHint','false'::jsonb)='true'::jsonb
+     and coalesce(t->'annotations'->'destructiveHint','false'::jsonb)<>'true'::jsonb
+     and coalesce(t->'annotations'->'openWorldHint','false'::jsonb)<>'true'::jsonb;
 
    insert into public.jd_connector_tools(
      school_id,server_id,name,description,input_schema,annotations,read_only
@@ -80,9 +80,9 @@ $$;
 -- Only explicitly read-only, non-destructive, non-open-world tools are trusted.
 update public.jd_connector_tools t
 set read_only =
-  coalesce(t.annotations->>'readOnlyHint','false')='true'
-  and coalesce(t.annotations->>'destructiveHint','false')<>'true'
-  and coalesce(t.annotations->>'openWorldHint','false')<>'true'
+  coalesce(t.annotations->'readOnlyHint','false'::jsonb)='true'::jsonb
+  and coalesce(t.annotations->'destructiveHint','false'::jsonb)<>'true'::jsonb
+  and coalesce(t.annotations->'openWorldHint','false'::jsonb)<>'true'::jsonb
 from public.jd_connector_servers s
 where s.id=t.server_id
   and s.school_id=t.school_id
