@@ -14,7 +14,7 @@ before(async()=>{
  await db.exec(sql('20261114094036_jd_connector_permission_grants.sql'));
  await db.exec(sql('20261118100000_jd_connector_oauth.sql'));
  await db.exec(sql('20261118120000_jd_connector_pasted_tokens.sql'));
- await db.exec(sql('20261119130000_jd_connector_readonly_discovery.sql'));
+ await db.exec(sql('20261119123553_jd_connector_readonly_discovery.sql'));
 });
 beforeEach(async()=>{await db.exec('reset role;truncate jd_connector_servers cascade;');await db.query("update profiles set role='manager',school_id=$2 where id=$1",[manager,school]);});
 after(()=>db.close());
