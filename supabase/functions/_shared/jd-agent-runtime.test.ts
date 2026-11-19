@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, runJdMcpToolWithAudit, summariseToolEvidence } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -132,4 +132,18 @@ Deno.test("tool evidence records approval requests without claiming provider exe
   assertEqual(evidence.external_action_executed, false, "provider action explicitly not executed");
   assertEqual(evidence.execution_state, "approval_requested", "execution state is explicit");
   assertEqual(evidence.approval_id, "approval-reference", "approval reference linked");
+});
+
+
+Deno.test("Claude MCP exposes first-class GitHub repository search and file-reading capabilities", () => {
+  assertEqual(JD_AGENT_TOOL_NAMES.includes("search_connected_repository_code"), true, "repository code search registered");
+  assertEqual(JD_AGENT_TOOL_NAMES.includes("read_connected_repository_file"), true, "repository file read registered");
+});
+
+Deno.test("GitHub repository access trusts only explicitly annotated persisted read-only tools", () => {
+  assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: true } }), true, "explicit read-only tool accepted");
+  assertEqual(isTrustedGithubReadTool({ read_only: false, annotations: { readOnlyHint: true } }), false, "persisted approval gate respected");
+  assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: true, destructiveHint: true } }), false, "destructive tool rejected");
+  assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: true, openWorldHint: true } }), false, "open-world tool rejected");
+  assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: "true" } }), false, "string annotation rejected");
 });
