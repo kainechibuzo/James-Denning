@@ -68,6 +68,9 @@ jobs:
       - name: Test reviewed organisation settings and SQL execution
         run: npm run test:settings
 
+      - name: Test stale approval expiry and audit in isolated PostgreSQL
+        run: npm run test:approvals
+
       - name: Test versioned agent registry and evaluation authority boundaries
         run: npm run test:registry
 
