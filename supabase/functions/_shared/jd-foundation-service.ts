@@ -19,7 +19,10 @@ export async function readFoundationContext(ctx:{admin:any;userId:string;schoolI
  const designs=[];let remaining=40000,omitted=0;
  for(const doc of docs||[]){
   const {data:v,error:ve}=await ctx.admin.from('jd_foundation_versions').select('version,content,content_hash,approval_id').eq('school_id',ctx.schoolId).eq('document_id',doc.id).eq('version',doc.current_version).maybeSingle();
-  if(ve)throw Error('Approved business context is incomplete');
+  if(ve){
+   if(isMissingRelation(ve))return {available:false,reason:'foundation_schema_not_deployed',message:'Business Foundation version storage is not deployed in this production database. No approved business context was read.',requiredRelease:'reviewed production database migration',approvedCurrentBlueprints:[],researchEvidence:[],researchEvidenceAvailable:false,executionAuthorised:false,evidenceBoundary:'No blueprint or research evidence was available. Do not invent approved business context or treat a preview as approved.'};
+   throw Error('Approved business context is incomplete');
+  }
   if(!v)throw Error('Current blueprint version is missing');
   const {data:a,error:ae}=await ctx.admin.from('jd_approvals').select('status,decided_at').eq('school_id',ctx.schoolId).eq('id',v.approval_id).maybeSingle();
   if(ae)throw Error('Blueprint review state is unavailable');
