@@ -153,6 +153,9 @@ jobs:
       - name: Test JD streamed response parsing and continuation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-stream.test.ts
 
+      - name: Test Gemini end-to-end tool execution cycle
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-gemini-runtime.test.ts
+
       - name: Test JD execution evidence and crash recovery
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-tool-evidence.test.ts
