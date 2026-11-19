@@ -11,7 +11,7 @@ import { buildOrganisationBlueprintDraft, validateOrganisationBlueprint } from "
 import { validateVacancy } from "./jd-hiring.ts";
 import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
 import { analyseKpiTrends } from "./jd-kpi-trends.ts";
-import { readResponsesStream, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
+import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
 export type AgentContext = {
   admin: any;
@@ -889,7 +889,10 @@ export function resolveFollowupModel(configuredModel: string, currentModel: stri
 }
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
-  const endpoint = `${baseUrl.replace(/\/$/, "")}/responses`;
+  const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
+  const endpoint = isGemini
+    ? `${baseUrl.replace(/\/$/, "")}/chat/completions`
+    : `${baseUrl.replace(/\/$/, "")}/responses`;
   const maxAttempts = 3;
   let lastNetworkError: unknown = null;
 
@@ -901,10 +904,20 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com",
-          "X-OpenRouter-Title": "James Denning JD",
+          ...(isGemini ? {} : {
+            "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com",
+            "X-OpenRouter-Title": "James Denning JD",
+          }),
         },
-        body: JSON.stringify({ ...input, stream: true }),
+        body: JSON.stringify(isGemini ? {
+          model: input.model,
+          messages: responsesInputToChatMessages(input.input, typeof input.instructions === "string" ? input.instructions : undefined),
+          tools: responsesToolsToChatTools(input.tools),
+          tool_choice: input.tool_choice || "auto",
+          max_tokens: input.max_output_tokens || 6144,
+          stream: true,
+          stream_options: { include_usage: true },
+        } : { ...input, stream: true }),
         signal: AbortSignal.timeout(45000),
       });
     } catch (error) {
@@ -919,7 +932,9 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
 
     if (response.ok) {
       if (!response.body) throw new Error("Model provider returned an empty response stream");
-      const streamed = await readResponsesStream(response.body, onTextDelta);
+      const streamed = isGemini
+        ? await readChatCompletionsStream(response.body, onTextDelta)
+        : await readResponsesStream(response.body, onTextDelta);
       return { response: streamed, attempts: attempt };
     }
 
@@ -1122,7 +1137,7 @@ export async function runAgent(input: {
         text: partial || "I could not finish the requested operation because the model response was cut off before its tool request was complete.",
         status: "partially_completed", truncated: true,
         toolEvents: [...completedCalls], responseId: response.id || null,
-        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "openrouter",
+        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "google",
       };
     }
     if (!calls.length) {
@@ -1143,7 +1158,7 @@ export async function runAgent(input: {
       return {
         text: fullText, status: truncated ? "partially_completed" : "completed", truncated,
         toolEvents: [...completedCalls], responseId: response.id || null,
-        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "openrouter",
+        tokenUsage, modelRequests, model: typeof response.model === "string" ? response.model : input.model, provider: "google",
       };
     }
     if (turn === maxToolRounds) break;
@@ -1201,6 +1216,6 @@ export async function runAgent(input: {
     tokenUsage,
     modelRequests,
     model: typeof response.model === "string" ? response.model : input.model,
-    provider: "openrouter",
+    provider: "google",
   };
 }
