@@ -180,6 +180,22 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       recoveredState.conversationInput.filter((item: any) => item?.type === "function_call_output").map((item: any) => String(item.call_id || ""))
     );
     let recoveredIncomplete = false;
+    const journalCallIds = new Set<string>(stepRows.map((step: any) => String((step.input_json as any)?.call_id || "")).filter(Boolean));
+    // A checkpoint may exist for a model tool request even if the worker stopped
+    // before it could persist the "started" journal row. That call is safe to
+    // reconsider because tool execution had not begun.
+    for (const pendingCall of recoveredState.conversationInput.filter((item: any) => item?.type === "function_call")) {
+      const callId = String(pendingCall.call_id || pendingCall.id || "");
+      if (!callId || recoveredOutputIds.has(callId) || journalCallIds.has(callId)) continue;
+      recoveredState.conversationInput.push({
+        type: "function_call_output",
+        call_id: callId,
+        output: JSON.stringify({ ok: false, outcome: "not_started", error: "The worker stopped before this action began. No action was executed; JD can reconsider it safely." }),
+      });
+      recoveredOutputIds.add(callId);
+      recoveredState.completedCalls.push(callId);
+      recoveredCallIds.add(callId);
+    }
     for (const step of stepRows) {
       const callId = String((step.input_json as any)?.call_id || "");
       if (!callId || recoveredCallIds.has(callId)) continue;
