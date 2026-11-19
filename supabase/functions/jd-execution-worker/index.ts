@@ -2,7 +2,6 @@ import { runWithShadowUsage } from "./_shared/jd-usage-observer.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "./_shared/jd-agent-runtime.ts";
 import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
-import { selectJdModel } from "./_shared/jd-agent-routing.ts";
 import { getJdSecret } from "./_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
@@ -151,29 +150,81 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .filter((item: any) => item.role === "assistant" || item.role === "user")
       .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
 
-    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-    // Default to OpenRouter's free-only router, which selects an available
-    // free model compatible with the request's tool-calling requirements.
-    const configuredModel = Deno.env.get("JD_MODEL_NAME") || "openrouter/free";
-    const model = selectJdModel(run.request_text, configuredModel, { fast: Deno.env.get("JD_MODEL_FAST_NAME"), reasoning: Deno.env.get("JD_MODEL_REASONING_NAME") });
-    if (!apiKey) throw new Error("OpenRouter API key is not configured");
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    // Keep one predictable Gemini model across all tool rounds and retries.
+    // Provider/model changes are code-controlled, not operator env overrides.
+    const model = "gemini-3.1-flash-lite";
+    if (!apiKey) throw new Error("Gemini API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
       .from("jd_execution_checkpoints")
       .select("runtime_state_json,state_version")
       .eq("job_id", jobId).eq("school_id", schoolId).maybeSingle();
     if (checkpointReadError) throw new Error("Could not load the saved runtime checkpoint");
-    const resumeState = checkpointRow?.state_version === 1
-      ? checkpointRow.runtime_state_json
-      : null;
-
-    const { data: lastStep, error: stepLookupError } = await admin.from("jd_automation_steps")
-      .select("step_index").eq("school_id", schoolId).eq("run_id", runId)
-      .order("step_index", { ascending: false }).limit(1).maybeSingle();
+    const { data: existingSteps, error: stepLookupError } = await admin.from("jd_automation_steps")
+      .select("id,step_index,tool_key,status,input_json,output_json,error_message")
+      .eq("school_id", schoolId).eq("run_id", runId)
+      .order("step_index", { ascending: true }).limit(200);
     if (stepLookupError) throw new Error("Could not inspect existing execution steps");
-    let stepIndex = Number(lastStep?.step_index ?? 0);
+    const stepRows = existingSteps || [];
+    let stepIndex = stepRows.reduce((max: number, step: any) => Math.max(max, Number(step.step_index || 0)), 0);
     const stepIds = new Map<string, string>();
     const events: Record<string, unknown>[] = [];
+    const recoveredState: any = checkpointRow?.state_version === 1 && checkpointRow.runtime_state_json
+      ? structuredClone(checkpointRow.runtime_state_json)
+      : { version: 1, conversationInput: [...history.map((item: any) => ({ role: item.role, content: item.content })), { role: "user", content: run.request_text }], completedCalls: [] };
+    recoveredState.conversationInput = Array.isArray(recoveredState.conversationInput) ? recoveredState.conversationInput : [];
+    recoveredState.completedCalls = Array.isArray(recoveredState.completedCalls) ? recoveredState.completedCalls : [];
+    const recoveredCallIds = new Set<string>(recoveredState.completedCalls.map(String));
+    const recoveredOutputIds = new Set<string>(
+      recoveredState.conversationInput.filter((item: any) => item?.type === "function_call_output").map((item: any) => String(item.call_id || ""))
+    );
+    let recoveredIncomplete = false;
+    const journalCallIds = new Set<string>(stepRows.map((step: any) => String((step.input_json as any)?.call_id || "")).filter(Boolean));
+    // A checkpoint may exist for a model tool request even if the worker stopped
+    // before it could persist the "started" journal row. That call is safe to
+    // reconsider because tool execution had not begun.
+    for (const pendingCall of recoveredState.conversationInput.filter((item: any) => item?.type === "function_call")) {
+      const callId = String(pendingCall.call_id || pendingCall.id || "");
+      if (!callId || recoveredOutputIds.has(callId) || journalCallIds.has(callId)) continue;
+      recoveredState.conversationInput.push({
+        type: "function_call_output",
+        call_id: callId,
+        output: JSON.stringify({ ok: false, outcome: "not_started", error: "The worker stopped before this action began. No action was executed; JD can reconsider it safely." }),
+      });
+      recoveredOutputIds.add(callId);
+      recoveredState.completedCalls.push(callId);
+      recoveredCallIds.add(callId);
+    }
+    for (const step of stepRows) {
+      const callId = String((step.input_json as any)?.call_id || "");
+      if (!callId || recoveredCallIds.has(callId)) continue;
+      let output: string;
+      if (step.status === "completed" && typeof (step.output_json as any)?.tool_output === "string") {
+        output = String((step.output_json as any).tool_output).slice(0, 80000);
+      } else if (step.status === "failed" && typeof (step.output_json as any)?.tool_output === "string") {
+        output = String((step.output_json as any).tool_output).slice(0, 80000);
+        recoveredIncomplete = true;
+      } else {
+        output = JSON.stringify({ ok: false, outcome: "unknown", error: "This action started before the worker stopped, but its result was not durably recorded. JD will not repeat it automatically. Check the connected service before retrying." });
+        recoveredIncomplete = true;
+        if (step.status === "running") {
+          await admin.from("jd_automation_steps").update({
+            status: "failed",
+            error_message: "Worker stopped before the action result was durably recorded; outcome unknown and automatic retry blocked",
+            output_json: { event: "outcome_unknown", verification: "recovery_blocked_duplicate" },
+            completed_at: new Date().toISOString(),
+          }).eq("id", step.id).eq("school_id", schoolId).eq("run_id", runId).eq("status", "running");
+        }
+      }
+      if (!recoveredOutputIds.has(callId)) {
+        recoveredState.conversationInput.push({ type: "function_call_output", call_id: callId, output });
+        recoveredOutputIds.add(callId);
+      }
+      recoveredState.completedCalls.push(callId);
+      recoveredCallIds.add(callId);
+    }
+    const resumeState = recoveredState;
 
     const result = await runWithShadowUsage({
       admin, jobId, schoolId, leaseToken,
@@ -185,7 +236,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
       model,
-      baseUrl: Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
       resumeState,
       onCheckpoint: async (state) => {
         if (leaseLost) throw new Error("Execution lease was lost");
@@ -217,17 +268,21 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         }
 
         const stepId = stepIds.get(callId);
+        const evidence = event.evidence && typeof event.evidence === "object" && !Array.isArray(event.evidence)
+          ? event.evidence as Record<string, unknown>
+          : null;
+        const verifiedResult = event.status === "completed" && evidence?.result_nonempty === true && typeof evidence.result_keys === "string" && evidence.result_keys.length > 0;
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
-            status: event.status === "completed" ? "completed" : "failed",
-            output_json: { event: event.status, evidence: event.evidence && typeof event.evidence === "object" ? event.evidence : null },
-            error_message: event.status === "failed" ? "Read-only tool execution failed" : null,
+            status: verifiedResult ? "completed" : "failed",
+            output_json: { event: event.status, evidence, tool_output: typeof event.toolOutput === "string" ? event.toolOutput.slice(0, 80000) : null, verification: verifiedResult ? "semantic_tool_result" : "missing_result_evidence" },
+            error_message: verifiedResult ? null : String(event.error || (event.status === "outcome_unknown" ? "Action outcome could not be verified" : "Tool returned no verifiable result evidence")).slice(0, 240),
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
             .select("id").maybeSingle();
           if (error || !data) throw new Error("Could not persist execution step result");
         }
-        if (event.status === "completed") {
+        if (verifiedResult) {
           const { data, error } = await admin.rpc("jd_checkpoint_execution_job", {
             p_job_id: jobId, p_lease_token: leaseToken, p_step_index: stepIndex,
           });
@@ -243,7 +298,8 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     persistPartial(true);
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
-    const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
+    const hadToolFailure = events.some((event: any) => event.status === "failed" || event.status === "outcome_unknown");
+    const finalStatus = result.status === "partially_completed" || hadToolFailure || recoveredIncomplete ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
     const visualTasksQuery = canViewOperationalTasks

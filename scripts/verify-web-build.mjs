@@ -18,6 +18,8 @@ assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/AppDemo\.jsx["']\)\)/, "Wor
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/saas-entry\.jsx["']\)/, "Authentication must be lazy-loaded");
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/public-landing\.jsx["']\)/, "Landing page must be lazy-loaded");
 assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
+assert.match(jdChat, /function loadKatexAssets\(/, "KaTeX must load on demand from the chat math renderer");
+assert.match(jdChat, /jd-katex-css[\s\S]*jd-katex-js/, "KaTeX CSS and JavaScript must be loaded only by the math renderer");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
 
 // Multi-industry product identity and mobile regression guards.
@@ -134,6 +136,7 @@ assert.match(jdVisual, /React text|aria-label/, "Visual renderer must use access
 const dist = resolve(root, "dist");
 assert.ok(existsSync(join(dist, "index.html")), "Production build must emit dist/index.html");
 const html = readFileSync(join(dist, "index.html"), "utf8");
+assert.doesNotMatch(html, /cdn\.jsdelivr\.net\/npm\/katex/, "The initial HTML must not load KaTeX for visitors who never open mathematical content");
 // Ignore deferred third-party scripts (for example KaTeX). Only the local
 // module entry is part of the initial application bundle and its size budget.
 const scriptAttributes = [...html.matchAll(/<script\b([^>]*)>/g)].map((match) => match[1]);
@@ -154,6 +157,15 @@ assert.ok(entry.length <= maxEntryBytes, `Initial JS entry too large: ${Math.rou
 assert.ok(entryGzip.length <= maxEntryGzipBytes, `Initial gzipped JS entry too large: ${Math.round(entryGzip.length / 1024)} KB (budget 260 KB)`);
 
 const jsAssets = readdirSync(join(dist, "assets")).filter((name) => name.endsWith(".js"));
+const workspaceAsset = jsAssets.find((name) => name.startsWith("AppDemo-"));
+assert.ok(workspaceAsset, "Authenticated workspace must remain a separately loaded route chunk");
+const workspaceGzipBytes = gzipSync(readFileSync(join(dist, "assets", workspaceAsset))).length;
+assert.ok(workspaceGzipBytes <= 120 * 1024, `Workspace route chunk too large: ${Math.round(workspaceGzipBytes / 1024)} KB gzip (budget 120 KB)`);
+const spreadsheetAsset = jsAssets.find((name) => name.startsWith("spreadsheet-vendor-"));
+if (spreadsheetAsset) {
+  const spreadsheetGzipBytes = gzipSync(readFileSync(join(dist, "assets", spreadsheetAsset))).length;
+  assert.ok(spreadsheetGzipBytes <= 300 * 1024, `Deferred spreadsheet importer too large: ${Math.round(spreadsheetGzipBytes / 1024)} KB gzip (budget 300 KB)`);
+}
 assert.ok(jsAssets.length >= 4, `Expected route/vendor splitting; found only ${jsAssets.length} JS asset(s)`);
 assert.ok(existsSync(join(dist, "manifest.json")), "PWA manifest must be included in the web build");
 console.log(`Web verification passed: ${buttonTags.length} landing buttons, ${linkTags.length} links, ${jsAssets.length} JS chunks, entry ${Math.round(entry.length / 1024)} KB (${Math.round(entryGzip.length / 1024)} KB gzip).`);

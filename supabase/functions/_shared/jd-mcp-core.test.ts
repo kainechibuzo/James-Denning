@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
+import { hasExplicitMcpFailure, hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "./jd-mcp-core.ts";
 Deno.test("MCP endpoint requires exact HTTPS host allowlist", () => {
   assertEquals(validateMcpEndpoint("https://mcp.example.com/mcp", ["mcp.example.com"]).hostname, "mcp.example.com");
   assertThrows(() => validateMcpEndpoint("http://mcp.example.com/mcp", ["mcp.example.com"]));
@@ -19,4 +19,27 @@ Deno.test("MCP SSE and JSON responses are parsed", () => {
 Deno.test("Tool names are constrained", () => {
   assertEquals(validateToolName("gmail.search"), "gmail.search");
   assertThrows(() => validateToolName("bad tool"));
+});
+
+Deno.test("MCP tool result must contain meaningful evidence", () => {
+  assertEquals(hasMeaningfulMcpResult(null), false);
+  assertEquals(hasMeaningfulMcpResult({}), false);
+  assertEquals(hasMeaningfulMcpResult({isError:false,content:[]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:""}]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:"   "}]}), false);
+  assertEquals(hasMeaningfulMcpResult({content:[{type:"text",text:"Created repository"}]}), true);
+  assertEquals(hasMeaningfulMcpResult({isError:true,content:[{type:"text",text:"Created repository"}]}), false);
+  assertEquals(hasMeaningfulMcpResult({ok:false,result:{id:"123"}}), false);
+  assertEquals(hasMeaningfulMcpResult({success:false,id:"123"}), false);
+  assertEquals(hasMeaningfulMcpResult({status:"failed",id:"123"}), false);
+  assertEquals(hasMeaningfulMcpResult({status:"outcome_unknown",id:"123"}), false);
+  assertEquals(hasMeaningfulMcpResult({structuredContent:{ok:false,error:"denied"}}), false);
+  assertEquals(hasExplicitMcpFailure({structuredContent:{ok:false,error:"denied"}}), true);
+  assertEquals(hasExplicitMcpFailure({status:"outcome_unknown"}), false);
+  assertEquals(hasMeaningfulMcpResult({status:"outcome_unknown",id:"123"}), false);
+  assertEquals(hasExplicitMcpFailure({id:"123",status:"succeeded"}), false);
+  assertEquals(hasMeaningfulMcpResult({error:"Provider rejected request"}), false);
+  assertEquals(hasMeaningfulMcpResult({structuredContent:{id:123}}), true);
+  assertEquals(hasMeaningfulMcpResult([{type:"text",text:"ok"}]), true);
+  assertEquals(hasMeaningfulMcpResult(false), true);
 });

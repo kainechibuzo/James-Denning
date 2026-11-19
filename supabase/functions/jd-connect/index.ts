@@ -3,7 +3,7 @@ import {connectorOAuthToken,connectorOAuthKey,prepareConnectorRevocation} from "
 import {canUseConnector,MCP_OAUTH_PROVIDERS} from "../_shared/jd-connector-oauth-policy.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { decryptSecret, encryptSecret, importAesKey } from "../_shared/jd-oauth-crypto.ts";
-import { isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
+import { hasExplicitMcpFailure, hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
 
 const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
@@ -41,7 +41,7 @@ Deno.serve(async req=>{
  const requireEncryptionKey=()=>{if(!key)throw new Error("JD_OAUTH_ENCRYPTION_KEY is missing or invalid; configure the 32-byte base64 encryption key before storing credentials or approving write-capable connector calls");return key;};
  const audit=async(type:string,meta:Record<string,unknown>)=>await db.rpc("jd_business_audit",{p_school_id:school,p_actor_id:actor,p_event_type:type,p_event:meta});
  const getServer=async(id:string)=>{
-  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info,oauth_provider_id,access_owner_user_id,oauth_actor_id,oauth_generation").eq("id",id).eq("school_id",school).maybeSingle();
+  const {data,error}=await db.from("jd_connector_servers").select("id,school_id,name,endpoint_url,host,status,protocol_version,server_info,oauth_provider_id,access_owner_user_id,oauth_actor_id,oauth_generation,updated_at").eq("id",id).eq("school_id",school).maybeSingle();
   if(error||!data||!canUseConnector(data,actor))throw new Error("Connector not found or not shared with you");return data as any;
  };
  const visibleServerIds=async()=>{
@@ -55,13 +55,15 @@ Deno.serve(async req=>{
   if(error)throw new Error("Could not load connector credentials");
   return data?.encrypted_bearer_token?await decryptSecret(data.encrypted_bearer_token,requireEncryptionKey()):"";
  };
- const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string)=>{
+ const rpc=async(endpoint:string,token:string,method:string,params:Record<string,unknown>={},sessionId?:string,onResponse?:(response:Response)=>void,onDispatch?:()=>void)=>{
   // Fixed reviewed token endpoints do not require arbitrary-host setup.
   validateMcpEndpoint(endpoint,tokenEndpoint(endpoint)?[new URL(endpoint).hostname]:allowed);
   const id=crypto.randomUUID(),notification=method.startsWith("notifications/");
   const headers:Record<string,string>={"Content-Type":"application/json","Accept":"application/json, text/event-stream","MCP-Protocol-Version":"2025-06-18"};
   if(token)headers.Authorization=`Bearer ${token}`;if(sessionId)headers["Mcp-Session-Id"]=sessionId;
+  onDispatch?.();
   const response=await fetch(endpoint,{method:"POST",headers,redirect:"error",signal:AbortSignal.timeout(15000),body:JSON.stringify(notification?{jsonrpc:"2.0",method,params}:{jsonrpc:"2.0",id,method,params})});
+  onResponse?.(response);
   const newSession=response.headers.get("Mcp-Session-Id")||sessionId||"";
   if(response.status===202)return {result:{},sessionId:newSession};
   const raw=await response.text();if(!response.ok)throw new Error(`MCP server returned HTTP ${response.status}`);if(notification)return {result:{},sessionId:newSession};
@@ -81,8 +83,12 @@ Deno.serve(async req=>{
   if(!Array.isArray(listed.result.tools))throw new Error("MCP server omitted the tool catalogue");
   const raw=listed.result.tools;
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
+  const seenNames=new Set<string>();
   const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
+   if(seenNames.has(name))throw new Error("MCP server returned duplicate tool names");
+   if(!Object.keys(schema).length||schema.type!=="object")throw new Error(`MCP tool ${name} has no valid object input schema`);
+   seenNames.add(name);
    return {school_id:school,server_id:server.id,name,description:clip(t?.description,4000),input_schema:schema,annotations,read_only:false};
   });
   if(server.oauth_provider_id){
@@ -92,7 +98,8 @@ Deno.serve(async req=>{
   const {error:deleteError}=await db.from("jd_connector_tools").delete().eq("server_id",server.id).eq("school_id",school);
   if(deleteError)throw new Error("Could not replace connector tool catalogue");
   if(tools.length){const {error}=await db.from("jd_connector_tools").insert(tools);if(error)throw new Error("Could not save discovered MCP tools");}
-  await db.from("jd_connector_servers").update({status:"connected",protocol_version:session.protocolVersion,server_info:session.serverInfo,last_connected_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school);
+  const {error:serverUpdateError}=await db.from("jd_connector_servers").update({status:"connected",protocol_version:session.protocolVersion,server_info:session.serverInfo,last_connected_at:new Date().toISOString(),last_error_code:null,updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school);
+  if(serverUpdateError)throw new Error("Tools were discovered but connector health could not be persisted");
   return tools;
  };
  const execute=async(server:any,toolName:string,args:Record<string,unknown>,approvalId:string|null)=>{
@@ -100,17 +107,28 @@ Deno.serve(async req=>{
   const {data:run,error:insertError}=await db.from("jd_connector_executions").insert({school_id:school,server_id:server.id,approval_id:approvalId,requested_by:actor,tool_name:toolName,status:"running"}).select("id").single();
   if(insertError||!run)throw new Error("Could not create connector execution record");
   let remoteResult:unknown=null;
+  let remoteRequestDispatched=false;
+  let remoteResponseReceived=false;
+  let remoteResultReceived=false;
+  let remoteToolRejected=false;
   try{
    const token=await getToken(server.id,server.oauth_generation),session=await connect(server,token);
-   const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined);
+   const response=await rpc(server.endpoint_url,token,"tools/call",{name:toolName,arguments:args},session.sessionId||undefined,()=>{remoteResponseReceived=true;},()=>{remoteRequestDispatched=true;});
+   remoteResultReceived=true;
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
-   if(resultObject.isError===true){
+   if(hasExplicitMcpFailure(remoteResult)){
+    remoteToolRejected=true;
     const content=Array.isArray(resultObject.content)?resultObject.content:[];
     const detail=content.map((item:any)=>clip(item?.text,500)).filter(Boolean).join("\\n");
-    const remoteFailure=new Error(detail||"Remote MCP tool returned isError=true");
+    const remoteFailure=new Error(detail||"Remote MCP tool explicitly reported failure");
     (remoteFailure as Error & {code?:string}).code="MCP_TOOL_ERROR";
     throw remoteFailure;
+   }
+   if(!hasMeaningfulMcpResult(remoteResult)){
+    const missingEvidence=new Error("Provider returned no meaningful result; action is not verified");
+    (missingEvidence as Error & {code?:string}).code="MISSING_RESULT_EVIDENCE";
+    throw missingEvidence;
    }
    const serialized=JSON.stringify(remoteResult);
    if(serialized.length>MAX_RESULT)throw new Error("Connector result exceeds the 90 KB limit");
@@ -128,17 +146,25 @@ Deno.serve(async req=>{
    if(auditError)warnings.push("Execution succeeded and evidence was saved, but the audit event could not be recorded.");
    return {executionId:run.id,result:remoteResult,evidence:{persisted:true,source:"jd_connector_executions",audit_recorded:!auditError,approval_status_persisted:approvalStatusPersisted},warnings};
   }catch(e){
-   if(server.oauth_provider_id&&/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:"OAUTH_RECONNECT_REQUIRED"}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
+   if(/HTTP (401|403)/.test(safeError(e)))await db.from("jd_connector_servers").update({status:"error",last_error_code:server.oauth_provider_id?"OAUTH_RECONNECT_REQUIRED":"CONNECTOR_AUTH_OR_PERMISSION_FAILED",updated_at:new Date().toISOString()}).eq("id",server.id).eq("school_id",school).eq("oauth_generation",server.oauth_generation);
    const code=clip((e as Error & {code?:string})?.code,80)||"MCP_CALL_FAILED";
    const failureMessage=e instanceof Error?e.message:"Connector operation failed";
-   const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:"failed",result_json:remoteResult,error_code:code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
-   if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
+   // A timeout, dropped connection, empty provider result, or failed evidence write
+   // cannot prove that the remote side effect did not happen. Never label it a
+   // clean failure that a caller might safely retry.
+   const providerRejected=remoteResponseReceived&&!remoteResultReceived&&/MCP server returned HTTP 4\d\d|MCP protocol error/.test(failureMessage);
+   const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&!providerRejected;
+   const terminalStatus=outcomeUnknown?"outcome_unknown":"failed";
+   const outcomeMessage=outcomeUnknown?"The provider may have performed the action, but JD could not verify and save its result. Do not retry automatically; inspect the provider and execution history first.":failureMessage;
+   const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
+   if(failureUpdateError)throw new Error(outcomeMessage+"; failed execution evidence could not be persisted");
    if(approvalId){
-    const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
-    if(approvalFailureError)throw new Error(failureMessage+"; approval failure status could not be persisted");
+    const {error:approvalFailureError}=await db.from("jd_connector_approvals").update({status:outcomeUnknown?"outcome_unknown":"failed",execution_id:run.id}).eq("id",approvalId).eq("school_id",school);
+    if(approvalFailureError)throw new Error(outcomeMessage+"; approval failure status could not be persisted");
    }
-   const {error:auditFailureError}=await audit("connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:code});
-   if(auditFailureError)throw new Error(failureMessage+"; failure audit event could not be persisted");
+   const {error:auditFailureError}=await audit(outcomeUnknown?"connector.tool.outcome_unknown":"connector.tool.failed",{server_id:server.id,tool_name:toolName,execution_id:run.id,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code});
+   if(auditFailureError)throw new Error(outcomeMessage+"; failure audit event could not be persisted");
+   if(outcomeUnknown)throw new Error(outcomeMessage);
    throw e;
   }
  };
@@ -290,7 +316,7 @@ Deno.serve(async req=>{
   }
   if(body.action==="tools.call"){
    const toolId=clip(body.toolId,64),args=asObject(body.arguments);
-   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations").eq("id",toolId).eq("school_id",school).maybeSingle();
+   const {data:tool,error}=await db.from("jd_connector_tools").select("id,server_id,name,read_only,annotations,input_schema").eq("id",toolId).eq("school_id",school).maybeSingle();
    if(error||!tool)return send({error:"MCP tool not found"},404);
    const server=await getServer(tool.server_id);
    if(server.status!=="connected")return send({error:"Provider is not connected. Sign in or refresh tools first."},409);
@@ -304,7 +330,7 @@ Deno.serve(async req=>{
    const legacyRequiresApproval=!readOnly&&(!elevated||(!unrestricted&&(asObject(tool.annotations).destructiveHint===true||asObject(tool.annotations).openWorldHint===true)));
    const requiresApproval=server.oauth_provider_id?(!readOnly||tool.read_only!==true):legacyRequiresApproval;
    if(requiresApproval){
-    const serializedArgs=JSON.stringify(args);if(serializedArgs.length>30000)return send({error:"Tool arguments exceed the 30 KB approval limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
+    const serializedArgs=JSON.stringify({arguments:args,tool_schema:tool.input_schema,server_updated_at:server.updated_at||null,server_endpoint:server.endpoint_url,oauth_generation:server.oauth_generation??null});if(serializedArgs.length>40000)return send({error:"Tool approval details exceed the 40 KB limit"},413);const encrypted=await encryptSecret(serializedArgs,requireEncryptionKey());
     const {data:approval,error:approvalError}=await db.from("jd_connector_approvals").insert({school_id:school,server_id:server.id,requested_by:actor,tool_name:tool.name,arguments_ciphertext:encrypted}).select("id,status,expires_at").single();
     if(approvalError||!approval)return send({error:"Could not create approval request"},500);
     await audit("connector.approval.requested",{server_id:server.id,tool_name:tool.name,approval_id:approval.id});
@@ -316,7 +342,7 @@ Deno.serve(async req=>{
    const ids=await visibleServerIds();if(!ids.length)return send({approvals:[]});
    const {data,error}=await db.from("jd_connector_approvals").select("id,server_id,requested_by,tool_name,arguments_ciphertext,status,resolved_by,resolved_at,expires_at,created_at").eq("school_id",school).in("server_id",ids).eq("status","pending").order("created_at",{ascending:false}).limit(100);
    if(error)throw error;
-   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey())))})));
+   const approvals=await Promise.all((data||[]).map(async(row:any)=>({id:row.id,server_id:row.server_id,requested_by:row.requested_by,tool_name:row.tool_name,status:row.status,resolved_by:row.resolved_by,resolved_at:row.resolved_at,expires_at:row.expires_at,created_at:row.created_at,arguments:asObject(asObject(JSON.parse(await decryptSecret(row.arguments_ciphertext,requireEncryptionKey()))).arguments)})));
    return send({approvals});
   }
   if(body.action==="approvals.get"){
@@ -353,9 +379,18 @@ Deno.serve(async req=>{
    try{
     const server=await getServer(approval.server_id);
     if(server.status!=="connected"||(server.oauth_provider_id&&server.oauth_generation!==approvalServer.oauth_generation))throw new Error("Connection changed after approval. Request approval again.");
-    const raw=await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey()),args=asObject(JSON.parse(raw));
+    const {data:currentTool,error:currentToolError}=await db.from("jd_connector_tools").select("id,input_schema").eq("school_id",school).eq("server_id",server.id).eq("name",approval.tool_name).maybeSingle();
+    if(currentToolError||!currentTool)throw new Error("The approved tool is no longer available on this connection. Refresh tools and request approval again.");
+    const raw=asObject(JSON.parse(await decryptSecret(approval.arguments_ciphertext,requireEncryptionKey())));
+    if(!raw.arguments||JSON.stringify(raw.tool_schema)!==JSON.stringify(currentTool.input_schema)||raw.server_endpoint!==server.endpoint_url||raw.server_updated_at!==(server.updated_at||null)||raw.oauth_generation!==(server.oauth_generation??null))throw new Error("The connector, permissions or tool definition changed after approval. Request approval again.");
+    const args=asObject(raw.arguments);
     const result=await execute(server,approval.tool_name,args,id);return send({approved:true,...result});
-   }catch(e){await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school);throw e;}
+   }catch(e){
+    // execute() records a confirmed failure or outcome_unknown itself. Only
+    // mark failures that happened before an execution record was created.
+    await db.from("jd_connector_approvals").update({status:"failed"}).eq("id",id).eq("school_id",school).eq("status","approved");
+    throw e;
+   }
   }
   if(body.action==="executions.list"){
    const ids=await visibleServerIds();if(!ids.length)return send({executions:[]});

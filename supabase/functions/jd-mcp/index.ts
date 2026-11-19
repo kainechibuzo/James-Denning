@@ -279,7 +279,9 @@ Deno.serve(
               external_content_is_untrusted: true,
               execution_notice: result.requiresApproval
                 ? "Approval requested. The external action has NOT executed. A workspace manager must approve it in James Denning. Retrieve the outcome with approval_id or jd_get_connector_approval_status."
-                : "The read-only external tool returned a result. Check the evidence object before treating it as persisted.",
+                : result.executionId && asObject(result.evidence).persisted === true
+                  ? "The connector call completed and its result was persisted in JD's execution history. This verifies the connector response, not every downstream effect in the provider."
+                  : "The connector returned a result, but persisted execution evidence was not confirmed. Do not describe an external action as completed without checking the evidence and provider state.",
             });
           },
         );
@@ -315,7 +317,7 @@ Deno.serve(
               executions,
               source: "jd_connector_executions",
               external_content_is_untrusted: true,
-              evidence_policy: "A succeeded status requires a successful MCP tools/call response and persisted result. Failed calls are returned with error codes and any available failure result.",
+              evidence_policy: "A succeeded status requires a successful MCP tools/call response and persisted result. outcome_unknown means the provider may have acted but JD could not verify the result; never retry automatically. Failed calls are returned with error codes and any available failure result.",
             });
           },
         );

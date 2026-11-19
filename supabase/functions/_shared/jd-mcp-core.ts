@@ -26,3 +26,34 @@ export function validateToolName(value: unknown): string {
   if (typeof value !== "string" || !/^[a-zA-Z0-9_.:-]{1,128}$/.test(value)) throw new Error("Invalid MCP tool name");
   return value;
 }
+
+/** Reject transport-level "success" responses that contain no actionable result.
+ * MCP providers may return content, structuredContent, scalar values or arrays.
+ */
+export function hasExplicitMcpFailure(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some(hasExplicitMcpFailure);
+  const record = value as Record<string, unknown>;
+  if (record.isError === true || record.ok === false || record.success === false) return true;
+  if (typeof record.error === "string" && record.error.trim()) return true;
+  if (typeof record.status === "string" && ["failed", "failure", "error", "rejected", "cancelled"].includes(record.status.toLowerCase())) return true;
+  return hasExplicitMcpFailure(record.structuredContent);
+}
+
+export function hasMeaningfulMcpResult(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value === "boolean") return true;
+  if (Array.isArray(value)) return value.some((item) => hasMeaningfulMcpResult(item));
+  if (typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  if (hasExplicitMcpFailure(record)) return false;
+  if (typeof record.status === "string" && ["outcome_unknown", "unknown"].includes(record.status.toLowerCase())) return false;
+  if (hasMeaningfulMcpResult(record.structuredContent)) return true;
+  if (hasMeaningfulMcpResult(record.content)) return true;
+  return Object.entries(record).some(([key, item]) =>
+    !["isError", "_meta", "structuredContent", "content", "type"].includes(key) &&
+    hasMeaningfulMcpResult(item)
+  );
+}
