@@ -628,11 +628,25 @@ const tools: ToolSpec[] = [
       const entries = (data || []).map((row: any) => {
         const metadata = row.event_json && typeof row.event_json === "object" && !Array.isArray(row.event_json) ? row.event_json : {};
         const actor = actorById.get(row.actor_id);
+        const eventDescriptions: Record<string, string> = {
+          "connector.approval.requested": "Approval requested; the external action was not executed",
+          "approval.approved": "Approval granted",
+          "approval.rejected": "Approval rejected",
+          "approval.expired": "Approval expired before a decision",
+          "connector.approval.denied": "Connector approval denied; the external action was not executed",
+          "connector.approval.expired": "Connector approval expired before a decision",
+          "connector.tool.executed": "Connector tool execution recorded",
+        };
+        const eventDescription = row.event_type === "mcp.tool.completed" && metadata.result_status === "approval_requested"
+          ? "Approval request created; the external action was not executed"
+          : row.event_type === "mcp.tool.completed" && metadata.result_status === "connector_execution_recorded"
+            ? "Connector execution recorded"
+            : eventDescriptions[String(row.event_type)] || (metadata.approval_id ? "Approval reference linked to this event" : null);
         const notes = [
+          eventDescription,
           typeof metadata.tool_name === "string" ? "Tool: " + metadata.tool_name : null,
           typeof metadata.error_code === "string" ? "Error code: " + metadata.error_code : null,
           typeof metadata.status === "string" ? "Status: " + metadata.status : null,
-          metadata.approval_id ? "Approval request recorded" : null,
           metadata.execution_id ? "Execution evidence recorded" : null,
           Number.isInteger(metadata.attempt) ? "Attempt: " + metadata.attempt : null,
         ].filter(Boolean);
