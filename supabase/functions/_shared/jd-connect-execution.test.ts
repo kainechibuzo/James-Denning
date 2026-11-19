@@ -3,7 +3,7 @@ import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/
 const source = await Deno.readTextFile(new URL("../jd-connect/index.ts", import.meta.url));
 
 Deno.test("JD Connect treats MCP tool-level errors as failed executions", () => {
-  assertMatch(source, /resultObject\.isError===true/);
+  assertMatch(source, /hasExplicitMcpFailure\(remoteResult\)/);
   assertMatch(source, /MCP_TOOL_ERROR/);
   assertMatch(source, /status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown\?"REMOTE_OUTCOME_UNCONFIRMED":code/);
 });
