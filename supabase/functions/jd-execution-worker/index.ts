@@ -218,7 +218,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         const evidence = event.evidence && typeof event.evidence === "object" && !Array.isArray(event.evidence)
           ? event.evidence as Record<string, unknown>
           : null;
-        const verifiedResult = event.status === "completed" && !!evidence && Object.keys(evidence).length > 0;
+        const verifiedResult = event.status === "completed" && evidence?.result_nonempty === true && typeof evidence.result_keys === "string" && evidence.result_keys.length > 0;
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
             status: verifiedResult ? "completed" : "failed",
@@ -245,7 +245,8 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     persistPartial(true);
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
-    const finalStatus = result.status === "partially_completed" ? "partially_completed" : "completed";
+    const hadToolFailure = events.some((event: any) => event.status === "failed");
+    const finalStatus = result.status === "partially_completed" || hadToolFailure ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
     const visualTasksQuery = canViewOperationalTasks
