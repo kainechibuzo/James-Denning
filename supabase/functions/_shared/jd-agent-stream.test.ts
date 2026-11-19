@@ -129,3 +129,31 @@ Deno.test("Gemini stream rejects malformed tool-call arguments", async () => {
   try { await readChatCompletionsStream(body); } catch { failed = true; }
   equal(failed, true, "malformed function arguments rejected");
 });
+
+Deno.test("Gemini truncated tool calls remain incomplete and are never treated as executable", async () => {
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(
+        'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_partial","function":{"name":"get_people_intelligence","arguments":"{\\"limit\\":"}}]},"finish_reason":null}]}\n' +
+        'data: {"choices":[{"delta":{},"finish_reason":"length"}]}\n'
+      ));
+      controller.close();
+    },
+  });
+  const result = await readChatCompletionsStream(body);
+  equal(result.status, "incomplete", "truncated response status");
+  equal(result.output.filter((item: any) => item.type === "function_call").length, 1, "partial call retained for continuation");
+  equal(result.output.find((item: any) => item.type === "function_call").arguments, '{"limit":', "partial arguments retained only as continuation context");
+});
+
+Deno.test("Gemini token-limited empty responses can be continued", async () => {
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{},"finish_reason":"length"}]}\n'));
+      controller.close();
+    },
+  });
+  const result = await readChatCompletionsStream(body);
+  equal(result.status, "incomplete", "empty truncated response status");
+  equal(result.output.length, 0, "no invented output");
+});
