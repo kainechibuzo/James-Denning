@@ -11,7 +11,7 @@ import * as policy from '../supabase/functions/_shared/jd-connector-oauth-policy
 import * as mcp from '../supabase/functions/_shared/jd-mcp-core.ts';
 const connectorSource = readFileSync('supabase/functions/jd-connect/index.ts','utf8');
 test('connector discovery persists provider read-only annotations instead of marking every tool writable',()=>{
- assert.match(connectorSource,/read_only:isReadOnlyTool\(\{name,annotations\}\)/);
+ assert.match(connectorSource,/read_only:isReadOnlyTool\(\{name,annotations\},server\.oauth_provider_id\)/);
  assert.doesNotMatch(connectorSource,/read_only:false/);
 });
 const key=Buffer.alloc(32,2).toString('base64');
