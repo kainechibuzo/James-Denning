@@ -51,12 +51,12 @@ test('GitHub create_branch write creates a pending approval and never dispatches
  assert.equal(r.status,200);
  const body=await r.json();
  assert.equal(body.requiresApproval,true);
- assert.equal(typeof body.approvalId,'string');
+ assert.equal(typeof body.approval.id,'string');
  const insert=f.calls.find(c=>c[0]==='db'&&c[1]==='jd_connector_approvals'&&c[2]==='insert');
  assert.ok(insert,'connector approval row inserted');
  assert.equal(insert[4].tool_name,'create_branch');
- assert.equal(insert[4].status,'pending');
- assert.ok(new Date(insert[4].expires_at).getTime()>Date.now(),'approval has a future expiry');
+ assert.equal(body.approval.status,'pending');
+ assert.ok(new Date(body.approval.expires_at).getTime()>Date.now(),'approval has a future expiry');
  assert.equal(f.calls.some(c=>c[0]==='fetch'||c[0]==='oauth-token'),false,'no external GitHub request is dispatched');
  assert.equal(f.calls.some(c=>c[0]==='db'&&c[1]==='jd_connector_executions'&&c[2]==='insert'),false,'no connector execution record is created');
 });
