@@ -81,7 +81,8 @@ Deno.serve(async req=>{
   if(!Array.isArray(listed.result.tools))throw new Error("MCP server omitted the tool catalogue");
   const raw=listed.result.tools;
   if(raw.length>250)throw new Error("MCP server exposes too many tools (maximum 250)");
-  const seenNames=new Set<string>();\n  const tools=raw.map((t:any)=>{
+  const seenNames=new Set<string>();
+  const tools=raw.map((t:any)=>{
    const name=validateToolName(t?.name),schema=asObject(t?.inputSchema),annotations=asObject(t?.annotations);
    if(seenNames.has(name))throw new Error("MCP server returned duplicate tool names");
    if(!Object.keys(schema).length||schema.type!=="object")throw new Error(`MCP tool ${name} has no valid object input schema`);
