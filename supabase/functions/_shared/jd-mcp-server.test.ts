@@ -141,6 +141,7 @@ Deno.test("connected MCP tool notices distinguish approval, persisted execution 
 
 Deno.test("business context reports an explicit unavailable state when its reviewed schema is not deployed", () => {
   assertMatch(foundation, /isMissingRelation/);
+  assertMatch(foundation, /PGRST205/);
   assertMatch(foundation, /foundation_schema_not_deployed/);
   assertMatch(foundation, /available:false/);
   assertMatch(foundation, /reviewed production database migration/);
