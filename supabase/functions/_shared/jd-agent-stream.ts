@@ -181,7 +181,9 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
       content += delta.content;
       onTextDelta?.(delta.content);
     }
-    for (const part of delta.tool_calls || []) {
+    const toolCallParts = delta.tool_calls ?? [];
+    if (!Array.isArray(toolCallParts)) throw malformedAgentResponse("Gemini returned an invalid tool-call fragment list");
+    for (const part of toolCallParts) {
       const rawIndex = part?.index;
       let index: number | null = null;
       if ((typeof rawIndex === "number" || (typeof rawIndex === "string" && rawIndex.trim() !== ""))) {
@@ -201,7 +203,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
         if (toolCalls.size === 0) {
           while (toolCalls.has(nextToolIndex)) nextToolIndex += 1;
           index = nextToolIndex++;
-        } else if (toolCalls.size === 1) {
+        } else if (toolCalls.size === 1 && toolCallParts.length === 1) {
           index = toolCalls.keys().next().value as number;
         } else {
           throw malformedAgentResponse("Gemini returned a tool-call fragment without an index or call ID; parallel calls cannot be correlated safely");
