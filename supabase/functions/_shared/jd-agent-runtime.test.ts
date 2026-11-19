@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, runJdMcpToolWithAudit } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, runJdMcpToolWithAudit, summariseToolEvidence } from "./jd-agent-runtime.ts";
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -121,4 +121,15 @@ Deno.test("native MCP tool is not invoked when its audit start cannot be persist
 
 Deno.test("pending approvals inventory is registered as a read-only native capability", () => {
   assertEqual(JD_AGENT_TOOL_NAMES.includes("list_pending_approvals"), true, "pending approvals tool registered");
+});
+
+Deno.test("tool evidence records approval requests without claiming provider execution", () => {
+  const evidence = summariseToolEvidence({
+    requiresApproval: true,
+    approval: { id: "approval-reference" },
+  });
+  assertEqual(evidence.approval_requested, true, "approval request recorded");
+  assertEqual(evidence.external_action_executed, false, "provider action explicitly not executed");
+  assertEqual(evidence.execution_state, "approval_requested", "execution state is explicit");
+  assertEqual(evidence.approval_id, "approval-reference", "approval reference linked");
 });
