@@ -3,7 +3,7 @@ import {connectorOAuthToken,connectorOAuthKey,prepareConnectorRevocation} from "
 import {canUseConnector,MCP_OAUTH_PROVIDERS} from "../_shared/jd-connector-oauth-policy.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { decryptSecret, encryptSecret, importAesKey } from "../_shared/jd-oauth-crypto.ts";
-import { hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
+import { hasExplicitMcpFailure, hasMeaningfulMcpResult, isReadOnlyTool, parseMcpPayload, validateMcpEndpoint, validateToolName } from "../_shared/jd-mcp-core.ts";
 
 const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Cache-Control":"no-store"};
 const send=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
@@ -117,11 +117,11 @@ Deno.serve(async req=>{
    remoteResultReceived=true;
    remoteResult=response.result;
    const resultObject=asObject(remoteResult);
-   if(resultObject.isError===true){
+   if(hasExplicitMcpFailure(remoteResult)){
     remoteToolRejected=true;
     const content=Array.isArray(resultObject.content)?resultObject.content:[];
     const detail=content.map((item:any)=>clip(item?.text,500)).filter(Boolean).join("\\n");
-    const remoteFailure=new Error(detail||"Remote MCP tool returned isError=true");
+    const remoteFailure=new Error(detail||"Remote MCP tool explicitly reported failure");
     (remoteFailure as Error & {code?:string}).code="MCP_TOOL_ERROR";
     throw remoteFailure;
    }
