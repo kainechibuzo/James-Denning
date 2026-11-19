@@ -9,6 +9,11 @@ import {transformWithOxc} from 'vite';
 import * as cryptoFns from '../supabase/functions/_shared/jd-oauth-crypto.ts';
 import * as policy from '../supabase/functions/_shared/jd-connector-oauth-policy.mjs';
 import * as mcp from '../supabase/functions/_shared/jd-mcp-core.ts';
+const connectorSource = readFileSync('supabase/functions/jd-connect/index.ts','utf8');
+test('connector discovery persists provider read-only annotations instead of marking every tool writable',()=>{
+ assert.match(connectorSource,/read_only:isReadOnlyTool\(\{name,annotations\},server\.oauth_provider_id\)/);
+ assert.doesNotMatch(connectorSource,/read_only:false/);
+});
 const key=Buffer.alloc(32,2).toString('base64');
 const config=policy.oauthConfig('github',JSON.stringify({github:{client_id:'synthetic',client_secret:'SYNTHETIC_SECRET',scopes:['repo'],authorization_endpoint:'https://github.com/login/oauth/authorize',token_endpoint:'https://github.com/login/oauth/access_token',token_endpoint_auth_method:'client_secret_post'}}),'github.com,api.githubcopilot.com');
 mkdirSync('node_modules/.cache',{recursive:true});const temp=mkdtempSync(resolve('node_modules/.cache/oauth-handler-'));

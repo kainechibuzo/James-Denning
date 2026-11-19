@@ -3,6 +3,7 @@ import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/
 const source = await Deno.readTextFile(new URL("../jd-mcp/index.ts", import.meta.url));
 const config = await Deno.readTextFile(new URL("../../config.toml", import.meta.url));
 const runtime = await Deno.readTextFile(new URL("./jd-agent-runtime.ts", import.meta.url));
+const foundation = await Deno.readTextFile(new URL("./jd-foundation-service.ts", import.meta.url));
 
 Deno.test("JD MCP is protected by OAuth discovery and authenticated Supabase user middleware", () => {
   assertMatch(source, /withOAuthProtectedResource\(\)/);
@@ -63,13 +64,17 @@ Deno.test("jd_list_execution_activity returns persisted automation execution evi
   assertMatch(block, /error_message: clip\(step\.error_message/);
 });
 
-Deno.test("jd_list_connected_mcp_tools returns only connected organisation tools", () => {
+Deno.test("jd_list_connected_mcp_tools is tenant-scoped, private-connection aware and paginated", () => {
   const start = source.indexOf('"jd_list_connected_mcp_tools"');
   const end = source.indexOf('"jd_call_connected_mcp_tool"', start);
   const block = source.slice(start, end);
+  assertMatch(block, /from\("jd_connector_servers"\)/);
   assertMatch(block, /from\("jd_connector_tools"\)/);
   assertMatch(block, /\.eq\("school_id", schoolId\)/);
-  assertMatch(block, /\.eq\("server\.status", "connected"\)/);
+  assertMatch(block, /access_owner_user_id/);
+  assertMatch(block, /\.in\("server_id", serverIds\)/);
+  assertMatch(block, /\.range\(pageOffset/);
+  assertMatch(block, /include_schema/);
 });
 
 Deno.test("jd_call_connected_mcp_tool gates writes and retrieves approval results", () => {
@@ -100,10 +105,55 @@ Deno.test("native MCP blueprint submissions create a reviewable run and preserve
   assertMatch(source, /context\.conversationId = createdConversationId/);
 });
 
+Deno.test("execution activity distinguishes approval requests from provider execution", () => {
+  assertMatch(source, /select\("tool_key,status,error_message,started_at,completed_at,output_json"\)/);
+  assertMatch(source, /approval_requested/);
+  assertMatch(source, /status_meaning/);
+  assertMatch(source, /provider action has not executed/);
+  assertMatch(source, /ids_hidden: true/);
+  assertMatch(runtime, /summary\.external_action_executed = false/);
+  assertMatch(runtime, /summary\.execution_state = "approval_requested"/);
+});
+
+Deno.test("direct MCP tools are audited before and after handler execution", () => {
+  assertMatch(source, /createJdMcpAuditedHandler\(agentContext, name, handler\)/);
+  assertMatch(source, /createJdMcpAuditedHandler\(agentContext, toolName, async/);
+  assertMatch(runtime, /export function createJdMcpAuditedHandler/);
+  assertMatch(runtime, /mcp\.tool\.started/);
+  assertMatch(runtime, /mcp\.tool\.completed/);
+  assertMatch(runtime, /mcp\.tool\.failed/);
+});
+
+Deno.test("native MCP exposes pending approvals and paginated connector discovery", () => {
+  assertMatch(runtime, /name: "list_pending_approvals"/);
+  assertMatch(runtime, /name: "list_connected_mcp_tools"/);
+  assertMatch(runtime, /include_schema/);
+  assertMatch(runtime, /business_approvals/);
+  assertMatch(runtime, /connector_approvals/);
+});
+
+Deno.test("activity intelligence reads the current append-only JD audit stream", () => {
+  const start = runtime.indexOf('name: "get_recent_activity_logs"');
+  const end = runtime.indexOf('name: "get_email_delivery_logs"', start);
+  const block = runtime.slice(start, end);
+  assertMatch(block, /from\("jd_audit_events"\)/);
+  assertMatch(block, /select\("actor_id,event_type,event_json,created_at"\)/);
+  assertMatch(block, /from\("profiles"\)/);
+  assertEquals(block.includes("admin_audit_log"), false);
+});
+
 Deno.test("connected MCP tool notices distinguish approval, persisted execution and unverified results", () => {
   assertMatch(source, /result\.executionId && asObject\(result\.evidence\)\.persisted === true/);
   assertMatch(source, /This verifies the connector response, not every downstream effect/);
   assertMatch(source, /persisted execution evidence was not confirmed/);
   assertMatch(source, /outcome_unknown means the provider may have acted/);
   assertMatch(source, /never retry automatically/);
+});
+
+Deno.test("business context reports an explicit unavailable state when its reviewed schema is not deployed", () => {
+  assertMatch(foundation, /isMissingRelation/);
+  assertMatch(foundation, /PGRST205/);
+  assertMatch(foundation, /foundation_schema_not_deployed/);
+  assertMatch(foundation, /available:false/);
+  assertMatch(foundation, /reviewed production database migration/);
 });
