@@ -474,7 +474,7 @@ Deno.serve(
                 openWorldHint: capability.name === "call_connected_mcp_tool",
               },
             },
-            async (rawArgs: any) => {
+            createJdMcpAuditedHandler(agentContext, toolName, async (rawArgs: any) => {
               const context: AgentContext = { ...agentContext };
               let createdRunId: string | null = null;
               let createdConversationId: string | null = null;
@@ -530,7 +530,7 @@ Deno.serve(
                 }
                 throw error;
               }
-            },
+            }),
           );
         }
 
