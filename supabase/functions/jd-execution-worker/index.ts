@@ -282,7 +282,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     persistPartial(true);
     await partialWriteChain;
     if (leaseLost) throw new Error("Execution lease was lost before completion");
-    const hadToolFailure = events.some((event: any) => event.status !== "completed");
+    const hadToolFailure = events.some((event: any) => event.status === "failed" || event.status === "outcome_unknown");
     const finalStatus = result.status === "partially_completed" || hadToolFailure || recoveredIncomplete ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
