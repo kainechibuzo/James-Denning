@@ -201,10 +201,8 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
         if (toolCalls.size === 0) {
           while (toolCalls.has(nextToolIndex)) nextToolIndex += 1;
           index = nextToolIndex++;
-        } else if (toolCalls.size === 1) {
-          index = toolCalls.keys().next().value as number;
         } else {
-          throw malformedAgentResponse("Gemini returned a tool-call fragment without an index or call ID; parallel calls cannot be correlated safely");
+          throw malformedAgentResponse("Gemini returned a tool-call fragment without an index or call ID; the fragment cannot be correlated safely");
         }
       }
       if (callId) {
