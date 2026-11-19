@@ -80,9 +80,6 @@ jobs:
       - name: Test SaaS agent design contracts and access boundaries
         run: npm run test:agents
 
-      - name: Test chat, settings and SaaS agent layouts in Chromium
-        run: npm run test:chat-layout
-
       - name: Validate checklist coverage and evidence integrity
         run: npm run test:checklist
 
@@ -241,3 +238,42 @@ jobs:
           deno check --node-modules-dir=auto supabase/functions/jd-business-monitor-worker/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-ops-worker/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-report-share/index.ts
+
+  layout:
+    name: Chromium — ${{ matrix.suite.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - name: core layouts
+            command: >-
+              node scripts/test-chat-layout.mjs &&
+              node scripts/test-settings-layout.mjs &&
+              node scripts/test-agent-studio-layout.mjs &&
+              node scripts/test-foundation-layout.mjs &&
+              node scripts/test-agent-registry-layout.mjs
+          - name: site and theme layouts
+            command: >-
+              npm run test:reference-layout &&
+              npm run test:site-layout &&
+              npm run test:conversation-layout &&
+              npm run test:theme-layout
+          - name: connector and mobile layouts
+            command: >-
+              npm run test:connectors &&
+              node scripts/test-mobile-polish-layout.mjs &&
+              node scripts/test-connector-tokens-layout.mjs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run complete Chromium suite
+        run: ${{ matrix.suite.command }}
