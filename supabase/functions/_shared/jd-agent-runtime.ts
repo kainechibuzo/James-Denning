@@ -807,40 +807,52 @@ const tools: ToolSpec[] = [
     parameters: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 50 } }, required: [], additionalProperties: false },
     execute: async (args,ctx) => {
       const limit = Math.min(50, Math.max(1, Number(args.limit || 25)));
-      const [{ data: business, error: businessError }, { data: servers, error: serverError }] = await Promise.all([
-        ctx.admin.from("jd_approvals").select("id,title,action_key,risk_level,status,reason,execution_status,created_at,expires_at")
-          .eq("school_id", ctx.schoolId).eq("status", "pending").order("created_at", { ascending: false }).limit(limit),
+      const [{ data: businessRows, error: businessError }, { data: servers, error: serverError }] = await Promise.all([
+        ctx.admin.from("jd_approvals").select("id,requested_by,title,action_key,risk_level,status,reason,execution_status,created_at,expires_at")
+          .eq("school_id", ctx.schoolId).eq("status", "pending").order("created_at", { ascending: false }).limit(limit + 1),
         ctx.admin.from("jd_connector_servers").select("id,name,access_owner_user_id")
-          .eq("school_id", ctx.schoolId).eq("status", "connected").limit(200),
+          .eq("school_id", ctx.schoolId).limit(200),
       ]);
       if (businessError || serverError) throw new Error("Could not list pending workspace approvals");
       const visibleServers = (servers || []).filter((server: any) => !server.access_owner_user_id || server.access_owner_user_id === ctx.userId);
       const serverNames = new Map<string, string>(visibleServers.map((server: any) => [String(server.id), String(server.name || "MCP server")] as [string, string]));
       const serverIds = visibleServers.map((server: any) => server.id);
-      let connectorApprovals: any[] = [];
+      let connectorRows: any[] = [];
       if (serverIds.length) {
         const { data, error } = await ctx.admin.from("jd_connector_approvals")
           .select("id,server_id,requested_by,tool_name,status,created_at,expires_at")
           .eq("school_id", ctx.schoolId).eq("status", "pending").in("server_id", serverIds)
-          .order("created_at", { ascending: false }).limit(limit);
+          .order("created_at", { ascending: false }).limit(limit + 1);
         if (error) throw new Error("Could not list pending connector approvals");
-        connectorApprovals = (data || []).map((row: any) => ({
+        connectorRows = data || [];
+      }
+      const business = (businessRows || []).slice(0, limit);
+      const connectors = connectorRows.slice(0, limit);
+      const requesterIds = [...new Set([
+        ...business.map((row: any) => row.requested_by),
+        ...connectors.map((row: any) => row.requested_by),
+      ].filter((id: unknown): id is string => typeof id === "string"))];
+      const { data: requesters, error: requesterError } = requesterIds.length
+        ? await ctx.admin.from("profiles").select("id,full_name,role").eq("school_id", ctx.schoolId).in("id", requesterIds)
+        : { data: [], error: null };
+      if (requesterError) throw new Error("Could not resolve approval requester labels");
+      const requesterById = new Map<string, any>((requesters || []).map((row: any) => [String(row.id), row] as [string, any]));
+      const requesterLabel = (id: string) => requesterById.get(id)?.full_name || requesterById.get(id)?.role || "Workspace member";
+      return {
+        business_approvals: business.map((row: any) => ({ ...row, requested_by: requesterLabel(row.requested_by) })),
+        connector_approvals: connectors.map((row: any) => ({
           approval_id: row.id,
-          server_name: serverNames.get(row.server_id) || "MCP server",
-          requested_by: row.requested_by,
+          server_name: serverNames.get(String(row.server_id)) || "MCP server",
+          requested_by: requesterLabel(row.requested_by),
           tool_name: row.tool_name,
           status: row.status,
           created_at: row.created_at,
           expires_at: row.expires_at,
-        }));
-      }
-      return {
-        business_approvals: business || [],
-        connector_approvals: connectorApprovals,
-        counts: { business: (business || []).length, connectors: connectorApprovals.length },
-        truncated: { business: (business || []).length === limit, connectors: connectorApprovals.length === limit },
+        })),
+        counts: { business: business.length, connectors: connectors.length },
+        has_more: { business: (businessRows || []).length > limit, connectors: connectorRows.length > limit },
         read_only: true,
-        notice: "This is a read-only inventory. Listing an approval does not approve or execute it. Connector arguments and credentials are intentionally omitted.",
+        notice: "This is a read-only inventory. Listing an approval does not approve or execute it. Connector arguments, credentials and internal UUIDs for actors/servers are intentionally omitted; approval IDs are retained for status lookup.",
       };
     },
   },
