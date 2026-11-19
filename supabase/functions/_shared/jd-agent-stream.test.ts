@@ -49,11 +49,11 @@ Deno.test("Responses stream fails closed when no terminal event arrives", async 
 Deno.test("Gemini-compatible stream returns assistant text and complete tool calls", async () => {
   const encoder = new TextEncoder();
   const chunks = [
-    'data: {"id":"chatcmpl-1","model":"gemini-3.1-flash-lite","choices":[{"delta":{"content":"Checking "},"finish_reason":null}]}\\n\\n',
-    'data: {"choices":[{"delta":{"content":"now"},"finish_reason":null}]}\\n\\n',
-    'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"get_people_intelligence","arguments":"{}"}}]},"finish_reason":null}]}\\n\\n',
-    'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\\n\\n',
-    'data: [DONE]\\n\\n',
+    'data: {"id":"chatcmpl-1","model":"gemini-3.1-flash-lite","choices":[{"delta":{"content":"Checking "},"finish_reason":null}]}\n\n',
+    'data: {"choices":[{"delta":{"content":"now"},"finish_reason":null}]}\n\n',
+    'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"get_people_intelligence","arguments":"{}"}}]},"finish_reason":null}]}\n\n',
+    'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n\n',
+    'data: [DONE]\n\n',
   ];
   const body = new ReadableStream<Uint8Array>({
     start(controller) { for (const chunk of chunks) controller.enqueue(encoder.encode(chunk)); controller.close(); },
@@ -83,7 +83,7 @@ Deno.test("Gemini request adapter preserves instructions, tool outputs and funct
 
 Deno.test("Gemini stream rejects missing terminal completion marker", async () => {
   const body = new ReadableStream<Uint8Array>({
-    start(controller) { controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"partial"},"finish_reason":null}]}\\n')); controller.close(); },
+    start(controller) { controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"partial"},"finish_reason":null}]}\n')); controller.close(); },
   });
   let failed = false;
   try { await readChatCompletionsStream(body); } catch { failed = true; }
