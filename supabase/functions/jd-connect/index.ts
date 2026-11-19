@@ -152,7 +152,7 @@ Deno.serve(async req=>{
    // A timeout, dropped connection, empty provider result, or failed evidence write
    // cannot prove that the remote side effect did not happen. Never label it a
    // clean failure that a caller might safely retry.
-   const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&(!remoteResponseReceived||(remoteResponseReceived&&!remoteResultReceived&&!/MCP server returned HTTP 4\\d\\d|MCP protocol error/.test(failureMessage))||(remoteResultReceived&&!hasMeaningfulMcpResult(remoteResult)));
+   const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&(!remoteResponseReceived||(remoteResponseReceived&&!remoteResultReceived&&!/MCP server returned HTTP 4\d\d|MCP protocol error/.test(failureMessage))||(remoteResultReceived&&!hasMeaningfulMcpResult(remoteResult)));
    const terminalStatus=outcomeUnknown?"outcome_unknown":"failed";
    const {error:failureUpdateError}=await db.from("jd_connector_executions").update({status:terminalStatus,result_json:remoteResult,error_code:outcomeUnknown?"REMOTE_OUTCOME_UNCONFIRMED":code,duration_ms:Date.now()-started,completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",school);
    if(failureUpdateError)throw new Error(failureMessage+"; failed execution evidence could not be persisted");
