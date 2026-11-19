@@ -26,6 +26,7 @@ test('saved tasks and memory are not falsely called unsaved previews or approval
  assert.equal(capabilityEffect('submit_organisation_blueprint_for_review').effect,'approval_request');
  assert.equal(capabilityEffect('create_business_document_draft').effect,'private_document_draft');
  assert.equal(capabilityEffect('call_connected_mcp_tool').effect,'connector_dependent');
+ assert.equal(capabilityEffect('list_pending_approvals').effect,'read_only');
  assert.equal(capabilityEffect('preview_hiring_vacancy').effect,'preview_only');
  for(const name of ['get_new_unreviewed_tool','constructor','__proto__'])assert.equal(capabilityEffect(name).effect,'not_classified');
 });
