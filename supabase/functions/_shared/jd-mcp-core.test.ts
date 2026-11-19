@@ -35,7 +35,8 @@ Deno.test("MCP tool result must contain meaningful evidence", () => {
   assertEquals(hasMeaningfulMcpResult({status:"outcome_unknown",id:"123"}), false);
   assertEquals(hasMeaningfulMcpResult({structuredContent:{ok:false,error:"denied"}}), false);
   assertEquals(hasExplicitMcpFailure({structuredContent:{ok:false,error:"denied"}}), true);
-  assertEquals(hasExplicitMcpFailure({status:"outcome_unknown"}), true);
+  assertEquals(hasExplicitMcpFailure({status:"outcome_unknown"}), false);
+  assertEquals(hasMeaningfulMcpResult({status:"outcome_unknown",id:"123"}), false);
   assertEquals(hasExplicitMcpFailure({id:"123",status:"succeeded"}), false);
   assertEquals(hasMeaningfulMcpResult({error:"Provider rejected request"}), false);
   assertEquals(hasMeaningfulMcpResult({structuredContent:{id:123}}), true);
