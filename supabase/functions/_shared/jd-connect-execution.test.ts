@@ -60,7 +60,9 @@ Deno.test("JD Connect returns to read-only when a provider grant is missing or e
 Deno.test("OAuth never bypasses per-action approval through legacy elevated grants",()=>{assertMatch(source,/const requiresApproval=server\.oauth_provider_id\?\(!readOnly\|\|tool\.read_only!==true\):legacyRequiresApproval/);});
 
 Deno.test("JD Connect never labels an ambiguous remote outcome as a clean failure", () => {
-  assertMatch(source, /const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected/);
+  assertMatch(source, /const outcomeUnknown=remoteRequestDispatched&&!remoteToolRejected&&!providerRejected/);
+  assertMatch(source, /const providerRejected=remoteResponseReceived&&!remoteResultReceived/);
+  assertMatch(source, /onDispatch\?\.\(\)/);
   assertMatch(source, /status:terminalStatus/);
   assertMatch(source, /status:outcomeUnknown\?"outcome_unknown":"failed"/);
   assertMatch(source, /Do not retry automatically; inspect the provider and execution history first/);
