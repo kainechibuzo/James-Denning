@@ -112,7 +112,6 @@ export function responsesToolsToChatTools(tools: unknown): any[] {
       name: String(tool.name || ""),
       description: String(tool.description || ""),
       parameters: tool.parameters && typeof tool.parameters === "object" ? tool.parameters : { type: "object", properties: {} },
-      ...(tool.strict === true ? { strict: true } : {}),
     },
   }));
 }
