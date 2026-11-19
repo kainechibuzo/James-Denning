@@ -1,3 +1,6 @@
+alter table public.jd_operational_tasks
+  add column if not exists created_by_agent boolean not null default false;
+
 -- Create operational tasks and their audit evidence in one transaction.
 -- Replays return the original task/audit evidence and never create duplicate audit rows.
 create or replace function public.jd_create_operational_task(
@@ -69,6 +72,11 @@ begin
       or v_task.priority is distinct from p_priority then
       raise exception 'Idempotency key was already used with different task details' using errcode='22023';
     end if;
+
+    update public.jd_operational_tasks
+    set created_by_agent = true
+    where id = v_task.id and school_id = v_school
+    returning * into v_task;
 
     select id into v_audit_id
     from public.jd_audit_events
