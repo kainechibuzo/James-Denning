@@ -11,6 +11,8 @@ Deno.test("Only explicitly annotated safe tools are read-only", () => {
   assertEquals(isReadOnlyTool({name:"search",annotations:{readOnlyHint:true}}), true);
   assertEquals(isReadOnlyTool({name:"send",annotations:{readOnlyHint:true,openWorldHint:true}}), false);
   assertEquals(isReadOnlyTool({name:"unknown"}), false);
+  assertEquals(isReadOnlyTool({name:"run_secret_scanning",annotations:{readOnlyHint:true}}), false);
+  assertEquals(isReadOnlyTool({name:"search",annotations:{readOnlyHint:"true" as any}}), false);
 });
 Deno.test("MCP SSE and JSON responses are parsed", () => {
   assertEquals(parseMcpPayload('{"jsonrpc":"2.0","result":{"ok":true}}',"application/json").result.ok, true);
