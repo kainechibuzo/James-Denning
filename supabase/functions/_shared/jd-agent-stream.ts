@@ -104,7 +104,7 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
       const id = String(value.call_id || value.id || "");
       const name = String(value.name || "");
       const args = String(value.arguments || "{}");
-      if (!id || !name) throw new Error("Gemini tool-call history is missing its call ID or function name");
+      if (!id || !name) throw malformedAgentResponse("Gemini tool-call history is missing its call ID or function name");
       let parsed: unknown;
       try { parsed = JSON.parse(args); } catch { throw malformedAgentResponse("Gemini tool-call history contains invalid arguments"); }
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw malformedAgentResponse("Gemini tool-call arguments must be a JSON object");
@@ -125,7 +125,7 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
     flushAssistant();
     if (value.type === "function_call_output") {
       const callId = String(value.call_id || "");
-      if (!callId) throw new Error("Gemini tool output is missing its call ID");
+      if (!callId) throw malformedAgentResponse("Gemini tool output is missing its call ID");
       messages.push({ role: "tool", tool_call_id: callId, content: typeof value.output === "string" ? value.output : JSON.stringify(value.output ?? "") });
       continue;
     }
