@@ -5,7 +5,7 @@ import {encryptSecret,decryptSecret,importAesKey} from './jd-oauth-crypto.ts';
 const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const hash=(v:unknown)=>typeof v==='string'&&/^[0-9a-f]{64}$/.test(v);
 const statusFor=(code:string)=>code==='42501'?403:code==='40001'?409:code==='54000'?429:code==='22023'?400:503;
-const isMissingRelation=(error:any)=>error?.code==='42P01'||/relation .* does not exist/i.test(String(error?.message||''));
+const isMissingRelation=(error:any)=>error?.code==='42P01'||error?.code==='PGRST205'||/relation .* does not exist|could not find the table .* in the schema cache/i.test(String(error?.message||''));
 // Read approved CURRENT blueprint content only; never promote a prior approved version over a pending revision.
 export async function readFoundationContext(ctx:{admin:any;userId:string;schoolId:string;role:string}){
  if(!['owner','admin'].includes(ctx.role))throw Error('Workspace administrator required');
