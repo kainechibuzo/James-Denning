@@ -215,17 +215,21 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         }
 
         const stepId = stepIds.get(callId);
+        const evidence = event.evidence && typeof event.evidence === "object" && !Array.isArray(event.evidence)
+          ? event.evidence as Record<string, unknown>
+          : null;
+        const verifiedResult = event.status === "completed" && !!evidence && Object.keys(evidence).length > 0;
         if (stepId) {
           const { data, error } = await admin.from("jd_automation_steps").update({
-            status: event.status === "completed" ? "completed" : "failed",
-            output_json: { event: event.status, evidence: event.evidence && typeof event.evidence === "object" ? event.evidence : null },
-            error_message: event.status === "failed" ? "Read-only tool execution failed" : null,
+            status: verifiedResult ? "completed" : "failed",
+            output_json: { event: event.status, evidence, verification: verifiedResult ? "non_empty_tool_result" : "missing_result_evidence" },
+            error_message: verifiedResult ? null : "Tool returned no verifiable result evidence",
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
             .select("id").maybeSingle();
           if (error || !data) throw new Error("Could not persist execution step result");
         }
-        if (event.status === "completed") {
+        if (verifiedResult) {
           const { data, error } = await admin.rpc("jd_checkpoint_execution_job", {
             p_job_id: jobId, p_lease_token: leaseToken, p_step_index: stepIndex,
           });
