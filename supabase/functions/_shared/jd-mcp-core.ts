@@ -42,7 +42,7 @@ export function hasMeaningfulMcpResult(value: unknown): boolean {
   if (hasMeaningfulMcpResult(record.structuredContent)) return true;
   if (hasMeaningfulMcpResult(record.content)) return true;
   return Object.entries(record).some(([key, item]) =>
-    !["isError", "_meta", "structuredContent", "content"].includes(key) &&
+    !["isError", "_meta", "structuredContent", "content", "type"].includes(key) &&
     hasMeaningfulMcpResult(item)
   );
 }
