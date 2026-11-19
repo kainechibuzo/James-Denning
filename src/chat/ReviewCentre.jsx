@@ -19,9 +19,24 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
   const load = useCallback(async () => {
     setLoading(true); setError("");setConfirmApply("");
     try {
-      const {data,error:invokeError}=await client.functions.invoke("jd-automation",{body:{action:"approvals.list"}});
-      if(invokeError||data?.error||!Array.isArray(data?.approvals))throw Error();
-      if(alive.current){setItems(data.approvals);setNeedsRefresh(false);}return true;
+      const [workspaceResponse,connectorResponse]=await Promise.all([
+        client.functions.invoke("jd-automation",{body:{action:"approvals.list"}}),
+        client.functions.invoke("jd-connect",{body:{action:"approvals.list"}})
+      ]);
+      const data=workspaceResponse.data,connectorData=connectorResponse.data;
+      if(workspaceResponse.error||data?.error||!Array.isArray(data?.approvals))throw Error();
+      if(connectorResponse.error||connectorData?.error||!Array.isArray(connectorData?.approvals))throw Error();
+      const connectorItems=connectorData.approvals.map(item=>({
+        ...item,
+        source:"connector",
+        status:item.status==="denied"?"rejected":item.status,
+        title:"Connected app · "+item.tool_name,
+        reason:"This request targets an external connected-app tool. Approval may execute that action; no action is taken by viewing this record.",
+        action_key:"connector.tool",
+        risk_level:"high",
+        execution_status:item.status==="executed"?"completed":"not_executed"
+      }));
+      if(alive.current){setItems([...data.approvals,...connectorItems].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)));setNeedsRefresh(false);}return true;
     }catch{if(alive.current){setItems([]);setNeedsRefresh(true);setError("Could not confirm approval records. Refresh before making changes.");}return false;}
     finally{if(alive.current)setLoading(false);}
   }, [client]);
@@ -53,6 +68,7 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
   };
 
   const pending = items.filter((item) => item.status === "pending");
+  const statusCounts = ["pending","expired","approved","rejected"].reduce((counts,status)=>({...counts,[status]:items.filter(item=>item.status===status).length}),{});
   return (
     <div className="jd-review-backdrop" onMouseDown={(event)=>{if(event.target===event.currentTarget)onClose?.();}}>
     <section className="jd-review">
@@ -62,15 +78,16 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
       </header>
       {error&&<div className="jd-review-alert error"><AlertTriangle size={14}/>{error}</div>}
       {notice&&<div className="jd-review-alert">{notice}</div>}
-      <div className="jd-review-summary"><strong>{pending.length}</strong><span>pending review</span><span className="jd-review-total">{items.length} total requests</span></div>
+      <div className="jd-review-summary"><strong>{pending.length}</strong><span>pending review</span><span className="jd-review-counts">{statusCounts.approved} approved · {statusCounts.rejected} rejected · {statusCounts.expired} expired</span><span className="jd-review-total">{items.length} total requests</span></div>
       {loading?<div className="jd-review-empty">Loading review requests…</div>:items.length===0?<div className="jd-review-empty"><ShieldCheck size={25}/><strong>Nothing to review</strong><span>New high-impact requests from JD will appear here.</span></div>:<div className="jd-review-list">
         {items.map((item)=>(
           <article className="jd-review-card" key={item.id}>
-            <div className="jd-review-card-top"><span className={"jd-review-status "+item.status}>{item.status.replaceAll("_"," ")}</span><span className="jd-review-date"><Clock3 size={12}/>{new Date(item.created_at).toLocaleString()}</span></div>
+            <div className="jd-review-card-top"><span className={"jd-review-status "+item.status} role="status" aria-label={"Approval status: "+item.status}>{item.status.replaceAll("_"," ")}</span><span className="jd-review-date"><Clock3 size={12}/>{new Date(item.created_at).toLocaleString()}</span></div>
             <h3>{item.title||"JD action request"}</h3>
             {item.action_key==="organisation.provision_departments"&&<div className="jd-review-jd-tag">✦ Prepared by JD · {item.proposal_json?.blueprint?.departments?.length||0} proposed departments</div> }
+            {item.source==="connector"&&<div className="jd-review-jd-tag">Connected provider · {item.tool_name}</div>}
             <p>{item.reason}</p>
-            {item.action_key!=="settings.apply"&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
+            {item.source==="connector"?<div className="jd-review-request">External action details are protected. Viewing this request does not approve or execute it.</div>:item.action_key!=="settings.apply"&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
             {item.action_key==="settings.apply"&&(settingsDiff(item)?<section aria-label="Proposed settings changes" className="jd-settings-diff">
               <p>Review each exact value. JD has not applied these settings. Missing contact details must be supplied, not guessed.</p>
               {settingsDiff(item).map(change=><div className="jd-settings-diff-row" key={change.key}><strong>{change.label}</strong><div><small>Current at proposal</small><span>{change.before===null?'Not configured':String(change.before)}</span></div><div><small>Proposed</small><span>{String(change.after)}</span></div>{!change.changed&&<small>No change</small>}</div>)}
@@ -92,7 +109,10 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
               ))}
             </div>}
             <div className="jd-review-meta"><span>Risk: {item.risk_level}</span><span>Execution: {item.execution_status?.replaceAll("_"," ")||"not executed"}</span></div>
-            {item.status==="pending"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
+            {item.status==="pending"&&item.source!=="connector"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
+            {item.status==="pending"&&item.source==="connector"&&<div className="jd-review-safe-note">Pending connector approval. This record is read-only here; no external action has been approved or executed.</div>}
+            {item.status==="expired"&&<div className="jd-review-safe-note">This request expired automatically. No approval or external action was granted.</div>}
+            {item.status==="rejected"&&<div className="jd-review-safe-note">This request was rejected. No external action was authorised.</div>}
             {item.action_key==="settings.apply"&&item.status==="approved"&&settingsDiff(item)&&['not_executed','running'].includes(item.execution_status)&&<div className="jd-review-actions">
               {confirmApply===item.id?<><span>Apply only the approved values above? Earlier completed steps will not be repeated.</span><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>setConfirmApply('')}>Keep unchanged</button><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>apply(item)}>Confirm apply settings</button></>:<button type="button" disabled={!!busyId||needsRefresh||loading} onClick={()=>setConfirmApply(item.id)}>Apply approved settings</button>}
             </div>}
@@ -112,9 +132,9 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
         .jd-review-eyebrow{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:.14em;font-weight:800;color:var(--jd-muted)}
         .jd-review-head h2{font-size:27px;letter-spacing:-1px;margin:10px 0 5px}.jd-review-head p{font-size:12px;color:var(--jd-muted);margin:0;line-height:1.6}
         .jd-review-controls{display:flex;gap:7px}.jd-review-controls button{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--jd-text-soft);cursor:pointer}
-        .jd-review-summary{max-width:900px;margin:0 auto 14px;padding:14px 16px;background:var(--jd-card);border:1px solid var(--jd-border);border-radius:12px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--jd-muted)}.jd-review-summary strong{font-size:20px;color:var(--jd-text)}.jd-review-total{margin-left:auto}
+        .jd-review-summary{max-width:900px;margin:0 auto 14px;padding:14px 16px;background:var(--jd-card);border:1px solid var(--jd-border);border-radius:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--jd-muted)}.jd-review-summary strong{font-size:20px;color:var(--jd-text)}.jd-review-counts{font-size:10px;color:var(--jd-muted)}.jd-review-total{margin-left:auto}
         .jd-review-list{max-width:900px;margin:0 auto;display:grid;gap:10px}.jd-review-card{background:var(--jd-card);border:1px solid var(--jd-border);border-radius:13px;padding:16px}
-        .jd-review-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.jd-review-status{font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--jd-muted)}.jd-review-status.pending{color:var(--jd-text-soft)}.jd-review-status.approved{color:var(--jd-text-soft)}.jd-review-status.rejected,.jd-review-status.expired{color:var(--jd-text-soft)}
+        .jd-review-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.jd-review-status{font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--jd-muted);padding:4px 7px;border:1px solid var(--jd-border);border-radius:20px}.jd-review-status.pending{color:var(--jd-text);background:var(--jd-soft)}.jd-review-status.approved{color:#28734d;border-color:color-mix(in srgb,#28734d 28%,var(--jd-border));background:color-mix(in srgb,#28734d 8%,var(--jd-card))}.jd-review-status.rejected{color:#a33e3e;border-color:color-mix(in srgb,#a33e3e 28%,var(--jd-border));background:color-mix(in srgb,#a33e3e 8%,var(--jd-card))}.jd-review-status.expired{color:var(--jd-muted);background:var(--jd-soft)}
         .jd-review-date{display:flex;align-items:center;gap:5px;color:var(--jd-muted);font-size:9px}
         .jd-review-jd-tag{display:inline-flex;margin:2px 0 10px;padding:5px 8px;border:1px solid var(--jd-border);border-radius:20px;background:var(--jd-soft);color:var(--jd-text-soft);font-size:9px;font-weight:700}
         .jd-review-blueprint{margin-top:12px;padding:13px;background:var(--jd-card);border:1px solid var(--jd-border);border-radius:12px}
