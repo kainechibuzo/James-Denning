@@ -146,6 +146,9 @@ jobs:
       - name: Test JD timezone-aware recurring schedule calculation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-scheduler.test.ts
 
+      - name: Test JD approval expiry and task provenance migrations
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119150000_jd_approval_expiration_lifecycle.sql,supabase/migrations/20261119151000_jd_task_provenance_atomic.sql supabase/functions/_shared/jd-approval-expiration-migration.test.ts
+
 
       - name: Test JD execution reliability helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-runtime.test.ts
