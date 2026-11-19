@@ -374,7 +374,14 @@ Deno.serve(async req=>{
    if(error||!approval)return send({error:"Pending approval not found"},404);
    const approvalServer=await getServer(approval.server_id);
    if(approvalServer.status!=="connected")return send({error:"Provider is no longer connected"},409);
-   if(new Date(approval.expires_at).getTime()<Date.now()){await db.from("jd_connector_approvals").update({status:"expired"}).eq("id",id);return send({error:"Approval expired"},410);}
+   if(new Date(approval.expires_at).getTime()<=Date.now()){
+    const expiredAt=new Date().toISOString();
+    const {data:expired,error:expireError}=await db.from("jd_connector_approvals")
+     .update({status:"expired",resolved_at:expiredAt}).eq("id",id).eq("school_id",school).eq("status","pending").select("id").maybeSingle();
+    if(expireError)throw new Error("Could not persist the expired approval state");
+    if(expired)await audit("connector.approval.expired",{approval_id:id,tool_name:approval.tool_name,expired_at:expiredAt,expired_by:"decision_guard"});
+    return send({error:"Approval expired"},410);
+   }
    const {data:claimed,error:claimError}=await db.from("jd_connector_approvals").update({status:decision,resolved_by:actor,resolved_at:new Date().toISOString()}).eq("id",id).eq("school_id",school).eq("status","pending").select("id").maybeSingle();
    if(claimError||!claimed)return send({error:"Approval was already resolved"},409);
    if(decision==="denied"){await audit("connector.approval.denied",{approval_id:id,tool_name:approval.tool_name});return send({approved:false,denied:true});}
