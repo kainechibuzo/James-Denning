@@ -1,4 +1,8 @@
--- Make Paystack payment finalisation atomic across payment, subscription and audit state.
+-- Make Paystack payment finalisation atomic across payment, subscription, invoice and audit state.
+create unique index if not exists jd_billing_invoice_lines_one_platform_per_invoice
+  on public.jd_billing_invoice_lines(school_id,invoice_id)
+  where line_type='platform_subscription';
+
 -- Only the authenticated billing Edge Functions may invoke this service-role RPC.
 create or replace function public.jd_billing_finalize_payment(
   p_school_id uuid,
@@ -18,6 +22,8 @@ as $billing$
 declare
   payment public.jd_billing_payments%rowtype;
   subscription public.jd_billing_subscriptions%rowtype;
+  invoice public.jd_billing_invoices%rowtype;
+  invoice_number text;
   effective_paid_at timestamptz := coalesce(p_paid_at, clock_timestamp());
 begin
   if p_school_id is null or p_reference is null or length(trim(p_reference))=0
@@ -57,8 +63,41 @@ begin
     raise exception 'Webhook receipt not found' using errcode='22023';
   end if;
 
+  invoice_number := 'JD-' || to_char(effective_paid_at at time zone 'UTC','YYYYMM') ||
+    '-' || upper(replace(payment.id::text,'-',''));
+  insert into public.jd_billing_invoices(
+    school_id,invoice_number,idempotency_key,currency,status,
+    period_start,period_end,issued_at,due_at,
+    subtotal_minor,tax_minor,total_minor,paid_minor
+  ) values (
+    p_school_id,invoice_number,payment.id,p_currency,'paid',
+    effective_paid_at,effective_paid_at+interval '1 month',
+    effective_paid_at,effective_paid_at,
+    p_amount_minor,0,p_amount_minor,p_amount_minor
+  )
+  on conflict (school_id,idempotency_key) do nothing
+  returning * into invoice;
+  if not found then
+    select * into invoice from public.jd_billing_invoices
+      where school_id=p_school_id and idempotency_key=payment.id;
+  end if;
+  if invoice.id is null then
+    raise exception 'Could not persist the paid invoice' using errcode='40001';
+  end if;
+
+  insert into public.jd_billing_invoice_lines(
+    school_id,invoice_id,line_type,description,quantity_micros,
+    unit_amount_micros,amount_minor,metadata
+  ) values (
+    p_school_id,invoice.id,'platform_subscription','James-Denning monthly platform subscription',
+    1000000,p_amount_minor*10000,p_amount_minor,
+    jsonb_build_object('payment_reference',p_reference,'period_start',effective_paid_at,'period_end',effective_paid_at+interval '1 month')
+  )
+  on conflict do nothing;
+
   update public.jd_billing_payments set
     status='succeeded',
+    invoice_id=invoice.id,
     paid_at=effective_paid_at,
     verified_at=clock_timestamp(),
     provider_customer_code=coalesce(p_customer_code,provider_customer_code),
@@ -81,6 +120,13 @@ begin
     p_school_id,p_actor_id,p_source_webhook_receipt_id,
     case when p_source_webhook_receipt_id is null then 'payment.verified' else 'payment.webhook_verified' end,
     jsonb_build_object('provider','paystack','reference',p_reference,'amount_minor',p_amount_minor,'currency',p_currency)
+  );
+  insert into public.jd_billing_events(
+    school_id,event_type,event_json
+  ) values (
+    p_school_id,'invoice.paid',
+    jsonb_build_object('invoice_id',invoice.id,'invoice_number',invoice.invoice_number,
+      'payment_reference',p_reference,'amount_minor',p_amount_minor,'currency',p_currency)
   );
 
   return jsonb_build_object('verified',true,'status','succeeded','reused',false,'reference',p_reference,'paid_at',effective_paid_at);
