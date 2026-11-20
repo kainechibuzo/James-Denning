@@ -89,5 +89,5 @@ $billing$;
 
 revoke all on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid,uuid)
   from public, anon, authenticated;
-grant execute on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid)
+grant execute on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid,uuid)
   to service_role;
