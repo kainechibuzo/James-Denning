@@ -81,8 +81,10 @@ Deno.serve(async (req: Request) => {
 
     const expiredTrial = subscription?.status === "trialing" &&
       subscription.trial_ends_at && Date.parse(subscription.trial_ends_at) <= Date.now();
+    const cancelledPeriodEnded = subscription?.status === "active" && subscription.cancel_at_period_end &&
+      subscription.current_period_end && Date.parse(subscription.current_period_end) <= Date.now();
     return send({
-      subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : subscription.status } : null,
+      subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : cancelledPeriodEnded ? "cancelled" : subscription.status } : null,
       invoices: invoices || [],
       billing_live: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE")),
       checkout_enabled: Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") === "true" && Deno.env.get("JD_BILLING_CANCEL_FLOW_ENABLED") === "true" && Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
