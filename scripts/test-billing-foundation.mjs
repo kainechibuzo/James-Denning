@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [migration, rollback, endpoint, config, finalisation] = await Promise.all([
+const [migration, rollback, endpoint, config, finalisation, finalisationRollback] = await Promise.all([
   readFile(new URL("../supabase/migrations/20261120084500_jd_commercial_billing.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/rollback/20261120084500_jd_commercial_billing.rollback.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/functions/jd-billing/index.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/config/billing.mjs", import.meta.url), "utf8"),
   readFile(new URL("../supabase/migrations/20261120130000_jd_billing_payment_finalization.sql", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/rollback/20261120130000_jd_billing_payment_finalization.rollback.sql", import.meta.url), "utf8"),
 ]);
 
 test("commercial billing tables are tenant-scoped and unavailable to browser roles", () => {
@@ -46,7 +47,7 @@ test("Paystack checkout is server-initialised and transaction verification is st
   assert.match(endpoint, /PAYSTACK_PLATFORM_PLAN_CODE/);
   assert.match(endpoint, /api\.paystack\.co\/transaction\/initialize/);
   assert.match(endpoint, /api\.paystack\.co\/transaction\/verify/);
-  assert.match(endpoint, /transaction\?\.status !== "success"/);
+  assert.match(endpoint, /transaction\.status !== "success"/);
   assert.match(endpoint, /transaction\?\.reference !== reference/);
   assert.match(endpoint, /Number\(transaction\?\.amount\) !== Number\(payment\.amount_minor\)/);
   assert.match(endpoint, /transaction\?\.currency !== payment\.currency/);
@@ -89,13 +90,13 @@ test("verified payments create one paid platform invoice in the same transaction
   assert.match(finalisation, /invoice_id=invoice\.id/);
   assert.match(finalisation, /'invoice\.paid'/);
   assert.match(finalisation, /jd_billing_invoice_lines_one_platform_per_invoice/);
-  assert.match(rollback, /drop index if exists public\.jd_billing_invoice_lines_one_platform_per_invoice/);
+  assert.match(finalisationRollback, /drop index if exists public\.jd_billing_invoice_lines_one_platform_per_invoice/);
 });
 
 test("subscription cancellation is provider-confirmed, tenant-scoped and keeps the paid period", () => {
   assert.match(finalisation, /jd_billing_mark_subscription_cancelled/);
   assert.match(finalisation, /provider_subscription_code is distinct from p_subscription_code/);
-  assert.match(finalisation, /cancel_at_period_end=true/);
+  assert.match(finalisation, /cancel_at_period_end=paid_period_remaining/);
   assert.match(finalisation, /subscription\.cancelled/);
-  assert.match(rollback, /drop function public\.jd_billing_mark_subscription_cancelled/);
+  assert.match(finalisationRollback, /drop function public\.jd_billing_mark_subscription_cancelled/);
 });
