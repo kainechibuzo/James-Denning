@@ -136,7 +136,9 @@ export function BillingPage({ ctx }) {
   const invoices = snapshot?.invoices || [];
   const statusDescription = useMemo(() => {
     if (trialActive) return `Your free trial ends ${dateTime(subscription.trial_ends_at)}. No charge is made during the trial.`;
-    if (subscription?.cancel_at_period_end) return `Automatic renewal is off. Your current paid period ends ${dateTime(subscription?.current_period_end)}.`;
+    if (subscription?.cancel_at_period_end) return status === "past_due"
+      ? `Automatic renewal is off, but this workspace still has a past-due balance. The recorded paid period ended ${dateTime(subscription?.current_period_end)}.`
+      : `Automatic renewal is off. Your current paid period ends ${dateTime(subscription?.current_period_end)}.`;
     if (status === "active") return `Your platform subscription renews monthly. Next billing date: ${dateTime(subscription?.current_period_end)}.`;
     if (checkoutDue) return "Your trial has ended or payment needs attention. Review the amount and continue through secure checkout when ready.";
     if (status === "cancelled") return `Your subscription is cancelled. No further automatic renewals are scheduled. The current paid period is recorded through ${dateTime(subscription?.current_period_end)}.`;
@@ -185,7 +187,7 @@ export function BillingPage({ ctx }) {
             checkoutDue ? <button onClick={checkout} disabled={!checkoutEnabled || Boolean(working)} style={{ ...primaryButton, opacity: !checkoutEnabled ? .55 : 1 }}>
               {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
             </button> :
-            status === "active" ? <div style={{ display: "grid", gap: 10 }}>
+            ["active", "past_due"].includes(status) ? <div style={{ display: "grid", gap: 10 }}>
               <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div>
               {subscription?.cancel_at_period_end
                 ? <span style={{ color: C.muted, fontSize: 11 }}>Automatic renewal is off</span>
