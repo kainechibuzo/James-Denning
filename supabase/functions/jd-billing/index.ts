@@ -79,10 +79,10 @@ Deno.serve(async (req: Request) => {
       .limit(20);
     if (invoiceError) return send({ error: "Could not load invoices" }, 503);
 
-    const expiredTrial = subscription?.status === "trialing" &&
-      subscription.trial_ends_at && Date.parse(subscription.trial_ends_at) <= Date.now();
-    const cancelledPeriodEnded = ["active", "past_due"].includes(subscription?.status) && subscription.cancel_at_period_end &&
-      subscription.current_period_end && Date.parse(subscription.current_period_end) <= Date.now();
+    const expiredTrial = Boolean(subscription && subscription.status === "trialing" &&
+      subscription.trial_ends_at && Date.parse(subscription.trial_ends_at) <= Date.now());
+    const cancelledPeriodEnded = Boolean(subscription && ["active", "past_due"].includes(subscription.status) && subscription.cancel_at_period_end &&
+      subscription.current_period_end && Date.parse(subscription.current_period_end) <= Date.now());
     return send({
       subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : cancelledPeriodEnded ? "cancelled" : subscription.status } : null,
       invoices: invoices || [],
