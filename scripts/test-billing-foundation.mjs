@@ -82,3 +82,12 @@ test("payment and subscription state are finalised atomically with an append-onl
   assert.match(finalisation, /school_id,actor_id,source_webhook_receipt_id/);
   assert.match(endpoint, /rpc\("jd_billing_finalize_payment"/);
 });
+
+test("verified payments create one paid platform invoice in the same transaction", () => {
+  assert.match(finalisation, /insert into public\.jd_billing_invoices/);
+  assert.match(finalisation, /insert into public\.jd_billing_invoice_lines/);
+  assert.match(finalisation, /invoice_id=invoice\.id/);
+  assert.match(finalisation, /'invoice\.paid'/);
+  assert.match(finalisation, /jd_billing_invoice_lines_one_platform_per_invoice/);
+  assert.match(rollback, /drop index if exists public\.jd_billing_invoice_lines_one_platform_per_invoice/);
+});
