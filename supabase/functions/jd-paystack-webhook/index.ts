@@ -221,7 +221,7 @@ Deno.serve(async (req: Request) => {
     } else if (event === "subscription.disable") {
       const paidThrough = subscription.current_period_end ? Date.parse(subscription.current_period_end) : 0;
       const periodStillPaid = Number.isFinite(paidThrough) && paidThrough > Date.now();
-      changes.status = periodStillPaid ? "active" : "cancelled";
+      changes.status = periodStillPaid ? subscription.status : "cancelled";
       changes.cancel_at_period_end = periodStillPaid;
       changes.next_payment_at = null;
     } else if (event === "invoice.payment_failed") {
