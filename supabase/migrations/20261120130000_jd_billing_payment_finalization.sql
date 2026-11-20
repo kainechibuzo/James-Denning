@@ -7,6 +7,7 @@ create or replace function public.jd_billing_finalize_payment(
   p_currency text,
   p_paid_at timestamptz,
   p_customer_code text default null,
+  p_actor_id uuid default null,
   p_source_webhook_receipt_id uuid default null
 )
 returns jsonb
@@ -75,9 +76,9 @@ begin
   where school_id=p_school_id;
 
   insert into public.jd_billing_events(
-    school_id,source_webhook_receipt_id,event_type,event_json
+    school_id,actor_id,source_webhook_receipt_id,event_type,event_json
   ) values (
-    p_school_id,p_source_webhook_receipt_id,
+    p_school_id,p_actor_id,p_source_webhook_receipt_id,
     case when p_source_webhook_receipt_id is null then 'payment.verified' else 'payment.webhook_verified' end,
     jsonb_build_object('provider','paystack','reference',p_reference,'amount_minor',p_amount_minor,'currency',p_currency)
   );
@@ -86,7 +87,7 @@ begin
 end;
 $billing$;
 
-revoke all on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid)
+revoke all on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid,uuid)
   from public, anon, authenticated;
 grant execute on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid)
   to service_role;
