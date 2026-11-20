@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [app, page, navigation, endpoint, webhook] = await Promise.all([
+const [app, page, navigation, endpoint, webhook, supabaseConfig] = await Promise.all([
   readFile(new URL("../src/AppDemo.jsx", import.meta.url), "utf8"),
   readFile(new URL("../src/pages/billing.jsx", import.meta.url), "utf8"),
   readFile(new URL("../src/config/workspace-navigation.mjs", import.meta.url), "utf8"),
   readFile(new URL("../supabase/functions/jd-billing/index.ts", import.meta.url), "utf8"),
   readFile(new URL("../supabase/functions/jd-paystack-webhook/index.ts", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/config.toml", import.meta.url), "utf8"),
 ]);
 
 test("billing page is lazy-loaded and mounted only through the authorised billing route", () => {
@@ -52,4 +53,9 @@ test("webhook finalisation uses shared crypto and the atomic payment RPC", () =>
   assert.match(webhook, /rpc\("jd_billing_finalize_payment"/);
   assert.doesNotMatch(webhook, /changes\.status = "active"/);
   assert.match(webhook, /\.\.\/_shared\/jd-paystack-webhook-crypto\.ts/);
+});
+
+test("billing API requires user JWT while the Paystack callback relies on HMAC verification", () => {
+  assert.match(supabaseConfig, /\[functions\.jd-billing\][\s\S]*?verify_jwt = true/);
+  assert.match(supabaseConfig, /\[functions\.jd-paystack-webhook\][\s\S]*?verify_jwt = false/);
 });
