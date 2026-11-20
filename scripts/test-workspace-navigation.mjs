@@ -30,7 +30,7 @@ test("admin sees every route, grouped",()=>{
 for(const role of ["owner","manager"])for(const policy of ["allow","deny","subset"])test(`${role} / ${policy} only gets permitted JD routes`,()=>{
   const canAccess=id=>policy==="allow"||(policy==="subset"&&id==="jd-chat");
   const nav=build({role,canAccess});
-  const expected=policy==="allow"?["jd-chat","jd-operations"]:policy==="subset"?["jd-chat"]:[];
+  const expected=policy==="allow"?(role==="owner"?["billing","jd-chat","jd-operations"]:["jd-chat","jd-operations"]):policy==="subset"?["jd-chat"]:[];
   assert.deepEqual(pageIds(nav),expected.sort());assertGroups(nav);
 });
 test("unsupported and legacy roles get no implicit grant, even with a permissive resolver",()=>{
