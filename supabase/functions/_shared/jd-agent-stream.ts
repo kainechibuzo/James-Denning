@@ -108,7 +108,7 @@ export function responsesInputToChatMessages(input: unknown, instructions?: stri
       let parsed: unknown;
       try { parsed = JSON.parse(args); } catch { throw malformedAgentResponse("Gemini tool-call history contains invalid arguments"); }
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw malformedAgentResponse("Gemini tool-call arguments must be a JSON object");
-      pendingToolCalls.push({ id, type: "function", function: { name, arguments: args } });
+      pendingToolCalls.push({ id, type: "function", function: { name, arguments: args }, ...(value.extra_content && typeof value.extra_content === "object" ? { extra_content: value.extra_content } : {}) });
       continue;
     }
     if (value.type === "message" && value.role === "assistant") {
@@ -217,6 +217,8 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
         toolCallIds.set(callId, index);
       }
       const current = toolCalls.get(index) || { id: "", type: "function", function: { name: "", arguments: "" } };
+      // Gemini 3 requires this opaque provider payload to be replayed verbatim after tool execution.
+      if (part.extra_content && typeof part.extra_content === "object") current.extra_content = part.extra_content;
       if (callId && current.id && current.id !== callId) {
         throw malformedAgentResponse("Gemini reused a tool-call index for different call IDs");
       }
@@ -259,6 +261,7 @@ export async function readChatCompletionsStream(body: ReadableStream<Uint8Array>
       call_id: call.id,
       name: call.function.name,
       arguments: call.function.arguments,
+      ...(call.extra_content && typeof call.extra_content === "object" ? { extra_content: call.extra_content } : {}),
     });
     const status = finishReason === "length" ? "incomplete" : "completed";
     return {
