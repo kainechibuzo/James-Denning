@@ -5,7 +5,9 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
+  const payload = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(payload).set(bytes);
+  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", payload))]
     .map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
@@ -23,8 +25,8 @@ Deno.serve(async (req: Request) => {
     rawBody,
     req.headers.get("Paystack-Signature"),
     req.headers.get("x-paystack-signature"),
-    signingSecret,
-    legacySecret,
+    signingSecret ?? null,
+    legacySecret ?? null,
   );
   if (!signature.valid) return json({ error: "Invalid webhook signature" }, 401);
 
@@ -193,7 +195,7 @@ Deno.serve(async (req: Request) => {
           (data.subscription as Record<string, unknown>).metadata &&
           typeof (data.subscription as Record<string, unknown>).metadata === "object"
         ? (data.subscription as Record<string, unknown>).metadata as Record<string, unknown> : {});
-    let lookup = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency");
+    let lookup = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency,current_period_end,status");
     if (typeof subscriptionCode === "string") lookup = lookup.eq("provider_subscription_code", subscriptionCode);
     else if (typeof customerCode === "string") lookup = lookup.eq("provider_customer_code", customerCode);
     else if (typeof metadata.workspace_id === "string" && /^[0-9a-f-]{36}$/i.test(metadata.workspace_id)) lookup = lookup.eq("school_id", metadata.workspace_id);
