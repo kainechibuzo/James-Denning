@@ -184,9 +184,14 @@ export function BillingPage({ ctx }) {
               {working === "trial" ? <LoaderCircle size={15}/> : <Clock3 size={15}/>} Start 3-day free trial
             </button> :
             trialActive ? <div style={{ color: C.muted, fontSize: 12 }}> <CheckCircle2 size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/> Trial active · {remaining(subscription.trial_ends_at)}</div> :
-            checkoutDue ? <button onClick={checkout} disabled={!checkoutEnabled || Boolean(working)} style={{ ...primaryButton, opacity: !checkoutEnabled ? .55 : 1 }}>
-              {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
-            </button> :
+            checkoutDue ? <div style={{ display: "grid", gap: 10 }}>
+              <button onClick={checkout} disabled={!checkoutEnabled || Boolean(working)} style={{ ...primaryButton, opacity: !checkoutEnabled ? .55 : 1 }}>
+                {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
+              </button>
+              {status === "past_due" && subscription?.provider_subscription_code && !subscription?.cancel_at_period_end
+                ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                : null}
+            </div> :
             ["active", "past_due"].includes(status) ? <div style={{ display: "grid", gap: 10 }}>
               <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div>
               {subscription?.cancel_at_period_end
