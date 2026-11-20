@@ -66,9 +66,11 @@ test("shell searches authorised NAV, not the raw catalogue; header is independen
   assert.doesNotMatch(shell, /searchNavigation\(ALL_NAV/);
   assert.match(shell, /\{visibleNavigation\.map/);
   // The supplied reference keeps the brand in the header on every route;
-  // filtering sidebar search must not replace or hide that header.
-  const header = shell.slice(shell.indexOf('<header className="reference-workspace-header"'), shell.indexOf('</header>'));
-  assert.match(header, /<ReferenceBrand\/>/);
+  // filtering sidebar search must not replace or hide that header. The header
+  // brand is the JD tile + Caslon wordmark lockup from the reference.
+  const header = shell.slice(shell.indexOf('<header className="reference-workspace-header'), shell.indexOf('</header>'));
+  assert.match(header, /<HeritageWordmark/);
+  assert.match(header, /className="jd-topbar-tile"/);
   assert.doesNotMatch(header, /visibleNavigation|navigationQuery/);
 });
 test("navigation retains accessible search, active page and expansion hooks", () => {
@@ -79,7 +81,8 @@ test("navigation retains accessible search, active page and expansion hooks", ()
 });
 test("mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup", () => {
   assert.match(shell, /inert=\{isMobile&&!sideOpen \? "" : undefined\}/);
-  assert.match(shell, /minHeight:0,padding:"8px 6px",overflowY:"auto"/);
+  // The drawer's page list is the only scrolling region inside a fixed-height drawer.
+  assert.match(shell, /flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain"/);
   assert.match(shell, /return bindMobileNavigation\(sidebarRef\.current/);
   assert.match(shell, /\[isMobile,sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id\]/);
   assert.match(shell, /useState\("jd-chat"\)/);

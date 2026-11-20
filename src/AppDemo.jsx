@@ -1,7 +1,7 @@
 import {assistantNavigation} from "./config/assistant-navigation.mjs";
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
 import React, { lazy, useId, useState, useEffect, useMemo, Component, useRef } from "react";
-import { ArrowLeft, ArrowRight, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight, Landmark, Layers3, PlayCircle, Sparkles, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
@@ -12,7 +12,7 @@ import { OrganizationProvider, useOrganization } from './contexts/organization.j
 import { LIGHT as THEME_LIGHT, DARK as THEME_DARK, setTheme } from './config/theme.js';
 import { PRODUCT } from './config/product.js';
 import { PERM_ROLE_DEFAULTS } from './config/permissions.mjs';
-import { ReferenceBrand } from "./components/reference-brand.jsx";
+import { HeritageRule, HeritageWordmark } from "./components/reference-brand.jsx";
 import "./styles/reference-design.css";
 import { ChatHome } from "./chat/ChatHome.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
@@ -66,6 +66,12 @@ function DarkProvider({children}){
     document.documentElement.style.colorScheme=mode;
     document.body.style.background=dark?DARK.offWhite:LIGHT.offWhite;
   },[dark]);
+  // The paper surface is the default before the provider has committed, so the
+  // first paint is never the legacy cool-grey canvas.
+  useEffect(()=>{
+    if(!document.documentElement.dataset.theme)document.documentElement.dataset.theme="light";
+    if(!document.body.dataset.theme)document.body.dataset.theme="light";
+  },[]);
   return <DarkCtx.Provider value={{dark,toggle}}>{children}</DarkCtx.Provider>;
 }
 
@@ -503,6 +509,17 @@ const ICON_MAP = {
   image: Image, file: File, folder: Folder, package: Package,
   pencil: Pencil,
 };
+// Referenced icons for the JD Assistant block: sparkle for the destination
+// itself, plus the reference's action glyphs for its shortcuts.
+// Shortcuts that belong under the rule in the assistant block (working views),
+// and the destinations that repeat the assistant itself.
+const SECONDARY_ASSISTANT = new Set(["departments","usage","runs","connectors"]);
+const ASSISTANT_ICONS = {chat:Sparkles,new:Plus,history:History,review:Shield,departments:Layers3,usage:BarChart2,runs:PlayCircle,connectors:Link};
+function AssistantIcon({name,size=19}){
+  const Ic=ASSISTANT_ICONS[name]||Sparkles;
+  return <Ic size={size} aria-hidden="true" style={{flexShrink:0}}/>;
+}
+
 function AppIcon({name,size=16,color,style={}}){
   const Ic=ICON_MAP[name];
   if(!Ic) return null;
@@ -1305,6 +1322,7 @@ function AppInner(){
   const visibleNavigation = searchNavigation(NAV,navigationQuery);
   const assistantTools = assistantNavigation(NAV,navigationQuery);
   const groupCollapsed = (id) => isNavGroupCollapsed(id,collapsedGroups,navigationQuery,sideOpen||isMobile);
+  const chatEntry = NAV.find(entry=>entry.id==="jd-chat"&&!entry.group);
 
   const ctx={user,role,notify,setPage,canAccess,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam,workspaceType,terms};
 
@@ -1317,7 +1335,7 @@ function AppInner(){
 
 
   return(
-    <div className="jd-workspace-shell" inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:C.offWhite,
+    <div className="jd-workspace-shell" inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:"var(--jd-paper)",
       fontFamily:"'JD Inter',system-ui,sans-serif",transition:"background .2s"}}>
 
 
@@ -1328,199 +1346,187 @@ function AppInner(){
             zIndex:498,backdropFilter:"blur(2px)"}}/>
       )}
 
-      {/* SIDEBAR */}
+      {/* NAVIGATION DRAWER — reference layout: engraved plate, identity,
+          organisation + search fields, JD assistant block, department groups
+          and an account card seated on the skyline. */}
       <aside id="workspace-navigation" ref={sidebarRef} tabIndex={-1} aria-label="Workspace navigation"
+        className={`jd-drawer ${isMobile ? "is-mobile" : (sideOpen ? "is-open" : "is-rail")}`}
         role={isMobile?"dialog":undefined} aria-modal={isMobile&&sideOpen?true:undefined}
         aria-hidden={isMobile&&!sideOpen ? true : undefined} inert={isMobile&&!sideOpen ? "" : undefined}
         style={{
-        width: isMobile ? "min(280px, 88vw)" : (sideOpen?230:56),
-        background:"linear-gradient(180deg,var(--jd-text) 0%,var(--jd-text) 55%,var(--jd-text) 100%)",
+        width: isMobile ? "min(304px, 90vw)" : (sideOpen?272:0),
         transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
         position: isMobile ? "fixed" : "sticky",
         top:0, left:0,
         height:"100dvh",zIndex: isMobile ? 499 : "auto",
         overflow:"hidden",
-        boxShadow:"4px 0 24px rgba(0,0,0,.15)",
         transform: isMobile ? (sideOpen?"translateX(0)":"translateX(-100%)") : "none",
       }}>
 
-        {/* Logo / Brand */}
-        <div style={{padding:"16px 12px",display:"flex",alignItems:"center",gap:10,
-          borderBottom:"1px solid color-mix(in srgb, var(--jd-card) 8%, transparent)",flexShrink:0,minHeight:60}}>
-          <div style={{flexShrink:0,transition:"all .2s"}}><Logo size={32}/></div>
-          {(sideOpen||isMobile)&&(
-            <div style={{overflow:"hidden",transition:"opacity .2s"}}>
-              <div style={{color:"var(--jd-card)",fontWeight:900,fontSize:12,lineHeight:1.2,letterSpacing:.2,
-                whiteSpace:"nowrap"}}>James-Denning</div>
-              <div style={{color:"color-mix(in srgb, var(--jd-card) 40%, transparent)",fontSize:9,textTransform:"uppercase",
-                letterSpacing:.3,marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={_sidebarSchoolName||"Your organisation"}>{_sidebarSchoolName||"Your organisation"}</div>
+        <div className="jd-drawer-plate">
+          <span className="jd-drawer-plate-art" aria-hidden="true"/>
+          <span className="jd-drawer-plate-sweep" aria-hidden="true"/>
+          <div className="jd-drawer-identity">
+            <span className="jd-drawer-tile" aria-hidden="true">JD</span>
+            <div className="jd-drawer-names">
+              <div className="jd-drawer-wordmark">James-Denning</div>
+              <div className="jd-drawer-strapline">Business Operating System</div>
+              <div className="jd-drawer-signature"><HeritageRule/></div>
             </div>
-          )}
+          </div>
         </div>
 
-        <button ref={workspaceSwitchRef} type="button" aria-label="Switch organisation" aria-haspopup="dialog"
-          title={`Switch organisation — ${_sidebarSchoolName||"Your organisation"}`}
-          onClick={()=>{closeSideOnMobile();setShowWorkspaceSwitch(true);}}
-          style={{margin:"10px 8px 0",padding:"10px 8px",minHeight:40,display:"flex",alignItems:"center",justifyContent:sideOpen||isMobile?"flex-start":"center",gap:8,borderRadius:9,border:"1px solid color-mix(in srgb, var(--jd-card) 18%, transparent)",background:"color-mix(in srgb, var(--jd-card) 6%, transparent)",color:"var(--jd-border)",cursor:"pointer",flexShrink:0,fontSize:12}}>
-          <Building2 size={16} aria-hidden="true" style={{flexShrink:0}}/>
-          {(sideOpen||isMobile)&&<span>Switch organisation</span>}
-        </button>
+        <div className="jd-drawer-section">
+          <button ref={workspaceSwitchRef} type="button" className="jd-drawer-field"
+            aria-label="Switch organisation" aria-haspopup="dialog"
+            title={`Switch organisation — ${_sidebarSchoolName||"Your organisation"}`}
+            onClick={()=>{closeSideOnMobile();setShowWorkspaceSwitch(true);}}>
+            <Landmark size={19} aria-hidden="true"/>
+            <span>Switch organisation</span>
+            <ChevronRight size={17} className="jd-drawer-chevron" aria-hidden="true"/>
+          </button>
 
-        {(sideOpen||isMobile)&&<div style={{padding:"10px 10px 4px",flexShrink:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,border:"1px solid color-mix(in srgb, var(--jd-card) 18%, transparent)",borderRadius:9,padding:"6px 8px",color:"var(--jd-muted)"}}>
-            <Search size={14} aria-hidden="true"/>
-            <input type="search" aria-label="Search workspace navigation" placeholder="Find a page or department"
-              value={sidebarSearch} onChange={e=>setSidebarSearch(e.target.value)}
-              style={{width:"100%",minWidth:0,background:"transparent",color:"var(--jd-card)",border:0,fontSize:12,padding:"5px 0"}}/>
-            {sidebarSearch&&<button type="button" aria-label="Clear navigation search" onClick={()=>{setSidebarSearch("");sidebarRef.current?.querySelector('input[type="search"]')?.focus();}}
-              style={{background:"none",border:0,color:"var(--jd-card)",cursor:"pointer",padding:4,display:"flex"}}><X size={14}/></button>}
+          <div className="jd-drawer-field jd-drawer-search">
+            <Search size={19} aria-hidden="true"/>
+            <input type="search" aria-label="Search workspace navigation" placeholder="Find a page or department…"
+              value={sidebarSearch} onChange={e=>setSidebarSearch(e.target.value)}/>
+            {sidebarSearch
+              ? <button type="button" className="jd-drawer-clear" aria-label="Clear navigation search"
+                  onClick={()=>{setSidebarSearch("");sidebarRef.current?.querySelector('input[type="search"]')?.focus();}}><X size={16}/></button>
+              : <span className="jd-drawer-kbd" aria-hidden="true">Ctrl K</span>}
           </div>
-          {isMobile&&<button type="button" onClick={closeSideOnMobile} style={{background:"none",border:0,color:"var(--jd-muted)",padding:"10px 0",cursor:"pointer",fontSize:12}}>Close navigation</button>}
-        </div>}
-        <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,padding:"8px 6px",overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"var(--jd-muted)",padding:"0 10px"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
-          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"var(--jd-muted)",padding:"0 10px"}}>{visibleNavigation.filter(n=>!n.group).length+assistantTools.length} matching destinations</p>}
-          {assistantTools.length>0 && <section className="jd-assistant-navigation" aria-label="JD AI assistant">
-            {(sideOpen||isMobile)&&<h2>JD AI assistant</h2>}
-            {assistantTools.map(tool=><button className="jd-nav-pill" key={tool.id} type="button" aria-label={tool.label} title={!sideOpen?tool.label:undefined}
-              onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
-              <AppIcon name={tool.icon} size={16}/>{(sideOpen||isMobile)&&<span>{tool.label}</span>}
-            </button>)}
+          {isMobile&&<button type="button" onClick={closeSideOnMobile}
+            style={{background:"none",border:0,color:"var(--jd-ink-muted)",padding:"2px 4px 8px",cursor:"pointer",fontSize:12,fontFamily:"var(--jd-font-ui)"}}>Close navigation</button>}
+        </div>
+
+        <nav aria-label="Workspace pages" style={{flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",padding:"0 0 4px"}}>
+          {role==="owner"&&ownerPermissions.status!=="ready"&&<p role={ownerPermissions.status==="error"?"alert":"status"} style={{fontSize:11,color:"var(--jd-ink-muted)",padding:"0 12px",fontFamily:"var(--jd-font-ui)"}}>{ownerPermissions.status==="error"?"Owner navigation permissions could not be confirmed. Sign in again or contact an administrator.":"Checking owner navigation permissions…"}</p>}
+          {navigationQuery.trim()&&<p role="status" style={{fontSize:11,color:"var(--jd-ink-muted)",padding:"0 12px 6px",fontFamily:"var(--jd-font-ui)"}}>{visibleNavigation.filter(n=>!n.group).length+assistantTools.length} matching destinations</p>}
+
+          {assistantTools.length>0 && <section className="jd-assistant-navigation" aria-label="JD AI assistant" style={{border:0,padding:0,margin:0}}>
+            <h2 className="jd-drawer-heading">JD Assistant</h2>
+            {chatEntry&&<button className={"jd-drawer-item"+(page==="jd-chat"&&!(assistantRequest?.view&&assistantRequest.view!=="chat")?" is-selected":"")}
+              type="button" aria-label="JD Assistant" aria-current={page==="jd-chat"?"page":undefined} data-tour="nav-jd-chat"
+              onClick={()=>{setAssistantRequest({view:"chat"});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+              <Sparkles size={20} aria-hidden="true" style={{flexShrink:0}}/>
+              <span>JD Assistant</span>
+            </button>}
+            {assistantTools.filter(tool=>!SECONDARY_ASSISTANT.has(tool.id)).map(tool=>(
+              <button className={"jd-drawer-item"+(page==="jd-chat"&&assistantRequest?.view===tool.id?" is-selected":"")} key={tool.id} type="button"
+                aria-label={tool.label} aria-current={page==="jd-chat"&&assistantRequest?.view===tool.id?"page":undefined} title={tool.label}
+                onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+                <AssistantIcon name={tool.id} size={19}/>
+                <span>{tool.label}</span>
+              </button>
+            ))}
+            <div className="jd-drawer-divider" aria-hidden="true"/>
+            {assistantTools.filter(tool=>SECONDARY_ASSISTANT.has(tool.id)).map(tool=>(
+              <button className={"jd-drawer-item"+(page==="jd-chat"&&assistantRequest?.view===tool.id?" is-selected":"")} key={tool.id} type="button"
+                aria-label={tool.label} aria-current={page==="jd-chat"&&assistantRequest?.view===tool.id?"page":undefined} title={tool.label}
+                onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+                <AssistantIcon name={tool.id} size={19}/>
+                <span>{tool.label}</span>
+              </button>
+            ))}
           </section>}
+
           {visibleNavigation.map((n,i)=>{
-            // ── Group header ──
+            // ── Department header ──
             if(n.group){
-              if(!sideOpen) return <div key={n.id} style={{margin:"6px 4px",height:1,background:"color-mix(in srgb, var(--jd-card) 7%, transparent)"}}/>;
               const collapsed=groupCollapsed(n.id);
+              const children=visibleNavigation.filter(child=>child.gid===n.id);
+              if(navigationQuery.trim()) return null;
               return(
-                <button key={n.id} type="button" aria-expanded={!collapsed} disabled={Boolean(navigationQuery.trim())} onClick={()=>setCollapsedGroups(prev=>{
-                  const s=new Set(prev);
-                  s.has(n.id)?s.delete(n.id):s.add(n.id);
-                  return s;
-                })}
-                  style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
-                    padding:"10px 9px 5px",fontSize:9.5,fontWeight:800,letterSpacing:1.4,
-                    textTransform:"uppercase",color:"var(--jd-muted)",background:"none",
-                    border:"none",cursor:"pointer",textAlign:"left",marginTop:6,
-                    transition:"color .15s"}}
-                  onMouseEnter={e=>e.currentTarget.style.color="var(--jd-card)"}
-                  onMouseLeave={e=>e.currentTarget.style.color="var(--jd-muted)"}>
-                  <span>{n.group}</span>
-                  <span style={{fontSize:9,transition:"transform .2s",
-                    transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}><ChevronDown size={12}/></span>
-                </button>
+                <div key={n.id}>
+                  <button key={n.id} type="button" className="jd-drawer-group" aria-expanded={!collapsed}
+                    onClick={()=>setCollapsedGroups(prev=>{const s=new Set(prev);s.has(n.id)?s.delete(n.id):s.add(n.id);return s;})}>
+                    <span>{n.group}</span>
+                    <ChevronDown size={17} aria-hidden="true"/>
+                  </button>
+                  {!collapsed&&children.length>0&&<div className="jd-drawer-group-pages">
+                    {children.map(child=>{
+                      const active=page===child.id;
+                      return <button className={"jd-drawer-item"+(active?" is-selected":"")} key={child.id} type="button"
+                        aria-label={child.label} aria-current={active?"page":undefined} title={child.label}
+                        data-tour={`nav-${child.id}`}
+                        onClick={()=>{if(child.id==="jd-chat")setAssistantRequest({view:"chat"});setPage(child.id);setSidebarSearch("");closeSideOnMobile();}}>
+                        <AppIcon name={child.icon} size={19}/>
+                        <span>{child.label}</span>
+                      </button>;
+                    })}
+                  </div>}
+                </div>
               );
             }
-            // ── Child item: hide when group is collapsed ──
+            // ── Child item: hidden when its department is collapsed ──
             if(n.gid&&groupCollapsed(n.gid)) return null;
+            if(n.id==="jd-chat"&&assistantTools.length>0) return null;
             const active=page===n.id;
             return(
-              <button className="jd-nav-pill" key={n.id+i} type="button" aria-label={n.label} aria-current={active?"page":undefined} data-tour={`nav-${n.id}`} onClick={()=>{if(n.id==="jd-chat")setAssistantRequest({view:"chat"});setPage(n.id);setSidebarSearch("");closeSideOnMobile();}}
-                title={!sideOpen?n.label:""}
-                style={{width:"100%",display:"flex",alignItems:"center",gap:9,
-                  padding:sideOpen?"8px 10px":"10px",
-                  borderRadius:10,border:"none",cursor:"pointer",marginBottom:1,
-                  background:active?`linear-gradient(90deg,${C.orange}2a,color-mix(in srgb, var(--jd-card) 4%, transparent))`:"transparent",
-                  color:active?"var(--jd-card)":"color-mix(in srgb, var(--jd-card) 50%, transparent)",
-                  fontSize:12,fontWeight:active?700:400,
-                  transition:"all .15s ease",textAlign:"left",
-                  position:"relative",
-                  justifyContent:sideOpen?"flex-start":"center"}}
-                onMouseEnter={e=>{if(!active){e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 7%, transparent)";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 80%, transparent)";}}}
-                onMouseLeave={e=>{if(!active){e.currentTarget.style.background="transparent";e.currentTarget.style.color="color-mix(in srgb, var(--jd-card) 50%, transparent)";}}}
-              >
-                {active&&<div style={{position:"absolute",left:0,top:"12%",bottom:"12%",
-                  width:4,borderRadius:"0 4px 4px 0",background:C.orange,
-                  boxShadow:`0 0 10px ${C.orange}99`}}/>}
-                <AppIcon name={n.icon} size={16} color={active?C.orange:"var(--jd-muted)"}/>
-                {(sideOpen||isMobile)&&<span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
-                  letterSpacing:".01em"}}>{n.label}</span>}
+              <button className={"jd-drawer-item"+(active?" is-selected":"")} key={n.id+i} type="button"
+                aria-label={n.label} aria-current={active?"page":undefined} title={n.label} data-tour={`nav-${n.id}`}
+                onClick={()=>{if(n.id==="jd-chat")setAssistantRequest({view:"chat"});setPage(n.id);setSidebarSearch("");closeSideOnMobile();}}>
+                <AppIcon name={n.icon} size={19}/>
+                <span>{n.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* User / Sign Out */}
-        <div style={{padding:"10px 6px",borderTop:"1px solid color-mix(in srgb, var(--jd-card) 8%, transparent)",flexShrink:0}}>
-          <button aria-label="My profile" title="My profile" onClick={()=>{setShowProfile(true);closeSideOnMobile();}}
-              style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:sideOpen||isMobile?"10px":"8px 0",
-                borderRadius:10,border:"1px solid color-mix(in srgb, var(--jd-card) 10%, transparent)",cursor:"pointer",marginBottom:6,
-                background:"color-mix(in srgb, var(--jd-card) 6%, transparent)",color:"var(--jd-card)",textAlign:"left",
-                transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 12%, transparent)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="color-mix(in srgb, var(--jd-card) 6%, transparent)";}}>
-              <div style={{width:30,height:30,borderRadius:9,
-                background:`linear-gradient(135deg,${C.orange},var(--jd-text-soft))`,
-                display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:13,fontWeight:900,flexShrink:0,color:"var(--jd-card)",
-                boxShadow:"0 2px 8px rgba(112,112,112,.4)"}}>
-                {(user.name||"?")[0].toUpperCase()}
-              </div>
-              {(sideOpen||isMobile)&&<div style={{overflow:"hidden",flex:1}}>
-                <div style={{fontWeight:700,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",
-                  whiteSpace:"nowrap",color:"var(--jd-card)",lineHeight:1.2}}>{user.name}</div>
-                <div style={{fontSize:9.5,color:"color-mix(in srgb, var(--jd-card) 40%, transparent)",textTransform:"uppercase",
-                  letterSpacing:.8,marginTop:2}}>{role}</div>
-              </div>}
-              {(sideOpen||isMobile)&&<span style={{color:"color-mix(in srgb, var(--jd-card) 30%, transparent)",fontSize:12}}>›</span>}
+        <div className="jd-drawer-foot">
+          <span className="jd-drawer-skyline" aria-hidden="true"/>
+          <button className="jd-drawer-account" type="button" aria-label="My profile" title="My profile"
+            onClick={()=>{setShowProfile(true);closeSideOnMobile();}}>
+            <span className="jd-drawer-avatar" aria-hidden="true">{(user.name||"?").trim().charAt(0).toUpperCase()}</span>
+            <span style={{flex:1,minWidth:0}}>
+              <span className="jd-drawer-account-name">{user.name}</span>
+              <span className="jd-drawer-account-role">{role==="owner"?"Owner":role==="admin"?"Administrator":role==="manager"?"Manager":role}</span>
+            </span>
+            <ChevronRight size={17} aria-hidden="true" style={{color:"var(--jd-ink-soft)",flexShrink:0}}/>
           </button>
-          <button aria-label="Sign out" title="Sign out" onClick={()=>{closeSideOnMobile();setShowLogout(true);}}
-            style={{width:"100%",display:"flex",alignItems:"center",
-              gap:(sideOpen||isMobile)?7:0,justifyContent:(sideOpen||isMobile)?"flex-start":"center",
-              padding:"9px 10px",borderRadius:10,border:"none",cursor:"pointer",
-              background:"rgba(142,142,142,.1)",color:"rgba(183,183,183,.9)",
-              fontSize:11.5,fontWeight:600,transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(142,142,142,.2)";e.currentTarget.style.color="var(--jd-muted)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(142,142,142,.1)";e.currentTarget.style.color="rgba(183,183,183,.9)";}}>
-            <LogOut size={14}/>{(sideOpen||isMobile)&&<span>Sign Out</span>}
+          <div className="jd-drawer-foot-rule"><HeritageRule/></div>
+          <button className="jd-drawer-signout" type="button" aria-label="Sign out" title="Sign out"
+            onClick={()=>{closeSideOnMobile();setShowLogout(true);}}>
+            <LogOut size={19} aria-hidden="true"/>
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* MAIN */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,
+      <div className="jd-workspace-main" style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,
         marginLeft: isMobile ? 0 : undefined}}>
-        <header className="reference-workspace-header" style={{background:C.white,borderBottom:`1px solid ${C.border}`,
+        <header className="reference-workspace-header jd-topbar" style={{background:"var(--jd-paper)",borderBottom:"1px solid var(--jd-hairline)",
           padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
           justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
           boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
-          <div className="reference-header-left" style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
-            <button data-tour="workspace-menu" ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}
-              style={{background:"none",border:`1px solid ${C.border}`,cursor:"pointer",
-                color:C.muted,padding:"7px 9px",borderRadius:9,
-                display:"flex",alignItems:"center",transition:"all .15s",minWidth:36,minHeight:36,
-                justifyContent:"center"}}
-              onMouseEnter={e=>{e.currentTarget.style.background=C.offWhite;e.currentTarget.style.borderColor=C.blue+"30";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.borderColor=C.border;}}>
-              <AppIcon name="menu" size={18} color={C.muted}/>
+          <span className="jd-topbar-art" aria-hidden="true"/>
+          <div className="reference-header-left" style={{display:"flex",alignItems:"center",gap:10,minWidth:0,flex:1}}>
+            <button className="jd-topbar-menu" data-tour="workspace-menu" ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}>
+              <AppIcon name="menu" size={22}/>
             </button>
-            <ReferenceBrand/>
+            <div className="jd-topbar-brand">
+              <button className="jd-topbar-tile" type="button" aria-label="JD Assistant" title="JD Assistant"
+                onClick={()=>{setAssistantRequest({view:"chat"});setPage("jd-chat");}}>JD</button>
+              <div className="jd-topbar-brandtext">
+                <HeritageWordmark className="jd-topbar-wordmark" as="div"/>
+                <HeritageRule compact/>
+              </div>
+            </div>
           </div>
-          <div className="reference-header-controls" style={{display:"flex",gap:6,alignItems:"center",flexShrink:0}}>
+          <div className="reference-header-controls" style={{display:"flex",gap:4,alignItems:"center",flexShrink:0}}>
 
             <DarkToggle compact/>
             <button data-tour="tour-trigger"
               onClick={()=>setShowTour(true)}
-              title="Help / Product Tour"
-              style={{background:C.offWhite,border:`1px solid ${C.border}`,
-                borderRadius:9,width:36,height:36,cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                color:C.muted,transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background=C.orangePale;e.currentTarget.style.borderColor=C.orange+"40";e.currentTarget.style.color=C.orange;}}
-              onMouseLeave={e=>{e.currentTarget.style.background=C.offWhite;e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
-              <HelpCircle size={16}/>
+              title="Help / Product Tour" aria-label="Help / Product Tour">
+              <HelpCircle size={19}/>
             </button>
             <NotificationBell ctx={ctx}/>
-            <button className="reference-settings" type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
-              onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={17}/></button>
-            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)}
-              style={{width:34,height:34,borderRadius:10,
-                background:`linear-gradient(135deg,${C.blue},${C.blueDark})`,
-                color:"var(--jd-card)",fontSize:13,fontWeight:900,cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                boxShadow:`0 2px 8px ${C.blue}40`}}
-              title="My Profile">
+            <button className="reference-settings" data-account-settings type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
+              onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={19}/></button>
+            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)} title="My Profile">
               {(user.name||"?").trim().split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase()}
             </button>
 
@@ -1528,7 +1534,7 @@ function AppInner(){
         </header>
 
 
-        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-canvas)":C.offWhite,transition:"background .2s"}}>
+        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-paper)":"var(--jd-paper)",transition:"background .2s"}}>
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="billing" && (canAccess("billing") ? <BillingPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}

@@ -1,0 +1,101 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   HERITAGE SURFACE — the supplied reference design, expressed as tokens.
+
+   The reference is a warm paper workspace: an ivory canvas, a deep navy ink,
+   a serif voice for anything a human reads, and a narrow blue-white-red rule
+   that appears wherever the product signs its name. This sheet owns those
+   tokens and nothing else; component sheets consume them.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@font-face{font-family:'JD Caslon Text';src:url('/fonts/caslon-text-400.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'JD Caslon Text';src:url('/fonts/caslon-text-400-italic.woff2') format('woff2');font-style:italic;font-weight:400;font-display:swap}
+@font-face{font-family:'JD Caslon Text';src:url('/fonts/caslon-text-700.woff2') format('woff2');font-style:normal;font-weight:700;font-display:swap}
+
+:root{
+  /* Paper and ink */
+  --jd-paper:#f6efe4;
+  --jd-paper-deep:#efe6d8;
+  --jd-paper-raised:#fcfaf5;
+  --jd-paper-sunk:#f1e9dc;
+  --jd-ink:#22252b;
+  --jd-ink-heading:#1b1e24;
+  --jd-ink-soft:#3d434c;
+  --jd-ink-muted:#6e7079;
+  --jd-ink-faint:#9a9589;
+
+  /* The signature tri-colour rule and the navy it echoes */
+  --jd-rule-navy:#1e2a52;
+  --jd-rule-red:#c8372d;
+  --jd-rule-white:#f8f5ef;
+  --jd-navy-deep:#121c38;
+
+  /* Hairlines: engravings and cards use ink at low opacity, never grey. */
+  --jd-hairline:rgba(34,37,43,.16);
+  --jd-hairline-soft:rgba(34,37,43,.10);
+  --jd-hairline-strong:rgba(34,37,43,.26);
+
+  /* Voice: serif for reading, Inter for control-room labels. */
+  --jd-font-display:'JD Caslon Text',Georgia,'Times New Roman',serif;
+  --jd-font-body:'JD Caslon Text',Georgia,'Times New Roman',serif;
+  --jd-font-ui:'JD Inter',Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+
+  --jd-shadow-paper:0 1px 2px rgba(72,58,40,.06),0 10px 30px rgba(72,58,40,.05);
+  --jd-shadow-float:0 18px 48px rgba(60,48,32,.16);
+}
+
+/* Signatures ------------------------------------------------------------- */
+.jd-rule{display:inline-flex;align-items:center;gap:4px;height:3px;flex-shrink:0}
+.jd-rule i{display:block;height:3px;border-radius:1px}
+.jd-rule i:nth-child(1){width:22px;background:var(--jd-rule-navy)}
+.jd-rule i:nth-child(2){width:22px;background:var(--jd-rule-white);box-shadow:inset 0 0 0 1px rgba(34,37,43,.08)}
+.jd-rule i:nth-child(3){width:22px;background:var(--jd-rule-red)}
+.jd-rule.is-compact i{width:17px;height:2px}
+
+/* Wordmark --------------------------------------------------------------- */
+.jd-wordmark{display:inline-flex;align-items:baseline;font-family:var(--jd-font-display);color:var(--jd-ink-heading);letter-spacing:.004em;white-space:nowrap}
+.jd-wordmark b{font-weight:400}
+
+/* Letter-spaced small capitals used for group headings and eyebrows. */
+.jd-eyebrow{font-family:var(--jd-font-ui);font-size:10px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;color:var(--jd-ink-muted)}
+
+/* Paper textures --------------------------------------------------------- */
+/* A faint vignette keeps large empty fields from looking like dead white. */
+.jd-paper-field{
+  background-color:var(--jd-paper);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.55),transparent 62%),
+    radial-gradient(90% 70% at 100% 100%,rgba(232,219,199,.5),transparent 60%);
+}
+
+/* The reference is paper, but a dark workspace is a supported option: these
+   aliases let legacy surfaces that still read --jd-card/--jd-border/--jd-canvas
+   inherit the paper palette instead of the older cool grey one. Light only —
+   the true-black layer owns dark. */
+:root,:root[data-theme='light']{
+  --jd-canvas:var(--jd-paper);
+  --jd-card:var(--jd-paper-raised);
+  --jd-soft:var(--jd-paper-sunk);
+  --jd-border:var(--jd-hairline);
+  --jd-accent:var(--jd-rule-navy);
+  --jd-text:var(--jd-ink);
+  --jd-text-soft:var(--jd-ink-soft);
+  --jd-muted:var(--jd-ink-muted);
+}
+
+/* Dark theme: the same identity on ink-black paper. Only the tokens change. */
+:root[data-theme='dark']{
+  --jd-paper:#141414;
+  --jd-paper-deep:#0f0f0f;
+  --jd-paper-raised:#1b1b1b;
+  --jd-paper-sunk:#111;
+  --jd-ink:#f2efe9;
+  --jd-ink-heading:#faf7f2;
+  --jd-ink-soft:#d9d5cd;
+  --jd-ink-muted:#a9a49b;
+  --jd-ink-faint:#6f6a62;
+  --jd-hairline:rgba(242,239,233,.18);
+  --jd-hairline-soft:rgba(242,239,233,.10);
+  --jd-hairline-strong:rgba(242,239,233,.3);
+  --jd-rule-white:#2a2a2a;
+  --jd-shadow-paper:0 1px 2px rgba(0,0,0,.5),0 10px 30px rgba(0,0,0,.4);
+}

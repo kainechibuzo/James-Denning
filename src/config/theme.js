@@ -1,12 +1,13 @@
 /** The supplied JD reference palette, shared by every workspace route.
  * Legacy semantic names remain API-compatible; labels/icons, not hue, convey status.
  */
-const statusLight={green:"#34353b",greenPale:"#f1f2f5",greenLight:"#dddfe5",red:"#34353b",redPale:"#f1f2f5",redLight:"#dddfe5",amber:"#52545f",amberPale:"#f5f5f7",purple:"#52545f",purplePale:"#f1f2f5",teal:"#52545f",tealPale:"#f1f2f5"};
+const statusLight={green:"#3d434c",greenPale:"#f1e9dc",greenLight:"#ded2bf",red:"#8d2f26",redPale:"#f6e7e3",redLight:"#e3c9c4",amber:"#6e5a35",amberPale:"#f4ecdd",purple:"#3d434c",purplePale:"#f1e9dc",teal:"#3d434c",tealPale:"#f1e9dc"};
 export const LIGHT={
- orange:"#17191c",orangeDark:"#090a0c",orangePale:"#f1f2f5",orangeLight:"#dddfe5",
- blue:"#17191c",bluePale:"#f1f2f5",blueDark:"#090a0c",blueLight:"#dddfe5",
- white:"#ffffff",offWhite:"#f7f8fb",card:"#ffffff",filter:"#f1f2f5",
- border:"#dedfe4",borderLight:"#ececf0",text:"#101114",textSoft:"#34353b",muted:"#60616b",light:"#60616b",
+ // Warm paper workspace: the reference's ivory canvas, ink text and hairline rules.
+ orange:"#1e2a52",orangeDark:"#121c38",orangePale:"#f1e9dc",orangeLight:"#ded2bf",
+ blue:"#1e2a52",bluePale:"#f1e9dc",blueDark:"#121c38",blueLight:"#ded2bf",
+ white:"#fcfaf5",offWhite:"#f6efe4",card:"#fcfaf5",filter:"#f1e9dc",
+ border:"rgba(34,37,43,.16)",borderLight:"rgba(34,37,43,.10)",text:"#22252b",textSoft:"#3d434c",muted:"#6e7079",light:"#9a9589",
  ...statusLight,shadow:"0 2px 4px rgba(0,0,0,.035)",shadowMd:"0 5px 18px rgba(0,0,0,.055)",shadowLg:"0 14px 36px rgba(0,0,0,.08)",shadowXl:"0 24px 56px rgba(0,0,0,.12)"
 };
 export const DARK={

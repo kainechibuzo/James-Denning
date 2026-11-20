@@ -49,5 +49,6 @@ body .jd-command.reference-command{background-image:none!important}
  /* High-contrast OS modes need real edges where surface fills are suppressed. */
  :root[data-theme='dark'] :is(#root,body) :is(button,input,select,textarea,summary,[role='dialog']){border-color:ButtonText!important}
 }
-/* The selected sidebar pill has an ID + state selector in the legacy sheet. */
-:root[data-theme='dark'] #workspace-navigation button.jd-nav-pill[aria-current='page']{border-color:transparent!important}
+/* Dark mode keeps the drawer paper-edge free, but a selected row still needs
+   to read as selected. The selected surface is an explicit tonal fill. */
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-item[aria-current='page']{border-color:transparent!important}

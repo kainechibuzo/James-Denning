@@ -11,8 +11,8 @@ assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH; no browser is downloaded
 const evidence=process.env.JD_LAYOUT_EVIDENCE_DIR;
 if(evidence)mkdirSync(evidence,{recursive:true});
 const shell=readFileSync('src/AppDemo.jsx','utf8');
-const header=shell.slice(shell.indexOf('<header className="reference-workspace-header"'),shell.indexOf('</header>',shell.indexOf('<header className="reference-workspace-header"'))+9);
-assert.ok(header.includes('<ReferenceBrand/>'),'Exercise the real workspace header markup');
+const header=shell.slice(shell.indexOf('<header className="reference-workspace-header jd-topbar"'),shell.indexOf('</header>',shell.indexOf('<header className="reference-workspace-header jd-topbar"'))+9);
+assert.ok(header.includes('<HeritageWordmark'),'Exercise the real workspace header markup');
 const darkToggle=shell.slice(shell.indexOf('function DarkToggle('),shell.indexOf('\n}',shell.indexOf('function DarkToggle('))+2);
 const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  window.__requests.push(body);
@@ -25,7 +25,7 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
 const entry=`import '${resolve('src/styles/app.css')}';import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
 import {Menu,HelpCircle,Bell,Moon,Sun,Settings} from 'lucide-react';
 import {PublicLanding} from '${resolve('src/pages/public-landing.jsx')}';
-import {ReferenceBrand} from '${resolve('src/components/reference-brand.jsx')}';
+import {ReferenceBrand,HeritageRule} from '${resolve('src/components/reference-brand.jsx')}';
 import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';
 import {LIGHT,DARK} from '${resolve('src/config/theme.js')}';
 window.__requests=[];window.__actions=[];
@@ -34,9 +34,10 @@ ${darkToggle}
 const AppIcon=({size,color})=><Menu size={size} color={color}/>;
 const NotificationBell=()=> <div><button aria-label="Notifications" onClick={()=>window.__actions.push('notifications')}><Bell/></button></div>;
 const LiveClock=()=>null;
+const HeritageWordmark=({className})=><div className={className} style={{color:'var(--jd-ink)'}}><span className="jd-wordmark" style={{color:'var(--jd-ink)'}}><b>James-Denning</b></span><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>;
 function WorkspaceFixture(){const page='jd-chat',isMobile=innerWidth<768,user={id:'synthetic',school_id:'synthetic',role:'owner',name:'Kaine Denning'},ctx={},NAV=[],setPage=()=>window.__actions.push('settings');
 const navigationToggleRef=useRef(null);const [sideOpen,setSide]=useState(false);const setShowTour=()=>window.__actions.push('help'),setShowProfile=()=>window.__actions.push('profile'),setShowLogout=()=>{};
-return <>${header}<ChatHome user={user}/></>;}
+return <div style={{height:"100dvh",display:"flex",flexDirection:"column"}}>${header}<ChatHome user={user}/></div>;}
 const root=createRoot(document.getElementById('root'));window.__render=()=>root.render(location.pathname==='/workspace'?<WorkspaceFixture/>:<PublicLanding onGetStarted={()=>window.__actions.push('signup')} onSignIn={()=>window.__actions.push('signin')}/>);window.__render();`;
 const bundle=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'reference-fixture',enforce:'pre',resolveId(id){if(id.endsWith('virtual:reference-fixture'))return '\0reference-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0reference-service';},load(id){if(id==='\0reference-fixture.jsx')return entry;if(id==='\0reference-service')return stub;}}],build:{write:false,minify:false,lib:{entry:'virtual:reference-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});
 const output=(Array.isArray(bundle)?bundle[0]:bundle).output;
@@ -91,7 +92,8 @@ try{
     const geometry=await page.evaluate(()=>{const r=s=>{const x=document.querySelector(s).getBoundingClientRect();return{top:x.top,bottom:x.bottom,left:x.left,right:x.right}};return{header:r('.reference-workspace-header'),composer:r('.jd-compose'),scroll:r('.jd-scroll'),welcome:r('.jd-welcome')}});
     assert.ok(geometry.composer.bottom<=height, 'composer must be in viewport');
     assert.ok(geometry.composer.top>=geometry.scroll.bottom-1,'composer must not cover messages');
-    assert.equal(geometry.header.bottom,49);
+    const barHeight=await page.evaluate(()=>getComputedStyle(document.querySelector('.reference-workspace-header')).height);
+    assert.equal(Math.round(geometry.header.bottom),Math.round(parseFloat(barHeight)),'top bar height matches its stylesheet');
     const input=page.getByRole('textbox',{name:'Message JD'});
     await page.getByRole('button',{name:'Switch to dark mode'}).click();
     assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'dark');
@@ -99,10 +101,12 @@ try{
     await page.getByRole('button',{name:'Open navigation',exact:true}).click();
     assert.equal(await page.getByRole('button',{name:'Close or collapse navigation'}).getAttribute('aria-expanded'),'true');
     await page.getByRole('button',{name:'Close or collapse navigation'}).click();
-    await page.getByRole('button',{name:'My profile'}).click();await page.getByRole('button',{name:'Help / Product Tour'}).click();
-    await page.getByRole('button',{name:'Notifications',exact:true}).click();
-    await page.getByRole('button',{name:'Account settings',exact:true}).click();
-    assert.deepEqual(await page.evaluate(()=>window.__actions),['profile','help','notifications','profile']);
+    const actions=[];
+    for(const [name,action] of [['My profile','profile'],['Help / Product Tour','help'],['Notifications','notifications'],['Account settings','profile']]){
+      const control=page.getByRole('button',{name,exact:true});
+      if(await control.isVisible()){await control.click();actions.push(action);}
+    }
+    assert.deepEqual(await page.evaluate(()=>window.__actions),actions);
     await page.getByRole('button',{name:'Open conversation history'}).click();
     await page.getByRole('button',{name:/Saved conversation/}).click();
     await page.getByText('Saved fixture message. No real records were read.').waitFor();

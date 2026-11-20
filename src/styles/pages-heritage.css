@@ -1,0 +1,105 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   INTERIOR PAGES — shared framing for every workspace route that is not the
+   JD Assistant conversation. A Caslon title, the tri-colour rule, a quiet lede,
+   then paper cards. Nothing here changes page logic or permissions.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.jd-workspace-page{
+  background:var(--jd-paper)!important;
+  color:var(--jd-ink);
+  font-family:var(--jd-font-display);
+}
+.jd-workspace-page *{box-sizing:border-box}
+
+.jd-page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:22px;
+  flex-wrap:wrap;
+  width:min(1180px,100%);margin:0 auto 22px;
+  padding-bottom:20px;border-bottom:1px solid var(--jd-hairline);
+}
+.jd-page-header-main{min-width:0;flex:1 1 340px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.jd-page-header .jd-eyebrow{margin-bottom:-2px}
+.jd-page-title{
+  margin:0;font-family:var(--jd-font-display);font-weight:400;
+  font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.015em;
+  color:var(--jd-ink-heading);
+}
+.jd-page-lede{
+  margin:0;font-family:var(--jd-font-display);font-size:16.5px;line-height:1.6;
+  color:var(--jd-ink-soft);max-width:680px;
+}
+.jd-page-header-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex-shrink:0}
+
+.jd-paper-card{
+  background:var(--jd-paper-raised);
+  border:1px solid var(--jd-hairline);
+  border-radius:14px;
+  padding:22px;
+  min-width:0;
+  box-shadow:0 1px 2px rgba(72,58,40,.04);
+}
+.jd-paper-card-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--jd-hairline-soft);
+}
+.jd-paper-card-title{margin:0;font-family:var(--jd-font-display);font-weight:400;font-size:21px;line-height:1.25;color:var(--jd-ink-heading)}
+.jd-paper-card-lede{margin:5px 0 0;font-family:var(--jd-font-display);font-size:14.5px;line-height:1.6;color:var(--jd-ink-muted)}
+.jd-paper-card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.jd-figure-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:0;margin:0 0 20px;padding:4px 0;
+  border-top:1px solid var(--jd-hairline);border-bottom:1px solid var(--jd-hairline);
+}
+.jd-figure{padding:16px 20px 16px 0;border-top:0;border-left:1px solid var(--jd-hairline-soft);padding-left:20px}
+.jd-figure:first-child{border-left:0;padding-left:0}
+.jd-figure:first-child{border-top:0}
+.jd-figure-label{font-family:var(--jd-font-ui);font-size:10px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:var(--jd-ink-muted)}
+.jd-figure-value{font-family:var(--jd-font-display);font-size:30px;line-height:1.15;color:var(--jd-ink-heading);margin-top:7px}
+.jd-figure-note{font-family:var(--jd-font-display);font-size:13.5px;line-height:1.55;color:var(--jd-ink-muted);margin-top:6px}
+
+/* Page-level controls: outlined paper buttons, never filled bars. */
+.jd-workspace-page :is(button,input,select,textarea){font-family:var(--jd-font-ui)}
+.jd-workspace-page button{
+  border-radius:999px;
+  min-height:40px;
+}
+.jd-workspace-page input,.jd-workspace-page select,.jd-workspace-page textarea{
+  border-radius:10px!important;
+  background:var(--jd-paper-raised)!important;
+  border:1px solid var(--jd-hairline)!important;
+  color:var(--jd-ink)!important;
+  font-family:var(--jd-font-display)!important;
+  font-size:15px!important;
+}
+.jd-workspace-page :is(h1,h2,h3,h4){font-family:var(--jd-font-display);color:var(--jd-ink-heading);letter-spacing:-.01em}
+.jd-workspace-page :is(p,li,td,th,label,span){letter-spacing:0}
+
+/* Tab rail: outlined pills, the current one set in navy ink. */
+.jd-page-tabs button{
+  background:transparent!important;border:1px solid transparent!important;
+  color:var(--jd-ink-soft)!important;font-family:var(--jd-font-ui)!important;
+  font-size:12px!important;font-weight:500!important;letter-spacing:.01em;
+  padding:8px 13px!important;min-height:34px;border-radius:999px!important;cursor:pointer;
+}
+.jd-page-tabs button:hover{background:rgba(34,37,43,.05)!important}
+.jd-page-tabs button[style*="rgb(34, 37, 43)"],.jd-page-tabs button[aria-current='page']{
+  background:#1e2a52!important;border-color:#1e2a52!important;color:#f8f6f1!important;
+}
+
+/* Section rhythm inside a page body. */
+.jd-page-body{width:min(1180px,100%);margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+@media(max-width:760px){
+  .jd-figure-row{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px}
+  .jd-figure:nth-child(n+3){border-top:1px solid var(--jd-hairline-soft)}
+  .jd-figure{padding:13px 12px 13px 14px}
+  .jd-figure:nth-child(odd){border-left:0;padding-left:0}
+  .jd-figure-value{font-size:25px}
+  .jd-page-header{gap:14px;margin-bottom:16px;padding-bottom:16px}
+  .jd-page-title{font-size:26px}
+  .jd-page-lede{font-size:15px}
+  .jd-page-header-actions{width:100%}
+  .jd-paper-card{padding:16px;border-radius:12px}
+  .jd-paper-card-title{font-size:19px}
+}
