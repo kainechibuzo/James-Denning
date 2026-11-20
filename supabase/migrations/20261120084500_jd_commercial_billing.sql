@@ -94,6 +94,11 @@ create table public.jd_billing_payments (
   unique(school_id, request_id)
 );
 create index jd_billing_payments_invoice on public.jd_billing_payments(school_id, invoice_id, created_at desc);
+-- Enforce the one-outstanding-checkout invariant under concurrent owner requests.
+-- Failed/expired attempts must be reconciled before a new pending attempt is created.
+create unique index jd_billing_one_pending_payment_per_school
+  on public.jd_billing_payments(school_id)
+  where status='pending';
 
 create table public.jd_billing_webhook_receipts (
   id uuid primary key default gen_random_uuid(),
