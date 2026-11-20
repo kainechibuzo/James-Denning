@@ -441,7 +441,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         await admin.from("jd_messages").update({ content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: errorCode } })
           .eq("id", pendingMessage.id).eq("school_id", schoolId);
       } else if (streamConversationId) {
-        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" }, created_by_agent: true });
+        await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: errorCode }, created_by_agent: true });
       }
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
       return { job_id: jobId, status: "failed", error_code: errorCode };
