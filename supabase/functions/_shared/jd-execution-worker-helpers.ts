@@ -21,3 +21,20 @@ export function safeWorkerId(value: string | undefined): string {
 export function retryDelaySeconds(attempt: number): number {
   return Math.min(300, Math.max(5, 5 * (2 ** Math.max(0, attempt - 1))));
 }
+
+
+/** A side effect may have happened, but its durable evidence could not be saved. */
+export class NonRetryableExecutionEvidenceError extends Error {
+  readonly code = "JD_EXECUTION_EVIDENCE_PERSISTENCE_FAILED";
+
+  constructor(message = "Execution evidence could not be persisted") {
+    super(message);
+    this.name = "NonRetryableExecutionEvidenceError";
+  }
+}
+
+export function isNonRetryableExecutionEvidenceError(error: unknown): boolean {
+  return error instanceof NonRetryableExecutionEvidenceError
+    || (!!error && typeof error === "object"
+      && (error as Record<string, unknown>).code === "JD_EXECUTION_EVIDENCE_PERSISTENCE_FAILED");
+}

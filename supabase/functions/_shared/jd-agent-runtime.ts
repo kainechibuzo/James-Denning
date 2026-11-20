@@ -1523,7 +1523,7 @@ export async function runAgent(input: {
     await persistCheckpoint();
     let fileDraftClaimedThisRound = false;
     await input.onUsagePhase?.("external_wait");
-    const outputs = await Promise.all(calls.map(async (call: any) => {
+    const settledOutputs = await Promise.allSettled(calls.map(async (call: any) => {
       const tool = available.find((candidate) => candidate.name === call.name);
       if (!tool) return { type: "function_call_output", call_id: call.call_id, output: JSON.stringify({ error: "Tool is not available for this user" }) };
       if (tool.name === "create_business_document_draft") {
@@ -1571,6 +1571,12 @@ export async function runAgent(input: {
         return { type: "function_call_output", call_id: call.call_id, output: toolOutput };
       }
     }));
+    // Wait for every parallel tool call to settle before the worker handles a
+    // persistence failure. This prevents still-running side effects from racing
+    // with terminal outcome-unknown recovery.
+    const rejectedOutput = settledOutputs.find((item): item is PromiseRejectedResult => item.status === "rejected");
+    if (rejectedOutput) throw rejectedOutput.reason;
+    const outputs = settledOutputs.map((item) => (item as PromiseFulfilledResult<any>).value);
 
     await input.onUsagePhase?.("active");
     conversationInput.push(...outputs);
