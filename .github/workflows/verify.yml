@@ -98,6 +98,7 @@ jobs:
       - name: Type-check JD MCP functions
         run: |
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect-oauth/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
