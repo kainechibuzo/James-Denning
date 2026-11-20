@@ -245,6 +245,7 @@ Deno.serve(async (req: Request) => {
       p_currency: transaction.currency,
       p_paid_at: paidAt,
       p_customer_code: transaction.customer?.customer_code || null,
+      p_actor_id: authData.user.id,
       p_source_webhook_receipt_id: null,
     });
     if (finaliseError || !finalised?.verified) {
