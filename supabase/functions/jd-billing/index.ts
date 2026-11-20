@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
       subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : subscription.status } : null,
       invoices: invoices || [],
       billing_live: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE")),
-      checkout_enabled: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
+      checkout_enabled: Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") === "true" && Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
       note: "Checkout is available only after the free trial expires and only when the Paystack plan and server secrets are configured.",
     });
   }
@@ -95,8 +95,8 @@ Deno.serve(async (req: Request) => {
     const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
     const planCode = Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE");
     const appUrl = Deno.env.get("JD_APP_URL");
-    if (!secret || !planCode || !appUrl || !appUrl.startsWith("https://")) {
-      return send({ error: "Paystack billing is not configured", code: "billing_provider_not_configured" }, 503);
+    if (Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") !== "true" || !secret || !planCode || !appUrl || !appUrl.startsWith("https://")) {
+      return send({ error: "Paystack checkout is not enabled or configured", code: "billing_provider_not_configured" }, 503);
     }
 
     const { data: subscription, error: stateError } = await db
@@ -126,6 +126,30 @@ Deno.serve(async (req: Request) => {
     }
     if (existing) return send({ error: "This checkout request has already been used. Start a new request.", code: "billing_request_reused" }, 409);
 
+    // A Paystack plan overrides the transaction amount. Verify the provider-side
+    // amount, currency and cadence before creating a checkout that can charge a customer.
+    const planResponse = await fetch(`https://api.paystack.co/plan/${encodeURIComponent(planCode)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const planResult = await planResponse.json().catch(() => null);
+    const providerPlan = planResult?.data;
+    if (!planResponse.ok || planResult?.status !== true ||
+        providerPlan?.plan_code !== planCode ||
+        Number(providerPlan?.amount) !== Number(subscription.amount_minor) ||
+        providerPlan?.currency !== subscription.currency ||
+        providerPlan?.interval !== "monthly") {
+      console.error("Paystack plan configuration mismatch", {
+        status: planResponse.status,
+        currency: providerPlan?.currency,
+        interval: providerPlan?.interval,
+      });
+      return send({ error: "The configured Paystack plan does not match the workspace subscription price. Checkout is blocked.", code: "billing_plan_mismatch" }, 409);
+    }
+    const { error: planSaveError } = await db.from("jd_billing_subscriptions")
+      .update({ provider_plan_code: planCode, updated_at: new Date().toISOString() })
+      .eq("school_id", profile.school_id);
+    if (planSaveError) return send({ error: "Could not save the verified billing plan", code: "billing_plan_persist_failed" }, 503);
+
     const reference = `JD${crypto.randomUUID().replaceAll("-", "")}`;
     const { error: insertError } = await db.from("jd_billing_payments").insert({
       school_id: profile.school_id,
@@ -148,8 +172,7 @@ Deno.serve(async (req: Request) => {
       headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         email: authData.user.email,
-        amount: "1900",
-        currency: "USD",
+        currency: subscription.currency,
         reference,
         plan: planCode,
         callback_url: callback.toString(),
@@ -203,33 +226,20 @@ Deno.serve(async (req: Request) => {
     }
 
     const paidAt = transaction.paid_at || new Date().toISOString();
-    const { error: updatePaymentError } = await db.from("jd_billing_payments").update({
-      status: "succeeded", paid_at: paidAt, verified_at: new Date().toISOString(),
-      provider_customer_code: transaction.customer?.customer_code || null,
-    }).eq("school_id", profile.school_id).eq("provider_reference", reference);
-    if (updatePaymentError) return send({ error: "Payment verified but billing record could not be updated" }, 503);
-
-    const periodStart = new Date(paidAt);
-    const periodEnd = new Date(periodStart);
-    periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
-    const { error: subscriptionUpdateError } = await db.from("jd_billing_subscriptions").update({
-      status: "active",
-      provider_customer_code: transaction.customer?.customer_code || null,
-      current_period_start: periodStart.toISOString(),
-      current_period_end: periodEnd.toISOString(),
-      last_payment_at: paidAt,
-      updated_at: new Date().toISOString(),
-      version: 2,
-    }).eq("school_id", profile.school_id);
-    if (subscriptionUpdateError) return send({ error: "Payment verified; subscription state is awaiting reconciliation" }, 503);
-
-    await db.from("jd_billing_events").insert({
-      school_id: profile.school_id,
-      actor_id: authData.user.id,
-      event_type: "payment.verified",
-      event_json: { provider: "paystack", reference, amount_minor: payment.amount_minor, currency: payment.currency },
+    const { data: finalised, error: finaliseError } = await db.rpc("jd_billing_finalize_payment", {
+      p_school_id: profile.school_id,
+      p_reference: reference,
+      p_amount_minor: Number(transaction.amount),
+      p_currency: transaction.currency,
+      p_paid_at: paidAt,
+      p_customer_code: transaction.customer?.customer_code || null,
+      p_source_webhook_receipt_id: null,
     });
-    return send({ verified: true, status: "succeeded", reference, paid_at: paidAt });
+    if (finaliseError || !finalised?.verified) {
+      console.error("Verified payment finalisation failed", finaliseError?.code || "invalid_rpc_result");
+      return send({ error: "Payment was verified, but subscription finalisation is pending reconciliation" }, 503);
+    }
+    return send({ ...finalised, paid_at: paidAt });
   }
 
   return send({ error: "Unsupported billing action" }, 400);
