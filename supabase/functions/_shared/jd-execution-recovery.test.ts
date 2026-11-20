@@ -19,7 +19,7 @@ Deno.test("worker blocks automatic retries when a tool was started but its outco
 
 Deno.test("runtime checkpoints tool-call requests before executing side effects", () => {
   const checkpoint = runtime.indexOf("conversationInput.push(...output);");
-  const execute = runtime.indexOf("const outputs = await Promise.all(calls.map");
+  const execute = runtime.indexOf("const settledOutputs = await Promise.allSettled(calls.map");
   assertMatch(runtime, /Persist the assistant's tool-call request before any side effect begins/);
   if (checkpoint < 0 || execute < 0 || checkpoint > execute) throw new Error("Tool-call checkpoint must precede execution");
 });
@@ -33,4 +33,14 @@ Deno.test("runtime journals the tool response before its final conversation chec
 Deno.test("incomplete Gemini function calls are removed from continuation history", () => {
   assertMatch(runtime, /output\.filter\(\(item: any\) => item\?\.type !== "function_call"\)/);
   assertMatch(runtime, /Do not reuse or execute any partial tool-call arguments/);
+});
+
+Deno.test("parallel tool calls settle before the worker handles an evidence persistence failure", () => {
+  assertMatch(runtime, /Promise\.allSettled\(calls\.map/);
+  assertMatch(runtime, /if \(rejectedOutput\) throw rejectedOutput\.reason/);
+  assertMatch(worker, /NonRetryableExecutionEvidenceError/);
+  assertMatch(worker, /isNonRetryableExecutionEvidenceError\(error\)/);
+  assertMatch(worker, /automation\.outcome_unknown/);
+  assertMatch(worker, /automatic_retry: false/);
+  assertMatch(worker, /p_terminal_status: "partially_completed"/);
 });
