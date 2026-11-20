@@ -78,6 +78,9 @@ create table public.jd_billing_payments (
   invoice_id uuid references public.jd_billing_invoices(id) on delete restrict,
   provider text not null default 'paystack' check (provider = 'paystack'),
   provider_reference text not null,
+  request_id uuid not null,
+  checkout_url text,
+  checkout_expires_at timestamptz,
   amount_minor bigint not null check (amount_minor > 0),
   currency text not null default 'USD' check (currency = 'USD'),
   status text not null default 'pending'
@@ -87,7 +90,8 @@ create table public.jd_billing_payments (
   verified_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique(provider, provider_reference)
+  unique(provider, provider_reference),
+  unique(school_id, request_id)
 );
 create index jd_billing_payments_invoice on public.jd_billing_payments(school_id, invoice_id, created_at desc);
 
@@ -123,7 +127,7 @@ create index jd_billing_events_scope on public.jd_billing_events(school_id, crea
 -- One-time 3-day trial. A tenant can never restart or extend it by replaying requests.
 create function public.jd_billing_start_trial(p_actor_id uuid, p_request_id uuid)
 returns jsonb
-language plpgsql security definer set search_path='' as $billing$
+language plpgsql security invoker set search_path='' as $billing$
 declare
   tenant uuid;
   s public.jd_billing_subscriptions%rowtype;
