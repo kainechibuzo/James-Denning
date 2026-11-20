@@ -137,3 +137,56 @@ revoke all on function public.jd_billing_finalize_payment(uuid,text,bigint,text,
   from public, anon, authenticated;
 grant execute on function public.jd_billing_finalize_payment(uuid,text,bigint,text,timestamptz,text,uuid,uuid)
   to service_role;
+
+-- Persist a provider-confirmed cancellation and its audit event atomically.
+create or replace function public.jd_billing_mark_subscription_cancelled(
+  p_school_id uuid,
+  p_actor_id uuid,
+  p_subscription_code text
+)
+returns jsonb
+language plpgsql
+security invoker
+set search_path=''
+as $cancel$
+declare
+  subscription public.jd_billing_subscriptions%rowtype;
+begin
+  if p_school_id is null or p_actor_id is null or p_subscription_code is null or length(trim(p_subscription_code))=0 then
+    raise exception 'Workspace, actor and subscription identifiers are required' using errcode='22023';
+  end if;
+
+  select * into subscription from public.jd_billing_subscriptions
+    where school_id=p_school_id for update;
+  if not found or subscription.provider_subscription_code is distinct from p_subscription_code then
+    raise exception 'Provider subscription does not belong to this workspace' using errcode='42501';
+  end if;
+
+  if subscription.status='cancelled' then
+    return jsonb_build_object('cancelled',true,'reused',true,'current_period_end',subscription.current_period_end);
+  end if;
+  if subscription.status not in ('active','past_due') then
+    raise exception 'Subscription is not eligible for cancellation' using errcode='55000';
+  end if;
+
+  update public.jd_billing_subscriptions set
+    status='cancelled',
+    cancel_at_period_end=false,
+    next_payment_at=null,
+    updated_at=clock_timestamp(),
+    version=version+1
+  where school_id=p_school_id;
+
+  insert into public.jd_billing_events(school_id,actor_id,event_type,event_json)
+    values(p_school_id,p_actor_id,'subscription.cancelled',
+      jsonb_build_object('provider','paystack','subscription_code',p_subscription_code,
+        'access_period_end',subscription.current_period_end));
+
+  return jsonb_build_object('cancelled',true,'reused',false,'current_period_end',subscription.current_period_end);
+end;
+$cancel$;
+
+revoke all on function public.jd_billing_mark_subscription_cancelled(uuid,uuid,text)
+  from public, anon, authenticated;
+grant execute on function public.jd_billing_mark_subscription_cancelled(uuid,uuid,text)
+  to service_role;
