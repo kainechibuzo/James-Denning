@@ -246,6 +246,7 @@ jobs:
           deno check --node-modules-dir=auto supabase/functions/jd-task-scheduler/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-task-collaboration/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-mcp/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
