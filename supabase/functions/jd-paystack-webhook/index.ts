@@ -44,18 +44,30 @@ Deno.serve(async (req: Request) => {
   const providerReference = typeof data.reference === "string" ? data.reference : null;
   const providerId = data.id == null ? null : String(data.id);
   const eventKey = `${event}:${providerReference || providerId || payloadHash}`;
-  const { error: receiptError } = await db.from("jd_billing_webhook_receipts").insert({
+  let receiptId: string;
+  const { data: insertedReceipt, error: receiptError } = await db.from("jd_billing_webhook_receipts").insert({
     provider: "paystack",
     event_key: eventKey,
     event_type: event,
     provider_reference: providerReference,
     payload_sha256: payloadHash,
     status: "received",
-  });
-  if (receiptError?.code === "23505") return json({ received: true, duplicate: true });
-  if (receiptError) {
-    console.error("Paystack webhook receipt could not be persisted", receiptError.code);
+  }).select("id").single();
+  if (receiptError?.code === "23505") {
+    const { data: prior, error: priorError } = await db.from("jd_billing_webhook_receipts")
+      .select("id,status").eq("provider", "paystack").eq("event_key", eventKey).maybeSingle();
+    if (priorError || !prior) return json({ error: "Could not inspect duplicate webhook receipt" }, 503);
+    if (prior.status !== "failed") return json({ received: true, duplicate: true, status: prior.status });
+    const { error: reclaimError } = await db.from("jd_billing_webhook_receipts")
+      .update({ status: "received", error_code: null, processed_at: null })
+      .eq("id", prior.id).eq("status", "failed");
+    if (reclaimError) return json({ error: "Could not reclaim failed webhook receipt" }, 503);
+    receiptId = prior.id;
+  } else if (receiptError || !insertedReceipt) {
+    console.error("Paystack webhook receipt could not be persisted", receiptError?.code);
     return json({ error: "Could not persist webhook receipt" }, 503);
+  } else {
+    receiptId = insertedReceipt.id;
   }
 
   const mark = async (status: "processed" | "ignored" | "failed", errorCode?: string) => {
@@ -138,6 +150,7 @@ Deno.serve(async (req: Request) => {
         if (subUpdateError) throw new Error("recurring_subscription_update_failed");
         await db.from("jd_billing_events").insert({
           school_id: subscription.school_id, event_type: "payment.recurring_verified",
+          source_webhook_receipt_id: receiptId,
           event_json: { provider: "paystack", reference: providerReference, amount_minor: transaction.amount, currency: transaction.currency },
         });
         await mark("processed");
@@ -163,6 +176,7 @@ Deno.serve(async (req: Request) => {
       if (subUpdateError) throw new Error("billing_subscription_update_failed");
       await db.from("jd_billing_events").insert({
         school_id: payment.school_id, event_type: "payment.webhook_verified",
+        source_webhook_receipt_id: receiptId,
         event_json: { provider: "paystack", reference: providerReference, amount_minor: payment.amount_minor, currency: payment.currency },
       });
       await mark("processed");
@@ -175,9 +189,16 @@ Deno.serve(async (req: Request) => {
         ? (data.subscription as Record<string, unknown>).subscription_code : null);
     const customerCode = data.customer && typeof data.customer === "object"
       ? (data.customer as Record<string, unknown>).customer_code : null;
+    const metadata = data.metadata && typeof data.metadata === "object"
+      ? data.metadata as Record<string, unknown>
+      : (data.subscription && typeof data.subscription === "object" &&
+          (data.subscription as Record<string, unknown>).metadata &&
+          typeof (data.subscription as Record<string, unknown>).metadata === "object"
+        ? (data.subscription as Record<string, unknown>).metadata as Record<string, unknown> : {});
     let lookup = db.from("jd_billing_subscriptions").select("school_id,version");
     if (typeof subscriptionCode === "string") lookup = lookup.eq("provider_subscription_code", subscriptionCode);
     else if (typeof customerCode === "string") lookup = lookup.eq("provider_customer_code", customerCode);
+    else if (typeof metadata.workspace_id === "string" && /^[0-9a-f-]{36}$/i.test(metadata.workspace_id)) lookup = lookup.eq("school_id", metadata.workspace_id);
     else {
       await mark("ignored");
       return json({ received: true, ignored: true });
@@ -212,6 +233,7 @@ Deno.serve(async (req: Request) => {
     if (updateError) throw new Error("billing_subscription_event_update_failed");
     await db.from("jd_billing_events").insert({
       school_id: subscription.school_id, event_type: `paystack.${event}`,
+      source_webhook_receipt_id: receiptId,
       event_json: { provider: "paystack", subscription_code: subscriptionCode || null, customer_code: customerCode || null },
     });
     await mark("processed");
