@@ -109,6 +109,17 @@ export function BillingPage({ ctx }) {
     finally { setWorking(""); }
   };
 
+  const managePaymentMethod = async () => {
+    setWorking("manage"); setError(""); setNotice("");
+    try {
+      const result = await call({ action: "billing.subscription.manage_link" });
+      if (!result?.url || !result.url.startsWith("https://paystack.com/manage/subscriptions/")) {
+        throw new Error("Paystack returned an invalid payment-method management link");
+      }
+      window.location.assign(result.url);
+    } catch (err) { setError(err?.message || "Could not open payment-method management"); setWorking(""); }
+  };
+
   const cancelSubscription = async () => {
     setWorking("cancel"); setError(""); setNotice("");
     try {
@@ -189,7 +200,12 @@ export function BillingPage({ ctx }) {
                 {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
               </button>
               {status === "past_due" && subscription?.provider_subscription_code && !subscription?.cancel_at_period_end
-                ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                ? <>
+                    <button onClick={managePaymentMethod} disabled={Boolean(working)} style={secondaryButton}>
+                      {working === "manage" ? <LoaderCircle size={14}/> : <CreditCard size={14}/>} Update payment method
+                    </button>
+                    <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                  </>
                 : null}
             </div> :
             ["active", "past_due"].includes(status) ? <div style={{ display: "grid", gap: 10 }}>
@@ -197,7 +213,12 @@ export function BillingPage({ ctx }) {
               {subscription?.cancel_at_period_end
                 ? <span style={{ color: C.muted, fontSize: 11 }}>Automatic renewal is off</span>
                 : subscription?.provider_subscription_code
-                  ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                  ? <>
+                      <button onClick={managePaymentMethod} disabled={Boolean(working)} style={secondaryButton}>
+                        {working === "manage" ? <LoaderCircle size={14}/> : <CreditCard size={14}/>} Update payment method
+                      </button>
+                      <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                    </>
                   : <span style={{ color: C.muted, fontSize: 11 }}>Subscription management is still being linked.</span>}
             </div> : null}
           {checkoutDue && !checkoutEnabled && <p style={{ color: C.muted, fontSize: 11, lineHeight: 1.5, margin: "9px 0 0" }}>Checkout remains disabled until recurring cancellation controls and provider configuration are verified. No payment will be taken here.</p>}
