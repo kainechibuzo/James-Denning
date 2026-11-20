@@ -47,3 +47,9 @@ test("webhook validates signatures and persists replay-safe receipts before proc
   assert.match(webhook, /source_webhook_receipt_id: receiptId/);
   assert.match(webhook, /transaction\/verify/);
 });
+
+test("webhook finalisation uses shared crypto and the atomic payment RPC", () => {
+  assert.match(webhook, /rpc\\("jd_billing_finalize_payment"/);
+  assert.doesNotMatch(webhook, /changes\\.status = "active"/);
+  assert.match(webhook, /\.\.\\/_shared\\/jd-paystack-webhook-crypto\.ts/);
+});
