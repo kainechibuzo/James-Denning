@@ -199,7 +199,7 @@ export function BillingPage({ ctx }) {
               </button> :
               trialActive ? <span className="jd-billing-trial-live"><CheckCircle2 size={15}/> Trial active · {remaining(subscription.trial_ends_at)}</span> :
               checkoutDue ? <button className="jd-billing-primary" onClick={checkout} disabled={!checkoutEnabled || Boolean(working)} title={!checkoutEnabled ? "Checkout is not enabled yet" : "Continue to secure Paystack checkout"}>
-                {working === "checkout" ? <LoaderCircle size={15} className="jd-billing-spin"/> : <CreditCard size={15}/>} Continue to payment <ArrowUpRight size={15}/>
+                {working === "checkout" ? <LoaderCircle size={15} className="jd-billing-spin"/> : <CreditCard size={15}/>} Continue with Paystack <ArrowUpRight size={15}/>
               </button> :
               <div className="jd-billing-plan-actions">
                 {["active","past_due"].includes(status) && subscription?.provider_subscription_code && !subscription?.cancel_at_period_end ? <>
