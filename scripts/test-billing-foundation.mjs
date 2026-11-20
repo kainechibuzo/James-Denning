@@ -32,7 +32,7 @@ test("billing endpoint derives identity from verified JWT and never trusts brows
   assert.match(endpoint, /auth\.auth\.getUser\(token\)/);
   assert.match(endpoint, /\.eq\("id", authData\.user\.id\)/);
   assert.match(endpoint, /\["owner", "admin"\]\.includes\(profile\.role\)/);
-  assert.match(endpoint, /school_id: profile\.school_id/);
+  assert.match(endpoint, /\.eq\("school_id", profile\.school_id\)/);
   assert.doesNotMatch(endpoint, /body\.school_id|body\.tenant_id|body\.actor_id/);
 });
 
