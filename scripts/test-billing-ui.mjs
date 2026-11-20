@@ -30,6 +30,9 @@ test("billing UI starts trial and checkout only after explicit owner action", ()
 
 test("checkout requires an expired trial and server-side Paystack configuration", () => {
   assert.match(endpoint, /PAYSTACK_PLATFORM_PLAN_CODE/);
+  assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
+  assert.match(endpoint, /api\\.paystack\\.co\\/plan\\//);
+  assert.match(endpoint, /billing_plan_mismatch/);
   assert.match(endpoint, /PAYSTACK_SECRET_KEY/);
   assert.match(endpoint, /JD_APP_URL/);
   assert.match(endpoint, /Your free trial is still active/);
