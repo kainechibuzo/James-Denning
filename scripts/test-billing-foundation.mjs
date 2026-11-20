@@ -20,6 +20,10 @@ test("commercial billing tables are tenant-scoped and unavailable to browser rol
 
 test("trial start is owner/admin-only, one-time per tenant, and request-idempotent", () => {
   assert.match(migration, /jd_billing_start_trial\(p_actor_id uuid, p_request_id uuid\)/);
+  assert.match(migration, /security invoker/);
+  assert.doesNotMatch(migration, /security definer/i);
+  assert.match(migration, /unique\(school_id, request_id\)/);
+  assert.match(migration, /source_webhook_receipt_id uuid references public\.jd_billing_webhook_receipts/);
   assert.match(migration, /role in \('owner','admin'\)/);
   assert.match(migration, /on conflict \(school_id\) do nothing/);
   assert.match(migration, /unique index jd_billing_events_request/);
@@ -36,9 +40,17 @@ test("billing endpoint derives identity from verified JWT and never trusts brows
   assert.doesNotMatch(endpoint, /body\.school_id|body\.tenant_id|body\.actor_id/);
 });
 
-test("checkout is explicitly disabled and billing defaults stay centralised", () => {
-  assert.match(endpoint, /billing\.checkout\.create/);
-  assert.match(endpoint, /billing_checkout_disabled/);
+test("Paystack checkout is server-initialised and transaction verification is strict", () => {
+  assert.match(endpoint, /PAYSTACK_SECRET_KEY/);
+  assert.match(endpoint, /PAYSTACK_PLATFORM_PLAN_CODE/);
+  assert.match(endpoint, /api\.paystack\.co\/transaction\/initialize/);
+  assert.match(endpoint, /api\.paystack\.co\/transaction\/verify/);
+  assert.match(endpoint, /transaction\?\.status !== "success"/);
+  assert.match(endpoint, /transaction\?\.reference !== reference/);
+  assert.match(endpoint, /Number\(transaction\?\.amount\) !== Number\(payment\.amount_minor\)/);
+  assert.match(endpoint, /transaction\?\.currency !== payment\.currency/);
+  assert.match(endpoint, /billing_trial_active/);
+  assert.match(endpoint, /billing_checkout_in_progress/);
   assert.match(config, /checkoutEnabled: false/);
   assert.match(config, /paymentCollectionEnabled: false/);
   assert.match(config, /employeeUsageChargingEnabled: false/);
