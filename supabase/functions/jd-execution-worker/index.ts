@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "./_shared/jd-agent-runtime.ts";
 import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
 import { getJdSecret } from "./_shared/jd-secrets.ts";
+import { selectJdModel } from "../_shared/jd-agent-routing.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -151,11 +152,17 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .filter((item: any) => item.role === "assistant" || item.role === "user")
       .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
 
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    // Keep one predictable Gemini model across all tool rounds and retries.
-    // Provider/model changes are code-controlled, not operator env overrides.
-    const model = "gemini-3.1-flash-lite";
-    if (!apiKey) throw new Error("Gemini API key is not configured");
+    // Use Gemini through OpenRouter so provider routing, retries and tool-call
+    // metadata are handled by the Responses API adapter. Never call Gemini's
+    // direct OpenAI-compatible endpoint from the worker.
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+    const configuredModel = Deno.env.get("JD_MODEL_NAME") || "google/gemini-3.1-flash-lite";
+    const model = selectJdModel(run.request_text, configuredModel, {
+      fast: Deno.env.get("JD_MODEL_FAST_NAME"),
+      reasoning: Deno.env.get("JD_MODEL_REASONING_NAME"),
+    });
+    const modelBaseUrl = Deno.env.get("JD_MODEL_BASE_URL") || "https://openrouter.ai/api/v1";
+    if (!apiKey) throw new Error("OpenRouter API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
       .from("jd_execution_checkpoints")
@@ -237,7 +244,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
       model,
-      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      baseUrl: modelBaseUrl,
       resumeState,
       onCheckpoint: async (state) => {
         if (leaseLost) throw new Error("Execution lease was lost");
