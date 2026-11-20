@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
         const subscriptionCode = data.subscription_code ||
           (data.subscription && typeof data.subscription === "object"
             ? (data.subscription as Record<string, unknown>).subscription_code : null);
-        let query = db.from("jd_billing_subscriptions").select("school_id,version");
+        let query = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency");
         if (typeof subscriptionCode === "string") query = query.eq("provider_subscription_code", subscriptionCode);
         else if (typeof customerCode === "string") query = query.eq("provider_customer_code", customerCode);
         else {
@@ -123,9 +123,11 @@ Deno.serve(async (req: Request) => {
           await mark("ignored");
           return json({ received: true, ignored: true });
         }
-        if (Number(transaction.amount) <= 0 || !["USD"].includes(transaction.currency)) {
-          throw new Error("recurring_payment_currency_or_amount_invalid");
+        if (Number(transaction.amount) !== Number(subscription.amount_minor) ||
+            transaction.currency !== subscription.currency || transaction.currency !== "USD") {
+          throw new Error("recurring_payment_amount_currency_mismatch");
         }
+        const paidAt = transaction.paid_at || new Date().toISOString();
         const { error: recurringInsertError } = await db.from("jd_billing_payments").insert({
           school_id: subscription.school_id,
           provider: "paystack",
@@ -133,26 +135,28 @@ Deno.serve(async (req: Request) => {
           request_id: crypto.randomUUID(),
           amount_minor: Number(transaction.amount),
           currency: transaction.currency,
-          status: "succeeded",
-          provider_customer_code: customerCode || null,
-          paid_at: transaction.paid_at || new Date().toISOString(),
-          verified_at: new Date().toISOString(),
+          status: "pending",
         });
         if (recurringInsertError && recurringInsertError.code !== "23505") throw new Error("recurring_payment_record_failed");
-        const paidAt = transaction.paid_at || new Date().toISOString();
-        const periodEnd = new Date(paidAt); periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
-        const { error: subUpdateError } = await db.from("jd_billing_subscriptions").update({
-          status: "active", last_payment_at: paidAt,
-          current_period_start: paidAt, current_period_end: periodEnd.toISOString(),
-          provider_customer_code: customerCode || null, updated_at: new Date().toISOString(),
-          version: (subscription.version || 1) + 1,
-        }).eq("school_id", subscription.school_id);
-        if (subUpdateError) throw new Error("recurring_subscription_update_failed");
-        await db.from("jd_billing_events").insert({
-          school_id: subscription.school_id, event_type: "payment.recurring_verified",
-          source_webhook_receipt_id: receiptId,
-          event_json: { provider: "paystack", reference: providerReference, amount_minor: transaction.amount, currency: transaction.currency },
+        const { data: recurringPayment, error: recurringLookupError } = await db.from("jd_billing_payments")
+          .select("school_id,amount_minor,currency,status")
+          .eq("provider", "paystack").eq("provider_reference", providerReference).maybeSingle();
+        if (recurringLookupError || !recurringPayment ||
+            recurringPayment.school_id !== subscription.school_id ||
+            Number(recurringPayment.amount_minor) !== Number(transaction.amount) ||
+            recurringPayment.currency !== transaction.currency) {
+          throw new Error("recurring_payment_record_mismatch");
+        }
+        const { data: finalised, error: finaliseError } = await db.rpc("jd_billing_finalize_payment", {
+          p_school_id: subscription.school_id,
+          p_reference: providerReference,
+          p_amount_minor: Number(transaction.amount),
+          p_currency: transaction.currency,
+          p_paid_at: paidAt,
+          p_customer_code: customerCode || null,
+          p_source_webhook_receipt_id: receiptId,
         });
+        if (finaliseError || !finalised?.verified) throw new Error("recurring_payment_finalisation_failed");
         await mark("processed");
         return json({ received: true, processed: true });
       }
@@ -161,24 +165,16 @@ Deno.serve(async (req: Request) => {
         throw new Error("paystack_amount_currency_mismatch");
       }
       const paidAt = transaction.paid_at || new Date().toISOString();
-      const { error: paymentUpdateError } = await db.from("jd_billing_payments").update({
-        status: "succeeded", paid_at: paidAt, verified_at: new Date().toISOString(),
-        provider_customer_code: transaction.customer?.customer_code || null,
-      }).eq("school_id", payment.school_id).eq("provider_reference", providerReference);
-      if (paymentUpdateError) throw new Error("billing_payment_update_failed");
-
-      const periodEnd = new Date(paidAt); periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
-      const { error: subUpdateError } = await db.from("jd_billing_subscriptions").update({
-        status: "active", provider_customer_code: transaction.customer?.customer_code || null,
-        current_period_start: paidAt, current_period_end: periodEnd.toISOString(),
-        last_payment_at: paidAt, updated_at: new Date().toISOString(),
-      }).eq("school_id", payment.school_id);
-      if (subUpdateError) throw new Error("billing_subscription_update_failed");
-      await db.from("jd_billing_events").insert({
-        school_id: payment.school_id, event_type: "payment.webhook_verified",
-        source_webhook_receipt_id: receiptId,
-        event_json: { provider: "paystack", reference: providerReference, amount_minor: payment.amount_minor, currency: payment.currency },
+      const { data: finalised, error: finaliseError } = await db.rpc("jd_billing_finalize_payment", {
+        p_school_id: payment.school_id,
+        p_reference: providerReference,
+        p_amount_minor: Number(transaction.amount),
+        p_currency: transaction.currency,
+        p_paid_at: paidAt,
+        p_customer_code: transaction.customer?.customer_code || null,
+        p_source_webhook_receipt_id: receiptId,
       });
+      if (finaliseError || !finalised?.verified) throw new Error("billing_payment_finalisation_failed");
       await mark("processed");
       return json({ received: true, processed: true });
     }
@@ -195,7 +191,7 @@ Deno.serve(async (req: Request) => {
           (data.subscription as Record<string, unknown>).metadata &&
           typeof (data.subscription as Record<string, unknown>).metadata === "object"
         ? (data.subscription as Record<string, unknown>).metadata as Record<string, unknown> : {});
-    let lookup = db.from("jd_billing_subscriptions").select("school_id,version");
+    let lookup = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency");
     if (typeof subscriptionCode === "string") lookup = lookup.eq("provider_subscription_code", subscriptionCode);
     else if (typeof customerCode === "string") lookup = lookup.eq("provider_customer_code", customerCode);
     else if (typeof metadata.workspace_id === "string" && /^[0-9a-f-]{36}$/i.test(metadata.workspace_id)) lookup = lookup.eq("school_id", metadata.workspace_id);
