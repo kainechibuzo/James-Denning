@@ -97,12 +97,12 @@ Deno.serve(async (req: Request) => {
     if (!secret) return send({ error: "Paystack subscription management is not configured", code: "billing_provider_not_configured" }, 503);
     const { data: subscription, error: subscriptionError } = await db
       .from("jd_billing_subscriptions")
-      .select("status,provider_subscription_code,provider_customer_code,current_period_end")
+      .select("status,provider_subscription_code,provider_customer_code,current_period_end,cancel_at_period_end")
       .eq("school_id", profile.school_id)
       .maybeSingle();
     if (subscriptionError) return send({ error: "Could not load subscription state" }, 503);
     if (!subscription?.provider_subscription_code) return send({ error: "No Paystack subscription is linked to this workspace", code: "billing_subscription_not_linked" }, 409);
-    if (subscription.status === "cancelled") return send({ cancelled: true, reused: true, current_period_end: subscription.current_period_end });
+    if (subscription.status === "cancelled" || subscription.cancel_at_period_end) return send({ cancelled: true, reused: true, cancel_at_period_end: Boolean(subscription.cancel_at_period_end), current_period_end: subscription.current_period_end });
     if (!["active", "past_due"].includes(subscription.status)) {
       return send({ error: "This subscription cannot be cancelled in its current state", code: "billing_cancellation_not_available" }, 409);
     }
