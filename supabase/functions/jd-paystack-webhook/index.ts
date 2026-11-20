@@ -208,7 +208,8 @@ Deno.serve(async (req: Request) => {
 
     const changes: Record<string, unknown> = { updated_at: new Date().toISOString(), version: (subscription.version || 1) + 1 };
     if (event === "subscription.create") {
-      changes.status = "active";
+      // Subscription metadata alone is not payment proof. Only a verified
+      // charge.success event may activate the workspace subscription.
       if (typeof subscriptionCode === "string") changes.provider_subscription_code = subscriptionCode;
       if (typeof customerCode === "string") changes.provider_customer_code = customerCode;
       if (data.next_payment_date) changes.next_payment_at = data.next_payment_date;
