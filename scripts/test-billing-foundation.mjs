@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [migration, rollback, endpoint, config] = await Promise.all([
+const [migration, rollback, endpoint, config, finalisation] = await Promise.all([
   readFile(new URL("../supabase/migrations/20261120084500_jd_commercial_billing.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/rollback/20261120084500_jd_commercial_billing.rollback.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/functions/jd-billing/index.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/config/billing.mjs", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/migrations/20261120130000_jd_billing_payment_finalization.sql", import.meta.url), "utf8"),
 ]);
 
 test("commercial billing tables are tenant-scoped and unavailable to browser roles", () => {
@@ -54,4 +55,24 @@ test("Paystack checkout is server-initialised and transaction verification is st
   assert.match(config, /checkoutEnabled: false/);
   assert.match(config, /paymentCollectionEnabled: false/);
   assert.match(config, /employeeUsageChargingEnabled: false/);
+});
+
+test("Paystack plan is checked against the exact subscription amount, currency and monthly interval", () => {
+  assert.match(endpoint, /api\.paystack\.co\/plan\//);
+  assert.match(endpoint, /Number\(providerPlan\?\.amount\) !== Number\(subscription\.amount_minor\)/);
+  assert.match(endpoint, /providerPlan\?\.currency !== subscription\.currency/);
+  assert.match(endpoint, /providerPlan\?\.interval !== "monthly"/);
+  assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
+  assert.match(endpoint, /billing_plan_mismatch/);
+});
+
+test("payment and subscription state are finalised atomically with an append-only audit event", () => {
+  assert.match(finalisation, /jd_billing_finalize_payment/);
+  assert.match(finalisation, /for update/);
+  assert.match(finalisation, /payment\.amount_minor<>p_amount_minor/);
+  assert.match(finalisation, /update public\.jd_billing_payments/);
+  assert.match(finalisation, /update public\.jd_billing_subscriptions/);
+  assert.match(finalisation, /insert into public\.jd_billing_events/);
+  assert.match(finalisation, /to service_role/);
+  assert.match(endpoint, /rpc\("jd_billing_finalize_payment"/);
 });
