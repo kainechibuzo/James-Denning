@@ -84,13 +84,152 @@ Deno.serve(async (req: Request) => {
     return send({
       subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : subscription.status } : null,
       invoices: invoices || [],
-      billing_live: false,
-      note: "Billing records are read-only here. Checkout, invoice issuance and collection are not enabled.",
+      billing_live: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE")),
+      checkout_enabled: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
+      note: "Checkout is available only after the free trial expires and only when the Paystack plan and server secrets are configured.",
     });
   }
 
   if (body.action === "billing.checkout.create") {
-    return send({ error: "Checkout is not enabled yet", code: "billing_checkout_disabled" }, 409);
+    if (!isUuid(body.requestId)) return send({ error: "A UUID requestId is required" }, 400);
+    const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
+    const planCode = Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE");
+    const appUrl = Deno.env.get("JD_APP_URL");
+    if (!secret || !planCode || !appUrl || !appUrl.startsWith("https://")) {
+      return send({ error: "Paystack billing is not configured", code: "billing_provider_not_configured" }, 503);
+    }
+
+    const { data: subscription, error: stateError } = await db
+      .from("jd_billing_subscriptions")
+      .select("status,trial_ends_at,amount_minor,currency")
+      .eq("school_id", profile.school_id)
+      .maybeSingle();
+    if (stateError) return send({ error: "Could not verify subscription state" }, 503);
+    if (!subscription) return send({ error: "Start the free trial before checkout", code: "billing_trial_required" }, 409);
+    const trialActive = subscription.status === "trialing" && subscription.trial_ends_at &&
+      Date.parse(subscription.trial_ends_at) > Date.now();
+    if (trialActive) return send({ error: "Your free trial is still active", code: "billing_trial_active", trial_ends_at: subscription.trial_ends_at }, 409);
+    if (!["checkout_required", "expired", "past_due", "incomplete"].includes(subscription.status) &&
+        !(subscription.status === "trialing" && subscription.trial_ends_at && Date.parse(subscription.trial_ends_at) <= Date.now())) {
+      return send({ error: "This subscription is not eligible for checkout", code: "billing_checkout_not_due" }, 409);
+    }
+
+    const { data: existing, error: existingError } = await db
+      .from("jd_billing_payments")
+      .select("provider_reference,status,checkout_url,checkout_expires_at")
+      .eq("school_id", profile.school_id)
+      .eq("request_id", body.requestId)
+      .maybeSingle();
+    if (existingError) return send({ error: "Could not load checkout request" }, 503);
+    if (existing?.checkout_url && existing.status === "pending") {
+      return send({ checkout_url: existing.checkout_url, reference: existing.provider_reference, reused: true });
+    }
+    if (existing) return send({ error: "This checkout request has already been used. Start a new request.", code: "billing_request_reused" }, 409);
+
+    const reference = `JD${crypto.randomUUID().replaceAll("-", "")}`;
+    const { error: insertError } = await db.from("jd_billing_payments").insert({
+      school_id: profile.school_id,
+      provider: "paystack",
+      provider_reference: reference,
+      request_id: body.requestId,
+      amount_minor: 1900,
+      currency: "USD",
+      status: "pending",
+    });
+    if (insertError) {
+      if (insertError.code === "23505") return send({ error: "Checkout is already being initialised. Refresh billing and retry shortly.", code: "billing_checkout_in_progress" }, 409);
+      return send({ error: "Could not reserve checkout" }, 503);
+    }
+
+    const callback = new URL("/", appUrl);
+    callback.searchParams.set("billing", "paystack");
+    const paystackResponse = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: authData.user.email,
+        amount: "1900",
+        currency: "USD",
+        reference,
+        plan: planCode,
+        callback_url: callback.toString(),
+        metadata: { product: "james-denning", request_id: body.requestId },
+      }),
+    });
+    const providerResult = await paystackResponse.json().catch(() => null);
+    if (!paystackResponse.ok || providerResult?.status !== true ||
+        typeof providerResult?.data?.authorization_url !== "string") {
+      await db.from("jd_billing_payments").update({ status: "failed" })
+        .eq("school_id", profile.school_id).eq("provider_reference", reference);
+      console.error("Paystack checkout initialisation failed", { status: paystackResponse.status, message: providerResult?.message });
+      return send({ error: "Paystack could not initialise checkout", code: "billing_provider_checkout_failed" }, 502);
+    }
+
+    const { error: saveError } = await db.from("jd_billing_payments").update({
+      checkout_url: providerResult.data.authorization_url,
+      checkout_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    }).eq("school_id", profile.school_id).eq("provider_reference", reference);
+    if (saveError) {
+      console.error("Could not persist Paystack checkout URL", saveError.code);
+      return send({ error: "Checkout was created but could not be safely saved. Contact support before retrying.", code: "billing_checkout_persist_failed" }, 503);
+    }
+    return send({ checkout_url: providerResult.data.authorization_url, reference, reused: false });
+  }
+
+  if (body.action === "billing.checkout.verify") {
+    const reference = typeof body.reference === "string" ? body.reference : "";
+    if (!/^[A-Za-z0-9.=\-]{8,100}$/.test(reference)) return send({ error: "Invalid payment reference" }, 400);
+    const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
+    if (!secret) return send({ error: "Paystack billing is not configured", code: "billing_provider_not_configured" }, 503);
+
+    const { data: payment, error: paymentError } = await db
+      .from("jd_billing_payments")
+      .select("id,provider_reference,amount_minor,currency,status")
+      .eq("school_id", profile.school_id)
+      .eq("provider_reference", reference)
+      .maybeSingle();
+    if (paymentError || !payment) return send({ error: "Payment reference was not found for this workspace" }, 404);
+    if (payment.status === "succeeded") return send({ verified: true, status: "succeeded", reference, reused: true });
+
+    const verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const verifyResult = await verifyResponse.json().catch(() => null);
+    const transaction = verifyResult?.data;
+    if (!verifyResponse.ok || verifyResult?.status !== true || transaction?.status !== "success" ||
+        transaction?.reference !== reference || Number(transaction?.amount) !== Number(payment.amount_minor) ||
+        transaction?.currency !== payment.currency) {
+      return send({ verified: false, status: transaction?.status || "unverified", error: "Payment has not been verified as successful" }, 409);
+    }
+
+    const paidAt = transaction.paid_at || new Date().toISOString();
+    const { error: updatePaymentError } = await db.from("jd_billing_payments").update({
+      status: "succeeded", paid_at: paidAt, verified_at: new Date().toISOString(),
+      provider_customer_code: transaction.customer?.customer_code || null,
+    }).eq("school_id", profile.school_id).eq("provider_reference", reference);
+    if (updatePaymentError) return send({ error: "Payment verified but billing record could not be updated" }, 503);
+
+    const periodStart = new Date(paidAt);
+    const periodEnd = new Date(periodStart);
+    periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
+    const { error: subscriptionUpdateError } = await db.from("jd_billing_subscriptions").update({
+      status: "active",
+      provider_customer_code: transaction.customer?.customer_code || null,
+      current_period_start: periodStart.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      last_payment_at: paidAt,
+      updated_at: new Date().toISOString(),
+      version: 2,
+    }).eq("school_id", profile.school_id);
+    if (subscriptionUpdateError) return send({ error: "Payment verified; subscription state is awaiting reconciliation" }, 503);
+
+    await db.from("jd_billing_events").insert({
+      school_id: profile.school_id,
+      actor_id: authData.user.id,
+      event_type: "payment.verified",
+      event_json: { provider: "paystack", reference, amount_minor: payment.amount_minor, currency: payment.currency },
+    });
+    return send({ verified: true, status: "succeeded", reference, paid_at: paidAt });
   }
 
   return send({ error: "Unsupported billing action" }, 400);
