@@ -123,7 +123,7 @@ create index jd_billing_events_scope on public.jd_billing_events(school_id, crea
 -- One-time 3-day trial. A tenant can never restart or extend it by replaying requests.
 create function public.jd_billing_start_trial(p_actor_id uuid, p_request_id uuid)
 returns jsonb
-language plpgsql security definer set search_path='' as $
+language plpgsql security definer set search_path='' as $billing$
 declare
   tenant uuid;
   s public.jd_billing_subscriptions%rowtype;
@@ -167,7 +167,7 @@ begin
     values(tenant,p_actor_id,p_request_id,event_name,result);
   return result;
 end;
-$;
+$billing$;
 
 create function public.jd_billing_immutable_event() returns trigger
 language plpgsql set search_path='' as $$
