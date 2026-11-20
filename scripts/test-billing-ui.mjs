@@ -43,7 +43,7 @@ test("checkout requires an expired trial and server-side Paystack configuration"
   assert.match(endpoint, /PAYSTACK_SECRET_KEY/);
   assert.match(endpoint, /JD_APP_URL/);
   assert.match(endpoint, /Your free trial is still active/);
-  assert.match(endpoint, /transaction\?\.status !== "success"/);
+  assert.match(endpoint, /transaction\.status !== "success"/);
   assert.match(endpoint, /transaction\?\.reference !== reference/);
 });
 
