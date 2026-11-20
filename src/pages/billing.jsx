@@ -136,12 +136,12 @@ export function BillingPage({ ctx }) {
   const invoices = snapshot?.invoices || [];
   const statusDescription = useMemo(() => {
     if (trialActive) return `Your free trial ends ${dateTime(subscription.trial_ends_at)}. No charge is made during the trial.`;
+    if (status === "cancelled") return `Your subscription has ended. No further automatic renewals are scheduled. The last paid period ended ${dateTime(subscription?.current_period_end)}.`;
     if (subscription?.cancel_at_period_end) return status === "past_due"
-      ? `Automatic renewal is off, but this workspace still has a past-due balance. The recorded paid period ended ${dateTime(subscription?.current_period_end)}.`
+      ? `Automatic renewal is off, but this workspace still has a past-due balance. The recorded paid period ends ${dateTime(subscription?.current_period_end)}.`
       : `Automatic renewal is off. Your current paid period ends ${dateTime(subscription?.current_period_end)}.`;
     if (status === "active") return `Your platform subscription renews monthly. Next billing date: ${dateTime(subscription?.current_period_end)}.`;
     if (checkoutDue) return "Your trial has ended or payment needs attention. Review the amount and continue through secure checkout when ready.";
-    if (status === "cancelled") return `Your subscription is cancelled. No further automatic renewals are scheduled. The current paid period is recorded through ${dateTime(subscription?.current_period_end)}.`;
     return "Start with a 3-day trial. You will not be charged when the trial starts.";
   }, [trialActive, subscription, status, checkoutDue]);
 
