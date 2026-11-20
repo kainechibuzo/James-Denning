@@ -92,6 +92,32 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  if (body.action === "billing.subscription.manage_link") {
+    const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
+    if (!secret) return send({ error: "Paystack subscription management is not configured", code: "billing_provider_not_configured" }, 503);
+    const { data: subscription, error: subscriptionError } = await db
+      .from("jd_billing_subscriptions")
+      .select("provider_subscription_code")
+      .eq("school_id", profile.school_id)
+      .maybeSingle();
+    if (subscriptionError) return send({ error: "Could not load subscription state" }, 503);
+    if (!subscription?.provider_subscription_code) return send({ error: "No Paystack subscription is linked to this workspace", code: "billing_subscription_not_linked" }, 409);
+    const response = await fetch(`https://api.paystack.co/subscription/${encodeURIComponent(subscription.provider_subscription_code)}/manage/link`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const result = await response.json().catch(() => null);
+    const link = result?.data?.link;
+    let parsed: URL | null = null;
+    try { parsed = typeof link === "string" ? new URL(link) : null; } catch {}
+    if (!response.ok || result?.status !== true || !parsed || parsed.protocol !== "https:" ||
+        !(parsed.hostname === "paystack.com" || parsed.hostname.endsWith(".paystack.com")) ||
+        !parsed.pathname.startsWith("/manage/subscriptions/")) {
+      console.error("Paystack subscription management link unavailable", { status: response.status });
+      return send({ error: "Paystack could not create a safe payment-method management link", code: "billing_manage_link_unavailable" }, 502);
+    }
+    return send({ url: parsed.toString() });
+  }
+
   if (body.action === "billing.subscription.cancel") {
     const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!secret) return send({ error: "Paystack subscription management is not configured", code: "billing_provider_not_configured" }, 503);
