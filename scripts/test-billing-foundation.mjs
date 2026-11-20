@@ -63,6 +63,7 @@ test("Paystack plan is checked against the exact subscription amount, currency a
   assert.match(endpoint, /providerPlan\?\.currency !== subscription\.currency/);
   assert.match(endpoint, /providerPlan\?\.interval !== "monthly"/);
   assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
+  assert.match(endpoint, /JD_BILLING_CANCEL_FLOW_ENABLED/);
   assert.match(endpoint, /billing_plan_mismatch/);
   assert.match(endpoint, /\.eq\("school_id", profile\.school_id\)\.eq\("status", "pending"\)/);
   assert.match(endpoint, /billing_checkout_in_progress/);
