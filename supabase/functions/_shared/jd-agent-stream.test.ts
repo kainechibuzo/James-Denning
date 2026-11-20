@@ -72,8 +72,8 @@ Deno.test("Gemini stream preserves thought signatures and adapter replays them v
   const body = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(
-        'data: {"choices":[{"delta":{"tool_calls":[{"id":"call_signed","type":"function","extra_content":{"google":{"thought_signature":"' + signature + '"}},"function":{"name":"lookup","arguments":"{}"}}]},"finish_reason":null}]}\\n' +
-        'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\\n'
+        'data: {"choices":[{"delta":{"tool_calls":[{"id":"call_signed","type":"function","extra_content":{"google":{"thought_signature":"' + signature + '"}},"function":{"name":"lookup","arguments":"{}"}}]},"finish_reason":null}]}\n' +
+        'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n'
       ));
       controller.close();
     },
