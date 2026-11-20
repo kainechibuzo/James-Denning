@@ -162,16 +162,16 @@ begin
     raise exception 'Provider subscription does not belong to this workspace' using errcode='42501';
   end if;
 
-  if subscription.status='cancelled' then
-    return jsonb_build_object('cancelled',true,'reused',true,'current_period_end',subscription.current_period_end);
+  if subscription.status='cancelled' or subscription.cancel_at_period_end then
+    return jsonb_build_object('cancelled',true,'reused',true,'cancel_at_period_end',subscription.cancel_at_period_end,'current_period_end',subscription.current_period_end);
   end if;
   if subscription.status not in ('active','past_due') then
     raise exception 'Subscription is not eligible for cancellation' using errcode='55000';
   end if;
 
   update public.jd_billing_subscriptions set
-    status='cancelled',
-    cancel_at_period_end=false,
+    status='active',
+    cancel_at_period_end=true,
     next_payment_at=null,
     updated_at=clock_timestamp(),
     version=version+1
@@ -182,7 +182,7 @@ begin
       jsonb_build_object('provider','paystack','subscription_code',p_subscription_code,
         'access_period_end',subscription.current_period_end));
 
-  return jsonb_build_object('cancelled',true,'reused',false,'current_period_end',subscription.current_period_end);
+  return jsonb_build_object('cancelled',true,'reused',false,'cancel_at_period_end',true,'current_period_end',subscription.current_period_end);
 end;
 $cancel$;
 
