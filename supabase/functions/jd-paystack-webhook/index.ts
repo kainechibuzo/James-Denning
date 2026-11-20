@@ -154,6 +154,7 @@ Deno.serve(async (req: Request) => {
           p_currency: transaction.currency,
           p_paid_at: paidAt,
           p_customer_code: customerCode || null,
+          p_actor_id: null,
           p_source_webhook_receipt_id: receiptId,
         });
         if (finaliseError || !finalised?.verified) throw new Error("recurring_payment_finalisation_failed");
@@ -172,6 +173,7 @@ Deno.serve(async (req: Request) => {
         p_currency: transaction.currency,
         p_paid_at: paidAt,
         p_customer_code: transaction.customer?.customer_code || null,
+        p_actor_id: null,
         p_source_webhook_receipt_id: receiptId,
       });
       if (finaliseError || !finalised?.verified) throw new Error("billing_payment_finalisation_failed");
