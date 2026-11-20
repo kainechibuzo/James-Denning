@@ -116,12 +116,16 @@ create table public.jd_billing_events (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id) on delete restrict,
   request_id uuid not null default gen_random_uuid(),
+  source_webhook_receipt_id uuid references public.jd_billing_webhook_receipts(id) on delete restrict,
   actor_id uuid references auth.users(id) on delete set null,
   event_type text not null,
   event_json jsonb not null default '{}'::jsonb check (jsonb_typeof(event_json) = 'object'),
   created_at timestamptz not null default now()
 );
 create unique index jd_billing_events_request on public.jd_billing_events(school_id, request_id);
+create unique index jd_billing_events_webhook_receipt
+  on public.jd_billing_events(source_webhook_receipt_id)
+  where source_webhook_receipt_id is not null;
 create index jd_billing_events_scope on public.jd_billing_events(school_id, created_at desc);
 
 -- One-time 3-day trial. A tenant can never restart or extend it by replaying requests.
