@@ -121,20 +121,27 @@ Deno.serve(async (req: Request) => {
       .eq("request_id", body.requestId)
       .maybeSingle();
     if (existingError) return send({ error: "Could not load checkout request" }, 503);
-    if (existing?.checkout_url && existing.status === "pending" &&
-        existing.checkout_expires_at && Date.parse(existing.checkout_expires_at) > Date.now()) {
+    if (existing?.checkout_url && existing.status === "pending") {
       return send({ checkout_url: existing.checkout_url, reference: existing.provider_reference, reused: true });
     }
     if (existing?.status === "pending") {
-      const { error: expireError } = await db.from("jd_billing_payments")
-        .update({ status: "failed" })
-        .eq("school_id", profile.school_id)
-        .eq("provider_reference", existing.provider_reference)
-        .eq("status", "pending");
-      if (expireError) return send({ error: "Could not expire the previous checkout request", code: "billing_checkout_expiry_failed" }, 503);
-      return send({ error: "The previous checkout link expired or could not be saved. Start a new checkout request.", code: "billing_checkout_expired" }, 409);
+      return send({ error: "Checkout is still being initialised. Refresh billing before retrying.", code: "billing_checkout_in_progress" }, 409);
     }
     if (existing) return send({ error: "This checkout request has already been used. Start a new request.", code: "billing_request_reused" }, 409);
+
+    // Only one outstanding Paystack checkout is allowed per workspace. This
+    // prevents repeated clicks or network retries from creating multiple payable links.
+    const { data: pendingCheckout, error: pendingCheckoutError } = await db.from("jd_billing_payments")
+      .select("provider_reference,checkout_url,status")
+      .eq("school_id", profile.school_id).eq("status", "pending")
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (pendingCheckoutError) return send({ error: "Could not inspect an existing checkout", code: "billing_checkout_lookup_failed" }, 503);
+    if (pendingCheckout) {
+      if (pendingCheckout.checkout_url) {
+        return send({ checkout_url: pendingCheckout.checkout_url, reference: pendingCheckout.provider_reference, reused: true });
+      }
+      return send({ error: "Another checkout is still being initialised. Refresh billing before retrying.", code: "billing_checkout_in_progress" }, 409);
+    }
 
     // A Paystack plan overrides the transaction amount. Verify the provider-side
     // amount, currency and cadence before creating a checkout that can charge a customer.
@@ -231,10 +238,18 @@ Deno.serve(async (req: Request) => {
     });
     const verifyResult = await verifyResponse.json().catch(() => null);
     const transaction = verifyResult?.data;
-    if (!verifyResponse.ok || verifyResult?.status !== true || transaction?.status !== "success" ||
+    if (!verifyResponse.ok || verifyResult?.status !== true ||
         transaction?.reference !== reference || Number(transaction?.amount) !== Number(payment.amount_minor) ||
         transaction?.currency !== payment.currency) {
-      return send({ verified: false, status: transaction?.status || "unverified", error: "Payment has not been verified as successful" }, 409);
+      return send({ verified: false, status: "unverified", error: "Payment details could not be verified" }, 409);
+    }
+    if (transaction.status !== "success") {
+      if (["failed", "abandoned"].includes(transaction.status)) {
+        const { error: failedUpdateError } = await db.from("jd_billing_payments").update({ status: "failed" })
+          .eq("school_id", profile.school_id).eq("provider_reference", reference).eq("status", "pending");
+        if (failedUpdateError) return send({ error: "Payment is not successful and its state could not be reconciled" }, 503);
+      }
+      return send({ verified: false, status: transaction.status || "unverified", error: "Payment has not been verified as successful" }, 409);
     }
 
     const paidAt = transaction.paid_at || new Date().toISOString();
