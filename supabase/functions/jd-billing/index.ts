@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
       subscription: subscription ? { ...subscription, effective_status: expiredTrial ? "checkout_required" : subscription.status } : null,
       invoices: invoices || [],
       billing_live: Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE")),
-      checkout_enabled: Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") === "true" && Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
+      checkout_enabled: Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") === "true" && Deno.env.get("JD_BILLING_CANCEL_FLOW_ENABLED") === "true" && Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
       note: "Checkout is available only after the free trial expires and only when the Paystack plan and server secrets are configured.",
     });
   }
@@ -95,7 +95,7 @@ Deno.serve(async (req: Request) => {
     const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
     const planCode = Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE");
     const appUrl = Deno.env.get("JD_APP_URL");
-    if (Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") !== "true" || !secret || !planCode || !appUrl || !appUrl.startsWith("https://")) {
+    if (Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") !== "true" || Deno.env.get("JD_BILLING_CANCEL_FLOW_ENABLED") !== "true" || !secret || !planCode || !appUrl || !appUrl.startsWith("https://")) {
       return send({ error: "Paystack checkout is not enabled or configured", code: "billing_provider_not_configured" }, 503);
     }
 
