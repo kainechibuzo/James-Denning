@@ -418,12 +418,16 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       if (ackError || acknowledged !== true) throw new Error("Could not acknowledge the unknown-outcome job");
       return { job_id: jobId, status: "partially_completed", outcome: "unknown", automatic_retry: false };
     }
-    if (error instanceof NonRetryableAgentResponseError) {
+    if (error instanceof NonRetryableAgentResponseError || /Model provider returned HTTP 4\d\d/.test(detail)) {
       const completedAt = new Date().toISOString();
-      const safeMessage = "The model provider returned a malformed response. JD stopped this run without retrying it; review the provider response and start a new request if needed.";
+      const providerRejected = !(error instanceof NonRetryableAgentResponseError);
+      const errorCode = providerRejected ? "provider_request_rejected" : "invalid_model_response";
+      const safeMessage = providerRejected
+        ? "The model provider rejected JD’s request. The run was stopped without retrying; review the provider configuration and start a new request after the issue is fixed."
+        : "The model provider returned a malformed response. JD stopped this run without retrying it; review the provider response and start a new request if needed.";
       const { data: failedRun, error: failedRunError } = await admin.from("jd_automation_runs").update({
         status: "failed",
-        result_json: { error_code: "invalid_model_response", message: detail.slice(0, MAX_ERROR_LENGTH), retryable: false },
+        result_json: { error_code: errorCode, message: detail.slice(0, MAX_ERROR_LENGTH), retryable: false },
         completed_at: completedAt,
       }).eq("id", runId).eq("school_id", schoolId).select("id").maybeSingle();
       if (failedRunError || !failedRun) throw new Error("Malformed model response was detected, but the run could not be marked failed");
@@ -434,13 +438,13 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       const { data: pendingMessage } = await admin.from("jd_messages").select("id")
         .eq("school_id", schoolId).contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
       if (pendingMessage?.id) {
-        await admin.from("jd_messages").update({ content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" } })
+        await admin.from("jd_messages").update({ content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: errorCode } })
           .eq("id", pendingMessage.id).eq("school_id", schoolId);
       } else if (streamConversationId) {
         await admin.from("jd_messages").insert({ school_id: schoolId, conversation_id: streamConversationId, role: "assistant", content: safeMessage, content_json: { job_id: jobId, status: "failed", streaming: false, error_code: "invalid_model_response" }, created_by_agent: true });
       }
       await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
-      return { job_id: jobId, status: "failed", error_code: "invalid_model_response" };
+      return { job_id: jobId, status: "failed", error_code: errorCode };
     }
     const { data: retryResult, error: retryError } = await admin.rpc("jd_retry_execution_job", {
       p_job_id: jobId,
