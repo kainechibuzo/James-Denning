@@ -31,13 +31,13 @@ test("billing UI starts trial and checkout only after explicit owner action", ()
 test("checkout requires an expired trial and server-side Paystack configuration", () => {
   assert.match(endpoint, /PAYSTACK_PLATFORM_PLAN_CODE/);
   assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
-  assert.match(endpoint, /api\\.paystack\\.co\\/plan\\//);
+  assert.match(endpoint, /api\.paystack\.co\/plan\//);
   assert.match(endpoint, /billing_plan_mismatch/);
   assert.match(endpoint, /PAYSTACK_SECRET_KEY/);
   assert.match(endpoint, /JD_APP_URL/);
   assert.match(endpoint, /Your free trial is still active/);
-  assert.match(endpoint, /transaction\\?\.status !== "success"/);
-  assert.match(endpoint, /transaction\\?\.reference !== reference/);
+  assert.match(endpoint, /transaction\?\.status !== "success"/);
+  assert.match(endpoint, /transaction\?\.reference !== reference/);
 });
 
 test("webhook validates signatures and persists replay-safe receipts before processing", () => {
@@ -49,7 +49,7 @@ test("webhook validates signatures and persists replay-safe receipts before proc
 });
 
 test("webhook finalisation uses shared crypto and the atomic payment RPC", () => {
-  assert.match(webhook, /rpc\\("jd_billing_finalize_payment"/);
-  assert.doesNotMatch(webhook, /changes\\.status = "active"/);
-  assert.match(webhook, /\.\.\\/_shared\\/jd-paystack-webhook-crypto\.ts/);
+  assert.match(webhook, /rpc\("jd_billing_finalize_payment"/);
+  assert.doesNotMatch(webhook, /changes\.status = "active"/);
+  assert.match(webhook, /\.\.\/_shared\/jd-paystack-webhook-crypto\.ts/);
 });
