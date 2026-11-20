@@ -11,7 +11,7 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 
-import { isQueueMessage, retryDelaySeconds, safeWorkerId, type QueueMessage } from "./_shared/jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError, type QueueMessage } from "./_shared/jd-execution-worker-helpers.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
@@ -281,7 +281,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
             completed_at: new Date().toISOString(),
           }).eq("id", stepId).eq("school_id", schoolId).eq("run_id", runId)
             .select("id").maybeSingle();
-          if (error || !data) throw new Error("Could not persist execution step result");
+          if (error || !data) throw new NonRetryableExecutionEvidenceError("Could not persist execution step result");
         }
         if (verifiedResult) {
           const { data, error } = await admin.rpc("jd_checkpoint_execution_job", {
@@ -371,6 +371,53 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Execution failed";
     if (leaseLost) return { job_id: jobId, status: "lease_lost" };
+    if (isNonRetryableExecutionEvidenceError(error)) {
+      const completedAt = new Date().toISOString();
+      const safeMessage = "An action may have run, but JD could not save its verification evidence. The run has been stopped and will not be retried automatically. Check the connected service before trying again.";
+      const { data: unknownSteps, error: stepError } = await admin.from("jd_automation_steps").update({
+        status: "failed",
+        error_message: "Execution evidence could not be persisted; outcome unknown and automatic retry blocked",
+        output_json: { event: "outcome_unknown", verification: "evidence_persistence_failed", retryable: false },
+        completed_at: completedAt,
+      }).eq("school_id", schoolId).eq("run_id", runId).eq("status", "running").select("id");
+      if (stepError) throw new Error("Could not persist the unknown execution outcome");
+      const { data: partialRun, error: runError } = await admin.from("jd_automation_runs").update({
+        status: "partially_completed",
+        result_json: { error_code: "execution_evidence_persistence_failed", outcome: "unknown", retryable: false, execution_job_id: jobId, affected_steps: (unknownSteps || []).length },
+        completed_at: completedAt,
+      }).eq("id", runId).eq("school_id", schoolId).select("id").maybeSingle();
+      if (runError || !partialRun) throw new Error("Could not persist the partial run state");
+      const { error: auditError } = await admin.from("jd_audit_events").insert({
+        school_id: schoolId, actor_id: requestedBy, run_id: runId, event_type: "automation.outcome_unknown",
+        event_json: { job_id: jobId, error_code: "execution_evidence_persistence_failed", affected_steps: (unknownSteps || []).length, automatic_retry: false },
+      });
+      if (auditError) throw new Error("Could not persist the unknown-outcome audit event");
+      const { data: pendingMessage, error: messageLookupError } = await admin.from("jd_messages").select("id")
+        .eq("school_id", schoolId).contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
+      if (messageLookupError) throw new Error("Could not locate the execution status message");
+      const messagePayload = {
+        content: safeMessage,
+        content_json: { job_id: jobId, status: "partially_completed", streaming: false, outcome: "unknown", error_code: "execution_evidence_persistence_failed" },
+      };
+      if (pendingMessage?.id) {
+        const { error: messageError } = await admin.from("jd_messages").update(messagePayload).eq("id", pendingMessage.id).eq("school_id", schoolId);
+        if (messageError) throw new Error("Could not persist the unknown-outcome message");
+      } else if (streamConversationId) {
+        const { error: messageError } = await admin.from("jd_messages").insert({
+          school_id: schoolId, conversation_id: streamConversationId, role: "assistant", ...messagePayload, created_by_agent: true,
+        });
+        if (messageError) throw new Error("Could not create the unknown-outcome message");
+      }
+      const { data: finished, error: finishError } = await admin.rpc("jd_finish_execution_job", {
+        p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "partially_completed",
+      });
+      if (finishError || finished !== true) throw new Error("Could not finalise the unknown-outcome job");
+      const { data: acknowledged, error: ackError } = await admin.rpc("jd_ack_execution_message", {
+        p_job_id: jobId, p_queue_message_id: message.message_id,
+      });
+      if (ackError || acknowledged !== true) throw new Error("Could not acknowledge the unknown-outcome job");
+      return { job_id: jobId, status: "partially_completed", outcome: "unknown", automatic_retry: false };
+    }
     if (error instanceof NonRetryableAgentResponseError) {
       const completedAt = new Date().toISOString();
       const safeMessage = "The model provider returned a malformed response. JD stopped this run without retrying it; review the provider response and start a new request if needed.";
