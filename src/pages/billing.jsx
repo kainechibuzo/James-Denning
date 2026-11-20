@@ -171,7 +171,7 @@ export function BillingPage({ ctx }) {
               {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
             </button> :
             status === "active" ? <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div> : null}
-          {checkoutDue && !checkoutEnabled && <p style={{ color: C.muted, fontSize: 11, lineHeight: 1.5, margin: "9px 0 0" }}>Payment checkout is not configured yet. Your workspace will not be charged.</p>}
+          {checkoutDue && !checkoutEnabled && <p style={{ color: C.muted, fontSize: 11, lineHeight: 1.5, margin: "9px 0 0" }}>Checkout remains disabled until recurring cancellation controls and provider configuration are verified. No payment will be taken here.</p>}
         </div>
       </Panel>
 
