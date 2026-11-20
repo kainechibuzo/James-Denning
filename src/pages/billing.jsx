@@ -137,6 +137,11 @@ export function BillingPage({ ctx }) {
     setWorking("checkout"); setError(""); setNotice("");
     try {
       const result = await call({ action: "billing.checkout.create", requestId: crypto.randomUUID() });
+      if (result?.verified && result?.status === "succeeded") {
+        setNotice("Your previous payment was already completed and has now been verified.");
+        await refresh();
+        return;
+      }
       if (!result?.checkout_url || !result.checkout_url.startsWith("https://checkout.paystack.com/")) {
         throw new Error("The payment provider returned an invalid checkout URL");
       }
