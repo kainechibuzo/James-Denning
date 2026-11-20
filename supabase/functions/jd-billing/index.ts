@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
   if (body.action === "billing.snapshot") {
     const { data: subscription, error: subscriptionError } = await db
       .from("jd_billing_subscriptions")
-      .select("plan_key,status,currency,amount_minor,trial_started_at,trial_ends_at,current_period_start,current_period_end,cancel_at_period_end,next_payment_at,last_payment_at,created_at")
+      .select("plan_key,status,currency,amount_minor,trial_started_at,trial_ends_at,current_period_start,current_period_end,cancel_at_period_end,next_payment_at,last_payment_at,provider_subscription_code,created_at")
       .eq("school_id", profile.school_id)
       .maybeSingle();
     if (subscriptionError) return send({ error: "Could not load billing status" }, 503);
@@ -88,6 +88,63 @@ Deno.serve(async (req: Request) => {
       checkout_enabled: Deno.env.get("JD_BILLING_CHECKOUT_ENABLED") === "true" && Deno.env.get("JD_BILLING_CANCEL_FLOW_ENABLED") === "true" && Boolean(Deno.env.get("PAYSTACK_SECRET_KEY") && Deno.env.get("PAYSTACK_PLATFORM_PLAN_CODE") && Deno.env.get("JD_APP_URL")),
       note: "Checkout is available only after the free trial expires and only when the Paystack plan and server secrets are configured.",
     });
+  }
+
+  if (body.action === "billing.subscription.cancel") {
+    const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
+    if (!secret) return send({ error: "Paystack subscription management is not configured", code: "billing_provider_not_configured" }, 503);
+    const { data: subscription, error: subscriptionError } = await db
+      .from("jd_billing_subscriptions")
+      .select("status,provider_subscription_code,provider_customer_code,current_period_end")
+      .eq("school_id", profile.school_id)
+      .maybeSingle();
+    if (subscriptionError) return send({ error: "Could not load subscription state" }, 503);
+    if (!subscription?.provider_subscription_code) return send({ error: "No Paystack subscription is linked to this workspace", code: "billing_subscription_not_linked" }, 409);
+    if (subscription.status === "cancelled") return send({ cancelled: true, reused: true, current_period_end: subscription.current_period_end });
+    if (!["active", "past_due"].includes(subscription.status)) {
+      return send({ error: "This subscription cannot be cancelled in its current state", code: "billing_cancellation_not_available" }, 409);
+    }
+
+    const providerResponse = await fetch(`https://api.paystack.co/subscription/${encodeURIComponent(subscription.provider_subscription_code)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const providerResult = await providerResponse.json().catch(() => null);
+    const providerSubscription = providerResult?.data;
+    if (!providerResponse.ok || providerResult?.status !== true ||
+        providerSubscription?.subscription_code !== subscription.provider_subscription_code ||
+        typeof providerSubscription?.email_token !== "string" ||
+        !["active", "non-renewing"].includes(providerSubscription?.status)) {
+      console.error("Paystack subscription could not be verified for cancellation", {
+        status: providerResponse.status,
+        provider_status: providerSubscription?.status,
+      });
+      return send({ error: "Paystack could not confirm the linked subscription. No local cancellation was recorded.", code: "billing_provider_subscription_unverified" }, 409);
+    }
+    const providerCustomerCode = providerSubscription.customer?.customer_code;
+    if (subscription.provider_customer_code && providerCustomerCode !== subscription.provider_customer_code) {
+      return send({ error: "The provider subscription customer does not match this workspace", code: "billing_subscription_customer_mismatch" }, 403);
+    }
+
+    const disableResponse = await fetch("https://api.paystack.co/subscription/disable", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ code: subscription.provider_subscription_code, token: providerSubscription.email_token }),
+    });
+    const disableResult = await disableResponse.json().catch(() => null);
+    if (!disableResponse.ok || disableResult?.status !== true) {
+      console.error("Paystack subscription disable failed", { status: disableResponse.status, message: disableResult?.message });
+      return send({ error: "Paystack could not disable future renewals. Your local subscription state was not changed.", code: "billing_provider_cancellation_failed" }, 502);
+    }
+
+    const { data: cancellation, error: cancellationError } = await db.rpc("jd_billing_mark_subscription_cancelled", {
+      p_school_id: profile.school_id,
+      p_actor_id: authData.user.id,
+      p_subscription_code: subscription.provider_subscription_code,
+    });
+    if (cancellationError || !cancellation?.cancelled) {
+      return send({ error: "Paystack has stopped future renewals, but JD is still reconciling the local subscription state.", code: "billing_cancellation_reconciliation_pending" }, 503);
+    }
+    return send({ cancelled: true, reused: Boolean(cancellation.reused), current_period_end: cancellation.current_period_end });
   }
 
   if (body.action === "billing.checkout.create") {
