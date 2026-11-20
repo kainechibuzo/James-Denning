@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, CalendarDays, CheckCircle2, Clock3, CreditCard, FileText, LoaderCircle, RefreshCw, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
-import { C } from "../config/theme.js";
 import "./billing.css";
 
 const money = (minor, currency = "USD") => new Intl.NumberFormat("en-US", {
@@ -16,19 +15,11 @@ const remaining = (value) => {
   return days ? `${days} day${days === 1 ? "" : "s"} remaining` : `${hours} hour${hours === 1 ? "" : "s"} remaining`;
 };
 
-function Panel({ children, style = {} }) {
-  return <section style={{
-    background: "var(--jd-card)", border: "1px solid var(--jd-border)",
-    borderRadius: 16, padding: 20, minWidth: 0, ...style,
-  }}>{children}</section>;
-}
 function Status({ status }) {
   const label = ({ trialing: "Free trial", checkout_required: "Payment required", active: "Active",
     past_due: "Payment overdue", cancelled: "Cancelled", expired: "Expired", incomplete: "Incomplete" })[status] || "Not started";
-  return <span style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 99,
-    padding: "6px 10px", background: "var(--jd-soft)", border: "1px solid var(--jd-border)",
-    color: "var(--jd-text)", fontSize: 12, fontWeight: 700 }}>
-    <span style={{ width: 7, height: 7, borderRadius: 99, background: status === "active" ? "#65b98a" : "#a3a3a3" }}/>
+  return <span className={`jd-billing-status status-${status || "not_started"}`}>
+    <span className="jd-billing-status-dot"/>
     {label}
   </span>;
 }
@@ -279,19 +270,3 @@ export function BillingPage({ ctx }) {
   </main>;
 }
 
-const primaryButton = {
-  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-  padding: "11px 15px", border: "none", borderRadius: 9, background: "var(--jd-action)",
-  color: "var(--jd-on-action)", fontWeight: 800, fontSize: 12, cursor: "pointer",
-};
-const secondaryButton = {
-  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-  padding: "9px 12px", border: "1px solid var(--jd-border)", borderRadius: 9,
-  background: "var(--jd-card)", color: "var(--jd-text)", fontWeight: 700, fontSize: 12, cursor: "pointer",
-};
-const dangerButton = {
-  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-  padding: "9px 12px", border: "1px solid #9a6666", borderRadius: 9,
-  background: "var(--jd-soft)", color: "var(--jd-text)", fontWeight: 800, fontSize: 12, cursor: "pointer",
-};
-const cellStyle = { padding: "11px 8px", borderBottom: "1px solid var(--jd-border)", color: "var(--jd-text)" };
