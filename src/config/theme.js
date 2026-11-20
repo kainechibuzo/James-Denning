@@ -10,13 +10,14 @@ export const LIGHT={
  ...statusLight,shadow:"0 2px 4px rgba(0,0,0,.035)",shadowMd:"0 5px 18px rgba(0,0,0,.055)",shadowLg:"0 14px 36px rgba(0,0,0,.08)",shadowXl:"0 24px 56px rgba(0,0,0,.12)"
 };
 export const DARK={
- orange:"#f2f3f5",orangeDark:"#ffffff",orangePale:"#252629",orangeLight:"#b6b7bf",
- blue:"#f2f3f5",bluePale:"#252629",blueDark:"#ffffff",blueLight:"#b6b7bf",
- white:"#17181b",offWhite:"#111214",card:"#1d1e22",filter:"#252629",
- border:"#38393f",borderLight:"#2b2c31",text:"#f3f4f5",textSoft:"#d1d2d8",muted:"#b6b7bf",light:"#94959f",
- green:"#d1d2d8",greenPale:"#252629",greenLight:"#38393f",red:"#d1d2d8",redPale:"#252629",redLight:"#38393f",
- amber:"#d1d2d8",amberPale:"#252629",purple:"#d1d2d8",purplePale:"#252629",teal:"#d1d2d8",tealPale:"#252629",
- shadow:"0 2px 4px rgba(0,0,0,.18)",shadowMd:"0 8px 24px rgba(0,0,0,.20)",shadowLg:"0 20px 45px rgba(0,0,0,.24)",shadowXl:"0 32px 64px rgba(0,0,0,.28)"
+ // True-black canvas with restrained near-black layers for readable depth.
+ orange:"#f5f5f5",orangeDark:"#ffffff",orangePale:"#111111",orangeLight:"#a3a3a3",
+ blue:"#f5f5f5",bluePale:"#111111",blueDark:"#ffffff",blueLight:"#a3a3a3",
+ white:"#000000",offWhite:"#000000",card:"#090909",filter:"#111111",
+ border:"#262626",borderLight:"#1b1b1b",text:"#f5f5f5",textSoft:"#d4d4d4",muted:"#a3a3a3",light:"#858585",
+ green:"#d4d4d4",greenPale:"#111111",greenLight:"#262626",red:"#d4d4d4",redPale:"#111111",redLight:"#262626",
+ amber:"#d4d4d4",amberPale:"#111111",purple:"#d4d4d4",purplePale:"#111111",teal:"#d4d4d4",tealPale:"#111111",
+ shadow:"0 2px 4px rgba(0,0,0,.45)",shadowMd:"0 8px 24px rgba(0,0,0,.5)",shadowLg:"0 20px 45px rgba(0,0,0,.58)",shadowXl:"0 32px 64px rgba(0,0,0,.65)"
 };
 export let C=LIGHT;
 export const setTheme=dark=>{C=dark?DARK:LIGHT};

@@ -1,0 +1,88 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const [app, page, navigation, endpoint, webhook, supabaseConfig] = await Promise.all([
+  readFile(new URL("../src/AppDemo.jsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/pages/billing.jsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/config/workspace-navigation.mjs", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/functions/jd-billing/index.ts", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/functions/jd-paystack-webhook/index.ts", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/config.toml", import.meta.url), "utf8"),
+]);
+
+test("billing page is lazy-loaded and mounted only through the authorised billing route", () => {
+  assert.match(app, /lazyPage\(\(\) => import\("\.\/pages\/billing\.jsx"\), "BillingPage"\)/);
+  assert.match(app, /page==="billing" && \(canAccess\("billing"\) \? <BillingPage/);
+  assert.match(navigation, /id:"billing",\s+label:"Billing",\s+icon:"wallet",\s+roles:\["owner","admin"\]/);
+});
+
+test("billing UI starts trial and checkout only after explicit owner action", () => {
+  assert.match(page, /billing\.trial\.start/);
+  assert.match(page, /billing\.checkout\.create/);
+  assert.match(page, /billing\.checkout\.verify/);
+  assert.match(page, /Start 3-day free trial/);
+  assert.match(page, /Continue with Paystack/);
+  assert.match(page, /No payment has been taken/);
+  assert.match(page, /checkoutEnabled/);
+  assert.match(page, /billing.subscription.cancel/);
+  assert.match(page, /billing.subscription.manage_link/);
+  assert.match(page, /Update payment method/);
+  assert.match(page, /Cancel subscription/);
+  assert.match(page, /Confirm cancellation/);
+  assert.match(page, /checkout\.paystack\.com/);
+  assert.doesNotMatch(page, /PAYSTACK_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+});
+
+test("checkout requires an expired trial and server-side Paystack configuration", () => {
+  assert.match(endpoint, /PAYSTACK_PLATFORM_PLAN_CODE/);
+  assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
+  assert.match(endpoint, /JD_BILLING_CANCEL_FLOW_ENABLED/);
+  assert.match(endpoint, /api\.paystack\.co\/plan\//);
+  assert.match(endpoint, /billing_plan_mismatch/);
+  assert.match(endpoint, /PAYSTACK_SECRET_KEY/);
+  assert.match(endpoint, /JD_APP_URL/);
+  assert.match(endpoint, /Your free trial is still active/);
+  assert.match(endpoint, /transaction\.status !== "success"/);
+  assert.match(endpoint, /transaction\?\.reference !== reference/);
+});
+
+test("webhook validates signatures and persists replay-safe receipts before processing", () => {
+  assert.match(webhook, /verifyPaystackWebhookSignature/);
+  assert.match(webhook, /jd_billing_webhook_receipts/);
+  assert.match(webhook, /prior\.status !== "failed"/);
+  assert.match(webhook, /source_webhook_receipt_id: receiptId/);
+  assert.match(webhook, /transaction\/verify/);
+});
+
+test("webhook finalisation uses shared crypto and the atomic payment RPC", () => {
+  assert.match(webhook, /rpc\("jd_billing_finalize_payment"/);
+  assert.doesNotMatch(webhook, /changes\.status = "active"/);
+  assert.match(webhook, /\.\.\/_shared\/jd-paystack-webhook-crypto\.ts/);
+});
+
+test("billing API requires user JWT while the Paystack callback relies on HMAC verification", () => {
+  assert.match(supabaseConfig, /\[functions\.jd-billing\][\s\S]*?verify_jwt = true/);
+  assert.match(supabaseConfig, /\[functions\.jd-paystack-webhook\][\s\S]*?verify_jwt = false/);
+});
+
+test("cancellation verifies Paystack subscription ownership and never exposes the email token", () => {
+  assert.match(endpoint, /api\.paystack\.co\/subscription\//);
+  assert.match(endpoint, /providerSubscription\?\.email_token/);
+  assert.match(endpoint, /api\.paystack\.co\/subscription\/disable/);
+  assert.match(endpoint, /rpc\("jd_billing_mark_subscription_cancelled"/);
+  assert.match(endpoint, /provider_customer_code/);
+  assert.doesNotMatch(page, /email_token|PAYSTACK_SECRET_KEY/);
+});
+
+test("Paystack disable webhook preserves access through the paid period", () => {
+  assert.match(webhook, /periodStillPaid/);
+  assert.match(webhook, /changes\.cancel_at_period_end = periodStillPaid/);
+});
+
+test("payment-method management links are created server-side and constrained to Paystack", () => {
+  assert.match(endpoint, /subscription\/.*\/manage\/link/);
+  assert.match(endpoint, /parsed\.hostname === "paystack\.com"/);
+  assert.match(endpoint, /parsed\.pathname\.startsWith\("\/manage\/subscriptions\/"\)/);
+  assert.doesNotMatch(page, /email_token|PAYSTACK_SECRET_KEY/);
+});

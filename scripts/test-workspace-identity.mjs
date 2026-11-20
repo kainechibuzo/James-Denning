@@ -18,8 +18,8 @@ test('profile, authenticated actor and workspace identities must agree before pe
 });
 test('owner gets JD-only routes with explicit denial preserved',()=>{
  const build=canAccess=>buildWorkspaceNavigation({role:'owner',canAccess});
- assert.deepEqual(build(()=>true).map(n=>n.id),['jd-chat','jd-operations']);
- assert.deepEqual(build(id=>id!=='jd-operations').map(n=>n.id),['jd-chat']);
+ assert.deepEqual(build(()=>true).map(n=>n.id),['jd-chat','jd-operations','g-organisation','billing']);
+ assert.deepEqual(build(id=>id!=='jd-operations').map(n=>n.id),['jd-chat','g-organisation','billing']);
  assert.deepEqual(build(()=>false),[]);
 });
 test('owner access is additive and scoped, not blanket legacy admin access',()=>{

@@ -1,7 +1,7 @@
 {
   "name": "james-denning",
   "version": "1.0.0",
-  "description": "JAMES-DENNING \u2014 Organization Operations Workspace",
+  "description": "JAMES-DENNING — Organization Operations Workspace",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -23,7 +23,7 @@
     "test:chat-layout": "node scripts/test-chat-layout.mjs && node scripts/test-settings-layout.mjs && node scripts/test-agent-studio-layout.mjs && node scripts/test-foundation-layout.mjs && node scripts/test-agent-registry-layout.mjs && npm run test:reference-layout && npm run test:site-layout && npm run test:conversation-layout && npm run test:theme-layout && npm run test:connectors && node scripts/test-mobile-polish-layout.mjs && node scripts/test-connector-tokens-layout.mjs",
     "test:registry": "node --experimental-strip-types --test scripts/test-agent-registry.mjs scripts/test-agent-registry-database.mjs scripts/test-agent-registry-ui.mjs",
     "test:usage": "node --experimental-strip-types --test scripts/test-usage-ledger-database.mjs scripts/test-usage-service.mjs scripts/test-usage-runtime.mjs",
-    "test:foundation": "node --experimental-strip-types --test scripts/test-business-foundation.mjs scripts/test-foundation-database.mjs scripts/test-foundation-ui.mjs",
+    "test:foundation": "node --experimental-strip-types --test scripts/test-business-foundation.mjs scripts/test-foundation-database.mjs scripts/test-foundation-ui.mjs && npm run test:billing",
     "test:agents": "node --experimental-strip-types --test scripts/test-agent-architect.mjs scripts/test-agent-studio-ui.mjs",
     "test:settings": "node --experimental-strip-types --test scripts/test-settings-review.mjs scripts/test-settings-review-database.mjs",
     "test:approvals": "node --test scripts/test-approval-expiry-database.mjs",
@@ -33,11 +33,12 @@
     "test:site-layout": "node scripts/test-site-design-layout.mjs",
     "test:dependency-security": "node --test scripts/test-picomatch-security.mjs",
     "test:conversation-layout": "node scripts/test-conversation-layout.mjs",
-    "test:theme-layout": "JD_THEME_AUDIT=1 node scripts/test-site-design-layout.mjs",
+    "test:theme-layout": "JD_THEME_AUDIT=1 node scripts/test-site-design-layout.mjs && node --test scripts/test-true-black-theme.mjs",
     "test:connectors": "node --test scripts/test-composer-connectors.mjs && node scripts/test-composer-focus-layout.mjs && node scripts/test-composer-connectors-layout.mjs",
     "test:work-apps": "node --experimental-strip-types --test scripts/test-workspace-apps.mjs scripts/test-workspace-apps-database.mjs scripts/test-workspace-oauth-endpoint.mjs scripts/test-workspace-refresh.mjs",
     "test:connector-oauth": "node --experimental-strip-types --test scripts/test-connector-oauth.mjs scripts/test-connector-oauth-database.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-errors.mjs",
-    "test:connector-tokens": "node --experimental-strip-types --test scripts/test-connector-tokens.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-database.mjs"
+    "test:connector-tokens": "node --experimental-strip-types --test scripts/test-connector-tokens.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-database.mjs",
+    "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs scripts/test-billing-ui.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

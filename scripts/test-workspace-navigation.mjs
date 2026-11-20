@@ -16,7 +16,7 @@ function assertGroups(nav){
 const REMOVED=["dashboard","members","students","teachers","classes","subjects","results","report-cards","transcript","grading","fees","fee-tracker","my-bill","attendance","timetable","calendar","broadsheet","sections","approvals","access-requests","my-results"];
 
 test("catalogue contains only JD workspace routes; legacy portal routes are gone",()=>{
-  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["jd-chat","jd-operations","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
+  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["jd-chat","jd-operations","billing","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
   for(const id of REMOVED)assert.ok(!WORKSPACE_NAVIGATION.some(n=>n.id===id),`${id} removed`);
   for(const n of WORKSPACE_NAVIGATION)for(const role of n.roles)assert.ok(["owner","admin","manager"].includes(role),`${n.id}:${role}`);
 });
@@ -24,12 +24,13 @@ test("admin sees every route, grouped",()=>{
   const nav=build();
   assert.deepEqual(pageIds(nav),WORKSPACE_NAVIGATION.map(n=>n.id).sort());assertGroups(nav);
   assert.deepEqual(nav.slice(0,2).map(n=>n.id),["jd-chat","jd-operations"]);
+  assert.ok(nav.some(n=>n.id==="billing"&&n.roles.includes("admin")&&n.roles.includes("owner")));
   const declared=BUSINESS_GROUPS.flatMap(g=>g.pages);assert.equal(new Set(declared).size,declared.length);
 });
 for(const role of ["owner","manager"])for(const policy of ["allow","deny","subset"])test(`${role} / ${policy} only gets permitted JD routes`,()=>{
   const canAccess=id=>policy==="allow"||(policy==="subset"&&id==="jd-chat");
   const nav=build({role,canAccess});
-  const expected=policy==="allow"?["jd-chat","jd-operations"]:policy==="subset"?["jd-chat"]:[];
+  const expected=policy==="allow"?(role==="owner"?["billing","jd-chat","jd-operations"]:["jd-chat","jd-operations"]):policy==="subset"?["jd-chat"]:[];
   assert.deepEqual(pageIds(nav),expected.sort());assertGroups(nav);
 });
 test("unsupported and legacy roles get no implicit grant, even with a permissive resolver",()=>{
@@ -63,4 +64,11 @@ test("shell wires role resolver, group resets, account access and reauthenticati
   assert.match(shell,/returnFocus=\{isMobile\?navigationToggleRef.current:workspaceSwitchRef.current\}/);
   assert.match(shell,/function AccessDenied\(\)/,"denied routes render a defined component");
   for(const legacy of ["SchoolSelectPage","PlatformDashboardPage","SectionSelector","LoginPage","SCHOOL_SLUGS"])assert.doesNotMatch(shell,new RegExp(legacy));
+});
+
+test("billing is available to owners and admins only",()=>{
+  assert.ok(build({role:"admin"}).some(n=>n.id==="billing"));
+  assert.ok(build({role:"owner",canAccess:id=>id==="billing"}).some(n=>n.id==="billing"));
+  assert.ok(!build({role:"owner",canAccess:()=>false}).some(n=>n.id==="billing"));
+  assert.ok(!build({role:"manager",canAccess:()=>true}).some(n=>n.id==="billing"));
 });

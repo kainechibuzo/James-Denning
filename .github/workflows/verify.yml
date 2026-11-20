@@ -95,9 +95,15 @@ jobs:
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-tool-evidence.test.ts
           deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-execution-worker/index.ts,supabase/functions/_shared/jd-agent-runtime.ts supabase/functions/_shared/jd-execution-recovery.test.ts
           deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119120000_jd_connector_outcome_unknown.sql supabase/functions/_shared/jd-connector-outcome-migration.test.ts
+      - name: Test Paystack webhook signature verification
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-paystack-webhook-crypto.test.ts
+
       - name: Type-check JD MCP functions
         run: |
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-paystack-webhook/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-oauth-callback/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect-oauth/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
