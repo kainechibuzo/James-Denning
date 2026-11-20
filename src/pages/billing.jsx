@@ -136,6 +136,7 @@ export function BillingPage({ ctx }) {
   const invoices = snapshot?.invoices || [];
   const statusDescription = useMemo(() => {
     if (trialActive) return `Your free trial ends ${dateTime(subscription.trial_ends_at)}. No charge is made during the trial.`;
+    if (subscription?.cancel_at_period_end) return `Automatic renewal is off. Your current paid period ends ${dateTime(subscription?.current_period_end)}.`;
     if (status === "active") return `Your platform subscription renews monthly. Next billing date: ${dateTime(subscription?.current_period_end)}.`;
     if (checkoutDue) return "Your trial has ended or payment needs attention. Review the amount and continue through secure checkout when ready.";
     if (status === "cancelled") return `Your subscription is cancelled. No further automatic renewals are scheduled. The current paid period is recorded through ${dateTime(subscription?.current_period_end)}.`;
@@ -186,9 +187,11 @@ export function BillingPage({ ctx }) {
             </button> :
             status === "active" ? <div style={{ display: "grid", gap: 10 }}>
               <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div>
-              {subscription?.provider_subscription_code
-                ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
-                : <span style={{ color: C.muted, fontSize: 11 }}>Subscription management is still being linked.</span>}
+              {subscription?.cancel_at_period_end
+                ? <span style={{ color: C.muted, fontSize: 11 }}>Automatic renewal is off</span>
+                : subscription?.provider_subscription_code
+                  ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                  : <span style={{ color: C.muted, fontSize: 11 }}>Subscription management is still being linked.</span>}
             </div> : null}
           {checkoutDue && !checkoutEnabled && <p style={{ color: C.muted, fontSize: 11, lineHeight: 1.5, margin: "9px 0 0" }}>Checkout remains disabled until recurring cancellation controls and provider configuration are verified. No payment will be taken here.</p>}
         </div>
