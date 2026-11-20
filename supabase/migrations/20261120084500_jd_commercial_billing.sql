@@ -111,12 +111,63 @@ create index jd_billing_webhook_pending
 create table public.jd_billing_events (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id) on delete restrict,
+  request_id uuid not null default gen_random_uuid(),
   actor_id uuid references auth.users(id) on delete set null,
   event_type text not null,
   event_json jsonb not null default '{}'::jsonb check (jsonb_typeof(event_json) = 'object'),
   created_at timestamptz not null default now()
 );
+create unique index jd_billing_events_request on public.jd_billing_events(school_id, request_id);
 create index jd_billing_events_scope on public.jd_billing_events(school_id, created_at desc);
+
+-- One-time 3-day trial. A tenant can never restart or extend it by replaying requests.
+create function public.jd_billing_start_trial(p_actor_id uuid, p_request_id uuid)
+returns jsonb
+language plpgsql security definer set search_path='' as $
+declare
+  tenant uuid;
+  s public.jd_billing_subscriptions%rowtype;
+  prior public.jd_billing_events%rowtype;
+  affected integer := 0;
+  result jsonb;
+  event_name text;
+  now_at timestamptz := clock_timestamp();
+begin
+  if p_actor_id is null or p_request_id is null then
+    raise exception 'Actor and request identifiers are required' using errcode='22023';
+  end if;
+  select school_id into tenant from public.profiles
+    where id=p_actor_id and role in ('owner','admin');
+  if tenant is null then
+    raise exception 'Workspace owner permission required' using errcode='42501';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(tenant::text,20261120));
+  select * into prior from public.jd_billing_events
+    where school_id=tenant and request_id=p_request_id;
+  if found then return prior.event_json; end if;
+
+  insert into public.jd_billing_subscriptions
+    (school_id,provider,plan_key,status,currency,amount_minor,trial_started_at,trial_ends_at)
+  values
+    (tenant,'paystack','platform_monthly_v1','trialing','USD',1900,now_at,now_at+interval '3 days')
+  on conflict (school_id) do nothing;
+  get diagnostics affected = row_count;
+  select * into s from public.jd_billing_subscriptions where school_id=tenant;
+  if not found then raise exception 'Billing subscription state unavailable' using errcode='40001'; end if;
+
+  event_name := case when affected=1 then 'subscription.trial_started' else 'subscription.trial_start_reused' end;
+  result := jsonb_build_object(
+    'created',affected=1,
+    'status',case when s.status='trialing' and s.trial_ends_at<=now_at then 'checkout_required' else s.status end,
+    'plan_key',s.plan_key,'currency',s.currency,'amount_minor',s.amount_minor,
+    'trial_started_at',s.trial_started_at,'trial_ends_at',s.trial_ends_at,
+    'next_payment_at',s.next_payment_at,'charged',false
+  );
+  insert into public.jd_billing_events(school_id,actor_id,request_id,event_type,event_json)
+    values(tenant,p_actor_id,p_request_id,event_name,result);
+  return result;
+end;
+$;
 
 create function public.jd_billing_immutable_event() returns trigger
 language plpgsql set search_path='' as $$
@@ -146,6 +197,8 @@ grant select, insert, update, delete on public.jd_billing_subscriptions,
 revoke update, delete on public.jd_billing_events from service_role;
 
 revoke all on function public.jd_billing_immutable_event() from public, anon, authenticated, service_role;
+revoke all on function public.jd_billing_start_trial(uuid,uuid) from public, anon, authenticated;
+grant execute on function public.jd_billing_start_trial(uuid,uuid) to service_role;
 
 comment on table public.jd_billing_subscriptions is
   'Tenant SaaS subscription state. Initial USD 19/month and 3-day trial are product defaults; status is not activated by a browser callback.';
