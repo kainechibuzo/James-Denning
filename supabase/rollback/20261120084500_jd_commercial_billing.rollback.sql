@@ -10,6 +10,7 @@ begin
     raise exception 'Refusing to drop populated billing records; preserve and migrate data first';
   end if;
 end $$;
+drop function public.jd_billing_start_trial(uuid,uuid);
 drop table public.jd_billing_events;
 drop table public.jd_billing_webhook_receipts;
 drop table public.jd_billing_payments;
