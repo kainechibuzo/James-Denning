@@ -153,7 +153,7 @@ Deno.serve(async (req: Request) => {
         reference,
         plan: planCode,
         callback_url: callback.toString(),
-        metadata: { product: "james-denning", request_id: body.requestId },
+        metadata: { product: "james-denning", request_id: body.requestId, workspace_id: profile.school_id },
       }),
     });
     const providerResult = await paystackResponse.json().catch(() => null);
