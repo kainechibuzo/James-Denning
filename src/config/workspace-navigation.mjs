@@ -8,6 +8,7 @@ export const canAdministerOperations = role => ["owner","admin"].includes(role);
 const entries = [
   {id:"jd-chat",       label:"JD Assistant",          icon:"dashboard",  roles:["owner","admin","manager"]},
   {id:"jd-operations", label:"Tasks & Operations",    icon:"activity",   roles:["owner","admin","manager"]},
+  {id:"billing",       label:"Billing",               icon:"wallet",     roles:["owner","admin"]},
   {id:"hiring",        label:"Recruitment",           icon:"user-check", roles:["admin"]},
   {id:"mail-logs",     label:"Email Logs",            icon:"mail-logs",  roles:["admin"]},
   {id:"notifications", label:"Notifications",         icon:"bell",       roles:["admin"]},
@@ -24,7 +25,7 @@ export const WORKSPACE_NAVIGATION = Object.freeze(entries.map((entry) => Object.
 export const BUSINESS_GROUPS = Object.freeze([
   {id:"g-people",group:"People & Recruitment",pages:["hiring"]},
   {id:"g-communications",group:"Communications",pages:["mail-logs","notifications"]},
-  {id:"g-organisation",group:"Organisation",pages:["permissions","settings","admin-tools","org-create"]},
+  {id:"g-organisation",group:"Organisation",pages:["billing","permissions","settings","admin-tools","org-create"]},
 ].map((group) => Object.freeze({...group,pages:Object.freeze(group.pages)})));
 
 export function businessGroupForPage(page) {
