@@ -67,6 +67,29 @@ Deno.test("Gemini-compatible stream returns assistant text and complete tool cal
   equal(result.output.find((item: any) => item.type === "function_call").name, "get_people_intelligence", "tool name");
 });
 
+Deno.test("Gemini stream preserves thought signatures and adapter replays them verbatim", async () => {
+  const signature = "opaque-gemini-signature-do-not-modify";
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(
+        'data: {"choices":[{"delta":{"tool_calls":[{"id":"call_signed","type":"function","extra_content":{"google":{"thought_signature":"' + signature + '"}},"function":{"name":"lookup","arguments":"{}"}}]},"finish_reason":null}]}\n' +
+        'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n'
+      ));
+      controller.close();
+    },
+  });
+  const response = await readChatCompletionsStream(body);
+  const call = response.output.find((item: any) => item.type === "function_call");
+  equal(call.extra_content.google.thought_signature, signature, "signature retained in normalized response");
+  const messages = responsesInputToChatMessages([
+    { role: "user", content: "Look this up" },
+    ...response.output,
+    { type: "function_call_output", call_id: "call_signed", output: '{"ok":true}' },
+  ]);
+  equal(messages[1].tool_calls[0].extra_content.google.thought_signature, signature, "signature replayed to Gemini");
+  equal(messages[2].tool_call_id, "call_signed", "signed tool result correlation");
+});
+
 Deno.test("Gemini request adapter preserves instructions, tool outputs and function schemas", () => {
   const messages = responsesInputToChatMessages([
     { role: "user", content: "Check staff" },
