@@ -151,6 +151,7 @@ set search_path=''
 as $cancel$
 declare
   subscription public.jd_billing_subscriptions%rowtype;
+  paid_period_remaining boolean;
 begin
   if p_school_id is null or p_actor_id is null or p_subscription_code is null or length(trim(p_subscription_code))=0 then
     raise exception 'Workspace, actor and subscription identifiers are required' using errcode='22023';
@@ -169,9 +170,10 @@ begin
     raise exception 'Subscription is not eligible for cancellation' using errcode='55000';
   end if;
 
+  paid_period_remaining := subscription.current_period_end is not null and subscription.current_period_end>clock_timestamp();
   update public.jd_billing_subscriptions set
-    status=subscription.status,
-    cancel_at_period_end=true,
+    status=case when paid_period_remaining then subscription.status else 'cancelled' end,
+    cancel_at_period_end=paid_period_remaining,
     next_payment_at=null,
     updated_at=clock_timestamp(),
     version=version+1
@@ -182,7 +184,7 @@ begin
       jsonb_build_object('provider','paystack','subscription_code',p_subscription_code,
         'access_period_end',subscription.current_period_end));
 
-  return jsonb_build_object('cancelled',true,'reused',false,'cancel_at_period_end',true,'current_period_end',subscription.current_period_end);
+  return jsonb_build_object('cancelled',true,'reused',false,'cancel_at_period_end',paid_period_remaining,'current_period_end',subscription.current_period_end);
 end;
 $cancel$;
 
