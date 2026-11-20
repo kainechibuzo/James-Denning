@@ -34,6 +34,7 @@ const OrgSignupModal = lazyPage(() => import("./pages/hiring.jsx"), "OrgSignupMo
 const PublicHireLanding = lazyPage(() => import("./pages/hiring.jsx"), "PublicHireLanding");
 const HiringPage = lazyPage(() => import("./pages/hiring.jsx"), "HiringPage");
 const JDOperationsPage = lazyPage(() => import("./pages/jd-operations.jsx"), "JDOperationsPage");
+const BillingPage = lazyPage(() => import("./pages/billing.jsx"), "BillingPage");
 
 
 
@@ -1530,6 +1531,7 @@ function AppInner(){
         <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-canvas)":C.offWhite,transition:"background .2s"}}>
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
+          {page==="billing" && (canAccess("billing") ? <BillingPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="hiring"        && (canAccess("hiring")       ?<HiringPage ctx={ctx}/>             :<AccessDenied/>)}
           {page==="mail-logs"     && (canAccess("mail-logs")    ?<MailLogsPage ctx={ctx}/>           :<AccessDenied/>)}
           {page==="notifications" && (canAccess("notifications")?<NotificationsPage ctx={ctx}/>      :<AccessDenied/>)}
