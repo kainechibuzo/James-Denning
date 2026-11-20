@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { verifyPaystackWebhookSignature } from "../_shared/jd-paystack-webhook-crypto.ts";
+import { verifyPaystackWebhookSignature } from "./_shared/jd-paystack-webhook-crypto.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
