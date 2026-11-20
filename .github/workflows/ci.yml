@@ -123,6 +123,9 @@ jobs:
       - name: Test JD OAuth cryptography helpers
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-oauth-crypto.test.ts
 
+      - name: Test Paystack webhook signature verification
+        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-paystack-webhook-crypto.test.ts
+
       - name: Test JD inbound MCP server security contract
         run: deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-mcp/index.ts,supabase/functions/_shared/jd-agent-runtime.ts,supabase/functions/_shared/jd-foundation-service.ts,supabase/config.toml supabase/functions/_shared/jd-mcp-server.test.ts
 
@@ -246,6 +249,8 @@ jobs:
           deno check --node-modules-dir=auto supabase/functions/jd-task-scheduler/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-task-collaboration/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-business-platform/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
+          deno check --node-modules-dir=auto supabase/functions/jd-paystack-webhook/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-billing/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-connect/index.ts
           deno check --node-modules-dir=auto supabase/functions/jd-mcp/index.ts
