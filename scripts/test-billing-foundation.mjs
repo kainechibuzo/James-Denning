@@ -71,6 +71,16 @@ test("Paystack plan is checked against the exact subscription amount, currency a
   assert.match(endpoint, /\["failed", "abandoned"\]\.includes\(transaction\.status\)/);
 });
 
+test("pending checkout attempts are unique per workspace and stale attempts are reconciled before replacement", () => {
+  assert.match(migration, /create unique index jd_billing_one_pending_payment_per_school[\\s\\S]*where status='pending'/);
+  assert.match(endpoint, /select\\("provider_reference,checkout_url,checkout_expires_at,created_at,status"\\)/);
+  assert.match(endpoint, /30 \\* 60 \\* 1000/);
+  assert.match(endpoint, /transaction\\/verify\\/\$\\{encodeURIComponent\\(pendingCheckout\\.provider_reference\\)\\}/);
+  assert.match(endpoint, /\\["failed", "abandoned"\\]\\.includes\\(staleTransaction\\.status\\)/);
+  assert.match(endpoint, /jd_billing_finalize_payment/);
+  assert.match(endpoint, /billing_stale_checkout_unresolved/);
+});
+
 test("payment and subscription state are finalised atomically with an append-only audit event", () => {
   assert.match(finalisation, /jd_billing_finalize_payment/);
   assert.match(finalisation, /for update/);
