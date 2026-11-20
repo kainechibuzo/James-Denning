@@ -91,3 +91,11 @@ test("verified payments create one paid platform invoice in the same transaction
   assert.match(finalisation, /jd_billing_invoice_lines_one_platform_per_invoice/);
   assert.match(rollback, /drop index if exists public\.jd_billing_invoice_lines_one_platform_per_invoice/);
 });
+
+test("subscription cancellation is provider-confirmed, tenant-scoped and keeps the paid period", () => {
+  assert.match(finalisation, /jd_billing_mark_subscription_cancelled/);
+  assert.match(finalisation, /provider_subscription_code is distinct from p_subscription_code/);
+  assert.match(finalisation, /cancel_at_period_end=true/);
+  assert.match(finalisation, /subscription\.cancelled/);
+  assert.match(rollback, /drop function public\.jd_billing_mark_subscription_cancelled/);
+});
