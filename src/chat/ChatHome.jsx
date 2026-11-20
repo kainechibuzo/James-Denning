@@ -418,7 +418,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
 
 
   return (
-    <div className={`jd-command reference-command${messages.length===0 ? " is-empty" : ""}`}>
+    <div className={`jd-command reference-command jd-conversation${messages.length===0 ? " is-empty" : ""}`}>
       <style>{`
         .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
@@ -557,9 +557,13 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
-        <div className="jd-utility"><button className="jd-history-trigger" type="button" aria-label="Open conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button><span className={"jd-utility-status" + (sending || backgroundWorking ? " is-working" : "")} role="status">{isWorking ? `JD is cooking · ${activeJobCount} active` : "Workspace Active"}</span></div><div className="jd-scroll">
+        <div className="jd-utility">
+          <button className="jd-history-trigger" type="button" aria-label="Open conversation history" title="Conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button>
+          <span className={"jd-utility-status" + (isWorking ? " is-working" : "")} role="status">{isWorking ? (activeJobCount > 0 ? `Working · ${activeJobCount} run${activeJobCount===1?"":"s"} active` : "Working on your request") : "Workspace Active"}</span>
+        </div><div className="jd-scroll">
           {messages.length===0 ? <div className="jd-welcome">
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
+            <div style={{margin:"2px 0 16px"}}><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">

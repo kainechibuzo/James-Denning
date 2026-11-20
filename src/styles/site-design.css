@@ -29,18 +29,6 @@ button,input,select,textarea{font-family:inherit}
 .jd-workspace-page th{background:var(--jd-soft);color:var(--jd-muted)!important;font-size:11px;letter-spacing:.025em;font-weight:600}
 .jd-workspace-page :is(td,th){padding:12px 14px}
 .jd-workspace-page :is([role='alert'],[role='status']):not(:has(>table)){color:var(--jd-text)}
-/* The same light navigation seen inside the supplied dashboard artwork. */
-#workspace-navigation{background:var(--jd-surface)!important;border-right:1px solid var(--jd-border);box-shadow:2px 0 12px #00000004!important;color:var(--jd-text)}
-#workspace-navigation :is(div,span,p){color:inherit!important;border-color:var(--jd-border)!important;box-shadow:none!important}
-#workspace-navigation button{color:var(--jd-text)!important;background:transparent!important;border-color:var(--jd-border)!important;border-radius:12px!important}
-#workspace-navigation button:hover{background:var(--jd-soft)!important}
-#workspace-navigation button[aria-current='page']{background:var(--jd-soft)!important;font-weight:600!important}
-#workspace-navigation button[aria-current='page']>div{background:var(--jd-action)!important;box-shadow:none!important;width:2px!important}
-#workspace-navigation svg{color:var(--jd-muted)!important}
-#workspace-navigation input{background:transparent!important;color:var(--jd-text)!important;min-height:32px}
-#workspace-navigation input::placeholder{color:var(--jd-muted)}
-#workspace-navigation [style*='text-transform: uppercase']{color:var(--jd-muted)!important;font-weight:500!important;letter-spacing:.06em!important}
-#workspace-navigation [style*='linear-gradient']{background:var(--jd-soft)!important;color:var(--jd-text)!important}
 /* Shared components, including dialogs rendered through document.body portals. */
 .jd-ui-card,.jd-ui-modal,.jd-confirm-card{background:var(--jd-card)!important;border:1px solid var(--jd-border)!important;border-radius:18px;box-shadow:0 2px 5px #00000004!important;color:var(--jd-text)}
 .jd-ui-button{background:var(--jd-action)!important;color:var(--jd-on-action)!important;border:1px solid var(--jd-action)!important;border-radius:999px!important;min-height:40px;box-shadow:none!important;font-weight:600!important;letter-spacing:0!important;padding-left:18px!important;padding-right:18px!important}

@@ -1,0 +1,364 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   CONVERSATION — the JD Assistant page.
+
+   Reading surface first: serif prose at a generous measure, a navy JD seal
+   beside each reply, a "Run complete" hairline capsule, user turns in cream
+   bubbles on the right, and a composer drawn as a single paper card. These
+   rules intentionally carry more weight than the legacy chat-local sheet.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.jd-command.reference-command.jd-conversation{
+  /* The shell header is sticky and already occupies this height; the
+     conversation fills the rest of the column without nesting a scrollbar. */
+  height:auto;
+  flex:1 1 auto;
+  min-height:0;
+  background:var(--jd-paper)!important;
+  background-image:none!important;
+  color:var(--jd-ink);
+  font-family:var(--jd-font-display);
+}
+.jd-command.reference-command.jd-conversation.is-empty{background-image:none!important}
+
+/* ── Utility strip: history plate left, workspace state capsule right ────── */
+.jd-conversation .jd-utility{
+  background:transparent!important;
+  border-bottom:0!important;
+  padding:14px 26px 6px!important;
+  min-height:auto!important;
+}
+.jd-conversation .jd-history-trigger{
+  width:34px!important;height:34px!important;border:0!important;background:transparent!important;
+  border-radius:8px;color:var(--jd-ink)!important;opacity:.8;cursor:pointer;
+}
+.jd-conversation .jd-history-trigger:hover{opacity:1;background:rgba(34,37,43,.06)!important}
+.jd-conversation .jd-history-trigger svg{width:23px;height:23px;stroke-width:1.6}
+.jd-conversation .jd-utility-status{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--jd-font-display)!important;
+  font-size:14px!important;font-weight:400!important;
+  color:var(--jd-ink)!important;
+  background:rgba(252,250,245,.55)!important;
+  border:1px solid var(--jd-hairline)!important;
+  border-radius:999px!important;
+  padding:8px 15px!important;
+  box-shadow:0 1px 2px rgba(72,58,40,.05);
+  line-height:1.2;
+}
+.jd-conversation .jd-utility-status:before{
+  content:'';width:8px;height:8px;border-radius:999px;flex-shrink:0;
+  background:var(--jd-ink);opacity:1;
+}
+.jd-conversation .jd-utility-status.is-working:before{animation:jd-heritage-pulse 1.3s ease-in-out infinite}
+@keyframes jd-heritage-pulse{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+
+/* ── Thread measure ─────────────────────────────────────────────────────── */
+.jd-conversation .jd-scroll{padding:10px 26px 16px!important}
+.jd-conversation .jd-thread{
+  width:min(820px,100%)!important;
+  gap:26px!important;
+  padding:6px 0 26px!important;
+}
+
+/* User turn: a cream capsule, right aligned, serif. */
+.jd-command.reference-command .jd-message.user{
+  max-width:min(72%,560px)!important;
+  background:var(--jd-paper-sunk)!important;
+  border:1px solid var(--jd-hairline)!important;
+  border-radius:16px!important;
+  padding:15px 22px!important;
+  font-family:var(--jd-font-display);
+  font-size:24px!important;
+  line-height:1.35!important;
+  color:var(--jd-ink)!important;
+  box-shadow:none!important;
+}
+
+/* Assistant header: navy seal + label + run-state capsule. */
+.jd-conversation .jd-message-head{
+  display:flex;align-items:center;gap:13px;
+  margin:0 0 14px!important;
+  font-family:var(--jd-font-display);
+  font-size:17px;color:var(--jd-ink);
+}
+.jd-conversation .jd-mini-mark{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(160deg,#242a31,#0e1216);
+  color:#fdfbf6;display:grid;place-items:center;
+  font-family:var(--jd-font-display);font-style:italic;font-size:18px;line-height:1;
+  box-shadow:0 2px 7px rgba(16,20,24,.22);
+}
+.jd-conversation .jd-job-state{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--jd-font-display);font-size:14px;font-weight:400;
+  color:var(--jd-ink);background:rgba(252,250,245,.5);
+  border:1px solid var(--jd-hairline);border-radius:999px;
+  padding:7px 14px;line-height:1.2;
+}
+.jd-conversation .jd-job-state:after{content:'✓';font-family:var(--jd-font-ui);font-size:12px;line-height:1;color:var(--jd-ink-soft)}
+.jd-conversation .jd-job-state:is(.queued,.planning,.running,.retry_wait):after{content:'';width:7px;height:7px;border-radius:999px;background:var(--jd-ink-muted);animation:jd-heritage-pulse 1.3s ease-in-out infinite}
+.jd-conversation .jd-job-state:is(.failed,.cancelled):after{content:'!'}
+
+/* Assistant prose: Caslon at a book-like measure. */
+.jd-command.reference-command.jd-conversation .jd-message.assistant{
+  color:var(--jd-ink)!important;
+  font-family:var(--jd-font-display);
+  font-size:19px;
+  line-height:1.62;
+  letter-spacing:0;
+  padding:0!important;
+}
+.jd-command.reference-command.jd-conversation .jd-markdown{
+  color:var(--jd-ink)!important;
+  font-family:var(--jd-font-display)!important;
+  font-size:19px!important;
+  line-height:1.6!important;
+}
+.jd-conversation .jd-markdown p{margin:0 0 17px}
+.jd-conversation .jd-markdown p:last-child{margin-bottom:0}
+.jd-conversation .jd-markdown strong{font-weight:700;color:var(--jd-ink-heading)}
+.jd-conversation .jd-markdown em{font-style:italic}
+
+/* The reply's opening line is the reference's italic greeting, followed by
+   the tri-colour rule. Any first-paragraph italics already in the copy stay
+   untouched; this adds the display treatment to a leading sentence only. */
+.jd-conversation .jd-message.assistant>.jd-markdown>p:first-child strong{font-weight:700}
+/* Every reply is signed once: the tri-colour rule sits under its opening line. */
+.jd-conversation .jd-message.assistant .jd-markdown>p:first-child:after{
+  content:'';display:block;width:86px;height:3px;margin-top:12px;border-radius:1px;
+  background:linear-gradient(90deg,#1e2a52 0 32.5%,#fbf8f2 32.5% 66.5%,#c8372d 66.5% 100%);
+  box-shadow:inset 0 0 0 1px rgba(34,37,43,.05);
+}
+:root[data-theme='dark'] .jd-conversation .jd-message.assistant .jd-markdown>p:first-child:after{
+  background:linear-gradient(90deg,#8ea0d6 0 32.5%,#2a2a2a 32.5% 66.5%,#d9766c 66.5% 100%);
+}
+
+.jd-conversation .jd-markdown h2,.jd-conversation .jd-markdown h3,.jd-conversation .jd-markdown h4{
+  font-family:var(--jd-font-display)!important;color:var(--jd-ink-heading)!important;
+  font-weight:400!important;letter-spacing:-.01em;line-height:1.25;
+  margin:26px 0 12px;
+}
+.jd-conversation .jd-markdown h2{font-size:25px}
+.jd-conversation .jd-markdown h3{font-size:21px}
+.jd-conversation .jd-markdown h4{font-size:18px}
+.jd-conversation .jd-markdown ul,.jd-conversation .jd-markdown ol{margin:0 0 18px;padding-left:22px}
+.jd-conversation .jd-markdown li{margin:0 0 9px;padding-left:4px}
+.jd-conversation .jd-markdown li::marker{color:var(--jd-ink-muted)}
+.jd-conversation .jd-markdown blockquote{
+  margin:0 0 18px;padding:2px 0 2px 20px;border-left:2px solid var(--jd-rule-navy);
+  font-style:italic;color:var(--jd-ink-soft);background:none!important;
+}
+.jd-conversation .jd-markdown hr{border:0;border-top:1px solid var(--jd-hairline);margin:22px 0}
+.jd-conversation .jd-markdown code,.jd-conversation .jd-inline-code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--jd-paper-sunk);border:1px solid var(--jd-hairline-soft);border-radius:5px;padding:1px 5px;
+}
+.jd-conversation .jd-markdown a{color:var(--jd-ink);text-decoration:underline;text-decoration-color:var(--jd-hairline-strong)}
+
+/* Tables keep the paper surface but read as engraved ledgers. */
+.jd-conversation .jd-table-wrap{border:1px solid var(--jd-hairline);border-radius:10px;background:rgba(252,250,245,.6)}
+.jd-conversation .jd-table th{
+  font-family:var(--jd-font-ui);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--jd-paper-sunk)!important;color:var(--jd-ink-soft)!important;
+}
+.jd-conversation .jd-table td{font-family:var(--jd-font-display);font-size:16px;color:var(--jd-ink)!important}
+.jd-conversation .jd-table-hint{font-family:var(--jd-font-ui);font-size:10.5px;color:var(--jd-ink-muted)!important}
+
+/* ── Welcome (empty conversation) ───────────────────────────────────────── */
+.jd-conversation .jd-welcome{
+  width:min(820px,100%)!important;
+  transform:none!important;
+  padding:0 0 8px!important;
+  align-items:flex-start!important;
+  text-align:left;
+}
+.jd-conversation .jd-heading{
+  font-family:var(--jd-font-display)!important;
+  font-weight:400!important;
+  font-size:clamp(28px,3.4vw,42px)!important;
+  letter-spacing:-.015em!important;
+  line-height:1.16!important;
+  text-align:left!important;
+  margin:0 0 12px!important;
+  color:var(--jd-ink-heading);
+}
+.jd-conversation .jd-heading .jd-script{
+  font-family:var(--jd-font-display)!important;
+  font-style:italic;font-weight:400;font-size:1em;letter-spacing:-.015em;
+  -webkit-text-stroke:0;
+}
+.jd-conversation .jd-subtitle{
+  font-family:var(--jd-font-display)!important;
+  font-size:18px!important;line-height:1.6!important;
+  color:var(--jd-ink-soft)!important;
+  text-align:left!important;margin:0 0 4px!important;
+  max-width:640px;
+}
+.jd-conversation .jd-welcome-description{
+  font-family:var(--jd-font-display)!important;
+  font-size:16px!important;line-height:1.6!important;color:var(--jd-ink-muted)!important;
+  text-align:left!important;margin:0!important;max-width:620px;
+}
+.jd-conversation .jd-welcome .jd-welcome-divider,.jd-conversation .jd-welcome .jd-spark{display:none!important}
+
+/* ── Composer ───────────────────────────────────────────────────────────── */
+.jd-conversation .jd-compose-wrap{
+  width:min(912px,calc(100% - 44px))!important;
+  margin:0 auto calc(20px + env(safe-area-inset-bottom,0px))!important;
+}
+.jd-conversation .jd-compose{
+  position:relative;
+  background:var(--jd-paper-raised)!important;
+  border:1px solid var(--jd-hairline)!important;
+  border-radius:16px!important;
+  padding:16px 18px 12px!important;
+  box-shadow:0 1px 2px rgba(72,58,40,.05),0 10px 28px rgba(72,58,40,.06)!important;
+}
+.jd-conversation .jd-compose:focus-within{outline:2px solid rgba(30,42,82,.4);outline-offset:1px}
+body .jd-command.reference-command.jd-conversation .jd-compose textarea{
+  font-family:var(--jd-font-display)!important;
+  font-size:20px!important;
+  line-height:1.45!important;
+  min-height:52px!important;height:52px;
+  color:var(--jd-ink)!important;
+  background:transparent!important;
+  padding:2px 2px 0!important;
+}
+body .jd-command.reference-command.jd-conversation .jd-compose textarea::placeholder{color:var(--jd-ink-muted)!important}
+.jd-conversation .jd-compose-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.jd-conversation .jd-composer-tools-controls{gap:12px!important}
+.jd-conversation .jd-add-tool{
+  width:42px!important;height:42px!important;
+  border:1px solid var(--jd-hairline)!important;
+  background:rgba(255,255,255,.6)!important;
+  color:var(--jd-ink)!important;border-radius:999px!important;
+}
+.jd-conversation .jd-add-tool:hover{background:#fff!important;border-color:var(--jd-hairline-strong)!important}
+.jd-conversation .jd-add-tool svg{width:20px;height:20px;stroke-width:1.7}
+.jd-conversation .jd-compose-hint{
+  font-family:var(--jd-font-display)!important;
+  font-size:15px!important;color:var(--jd-ink-soft)!important;
+}
+.jd-conversation .jd-send{
+  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+  border-radius:11px!important;
+  background:linear-gradient(160deg,#2b3a63,#141d36)!important;
+  color:#f7f5f0!important;
+  box-shadow:0 5px 14px rgba(24,34,62,.28)!important;
+}
+.jd-conversation .jd-send svg{width:21px;height:21px}
+.jd-conversation .jd-send:disabled{opacity:.45!important;box-shadow:none!important}
+.jd-conversation .jd-pause{
+  font-family:var(--jd-font-ui);font-size:11px;border:1px solid var(--jd-hairline);
+  background:transparent;color:var(--jd-ink);border-radius:999px;padding:8px 12px;cursor:pointer;
+}
+.jd-conversation .jd-queue-note{
+  font-family:var(--jd-font-display)!important;
+  font-size:14px!important;color:var(--jd-ink-soft)!important;
+  padding-top:12px!important;justify-content:center;
+}
+.jd-conversation .jd-queue-note strong{font-weight:400!important}
+.jd-conversation .jd-disclaimer{
+  font-family:var(--jd-font-display)!important;
+  font-size:13.5px!important;color:var(--jd-ink-muted)!important;margin-top:5px!important;
+  text-align:center;
+}
+.jd-conversation .jd-error{
+  font-family:var(--jd-font-display);font-size:14px;color:#8d2f26;
+  background:rgba(200,55,45,.07);border:1px solid rgba(200,55,45,.24);
+  border-radius:10px;padding:10px 14px;margin-bottom:10px;
+}
+
+/* Activity + run annunciators keep their semantics, restyled as paper notes. */
+.jd-conversation .jd-activity{background:rgba(252,250,245,.7)!important;border:1px solid var(--jd-hairline)!important;border-radius:12px}
+.jd-conversation .jd-activity-title{font-family:var(--jd-font-display);font-size:16px;color:var(--jd-ink)!important}
+.jd-conversation .jd-activity-detail,.jd-conversation .jd-activity-step{font-family:var(--jd-font-display);font-size:14px;color:var(--jd-ink-muted)!important}
+.jd-conversation .jd-run{font-family:var(--jd-font-ui);font-size:11px;color:var(--jd-ink-muted)!important}
+
+/* Visual workspace blocks inherit the paper voice. */
+.jd-conversation .jd-visual-workspace{font-family:var(--jd-font-display)}
+.jd-conversation .jd-viz-metric,.jd-conversation .jd-viz-panel{
+  background:rgba(252,250,245,.75)!important;border:1px solid var(--jd-hairline)!important;border-radius:12px!important;
+}
+
+/* ── Phone ──────────────────────────────────────────────────────────────── */
+@media(max-width:760px){
+  .jd-command.reference-command.jd-conversation{height:auto;flex:1 1 auto;min-height:0}
+  .jd-conversation .jd-utility{padding:10px 14px 2px!important}
+  .jd-conversation .jd-utility-status{font-size:13px!important;padding:7px 12px!important}
+  .jd-conversation .jd-scroll{padding:8px 16px 12px!important}
+  .jd-conversation .jd-thread{gap:22px!important;padding-bottom:18px!important}
+  .jd-command.reference-command .jd-message.user{font-size:19px!important;padding:12px 17px!important;max-width:88%!important}
+  .jd-command.reference-command.jd-conversation .jd-markdown{font-size:17.5px!important;line-height:1.62!important}
+  .jd-conversation .jd-mini-mark{width:40px;height:40px;border-radius:11px;font-size:16px}
+  .jd-conversation .jd-job-state{font-size:13px;padding:6px 11px}
+  .jd-conversation .jd-message-head{gap:10px;margin-bottom:12px!important}
+  .jd-conversation .jd-compose-wrap{width:calc(100% - 24px)!important;margin-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important}
+  .jd-conversation .jd-compose{padding:12px 13px 10px!important;border-radius:15px!important}
+  body .jd-command.reference-command.jd-conversation .jd-compose textarea{font-size:17.5px!important;min-height:44px!important;height:44px}
+  .jd-conversation .jd-add-tool{width:38px!important;height:38px!important}
+  .jd-conversation .jd-compose-hint{font-size:14px!important}
+  .jd-conversation .jd-send{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+  .jd-conversation .jd-queue-note{font-size:12.5px!important;padding-top:9px!important}
+  .jd-conversation .jd-disclaimer{font-size:12px!important}
+  .jd-conversation .jd-heading{font-size:clamp(25px,6.6vw,32px)!important}
+  .jd-conversation .jd-subtitle{font-size:16px!important}
+  .jd-conversation .jd-welcome-description{font-size:14.5px!important}
+}
+@media(max-height:650px){
+  .jd-conversation .jd-welcome{padding:6px 0!important}
+  .jd-conversation .jd-compose-wrap{margin-bottom:6px!important}
+}
+
+/* Dark theme */
+:root[data-theme='dark'] .jd-command.reference-command.jd-conversation{background-image:none!important}
+:root[data-theme='dark'] .jd-conversation .jd-utility-status,
+:root[data-theme='dark'] .jd-conversation .jd-job-state,
+:root[data-theme='dark'] .jd-conversation .jd-activity{background:rgba(255,255,255,.05)!important}
+:root[data-theme='dark'] .jd-conversation .jd-compose{background:var(--jd-paper-raised)!important}
+:root[data-theme='dark'] .jd-conversation .jd-add-tool{background:rgba(255,255,255,.06)!important}
+:root[data-theme='dark'] .jd-conversation .jd-add-tool:hover{background:rgba(255,255,255,.1)!important}
+:root[data-theme='dark'] .jd-conversation .jd-send{background:linear-gradient(160deg,#f4f1ea,#cdc8bd)!important;color:#141414!important}
+:root[data-theme='dark'] .jd-conversation .jd-error{color:#f0b3aa;background:rgba(200,55,45,.14)}
+:root[data-theme='dark'] .jd-conversation .jd-viz-metric,
+:root[data-theme='dark'] .jd-conversation .jd-viz-panel{background:rgba(255,255,255,.05)!important}
+
+/* Measured reference geometry (543 × 724 CSS pixels). Keep the reading
+   measure capped on wide screens, not enlarged with the viewport. */
+.jd-conversation .jd-utility{padding:12px 20px 8px!important}
+.jd-conversation .jd-history-trigger{width:20px!important;height:22px!important}
+.jd-conversation .jd-history-trigger svg{width:15px;height:15px}
+.jd-conversation .jd-utility-status{font-size:12px!important;padding:4px 9px!important;gap:7px}
+.jd-conversation .jd-utility-status:before{width:5px;height:5px}
+.jd-conversation .jd-scroll{padding:8px 24px 12px!important}
+.jd-conversation .jd-thread{gap:14px!important;padding:4px 0 12px!important}
+.jd-command.reference-command .jd-message.user{font-size:16px!important;padding:8px 13px!important;border-radius:11px!important}
+.jd-conversation .jd-message-head{gap:10px;font-size:12px;font-weight:400;margin-bottom:8px!important}
+.jd-conversation .jd-mini-mark{width:23px;height:23px;border-radius:7px;font-size:11px;font-style:normal}
+.jd-conversation .jd-job-state{font-size:11px;font-weight:400;padding:4px 9px;gap:6px}
+.jd-command.reference-command.jd-conversation .jd-markdown{font-size:16px!important;line-height:1.1!important}
+.jd-conversation .jd-markdown p{margin:0 0 12px}
+.jd-conversation .jd-message.assistant .jd-markdown>p:first-child{font-size:18px;line-height:1.2}
+.jd-conversation .jd-message.assistant .jd-markdown>p:first-child:after{width:42px;height:2px;margin-top:8px}
+.jd-conversation .jd-markdown ol{list-style:none;counter-reset:jd-option;padding-left:2px;margin:0 0 18px}
+.jd-conversation .jd-markdown ol>li{position:relative;counter-increment:jd-option;padding-left:37px;margin:0 0 12px;min-height:28px}
+.jd-conversation .jd-markdown ol>li:before{content:counter(jd-option);position:absolute;left:0;top:1px;width:25px;height:24px;display:grid;place-items:center;border:1px solid var(--jd-hairline-soft);border-radius:7px;background:var(--jd-paper-sunk)}
+.jd-conversation .jd-markdown>ol+p:last-child{font-size:19px;font-style:italic;padding-bottom:9px;border-bottom:1px solid var(--jd-hairline)}
+.jd-conversation .jd-compose-wrap{width:min(912px,calc(100% - 40px))!important;margin-bottom:calc(27px + env(safe-area-inset-bottom,0px))!important}
+.jd-conversation .jd-compose{border-radius:13px!important;padding:8px 10px 6px!important;box-shadow:0 3px 8px rgba(72,58,40,.05)!important}
+body .jd-command.reference-command.jd-conversation .jd-compose textarea{font-size:16px!important;line-height:1.3!important;min-height:23px!important;height:23px;padding:0!important}
+.jd-conversation .jd-compose-bottom{margin-top:7px}
+.jd-conversation .jd-composer-tools-controls{gap:10px!important}
+.jd-conversation .jd-add-tool{width:32px!important;height:31px!important;background:var(--jd-paper-sunk)!important}
+.jd-conversation .jd-add-tool svg{width:15px;height:15px}
+.jd-conversation .jd-compose-hint{font-size:12px!important}
+.jd-conversation .jd-send{width:35px!important;height:31px!important;min-width:35px!important;min-height:31px!important;border-radius:9px!important;box-shadow:none!important;background:linear-gradient(150deg,#253142,#17212c)!important}
+.jd-conversation .jd-send svg{width:17px;height:17px}
+.jd-conversation .jd-send:disabled{opacity:1!important}
+.jd-conversation .jd-queue-note{font-size:10.5px!important;padding-top:8px!important;gap:0}
+.jd-conversation .jd-disclaimer{font-size:10.5px!important;margin-top:3px!important}
+@media(max-width:420px){
+ .jd-conversation .jd-scroll{padding-left:16px!important;padding-right:16px!important}
+ .jd-conversation .jd-compose-wrap{width:calc(100% - 24px)!important;margin-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
+ .jd-conversation .jd-disclaimer{font-size:10px!important}
+}

@@ -1,0 +1,329 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   WORKSPACE CHROME — top bar and navigation drawer.
+
+   Two fixed pieces of furniture frame every workspace page:
+   • a paper top bar: menu, JD tile, wordmark over the tri-colour rule,
+     engraved facade bleeding in from the right, then the controls;
+   • a navigation drawer: engraved header, wordmark and strapline, the
+     organisation and search fields, the JD assistant block, the departments,
+     and the account card seated on an engraved skyline.
+
+   Every measurement below was lifted from the supplied reference captures
+   (1086×1448 device pixels at 2× density ⇒ a 543×724 CSS viewport), so the
+   numbers are reference device pixels ÷ 2. They are absolute CSS pixels and
+   hold at every viewport width.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shell ───────────────────────────────────────────────────────────────── */
+/* Height is a token so the conversation and any sticky offsets stay in step. */
+:root{--jd-topbar-h:56px}
+/* The shell column: sticky bar, then the route fills the remaining height.
+   A flex column child cannot be sized with 100dvh without overflowing. */
+.jd-workspace-shell>.jd-workspace-main{height:100dvh;max-height:100dvh;overflow:hidden}
+.jd-workspace-main>.jd-workspace-chat{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.jd-workspace-main>.jd-workspace-chat>*{flex:1 1 auto;min-height:0}
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.reference-workspace-header.jd-topbar{
+  position:relative;
+  overflow:hidden;
+  height:var(--jd-topbar-h)!important;
+  min-height:var(--jd-topbar-h)!important;
+  padding:0 13px 0 11px!important;
+  background:var(--jd-paper)!important;
+  border-bottom:1px solid var(--jd-hairline)!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  z-index:210;
+}
+/* The facade engraving: it lives on the right of the bar and fades out before
+   the wordmark, exactly as in the reference. */
+.jd-topbar-art{
+  position:absolute;
+  inset:0 0 0 auto;
+  width:min(560px,56%);
+  background:url('/design/paris-facade.webp') right -6px/auto 172% no-repeat;
+  opacity:.72;
+  mix-blend-mode:multiply;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.5) 22%,#000 58%);
+  mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.5) 22%,#000 58%);
+}
+.jd-topbar-art:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(246,239,228,.10),rgba(246,239,228,.42))}
+.reference-workspace-header.jd-topbar>.reference-header-left{position:relative;z-index:2}
+.reference-workspace-header.jd-topbar>.reference-header-controls{position:relative;z-index:2}
+
+.jd-topbar-menu{
+  width:32px!important;height:32px!important;min-width:32px!important;
+  border:1px solid transparent!important;border-radius:8px!important;
+  background:transparent!important;color:var(--jd-ink)!important;
+  display:grid;place-items:center;cursor:pointer;flex-shrink:0;
+  padding:0!important;
+  transition:background .16s ease,border-color .16s ease;
+}
+.jd-topbar-menu svg{width:13px;height:13px;stroke-width:1.7}
+.jd-topbar-menu:hover{background:rgba(34,37,43,.06)!important;border-color:var(--jd-hairline)!important}
+
+/* Brand block: tile + wordmark with its signature rule beneath. */
+.jd-topbar-brand{display:flex;align-items:center;gap:10.5px;min-width:0}
+.jd-topbar-tile{
+  width:31px;height:31px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(158deg,#252c34,#101418);
+  color:#fdfbf6;display:grid;place-items:center;
+  font-family:var(--jd-font-display);font-size:13px;line-height:1;
+  letter-spacing:.01em;box-shadow:0 1px 3px rgba(16,20,24,.28);
+  text-decoration:none;border:0;cursor:pointer;padding:0;
+}
+.jd-topbar-brandtext{display:flex;flex-direction:column;gap:5px;min-width:0}
+.jd-topbar-wordmark.jd-wordmark{font-size:24px;line-height:1;letter-spacing:0}
+.jd-topbar-brandtext .jd-rule{width:42px;gap:0}
+.jd-topbar-brandtext .jd-rule i{width:14px;height:2px}
+
+/* Controls sit as bare ink icons, evenly spaced, exactly as in the reference. */
+.reference-workspace-header.jd-topbar .reference-header-controls{gap:0!important;align-items:center}
+.reference-workspace-header.jd-topbar .reference-header-controls>button,
+.reference-workspace-header.jd-topbar .reference-header-controls>div>button,
+.reference-workspace-header.jd-topbar button[data-tour='workspace-menu']{
+  width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
+  padding:0!important;border:1px solid transparent!important;border-radius:8px!important;
+  background:transparent!important;color:var(--jd-ink)!important;box-shadow:none!important;
+  display:grid;place-items:center!important;cursor:pointer;
+}
+.reference-workspace-header.jd-topbar .reference-header-controls>button:hover,
+.reference-workspace-header.jd-topbar .reference-header-controls>div>button:hover{
+  background:rgba(34,37,43,.07)!important;border-color:var(--jd-hairline)!important;
+}
+.reference-workspace-header.jd-topbar .reference-header-controls svg{width:17px;height:17px;stroke-width:1.55}
+.reference-workspace-header.jd-topbar .reference-profile{
+  width:27px!important;height:27px!important;min-width:27px!important;border-radius:999px!important;
+  background:rgba(34,37,43,.11)!important;color:var(--jd-ink)!important;
+  font-family:var(--jd-font-display)!important;font-size:11px!important;font-weight:400!important;
+  letter-spacing:.01em;box-shadow:none!important;margin-left:14px;
+}
+.reference-workspace-header.jd-topbar .reference-profile:hover{background:rgba(34,37,43,.17)!important}
+
+/* ── Drawer ──────────────────────────────────────────────────────────────── */
+#workspace-navigation.jd-drawer{
+  background:var(--jd-paper)!important;
+  border-right:1px solid var(--jd-hairline);
+  box-shadow:none!important;
+  font-family:var(--jd-font-display);
+  color:var(--jd-ink);
+  overflow:hidden;
+  width:272px;
+}
+#workspace-navigation.jd-drawer.is-mobile{width:min(272px,88vw)!important}
+#workspace-navigation.jd-drawer.is-rail{border-right:0}
+
+/* Engraved corner: the facade tucks into the top-right of the drawer and a
+   pale engraved sweep-curve crosses behind the wordmark. */
+#workspace-navigation .jd-drawer-plate{position:relative;overflow:hidden;padding:37px 14px 0;flex-shrink:0}
+#workspace-navigation .jd-drawer-plate-art{
+  position:absolute;top:-12px;right:-34px;width:200px;height:160px;
+  background:url('/design/paris-facade.webp') right top/auto 132% no-repeat;
+  opacity:.72;mix-blend-mode:multiply;pointer-events:none;
+  -webkit-mask-image:radial-gradient(135% 110% at 100% 0%,#000 40%,transparent 78%);
+  mask-image:radial-gradient(135% 110% at 100% 0%,#000 40%,transparent 78%);
+}
+#workspace-navigation .jd-drawer-plate-sweep{
+  position:absolute;top:-70px;right:-62px;width:196px;height:180px;
+  border-radius:50%;pointer-events:none;
+  border:1px solid rgba(34,37,43,.16);
+  box-shadow:0 0 0 9px rgba(252,250,245,.55),0 0 0 10px rgba(34,37,43,.10);
+}
+#workspace-navigation .jd-drawer-identity{position:relative;z-index:2;display:flex;align-items:center;gap:12.5px}
+#workspace-navigation .jd-drawer-tile{
+  width:39px;height:39px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(158deg,#252c34,#0e1216);
+  color:#fdfbf6;display:grid;place-items:center;
+  font-family:var(--jd-font-display);font-size:17px;line-height:1;
+  box-shadow:0 1px 3px rgba(16,20,24,.3);
+}
+#workspace-navigation .jd-drawer-names{min-width:0}
+#workspace-navigation .jd-drawer-wordmark{font-family:var(--jd-font-display);font-size:24px;line-height:1.05;color:var(--jd-ink-heading);letter-spacing:0;white-space:nowrap}
+#workspace-navigation .jd-drawer-strapline{
+  font-family:var(--jd-font-ui);font-size:7.5px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--jd-ink-soft);margin-top:5px;white-space:nowrap;
+}
+#workspace-navigation .jd-drawer-signature{margin-top:10px;padding-left:1px}
+#workspace-navigation .jd-drawer-signature .jd-rule{width:42px;gap:0}
+#workspace-navigation .jd-drawer-signature .jd-rule i{width:14px;height:2px}
+
+/* Organisation switch + search: quiet outlined fields on a shared gutter. */
+#workspace-navigation .jd-drawer-section{padding:17.5px 19px 0}
+#workspace-navigation .jd-drawer-field{
+  position:relative;z-index:2;display:flex;align-items:center;gap:14px;width:100%;
+  min-height:28.5px;padding:0 11px;margin:0 0 9.5px;
+  border:1px solid var(--jd-hairline);border-radius:9px;
+  background:rgba(255,255,255,.42);color:var(--jd-ink);
+  font-family:var(--jd-font-display);font-size:12.5px;text-align:left;cursor:pointer;
+  transition:border-color .16s ease,background .16s ease;
+}
+#workspace-navigation .jd-drawer-field:hover{border-color:var(--jd-hairline-strong);background:rgba(255,255,255,.68)}
+#workspace-navigation .jd-drawer-field svg{flex-shrink:0;color:var(--jd-ink-soft);width:12px;height:12px;stroke-width:1.5}
+#workspace-navigation .jd-drawer-field>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workspace-navigation .jd-drawer-field .jd-drawer-chevron{color:var(--jd-ink-muted);width:7px;height:7px}
+#workspace-navigation .jd-drawer-search{padding:0 10px 0 11px}
+#workspace-navigation .jd-drawer-search input{
+  width:100%;min-width:0;border:0!important;background:transparent!important;
+  font-family:var(--jd-font-display);font-size:12.5px;color:var(--jd-ink)!important;
+  padding:7px 0;box-shadow:none!important;
+}
+#workspace-navigation .jd-drawer-search input::placeholder{color:var(--jd-ink-muted);opacity:1}
+#workspace-navigation .jd-drawer-kbd{
+  flex-shrink:0;font-family:var(--jd-font-display);font-size:9px;color:var(--jd-ink);
+  background:rgba(34,37,43,.045);border-radius:6px;padding:3px 6px;white-space:nowrap;
+}
+#workspace-navigation .jd-drawer-clear{border:0!important;background:transparent!important;color:var(--jd-ink-muted)!important;padding:3px!important;display:grid;place-items:center;cursor:pointer;width:auto!important;min-height:0!important}
+
+/* JD ASSISTANT eyebrow: letterspaced small capitals on the plate gutter. */
+#workspace-navigation .jd-drawer-heading{
+  font-family:var(--jd-font-display);font-size:10px;font-weight:400;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--jd-ink);padding:0;margin:24px 0 11px 26px;
+}
+
+/* The selected assistant row: a flat navy pill, full drawer measure. */
+#workspace-navigation .jd-drawer-item{
+  width:calc(100% - 35px);margin:0 17.5px;display:flex;align-items:center;gap:18px;min-height:25px;
+  padding:0 17px;border:1px solid transparent;border-radius:999px;background:transparent;
+  color:var(--jd-ink);font-family:var(--jd-font-display);font-size:16px;line-height:25px;
+  text-align:left;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+#workspace-navigation .jd-drawer-item svg{flex-shrink:0;color:var(--jd-ink);width:12.5px;height:12.5px;stroke-width:1.5}
+#workspace-navigation .jd-drawer-item>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workspace-navigation .jd-drawer-item:hover{background:rgba(34,37,43,.055)}
+#workspace-navigation .jd-drawer-item[aria-current='page'],.jd-drawer-item.is-selected{
+  background:#2b3447;
+  color:#f8f6f1;box-shadow:none;min-height:27.5px;line-height:27.5px;
+}
+#workspace-navigation .jd-drawer-item[aria-current='page'] svg,.jd-drawer-item.is-selected svg{color:#f2eee6;stroke-width:1.6}
+#workspace-navigation .jd-drawer-item[aria-current='page']:hover,.jd-drawer-item.is-selected:hover{background:#313c52}
+
+#workspace-navigation .jd-drawer-divider{height:1px;background:var(--jd-hairline);margin:7px 19px}
+
+/* Collapsible department groups: tracked small capitals over a chevron. */
+#workspace-navigation .jd-drawer-group{
+  width:calc(100% - 35px);margin:0 17.5px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:0 9px 0 9px;border:0;border-radius:9px;background:transparent;
+  min-height:27px;
+  font-family:var(--jd-font-display);font-size:9.5px;font-weight:400;line-height:1.2;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--jd-ink);
+  cursor:pointer;text-align:left;transition:background .15s ease;
+}
+#workspace-navigation .jd-drawer-group:hover{background:rgba(34,37,43,.045)}
+#workspace-navigation .jd-drawer-group svg{flex-shrink:0;color:var(--jd-ink-soft);width:8px;height:8px;stroke-width:1.8;transition:transform .2s ease}
+#workspace-navigation .jd-drawer-group[aria-expanded='false'] svg{transform:rotate(0deg)}
+#workspace-navigation .jd-drawer-group[aria-expanded='true'] svg{transform:rotate(180deg)}
+#workspace-navigation .jd-drawer-group-pages{padding:0 0 4px}
+#workspace-navigation .jd-drawer-group-pages .jd-drawer-item{min-height:25px;font-size:15px}
+
+/* Account card, seated above the engraved skyline; Sign Out beneath it. */
+#workspace-navigation .jd-drawer-foot{position:relative;flex-shrink:0;padding:0 17.5px;margin-top:36px}
+#workspace-navigation .jd-drawer-skyline{
+  position:absolute;left:0;right:0;bottom:0;height:144px;pointer-events:none;
+  background:url('/design/paris-skyline.webp') center bottom/118% auto no-repeat;
+  opacity:.62;mix-blend-mode:multiply;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.5) 30%,#000 74%);
+  mask-image:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.5) 30%,#000 74%);
+}
+#workspace-navigation .jd-drawer-account{
+  position:relative;z-index:2;width:100%;display:flex;align-items:center;gap:10.5px;
+  min-height:47.5px;padding:8px 12px;border:1px solid var(--jd-hairline);border-radius:12px;
+  background:rgba(252,250,245,.66);color:var(--jd-ink);cursor:pointer;text-align:left;
+  transition:border-color .16s ease,background .16s ease;
+}
+#workspace-navigation .jd-drawer-account:hover{border-color:var(--jd-hairline-strong);background:rgba(252,250,245,.9)}
+#workspace-navigation .jd-drawer-avatar{
+  width:26.5px;height:26.5px;border-radius:999px;flex-shrink:0;
+  background:rgba(34,37,43,.10);color:var(--jd-ink-heading);
+  display:grid;place-items:center;font-family:var(--jd-font-display);font-size:13px;
+}
+#workspace-navigation .jd-drawer-account-names{min-width:0;flex:1}
+#workspace-navigation .jd-drawer-account-name{display:block;font-family:var(--jd-font-display);font-size:14px;font-weight:700;line-height:1.15;color:var(--jd-ink-heading);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workspace-navigation .jd-drawer-account-role{display:block;font-family:var(--jd-font-display);font-size:11.5px;line-height:1.2;color:var(--jd-ink-muted);margin-top:3px}
+#workspace-navigation .jd-drawer-account .jd-drawer-chevron{width:7px;height:7px;color:var(--jd-ink)}
+#workspace-navigation .jd-drawer-foot-rule{position:relative;z-index:2;margin:2.5px 0 0 9px}
+#workspace-navigation .jd-drawer-foot-rule .jd-rule{width:42px;gap:0}
+#workspace-navigation .jd-drawer-foot-rule .jd-rule i{width:14px;height:2px}
+#workspace-navigation .jd-drawer-signout{
+  position:relative;z-index:2;width:100%;display:flex;align-items:center;gap:13px;
+  min-height:25px;padding:0 9px;margin-top:16px;border:0;border-radius:9px;
+  background:transparent;color:var(--jd-ink);font-family:var(--jd-font-display);
+  font-size:14px;cursor:pointer;text-align:left;transition:background .15s ease;
+}
+#workspace-navigation .jd-drawer-signout:hover{background:rgba(34,37,43,.055)}
+#workspace-navigation .jd-drawer-signout svg{color:var(--jd-ink);stroke-width:1.5;width:12.5px;height:12.5px}
+
+/* Rail (collapsed) state on desktop: the furniture that cannot fit is hidden. */
+#workspace-navigation.is-rail .jd-drawer-plate,
+#workspace-navigation.is-rail .jd-drawer-foot{display:none}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* On a phone the bar carries four controls and the wordmark: drop the control
+   pair the drawer already offers so the brand stays legible. */
+@media(max-width:560px){
+  .reference-workspace-header.jd-topbar .reference-header-controls>:is(button[data-tour='tour-trigger'],[data-account-settings]){display:none!important}
+}
+@media(max-width:760px){
+  .reference-workspace-header.jd-topbar{padding:0 10px!important}
+  .jd-topbar-art{width:76%;opacity:.5}
+  .jd-topbar-brand{gap:9px}
+  .jd-topbar-wordmark.jd-wordmark{font-size:21px}
+  .jd-topbar-tile{width:29px;height:29px;border-radius:8px;font-size:12px}
+  .reference-workspace-header.jd-topbar .reference-header-controls>button{width:28px!important;min-width:28px!important}
+  .reference-workspace-header.jd-topbar .reference-header-controls svg{width:16px;height:16px}
+}
+@media(max-width:420px){
+  .jd-topbar-brand{gap:7px}
+  .jd-topbar-wordmark.jd-wordmark{font-size:18px}
+  .jd-topbar-brandtext .jd-rule{width:34px}
+  .jd-topbar-brandtext .jd-rule i{width:11px}
+  .jd-topbar-tile{width:27px;height:27px;border-radius:7px;font-size:11px}
+  .jd-topbar-menu{width:28px!important;height:28px!important;min-width:28px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .jd-drawer-group svg,.jd-topbar-menu,.jd-drawer-field,.jd-drawer-item,.jd-drawer-account{transition:none}
+}
+
+/* Dark theme keeps the engravings but inverts them to pale ink. */
+:root[data-theme='dark'] .jd-topbar-art,
+:root[data-theme='dark'] .jd-drawer-plate-art,
+:root[data-theme='dark'] .jd-drawer-skyline{filter:invert(1);mix-blend-mode:screen;opacity:.26}
+:root[data-theme='dark'] .jd-topbar-art:after{background:linear-gradient(180deg,rgba(20,20,20,.3),rgba(20,20,20,.75))}
+:root[data-theme='dark'] #workspace-navigation.jd-drawer{background:var(--jd-paper)!important}
+:root[data-theme='dark'] .jd-drawer-field{background:rgba(255,255,255,.04)}
+:root[data-theme='dark'] .jd-drawer-field:hover{background:rgba(255,255,255,.07)}
+:root[data-theme='dark'] .jd-drawer-account{background:rgba(255,255,255,.04)}
+:root[data-theme='dark'] .jd-drawer-account:hover{background:rgba(255,255,255,.07)}
+:root[data-theme='dark'] .jd-drawer-plate-sweep{border-color:rgba(255,255,255,.12);box-shadow:0 0 0 9px rgba(20,20,20,.55),0 0 0 10px rgba(255,255,255,.08)}
+:root[data-theme='dark'] .jd-drawer-item[aria-current='page'],:root[data-theme='dark'] .jd-drawer-item.is-selected{background:linear-gradient(150deg,#f4f1ea,#ded9cf);color:#141414}
+:root[data-theme='dark'] .jd-drawer-item[aria-current='page'] svg,:root[data-theme='dark'] .jd-drawer-item.is-selected svg{color:#141414}
+:root[data-theme='dark'] .jd-drawer-avatar{background:rgba(255,255,255,.1)}
+
+/* Keep the account engraving anchored while navigation remains scrollable. */
+#workspace-navigation .jd-drawer-foot{padding-bottom:74px;margin-top:18px}
+#workspace-navigation .jd-drawer-account>svg{width:8px;height:8px}
+@media(min-width:421px) and (max-width:760px){
+ .jd-topbar-wordmark.jd-wordmark{font-size:24px}
+ .jd-topbar-tile{width:31px;height:31px}
+}
+
+#workspace-navigation .jd-drawer-search input{height:27px;min-height:0;padding:0;font-size:12.5px!important}
+#workspace-navigation .jd-drawer-kbd{overflow:visible;flex:0 0 auto}
+#workspace-navigation .jd-drawer-tile{color:#fdfbf6!important}
+#workspace-navigation .jd-drawer-identity{align-items:flex-start;padding-left:12px}
+#workspace-navigation .jd-drawer-wordmark{font-size:24px}
+#workspace-navigation .jd-drawer-strapline{font-size:6px}
+#workspace-navigation .jd-drawer-plate-art{opacity:.28}
+#workspace-navigation .jd-drawer-heading{margin-top:13px}
+#workspace-navigation .jd-drawer-item{font-size:15px;min-height:25px;padding:0 17px;width:calc(100% - 35px);gap:18px}
+#workspace-navigation .jd-drawer-item[aria-current='page']{min-height:28px;background:#2b3447;color:#f8f6f1;border-radius:999px;font-weight:400}
+#workspace-navigation .jd-drawer-item[aria-current='page'] svg{color:#f8f6f1}
+#workspace-navigation .jd-drawer-account{min-height:48px}
+
+#workspace-navigation .jd-drawer-section>button:last-child:not(.jd-drawer-field){position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#workspace-navigation .jd-drawer-section>button:last-child:not(.jd-drawer-field):focus-visible{position:relative;width:auto;height:auto;clip-path:none}
+#workspace-navigation .jd-drawer-search .jd-drawer-kbd{flex:none;overflow:visible;min-width:31px;padding:3px 4px;font-size:9px}
