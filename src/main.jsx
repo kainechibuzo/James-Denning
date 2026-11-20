@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import './styles/app.css'
+import './styles/true-black-theme.css'
 import App from './App.jsx'
 
 // ── Native platform bootstrap ─────────────────────────────────────────────────
@@ -13,7 +14,7 @@ if (Capacitor.isNativePlatform()) {
   // Navy status bar, light (white) icons, does NOT overlay the WebView
   // setOverlaysWebView(false) is the key fix — pushes app content below the bar
   StatusBar.setStyle({ style: Style.Dark }).catch(() => {})
-  StatusBar.setBackgroundColor({ color: '#090a0c' }).catch(() => {})
+  StatusBar.setBackgroundColor({ color: '#000000' }).catch(() => {})
   StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {})
 }
 
