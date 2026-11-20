@@ -204,7 +204,7 @@ export function BillingPage({ ctx }) {
               <div className="jd-billing-plan-actions">
                 {["active","past_due"].includes(status) && subscription?.provider_subscription_code && !subscription?.cancel_at_period_end ? <>
                   <button className="jd-billing-secondary" onClick={managePaymentMethod} disabled={Boolean(working)}>{working === "manage" ? <LoaderCircle size={14} className="jd-billing-spin"/> : <CreditCard size={14}/>} Payment method</button>
-                  <button className="jd-billing-text-button" onClick={()=>setConfirmCancel(true)} disabled={Boolean(working)}>Cancel plan</button>
+                  <button className="jd-billing-text-button" onClick={()=>setConfirmCancel(true)} disabled={Boolean(working)}>Cancel subscription</button>
                 </> : null}
               </div>}
           </div>
