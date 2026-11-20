@@ -26,6 +26,8 @@ test("billing UI starts trial and checkout only after explicit owner action", ()
   assert.match(page, /No payment has been taken/);
   assert.match(page, /checkoutEnabled/);
   assert.match(page, /billing.subscription.cancel/);
+  assert.match(page, /billing.subscription.manage_link/);
+  assert.match(page, /Update payment method/);
   assert.match(page, /Cancel subscription/);
   assert.match(page, /Confirm cancellation/);
   assert.match(page, /checkout\.paystack\.com/);
@@ -76,4 +78,11 @@ test("cancellation verifies Paystack subscription ownership and never exposes th
 test("Paystack disable webhook preserves access through the paid period", () => {
   assert.match(webhook, /periodStillPaid/);
   assert.match(webhook, /changes\.cancel_at_period_end = periodStillPaid/);
+});
+
+test("payment-method management links are created server-side and constrained to Paystack", () => {
+  assert.match(endpoint, /subscription\/.*\/manage\/link/);
+  assert.match(endpoint, /parsed\.hostname === "paystack\.com"/);
+  assert.match(endpoint, /parsed\.pathname\.startsWith\("\/manage\/subscriptions\/"\)/);
+  assert.doesNotMatch(page, /email_token|PAYSTACK_SECRET_KEY/);
 });
