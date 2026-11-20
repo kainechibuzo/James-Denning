@@ -170,7 +170,7 @@ begin
   end if;
 
   update public.jd_billing_subscriptions set
-    status='active',
+    status=subscription.status,
     cancel_at_period_end=true,
     next_payment_at=null,
     updated_at=clock_timestamp(),
