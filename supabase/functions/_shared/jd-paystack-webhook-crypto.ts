@@ -8,7 +8,11 @@ async function hmacSha512(secret: string, message: Uint8Array): Promise<string> 
   const key = await crypto.subtle.importKey(
     "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-512" }, false, ["sign"],
   );
-  return toHex(new Uint8Array(await crypto.subtle.sign("HMAC", key, message)));
+  // Copy into a fresh ArrayBuffer: Uint8Array.buffer may be SharedArrayBuffer
+  // under newer TypeScript/Deno lib definitions and is not a valid BufferSource.
+  const payload = new ArrayBuffer(message.byteLength);
+  new Uint8Array(payload).set(message);
+  return toHex(new Uint8Array(await crypto.subtle.sign("HMAC", key, payload)));
 }
 
 function constantTimeHexEqual(left: string, right: string): boolean {
