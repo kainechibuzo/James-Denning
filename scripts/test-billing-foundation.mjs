@@ -64,6 +64,9 @@ test("Paystack plan is checked against the exact subscription amount, currency a
   assert.match(endpoint, /providerPlan\?\.interval !== "monthly"/);
   assert.match(endpoint, /JD_BILLING_CHECKOUT_ENABLED/);
   assert.match(endpoint, /billing_plan_mismatch/);
+  assert.match(endpoint, /checkout_expires_at.*Date\.parse\(existing\.checkout_expires_at\)/);
+  assert.match(endpoint, /billing_checkout_expired/);
+  assert.match(endpoint, /No payment link was returned/);
 });
 
 test("payment and subscription state are finalised atomically with an append-only audit event", () => {
