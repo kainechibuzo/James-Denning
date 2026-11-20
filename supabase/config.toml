@@ -59,3 +59,11 @@ verify_jwt = false
 [functions.jd-connect-oauth]
 # Public callback consumes one-time state; POST validates a human user JWT.
 verify_jwt = false
+
+[functions.jd-billing]
+# Authenticated billing API; the handler also verifies the user JWT and workspace role.
+verify_jwt = true
+
+[functions.jd-paystack-webhook]
+# Public provider callback; request authenticity is enforced with Paystack HMAC signatures.
+verify_jwt = false
