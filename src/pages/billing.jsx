@@ -38,6 +38,7 @@ export function BillingPage({ ctx }) {
   const [working, setWorking] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const user = ctx?.user;
   const workspaceName = ctx?.selectedSchool?.name || "Your organisation";
@@ -108,6 +109,19 @@ export function BillingPage({ ctx }) {
     finally { setWorking(""); }
   };
 
+  const cancelSubscription = async () => {
+    setWorking("cancel"); setError(""); setNotice("");
+    try {
+      const result = await call({ action: "billing.subscription.cancel" });
+      setNotice(result?.cancelled
+        ? `Subscription cancelled. No further automatic renewals are scheduled. Current paid period ends ${dateTime(result.current_period_end)}.`
+        : "Cancellation status is being reconciled.");
+      setConfirmCancel(false);
+      await refresh();
+    } catch (err) { setError(err?.message || "Could not cancel the subscription"); }
+    finally { setWorking(""); }
+  };
+
   const checkout = async () => {
     setWorking("checkout"); setError(""); setNotice("");
     try {
@@ -122,9 +136,9 @@ export function BillingPage({ ctx }) {
   const invoices = snapshot?.invoices || [];
   const statusDescription = useMemo(() => {
     if (trialActive) return `Your free trial ends ${dateTime(subscription.trial_ends_at)}. No charge is made during the trial.`;
-    if (status === "active") return `Your platform subscription is active. Next billing date: ${dateTime(subscription?.current_period_end)}.`;
+    if (status === "active") return `Your platform subscription renews monthly. Next billing date: ${dateTime(subscription?.current_period_end)}.`;
     if (checkoutDue) return "Your trial has ended or payment needs attention. Review the amount and continue through secure checkout when ready.";
-    if (status === "cancelled") return "Your subscription is cancelled. Existing invoices remain available below.";
+    if (status === "cancelled") return `Your subscription is cancelled. No further automatic renewals are scheduled. The current paid period is recorded through ${dateTime(subscription?.current_period_end)}.`;
     return "Start with a 3-day trial. You will not be charged when the trial starts.";
   }, [trialActive, subscription, status, checkoutDue]);
 
@@ -170,7 +184,12 @@ export function BillingPage({ ctx }) {
             checkoutDue ? <button onClick={checkout} disabled={!checkoutEnabled || Boolean(working)} style={{ ...primaryButton, opacity: !checkoutEnabled ? .55 : 1 }}>
               {working === "checkout" ? <LoaderCircle size={15}/> : <CreditCard size={15}/>} Continue with Paystack
             </button> :
-            status === "active" ? <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div> : null}
+            status === "active" ? <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ color: C.muted, fontSize: 12 }}><ShieldCheck size={14} style={{ verticalAlign: "middle", marginRight: 5 }}/>Subscription confirmed</div>
+              {subscription?.provider_subscription_code
+                ? <button onClick={() => setConfirmCancel(true)} disabled={Boolean(working)} style={secondaryButton}>Cancel subscription</button>
+                : <span style={{ color: C.muted, fontSize: 11 }}>Subscription management is still being linked.</span>}
+            </div> : null}
           {checkoutDue && !checkoutEnabled && <p style={{ color: C.muted, fontSize: 11, lineHeight: 1.5, margin: "9px 0 0" }}>Checkout remains disabled until recurring cancellation controls and provider configuration are verified. No payment will be taken here.</p>}
         </div>
       </Panel>
@@ -191,6 +210,20 @@ export function BillingPage({ ctx }) {
         </div>
       </Panel>
     </div>
+
+    {confirmCancel && <Panel style={{ marginBottom: 14, border: "1px solid #9a6666" }}>
+      <strong style={{ fontSize: 14 }}>Cancel recurring subscription?</strong>
+      <p style={{ color: C.muted, fontSize: 12, lineHeight: 1.65, margin: "8px 0 14px" }}>
+        This asks Paystack to stop future automatic renewals. It does not refund previous payments.
+        Your current paid period is recorded through {dateTime(subscription?.current_period_end)}.
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <button onClick={cancelSubscription} disabled={Boolean(working)} style={dangerButton}>
+          {working === "cancel" ? <LoaderCircle size={14}/> : null} Confirm cancellation
+        </button>
+        <button onClick={() => setConfirmCancel(false)} disabled={Boolean(working)} style={secondaryButton}>Keep subscription</button>
+      </div>
+    </Panel>}
 
     <Panel style={{ marginBottom: 14 }}>
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
@@ -238,5 +271,15 @@ const primaryButton = {
   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
   padding: "11px 15px", border: "none", borderRadius: 9, background: "var(--jd-action)",
   color: "var(--jd-on-action)", fontWeight: 800, fontSize: 12, cursor: "pointer",
+};
+const secondaryButton = {
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+  padding: "9px 12px", border: "1px solid var(--jd-border)", borderRadius: 9,
+  background: "var(--jd-card)", color: "var(--jd-text)", fontWeight: 700, fontSize: 12, cursor: "pointer",
+};
+const dangerButton = {
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+  padding: "9px 12px", border: "1px solid #9a6666", borderRadius: 9,
+  background: "var(--jd-soft)", color: "var(--jd-text)", fontWeight: 800, fontSize: 12, cursor: "pointer",
 };
 const cellStyle = { padding: "11px 8px", borderBottom: "1px solid var(--jd-border)", color: "var(--jd-text)" };
