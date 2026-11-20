@@ -114,8 +114,8 @@ Deno.serve(async (req: Request) => {
     const providerSubscription = providerResult?.data;
     if (!providerResponse.ok || providerResult?.status !== true ||
         providerSubscription?.subscription_code !== subscription.provider_subscription_code ||
-        typeof providerSubscription?.email_token !== "string" ||
-        !["active", "non-renewing"].includes(providerSubscription?.status)) {
+        !["active", "non-renewing", "inactive"].includes(providerSubscription?.status) ||
+        (providerSubscription?.status === "active" && typeof providerSubscription?.email_token !== "string")) {
       console.error("Paystack subscription could not be verified for cancellation", {
         status: providerResponse.status,
         provider_status: providerSubscription?.status,
@@ -127,15 +127,17 @@ Deno.serve(async (req: Request) => {
       return send({ error: "The provider subscription customer does not match this workspace", code: "billing_subscription_customer_mismatch" }, 403);
     }
 
-    const disableResponse = await fetch("https://api.paystack.co/subscription/disable", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ code: subscription.provider_subscription_code, token: providerSubscription.email_token }),
-    });
-    const disableResult = await disableResponse.json().catch(() => null);
-    if (!disableResponse.ok || disableResult?.status !== true) {
-      console.error("Paystack subscription disable failed", { status: disableResponse.status, message: disableResult?.message });
-      return send({ error: "Paystack could not disable future renewals. Your local subscription state was not changed.", code: "billing_provider_cancellation_failed" }, 502);
+    if (providerSubscription.status === "active") {
+      const disableResponse = await fetch("https://api.paystack.co/subscription/disable", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ code: subscription.provider_subscription_code, token: providerSubscription.email_token }),
+      });
+      const disableResult = await disableResponse.json().catch(() => null);
+      if (!disableResponse.ok || disableResult?.status !== true) {
+        console.error("Paystack subscription disable failed", { status: disableResponse.status, message: disableResult?.message });
+        return send({ error: "Paystack could not disable future renewals. Your local subscription state was not changed.", code: "billing_provider_cancellation_failed" }, 502);
+      }
     }
 
     const { data: cancellation, error: cancellationError } = await db.rpc("jd_billing_mark_subscription_cancelled", {
