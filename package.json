@@ -38,7 +38,7 @@
     "test:work-apps": "node --experimental-strip-types --test scripts/test-workspace-apps.mjs scripts/test-workspace-apps-database.mjs scripts/test-workspace-oauth-endpoint.mjs scripts/test-workspace-refresh.mjs",
     "test:connector-oauth": "node --experimental-strip-types --test scripts/test-connector-oauth.mjs scripts/test-connector-oauth-database.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-errors.mjs",
     "test:connector-tokens": "node --experimental-strip-types --test scripts/test-connector-tokens.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-database.mjs",
-    "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs"
+    "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs scripts/test-billing-ui.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
