@@ -77,5 +77,7 @@ test("payment and subscription state are finalised atomically with an append-onl
   assert.match(finalisation, /update public\.jd_billing_subscriptions/);
   assert.match(finalisation, /insert into public\.jd_billing_events/);
   assert.match(finalisation, /to service_role/);
+  assert.match(finalisation, /jd_billing_finalize_payment\(uuid,text,bigint,text,timestamptz,text,uuid,uuid\)/);
+  assert.match(finalisation, /school_id,actor_id,source_webhook_receipt_id/);
   assert.match(endpoint, /rpc\("jd_billing_finalize_payment"/);
 });
