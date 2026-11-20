@@ -219,15 +219,70 @@ Deno.serve(async (req: Request) => {
     // Only one outstanding Paystack checkout is allowed per workspace. This
     // prevents repeated clicks or network retries from creating multiple payable links.
     const { data: pendingCheckout, error: pendingCheckoutError } = await db.from("jd_billing_payments")
-      .select("provider_reference,checkout_url,status")
+      .select("provider_reference,checkout_url,checkout_expires_at,created_at,status")
       .eq("school_id", profile.school_id).eq("status", "pending")
       .order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (pendingCheckoutError) return send({ error: "Could not inspect an existing checkout", code: "billing_checkout_lookup_failed" }, 503);
     if (pendingCheckout) {
-      if (pendingCheckout.checkout_url) {
+      const expiresAt = pendingCheckout.checkout_expires_at ? Date.parse(pendingCheckout.checkout_expires_at) : NaN;
+      if (pendingCheckout.checkout_url && Number.isFinite(expiresAt) && expiresAt > Date.now()) {
         return send({ checkout_url: pendingCheckout.checkout_url, reference: pendingCheckout.provider_reference, reused: true });
       }
-      return send({ error: "Another checkout is still being initialised. Refresh billing before retrying.", code: "billing_checkout_in_progress" }, 409);
+
+      // A pending link must not block a workspace forever after abandonment,
+      // a lost browser callback, or a failed attempt to persist the checkout URL.
+      // Reconcile only after the 30-minute checkout window has elapsed.
+      const createdAt = Date.parse(pendingCheckout.created_at || "");
+      const stale = Number.isFinite(createdAt) && Date.now() - createdAt >= 30 * 60 * 1000;
+      if (!stale) {
+        return send({ error: "Another checkout is still being initialised or remains payable. Refresh billing before retrying.", code: "billing_checkout_in_progress" }, 409);
+      }
+
+      const staleVerifyResponse = await fetch(
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(pendingCheckout.provider_reference)}`,
+        { headers: { Authorization: `Bearer ${secret}` } },
+      );
+      const staleVerifyResult = await staleVerifyResponse.json().catch(() => null);
+      const staleTransaction = staleVerifyResult?.data;
+      if (!staleVerifyResponse.ok || staleVerifyResult?.status !== true ||
+          staleTransaction?.reference !== pendingCheckout.provider_reference) {
+        console.error("Stale Paystack checkout could not be reconciled", { status: staleVerifyResponse.status });
+        return send({ error: "The previous checkout could not be reconciled with Paystack. No new checkout was created.", code: "billing_stale_checkout_unresolved" }, 503);
+      }
+
+      if (staleTransaction.status === "success") {
+        if (Number(staleTransaction.amount) !== Number(subscription.amount_minor) ||
+            staleTransaction.currency !== subscription.currency) {
+          return send({ error: "The previous Paystack payment does not match this workspace's subscription price.", code: "billing_stale_payment_mismatch" }, 409);
+        }
+        const { data: finalised, error: finaliseError } = await db.rpc("jd_billing_finalize_payment", {
+          p_school_id: profile.school_id,
+          p_reference: pendingCheckout.provider_reference,
+          p_amount_minor: Number(staleTransaction.amount),
+          p_currency: staleTransaction.currency,
+          p_paid_at: staleTransaction.paid_at || new Date().toISOString(),
+          p_customer_code: staleTransaction.customer?.customer_code || null,
+          p_actor_id: authData.user.id,
+          p_source_webhook_receipt_id: null,
+        });
+        if (finaliseError || !finalised?.verified) {
+          return send({ error: "The previous payment succeeded, but JD could not finish recording it. Contact support before retrying.", code: "billing_stale_payment_finalisation_pending" }, 503);
+        }
+        return send({ ...finalised, reconciled: true });
+      }
+
+      if (["failed", "abandoned"].includes(staleTransaction.status)) {
+        const { error: staleUpdateError } = await db.from("jd_billing_payments")
+          .update({ status: "failed" })
+          .eq("school_id", profile.school_id)
+          .eq("provider_reference", pendingCheckout.provider_reference)
+          .eq("status", "pending");
+        if (staleUpdateError) {
+          return send({ error: "Paystack confirmed the previous checkout failed, but JD could not reconcile it. No new checkout was created.", code: "billing_stale_checkout_update_failed" }, 503);
+        }
+      } else {
+        return send({ error: "Paystack still reports the previous checkout as pending. No duplicate checkout was created.", code: "billing_checkout_still_pending" }, 409);
+      }
     }
 
     // A Paystack plan overrides the transaction amount. Verify the provider-side
