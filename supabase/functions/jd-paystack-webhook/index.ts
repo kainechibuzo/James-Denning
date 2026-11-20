@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
         const subscriptionCode = data.subscription_code ||
           (data.subscription && typeof data.subscription === "object"
             ? (data.subscription as Record<string, unknown>).subscription_code : null);
-        let query = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency");
+        let query = db.from("jd_billing_subscriptions").select("school_id,version,amount_minor,currency,current_period_end,cancel_at_period_end");
         if (typeof subscriptionCode === "string") query = query.eq("provider_subscription_code", subscriptionCode);
         else if (typeof customerCode === "string") query = query.eq("provider_customer_code", customerCode);
         else {
@@ -219,8 +219,11 @@ Deno.serve(async (req: Request) => {
       changes.cancel_at_period_end = true;
       if (data.next_payment_date) changes.next_payment_at = data.next_payment_date;
     } else if (event === "subscription.disable") {
-      changes.status = "cancelled";
-      changes.cancel_at_period_end = false;
+      const paidThrough = subscription.current_period_end ? Date.parse(subscription.current_period_end) : 0;
+      const periodStillPaid = Number.isFinite(paidThrough) && paidThrough > Date.now();
+      changes.status = periodStillPaid ? "active" : "cancelled";
+      changes.cancel_at_period_end = periodStillPaid;
+      changes.next_payment_at = null;
     } else if (event === "invoice.payment_failed") {
       changes.status = "past_due";
     } else {
