@@ -4,7 +4,9 @@ import { verifyPaystackWebhookSignature } from "./jd-paystack-webhook-crypto.ts"
 const encoder = new TextEncoder();
 async function sign(secret: string, data: Uint8Array) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-512" }, false, ["sign"]);
-  return [...new Uint8Array(await crypto.subtle.sign("HMAC", key, data))].map(x=>x.toString(16).padStart(2,"0")).join("");
+  const payload = new ArrayBuffer(data.byteLength);
+  new Uint8Array(payload).set(data);
+  return [...new Uint8Array(await crypto.subtle.sign("HMAC", key, payload))].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 Deno.test("verifies timestamped Paystack-Signature over exact raw bytes", async () => {
   const body=encoder.encode('{"event":"charge.success","data":{"amount":1900}}');
