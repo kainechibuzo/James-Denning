@@ -121,8 +121,18 @@ Deno.serve(async (req: Request) => {
       .eq("request_id", body.requestId)
       .maybeSingle();
     if (existingError) return send({ error: "Could not load checkout request" }, 503);
-    if (existing?.checkout_url && existing.status === "pending") {
+    if (existing?.checkout_url && existing.status === "pending" &&
+        existing.checkout_expires_at && Date.parse(existing.checkout_expires_at) > Date.now()) {
       return send({ checkout_url: existing.checkout_url, reference: existing.provider_reference, reused: true });
+    }
+    if (existing?.status === "pending") {
+      const { error: expireError } = await db.from("jd_billing_payments")
+        .update({ status: "failed" })
+        .eq("school_id", profile.school_id)
+        .eq("provider_reference", existing.provider_reference)
+        .eq("status", "pending");
+      if (expireError) return send({ error: "Could not expire the previous checkout request", code: "billing_checkout_expiry_failed" }, 503);
+      return send({ error: "The previous checkout link expired or could not be saved. Start a new checkout request.", code: "billing_checkout_expired" }, 409);
     }
     if (existing) return send({ error: "This checkout request has already been used. Start a new request.", code: "billing_request_reused" }, 409);
 
@@ -193,8 +203,10 @@ Deno.serve(async (req: Request) => {
       checkout_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     }).eq("school_id", profile.school_id).eq("provider_reference", reference);
     if (saveError) {
+      await db.from("jd_billing_payments").update({ status: "failed" })
+        .eq("school_id", profile.school_id).eq("provider_reference", reference).eq("status", "pending");
       console.error("Could not persist Paystack checkout URL", saveError.code);
-      return send({ error: "Checkout was created but could not be safely saved. Contact support before retrying.", code: "billing_checkout_persist_failed" }, 503);
+      return send({ error: "Checkout could not be safely saved. No payment link was returned; start a new checkout request.", code: "billing_checkout_persist_failed" }, 503);
     }
     return send({ checkout_url: providerResult.data.authorization_url, reference, reused: false });
   }
