@@ -173,8 +173,8 @@ Deno.serve(async (req: Request) => {
       provider: "paystack",
       provider_reference: reference,
       request_id: body.requestId,
-      amount_minor: 1900,
-      currency: "USD",
+      amount_minor: Number(subscription.amount_minor),
+      currency: subscription.currency,
       status: "pending",
     });
     if (insertError) {
