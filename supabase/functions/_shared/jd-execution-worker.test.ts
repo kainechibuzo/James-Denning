@@ -1,4 +1,4 @@
-import { isQueueMessage, retryDelaySeconds, safeWorkerId } from "./jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError } from "./jd-execution-worker-helpers.ts";
 
 function assertEquals(actual: unknown, expected: unknown, message: string) {
   if (actual !== expected) throw new Error(`${message}: expected ${String(expected)}, received ${String(actual)}`);
@@ -22,4 +22,11 @@ Deno.test("retry delay is exponential and bounded", () => {
   assertEquals(retryDelaySeconds(2), 10, "second retry delay");
   assertEquals(retryDelaySeconds(3), 20, "third retry delay");
   assertEquals(retryDelaySeconds(20), 300, "maximum retry delay");
+});
+
+Deno.test("execution evidence persistence failures are terminal and non-retryable", () => {
+  const error = new NonRetryableExecutionEvidenceError("evidence write failed");
+  assertEquals(isNonRetryableExecutionEvidenceError(error), true, "typed evidence failure recognised");
+  assertEquals(isNonRetryableExecutionEvidenceError({ code: "JD_EXECUTION_EVIDENCE_PERSISTENCE_FAILED" }), true, "serialised evidence failure recognised");
+  assertEquals(isNonRetryableExecutionEvidenceError(new Error("temporary network error")), false, "ordinary transient error remains retryable");
 });
