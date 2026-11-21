@@ -40,7 +40,7 @@ try{for(const width of [320,393,1280]){
    // Heritage colours are intentional, not legacy accent leakage. Resolve
    // tokens to RGB so this audit follows the shared light/dark palette.
    const probe=document.createElement('span');document.body.append(probe);
-   const approved=new Set(['#2b3447','#1e2a42','#8d2f26'].map(value=>{probe.style.color=value;return getComputedStyle(probe).color;}));
+   const approved=new Set(['#2b3447','#313c52','#1e2a42','#8d2f26'].map(value=>{probe.style.color=value;return getComputedStyle(probe).color;}));
    for(const token of ['--jd-paper','--jd-paper-raised','--jd-paper-sunk','--jd-paper-deep','--jd-ink','--jd-ink-heading','--jd-ink-soft','--jd-ink-muted','--jd-rule-navy']){
     probe.style.color=`var(${token})`;approved.add(getComputedStyle(probe).color);
    }
