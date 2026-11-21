@@ -1,0 +1,99 @@
+/* Public-facing expression of the same paper, Caslon and navy workspace.
+   Scoped to the public page: workspace and authentication behaviour stay intact. */
+.reference-landing{background:var(--jd-paper);color:var(--jd-ink);font-family:var(--jd-font-display);color-scheme:light}
+.reference-landing .landing-brand{display:inline-flex;align-items:center;gap:12px;color:var(--jd-ink-heading);white-space:nowrap}
+.landing-brand>span:last-child{display:flex;flex-direction:column;align-items:flex-start;gap:7px;font-size:23px}
+.reference-landing .reference-site-header{background:var(--jd-paper);border-bottom:1px solid var(--jd-hairline);height:88px;padding-inline:max(24px,calc((100% - 1240px)/2));isolation:isolate}
+.reference-site-header:before{content:'';position:absolute;inset:0 16% 0 auto;width:320px;z-index:-1;pointer-events:none;background:url('/design/paris-facade.webp') center 36%/cover;opacity:.16;mask-image:linear-gradient(90deg,transparent,#000,transparent)}
+.reference-landing .reference-primary{background:var(--jd-rule-navy);color:#fcfaf5;border:1px solid var(--jd-rule-navy);font-family:var(--jd-font-display);font-size:16px;font-weight:400;letter-spacing:0;box-shadow:0 2px 4px #1e2a5214;transition:background .15s}
+.reference-landing .reference-primary:hover{background:#303d67}
+.reference-landing .landing-signin{color:var(--jd-ink);font-size:15px;font-weight:400}
+.reference-landing .reference-menu-button{background:transparent;color:var(--jd-ink);border-color:var(--jd-hairline)}
+.reference-landing .reference-site-menu{background:var(--jd-paper-raised);border-color:var(--jd-hairline);box-shadow:var(--jd-shadow-float)}
+.reference-landing .reference-site-menu :is(a,button){color:var(--jd-ink);font-size:16px}
+.reference-landing .reference-site-menu :is(a,button):hover{background:var(--jd-paper-sunk)}
+.reference-landing .reference-landing-body{max-width:1320px;padding:76px 40px 24px;background:none}
+.reference-landing .reference-hero{grid-template-columns:1fr 1.05fr;gap:64px;align-items:center}
+.reference-landing .reference-hero-copy{padding:0}
+.reference-landing .reference-hero h1{font-family:var(--jd-font-display);font-size:clamp(48px,6.3vw,86px);line-height:.98;letter-spacing:-.035em;white-space:normal;margin:0 0 22px}
+.reference-landing .reference-hero h1 em{font-family:inherit;font-size:1em;letter-spacing:inherit}
+.reference-landing .reference-lead{font-size:19px;line-height:1.6;color:var(--jd-ink-soft);margin-top:24px;max-width:490px}
+.reference-landing .landing-eyebrow{font-family:var(--jd-font-ui);font-size:9px!important;letter-spacing:.2em;color:var(--jd-ink-soft);font-weight:500}
+.reference-landing .reference-explore{font-size:16px;font-weight:400;color:var(--jd-ink);border-color:var(--jd-hairline);padding-right:16px}
+.reference-landing .reference-explore>span{background:var(--jd-paper-sunk)}
+.reference-landing .reference-proof{font-size:12px;color:var(--jd-ink-muted);max-width:360px}
+.landing-workspace-preview{min-width:0;background:var(--jd-paper-raised);border:1px solid var(--jd-hairline);border-radius:18px;box-shadow:0 18px 60px #493b2810;overflow:hidden;transform:rotate(1deg)}
+.landing-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px;border-bottom:1px solid var(--jd-hairline);background:var(--jd-paper)}
+.landing-preview-bar .landing-brand>span:first-child{width:27px!important;height:27px!important;border-radius:8px!important;font-size:13px!important}
+.landing-preview-bar .landing-brand>span:last-child{font-size:18px;gap:3px}
+.landing-preview-bar>span{font-size:10px;border:1px solid var(--jd-hairline);border-radius:99px;padding:6px 9px;white-space:nowrap}
+.landing-preview-body{padding:24px 26px 22px}
+.landing-preview-caption{font-family:var(--jd-font-ui);font-size:7px;letter-spacing:.13em;color:var(--jd-ink-muted);margin:0 0 24px;line-height:1.6}
+.landing-preview-user{width:fit-content;max-width:90%;margin:0 0 24px auto;background:var(--jd-paper-sunk);border:1px solid var(--jd-hairline-soft);border-radius:12px;padding:10px 14px;font-size:15px}
+.landing-preview-author{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:16px}
+.landing-preview-body h2{font-size:24px;line-height:1.15;font-weight:400;letter-spacing:-.02em;margin:0 0 10px}
+.landing-preview-body>p:not([class]){font-size:16px;line-height:1.5;color:var(--jd-ink-soft)}
+.landing-preview-body ol{list-style:none;counter-reset:preview;margin:20px 0 24px;padding:0;display:grid;gap:16px}
+.landing-preview-body li{position:relative;padding-left:36px;counter-increment:preview;font-size:15px;line-height:1.4}
+.landing-preview-body li:before{content:counter(preview);position:absolute;left:0;top:0;background:var(--jd-paper-sunk);border:1px solid var(--jd-hairline-soft);border-radius:7px;width:25px;height:25px;display:grid;place-items:center}
+.landing-preview-body li span{display:block;font-size:13px;color:var(--jd-ink-muted)}
+.landing-preview-composer{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--jd-hairline);border-radius:12px;padding:12px;color:var(--jd-ink-muted);font-size:15px}
+.landing-preview-composer span{background:var(--jd-rule-navy);color:#fff;border-radius:8px;padding:3px 9px;font-size:20px}
+.reference-landing .reference-features{max-width:none;margin-top:64px;gap:0;border-block:1px solid var(--jd-hairline)}
+.reference-landing .reference-features article{background:transparent;border:0;border-radius:0;padding:28px 32px}
+.reference-landing .reference-features article+article{border-left:1px solid var(--jd-hairline)}
+.reference-landing .reference-feature-icon{background:var(--jd-paper-sunk);border:1px solid var(--jd-hairline-soft);border-radius:10px;color:var(--jd-rule-navy)}
+.reference-landing .reference-features h2{font-size:25px;font-weight:400;letter-spacing:0}
+.reference-landing .reference-features p{font-size:16px;line-height:1.6;color:var(--jd-ink-soft)}
+.reference-landing :is(.landing-section-heading h2,.landing-control h2,.landing-final-cta h2){font-family:var(--jd-font-display);font-weight:400;letter-spacing:-.025em}
+.reference-landing .landing-final-cta h2 em{font-family:inherit}
+.reference-landing :is(.landing-section-heading>p:last-child:not(.landing-eyebrow),.landing-steps p,.landing-faq details p,.landing-final-cta>p:not(.landing-eyebrow)){font-size:17px;color:var(--jd-ink-soft);line-height:1.65}
+.reference-landing :is(.landing-how,.landing-steps article,.landing-faq details,.landing-final-cta,.landing-footer){border-color:var(--jd-hairline)}
+.reference-landing .landing-demo{background:var(--jd-paper-raised);border-color:var(--jd-hairline);box-shadow:var(--jd-shadow-paper);border-radius:16px}
+.reference-landing .landing-demo>small{font-family:var(--jd-font-ui);font-size:8px;color:var(--jd-ink-muted)}
+.reference-landing .landing-demo-question{background:var(--jd-paper-sunk);font-size:18px}
+.reference-landing .landing-demo-answer p{font-size:17px;color:var(--jd-ink-soft);line-height:1.6}
+.reference-landing .landing-demo-answer strong{font-size:15px}
+.reference-landing .landing-demo-outcome{font-size:13px;border-color:var(--jd-hairline);color:var(--jd-ink-soft)}
+.reference-landing .landing-scenario-tabs button{border-color:var(--jd-hairline);color:var(--jd-ink-soft);font-size:14px;font-family:var(--jd-font-display)}
+.reference-landing .landing-scenario-tabs button[aria-pressed=true]{background:var(--jd-rule-navy);border-color:var(--jd-rule-navy);color:#fcfaf5}
+.reference-landing .landing-steps h3{font-size:25px;font-weight:400;letter-spacing:-.015em}
+.reference-landing .landing-steps article>div{color:var(--jd-rule-navy)}
+.reference-landing .landing-control{background:#1e2a42;color:#fcfaf5;border-radius:18px}
+.reference-landing .landing-control :is(p:not(.landing-eyebrow),li){color:#e1dcd3;font-size:16px}
+.reference-landing .landing-control .landing-eyebrow{color:#d9d1c3}
+.reference-landing .landing-control strong{font-size:19px;font-weight:400;color:#fff}
+.reference-landing .landing-faq summary{font-size:20px;font-weight:400}
+.reference-landing .landing-final-cta{position:relative;isolation:isolate;overflow:hidden}
+.landing-final-cta:before{content:'';position:absolute;inset:0;z-index:-1;background:url('/design/paris-skyline.webp') right bottom/470px auto no-repeat;opacity:.16;pointer-events:none;mask-image:linear-gradient(180deg,transparent 20%,#000)}
+.reference-landing .landing-footer{color:var(--jd-ink-soft);font-size:14px}
+.reference-landing .landing-footer a{color:inherit;text-underline-offset:4px}
+.reference-landing :focus-visible{outline:2px solid var(--jd-rule-navy);outline-offset:4px}
+@media(max-width:1000px){
+ .reference-landing .reference-hero{gap:28px}
+ .reference-landing .reference-hero-actions{flex-wrap:wrap;gap:10px}
+ .landing-preview-bar{padding:12px}.landing-preview-bar>span{display:none}
+}
+@media(max-width:760px){
+ .reference-landing .reference-site-header{height:72px;padding:0 18px;gap:8px}
+ .reference-landing .landing-brand{gap:9px}
+ .reference-site-header .landing-brand>span:first-child{width:31px!important;height:31px!important;font-size:14px!important}
+ .reference-site-header .landing-brand>span:last-child{font-size:20px;gap:5px}
+ .reference-landing .reference-header-actions{gap:8px}
+ .reference-landing .reference-site-header .reference-primary{display:none}
+ .reference-landing .reference-landing-body{padding:42px 20px 18px}
+ .reference-landing .reference-hero{grid-template-columns:minmax(0,1fr);gap:36px}
+ .reference-landing .reference-hero h1{font-size:clamp(52px,12vw,76px)}
+ .reference-landing .reference-lead{font-size:18px;max-width:560px}
+ .reference-landing .reference-hero-actions{flex-wrap:wrap}
+ .landing-workspace-preview{transform:none;max-width:540px;width:100%;margin:auto}
+ .landing-preview-body{padding:22px 18px}
+ .landing-preview-bar{padding:14px 18px}
+ .reference-landing .reference-features{margin-top:40px}
+ .reference-landing .reference-features article{padding:22px 12px}
+ .reference-landing .reference-features h2{font-size:23px}
+ .reference-landing .reference-features p{font-size:15px}
+ .reference-landing .landing-use-cases,.reference-landing .landing-faq{gap:24px}
+ .reference-landing .landing-footer .landing-brand>span:last-child{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){.reference-landing *{transition:none!important;scroll-behavior:auto!important}}
