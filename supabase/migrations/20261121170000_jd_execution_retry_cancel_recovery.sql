@@ -54,5 +54,3 @@ begin
 end;
 $$;
 
-revoke all on function public.jd_cancel_execution_job(uuid,uuid) from public,anon,authenticated;
-grant execute on function public.jd_cancel_execution_job(uuid,uuid) to service_role;
