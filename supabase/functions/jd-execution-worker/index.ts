@@ -154,11 +154,11 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       .filter((item: any) => item.role === "assistant" || item.role === "user")
       .map((item: any) => ({ role: item.role, content: String(item.content || "").slice(0, 12000) }));
 
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    // Keep one predictable Gemini model across all tool rounds and retries.
-    // Provider/model changes are code-controlled, not operator env overrides.
-    const model = "gemini-3.1-flash-lite";
-    if (!apiKey) throw new Error("Gemini API key is not configured");
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+    // Route Gemini through OpenRouter so provider failover and its Gemini
+    // tool-call metadata are preserved across every round and checkpoint.
+    const model = Deno.env.get("JD_MODEL_NAME") || "google/gemini-3.1-flash-lite";
+    if (!apiKey) throw new Error("OpenRouter API key is not configured");
 
     const { data: checkpointRow, error: checkpointReadError } = await admin
       .from("jd_execution_checkpoints")
@@ -240,7 +240,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
       model,
-      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      baseUrl: "https://openrouter.ai/api/v1",
       resumeState,
       onCheckpoint: async (state) => {
         if (leaseLost) throw new Error("Execution lease was lost");
