@@ -182,6 +182,8 @@ function friendlyActivityLabel(name) {
 
 export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
   const [draft, setDraft] = useState("");
+  const [responseStyle, setResponseStyle] = useState("balanced");
+  const responseStyles = { concise: "Respond concisely: lead with the answer, keep only essential context, and use short lists when helpful.", balanced: "Use a balanced response: answer directly, explain important context, and give practical next steps when useful.", detailed: "Give a detailed response: explain the reasoning, assumptions, trade-offs, and actionable next steps without unnecessary repetition." };
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
@@ -369,7 +371,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message: `${responseStyles[responseStyle]}\n\nUser request: ${message}`, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
@@ -594,7 +596,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-compose">
-            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
+            <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>\n            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
               onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
