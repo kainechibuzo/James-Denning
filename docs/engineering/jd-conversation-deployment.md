@@ -1,19 +1,23 @@
-# Owner-authorized conversation backend deployment
+# Conversation deployment incident — incomplete rollout
 
-The owner authorized applying the migration and deploying the functions after PR #135 merged. Target: existing James-Denning project `thklwiybjuhrjqrrxyid`.
+Owner authorized applying the migration and deploying the two functions after PR #135 merged. Target: existing James-Denning project `thklwiybjuhrjqrrxyid`.
 
-## Applied
+## Database: applied and verified
 
-- Applied the SQL from `20261121100000_jd_conversation_interactions.sql` through the Supabase migration connector. Supabase recorded it as version `20261121084947`, name `jd_conversation_interactions` (the connector generates the version rather than preserving the filename timestamp). Do not blindly apply the same migration again merely because these version strings differ.
-- Verified both unique indexes exist.
-- Verified the submission routine is SECURITY DEFINER, service_role can execute, and anon/authenticated cannot execute.
-- Updated `jd-execution-worker` to v26, ACTIVE, verify_jwt=false.
-- Updated `jd-automation` to v19, ACTIVE, verify_jwt=true.
+Applied `20261121100000_jd_conversation_interactions.sql` via Supabase migration connector. Supabase recorded version `20261121084947`, name `jd_conversation_interactions`; the connector generates a version instead of retaining the filename timestamp. Do not blindly apply it again because those timestamps differ.
 
-Functions were deployed through the Supabase connector using immutable entrypoint imports pinned to merged commit `5ef9e3e2ae7e293a72cb6eb5f743422b7f74963b`, including relative shared dependencies at that same revision. This follows the existing deployment's remote-source pattern; it does not refer to a moving branch. Dependency resolution of npm/HTTPS imports is not fully locked.
+Both unique indexes exist. The submission routine is SECURITY DEFINER, service_role can execute it, and anon/authenticated cannot. Database, REST and auth health checks passed.
 
-The first GitHub CLI deployment run failed before the worker version changed; it was not counted as successful. The final branch workflow is read-only smoke verification and contains no deployment credentials or mutation steps.
+## Functions: startup failure after connector update
 
-## Verification boundary
+The connector reported `jd-execution-worker` v26 and `jd-automation` v19 ACTIVE after receiving immutable imports of merged source commit `5ef9e3e2ae7e293a72cb6eb5f743422b7f74963b`. However, public smoke checks returned BOOT_ERROR (503) for automation OPTIONS and worker GET/POST. Automation unauthenticated POST returned gateway 401, which does not prove handler health.
 
-Migration catalog/privilege checks and function ACTIVE/version metadata are verified through Supabase. The branch workflow checks public unauthenticated startup/authentication responses. These checks are not authenticated model, tenant, upload, approval or execution end-to-end testing. No business actions or test conversation records were created. See `jd-conversation-rollout.md` for rollback and remaining functional test limitations.
+Inspection showed that the connector's update operation stored plain TypeScript as the function body rather than the ESZIP artifact returned by the previously working version. ACTIVE metadata was therefore insufficient and these updates must not be considered a successful rollout.
+
+## Recovery
+
+A narrow current-branch GitHub workflow attempts the proper CLI API deployment of local source for only worker and automation. The first attempt required CLI `--yes`, which was added for this explicitly authorized operation. The next attempt reached upload but was rejected with `401 Invalid access token`; no CLI deployment succeeded in that run (44886940542). The subsequent attempt using the existing Production environment also failed with the same invalid-token response (run 44887008509). No further credential retries were attempted. The recovery workflow is now manual-only.
+
+If that credential is also invalid, the owner must repair the GitHub Actions Supabase Management API credential through secure settings (not chat) before redeploying/restoring a compiled function artifact. Do not claim live functionality, authenticated E2E tests, or successful rollback on the basis of ACTIVE metadata. No business test actions were submitted.
+
+The migration is additive and remains applied; see `jd-conversation-rollout.md` for its rollback SQL and functional test limitations. Rolling back the SQL alone does not fix the function startup issue.

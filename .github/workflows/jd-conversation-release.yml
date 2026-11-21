@@ -1,15 +1,13 @@
-# Deployment completed through Supabase connector: automation v19, worker v26.
-# Immutable source: 5ef9e3e2ae7e293a72cb6eb5f743422b7f74963b.
-# This workflow is read-only and carries no deployment credentials.
-name: Verify conversation backend release
+# Recovery deployment: requires a valid Supabase Management API token.
+# Connector updates currently fail startup; see the deployment incident record.
+name: Repair conversation backend deployment
 on:
-  push:
-    branches: [arena/7ea643db-james-denning]
-    paths: [.github/workflows/jd-conversation-release.yml]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
+    if: github.ref == 'refs/heads/arena/7ea643db-james-denning'
     environment: Production
     runs-on: ubuntu-latest
     timeout-minutes: 5
