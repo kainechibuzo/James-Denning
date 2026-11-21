@@ -183,7 +183,6 @@ function friendlyActivityLabel(name) {
 export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
   const [draft, setDraft] = useState("");
   const [responseStyle, setResponseStyle] = useState("balanced");
-  const responseStyles = { concise: "Respond concisely: lead with the answer, keep only essential context, and use short lists when helpful.", balanced: "Use a balanced response: answer directly, explain important context, and give practical next steps when useful.", detailed: "Give a detailed response: explain the reasoning, assumptions, trade-offs, and actionable next steps without unnecessary repetition." };
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
