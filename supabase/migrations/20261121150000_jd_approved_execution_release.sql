@@ -16,7 +16,9 @@ begin
  end if;
  if v_approval.execution_status <> 'not_executed' then raise exception 'Approval execution requires manual reconciliation' using errcode='40001'; end if;
  select * into v_run from public.jd_automation_runs where id=v_approval.run_id and school_id=v_school_id for update;
- if not found or v_run.requested_by <> v_approval.requested_by then raise exception 'Approved run does not match its requester and workspace' using errcode='42501'; end if;
+ if not found or v_run.requested_by <> v_approval.requested_by or v_approval.proposal_json->>'request_text' is distinct from v_run.request_text then
+  raise exception 'Approved run does not match its requester, workspace and approved request' using errcode='42501';
+ end if;
  if v_run.status <> 'awaiting_approval' then raise exception 'Run is not awaiting this approval' using errcode='40001'; end if;
  update public.jd_automation_runs set status='planning',
   result_json=coalesce(result_json,'{}'::jsonb)||jsonb_build_object('approval_id',v_approval.id,'approval_released_by',p_actor_id),
