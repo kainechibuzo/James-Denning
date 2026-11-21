@@ -10,6 +10,7 @@ permissions:
   contents: read
 jobs:
   verify:
+    environment: Production
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
