@@ -574,6 +574,7 @@ Deno.serve(async (req) => {
    .select("id,run_id,action_key,proposal_json,school_id").eq("id",approvalId).eq("school_id",profile.school_id).maybeSingle();
   if(beforeError||!before) return json({error:"Approval request not found"},404);
   if(before.action_key==="agent.publication.review") return json({error:"Review this definition in Business Builder → Agent registry. That review pins the exact evaluation and requires an independent reviewer; the generic approval action cannot publish an agent."},409);
+  if(before.action_key==="agent.execution.grant") return json({error:"Decide this execution-authority request in Business Builder → Agent registry. That review pins the exact definition evidence and requires an independent reviewer; the generic approval action cannot grant execution authority."},409);
   const {data:result,error:decisionErr}=await admin.rpc("jd_decide_approval",{
    p_approval_id:approvalId,p_actor_id:authData.user.id,p_decision:decision,p_note:note
   });
@@ -674,12 +675,36 @@ Deno.serve(async (req) => {
   }
   const byRun=new Map<string,any[]>();
   for(const step of steps){const list=byRun.get(step.run_id)||[];list.push(step);byRun.set(step.run_id,list);}
+  // Compact workforce-deployment summaries for the automation runs monitor.
+  // Report text, tool arguments and tool results stay in the step journal;
+  // the monitor shows only agent references, statuses and verification state.
+  const workforceByStep=new Map<string,any[]>();
+  if(ids.length){
+   const {data:deploySteps}=await admin.from("jd_automation_steps")
+    .select("id,run_id,output_json").eq("school_id",profile.school_id).in("run_id",ids)
+    .eq("tool_key","deploy_specialist_workforce").order("step_index",{ascending:true}).limit(50);
+   for(const step of deploySteps||[]){
+    try{
+     const parsed=JSON.parse(String((step.output_json as any)?.tool_output||""));
+     const agents=Array.isArray(parsed?.agents)?parsed.agents:[];
+     if(agents.length)workforceByStep.set(String(step.id),agents.slice(0,5).map((agent:any)=>({
+      agent_ref:String(agent?.agent_ref||"").slice(0,90),
+      name:String(agent?.name||"").slice(0,120),
+      source:agent?.source==="registry"?"registry":"builtin",
+      status:agent?.status==="report_returned"?"report_returned":"failed",
+      tools_granted:Array.isArray(agent?.tools_granted)?agent.tools_granted.slice(0,6).map((tool:any)=>String(tool).slice(0,80)):[],
+      verification:String(agent?.verification?.status||"unknown").slice(0,40),
+      report_returned:agent?.status==="report_returned"&&typeof agent?.report==="string"&&agent.report.length>0,
+     })));
+    }catch{/* a step without a parsable deployment keeps no workforce summary */}
+   }
+  }
   return json({runs:runs.map((run:any)=>({
    id:run.id,requested_by:run.requested_by,trigger_type:run.trigger_type,status:run.status,
    request_preview:String(run.request_text||"").slice(0,500),created_at:run.created_at,
    started_at:run.started_at,completed_at:run.completed_at,
    token_usage:run.result_json?.tokenUsage||null,model_requests:run.result_json?.modelRequests||[],model:run.result_json?.model||null,
-   steps:byRun.get(run.id)||[]
+   steps:(byRun.get(run.id)||[]).map((step:any)=>({...step,workforce:workforceByStep.get(String(step.id))||null}))
   }))});
  }
  if(payload.action==="usage.summary"){

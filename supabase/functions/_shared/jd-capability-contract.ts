@@ -23,6 +23,9 @@ const effects: Record<string, {effect:string; boundary:string}> = {
   submit_organisation_blueprint_for_review: {effect:"approval_request",boundary:"May save a proposal and request review. Does not create departments; approval and successful provisioning are separate."},
   create_business_document_draft: {effect:"private_document_draft",boundary:"Only on an explicit file request. Saves a private draft; never sends or publishes it."},
   call_connected_mcp_tool: {effect:"connector_dependent",boundary:"Discover first. Read-only calls may execute; write-capable calls request approval. Check execution evidence after approval, never treat an approval as execution."},
+  delegate_to_specialist_agent: {effect:"workforce_orchestration",boundary:"Returns one bounded reasoning-only specialist report inside the conversation. The specialist has no tools, approvals, hiring, spending or deployment authority, and JD verifies the report independently."},
+  deploy_specialist_workforce: {effect:"workforce_orchestration",boundary:"Runs bounded read-only specialist assignments inside the conversation. Specialists cannot approve, hire, spend, deploy or create agents, and every deliverable requires independent JD verification before completion. Release-gated."},
+  propose_agent_definition: {effect:"saved_internal_record",boundary:"Saves a validated specialist proposal as an immutable registry draft for independent human review. Not evaluated, published, executable, hireable or billable."},
 };
 const readers = new Set([
   "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence",

@@ -1,0 +1,236 @@
+
+> james-denning@1.0.0 test:workforce
+> node --experimental-strip-types --test scripts/test-agent-workforce-engine.mjs scripts/test-agent-workforce-runtime.mjs scripts/test-agent-workforce-database.mjs scripts/test-agent-workforce-ui.mjs
+
+TAP version 13
+# (node:3431) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-registry-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: execution authority requires current published operational evidence
+ok 1 - execution authority requires current published operational evidence
+  ---
+  duration_ms: 1474.772231
+  type: 'test'
+  ...
+# Subtest: independence is enforced across request, decision and grant
+ok 2 - independence is enforced across request, decision and grant
+  ---
+  duration_ms: 61.54953
+  type: 'test'
+  ...
+# Subtest: revoke is immediate and clears the review pointer
+ok 3 - revoke is immediate and clears the review pointer
+  ---
+  duration_ms: 47.955827
+  type: 'test'
+  ...
+# Subtest: requests replay exactly and reject changed payloads or stale versions
+ok 4 - requests replay exactly and reject changed payloads or stale versions
+  ---
+  duration_ms: 53.273728
+  type: 'test'
+  ...
+# Subtest: grant requires an approved, current, independently decided review
+ok 5 - grant requires an approved, current, independently decided review
+  ---
+  duration_ms: 52.423952
+  type: 'test'
+  ...
+# Subtest: a superseded definition version invalidates a previous execution grant path
+ok 6 - a superseded definition version invalidates a previous execution grant path
+  ---
+  duration_ms: 49.881824
+  type: 'test'
+  ...
+# Subtest: tenant and role boundaries hold for execution authority
+ok 7 - tenant and role boundaries hold for execution authority
+  ---
+  duration_ms: 40.44562
+  type: 'test'
+  ...
+# Subtest: execution actions need a bounded note
+ok 8 - execution actions need a bounded note
+  ---
+  duration_ms: 45.73185
+  type: 'test'
+  ...
+# Subtest: read registry exposes execution fields and execution approval history
+ok 9 - read registry exposes execution fields and execution approval history
+  ---
+  duration_ms: 53.343426
+  type: 'test'
+  ...
+# Subtest: rollback removes execution columns and functions without touching definitions
+ok 10 - rollback removes execution columns and functions without touching definitions
+  ---
+  duration_ms: 48.703914
+  type: 'test'
+  ...
+# Subtest: generic approval decisions cannot decide execution-authority reviews
+ok 11 - generic approval decisions cannot decide execution-authority reviews
+  ---
+  duration_ms: 39.109536
+  type: 'test'
+  ...
+# Subtest: registry service accepts execution actions through the reviewed release gate
+ok 12 - registry service accepts execution actions through the reviewed release gate
+  ---
+  duration_ms: 41.60888
+  type: 'test'
+  ...
+# (node:3444) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-workforce.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: allowlists are internally consistent and never contain delegation or write tools
+ok 13 - allowlists are internally consistent and never contain delegation or write tools
+  ---
+  duration_ms: 0.958739
+  type: 'test'
+  ...
+# Subtest: valid deployment plans are normalised and unknown tools are denied, never granted
+ok 14 - valid deployment plans are normalised and unknown tools are denied, never granted
+  ---
+  duration_ms: 0.792749
+  type: 'test'
+  ...
+# Subtest: plans are bounded in agent count, task and context length
+ok 15 - plans are bounded in agent count, task and context length
+  ---
+  duration_ms: 1.519002
+  type: 'test'
+  ...
+# Subtest: requested tools beyond the per-agent cap are denied, not granted
+ok 16 - requested tools beyond the per-agent cap are denied, not granted
+  ---
+  duration_ms: 0.234347
+  type: 'test'
+  ...
+# Subtest: tools are only granted when the deploying user can actually use them
+ok 17 - tools are only granted when the deploying user can actually use them
+  ---
+  duration_ms: 0.230365
+  type: 'test'
+  ...
+# Subtest: assignment instructions carry the governance boundary and granted tools
+ok 18 - assignment instructions carry the governance boundary and granted tools
+  ---
+  duration_ms: 0.262714
+  type: 'test'
+  ...
+# Subtest: assignment evidence summaries are bounded and exclude results
+ok 19 - assignment evidence summaries are bounded and exclude results
+  ---
+  duration_ms: 0.372927
+  type: 'test'
+  ...
+# Subtest: audit payloads record structure only, never assignment or report text
+ok 20 - audit payloads record structure only, never assignment or report text
+  ---
+  duration_ms: 0.158439
+  type: 'test'
+  ...
+# Subtest: registry definitions map to conservative executable specs only with authority
+ok 21 - registry definitions map to conservative executable specs only with authority
+  ---
+  duration_ms: 2.399339
+  type: 'test'
+  ...
+# Subtest: agent references are labelled deterministically
+ok 22 - agent references are labelled deterministically
+  ---
+  duration_ms: 0.382993
+  type: 'test'
+  ...
+# (node:3451) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-capability-contract.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: the runtime registers the workforce deployment and agent factory tools
+ok 23 - the runtime registers the workforce deployment and agent factory tools
+  ---
+  duration_ms: 0.814308
+  type: 'test'
+  ...
+# Subtest: every grantable tool is a registered, classified read or preview tool
+ok 24 - every grantable tool is a registered, classified read or preview tool
+  ---
+  duration_ms: 0.941548
+  type: 'test'
+  ...
+# Subtest: the isolated executor never grants delegation tools and rechecks grants at execution time
+ok 25 - the isolated executor never grants delegation tools and rechecks grants at execution time
+  ---
+  duration_ms: 0.356442
+  type: 'test'
+  ...
+# Subtest: specialist deliverables always carry the verification contract
+ok 26 - specialist deliverables always carry the verification contract
+  ---
+  duration_ms: 0.299715
+  type: 'test'
+  ...
+# Subtest: the agent factory saves reviewed drafts only and never execution authority
+ok 27 - the agent factory saves reviewed drafts only and never execution authority
+  ---
+  duration_ms: 0.288271
+  type: 'test'
+  ...
+# Subtest: sub-agent model calls stay silent and metered on the run usage ledger
+ok 28 - sub-agent model calls stay silent and metered on the run usage ledger
+  ---
+  duration_ms: 0.187486
+  type: 'test'
+  ...
+# Subtest: capability classification stays customer-legible for the new surfaces
+ok 29 - capability classification stays customer-legible for the new surfaces
+  ---
+  duration_ms: 0.214501
+  type: 'test'
+  ...
+# Subtest: execution authority starts closed and publishes the governance boundary
+ok 30 - execution authority starts closed and publishes the governance boundary
+  ---
+  duration_ms: 98.622273
+  type: 'test'
+  ...
+# Subtest: request, independent decision and grant flow records bounded read-only authority
+ok 31 - request, independent decision and grant flow records bounded read-only authority
+  ---
+  duration_ms: 94.734164
+  type: 'test'
+  ...
+# Subtest: rejecting an execution review keeps authority closed
+ok 32 - rejecting an execution review keeps authority closed
+  ---
+  duration_ms: 54.406695
+  type: 'test'
+  ...
+# Subtest: draft definitions can never request deployment authority
+ok 33 - draft definitions can never request deployment authority
+  ---
+  duration_ms: 20.293508
+  type: 'test'
+  ...
+# Subtest: unsaved edits lock execution controls like publication controls
+ok 34 - unsaved edits lock execution controls like publication controls
+  ---
+  duration_ms: 25.226846
+  type: 'test'
+  ...
+# Subtest: failed registry responses never display success or private diagnostics
+ok 35 - failed registry responses never display success or private diagnostics
+  ---
+  duration_ms: 22.263393
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 35
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3140.95305

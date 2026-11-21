@@ -15,6 +15,25 @@ import { analyseKpiTrends } from "./jd-kpi-trends.ts";
 import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
 import { isExplicitToolFailure, isSuccessfulToolResult } from "./jd-tool-evidence.ts";
+import {
+  WORKFORCE_RELEASE_FLAG,
+  SPECIALIST_EXECUTION_ROLES,
+  FORBIDDEN_AGENT_TOOLS,
+  type AgentRef,
+  type ResolvedAgent,
+  type WorkforceAssignment,
+  type AssignmentToolEvent,
+  builtinSpecialist,
+  validateWorkforcePlan,
+  resolveAssignmentTools,
+  buildAgentInstructions,
+  buildAssignmentUserContent,
+  summariseAssignmentEvidence,
+  buildWorkforceAuditPayload,
+  mapRegistryDefinition,
+  agentRefLabel,
+} from "./jd-agent-workforce.ts";
+import { validateAgentDefinition } from "./jd-agent-registry.mjs";
 export type AgentContext = {
   admin: any;
   schoolId: string;
@@ -119,6 +138,39 @@ const tools: ToolSpec[] = [
       context:{type:"string",maxLength:8000}
     },required:["specialist","task"],additionalProperties:false},
     execute:async()=>({error:"Specialist delegation must run through the isolated agent executor"}),
+  },
+  {
+    name:"deploy_specialist_workforce",
+    risk:"low",roles:["owner","admin","manager"],strict:false,
+    description:"Deploy 1-5 specialist agents on separate bounded assignments for one objective. Available specialists are the eight built-in roles and tenant-published registry agents whose owners granted execution authority. Each specialist receives its own task, context and at most a few read-only tools; specialists cannot write records, approve actions, hire, spend, deploy or create further agents. Specialist deliverables are reports that you must independently verify before claiming completion. Use for work that genuinely needs separate specialist assignments; never treat a deployment as completed business work.",
+    parameters:{type:"object",properties:{
+      objective:{type:"string",minLength:12,maxLength:4000},
+      assignments:{type:"array",minItems:1,maxItems:5,items:{type:"object",properties:{
+        agent:{type:"object",properties:{kind:{type:"string",enum:["builtin","registry"]},id:{type:"string",maxLength:80},agentId:{type:"string",maxLength:64}},required:["kind"],additionalProperties:false},
+        task:{type:"string",minLength:20,maxLength:4000},
+        context:{type:"string",maxLength:6000},
+        tools:{type:"array",maxItems:8,items:{type:"string",maxLength:80}}
+      },required:["agent","task"],additionalProperties:false}}
+    },required:["objective","assignments"],additionalProperties:false},
+    execute:async()=>({error:"Workforce deployment must run through the isolated agent executor inside a JD conversation"}),
+  },
+  {
+    name:"propose_agent_definition",
+    risk:"low",roles:["owner","admin"],
+    description:"Agent Factory: when the existing workforce cannot cover a requested capability, save a proposed specialist definition into the tenant agent registry. The proposal is validated and stored as an immutable draft version for independent human review. It is not evaluated, published, executable, hireable or billable, and it grants no tools. Capabilities are descriptive lowercase identifiers, never tool grants. Never store credentials in definitions or evaluation cases. Derive the proposal from the nearest maintained catalogue template.",
+    parameters:{type:"object",properties:{
+      templateId:{type:"string",minLength:1,maxLength:120},
+      name:{type:"string",minLength:2,maxLength:120},
+      responsibility:{type:"string",minLength:12,maxLength:2000},
+      instructions:{type:"array",minItems:1,maxItems:20,items:{type:"string",minLength:1,maxLength:2000}},
+      capabilities:{type:"array",minItems:1,maxItems:20,items:{type:"string",minLength:1,maxLength:100}},
+      deliverables:{type:"array",minItems:1,maxItems:20,items:{type:"string",minLength:1,maxLength:2000}},
+      limitations:{type:"array",minItems:1,maxItems:20,items:{type:"string",minLength:1,maxLength:2000}},
+      maxSteps:{type:"integer",minimum:1,maximum:30},
+      timeoutSeconds:{type:"integer",minimum:1,maximum:600},
+      evaluationCases:{type:"array",minItems:5,maxItems:20,items:{type:"object",properties:{id:{type:"string",minLength:2,maxLength:64},category:{type:"string",enum:["task_quality","tool_security","tenant_isolation","budget","cancellation"]},input:{type:"string",minLength:10,maxLength:2000},expected:{type:"string",minLength:10,maxLength:2000}},required:["id","category","input","expected"],additionalProperties:false}}
+    },required:["templateId","name","responsibility","instructions","capabilities","deliverables","limitations","maxSteps","timeoutSeconds","evaluationCases"],additionalProperties:false},
+    execute:async(args,ctx)=>proposeAgentDefinition(args,ctx),
   },
   {
     name:"get_ai_workforce_catalogue",risk:"low",roles:["owner","admin"],
@@ -642,6 +694,7 @@ const tools: ToolSpec[] = [
         const actor = actorById.get(row.actor_id);
         const eventDescriptions: Record<string, string> = {
           "connector.approval.requested": "Approval requested; the external action was not executed",
+          "workforce.deployed": "Specialist workforce deployment recorded",
           "approval.requested": "Approval requested; no settings changes have been applied",
           "approval.approved": "Approval granted",
           "approval.rejected": "Approval rejected",
@@ -1038,7 +1091,134 @@ export async function buildLaunchChecklistBatchKey(
   return Array.from(new Uint8Array(digest).slice(0, 16), (value) => value.toString(16).padStart(2, "0")).join("");
 }
 
-export const JD_AGENT_TOOL_NAMES = tools.map((tool) => tool.name);
+/**
+ * Agent Factory executor. Validates a JD-proposed specialist definition and
+ * saves it as an immutable registry draft for independent human review. The
+ * proposal never grants tools, execution authority, hiring or billing.
+ */
+export async function proposeAgentDefinition(args: Record<string, unknown>, ctx: AgentContext): Promise<Record<string, unknown>> {
+  if (getOptionalEnv("JD_AGENT_REGISTRY_ENABLED") !== "true") {
+    return { error: "The agent registry is release-gated; the proposal was not saved", persisted: false };
+  }
+  const content = {
+    schemaVersion: 1,
+    templateId: args.templateId,
+    name: args.name,
+    responsibility: args.responsibility,
+    instructions: args.instructions,
+    capabilities: args.capabilities,
+    deliverables: args.deliverables,
+    limitations: args.limitations,
+    model: { provider: null, name: null },
+    maxSteps: args.maxSteps,
+    timeoutSeconds: args.timeoutSeconds,
+    evaluationCases: args.evaluationCases,
+  };
+  let definition: ReturnType<typeof validateAgentDefinition>;
+  try {
+    definition = validateAgentDefinition(content);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "Definition rejected";
+    return { error: ("The proposed definition was rejected by the registry validator: " + reason).slice(0, 300), persisted: false };
+  }
+  const requestId = crypto.randomUUID();
+  const { data: receipt, error: rpcError } = await ctx.admin.rpc("jd_save_agent_definition", {
+    p_actor: ctx.userId, p_request: requestId, p_agent: null, p_expected: 0, p_content: definition,
+  });
+  if (rpcError || !receipt?.agent_id || receipt.persisted !== true) {
+    throw new Error("The proposed specialist definition could not be saved to the agent registry");
+  }
+  return {
+    proposed: true,
+    agent_id: receipt.agent_id,
+    version: receipt.version,
+    content_hash: receipt.content_hash,
+    state: "draft",
+    persisted: true,
+    request_id: requestId,
+    requires_human_review: true,
+    execution_enabled: false,
+    hiring_enabled: false,
+    billing_enabled: false,
+    notice: "Saved to the tenant agent registry as an immutable draft version. It is not evaluated, published, executable, hireable or billable, and it grants no tools.",
+  };
+}
+
+/**
+ * Isolated specialist executor for workforce deployments. Runs one bounded
+ * assignment with only the granted read-only tools. Sub-agent tool calls are
+ * deliberately NOT journaled as top-level execution steps: every granted tool
+ * is read-only, so a worker crash recovers by re-running the whole deployment
+ * safely instead of recording synthetic step rows. Model usage flows through
+ * the run's existing checkpointed usage accounting.
+ */
+export async function runAgentAssignment(input: {
+  resolved: ResolvedAgent;
+  assignment: WorkforceAssignment;
+  toolSpecs: Array<Record<string, unknown>>;
+  requestModel: (payload: Record<string, unknown>) => Promise<any>;
+  executeTool: (name: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  onToolEvent?: (event: AssignmentToolEvent) => void;
+}): Promise<{ report: string; rounds: number; toolEvents: AssignmentToolEvent[] }> {
+  const events: AssignmentToolEvent[] = [];
+  const instructions = buildAgentInstructions(input.resolved, input.assignment);
+  const conversationInput: Array<Record<string, unknown>> = [{ role: "user", content: buildAssignmentUserContent(input.assignment) }];
+  const maxRounds = Math.max(1, Math.trunc(input.resolved.maxModelRounds));
+  const payload = {
+    instructions,
+    input: conversationInput,
+    tools: input.toolSpecs,
+    max_output_tokens: input.resolved.maxOutputTokens,
+    tool_choice: "auto",
+    parallel_tool_calls: true,
+    store: false,
+  };
+  let response = await input.requestModel(payload);
+  for (let request = 1; request <= maxRounds; request += 1) {
+    const output = Array.isArray(response.output) ? response.output : [];
+    const calls = output.filter((item: any) => item.type === "function_call");
+    if (!calls.length) {
+      const report = responseOutputText(response);
+      if (!report) throw new Error("Specialist returned no readable report");
+      return { report, rounds: request, toolEvents: events };
+    }
+    if (request === maxRounds) throw new Error("Specialist reached its assignment tool-round limit without a final report");
+    conversationInput.push(...calls);
+    const outputs: Array<Record<string, unknown>> = [];
+    for (const call of calls) {
+      const name = String(call.name || "");
+      const granted = input.assignment.requestedTools.includes(name) && !FORBIDDEN_AGENT_TOOLS.includes(name);
+      let outputRecord: Record<string, unknown>;
+      if (!granted) {
+        outputRecord = { ok: false, error: "This tool was not granted with the assignment" };
+        events.push({ name, status: "failed" });
+      } else {
+        let args: Record<string, unknown> | null = null;
+        try { args = JSON.parse(call.arguments || "{}"); } catch { args = null; }
+        if (!args || typeof args !== "object" || Array.isArray(args)) {
+          outputRecord = { ok: false, error: "Invalid tool arguments" };
+          events.push({ name, status: "failed" });
+        } else {
+          try {
+            const result = await input.executeTool(name, args);
+            if (!isSuccessfulToolResult(result)) throw new Error("Tool returned an explicit failure result");
+            events.push({ name, status: "completed", evidence: summariseToolEvidence(result) });
+            outputRecord = { ok: true, result };
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "Tool execution failed";
+            events.push({ name, status: "failed" });
+            outputRecord = { ok: false, error: message.slice(0, 240) };
+          }
+        }
+      }
+      outputs.push({ type: "function_call_output", call_id: call.call_id, output: JSON.stringify(outputRecord) });
+    }
+    conversationInput.push(...outputs);
+    response = await input.requestModel(payload);
+  }
+  throw new Error("Specialist assignment did not complete");
+}
+
 
 const modelTools = (context: AgentContext) => tools
   .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
@@ -1303,6 +1483,194 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
   throw new Error(`Model provider request failed: ${detail.slice(0, 180)}`);
 }
 
+export type WorkforceDeploymentOutcome = {
+  agent_ref: string;
+  name: string;
+  source: "builtin" | "registry";
+  status: "report_returned" | "failed";
+  report?: string;
+  error?: string;
+  tools_granted: string[];
+  rounds_used?: number;
+  tool_evidence: Array<Record<string, unknown>>;
+  verification: { required: boolean; status: string };
+};
+
+/**
+ * Workforce deployment orchestrator. Validates the JD-proposed plan against
+ * the deployed user's role-allowed tools and execution-authorised registry
+ * definitions, then runs each assignment through the isolated specialist
+ * executor. Every granted tool is read-only; every deliverable is returned
+ * unverified and must be checked by JD before completion is reported.
+ */
+export async function runWorkforceDeployment(
+  args: Record<string, unknown>,
+  options: {
+    context: AgentContext;
+    available: ToolSpec[];
+    requestModel: (payload: Record<string, unknown>) => Promise<any>;
+  },
+): Promise<Record<string, unknown>> {
+  if (getOptionalEnv(WORKFORCE_RELEASE_FLAG) !== "true") {
+    return { error: "Agent workforce execution is release-gated; no specialist was deployed", deployed: false };
+  }
+  const availableToolNames = options.available.map((candidate) => candidate.name);
+  // Load tenant-published definitions that carry execution authority. A read
+  // failure never blocks built-in specialists; it is reported, not hidden.
+  const registryAgents = new Map<string, ResolvedAgent>();
+  let registryAgentsUnavailable = false;
+  try {
+    const { data: defs, error: defsError } = await options.context.admin
+      .from("jd_agent_definitions")
+      .select("id,current_version,state,execution_authorized")
+      .eq("school_id", options.context.schoolId)
+      .eq("execution_authorized", true)
+      .eq("state", "published")
+      .limit(20);
+    if (defsError) throw new Error("registry definitions read failed");
+    const ids = (defs || []).map((row: any) => String(row.id));
+    if (ids.length) {
+      const { data: versions, error: versionsError } = await options.context.admin
+        .from("jd_agent_definition_versions")
+        .select("agent_id,version,content,content_hash")
+        .eq("school_id", options.context.schoolId)
+        .in("agent_id", ids)
+        .order("version", { ascending: false })
+        .limit(60);
+      if (versionsError) throw new Error("registry definition versions read failed");
+      for (const def of defs || []) {
+        const version = (versions || []).find((row: any) => row.agent_id === def.id && row.version === def.current_version);
+        if (!version) continue;
+        try {
+          const resolved = mapRegistryDefinition({
+            content: version.content,
+            published: def.state === "published",
+            executionAuthorized: def.execution_authorized === true,
+            contentHash: String(version.content_hash || ""),
+            version: Number(version.version),
+          });
+          registryAgents.set(String(def.id), {
+            ...resolved,
+            ref: { kind: "registry", agentId: String(def.id) },
+            allowedTools: resolveAssignmentTools(resolved, availableToolNames),
+          });
+        } catch { /* an unpublishable definition is skipped, never executed */ }
+      }
+    }
+  } catch {
+    registryAgentsUnavailable = true;
+  }
+  const builtinAgents = new Map<string, ResolvedAgent>(SPECIALIST_EXECUTION_ROLES.map((role) => {
+    const base: ResolvedAgent = {
+      ref: { kind: "builtin", id: role.id },
+      name: role.name,
+      instructions: [role.charter],
+      allowedTools: role.allowedTools,
+      maxModelRounds: role.maxModelRounds,
+      maxOutputTokens: role.maxOutputTokens,
+      source: "builtin",
+    };
+    return [role.id, { ...base, allowedTools: resolveAssignmentTools(base, availableToolNames) }];
+  }));
+  const resolveAgent = (ref: AgentRef): ResolvedAgent | null => {
+    const builtin = builtinSpecialist(ref);
+    if (builtin) return builtinAgents.get(builtin.id) || null;
+    if (ref && typeof ref === "object" && (ref as any).kind === "registry") {
+      return registryAgents.get(String((ref as any).agentId || "")) || null;
+    }
+    return null;
+  };
+  const plan = validateWorkforcePlan(args, resolveAgent, availableToolNames);
+  const specByName = new Map(options.available.map((candidate) => [candidate.name, {
+    type: "function",
+    name: candidate.name,
+    description: candidate.description,
+    strict: candidate.strict !== false,
+    parameters: candidate.parameters,
+  } as Record<string, unknown>]));
+  const outcomes: WorkforceDeploymentOutcome[] = [];
+  for (const assignment of plan.assignments) {
+    const resolved = resolveAgent(assignment.agent) as ResolvedAgent;
+    const agentEvents: AssignmentToolEvent[] = [];
+    try {
+      const executed = await runAgentAssignment({
+        resolved,
+        assignment,
+        toolSpecs: assignment.requestedTools.map((name) => specByName.get(name)).filter(Boolean) as Array<Record<string, unknown>>,
+        requestModel: (payload) => options.requestModel(payload),
+        executeTool: (name, toolArgs) => {
+          const tool = options.available.find((candidate) => candidate.name === name);
+          if (!tool || !assignment.requestedTools.includes(name) || FORBIDDEN_AGENT_TOOLS.includes(name)) {
+            throw new Error("This tool was not granted with the assignment");
+          }
+          return tool.execute(toolArgs, options.context);
+        },
+        onToolEvent: (event) => { agentEvents.push(event); },
+      });
+      outcomes.push({
+        agent_ref: agentRefLabel(assignment.agent),
+        name: resolved.name,
+        source: resolved.source,
+        status: "report_returned",
+        report: executed.report,
+        tools_granted: [...assignment.requestedTools],
+        rounds_used: executed.rounds,
+        tool_evidence: summariseAssignmentEvidence(executed.toolEvents),
+        verification: { required: true, status: "pending_jd_verification" },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Specialist assignment failed";
+      outcomes.push({
+        agent_ref: agentRefLabel(assignment.agent),
+        name: resolved.name,
+        source: resolved.source,
+        status: "failed",
+        error: message.slice(0, 240),
+        tools_granted: [...assignment.requestedTools],
+        tool_evidence: summariseAssignmentEvidence(agentEvents),
+        verification: { required: true, status: "blocked_no_deliverable" },
+      });
+    }
+  }
+  try {
+    const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
+      school_id: options.context.schoolId,
+      actor_id: options.context.userId,
+      run_id: options.context.runId || null,
+      event_type: "workforce.deployed",
+      event_json: buildWorkforceAuditPayload({
+        objective: plan.objective,
+        outcomes: outcomes.map((outcome) => ({
+          agent_ref: outcome.agent_ref, name: outcome.name, source: outcome.source,
+          status: outcome.status, tool_calls: outcome.tool_evidence.length, tools_granted: outcome.tools_granted,
+        })),
+      }),
+    });
+    if (auditError) console.error("Workforce deployment audit write failed", String(auditError.message || "unknown").slice(0, 160));
+  } catch (auditFailure) {
+    console.error("Workforce deployment audit write failed", String(auditFailure).slice(0, 160));
+  }
+  const deniedEntries = Object.entries(plan.deniedTools).filter(([, denied]) => denied.length);
+  return {
+    deployed: true,
+    objective: plan.objective,
+    agents: outcomes,
+    ...(deniedEntries.length ? { denied_tools: Object.fromEntries(deniedEntries.map(([ref, denied]) => [ref, denied.slice(0, 12)])) } : {}),
+    execution_scope: "bounded_read_only_assignments",
+    specialists_can_approve: false,
+    specialists_can_create_agents: false,
+    registry_agents_available: registryAgents.size,
+    ...(registryAgentsUnavailable ? { registry_agents_unavailable: true } : {}),
+    verification_contract: {
+      required: true,
+      instruction: "Independently verify each specialist deliverable against saved records or registered tools before reporting completion. A specialist report is never proof that an external action occurred.",
+    },
+    usage_note: "Specialist model usage is metered on this run's existing usage records; no separate billing path was created.",
+    persisted: false,
+    execution_authority: "assigned_read_only_tasks_only",
+  };
+}
+
 export type AgentRuntimeCheckpoint = {
   version: 1;
   conversationInput: Array<Record<string, unknown>>;
@@ -1403,6 +1771,8 @@ export async function runAgent(input: {
     "Keep the user inside the assistant experience: understand the requested outcome, choose the relevant registered tools, perform supported steps, and show progress, decisions, checklists and evidence in the conversation. Do not tell users to navigate to another page when the assistant can complete the supported task. If a separate approval or account-management screen is genuinely required, explain exactly why and what the user needs to do.",
     "For requests spanning multiple capabilities, plan the steps yourself and execute the safe, supported parts. Ask only for essential missing information; do not ask users to understand internal modules, departments, tools, integrations or technical setup.",
     "For complex work that benefits from independent perspectives, delegate bounded analysis to the relevant specialist agents using delegate_to_specialist_agent. You may run independent specialists in parallel, compare their findings, resolve disagreements, and present one accountable JD conclusion. Specialists are reasoning-only and have no tools or authority; independently verify all claims and perform any supported actions yourself through registered tools. Do not delegate simple requests unnecessarily or describe a specialist report as completed external work.",
+    "When a request genuinely needs several specialists executing separate bounded subtasks, deploy them together with deploy_specialist_workforce: one objective, one specific assignment per specialist, relevant untrusted context, and only the read-only tools each specialist needs. Built-in specialists and tenant-published execution-authorised registry agents are deployable; a definition that is only published or drafted is not deployable. Specialists have no approval, hiring, spending, deployment or agent-creation authority and cannot grant themselves tools. After a deployment, independently verify every specialist deliverable against saved records or registered tools before reporting completion; treat failed or blocked specialists as explicit results, not silent omissions.",
+    "When the existing workforce cannot cover a requested capability, propose a specialist definition with propose_agent_definition derived from the nearest maintained catalogue template, then explain that it must be reviewed by the workspace administrators before it can ever be evaluated, published or deployed. Never present a proposal as an active employee, and never promise deployment authority for an unreviewed definition.",
     "If a requested capability is unavailable to the current role or is not registered, say so plainly, explain the closest supported alternative, and do not pretend to have completed it.",
     memoryInstruction,
     "Work toward the user's objective rather than merely giving them instructions.",
@@ -1464,11 +1834,11 @@ export async function runAgent(input: {
   let activeModel = restored?.activeModel ||
     resolveFollowupModel(input.model, input.model, modelRequests[modelRequests.length - 1]?.model);
 
-  const requestModel = async (payload: Record<string, unknown>) => {
+  const requestModel = async (payload: Record<string, unknown>, options?: { silent?: boolean }) => {
     await input.onUsagePhase?.("external_wait");
     const startedAt = performance.now();
     let firstTokenMs: number | null = null;
-    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, (delta) => {
+    const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, options?.silent ? undefined : (delta) => {
       if (firstTokenMs === null) firstTokenMs = Math.max(0, Math.round(performance.now() - startedAt));
       input.onTextDelta?.(delta);
     });
@@ -1602,10 +1972,16 @@ export async function runAgent(input: {
             max_output_tokens:2500,
             tool_choice:"none",
             store:false
-          });
+          }, { silent: true });
           const report = responseOutputText(specialistResponse);
           if (!report) throw new Error("Specialist returned no readable report");
           result = {agent_id:"jd-specialist-"+specialist,agent_role:specialist,status:"report_returned",execution_scope:"reasoning_only_no_tools",report};
+        } else if (tool.name === "deploy_specialist_workforce") {
+          result = await runWorkforceDeployment(args, {
+            context: input.context,
+            available,
+            requestModel: (payload) => requestModel(payload, { silent: true }),
+          });
         } else {
           result = await tool.execute(args, input.context);
         }

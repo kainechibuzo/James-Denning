@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-21 — JD Agent Execution Engine: workforce deployment, execution authority and Agent Factory
+
+- **Status:** implemented in source on `arena/b529496d-james-denning`; CI, staging migration and live verification pending.
+- **Deployment:** `deploy_specialist_workforce` deploys 1–5 specialists (eight built-in roles plus tenant-published execution-authorised registry definitions) on separate bounded assignments through a new isolated executor (`runAgentAssignment`) in the existing `jd-agent-runtime`. Single-specialist delegation now streams silently instead of polluting the visible response.
+- **Tool access:** specialists receive only frozen read-only allowlisted tools, intersected with the deploying user's role-allowed tools; denied tools are reported, never granted. Specialists cannot approve, hire, spend, deploy, write records or create further agents, and every deliverable requires independent JD verification before completion.
+- **Execution authority:** new migration `20261121180000_jd_agent_execution_engine.sql` adds per-agent `execution_authorized`/`execution_grant_approval`, the `jd_agent_execution` RPC lifecycle (request → independent review → grant → revoke), reviewer-independence, evidence pinning, expiry enforcement, version-change authority reset, and read-service execution fields. The generic Review Centre route refuses to decide these reviews.
+- **Agent Factory:** `propose_agent_definition` saves validated specialist proposals as immutable registry drafts for human review; proposals are never executable, hireable or billable.
+- **Monitoring:** bounded `workforce.deployed` audit events and per-agent workforce cards in Automation runs (agent reference, source, status, granted read tools, verification state — never report content).
+- **Governance:** both new surfaces are release-gated (`JD_AGENT_WORKFORCE_ENABLED`, existing `JD_AGENT_REGISTRY_ENABLED`) and fail closed; usage flows through the run's existing shadow ledger with no new billing path.
+- **Tests:** new `test:workforce` suite (engine contracts, runtime invariants, real candidate SQL in PGlite, UI flows) plus Deno executor tests; capability contract now classifies specialist delegation (pre-existing gap fixed). No production deployment, migration or staging acceptance was performed.
+
 ## 2026-11-15 — Claude MCP native JD capability parity
 
 - **Status:** implemented in source on `feat/claude-mcp-native-capability-parity`; CI and live OAuth/runtime verification pending.
