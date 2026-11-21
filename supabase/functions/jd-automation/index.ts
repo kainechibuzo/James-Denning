@@ -630,12 +630,8 @@ Deno.serve(async (req) => {
   const {data:run}=await admin.from("jd_automation_runs").select("conversation_id").eq("id",before.run_id).eq("school_id",profile.school_id).maybeSingle();
   return json({approval:result,execution,conversationId:before.proposal_json?.conversation_id||run?.conversation_id||null});
  }
- if(payload.action==="execution.cancel"){
-  const jobId=String(payload.jobId||"");
-  if(!/^[0-9a-f-]{36}$/i.test(jobId))return json({error:"A valid jobId is required"},400);
-  const {data:cancelled,error}=await admin.rpc("jd_cancel_execution_job",{p_job_id:jobId,p_actor_id:authData.user.id});
-  if(error)return json({error:"JD could not confirm cancellation",reason:error.message},error.code==="42501"?403:409);
-  return json({execution:cancelled});
+ if(payload.action==="execution.job.cancel"||payload.action==="execution.job.cancel_checked"){
+  return await handleExecutionCancellation({admin,profile,actorId:authData.user.id,payload,json});
  }
  if(payload.action==="conversation.branch"){
   const sourceId=String(payload.conversationId||"");
