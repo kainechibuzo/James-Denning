@@ -606,7 +606,7 @@ Deno.serve(async (req) => {
    const workerSecret=getJdSecret("JD_WORKER_SECRET");
    const workerUrl=Deno.env.get("SUPABASE_URL");
    if(workerSecret&&workerUrl){
-    EdgeRuntime.waitUntil(fetch(workerUrl.replace(/\\/$/,"")+"/functions/v1/jd-execution-worker",{
+    EdgeRuntime.waitUntil(fetch(workerUrl.replace(/\/$/,"")+"/functions/v1/jd-execution-worker",{
      method:"POST",headers:{"Content-Type":"application/json","x-jd-worker-secret":workerSecret},body:"{}"
     }).then(async response=>{if(!response.ok)console.error("JD approved-run dispatch returned",response.status);await response.text();})
       .catch(error=>console.error("JD approved-run dispatch failed",String(error).slice(0,160))));
