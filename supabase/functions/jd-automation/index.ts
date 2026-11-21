@@ -774,7 +774,7 @@ Deno.serve(async (req) => {
    proposal_json:{request_text:run.request_text,execution_enabled:false},audience_text:null,execution_status:"not_executed",created_by_agent:true
   }).select("id,status,expires_at").single();
   if(approvalErr||!approval) return json({error:"The request was paused but its approval record could not be created"},500);
-  const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. Approval records the decision only; execution remains disabled until a separately verified action handler is available.";
+  const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. If approved, JD will release the original request to its durable worker; any additional connector-specific approvals are still required, and approval is not completion.";
   const response={version:1,blocks:[{id:"approval",type:"approval",actionId:approval.id,description:reply}]};
   const {error:approvalMessageError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id,response},created_by_agent:true});
   if(approvalMessageError)return json({error:"The approval exists but its response could not be saved. Open Review Centre to inspect it."},500);
