@@ -24,7 +24,7 @@ jobs:
           set -euo pipefail
           test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo '::error::Supabase deployment connection is not configured'; exit 1; }
           for fn in jd-execution-worker jd-automation; do
-            if supabase functions deploy "$fn" --project-ref thklwiybjuhrjqrrxyid --use-api > /tmp/deploy.log 2>&1; then
+            if supabase functions deploy "$fn" --project-ref thklwiybjuhrjqrrxyid --use-api --yes > /tmp/deploy.log 2>&1; then
               echo "::notice::$fn deployment succeeded"
             else
               python3 -c 'import pathlib; s=pathlib.Path("/tmp/deploy.log").read_text()[-5000:]; print("::error::"+s.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'
