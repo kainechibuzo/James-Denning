@@ -84,7 +84,7 @@ try{for(const width of [320,393,1280]){
   await page.getByRole('searchbox',{name:'Search workspace navigation'}).fill(label);
   await page.locator('#workspace-navigation').getByRole('button',{name:label,exact:true}).click();await settle();
  };
- if(themeAudit){const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await check('sidebar-pills');if(width<768)await page.getByRole('button',{name:'Close navigation',exact:true}).click();}
+ if(themeAudit){const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await check('sidebar-pills');if(width<768)await page.keyboard.press('Escape');}
  await check('chat',true);
  if(themeAudit){
   for(const [label,selector] of [['Departments','.jd-departments'],['AI usage','.jd-usage'],['Review Centre','.jd-review'],['Automation runs','.jd-runs']]){
