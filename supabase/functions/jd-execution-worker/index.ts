@@ -236,6 +236,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       run: (onUsagePhase: ((phase: "active" | "external_wait") => Promise<void>) | undefined) => runAgent({
       onUsagePhase,
       message: run.request_text,
+      responseStyle: ["concise","balanced","detailed"].includes(run.result_json?.response_style) ? run.result_json.response_style : "balanced",
       history,
       context: { admin, schoolId, userId: requestedBy, role: String(profile.role || "member"), conversationId: run.conversation_id || undefined, runId },
       apiKey,
