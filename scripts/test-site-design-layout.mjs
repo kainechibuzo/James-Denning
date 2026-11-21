@@ -113,7 +113,7 @@ try{for(const width of [320,393,1280]){
   await navigate('Conversation history');await navigate('JD Assistant');await page.locator('.jd-compose').waitFor();
   await navigate('Conversation history');await page.locator('.jd-history-create').click();await page.locator('.jd-compose').waitFor();assert.equal(await page.locator('.jd-markdown').count(),0);
   await page.locator('.reference-workspace-header').getByRole('button',{name:'Help / Product Tour',exact:true}).click();await check('product-tour');await page.getByRole('button',{name:'Skip',exact:true}).click();
-  await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
+  if(width>=561)await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();else await navigate('Organisation Settings');await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
  }
 
  // Same header and actual role-filtered sidebar for every main route.
