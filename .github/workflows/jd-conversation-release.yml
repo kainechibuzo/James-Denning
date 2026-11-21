@@ -13,6 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 3.2.0
+      - name: Deploy local source with startup diagnostics
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo '::error::Supabase deployment connection is not configured'; exit 1; }
+          for fn in jd-execution-worker jd-automation; do
+            if supabase functions deploy "$fn" --project-ref thklwiybjuhrjqrrxyid --use-api > /tmp/deploy.log 2>&1; then
+              echo "::notice::$fn deployment succeeded"
+            else
+              python3 -c 'import pathlib; s=pathlib.Path("/tmp/deploy.log").read_text()[-5000:]; print("::error::"+s.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'
+              exit 1
+            fi
+          done
       - name: Credential-free startup and authentication smoke checks
         run: |
           node --input-type=module <<'NODE'
