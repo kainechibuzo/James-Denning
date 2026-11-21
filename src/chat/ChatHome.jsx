@@ -15,7 +15,7 @@ import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2 } from "lucide-react";
+import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
@@ -399,6 +399,38 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   };
 
 
+
+  const cancelExecution = async (item) => {
+    if(!item?.jobId)return;
+    setMessages(current=>current.map(m=>m.jobId===item.jobId?{...m,cancelling:true}:m));
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"execution.job.cancel",jobId:item.jobId}});
+      if(error||data?.error||data?.job?.status!=="cancelled")throw new Error(data?.error||"Cancellation was not confirmed");
+      setMessages(current=>current.map(m=>m.jobId===item.jobId?{...m,cancelling:false,jobStatus:"cancelled",run:{...(m.run||{}),status:"cancelled"}}:m));
+      if(conversationId)void loadConversation(conversationId);
+    }catch{
+      setMessages(current=>current.map(m=>m.jobId===item.jobId?{...m,cancelling:false}:m));
+      setError("JD could not confirm that this run stopped. Refresh its execution status before assuming it was cancelled.");
+    }
+  };
+  const copyPrompt = async (value) => {
+    try{await navigator.clipboard.writeText(String(value||""));}catch{setError("Prompt could not be copied. Check clipboard permissions.");}
+  };
+  const retryPrompt = (item) => {
+    const prompt=String(item?.content||"").trim();
+    if(!prompt)return;
+    send(prompt,conversationId,null,newRequestId());
+  };
+  const branchConversation = async () => {
+    if(!conversationId)return;
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"conversation.branch",conversationId}});
+      if(error||!data?.conversationId)throw new Error(data?.error||"Branch creation failed");
+      await loadConversation(data.conversationId);
+      await loadHistory();
+    }catch{setError("Could not create a separate conversation branch. The original conversation is unchanged.");}
+  };
+
   const newConversation = () => {
     if (sending) return;
     conversationSequence.current++;setOpeningId(null);setHistoryError("");
@@ -423,6 +455,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   return (
     <div className={`jd-command reference-command jd-conversation${messages.length===0 ? " is-empty" : ""}`}>
       <style>{`
+
+        .jd-message-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;opacity:.82}
+        .jd-message-actions button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--jd-border);background:var(--jd-card);color:var(--jd-text-soft);border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer}
+        .jd-message-actions button:hover{color:var(--jd-text);border-color:var(--jd-muted)}
+        .jd-message-actions button:disabled{opacity:.5;cursor:not-allowed}
         .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
         .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--jd-canvas);border-bottom:1px solid var(--jd-border)}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid var(--jd-border);background:color-mix(in srgb, var(--jd-card) 94%, transparent);border-radius:10px;color:var(--jd-text-soft);display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:var(--jd-text-soft);background:color-mix(in srgb, var(--jd-card) 96%, transparent);border:1px solid var(--jd-border);border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
@@ -588,7 +625,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               )}
               {item.pollUnavailable&&<div className="jd-response-result" role="status">Live status could not be refreshed. The job may still be running; no new execution was requested.<button type="button" onClick={()=>loadConversation(conversationId)}>Refresh conversation</button><button type="button" onClick={()=>setShowRuns(true)}>View execution runs</button></div>}
               {item.streaming&&!item.pollUnavailable&&<div className="jd-run">JD is writing its response…</div>}
-
+              <div className="jd-message-actions">
+                {item.role==="user"&&<><button type="button" title="Copy prompt" aria-label="Copy prompt" onClick={()=>copyPrompt(item.content)}><Copy size={13}/>Copy</button><button type="button" title="Retry prompt as a new request" aria-label="Retry prompt" onClick={()=>retryPrompt(item)} disabled={sending||queuePaused}><RotateCcw size={13}/>Retry</button></>}
+                {item.role==="assistant"&&["owner","admin"].includes(user?.role)&&item.jobId&&["queued","retry_wait"].includes(item.jobStatus||item.run?.status)&&<button type="button" title="Stop this queued or waiting execution" aria-label="Stop queued execution" onClick={()=>cancelExecution(item)} disabled={item.cancelling}><Square size={12}/>{item.cancelling?"Stopping…":"Stop"}</button>}
+                {item.role==="assistant"&&item.id===messages.filter(m=>m.role==="assistant").slice(-1)[0]?.id&&conversationId&&<button type="button" title="Branch this conversation" aria-label="Branch conversation" onClick={branchConversation}><GitBranch size={13}/>Branch</button>}
+              </div>
             </div>)}
 
           </div>}

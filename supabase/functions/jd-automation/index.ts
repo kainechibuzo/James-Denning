@@ -630,6 +630,32 @@ Deno.serve(async (req) => {
   const {data:run}=await admin.from("jd_automation_runs").select("conversation_id").eq("id",before.run_id).eq("school_id",profile.school_id).maybeSingle();
   return json({approval:result,execution,conversationId:before.proposal_json?.conversation_id||run?.conversation_id||null});
  }
+ if(payload.action==="execution.job.cancel"||payload.action==="execution.job.cancel_checked"){
+  return await handleExecutionCancellation({admin,profile,actorId:authData.user.id,payload,json});
+ }
+ if(payload.action==="conversation.branch"){
+  const sourceId=String(payload.conversationId||"");
+  if(!/^[0-9a-f-]{36}$/i.test(sourceId))return json({error:"A valid conversationId is required"},400);
+  const {data:source,error:sourceError}=await admin.from("jd_conversations").select("id,title,created_by")
+    .eq("id",sourceId).eq("school_id",profile.school_id).maybeSingle();
+  if(sourceError||!source||(source.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))return json({error:"Conversation not found"},404);
+  const {data:sourceMessages,error:messagesError}=await admin.from("jd_messages").select("role,content,content_json,sender_id")
+    .eq("school_id",profile.school_id).eq("conversation_id",sourceId).in("role",["user","assistant"])
+    .order("created_at",{ascending:true}).limit(40);
+  if(messagesError)return json({error:"Could not load conversation context"},500);
+  const {data:created,error:createError}=await admin.from("jd_conversations").insert({
+    school_id:profile.school_id,created_by:authData.user.id,title:(String(source.title||"Conversation").slice(0,70)+" · Branch").slice(0,100)
+  }).select("id").single();
+  if(createError||!created)return json({error:"Could not create conversation branch"},500);
+  const copied=(sourceMessages||[]).map((item:any)=> {
+    const meta={...(item.content_json||{})};
+    for(const key of ["job_id","run_id","status","job_status","job","streaming","retrying","error_code"])delete meta[key];
+    return {school_id:profile.school_id,conversation_id:created.id,sender_id:item.role==="user"?authData.user.id:null,role:item.role,content:String(item.content||""),content_json:{...meta,branched_from:sourceId},created_by_agent:item.role==="assistant"};
+  });
+  if(copied.length){const {error:copyError}=await admin.from("jd_messages").insert(copied);if(copyError){await admin.from("jd_conversations").delete().eq("id",created.id).eq("school_id",profile.school_id);return json({error:"Could not copy conversation context into the branch"},500);}}
+  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,event_type:"conversation.branched",event_json:{source_conversation_id:sourceId,new_conversation_id:created.id,copied_messages:copied.length}});
+  return json({conversationId:created.id,copiedMessages:copied.length});
+ }
  if(payload.action==="runs.list"){
   if(!hasRole(ADMIN_ROLES,profile.role)) return json({error:"Only workspace admins can view automation runs"},403);
   const {data,error}=await admin.from("jd_automation_runs")
