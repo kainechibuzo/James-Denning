@@ -1,0 +1,42 @@
+name: Owner-authorized conversation backend release
+on:
+  push:
+    branches: [arena/7ea643db-james-denning]
+    paths: [.github/workflows/jd-conversation-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: jd-conversation-backend-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event.head_commit.message == 'Deploy owner-authorized conversation backend'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require reviewed source
+        run: |
+          git fetch origin 5ef9e3e2ae7e293a72cb6eb5f743422b7f74963b
+          git diff --exit-code 5ef9e3e2ae7e293a72cb6eb5f743422b7f74963b -- supabase/
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 3.2.0
+      - name: Deploy only the two owner-authorized functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo '::error::Supabase deployment connection is not configured'; exit 1; }
+          supabase functions deploy jd-execution-worker --project-ref thklwiybjuhrjqrrxyid --use-api
+          supabase functions deploy jd-automation --project-ref thklwiybjuhrjqrrxyid --use-api
+      - name: Credential-free startup and authentication smoke checks
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://thklwiybjuhrjqrrxyid.supabase.co/functions/v1/';
+          for(const [name,method,status] of [['jd-automation','POST',401],['jd-automation','OPTIONS',200],['jd-execution-worker','POST',401],['jd-execution-worker','GET',405]]){
+            const r=await fetch(base+name,{method,headers:{'Content-Type':'application/json'},...(method==='POST'?{body:'{}'}:{}),signal:AbortSignal.timeout(45000)});
+            const body=await r.text(); console.log(JSON.stringify({name,method,expected:status,actual:r.status}));
+            if(r.status!==status||body.includes('BOOT_ERROR'))throw Error('Function startup/authentication check failed');
+          }
+          NODE
