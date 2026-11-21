@@ -9,8 +9,8 @@ before(async()=>{
  await db.exec(`
  create role anon;create role authenticated;create role service_role;
  create table profiles(id uuid primary key,school_id uuid,role text);
- create table jd_automation_runs(id uuid primary key,school_id uuid,requested_by uuid,status text,result_json jsonb default '{}'::jsonb,updated_at timestamptz default now());
- create table jd_approvals(id uuid primary key,school_id uuid,run_id uuid,requested_by uuid,status text,action_key text,execution_status text,execution_result_json jsonb,updated_at timestamptz default now());
+ create table jd_automation_runs(id uuid primary key,school_id uuid,requested_by uuid,status text,request_text text,result_json jsonb default '{}'::jsonb,updated_at timestamptz default now());
+ create table jd_approvals(id uuid primary key,school_id uuid,run_id uuid,requested_by uuid,status text,action_key text,execution_status text,execution_result_json jsonb,proposal_json jsonb not null default '{}'::jsonb,updated_at timestamptz default now());
  create table jd_execution_jobs(id uuid primary key default gen_random_uuid(),run_id uuid unique,status text);
  create table jd_audit_events(id bigint generated always as identity primary key,school_id uuid,actor_id uuid,run_id uuid,event_type text,event_json jsonb);
  create function jd_enqueue_execution_job(p_run_id uuid) returns jsonb language plpgsql as $$
@@ -30,7 +30,7 @@ before(async()=>{
  insert into jd_automation_runs(id,school_id,requested_by,status) values
  ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000003','awaiting_approval');
  insert into jd_approvals(id,school_id,run_id,requested_by,status,action_key,execution_status) values
- ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000003','approved','unclassified_request','not_executed');
+ ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000003','approved','unclassified_request','not_executed',jsonb_build_object('request_text','Launch my approved project'));
  `);
  await db.exec(migration);
 });
