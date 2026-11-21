@@ -355,3 +355,9 @@
 :root[data-theme='dark'] #workspace-navigation .jd-drawer-plate{background-color:#141414}
 :root[data-theme='dark'] #workspace-navigation .jd-drawer-foot{background-color:#141414}
 :root :is(input,textarea)::placeholder{color:var(--jd-ink-muted)!important;opacity:1}
+
+
+/* Muted inline metadata must remain readable on the warm-paper surfaces. */
+:root:not([data-theme='dark']) [style*="color: rgb(110, 112, 121)"]{
+  color:#62636b!important;
+}
