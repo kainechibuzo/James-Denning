@@ -1,11 +1,11 @@
 /* One shared entry for web, native and standalone route fixtures. */
 @import './system.css';
-@import './heritage.css';
 @import './reference-design.css';
 @import './site-design.css';
 @import './site-glyphs.css';
 @import './conversation-design.css';
 @import './minimal-surfaces.css';
+@import './heritage.css';
 @import './workspace-chrome.css';
 @import './conversation-heritage.css';
 @import './pages-heritage.css';

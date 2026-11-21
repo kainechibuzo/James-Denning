@@ -37,10 +37,18 @@ try{for(const width of [320,393,1280]){
   const measurement=await page.evaluate(()=>{
    const main=document.querySelector('.jd-workspace-page');
    const bad=[];
+   // Heritage colours are intentional, not legacy accent leakage. Resolve
+   // tokens to RGB so this audit follows the shared light/dark palette.
+   const probe=document.createElement('span');document.body.append(probe);
+   const approved=new Set(['#2b3447','#1e2a42','#8d2f26'].map(value=>{probe.style.color=value;return getComputedStyle(probe).color;}));
+   for(const token of ['--jd-paper','--jd-paper-raised','--jd-paper-sunk','--jd-paper-deep','--jd-ink','--jd-ink-heading','--jd-ink-soft','--jd-ink-muted','--jd-rule-navy']){
+    probe.style.color=`var(${token})`;approved.add(getComputedStyle(probe).color);
+   }
+   probe.remove();
    for(const e of document.querySelectorAll('button,input,select,textarea,h1,h2,h3,section,article')){
     if(!e.getClientRects().length)continue;
     const s=getComputedStyle(e),r=e.getBoundingClientRect();if(s.visibility==='hidden'||r.width===0||r.height===0)continue;
-    for(const prop of ['color','backgroundColor']){const c=s[prop].match(/^rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);if(c&&Number(c[4]??1)>0&&Math.max(...c.slice(1,4).map(Number))-Math.min(...c.slice(1,4).map(Number))>14)bad.push({tag:e.tagName,text:e.textContent.slice(0,35),prop,value:s[prop]});}
+    for(const prop of ['color','backgroundColor']){const c=s[prop].match(/^rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);if(!approved.has(s[prop])&&c&&Number(c[4]??1)>0&&Math.max(...c.slice(1,4).map(Number))-Math.min(...c.slice(1,4).map(Number))>14)bad.push({tag:e.tagName,text:e.textContent.slice(0,35),prop,value:s[prop]});}
    }
    return{documentWidth:document.documentElement.scrollWidth,mainWidth:main?.clientWidth,mainScroll:main?.scrollWidth,paletteViolations:bad};
   });

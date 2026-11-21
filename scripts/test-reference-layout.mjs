@@ -78,6 +78,21 @@ try{
    if(evidence)await page.screenshot({path:resolve(evidence,`${screen}-${width}x${height}.png`),fullPage:true});
    if(screen==='landing'){
     assert.equal(await page.locator('.reference-features article').count(),2);
+    const design=await page.evaluate(()=>({
+      paper:getComputedStyle(document.querySelector('.reference-landing')).backgroundColor,
+      font:getComputedStyle(document.querySelector('.reference-hero h1')).fontFamily,
+      preview:!!document.querySelector('.landing-workspace-preview'),
+      oldLaptop:!!document.querySelector('.reference-laptop'),
+    }));
+    assert.equal(design.paper,'rgb(246, 239, 228)');
+    assert.ok(design.font.includes('JD Caslon Text'));
+    assert.ok(design.preview&&!design.oldLaptop);
+    await page.getByRole('button',{name:'Operations teams',exact:true}).click();
+    await page.getByText('Turn our launch plan into accountable work.',{exact:true}).waitFor();
+    assert.equal(await page.getByRole('button',{name:'Operations teams',exact:true}).getAttribute('aria-pressed'),'true');
+    await page.locator('.landing-faq summary').filter({hasText:'Will JD complete every task automatically?'}).click();
+    assert.ok(await page.locator('.landing-faq details').nth(1).getAttribute('open')!==null);
+
     await page.getByRole('button',{name:'Get started',exact:true}).first().click();
     await page.getByRole('button',{name:'Open navigation menu'}).click();
     await page.getByRole('button',{name:'Sign in',exact:true}).click();

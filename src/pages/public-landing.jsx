@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Activity, Layers3, Menu, X, Play, ShieldCheck, ArrowRight, Check, MessageSquare, ClipboardCheck, LockKeyhole } from "lucide-react";
-import { ReferenceBrand } from "../components/reference-brand.jsx";
+import { HeritageTile, HeritageWordmark, HeritageRule } from "../components/reference-brand.jsx";
 import "../styles/reference-design.css";
 import "../styles/landing-growth.css";
+import "../styles/landing-heritage.css";
+
+function LandingBrand(){return <span className="landing-brand"><HeritageTile size={38}/><span><HeritageWordmark/><HeritageRule compact/></span></span>;}
 
 export function PublicLanding({ onSignIn, onGetStarted }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,7 +26,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
   }, [menuOpen]);
   return <main className="reference-landing">
     <header className="reference-site-header">
-      <a href="#top" aria-label="James-Denning home"><ReferenceBrand divided /></a>
+      <a href="#top" aria-label="James-Denning home"><LandingBrand/></a>
       <div className="reference-header-actions">
         <button className="landing-signin" aria-label="Sign in to your workspace" onClick={onSignIn}>Sign in</button>
         <button className="reference-primary" onClick={onGetStarted}>Get started <ArrowUpRight aria-hidden="true" /></button>
@@ -41,7 +44,8 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
       <section className="reference-hero" id="top">
         <div className="reference-hero-copy">
           <p className="landing-eyebrow">YOUR BUSINESS. LESS BUSYWORK.</p>
-          <h1>Run. Monitor. <em>Grow.</em></h1>
+          <h1>Run. Monitor.<br/><em>Grow.</em></h1>
+          <HeritageRule/>
           <p className="reference-lead">Meet James-Denning, your AI-powered operations assistant. Bring scattered tasks, business records and decisions into one conversation. Know what needs attention. Prepare the next step. Keep control of what happens next.</p>
           <div className="reference-hero-actions">
             <button className="reference-primary" onClick={onGetStarted}>Get started <ArrowUpRight aria-hidden="true" /></button>
@@ -49,10 +53,18 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
           </div>
           <p className="reference-proof"><ShieldCheck aria-hidden="true"/><span>Your workspace. Your permissions. Your approval when it matters.</span></p>
         </div>
-        <picture className="reference-laptop">
-          <source media="(max-width: 760px)" srcSet="/design/dashboard-laptop-front.webp"/>
-          <img src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard on a laptop, showing revenue, expenses and business performance. These are sample figures, not live workspace records." fetchPriority="high"/>
-        </picture>
+        <div className="landing-workspace-preview" aria-label="Illustrative JD Assistant conversation, not live workspace data">
+          <div className="landing-preview-bar"><LandingBrand/><span>Workspace Active</span></div>
+          <div className="landing-preview-body">
+            <p className="landing-preview-caption">A QUIETER WAY TO WORK · ILLUSTRATIVE EXAMPLE</p>
+            <p className="landing-preview-user">What needs my attention this week?</p>
+            <div className="landing-preview-author"><HeritageTile size={30}/><span>JD Assistant</span></div>
+            <h2><em>Hello!</em> Let’s make the next step clearer.</h2><HeritageRule/>
+            <p>Bring your records, questions and decisions together. Start with what matters most.</p>
+            <ol><li><strong>Review your priorities</strong><span>Find the work that needs your attention.</span></li><li><strong>Prepare a plan</strong><span>Give the next step a clear owner.</span></li><li><strong>Keep control</strong><span>Review proposed actions before they proceed.</span></li></ol>
+            <div className="landing-preview-composer">Ask JD anything…<span aria-hidden="true">↗</span></div>
+          </div>
+        </div>
       </section>
       <section className="reference-features" id="product" aria-label="Explore the platform">
         <article><span className="reference-feature-icon"><Activity aria-hidden="true"/></span><h2>Monitor</h2><p>See performance, finances and organisational activity in one view.</p></article>
@@ -62,7 +74,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
         <div className="landing-section-heading"><p className="landing-eyebrow">BUILT AROUND YOUR WORK</p><h2 id="use-cases-title">A clearer day starts<br/>with a better question.</h2><p>You don’t need another dashboard to watch. You need a way to turn what you know into what you do next.</p></div>
         <div className="landing-scenario">
           <div className="landing-scenario-tabs" aria-label="Explore use cases">{scenarios.map((item,index)=><button key={item.name} type="button" aria-pressed={scenario===index} onClick={()=>setScenario(index)}>{item.name}</button>)}</div>
-          <div className="landing-demo" aria-live="polite"><small>ILLUSTRATIVE CONVERSATION · NOT LIVE DATA</small><p className="landing-demo-question"><MessageSquare size={18} aria-hidden="true"/>{scenarios[scenario].question}</p><div className="landing-demo-answer"><img src="/design/jd-tile.png" alt="JD" width="36" height="36"/><div><strong>James-Denning</strong><p>{scenarios[scenario].answer}</p></div></div><p className="landing-demo-outcome"><Check size={16} aria-hidden="true"/>{scenarios[scenario].outcome}</p></div>
+          <div className="landing-demo" aria-live="polite"><small>ILLUSTRATIVE CONVERSATION · NOT LIVE DATA</small><p className="landing-demo-question"><MessageSquare size={18} aria-hidden="true"/>{scenarios[scenario].question}</p><div className="landing-demo-answer"><HeritageTile size={36}/><div><strong>James-Denning</strong><p>{scenarios[scenario].answer}</p></div></div><p className="landing-demo-outcome"><Check size={16} aria-hidden="true"/>{scenarios[scenario].outcome}</p></div>
         </div>
       </section>
       <section id="how-it-works" className="landing-how" aria-labelledby="how-title">
@@ -81,7 +93,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
         ["How does billing work?","The platform has its own billing. AI employee usage is additional and separate. Review the applicable plan and usage terms before enabling paid work; this page does not quote a price or promise free usage."],
       ].map(([question,answer])=><details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
       <section className="landing-final-cta"><p className="landing-eyebrow">MAKE ROOM FOR THE WORK THAT MATTERS</p><h2>Less chasing.<br/><em>More moving forward.</em></h2><p>Bring your next business question to James-Denning.</p><button className="reference-primary" onClick={onGetStarted}>Start your workspace <ArrowRight size={18} aria-hidden="true"/></button><button className="landing-signin" onClick={onSignIn}>Already have an account? Sign in</button></section>
-      <footer className="landing-footer"><ReferenceBrand divided/><span>Your organisation, one conversation.</span><a href="#top">Back to top ↑</a></footer>
+      <footer className="landing-footer"><LandingBrand/><span>Your organisation, one conversation.</span><a href="#top">Back to top ↑</a></footer>
     </div>
   </main>;
 }
