@@ -371,7 +371,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message: `${responseStyles[responseStyle]}\n\nUser request: ${message}`, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
