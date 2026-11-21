@@ -38,6 +38,13 @@ try{
   await page.getByRole('button',{name:/Synthetic capability report/}).waitFor({state:'visible'});
   await page.getByRole('button',{name:/Synthetic capability report/}).click();
   await page.locator('.jd-table').waitFor();
+  const responseChoices=page.locator('.jd-response-style button');
+  assert.equal(await responseChoices.count(),3,'three response styles are visible');
+  assert.deepEqual(await responseChoices.allTextContents(),['A · Concise','B · Balanced','C · Detailed']);
+  await page.getByRole('button',{name:'A · Concise'}).click();
+  assert.equal(await page.getByRole('button',{name:'A · Concise'}).getAttribute('aria-pressed'),'true');
+  await page.getByRole('button',{name:'C · Detailed'}).click();
+  assert.equal(await page.getByRole('button',{name:'C · Detailed'}).getAttribute('aria-pressed'),'true');
   const measure=()=>page.evaluate(()=>{
    const rect=sel=>{const e=document.querySelector(sel),r=e.getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,client:e.clientWidth,scroll:e.scrollWidth};};
    return{viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,thread:rect('.jd-thread'),table:rect('.jd-table-wrap'),scroll:rect('.jd-scroll'),utility:rect('.jd-utility'),composer:rect('.jd-compose-wrap'),requests:window.__requests};
