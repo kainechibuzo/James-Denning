@@ -404,8 +404,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     if(!item?.jobId)return;
     setMessages(current=>current.map(m=>m.jobId===item.jobId?{...m,cancelling:true}:m));
     try{
-      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"execution.cancel",jobId:item.jobId}});
-      if(error||data?.error||data?.execution?.status!=="cancelled")throw new Error(data?.error||"Cancellation was not confirmed");
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"execution.job.cancel",jobId:item.jobId}});
+      if(error||data?.error||data?.job?.status!=="cancelled")throw new Error(data?.error||"Cancellation was not confirmed");
       setMessages(current=>current.map(m=>m.jobId===item.jobId?{...m,cancelling:false,jobStatus:"cancelled",run:{...(m.run||{}),status:"cancelled"}}:m));
       if(conversationId)void loadConversation(conversationId);
     }catch{
@@ -627,7 +627,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               {item.streaming&&!item.pollUnavailable&&<div className="jd-run">JD is writing its response…</div>}
               <div className="jd-message-actions">
                 {item.role==="user"&&<><button type="button" title="Copy prompt" aria-label="Copy prompt" onClick={()=>copyPrompt(item.content)}><Copy size={13}/>Copy</button><button type="button" title="Retry prompt as a new request" aria-label="Retry prompt" onClick={()=>retryPrompt(item)} disabled={sending||queuePaused}><RotateCcw size={13}/>Retry</button></>}
-                {item.role==="assistant"&&item.jobId&&["queued","planning","running","retry_wait"].includes(item.jobStatus||item.run?.status)&&<button type="button" title="Stop this execution" aria-label="Stop execution" onClick={()=>cancelExecution(item)} disabled={item.cancelling}><Square size={12}/>{item.cancelling?"Stopping…":"Stop"}</button>}
+                {item.role==="assistant"&&item.jobId&&["queued","retry_wait"].includes(item.jobStatus||item.run?.status)&&<button type="button" title="Stop this queued or waiting execution" aria-label="Stop queued execution" onClick={()=>cancelExecution(item)} disabled={item.cancelling}><Square size={12}/>{item.cancelling?"Stopping…":"Stop"}</button>}
                 {item.role==="assistant"&&item.id===messages.filter(m=>m.role==="assistant").slice(-1)[0]?.id&&conversationId&&<button type="button" title="Branch this conversation" aria-label="Branch conversation" onClick={branchConversation}><GitBranch size={13}/>Branch</button>}
               </div>
             </div>)}
