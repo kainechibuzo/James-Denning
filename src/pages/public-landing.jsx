@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Activity, Layers3, Menu, X, Play, ShieldCheck, ArrowRight, Check, MessageSquare, ClipboardCheck, LockKeyhole } from "lucide-react";
+import { ArrowUpRight, Activity, Layers3, Menu, X, Play, ShieldCheck, ArrowRight, Check, MessageSquare, ClipboardCheck } from "lucide-react";
 import { HeritageTile, HeritageWordmark, HeritageRule } from "../components/reference-brand.jsx";
 import "../styles/reference-design.css";
 import "../styles/landing-growth.css";
@@ -53,18 +53,10 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
           </div>
           <p className="reference-proof"><ShieldCheck aria-hidden="true"/><span>Your workspace. Your permissions. Your approval when it matters.</span></p>
         </div>
-        <div className="landing-workspace-preview" aria-label="Illustrative JD Assistant conversation, not live workspace data">
-          <div className="landing-preview-bar"><LandingBrand/><span>Workspace Active</span></div>
-          <div className="landing-preview-body">
-            <p className="landing-preview-caption">A QUIETER WAY TO WORK · ILLUSTRATIVE EXAMPLE</p>
-            <p className="landing-preview-user">What needs my attention this week?</p>
-            <div className="landing-preview-author"><HeritageTile size={30}/><span>JD Assistant</span></div>
-            <h2><em>Hello!</em> Let’s make the next step clearer.</h2><HeritageRule/>
-            <p>Bring your records, questions and decisions together. Start with what matters most.</p>
-            <ol><li><strong>Review your priorities</strong><span>Find the work that needs your attention.</span></li><li><strong>Prepare a plan</strong><span>Give the next step a clear owner.</span></li><li><strong>Keep control</strong><span>Review proposed actions before they proceed.</span></li></ol>
-            <div className="landing-preview-composer">Ask JD anything…<span aria-hidden="true">↗</span></div>
-          </div>
-        </div>
+        <picture className="reference-laptop">
+          <source media="(max-width: 760px)" srcSet="/design/dashboard-laptop-front.webp"/>
+          <img src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard displayed on a laptop. Figures shown are sample data, not live workspace records." fetchPriority="high"/>
+        </picture>
       </section>
       <section className="reference-features" id="product" aria-label="Explore the platform">
         <article><span className="reference-feature-icon"><Activity aria-hidden="true"/></span><h2>Monitor</h2><p>See performance, finances and organisational activity in one view.</p></article>
@@ -85,7 +77,6 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
           [Activity,"03","Follow the actual work","Track recorded tasks and authorised runs. See what finished, what failed and what still needs attention."],
         ].map(([Icon,num,title,copy])=><article key={num}><div><span>{num}</span><Icon size={22} aria-hidden="true"/></div><h3>{title}</h3><p>{copy}</p></article>)}</div>
       </section>
-      <section className="landing-control" aria-labelledby="control-title"><div><LockKeyhole size={26} aria-hidden="true"/><p className="landing-eyebrow">ASSISTANCE WITHOUT SURRENDERING CONTROL</p><h2 id="control-title">Let JD help.<br/>Keep the final say.</h2><p>Useful AI should make the work easier to inspect—not harder to trust.</p></div><ul><li><Check size={18}/><span><strong>Permissions come first</strong>Connected services and actions depend on your workspace’s authorised access.</span></li><li><Check size={18}/><span><strong>Approval is not execution</strong>Review restricted actions before they proceed. A proposal is not a completed job.</span></li><li><Check size={18}/><span><strong>Progress you can question</strong>Inspect saved records and execution evidence. Missing information stays unknown.</span></li></ul></section>
       <section className="landing-faq" id="questions" aria-labelledby="faq-title"><div className="landing-section-heading"><p className="landing-eyebrow">BEFORE YOU GET STARTED</p><h2 id="faq-title">Good questions.</h2></div><div>{[
         ["What can I use JD for?","Use JD to inspect workspace records, prepare business plans and tasks, review proposed changes and follow authorised workflow execution. What it can execute depends on the tools, permissions and services available in your workspace."],
         ["Will JD complete every task automatically?","No. A checklist is a set of records, not a promise of autonomous completion. JD can work through authorised jobs using available tools. Missing information, approvals and work outside those tools may require a person."],

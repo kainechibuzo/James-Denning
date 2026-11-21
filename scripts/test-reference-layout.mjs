@@ -82,11 +82,14 @@ try{
       paper:getComputedStyle(document.querySelector('.reference-landing')).backgroundColor,
       font:getComputedStyle(document.querySelector('.reference-hero h1')).fontFamily,
       preview:!!document.querySelector('.landing-workspace-preview'),
-      oldLaptop:!!document.querySelector('.reference-laptop'),
+      laptop:!!document.querySelector('.reference-laptop img'),
+      blueSection:!!document.querySelector('.landing-control'),
+      laptopSource:document.querySelector('.reference-laptop img')?.currentSrc,
     }));
     assert.equal(design.paper,'rgb(246, 239, 228)');
     assert.ok(design.font.includes('JD Caslon Text'));
-    assert.ok(design.preview&&!design.oldLaptop);
+    assert.ok(!design.preview&&design.laptop&&!design.blueSection);
+    assert.ok(design.laptopSource.endsWith(width<=760?'dashboard-laptop-front.webp':'dashboard-laptop.webp'));
     await page.getByRole('button',{name:'Operations teams',exact:true}).click();
     await page.getByText('Turn our launch plan into accountable work.',{exact:true}).waitFor();
     assert.equal(await page.getByRole('button',{name:'Operations teams',exact:true}).getAttribute('aria-pressed'),'true');
