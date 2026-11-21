@@ -34,3 +34,34 @@ end;
 $$;
 revoke all on function public.jd_release_approved_execution(uuid,uuid) from public,anon,authenticated;
 grant execute on function public.jd_release_approved_execution(uuid,uuid) to service_role;
+
+create or replace function public.jd_set_chat_response_style(
+ p_run_id uuid,p_actor_id uuid,p_style text
+) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare v_run public.jd_automation_runs%rowtype; v_school_id uuid; v_existing text;
+begin
+ if p_style not in ('concise','balanced','detailed') then
+  raise exception 'Invalid response style' using errcode='22023';
+ end if;
+ select school_id into v_school_id from public.profiles where id=p_actor_id;
+ if v_school_id is null then raise exception 'Workspace profile required' using errcode='42501'; end if;
+ select * into v_run from public.jd_automation_runs
+  where id=p_run_id and school_id=v_school_id and requested_by=p_actor_id for update;
+ if not found then raise exception 'Conversation run not found' using errcode='P0002'; end if;
+ v_existing := v_run.result_json->>'response_style';
+ if v_existing is not null then
+  if v_existing <> p_style then raise exception 'Response style is already fixed for this request' using errcode='40001'; end if;
+  return jsonb_build_object('run_id',p_run_id,'response_style',p_style,'duplicate',true);
+ end if;
+ update public.jd_automation_runs
+  set result_json=coalesce(result_json,'{}'::jsonb)||jsonb_build_object('response_style',p_style),
+      updated_at=clock_timestamp()
+  where id=p_run_id and school_id=v_school_id and requested_by=p_actor_id;
+ insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json)
+  values(v_school_id,p_actor_id,p_run_id,'conversation.response_style_set',jsonb_build_object('response_style',p_style));
+ return jsonb_build_object('run_id',p_run_id,'response_style',p_style,'duplicate',false);
+end;
+$$;
+revoke all on function public.jd_set_chat_response_style(uuid,uuid,text) from public,anon,authenticated;
+grant execute on function public.jd_set_chat_response_style(uuid,uuid,text) to service_role;
