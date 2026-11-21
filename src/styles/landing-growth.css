@@ -28,14 +28,6 @@
 .landing-steps article>div>span{font-size:12px}
 .landing-steps h3{font-size:20px;font-weight:550;letter-spacing:-.025em;margin:0 0 12px}
 .landing-steps p{font-size:14px;color:#60616b;line-height:1.85;margin:0}
-.landing-control{padding:50px;background:#17191c;border-radius:24px;color:#f3f4f5;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.landing-control .landing-eyebrow{color:#b6b7bf;margin-top:24px;font-size:9px!important}
-.landing-control h2{font-size:clamp(30px,4vw,46px);font-weight:500;letter-spacing:-.055em;line-height:1.12;margin:0 0 20px}
-.landing-control p:not(.landing-eyebrow){color:#b6b7bf;line-height:1.8;font-size:14px;max-width:320px}
-.landing-control ul{list-style:none;padding:0;margin:0;display:grid;gap:28px}
-.landing-control li{display:flex;gap:14px;font-size:13px;color:#b6b7bf;line-height:1.8}
-.landing-control li svg{flex-shrink:0;margin-top:4px;color:#fff}
-.landing-control strong{display:block;color:#fff;font-size:15px;font-weight:550;margin-bottom:5px}
 .landing-faq{display:grid;grid-template-columns:1fr 1.4fr;gap:70px;padding:100px 0}
 .landing-faq details{border-bottom:1px solid #dedfe4}
 .landing-faq summary{list-style:none;cursor:pointer;padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:15px;font-weight:550;line-height:1.6}
@@ -58,7 +50,6 @@
  .landing-how{padding:50px 0}
  .landing-steps{grid-template-columns:minmax(0,1fr);gap:8px;margin-top:25px}
  .landing-steps article>div{margin-bottom:18px}
- .landing-control{grid-template-columns:minmax(0,1fr);gap:28px;padding:28px 24px;border-radius:20px}
  .landing-demo{padding:20px;min-height:0}
  .landing-demo-question{font-size:15px;padding:14px}
  .landing-scenario-tabs button{padding:10px 12px;font-size:11px}
