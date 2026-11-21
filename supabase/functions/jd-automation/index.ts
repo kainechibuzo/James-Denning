@@ -751,7 +751,7 @@ Deno.serve(async (req) => {
  if(payload.action!=="submit") return json({error:"Unsupported action"},400);
  const recorded=await recordChatSubmission({payload,profile,actorId:authData.user.id,admin,needsApproval});
  if(recorded.error)return json({error:recorded.error},recorded.status);
- const {conversationId,run,receipt,submission,risk}=recorded;
+ const {conversationId,run,receipt,submission,risk,responseStyle}=recorded;
  if(submission.replayed){
   const {data:existingJob,error:jobReadError}=await admin.from("jd_execution_jobs").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).maybeSingle();
   if(jobReadError)return json({error:"The saved execution status could not be confirmed. Retry safely with the same request identifier."},503);
@@ -778,7 +778,7 @@ Deno.serve(async (req) => {
   const response={version:1,blocks:[{id:"approval",type:"approval",actionId:approval.id,description:reply}]};
   const {error:approvalMessageError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id,response},created_by_agent:true});
   if(approvalMessageError)return json({error:"The approval exists but its response could not be saved. Open Review Centre to inspect it."},500);
-  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{...(run.result_json||{}),approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
+  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{...(run.result_json||{}),response_style:responseStyle||"balanced",approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,response,blocked:true,approval,...receipt});
  }
  // Routine requests enter the durable queue. The worker owns model execution,
