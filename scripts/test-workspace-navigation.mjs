@@ -16,7 +16,7 @@ function assertGroups(nav){
 const REMOVED=["dashboard","members","students","teachers","classes","subjects","results","report-cards","transcript","grading","fees","fee-tracker","my-bill","attendance","timetable","calendar","broadsheet","sections","approvals","access-requests","my-results"];
 
 test("catalogue contains only JD workspace routes; legacy portal routes are gone",()=>{
-  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["jd-chat","jd-operations","billing","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
+  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["jd-chat","jd-operations","jd-skills","billing","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
   for(const id of REMOVED)assert.ok(!WORKSPACE_NAVIGATION.some(n=>n.id===id),`${id} removed`);
   for(const n of WORKSPACE_NAVIGATION)for(const role of n.roles)assert.ok(["owner","admin","manager"].includes(role),`${n.id}:${role}`);
 });

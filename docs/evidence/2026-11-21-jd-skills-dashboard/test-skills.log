@@ -1,0 +1,268 @@
+
+> james-denning@1.0.0 test:skills
+> node --experimental-strip-types --test scripts/test-skills-package.mjs scripts/test-skills-database.mjs scripts/test-skills-ui.mjs scripts/test-skills-service.mjs
+
+TAP version 13
+# Subtest: import create issues a private quarantine target with bounded receipts
+ok 1 - import create issues a private quarantine target with bounded receipts
+  ---
+  duration_ms: 1776.745215
+  type: 'test'
+  ...
+# Subtest: the same request identifier replays its receipt; a different request on the same identifier conflicts
+ok 2 - the same request identifier replays its receipt; a different request on the same identifier conflicts
+  ---
+  duration_ms: 31.554439
+  type: 'test'
+  ...
+# Subtest: only workspace administrators act; other tenants cannot act on foreign imports
+ok 3 - only workspace administrators act; other tenants cannot act on foreign imports
+  ---
+  duration_ms: 53.146079
+  type: 'test'
+  ...
+# Subtest: a quarantined package records an immutable reviewable version without execution
+ok 4 - a quarantined package records an immutable reviewable version without execution
+  ---
+  duration_ms: 45.247817
+  type: 'test'
+  ...
+# Subtest: importing the same skill name creates the next immutable version
+ok 5 - importing the same skill name creates the next immutable version
+  ---
+  duration_ms: 41.608315
+  type: 'test'
+  ...
+# Subtest: self-review is refused; decisions need the current reviewable version and a real note
+ok 6 - self-review is refused; decisions need the current reviewable version and a real note
+  ---
+  duration_ms: 33.321947
+  type: 'test'
+  ...
+# Subtest: publication requires an approved current version with an independent recorded review
+ok 7 - publication requires an approved current version with an independent recorded review
+  ---
+  duration_ms: 49.718569
+  type: 'test'
+  ...
+# Subtest: discovery returns only published tenant skills as metadata, never instructions
+ok 8 - discovery returns only published tenant skills as metadata, never instructions
+  ---
+  duration_ms: 52.420187
+  type: 'test'
+  ...
+# Subtest: loading a published skill returns bounded untrusted text and records the exact version on the run
+ok 9 - loading a published skill returns bounded untrusted text and records the exact version on the run
+  ---
+  duration_ms: 35.819244
+  type: 'test'
+  ...
+# Subtest: a validation-failed import records evidence but creates no skill or version
+ok 10 - a validation-failed import records evidence but creates no skill or version
+  ---
+  duration_ms: 22.559159
+  type: 'test'
+  ...
+# Subtest: deprecation stops discovery and loading but keeps the immutable version and history
+ok 11 - deprecation stops discovery and loading but keeps the immutable version and history
+  ---
+  duration_ms: 35.898114
+  type: 'test'
+  ...
+# Subtest: skill versions, reviews and request receipts are immutable evidence
+ok 12 - skill versions, reviews and request receipts are immutable evidence
+  ---
+  duration_ms: 26.818436
+  type: 'test'
+  ...
+# Subtest: the tenant catalog read is scoped, bounded and never crosses tenants
+ok 13 - the tenant catalog read is scoped, bounded and never crosses tenants
+  ---
+  duration_ms: 33.714992
+  type: 'test'
+  ...
+# (node:4004) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-skills-package.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: constants expose the release gate and private quarantine bucket
+ok 14 - constants expose the release gate and private quarantine bucket
+  ---
+  duration_ms: 2.635946
+  type: 'test'
+  ...
+# Subtest: a clean deflated package validates deterministically with hashes
+ok 15 - a clean deflated package validates deterministically with hashes
+  ---
+  duration_ms: 55.544915
+  type: 'test'
+  ...
+# Subtest: stored (uncompressed) packages parse identically
+ok 16 - stored (uncompressed) packages parse identically
+  ---
+  duration_ms: 1.857591
+  type: 'test'
+  ...
+# Subtest: path traversal, absolute paths, duplicates and symlinks are rejected
+ok 17 - path traversal, absolute paths, duplicates and symlinks are rejected
+  ---
+  duration_ms: 4.106768
+  type: 'test'
+  ...
+# Subtest: decompression bombs and oversized archives fail closed
+ok 18 - decompression bombs and oversized archives fail closed
+  ---
+  duration_ms: 269.868159
+  type: 'test'
+  ...
+# Subtest: missing or invalid frontmatter fields block validation with actionable errors
+ok 19 - missing or invalid frontmatter fields block validation with actionable errors
+  ---
+  duration_ms: 4.831826
+  type: 'test'
+  ...
+# Subtest: prompt-injection findings force review but never execution authority
+ok 20 - prompt-injection findings force review but never execution authority
+  ---
+  duration_ms: 2.70593
+  type: 'test'
+  ...
+# Subtest: credential-like package text is rejected before review
+ok 21 - credential-like package text is rejected before review
+  ---
+  duration_ms: 0.867971
+  type: 'test'
+  ...
+# Subtest: unlicensed packages stay reviewable with an explicit licence status
+ok 22 - unlicensed packages stay reviewable with an explicit licence status
+  ---
+  duration_ms: 1.104217
+  type: 'test'
+  ...
+# Subtest: manifest ignores complex frontmatter and unknown specialist roles never grant access
+ok 23 - manifest ignores complex frontmatter and unknown specialist roles never grant access
+  ---
+  duration_ms: 1.640401
+  type: 'test'
+  ...
+# (node:4016) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-skills-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: the release gate fails closed with the flag name
+ok 24 - the release gate fails closed with the flag name
+  ---
+  duration_ms: 1.52948
+  type: 'test'
+  ...
+# Subtest: non-administrators and unknown actions are rejected before any database access
+ok 25 - non-administrators and unknown actions are rejected before any database access
+  ---
+  duration_ms: 0.26122
+  type: 'test'
+  ...
+# Subtest: confirm and request identifiers are mandatory for every mutating action
+ok 26 - confirm and request identifiers are mandatory for every mutating action
+  ---
+  duration_ms: 0.825219
+  type: 'test'
+  ...
+# Subtest: import create issues a bounded signed upload target and never a read grant
+ok 27 - import create issues a bounded signed upload target and never a read grant
+  ---
+  duration_ms: 0.53742
+  type: 'test'
+  ...
+# Subtest: a truncated archive is recorded as validation_failed without executing anything
+ok 28 - a truncated archive is recorded as validation_failed without executing anything
+  ---
+  duration_ms: 8.773273
+  type: 'test'
+  ...
+# Subtest: skill loading receipts are validated as untrusted data with no authority
+ok 29 - skill loading receipts are validated as untrusted data with no authority
+  ---
+  duration_ms: 0.275274
+  type: 'test'
+  ...
+# Subtest: discovery is metadata-only: instructions and execution flags are checked in the receipt
+ok 30 - discovery is metadata-only: instructions and execution flags are checked in the receipt
+  ---
+  duration_ms: 0.204754
+  type: 'test'
+  ...
+# Subtest: a db receipt that would unlock authority fails the call closed
+ok 31 - a db receipt that would unlock authority fails the call closed
+  ---
+  duration_ms: 0.437229
+  type: 'test'
+  ...
+# Subtest: zipBytes is a bounded synthetic fixture (never a real package execution)
+ok 32 - zipBytes is a bounded synthetic fixture (never a real package execution)
+  ---
+  duration_ms: 0.350042
+  type: 'test'
+  ...
+# Subtest: non-administrators are gated before any form renders
+ok 33 - non-administrators are gated before any form renders
+  ---
+  duration_ms: 76.754124
+  type: 'test'
+  ...
+# Subtest: the catalogue states the boundary copy and lists tenant-private skills
+ok 34 - the catalogue states the boundary copy and lists tenant-private skills
+  ---
+  duration_ms: 72.12947
+  type: 'test'
+  ...
+# Subtest: import flow creates a quarantine target, uploads to the signed URL and records review-required outcome
+ok 35 - import flow creates a quarantine target, uploads to the signed URL and records review-required outcome
+  ---
+  duration_ms: 36.24626
+  type: 'test'
+  ...
+# Subtest: a failed inspection renders the failure and never a publication state
+ok 36 - a failed inspection renders the failure and never a publication state
+  ---
+  duration_ms: 26.232258
+  type: 'test'
+  ...
+# Subtest: an uncertain upload keeps the exact request identifier for retry
+ok 37 - an uncertain upload keeps the exact request identifier for retry
+  ---
+  duration_ms: 33.951915
+  type: 'test'
+  ...
+# Subtest: review requires a note and approve/publish stay distinct steps
+ok 38 - review requires a note and approve/publish stay distinct steps
+  ---
+  duration_ms: 65.868283
+  type: 'test'
+  ...
+# Subtest: inert attachments are labelled as recorded but never executed
+ok 39 - inert attachments are labelled as recorded but never executed
+  ---
+  duration_ms: 34.257467
+  type: 'test'
+  ...
+# Subtest: revoke records the lifecycle action with a note
+ok 40 - revoke records the lifecycle action with a note
+  ---
+  duration_ms: 40.130945
+  type: 'test'
+  ...
+# Subtest: discovery preview shows metadata only and never instruction text
+ok 41 - discovery preview shows metadata only and never instruction text
+  ---
+  duration_ms: 31.562396
+  type: 'test'
+  ...
+1..41
+# tests 41
+# suites 0
+# pass 41
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3993.383052

@@ -69,6 +69,7 @@ jobs:
           npm run test:tasks
           npm run test:execution
           npm run test:capabilities
+          npm run test:skills
       - name: Verify artifact against source and approved plan
         run: node scripts/jd-backend-release.mjs --verify
       - name: Retain exact source artifact and manifest

@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-11-21 — JD Skills Admin Dashboard: secure skill package import, independent review and tenant-private catalogue
+
+- **Status:** implemented in source on the skills branch; CI, staging migration and live verification pending. Release-gated off (`JD_SKILLS_ENABLED` default absent → closed).
+- **Secure import:** admin uploads a skill ZIP to a private `jd-skill-packages` quarantine bucket via a short-lived signed URL. The trusted backend service downloads and inspects the archive in memory — parsing, CRC verification, frontmatter validation, licence status, injection/credential scans and hash computation — without ever executing package content, fetching package URLs or installing dependencies. Scripts and binaries are recorded as inert attachments only.
+- **Lifecycle authority:** new migration `20261122120000_jd_skills_catalog.sql` (rollback available) adds immutable, version-pinned skill tables with service-role-only RLS and RPCs enforcing tenant scope, request-idempotent replays, immutable versions/reviews/receipts, reviewer-independence (the importer cannot approve their own version), publication only after an independent approval, and immediate revocation/deprecation. A validation-failed import records evidence but creates no skill.
+- **Discovery and loading:** `jd_skills_resolve` exposes published tenant skills as metadata only; `jd_skills_load` returns bounded instruction text flagged `untrusted_task_data_never_authority` with `tools_granted:false` and records the exact skill version on the run. Loading never grants tools, execution authority, hiring or billing.
+- **Dashboard:** admin-only `jd-skills` nav entry (icon `package`), `page:jd-skills` permission and `src/pages/jd-skills.jsx` page with inspection reports, note-gated approve/reject/publish/revoke/deprecate confirmations and a metadata-only discovery preview; `skills-client.mjs` validates every read-back.
+- **Tests:** new `test:skills` suite (package inspection 10, PGlite SQL 13, UI 9, service contracts 9 — all green) wired into Web CI, verify and deploy workflows; `deno check` passes for both endpoints. No production deployment, migration or staging acceptance was performed. Phases 4–5 (workforce discovery wiring, rollout) are documented but intentionally not enabled.
+
 ## 2026-11-21 — JD Agent Execution Engine: workforce deployment, execution authority and Agent Factory
 
 - **Status:** implemented in source on `arena/b529496d-james-denning`; CI, staging migration and live verification pending.
