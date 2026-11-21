@@ -6,6 +6,7 @@ export const PERM_GROUPS = Object.freeze([
   {id:"workspace",label:"Workspace",color:"var(--jd-text-soft)",perms:[
     {id:"page:jd-chat",        label:"JD Assistant",       desc:"Chat with the JD assistant and AI workforce"},
     {id:"page:jd-operations",  label:"Tasks & Operations", desc:"Open the operations workspace, task queue and runs"},
+    {id:"page:jd-skills",      label:"Skills Catalog",     desc:"Import, review and publish skill packages for specialist agents"},
   ]},
   {id:"people",label:"People & Recruitment",color:"var(--jd-text-soft)",perms:[
     {id:"page:hiring",         label:"Recruitment",        desc:"Manage job posts and applicants"},

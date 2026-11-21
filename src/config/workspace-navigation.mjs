@@ -8,6 +8,7 @@ export const canAdministerOperations = role => ["owner","admin"].includes(role);
 const entries = [
   {id:"jd-chat",       label:"JD Assistant",          icon:"dashboard",  roles:["owner","admin","manager"]},
   {id:"jd-operations", label:"Tasks & Operations",    icon:"activity",   roles:["owner","admin","manager"]},
+  {id:"jd-skills",     label:"Skills Catalog",        icon:"package",    roles:["admin"]},
   {id:"billing",       label:"Billing",               icon:"wallet",     roles:["owner","admin"]},
   {id:"hiring",        label:"Recruitment",           icon:"user-check", roles:["admin"]},
   {id:"mail-logs",     label:"Email Logs",            icon:"mail-logs",  roles:["admin"]},

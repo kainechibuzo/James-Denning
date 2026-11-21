@@ -1,5 +1,6 @@
 import { recordChatSubmission } from "../_shared/jd-chat-submission.mjs";
 import { handleAgentRegistry } from "../_shared/jd-agent-registry-service.ts";
+import { handleSkills } from "../_shared/jd-skills-service.ts";
 import { handleUsage } from "../_shared/jd-usage-service.ts";
 import { handleFoundation } from "../_shared/jd-foundation-service.ts";
 import { buildSaasAgentTeam } from "../_shared/jd-agent-architect.mjs";
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
 
  if(!payload||typeof payload!=="object"||Array.isArray(payload))return json({error:"Invalid request object"},400);
  if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
+ if(typeof payload.action==="string"&&payload.action.startsWith("skills."))return handleSkills({payload,admin,auth,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("usage."))return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){

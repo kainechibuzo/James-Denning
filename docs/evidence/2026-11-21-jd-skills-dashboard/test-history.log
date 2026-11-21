@@ -1,0 +1,152 @@
+
+> james-denning@1.0.0 test:history
+> node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs
+
+TAP version 13
+# Subtest: tool labels never invent completion, including unknown/prototype property names
+ok 1 - tool labels never invent completion, including unknown/prototype property names
+  ---
+  duration_ms: 1.214178
+  type: 'test'
+  ...
+# Subtest: pending, skipped, partial and unknown states are not successful completion
+ok 2 - pending, skipped, partial and unknown states are not successful completion
+  ---
+  duration_ms: 0.319045
+  type: 'test'
+  ...
+# Subtest: valid persisted history and genuine empty history are distinguishable from failure
+ok 3 - valid persisted history and genuine empty history are distinguishable from failure
+  ---
+  duration_ms: 1.021375
+  type: 'test'
+  ...
+# Subtest: run history rejects missing response without private diagnostics
+ok 4 - run history rejects missing response without private diagnostics
+  ---
+  duration_ms: 0.468741
+  type: 'test'
+  ...
+# Subtest: run history rejects missing rows without private diagnostics
+ok 5 - run history rejects missing rows without private diagnostics
+  ---
+  duration_ms: 0.240606
+  type: 'test'
+  ...
+# Subtest: run history rejects API body error without private diagnostics
+ok 6 - run history rejects API body error without private diagnostics
+  ---
+  duration_ms: 0.128483
+  type: 'test'
+  ...
+# Subtest: run history rejects invalid row without private diagnostics
+ok 7 - run history rejects invalid row without private diagnostics
+  ---
+  duration_ms: 0.175036
+  type: 'test'
+  ...
+# Subtest: run history rejects duplicate rows without private diagnostics
+ok 8 - run history rejects duplicate rows without private diagnostics
+  ---
+  duration_ms: 0.219114
+  type: 'test'
+  ...
+# Subtest: run history rejects missing steps without private diagnostics
+ok 9 - run history rejects missing steps without private diagnostics
+  ---
+  duration_ms: 0.409181
+  type: 'test'
+  ...
+# Subtest: run history rejects bad step without private diagnostics
+ok 10 - run history rejects bad step without private diagnostics
+  ---
+  duration_ms: 0.61717
+  type: 'test'
+  ...
+# Subtest: run history handles HTTP 401 without raw error text
+ok 11 - run history handles HTTP 401 without raw error text
+  ---
+  duration_ms: 0.363244
+  type: 'test'
+  ...
+# Subtest: run history handles HTTP 403 without raw error text
+ok 12 - run history handles HTTP 403 without raw error text
+  ---
+  duration_ms: 0.181337
+  type: 'test'
+  ...
+# Subtest: run history handles HTTP 500 without raw error text
+ok 13 - run history handles HTTP 500 without raw error text
+  ---
+  duration_ms: 0.139481
+  type: 'test'
+  ...
+# Subtest: transport rejection is sanitised and never retried
+ok 14 - transport rejection is sanitised and never retried
+  ---
+  duration_ms: 0.23846
+  type: 'test'
+  ...
+# Subtest: optional run metrics cannot crash the UI: {"model":{}}
+ok 15 - optional run metrics cannot crash the UI: {"model":{}}
+  ---
+  duration_ms: 1.052658
+  type: 'test'
+  ...
+# Subtest: optional run metrics cannot crash the UI: {"model_requests":"bad"}
+ok 16 - optional run metrics cannot crash the UI: {"model_requests":"bad"}
+  ---
+  duration_ms: 0.103547
+  type: 'test'
+  ...
+# Subtest: optional run metrics cannot crash the UI: {"model_requests":[null]}
+ok 17 - optional run metrics cannot crash the UI: {"model_requests":[null]}
+  ---
+  duration_ms: 0.122763
+  type: 'test'
+  ...
+# Subtest: optional run metrics cannot crash the UI: {"token_usage":[]}
+ok 18 - optional run metrics cannot crash the UI: {"token_usage":[]}
+  ---
+  duration_ms: 0.087624
+  type: 'test'
+  ...
+# Subtest: mounted monitor never labels pending unknown work completed and separates record completion from outcome
+ok 19 - mounted monitor never labels pending unknown work completed and separates record completion from outcome
+  ---
+  duration_ms: 117.998904
+  type: 'test'
+  ...
+# Subtest: failed refresh clears old records and shows unavailability, not successful empty history or raw diagnostics
+ok 20 - failed refresh clears old records and shows unavailability, not successful empty history or raw diagnostics
+  ---
+  duration_ms: 29.592225
+  type: 'test'
+  ...
+# Subtest: late older response cannot replace newer refreshed records
+ok 21 - late older response cannot replace newer refreshed records
+  ---
+  duration_ms: 34.749295
+  type: 'test'
+  ...
+# Subtest: body error is unavailable rather than empty success and malformed records do not crash UI
+ok 22 - body error is unavailable rather than empty success and malformed records do not crash UI
+  ---
+  duration_ms: 30.677987
+  type: 'test'
+  ...
+# Subtest: genuine empty response states only what the bounded read returned
+ok 23 - genuine empty response states only what the bounded read returned
+  ---
+  duration_ms: 14.603518
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 923.595927
