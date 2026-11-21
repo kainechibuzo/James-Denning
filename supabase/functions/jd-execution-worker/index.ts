@@ -1,9 +1,11 @@
-import { runWithShadowUsage } from "./_shared/jd-usage-observer.mjs";
+import { recordedResponseResults } from "../_shared/jd-response-results.mjs";
+import { decodeResponse, streamText } from "../_shared/jd-response.mjs";
+import { runWithShadowUsage } from "../_shared/jd-usage-observer.mjs";
 import { NonRetryableAgentResponseError } from "../_shared/jd-agent-stream.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { runAgent } from "./_shared/jd-agent-runtime.ts";
-import { buildJdVisualWorkspace } from "./_shared/jd-visual-workspace.ts";
-import { getJdSecret } from "./_shared/jd-secrets.ts";
+import { runAgent } from "../_shared/jd-agent-runtime.ts";
+import { buildJdVisualWorkspace } from "../_shared/jd-visual-workspace.ts";
+import { getJdSecret } from "../_shared/jd-secrets.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -11,7 +13,7 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 
-import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError, type QueueMessage } from "./_shared/jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError, type QueueMessage } from "../_shared/jd-execution-worker-helpers.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
@@ -71,7 +73,8 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const now = Date.now();
     if (!force && now - lastPartialWriteAt < 800) return;
     lastPartialWriteAt = now;
-    const snapshot = partialText;
+    const snapshot = streamText(partialText);
+    if (!snapshot) return;
     partialWriteChain = partialWriteChain.then(async () => {
       if (!streamMessageId) {
         const { data: existing, error: lookupError } = await admin.from("jd_messages").select("id")
@@ -110,7 +113,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
   try {
     const [{ data: run, error: runError }, { data: profile, error: profileError }] = await Promise.all([
       admin.from("jd_automation_runs")
-        .select("id,school_id,conversation_id,requested_by,request_text,status,created_at")
+        .select("id,school_id,conversation_id,requested_by,request_text,status,created_at,result_json")
         .eq("id", runId).eq("school_id", schoolId).maybeSingle(),
       admin.from("profiles")
         .select("id,school_id,role")
@@ -133,15 +136,15 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     }
 
     const { data: rows, error: historyError } = await admin.from("jd_messages")
-      .select("role,content,created_at")
-      .eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
-      .order("created_at", { ascending: true }).limit(100);
+      .select("id,role,content,created_at")
+      .eq("school_id", schoolId).eq("conversation_id", run.conversation_id).lte("created_at",run.created_at)
+      .order("created_at", { ascending: false }).limit(100);
     if (historyError) throw new Error("Conversation history could not be loaded");
 
-    const historyRows = rows || [];
+    const historyRows = (rows || []).reverse();
     let currentMessageIndex = -1;
     for (let i = historyRows.length - 1; i >= 0; i -= 1) {
-      if (historyRows[i].role === "user" && historyRows[i].content === run.request_text) {
+      if (historyRows[i].role === "user" && (run.result_json?.user_message_id ? historyRows[i].id === run.result_json.user_message_id : historyRows[i].content === run.request_text)) {
         currentMessageIndex = i;
         break;
       }
@@ -302,17 +305,23 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
     const hadToolFailure = events.some((event: any) => event.status === "failed" || event.status === "outcome_unknown");
     const finalStatus = result.status === "partially_completed" || hadToolFailure || recoveredIncomplete ? "partially_completed" : "completed";
     // Visual workspace is derived from persisted tenant-scoped records only.
+    const decoded = decodeResponse(result.text, { allowOperational: false });
+    const requestedComponents = decoded.response?.context?.components || [];
+    const asksForRecords = /\b(show|list|review|summari[sz]e|status|progress|overview|check|which|workload|my|our|current|recorded|saved|assigned|open|blocked|completed)\b|how many/i.test(run.request_text);
+    const wantsTasks = requestedComponents.includes("tasks") || asksForRecords && /\b(tasks?|checklist|launch[ -]readiness)\b/i.test(run.request_text) || events.some((e: any) => e.name === "create_operational_setup_tasks" && e.status === "completed");
+    const wantsDepartments = requestedComponents.includes("departments") || asksForRecords && /\b(departments?|workload|organi[sz]ational structure)\b/i.test(run.request_text);
+    const wantsEvidence = requestedComponents.includes("execution") || asksForRecords && /\b(execution|evidence|activity|audit|workflow|run status)\b/i.test(run.request_text) || events.some((e: any) => ["failed","outcome_unknown"].includes(e.status));
     const canViewOperationalTasks = ["owner", "admin", "manager"].includes(String(profile.role || ""));
-    const visualTasksQuery = canViewOperationalTasks
+    const visualTasksQuery = canViewOperationalTasks && (wantsTasks || wantsDepartments)
       ? admin.from("jd_operational_tasks").select("id,title,description,department,priority,status,due_at,updated_at,metadata", { count: "exact" }).eq("school_id", schoolId).order("updated_at", { ascending: false }).limit(5000)
       : Promise.resolve({ data: [] as any[], error: null, count: 0 });
-    const visualBlueprintQuery = canViewOperationalTasks
+    const visualBlueprintQuery = canViewOperationalTasks && wantsDepartments
       ? admin.from("jd_organisation_blueprints").select("blueprint_json,status,updated_at").eq("school_id", schoolId).in("status", ["approved", "provisioned"]).order("updated_at", { ascending: false }).limit(1).maybeSingle()
       : Promise.resolve({ data: null, error: null });
     const [{ data: visualTasks, error: visualTasksError, count: visualTasksCount }, { data: visualBlueprint, error: visualBlueprintError }, { data: visualAudit, error: visualAuditError }, { data: visualSteps, error: visualStepsError }] = await Promise.all([
       visualTasksQuery,
       visualBlueprintQuery,
-      admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("actor_id", requestedBy).order("created_at", { ascending: false }).limit(20),
+      admin.from("jd_audit_events").select("id,event_type,created_at,event_json").eq("school_id", schoolId).eq("run_id", runId).order("created_at", { ascending: false }).limit(20),
       admin.from("jd_automation_steps").select("id,tool_key,status,error_message,output_json,started_at,completed_at").eq("school_id", schoolId).eq("run_id", runId).order("step_index", { ascending: true }).limit(30),
     ]);
     const blueprintDepartments = Array.isArray(visualBlueprint?.blueprint_json?.departments)
@@ -320,19 +329,22 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       : [];
     const visualWorkspace = buildJdVisualWorkspace({
       tasks: canViewOperationalTasks ? (visualTasks || []) : [],
-      tasksAvailable: canViewOperationalTasks && !visualTasksError,
+      tasksAvailable: canViewOperationalTasks && (wantsTasks || wantsDepartments) && !visualTasksError,
       departments: blueprintDepartments,
       departmentDefinitionsAvailable: !visualBlueprintError && blueprintDepartments.length > 0,
       tasksTotal: visualTasksCount ?? (visualTasks || []).length,
       audit: visualAudit || [], steps: visualSteps || [],
-      evidenceAvailable: !visualAuditError && !visualStepsError,
+      evidenceAvailable: wantsEvidence && !visualAuditError && !visualStepsError,
     });
 
+    const contextualVisual = { ...visualWorkspace, contextual: true, blocks: visualWorkspace.blocks.filter((block: any) => block.type === "checklist" ? wantsTasks : block.type === "departments" ? wantsDepartments : wantsEvidence) };
+    const recordedResults = recordedResponseResults(run.request_text, visualStepsError ? [] : visualSteps);
+    const response = decoded.response || (recordedResults ? {version:1,blocks:[{id:"answer",type:"message",content:decoded.content},...recordedResults.blocks]} : null);
     const { data: existingReply, error: replyLookupError } = await admin.from("jd_messages")
       .select("id").eq("school_id", schoolId).eq("conversation_id", run.conversation_id)
       .contains("content_json", { job_id: jobId }).limit(1).maybeSingle();
     if (replyLookupError) throw new Error("Could not verify whether the job response was already saved");
-    const finalMessage = { content: result.text, content_json: { job_id: jobId, streaming: false, toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })), tokenUsage: result.tokenUsage, truncated: result.truncated === true, visual_workspace: visualWorkspace } };
+    const finalMessage = { content: decoded.content, content_json: { job_id: jobId, streaming: false, toolEvents: events.map((event: any) => ({ name: event.name, status: event.status })), tokenUsage: result.tokenUsage, truncated: result.truncated === true, response, visual_workspace: contextualVisual.blocks.length ? contextualVisual : null } };
     if (existingReply?.id) {
       const { error: replyError } = await admin.from("jd_messages").update(finalMessage).eq("id", existingReply.id).eq("school_id", schoolId).eq("conversation_id", run.conversation_id);
       if (replyError) throw new Error("Agent response could not be finalised");

@@ -95,6 +95,9 @@ jobs:
       - name: Test operational task client and isolated PostgreSQL transitions
         run: npm run test:tasks
 
+      - name: Test conversation protocol and atomic interaction persistence
+        run: npm run test:responses
+
       - name: Production web build
         run: npm run verify:web
       - name: Production mobile build
@@ -113,6 +116,12 @@ jobs:
 
       - name: Test Supabase Auth and pre-authentication contract
         run: deno test --node-modules-dir=auto --allow-read=src/mobile-main.jsx,src/App.jsx,src/AppDemo.jsx,src/pages/saas-entry.jsx,src/supabaseClient.js,supabase/functions/preauth-lookup,supabase/functions/public-careers/index.ts,supabase/migrations/20261115164436_jd_revoke_legacy_public_rpcs.sql,supabase/rollback/20261115164436_jd_revoke_legacy_public_rpcs.rollback.sql supabase/functions/_shared/preauth-auth-contract.test.ts
+
+      - name: Type check conversational endpoint and worker
+        run: deno check --node-modules-dir=auto supabase/functions/jd-automation/index.ts supabase/functions/jd-execution-worker/index.ts
+
+      - name: Test structured conversation orchestration
+        run: deno test --node-modules-dir=auto --allow-env supabase/functions/_shared/jd-conversation-response.test.ts
 
       - name: Test JD document intelligence helpers
         run: deno test --node-modules-dir=auto --allow-env supabase/functions/_shared/jd-document-intelligence.test.ts
@@ -280,6 +289,7 @@ jobs:
               npm run test:reference-layout &&
               npm run test:site-layout &&
               npm run test:conversation-layout &&
+              npm run test:responses:layout &&
               npm run test:theme-layout
           - name: connector and mobile layouts
             command: >-

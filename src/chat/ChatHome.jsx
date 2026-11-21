@@ -1,3 +1,16 @@
+import {newRequestId} from "./conversation-state.mjs";
+import { StructuredResponse } from "./StructuredResponse.jsx";
+import { validateResponse, contextualWorkspace, streamText, answerText, decodeResponse } from "../../supabase/functions/_shared/jd-response.mjs";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import jsonLanguage from "highlight.js/lib/languages/json";
+import sql from "highlight.js/lib/languages/sql";
+import bash from "highlight.js/lib/languages/bash";
+import xml from "highlight.js/lib/languages/xml";
+import cssLanguage from "highlight.js/lib/languages/css";
+for (const [name,language] of Object.entries({javascript,typescript,python,json:jsonLanguage,sql,bash,html:xml,css:cssLanguage})) hljs.registerLanguage(name,language);
 import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
@@ -43,57 +56,23 @@ function renderInlineMarkdown(value, keyPrefix = "inline") {
   });
 }
 
-let katexAssetPromise;
+let katexAssets;
 function loadKatexAssets() {
-  if (typeof window !== "undefined" && window.katex) return Promise.resolve(window.katex);
-  if (katexAssetPromise) return katexAssetPromise;
-  katexAssetPromise = new Promise((resolve, reject) => {
-    if (!document.getElementById("jd-katex-css")) {
-      const link = document.createElement("link");
-      link.id = "jd-katex-css";
-      link.rel = "stylesheet";
-      link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css";
-      link.crossOrigin = "anonymous";
-      document.head.appendChild(link);
-    }
-    const finish = () => window.katex ? resolve(window.katex) : reject(new Error("KaTeX did not initialise"));
-    const existing = document.getElementById("jd-katex-js");
-    if (existing) {
-      if (window.katex) finish();
-      else {
-        existing.addEventListener("load", finish, { once: true });
-        existing.addEventListener("error", () => reject(new Error("KaTeX could not be loaded")), { once: true });
-      }
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "jd-katex-js";
-    script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js";
-    script.crossOrigin = "anonymous";
-    script.async = true;
-    script.onload = finish;
-    script.onerror = () => reject(new Error("KaTeX could not be loaded"));
-    document.head.appendChild(script);
-  }).catch((error) => {
-    katexAssetPromise = null;
-    throw error;
-  });
-  return katexAssetPromise;
+  if(!katexAssets)katexAssets=Promise.all([import("katex"),import("katex/dist/katex.min.css")]).then(([module])=>module.default).catch(error=>{katexAssets=null;throw error;});
+  return katexAssets;
 }
-
-function MathBlock({ value, display = false }) {
-  const [katex, setKatex] = useState(() => typeof window !== "undefined" ? window.katex || null : null);
-  useEffect(() => {
-    if (katex) return;
-    let active = true;
-    loadKatexAssets().then((loaded) => { if (active) setKatex(loaded); }).catch(() => {});
-    return () => { active = false; };
-  }, [katex]);
-  const rendered = katex
-    ? katex.renderToString(String(value || ""), { throwOnError: false, strict: "ignore", trust: false, displayMode: display })
-    : null;
-  const content = rendered ? <span dangerouslySetInnerHTML={{ __html: rendered }} /> : <code>{value}</code>;
-  return display ? <div className="jd-math-display" aria-label={"Mathematical expression: " + value}>{content}</div> : <span className="jd-math-inline" aria-label={"Mathematical expression: " + value}>{content}</span>;
+function MathBlock({value,display=false}) {
+  const [renderer,setRenderer]=useState(null);
+  useEffect(()=>{let active=true;loadKatexAssets().then(value=>{if(active)setRenderer(()=>value);}).catch(()=>{});return()=>{active=false;};},[]);
+  const html=renderer?.renderToString(String(value||""),{throwOnError:false,strict:"ignore",trust:false,displayMode:display,maxExpand:200,maxSize:20});
+  const Tag=display?"div":"span";
+  return <Tag className={display?"jd-math-display":"jd-math-inline"} aria-label={"Mathematical expression: "+value}>{html?<span dangerouslySetInnerHTML={{__html:html}}/>:<code>{value}</code>}</Tag>;
+}
+function CodeBlock({code,language}) {
+  const aliases={js:"javascript",ts:"typescript",py:"python",sh:"bash",jsx:"javascript",tsx:"typescript"};
+  const lang=aliases[language]||language;
+  const html=lang&&hljs.getLanguage(lang)?hljs.highlight(code,{language:lang,ignoreIllegals:true}).value:null;
+  return <pre className="jd-code-block" tabIndex={0} aria-label={(language||"Plain text")+" code"}><code data-language={language||undefined}>{html?<span dangerouslySetInnerHTML={{__html:html}}/>:code}</code></pre>;
 }
 
 function splitTableRow(line) {
@@ -122,7 +101,7 @@ function renderMessageContent(content) {
       const codeLines = [];
       index += 1;
       while (index < lines.length && !lines[index].trim().startsWith(fence[1])) codeLines.push(lines[index++]);
-      nodes.push(<pre className="jd-code-block" key={"code-" + index}><code data-language={fence[2] || undefined}>{codeLines.join("\n")}</code></pre>);
+      nodes.push(<CodeBlock key={"code-"+index} language={fence[2]} code={codeLines.join("\n")}/>);
       continue;
     }
     if (trimmed === "$$") {
@@ -214,6 +193,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError,setHistoryError] = useState("");
   const [openingId,setOpeningId] = useState(null);
+  const [historyCursor,setHistoryCursor]=useState(null);
+  const [earlierLoading,setEarlierLoading]=useState(false);
   const historySequence = useRef(0), conversationSequence = useRef(0), historyAlive = useRef(false);
   const [conversationId, setConversationId] = useState(null);
   const [activeSends, setActiveSends] = useState(0);
@@ -221,6 +202,10 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const conversationIdRef = useRef(null);
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
+  const submissions=useRef(new Set());
+  const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id]);
+  const pendingKey=(message,id)=>"jd:request:"+resumeKey+":"+(id||"new")+":"+message;
+  const rememberConversation=id=>{try{if(id)sessionStorage.setItem("jd:active:"+resumeKey,id);else sessionStorage.removeItem("jd:active:"+resumeKey);}catch{}};
   const [error, setError] = useState("");
   const taskKey = savedTaskKey(messages);
   const taskScope = JSON.stringify([organizationId,user?._authUserId||user?.id,user?.role,conversationId]);
@@ -230,10 +215,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   }, []);
   const firstName = (user?.name || "").trim().split(/\s+/)[0];
-  const activeJobCount = messages.filter((item) => item.role === "assistant" && item.jobId && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status)).length;
+  const activeJobCount = messages.filter((item) => item.role === "assistant" && !item.pollUnavailable && item.jobId && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status)).length;
   const backgroundWorking = activeJobCount > 0;
   const isWorking = sending || backgroundWorking;
   const visibleRequestCount = activeSends + activeJobCount;
+  const waitingForAnswer=item=>!item.streaming&&validateResponse(item.response)?.blocks.some(b=>["choice","form"].includes(b.type)&&!messages.some(m=>m.role==="user"&&m.interaction?.messageId===item.id&&m.interaction?.blockId===b.id));
 
   const loadHistory = useCallback(async () => {
     const version=++historySequence.current;
@@ -248,54 +234,49 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   },[]);
   useEffect(()=>{historyAlive.current=true;void loadHistory();return()=>{historyAlive.current=false;historySequence.current++;conversationSequence.current++;};},[loadHistory]);
 
-  useEffect(() => {
-    if (backgroundWorking) return;
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role !== "assistant" && messages.length > 0) return;
-    let active = true;
-    const checkApprovals = async () => {
-      const { data } = await supabase.functions.invoke("jd-automation", { body: { action: "approvals.list" } });
-      if (active && (data?.approvals || []).some((item) => item.status === "pending")) setShowReview(true);
-    };
-    void checkApprovals();
-    return () => { active = false; };
-  }, [backgroundWorking, messages.length]);
-
-  const loadConversation = async (id) => {
+  const loadConversation = async (id, before = null) => {
     if (!id || sending) return;
     setError("");
-    const version=++conversationSequence.current;
-    setOpeningId(id);setHistoryError("");
+    const version=before?conversationSequence.current:++conversationSequence.current;
+    if(before)setEarlierLoading(true);
+    else setOpeningId(id);setHistoryError("");
     let data;
     try {
-      const result=await supabase.functions.invoke("jd-automation",{body:{action:"history",conversationId:id}});
+      const result=await supabase.functions.invoke("jd-automation",{body:{action:"history",conversationId:id,...(before?{before}:{})}});
       if(result.error||result.data?.error||!Array.isArray(result.data?.messages))throw Error("conversation unavailable");
       data=result.data;
     } catch {
-      if(historyAlive.current&&conversationSequence.current===version){setHistoryError("This conversation could not be opened. Please try again.");setOpeningId(null);}
+      if(historyAlive.current&&conversationSequence.current===version){setHistoryError("This conversation could not be opened. Please try again.");setOpeningId(null);setEarlierLoading(false);if(before)setError("Earlier messages could not be loaded. Please try again.");}
       return;
     }
     if(!historyAlive.current||conversationSequence.current!==version)return;
-    setOpeningId(null);
-    setConversationId(id);
+    setOpeningId(null);setEarlierLoading(false);setHistoryCursor(data.nextCursor||null);
+    if(!before)setDraft("");
+    setConversationId(id);rememberConversation(id);
     conversationIdRef.current = id;
-    setMessages((data.messages || []).map((item) => ({
-      role: item.role, content: item.content || "",
-      visualWorkspace: item.content_json?.visual_workspace || item.content_json?.ui || null,
+    const loadedMessages=(data.messages || []).map((item) => ({
+      id:item.id, role: item.role, content: item.content || "",
+      response:validateResponse(item.content_json?.response),
+      interaction:item.content_json?.interaction||null,
+      streaming:item.content_json?.streaming===true && !["completed","partially_completed","failed","cancelled"].includes(item.content_json?.job_status||item.content_json?.status),
+      visualWorkspace: contextualWorkspace(item.content_json?.visual_workspace || item.content_json?.ui),
       toolEvents: item.content_json?.toolEvents || [],
       run: item.content_json?.run || (item.content_json?.run_id ? { id: item.content_json.run_id, status: item.content_json?.status } : null),
       jobId: item.content_json?.job_id || null,
       jobStatus: item.content_json?.job_status || item.content_json?.status || null,
       job: item.content_json?.job || null
-    })).filter((item) => item.role === "user" || item.role === "assistant"));
+    })).filter((item) => item.role === "user" || item.role === "assistant");
+    setMessages(current=>before?[...loadedMessages.filter(m=>!current.some(existing=>existing.id===m.id)),...current]:loadedMessages);
     setHistoryOpen(false);
     setShowReview(false);
   };
 
+  useEffect(()=>{let id;try{id=sessionStorage.getItem("jd:active:"+resumeKey);}catch{}if(id)void loadConversation(id);},[resumeKey]);
+
   // Poll durable jobs with bounded backoff. Job execution is server-side and
   // continues independently of this view; this loop only refreshes the UI.
   const pendingJobKey = messages
-    .filter((item) => item.role === "assistant" && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status))
+    .filter((item) => item.role === "assistant" && !item.pollUnavailable && item.jobId && item.run?.id && ["queued", "running", "retry_wait", "planning"].includes(item.jobStatus || item.run?.status))
     .map((item) => item.jobId)
     .filter(Boolean)
     .join(",");
@@ -307,6 +288,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     let timer = null;
     let inFlight = false;
     let delay = 2500;
+    let failures = 0;
     const poll = async () => {
       if (stopped || inFlight) return;
       if (document.visibilityState === "hidden") {
@@ -338,30 +320,42 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           return {
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
-            streaming: finalMessage?.content_json?.streaming === true,
+            streaming: !terminal && finalMessage?.content_json?.streaming === true,
             toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
-            visualWorkspace: finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui || (update.steps?.length ? { version: 1, blocks: [{ type: "timeline", title: "Recorded execution activity", events: update.steps.slice(0, 30).map((step) => ({ title: friendlyActivityLabel(step.tool_key), status: step.status, detail: step.error_message ? "Needs administrator review" : "" })) }] } : message.visualWorkspace || null),
+            id: finalMessage?.id || message.id,
+            response: validateResponse(finalMessage?.content_json?.response),
+            visualWorkspace: contextualWorkspace(finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui),
             run: { ...message.run, ...update.run, status },
-            jobStatus: update.job.status,
+            jobStatus: update.job?.status || status,
             job: update.job,
           };
         }));
         delay = hadError ? Math.min(15000, Math.round(delay * 1.8)) : 2500;
-      } finally {
+      } catch { hadError=true;delay = Math.min(15000, Math.round(delay * 1.8)); } finally {
         inFlight = false;
-        if (!stopped) timer = setTimeout(poll, delay);
+        failures=hadError?failures+1:0;
+        if(!stopped&&failures>=5){setMessages(current=>current.map(m=>jobIds.includes(m.jobId)?{...m,pollUnavailable:true}:m));}
+        else if (!stopped) timer = setTimeout(poll, delay);
       }
     };
     void poll();
     return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [pendingJobKey]);
 
-  const send = async (override, targetConversationId = null) => {
+  const send = async (override, targetConversationId = null, interaction = null, requestId = null) => {
     const message = (override ?? draft).trim();
-    if (!message || queuePaused) return;
+    if (!message || queuePaused) return false;
+    const storageKey=pendingKey(message,targetConversationId||conversationIdRef.current);
+    if(submissions.current.has(storageKey))return false;
+    submissions.current.add(storageKey);
+    let previous;try{previous=sessionStorage.getItem(storageKey);}catch{}
+    const idempotencyKey=requestId || previous || newRequestId();
+    try{sessionStorage.setItem(storageKey,idempotencyKey);}catch{}
+    const version=conversationSequence.current;
+    const visible=()=>historyAlive.current&&conversationSequence.current===version;
     setDraft("");
     setError("");
-    setMessages((current) => [...current, { role: "user", content: message }]);
+    setMessages((current) => current.some(m=>m.clientRequestId===idempotencyKey)?current:[...current, { id:"user-"+idempotencyKey,clientRequestId:idempotencyKey, role: "user", content: message },{id:"request-"+idempotencyKey,clientRequestId:idempotencyKey,role:"assistant",content:"",submitting:true}]);
     setActiveSends((count) => count + 1);
     try {
       let requestConversationId = targetConversationId || conversationIdRef.current || conversationId;
@@ -375,23 +369,30 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId: requestConversationId || conversationIdRef.current || conversationId },
+        body: { action: "submit", message, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
       });
       if (invokeError) throw invokeError;
-      if (!data) throw new Error("JD returned an empty response.");
-      if (data.conversationId) { conversationIdRef.current = data.conversationId; setConversationId(data.conversationId); }
+      if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
+      if(!visible())return true;
+      if (data.conversationId) { conversationIdRef.current = data.conversationId; setConversationId(data.conversationId);rememberConversation(data.conversationId); }
       if (conversationCreationRef.current?.unlock) { conversationCreationRef.current.unlock(); conversationCreationRef.current = null; }
       const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
       if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
-      setMessages((current) => [...current, { role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, jobStatus: data.job?.status || (queued ? "queued" : null), job: data.job || null, toolEvents: data.toolEvents || [], visualWorkspace: data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace || null }]);
+      if(!visible())return true;
+      setMessages((current) => current.map(m=>m.clientRequestId!==idempotencyKey?m:m.role==="user"?{...m,id:data.userMessageId||m.id,interaction}: { ...m, submitting:false,id:data.assistantMessage?.id||m.id, role: "assistant", content: queued ? "" : data.reply || data.message || "The request was recorded.", run: data.run, jobId: data.job?.id || null, jobStatus: data.job?.status || (queued ? "queued" : null), job: data.job || null, toolEvents: data.toolEvents || [], response:validateResponse(data.response||data.assistantMessage?.content_json?.response), visualWorkspace: contextualWorkspace(data.visual_workspace || data.ui || data.assistantMessage?.content_json?.visual_workspace) }));
+      try{sessionStorage.removeItem(storageKey);}catch{}
+      return true;
     } catch (err) {
+      if(!visible())return false;
       const status = err?.context?.status || err?.status;
-      setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not complete that request. Please try again in a moment.");
-      setMessages((current) => current.filter((item) => !(item.role === "user" && item.content === message)));
-      setDraft(message);
+      setError(status === 404 ? "JD is temporarily unavailable. Please try again later." : status === 401 ? "Your session has expired. Sign in again, then retry." : status === 403 ? "Your account does not have permission to do that." : status === 503 ? "JD is not fully set up yet. Please contact your workspace administrator." : "JD could not confirm this request. Retry safely or check conversation history; work may already be queued.");
+      setMessages((current) => current.filter((item) => item.clientRequestId!==idempotencyKey));
+      if(!interaction)setDraft(message);
+      return false;
     } finally {
       if (conversationCreationRef.current?.unlock) { conversationCreationRef.current.unlock(); conversationCreationRef.current = null; }
+      submissions.current.delete(storageKey);
       setActiveSends((count) => Math.max(0, count - 1));
     }
   };
@@ -400,6 +401,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const newConversation = () => {
     if (sending) return;
     conversationSequence.current++;setOpeningId(null);setHistoryError("");
+    rememberConversation(null);setHistoryCursor(null);setEarlierLoading(false);
     setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);
   };
   const handledNavigation = useRef(null);
@@ -561,17 +563,18 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           <button className="jd-history-trigger" type="button" aria-label="Open conversation history" title="Conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button>
           <span className={"jd-utility-status" + (isWorking ? " is-working" : "")} role="status">{isWorking ? (activeJobCount > 0 ? `Working · ${activeJobCount} run${activeJobCount===1?"":"s"} active` : "Working on your request") : "Workspace Active"}</span>
         </div><div className="jd-scroll">
+          {historyCursor&&<button className="jd-load-earlier" type="button" disabled={earlierLoading||sending} onClick={()=>loadConversation(conversationId,historyCursor)}>{earlierLoading?"Loading earlier messages…":"Load earlier messages"}</button>}
           {messages.length===0 ? <div className="jd-welcome">
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
             <div style={{margin:"2px 0 16px"}}><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">
-            {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={index}>
-              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
-              {item.content ? renderMessageContent(item.content) : null}
-              {item.role === "assistant" && item.visualWorkspace && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role} onRefreshTasks={taskRecords.refresh} onViewRuns={()=>setShowRuns(true)} onTaskWork={task=>send(`Review saved operational task ${task.id} (${JSON.stringify(task.title)}). Check its current status, dependencies, inputs and required approvals. Work on the next supported, authorised step using the available tools; if blocked, explain exactly what is needed. Do not treat changing a checklist status as executing the task, do not bypass approval, and do not claim completion without evidence.`)}/>}
-              {item.role === "assistant" && !item.content && ["queued", "planning", "running", "retry_wait"].includes(item.run?.status) && (
+            {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={item.id||item.jobId||index}>
+              {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.pollUnavailable?<span className="jd-job-state is-unavailable">Status unavailable</span>:waitingForAnswer(item)?<span className="jd-job-state is-awaiting">Waiting for your answer</span>:item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
+              {item.role==="assistant" && item.streaming ? <div className="jd-stream-text">{streamText(item.content)}</div> : item.role==="assistant"&&validateResponse(item.response) ? <StructuredResponse response={item.response} messageId={item.id} scope={taskScope} answers={messages.filter(m=>m.role==="user"&&m.interaction).map(m=>m.interaction)} disabled={sending||queuePaused} renderMarkdown={renderMessageContent} onReview={()=>setShowReview(true)} onAnswer={(interaction,requestId)=>{const block=item.response.blocks.find(b=>b.id===interaction.blockId);return send(answerText(block,interaction.values),conversationId,interaction,requestId);}}/> : item.content ? renderMessageContent(item.role==="assistant"?decodeResponse(item.content).content:item.content) : null}
+              {item.role === "assistant" && !item.streaming && contextualWorkspace(item.visualWorkspace) && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role} onRefreshTasks={taskRecords.refresh} onViewRuns={()=>setShowRuns(true)} onTaskWork={task=>send(`Review saved operational task ${task.id} (${JSON.stringify(task.title)}). Check its current status, dependencies, inputs and required approvals. Work on the next supported, authorised step using the available tools; if blocked, explain exactly what is needed. Do not treat changing a checklist status as executing the task, do not bypass approval, and do not claim completion without evidence.`)}/>}
+              {item.role === "assistant" && !item.pollUnavailable && !item.content && (item.submitting || ["queued", "planning", "running", "retry_wait"].includes(item.run?.status)) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
                   {item.toolEvents?.length ? <div className="jd-activity-steps">{item.toolEvents.slice(-4).map((event,i) => {
@@ -581,10 +584,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
                   })}</div> : <div className="jd-activity-detail">JD is organising the work and checking what it needs.</div>}
                 </div>
               )}
-              {item.streaming&&<div className="jd-run">JD is writing its response…</div>}
+              {item.pollUnavailable&&<div className="jd-response-result" role="status">Live status could not be refreshed. The job may still be running; no new execution was requested.<button type="button" onClick={()=>loadConversation(conversationId)}>Refresh conversation</button><button type="button" onClick={()=>setShowRuns(true)}>View execution runs</button></div>}
+              {item.streaming&&!item.pollUnavailable&&<div className="jd-run">JD is writing its response…</div>}
 
             </div>)}
-            {isWorking&&<div className="jd-message assistant"><div className="jd-activity" role="status" aria-live="polite"><div className="jd-activity-title"><span className="jd-activity-dot"/>JD is cooking…</div><div className="jd-activity-detail">Getting the request ready.</div></div></div>}
+
           </div>}
         </div>
         <div className="jd-compose-wrap">

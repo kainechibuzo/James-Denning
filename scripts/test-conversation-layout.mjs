@@ -27,7 +27,7 @@ try{for(const width of [320,393,708,1280]){
  const navigate=async(label)=>{const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await page.getByRole('searchbox',{name:'Search workspace navigation'}).fill(label);await page.locator('#workspace-navigation').getByRole('button',{name:label,exact:true}).click();await settle();};
  const save=async(name)=>{await settle();assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>window.__siteUnexpected),[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' overflow');if(dir&&[393,1280].includes(width))await page.screenshot({path:resolve(dir,`${name}-${width}.png`),fullPage:true});results.push({name,width,result:'PASS'});};
  const mainToggle=page.locator('[data-tour="workspace-menu"]');if(await mainToggle.getAttribute('aria-expanded')==='false')await mainToggle.click();
- assert.equal(await page.locator('.jd-assistant-navigation button svg').count(),7);
+ assert.equal(await page.locator('.jd-assistant-navigation button svg').count(),8);
  await save('sidebar-restored');
  // Every restored shortcut uses the actual main sidebar; none invents a route.
  for(const [label,selector] of [['Review Centre','.jd-review'],['Departments','.jd-departments'],['AI usage','.jd-usage'],['Automation runs','.jd-runs']]){

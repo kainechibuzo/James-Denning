@@ -55,7 +55,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
         </div>
         <picture className="reference-laptop">
           <source media="(max-width: 760px)" srcSet="/design/dashboard-laptop-front.webp"/>
-          <img src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard displayed on a laptop. Figures shown are sample data, not live workspace records." fetchPriority="high"/>
+          <img src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard on a laptop, showing revenue, expenses and business performance. These are sample figures, not live workspace records." fetchPriority="high"/>
         </picture>
       </section>
       <section className="reference-features" id="product" aria-label="Explore the platform">
