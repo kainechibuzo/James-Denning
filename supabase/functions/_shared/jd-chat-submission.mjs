@@ -1,0 +1,36 @@
+import {validateResponse,validateAnswer,answerText} from './jd-response.mjs';
+/** Called only after bearer-token authentication. Identity and tenant are
+ * supplied by the endpoint, never by the request payload. */
+export async function recordChatSubmission({payload,profile,actorId,admin,needsApproval}) {
+ let message=typeof payload.message==="string"?payload.message.trim():"";
+ let interaction = null;
+ let expectedResponse = null;
+ const requestedConversation = typeof payload.conversationId === "string" ? payload.conversationId : null;
+ if (payload.interaction !== undefined) {
+  const value=payload.interaction;
+  if (!requestedConversation || !value || typeof value.messageId!=="string" || !/^[0-9a-f-]{36}$/i.test(value.messageId) || typeof value.blockId!=="string") return {error:"Invalid interaction target",status:400};
+  const {data:parent,error:parentError}=await admin.from("jd_messages").select("id,content_json")
+   .eq("id",value.messageId).eq("school_id",profile.school_id).eq("conversation_id",requestedConversation).eq("role","assistant").maybeSingle();
+  expectedResponse=validateResponse(parent?.content_json?.response);
+  const block=expectedResponse?.blocks.find((b)=>b.id===value.blockId);
+  if(parentError||!parent||!block||parent.content_json?.streaming===true) return {error:"This response is not available for an answer",status:409};
+  try {
+   const values=validateAnswer(block,value.values);
+   message=answerText(block,values);
+   interaction={messageId:parent.id,blockId:block.id,values};
+  } catch (error) { return {error:String(error.message),status:400}; }
+ }
+ if(!message||message.length>12000) return {error:"Message is required and must be under 12,000 characters",status:400};
+ const requestId=typeof payload.idempotencyKey==="string"?payload.idempotencyKey:crypto.randomUUID();
+ if(!/^[a-zA-Z0-9_-]{1,100}$/.test(requestId)) return {error:"Invalid request identifier",status:400};
+ const risk=needsApproval(message)?"approval_required":"routine";
+ const {data:submission,error:submissionError}=await admin.rpc("jd_submit_chat_request",{
+  p_school_id:profile.school_id,p_actor_id:actorId,p_conversation_id:requestedConversation,
+  p_request_id:requestId,p_message:message,p_risk:risk,p_trigger_type:payload.triggerType==="upload"?"upload":"chat",p_interaction:interaction,p_expected_response:expectedResponse
+ });
+ if(submissionError||!submission?.run)return {error:submissionError?.code==="42501"?"Conversation not found":submissionError?.code==="23505"?"This question was already answered. Refresh the conversation.":"The request could not be recorded. Retry with the same request identifier.",status:submissionError?.code==="42501"?404:409};
+ const conversationId=submission.conversationId;
+ const run=submission.run;
+ const receipt={userMessageId:submission.messageId,clientRequestId:requestId};
+ return {conversationId,run,receipt,submission,risk};
+}

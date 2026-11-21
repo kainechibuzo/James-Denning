@@ -19,7 +19,8 @@ assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/saas-entry\.jsx["']\
 assert.match(app, /lazy\(\(\)\s*=>\s*import\(["']\.\/pages\/public-landing\.jsx["']\)/, "Landing page must be lazy-loaded");
 assert.match(app, /<Suspense\s+fallback=/, "Lazy routes need a loading state");
 assert.match(jdChat, /function loadKatexAssets\(/, "KaTeX must load on demand from the chat math renderer");
-assert.match(jdChat, /jd-katex-css[\s\S]*jd-katex-js/, "KaTeX CSS and JavaScript must be loaded only by the math renderer");
+assert.match(jdChat, /import\("katex"\)[\s\S]*import\("katex\/dist\/katex.min.css"\)/, "KaTeX must load from locally bundled, on-demand assets");
+assert.doesNotMatch(jdChat, /cdn\.jsdelivr\.net/, "The response renderer must not rely on a third-party CDN");
 assert.match(app, /class LazyRouteBoundary/, "Lazy routes need a recoverable error boundary");
 
 // Multi-industry product identity and mobile regression guards.

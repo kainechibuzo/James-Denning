@@ -362,3 +362,9 @@ body .jd-command.reference-command.jd-conversation .jd-compose textarea{font-siz
  .jd-conversation .jd-compose-wrap{width:calc(100% - 24px)!important;margin-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
  .jd-conversation .jd-disclaimer{font-size:10px!important}
 }
+
+/* Readable editorial rhythm and AA contrast on warm paper. */
+.jd-command.reference-command.jd-conversation .jd-markdown{line-height:1.5!important}
+.jd-command.reference-command.jd-conversation .jd-message-head,
+.jd-command.reference-command.jd-conversation .jd-disclaimer{color:var(--jd-ink-soft)!important}
+body .jd-command.reference-command.jd-conversation .jd-compose textarea::placeholder{color:var(--jd-ink-soft)!important}

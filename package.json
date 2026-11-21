@@ -38,7 +38,9 @@
     "test:work-apps": "node --experimental-strip-types --test scripts/test-workspace-apps.mjs scripts/test-workspace-apps-database.mjs scripts/test-workspace-oauth-endpoint.mjs scripts/test-workspace-refresh.mjs",
     "test:connector-oauth": "node --experimental-strip-types --test scripts/test-connector-oauth.mjs scripts/test-connector-oauth-database.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-errors.mjs",
     "test:connector-tokens": "node --experimental-strip-types --test scripts/test-connector-tokens.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-database.mjs",
-    "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs scripts/test-billing-ui.mjs"
+    "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs scripts/test-billing-ui.mjs",
+    "test:responses": "node --test scripts/test-response-protocol.mjs scripts/test-conversation-interactions-database.mjs",
+    "test:responses:layout": "node scripts/test-response-engine-layout.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
@@ -48,6 +50,8 @@
     "@capacitor/status-bar": "^8.0.1",
     "@supabase/supabase-js": "^2.99.1",
     "exceljs": "^4.4.0",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.19.1",
     "lucide-react": "^1.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

@@ -1,3 +1,4 @@
+import { recordChatSubmission } from "../_shared/jd-chat-submission.mjs";
 import { handleAgentRegistry } from "../_shared/jd-agent-registry-service.ts";
 import { handleUsage } from "../_shared/jd-usage-service.ts";
 import { handleFoundation } from "../_shared/jd-foundation-service.ts";
@@ -681,11 +682,19 @@ Deno.serve(async (req) => {
    .select("id,created_by").eq("id",id).eq("school_id",profile.school_id).maybeSingle();
   if(conversationErr||!conversation||(conversation.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
    return json({error:"Conversation not found"},404);
-  const {data:messageRows,error}=await admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id).order("created_at").limit(100);
+  const before=payload.before;
+  if(before&&(!before.createdAt||!/^\d{4}-\d{2}-\d{2}T[0-9:.+Z-]+$/.test(before.createdAt)||!Number.isFinite(Date.parse(before.createdAt))||!/^[0-9a-f-]{36}$/i.test(before.id||"")))return json({error:"Invalid history cursor"},400);
+  let messageQuery=admin.from("jd_messages").select("id,role,content,content_json,created_at").eq("school_id",profile.school_id).eq("conversation_id",id);
+  if(before)messageQuery=messageQuery.or(`created_at.lt.${before.createdAt},and(created_at.eq.${before.createdAt},id.lt.${before.id})`);
+  const {data:pageRows,error}=await messageQuery.order("created_at",{ascending:false}).order("id",{ascending:false}).limit(101);
   if(error) return json({error:"Could not load conversation"},500);
+  const hasMore=(pageRows||[]).length>100;
+  const messageRows=(pageRows||[]).slice(0,100).reverse();
+  const oldest=messageRows[0];
+  const nextCursor=hasMore&&oldest?{createdAt:oldest.created_at,id:oldest.id}:null;
   const {data:runs,error:runError}=await admin.from("jd_automation_runs")
    .select("id,status,created_at,started_at,completed_at").eq("school_id",profile.school_id)
-   .eq("conversation_id",id).order("created_at",{ascending:true}).limit(100);
+   .eq("conversation_id",id).order("created_at",{ascending:false}).limit(100);
   if(runError) return json({error:"Could not load conversation execution states"},500);
   const runRows=runs||[];
   const runIds=runRows.map((item:any)=>item.id);
@@ -707,59 +716,64 @@ Deno.serve(async (req) => {
    }};
   });
   for(const job of jobRows){
-   if(enriched.some((item:any)=>item.content_json?.job_id===job.id)) continue;
+   if(before||!["queued","planning","running","retry_wait"].includes(job.status)||enriched.some((item:any)=>item.content_json?.job_id===job.id)) continue;
    const run=runById.get(job.run_id);
    enriched.push({id:"job-"+job.id,role:"assistant",content:"",created_at:job.created_at,content_json:{
     job_id:job.id,run_id:job.run_id,status:job.status,job_status:job.status,job,
     run:run?{id:run.id,status:run.status,created_at:run.created_at,started_at:run.started_at,completed_at:run.completed_at}:null
    }});
   }
-  enriched.sort((a:any,b:any)=>String(a.created_at).localeCompare(String(b.created_at)));
-  return json({messages:enriched});
+  // A streamed/final assistant row is written later than its request. Sort it
+  // at its durable run position, not after a newer user's unrelated request.
+  const orderAt=(item:any)=>{const job=jobById.get(item.content_json?.job_id);return (job?runById.get(job.run_id)?.created_at:null)||item.created_at;};
+  enriched.sort((a:any,b:any)=>String(orderAt(a)).localeCompare(String(orderAt(b))) || (a.role===b.role?String(a.id).localeCompare(String(b.id)):a.role==="user"?-1:1));
+  return json({messages:enriched,nextCursor});
  }
  if(payload.action!=="submit") return json({error:"Unsupported action"},400);
- const message=typeof payload.message==="string"?payload.message.trim():"";
- if(!message||message.length>12000) return json({error:"Message is required and must be under 12,000 characters"},400);
- let conversationId=typeof payload.conversationId==="string"?payload.conversationId:null;
- if(conversationId){
-  const {data}=await admin.from("jd_conversations").select("id,created_by").eq("id",conversationId).eq("school_id",profile.school_id).maybeSingle();
-  if(!data||(data.created_by!==authData.user.id&&!hasRole(ADMIN_ROLES,profile.role)))
-   return json({error:"Conversation not found"},404);
- }else{
-  const {data,error}=await admin.from("jd_conversations").insert({school_id:profile.school_id,created_by:authData.user.id,title:message.replace(/\s+/g," ").slice(0,72)}).select("id").single();
-  if(error||!data) return json({error:"Could not create conversation"},500);
-  conversationId=data.id;
+ const recorded=await recordChatSubmission({payload,profile,actorId:authData.user.id,admin,needsApproval});
+ if(recorded.error)return json({error:recorded.error},recorded.status);
+ const {conversationId,run,receipt,submission,risk}=recorded;
+ if(submission.replayed){
+  const {data:existingJob,error:jobReadError}=await admin.from("jd_execution_jobs").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).maybeSingle();
+  if(jobReadError)return json({error:"The saved execution status could not be confirmed. Retry safely with the same request identifier."},503);
+  if(existingJob){
+   const {data:assistantMessage}=await admin.from("jd_messages").select("id,content,content_json").eq("school_id",profile.school_id).eq("conversation_id",conversationId).eq("role","assistant").filter("content_json->>job_id","eq",existingJob.id).limit(1).maybeSingle();
+   return json({conversationId,run,job:existingJob,...receipt,queued:["queued","planning","running","retry_wait"].includes(existingJob.status),assistantMessage,reply:assistantMessage?.content||"This request was already recorded. Check its saved execution status."});
+  }
+  if(risk==="approval_required"){
+   const {data:existingApproval}=await admin.from("jd_approvals").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).limit(1).maybeSingle();
+   if(!existingApproval)return json({error:"This request is paused but its approval record is not confirmed. No execution has been started."},503);
+   return json({conversationId,run,...receipt,reply:"This request is in the Review Centre. Check its recorded decision and execution status.",approval:existingApproval});
+  }
+  if(["completed","partially_completed","failed","cancelled"].includes(run.status))return json({conversationId,run,...receipt,reply:"This request was already recorded. Reopen the conversation for its saved result."});
  }
- const {data:history}=await admin.from("jd_messages").select("role,content").eq("school_id",profile.school_id).eq("conversation_id",conversationId).order("created_at").limit(20);
- const {error:saveError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,sender_id:authData.user.id,role:"user",content:message});
- if(saveError) return json({error:"Could not save message"},500);
- await admin.from("jd_conversations").update({updated_at:new Date().toISOString()}).eq("id",conversationId).eq("school_id",profile.school_id);
- const risk=needsApproval(message)?"approval_required":"routine";
- const {data:run,error:runErr}=await admin.from("jd_automation_runs").insert({
-  school_id:profile.school_id,conversation_id:conversationId,requested_by:authData.user.id,
-  trigger_type:payload.triggerType==="upload"?"upload":"chat",status:risk==="approval_required"?"awaiting_approval":"planning",
-  autonomy_mode:"autonomous",scope:"organisation",request_text:message,created_by_agent:true,
-  plan_json:[],idempotency_key:typeof payload.idempotencyKey==="string"?payload.idempotencyKey.slice(0,120):crypto.randomUUID()
- }).select("id,status,created_at").single();
- if(runErr||!run){if(runErr?.code==="23505")return json({error:"Duplicate request",duplicate:true},409);return json({error:"Could not create automation run"},500)}
- await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,run_id:run.id,event_type:"automation.requested",event_json:{risk}});
  if(risk==="approval_required"){
   const reason="This request may cause external or high-impact consequences and requires an administrator decision.";
   const {data:approval,error:approvalErr}=await admin.from("jd_approvals").insert({
    school_id:profile.school_id,run_id:run.id,requested_by:authData.user.id,status:"pending",
    reason,title:"Review JD action request",action_key:"unclassified_request",risk_level:"high",
-   proposal_json:{request_text:message,execution_enabled:false},audience_text:null,execution_status:"not_executed",created_by_agent:true
+   proposal_json:{request_text:run.request_text,execution_enabled:false},audience_text:null,execution_status:"not_executed",created_by_agent:true
   }).select("id,status,expires_at").single();
   if(approvalErr||!approval) return json({error:"The request was paused but its approval record could not be created"},500);
   const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. Approval records the decision only; execution remains disabled until a separately verified action handler is available.";
-  await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id},created_by_agent:true});
+  const response={version:1,blocks:[{id:"approval",type:"approval",actionId:approval.id,description:reply}]};
+  const {error:approvalMessageError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id,response},created_by_agent:true});
+  if(approvalMessageError)return json({error:"The approval exists but its response could not be saved. Open Review Centre to inspect it."},500);
   await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id);
-  return json({conversationId,run:{...run,status:"awaiting_approval"},reply,blocked:true,approval});
+  return json({conversationId,run:{...run,status:"awaiting_approval"},reply,response,blocked:true,approval,...receipt});
  }
  // Routine requests enter the durable queue. The worker owns model execution,
  // checkpoints, retries and terminal run state; this request returns immediately.
  const {data:job,error:enqueueError}=await admin.rpc("jd_enqueue_execution_job",{p_run_id:run.id});
  if(enqueueError||!job?.job_id){
+  // Another retry may have enqueued and started this same run between the
+  // replay lookup and the queue RPC. Never mark an existing live job failed.
+  const {data:racedJob,error:racedReadError}=await admin.from("jd_execution_jobs").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).maybeSingle();
+  if(racedJob){
+   const {data:assistantMessage}=await admin.from("jd_messages").select("id,content,content_json").eq("school_id",profile.school_id).eq("conversation_id",conversationId).eq("role","assistant").filter("content_json->>job_id","eq",racedJob.id).limit(1).maybeSingle();
+   return json({conversationId,run,job:racedJob,...receipt,queued:["queued","planning","running","retry_wait"].includes(racedJob.status),assistantMessage,reply:assistantMessage?.content||"This request was already recorded. Check its saved execution status."});
+  }
+  if(racedReadError)return json({error:"Execution status could not be confirmed. Retry safely; no additional execution was requested."},503);
   await admin.from("jd_automation_runs").update({status:"failed",result_json:{error:"execution_enqueue_failed"},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
   return json({conversationId,run:{...run,status:"failed"},error:"JD could not queue this request. No execution was started."},503);
  }
@@ -778,5 +792,5 @@ Deno.serve(async (req) => {
  }
  // The chat UI shows a compact live activity pill while the durable worker runs.
  // Do not add a conversational "queued" assistant message to the transcript.
- return json({conversationId,run:{...run,status:"queued"},job:{id:job.job_id,status:job.status},queued:true});
+ return json({conversationId,run:{...run,status:"queued"},job:{id:job.job_id,status:job.status},queued:true,...receipt});
 });

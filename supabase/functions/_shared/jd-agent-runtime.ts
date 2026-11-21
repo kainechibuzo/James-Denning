@@ -1,3 +1,4 @@
+import { RESPONSE_INSTRUCTIONS } from "./jd-response.mjs";
 import {workspaceCatalog,readWorkspaceApp} from "./jd-workspace-service.ts";
 import { readFoundationContext } from "./jd-foundation-service.ts";
 import { businessBlueprint, workforceCatalogue } from "./jd-business-foundation.mjs";
@@ -1401,6 +1402,7 @@ export async function runAgent(input: {
     "For long answers, be complete and structured. If the response hits the output-token limit, continue from the exact stopping point without repeating content. For multi-file software or website requests, create files in stages: first agree the file list and architecture in your response, then call the document tool for exactly one file per round, review each saved result before creating the next, and keep imports, paths and names consistent. Never claim a file was saved until the document tool confirms it. For ordinary multi-document requests, create separate private drafts, one file per tool call. For DOCX, provide Markdown content; for XLSX use JSON {sheets:[{name,rows:[[cell,...]]}]}; for PPTX use JSON {slides:[{title,bullets:[...]}]}. Keep spreadsheet cells to strings, numbers or booleans. When a saved draft includes a download_url, put the bare HTTPS URL on its own line so the chat can make it clickable. When drafting an email, produce a polished subject line and complete message; never claim it was sent.",
     "Your visible answer is for a non-technical business owner. Use everyday words. Do not output source code, code fences, raw JSON, database names, tool names, function names, variable names, UUIDs, SQL, API routes, HTTP codes or stack traces. Never expose internal execution labels. If something fails, say what the user needs to know and what happens next in plain language. Explain approvals as simple decisions and clearly distinguish proposed, approved and completed work.",
     "Be concise but useful. Summarise what you checked, what you found, and any remaining blockers.",
+    RESPONSE_INSTRUCTIONS,
   ].join("\n");
 
   const restored = input.resumeState?.version === 1 ? input.resumeState : null;

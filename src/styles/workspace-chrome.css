@@ -327,3 +327,15 @@
 #workspace-navigation .jd-drawer-section>button:last-child:not(.jd-drawer-field){position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 #workspace-navigation .jd-drawer-section>button:last-child:not(.jd-drawer-field):focus-visible{position:relative;width:auto;height:auto;clip-path:none}
 #workspace-navigation .jd-drawer-search .jd-drawer-kbd{flex:none;overflow:visible;min-width:31px;padding:3px 4px;font-size:9px}
+
+/* Keep product help reachable on phones; compact the lockup instead of
+   removing an essential keyboard-accessible action from the header. */
+@media(max-width:560px){
+ .reference-workspace-header.jd-topbar .reference-header-controls>button[data-tour='tour-trigger']{display:grid!important}
+ .reference-workspace-header.jd-topbar .reference-profile{margin-left:6px}
+}
+@media(max-width:360px){
+ .reference-workspace-header.jd-topbar .reference-header-left{gap:7px!important}
+ .jd-topbar-wordmark{font-size:15px!important}
+ .jd-topbar-brand{gap:6px}
+}
