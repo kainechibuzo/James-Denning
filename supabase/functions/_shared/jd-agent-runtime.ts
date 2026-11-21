@@ -1224,7 +1224,9 @@ export function resolveFollowupModel(configuredModel: string, currentModel: stri
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
   const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
-  const endpoint = isGemini
+  const isOpenRouterGemini = baseUrl.includes("openrouter.ai") && String(input.model || "").startsWith("google/gemini-");
+  const useChatCompletions = isGemini || isOpenRouterGemini;
+  const endpoint = useChatCompletions
     ? `${baseUrl.replace(/\/$/, "")}/chat/completions`
     : `${baseUrl.replace(/\/$/, "")}/responses`;
   const maxAttempts = 3;
@@ -1243,7 +1245,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
             "X-OpenRouter-Title": "James Denning JD",
           }),
         },
-        body: JSON.stringify(isGemini ? {
+        body: JSON.stringify(useChatCompletions ? {
           model: input.model,
           messages: responsesInputToChatMessages(input.input, typeof input.instructions === "string" ? input.instructions : undefined),
           tools: responsesToolsToChatTools(input.tools),
@@ -1266,7 +1268,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
 
     if (response.ok) {
       if (!response.body) throw new Error("Model provider returned an empty response stream");
-      const streamed = isGemini
+      const streamed = useChatCompletions
         ? await readChatCompletionsStream(response.body, onTextDelta)
         : await readResponsesStream(response.body, onTextDelta);
       return { response: streamed, attempts: attempt };
