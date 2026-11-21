@@ -239,7 +239,7 @@ jobs:
       - name: Stage nested Edge Function shared modules
         run: |
           for entrypoint in supabase/functions/*/index.ts; do
-            if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint"; then
+            if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint" || grep -q 'from "../_shared/' "$entrypoint" || grep -q "from '../_shared/" "$entrypoint"; then
               function_dir="${entrypoint%/index.ts}"
               mkdir -p "$function_dir/_shared"
               cp supabase/functions/_shared/*.ts supabase/functions/_shared/*.mjs "$function_dir/_shared/"
