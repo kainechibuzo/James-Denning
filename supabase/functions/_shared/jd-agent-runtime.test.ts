@@ -1,4 +1,13 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence, runAgentAssignment, proposeAgentDefinition } from "./jd-agent-runtime.ts";
+import { builtinSpecialist, WORKFORCE_GRANTABLE_TOOLS, type ResolvedAgent, type WorkforceAssignment } from "./jd-agent-workforce.ts";
+
+function assistantMessage(text: string) {
+  return { output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text }] }], status: "completed" };
+}
+
+function functionCalls(calls: Array<{ callId: string; name: string; arguments?: string }>) {
+  return { output: calls.map((call) => ({ type: "function_call", call_id: call.callId, name: call.name, arguments: call.arguments ?? "{}" })), status: "completed" };
+}
 
 function assertEqual(actual: unknown, expected: unknown, label: string) {
   if (actual !== expected) {
@@ -146,4 +155,106 @@ Deno.test("GitHub repository access trusts only explicitly annotated persisted r
   assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: true, destructiveHint: true } }), false, "destructive tool rejected");
   assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: true, openWorldHint: true } }), false, "open-world tool rejected");
   assertEqual(isTrustedGithubReadTool({ read_only: true, annotations: { readOnlyHint: "true" } }), false, "string annotation rejected");
+});
+
+Deno.test("workforce assignments run a bounded read-only tool loop and reject ungranted tools", async () => {
+  const role = builtinSpecialist({ kind: "builtin", id: "finance_analyst" })!;
+  const resolved: ResolvedAgent = {
+    ref: { kind: "builtin", id: "finance_analyst" },
+    name: role.name,
+    instructions: [role.charter],
+    allowedTools: role.allowedTools,
+    maxModelRounds: role.maxModelRounds,
+    maxOutputTokens: role.maxOutputTokens,
+    source: "builtin",
+  };
+  const assignment: WorkforceAssignment = {
+    agent: { kind: "builtin", id: "finance_analyst" },
+    task: "Analyse the supplied expense summary and flag budget risks.",
+    context: "",
+    requestedTools: ["get_billing_snapshot"],
+  };
+  const executed: string[] = [];
+  const requests: Array<any> = [];
+  const result = await runAgentAssignment({
+    resolved,
+    assignment,
+    toolSpecs: [{ type: "function", name: "get_billing_snapshot", description: "Read a bounded billing snapshot", parameters: { type: "object", properties: {}, additionalProperties: false } }],
+    requestModel: async (payload) => {
+      requests.push(payload);
+      if (requests.length === 1) {
+        return functionCalls([
+          { callId: "c1", name: "get_billing_snapshot" },
+          { callId: "c2", name: "deploy_specialist_workforce" },
+          { callId: "c3", name: "get_billing_snapshot", arguments: "not-json" },
+        ]);
+      }
+      return assistantMessage("Findings: two budget risks. JD must independently verify both.");
+    },
+    executeTool: async (name) => {
+      executed.push(name);
+      return { bill_count: 2, total_billed: 100 };
+    },
+  });
+  assertEqual(executed.length, 1, "only granted tools execute");
+  assertEqual(executed[0], "get_billing_snapshot", "granted tool ran once");
+  assertEqual(result.rounds, 2, "two model requests");
+  assertEqual(result.report.includes("independently verify"), true, "report returned");
+  assertEqual(result.toolEvents.length, 3, "one event per attempted call");
+  assertEqual(result.toolEvents[0].status, "completed", "granted call completed");
+  assertEqual(result.toolEvents[1].name, "deploy_specialist_workforce", "forbidden tool recorded");
+  assertEqual(result.toolEvents[1].status, "failed", "forbidden tool never executes");
+  assertEqual(result.toolEvents[2].status, "failed", "malformed arguments fail closed");
+  assertEqual(String(requests[0].instructions).includes("Finance Analyst"), true, "assignment instructions include the specialist role");
+  assertEqual(JSON.stringify(requests[1].input).includes("This tool was not granted with the assignment"), true, "ungranted tool output tells the specialist");
+});
+
+Deno.test("assignments that never produce a report fail their round limit", async () => {
+  const role = builtinSpecialist({ kind: "builtin", id: "research_analyst" })!;
+  const resolved: ResolvedAgent = {
+    ref: { kind: "builtin", id: "research_analyst" },
+    name: role.name,
+    instructions: [role.charter],
+    allowedTools: role.allowedTools,
+    maxModelRounds: 2,
+    maxOutputTokens: 2000,
+    source: "builtin",
+  };
+  let requests = 0;
+  let message = "";
+  try {
+    await runAgentAssignment({
+      resolved,
+      assignment: { agent: { kind: "builtin", id: "research_analyst" }, task: "Review the supplied repository context for research sources.", context: "", requestedTools: [] },
+      toolSpecs: [],
+      requestModel: async () => {
+        requests += 1;
+        return functionCalls([{ callId: `c${requests}`, name: "search_connected_repository_code" }]);
+      },
+      executeTool: async () => ({}),
+    });
+  } catch (error) {
+    message = error instanceof Error ? error.message : String(error);
+  }
+  assertEqual(message.includes("tool-round limit"), true, "round limit is explicit");
+  assertEqual(requests, 2, "no request beyond the limit");
+});
+
+Deno.test("workforce tool grants never include delegation or write-capable tools", () => {
+  for (const tool of ["deploy_specialist_workforce", "delegate_to_specialist_agent", "propose_agent_definition", "create_business_document_draft", "call_connected_mcp_tool"]) {
+    assertEqual(WORKFORCE_GRANTABLE_TOOLS.includes(tool), false, `${tool} is never grantable to specialists`);
+  }
+});
+
+Deno.test("the agent factory fails closed before any database write when release-gated", async () => {
+  let rpcCalls = 0;
+  const result = await proposeAgentDefinition({}, {
+    admin: { rpc: async () => { rpcCalls += 1; return { data: null, error: null }; } },
+    schoolId: "workspace",
+    userId: "actor",
+    role: "admin",
+  } as any);
+  assertEqual((result as any).persisted, false, "nothing persisted");
+  assertEqual((result as any).error.includes("release-gated"), true, "gate error surfaced");
+  assertEqual(rpcCalls, 0, "no registry RPC invoked");
 });

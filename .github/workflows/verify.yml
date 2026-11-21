@@ -51,6 +51,9 @@ jobs:
       - name: Test versioned agent registry and evaluation authority boundaries
         run: npm run test:registry
 
+      - name: Test agent execution engine, workforce grants and specialist boundaries
+        run: npm run test:workforce
+
       - name: Test shadow usage ledger, worker fencing and runtime boundaries
         run: npm run test:usage
 

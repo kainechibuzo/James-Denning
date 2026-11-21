@@ -1,0 +1,650 @@
+
+> james-denning@1.0.0 test:usage
+> node --experimental-strip-types --test scripts/test-usage-ledger-database.mjs scripts/test-usage-service.mjs scripts/test-usage-runtime.mjs
+
+TAP version 13
+# (node:3729) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-usage-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: configuration is explicit shadow only and preserves base subscription
+ok 1 - configuration is explicit shadow only and preserves base subscription
+  ---
+  duration_ms: 1330.632309
+  type: 'test'
+  ...
+# Subtest: budget policy cannot be upgraded to charging by caller
+ok 2 - budget policy cannot be upgraded to charging by caller
+  ---
+  duration_ms: 25.240899
+  type: 'test'
+  ...
+# Subtest: configuration rejects null budget
+ok 3 - configuration rejects null budget
+  ---
+  duration_ms: 12.729417
+  type: 'test'
+  ...
+# Subtest: configuration rejects negative
+ok 4 - configuration rejects negative
+  ---
+  duration_ms: 12.14046
+  type: 'test'
+  ...
+# Subtest: configuration rejects oversized
+ok 5 - configuration rejects oversized
+  ---
+  duration_ms: 10.953122
+  type: 'test'
+  ...
+# Subtest: configuration rejects invalid version
+ok 6 - configuration rejects invalid version
+  ---
+  duration_ms: 19.032072
+  type: 'test'
+  ...
+# Subtest: configure has request replay and optimistic version protection
+ok 7 - configure has request replay and optimistic version protection
+  ---
+  duration_ms: 17.581413
+  type: 'test'
+  ...
+# Subtest: reservation does not hire, authorise execution or charge
+ok 8 - reservation does not hire, authorise execution or charge
+  ---
+  duration_ms: 18.928395
+  type: 'test'
+  ...
+# Subtest: reservation requires configured sufficient budget and rejects double allocation
+ok 9 - reservation requires configured sufficient budget and rejects double allocation
+  ---
+  duration_ms: 21.5383
+  type: 'test'
+  ...
+# Subtest: reservation replay cannot double reserve or reuse request for another operation
+ok 10 - reservation replay cannot double reserve or reuse request for another operation
+  ---
+  duration_ms: 25.667444
+  type: 'test'
+  ...
+# Subtest: staff cannot access or mutate this tenant's usage
+ok 11 - staff cannot access or mutate this tenant's usage
+  ---
+  duration_ms: 13.733619
+  type: 'test'
+  ...
+# Subtest: other tenant cannot access or mutate this tenant's usage
+ok 12 - other tenant cannot access or mutate this tenant's usage
+  ---
+  duration_ms: 14.926006
+  type: 'test'
+  ...
+# Subtest: anon cannot spoof actor or access private worker data
+ok 13 - anon cannot spoof actor or access private worker data
+  ---
+  duration_ms: 15.886694
+  type: 'test'
+  ...
+# Subtest: authenticated cannot spoof actor or access private worker data
+ok 14 - authenticated cannot spoof actor or access private worker data
+  ---
+  duration_ms: 16.529948
+  type: 'test'
+  ...
+# Subtest: service role cannot forge direct ledger writes
+ok 15 - service role cannot forge direct ledger writes
+  ---
+  duration_ms: 16.130273
+  type: 'test'
+  ...
+# Subtest: immutable observations also reject mutation by privileged fixture owner
+ok 16 - immutable observations also reject mutation by privileged fixture owner
+  ---
+  duration_ms: 11.480067
+  type: 'test'
+  ...
+# Subtest: active time comes from the server and aggregates rounding once
+ok 17 - active time comes from the server and aggregates rounding once
+  ---
+  duration_ms: 30.894536
+  type: 'test'
+  ...
+# Subtest: idle duration is not counted
+ok 18 - idle duration is not counted
+  ---
+  duration_ms: 22.769053
+  type: 'test'
+  ...
+# Subtest: paused duration is not counted
+ok 19 - paused duration is not counted
+  ---
+  duration_ms: 17.642722
+  type: 'test'
+  ...
+# Subtest: approval_wait duration is not counted
+ok 20 - approval_wait duration is not counted
+  ---
+  duration_ms: 18.967678
+  type: 'test'
+  ...
+# Subtest: external_wait duration is not counted
+ok 21 - external_wait duration is not counted
+  ---
+  duration_ms: 17.96153
+  type: 'test'
+  ...
+# Subtest: observation replay is exact, never double counts and conflicts fail closed
+ok 22 - observation replay is exact, never double counts and conflicts fail closed
+  ---
+  duration_ms: 32.584311
+  type: 'test'
+  ...
+# Subtest: stale lease and expiration cannot append observations
+ok 23 - stale lease and expiration cannot append observations
+  ---
+  duration_ms: 17.453992
+  type: 'test'
+  ...
+# Subtest: replacement lease cannot attribute old active time to new worker
+ok 24 - replacement lease cannot attribute old active time to new worker
+  ---
+  duration_ms: 26.083794
+  type: 'test'
+  ...
+# Subtest: missed active deadline discards unconfirmed time and closes for review
+ok 25 - missed active deadline discards unconfirmed time and closes for review
+  ---
+  duration_ms: 20.941991
+  type: 'test'
+  ...
+# Subtest: active deadline is bounded by remaining budget and job lease
+ok 26 - active deadline is bounded by remaining budget and job lease
+  ---
+  duration_ms: 15.214409
+  type: 'test'
+  ...
+# Subtest: authorisation is checked again after role or tenant changes
+ok 27 - authorisation is checked again after role or tenant changes
+  ---
+  duration_ms: 16.953882
+  type: 'test'
+  ...
+# Subtest: reconciliation refuses running job and then releases terminal reservation without inventing time
+ok 28 - reconciliation refuses running job and then releases terminal reservation without inventing time
+  ---
+  duration_ms: 25.578844
+  type: 'test'
+  ...
+# Subtest: completed zero-work reservation can be reconciled but never automatically billed
+ok 29 - completed zero-work reservation can be reconciled but never automatically billed
+  ---
+  duration_ms: 17.288427
+  type: 'test'
+  ...
+# Subtest: audit failures roll back both reservation and financial counters
+ok 30 - audit failures roll back both reservation and financial counters
+  ---
+  duration_ms: 17.711884
+  type: 'test'
+  ...
+# Subtest: reconciliation detects tampered derived counters without concealing drift
+ok 31 - reconciliation detects tampered derived counters without concealing drift
+  ---
+  duration_ms: 16.63818
+  type: 'test'
+  ...
+# Subtest: persist evidence from actual synthetic reservation/observation/settlement chain
+ok 32 - persist evidence from actual synthetic reservation/observation/settlement chain
+  ---
+  duration_ms: 28.30733
+  type: 'test'
+  ...
+# Subtest: populated rollback refuses to erase usage evidence
+ok 33 - populated rollback refuses to erase usage evidence
+  ---
+  duration_ms: 12.31589
+  type: 'test'
+  ...
+# Subtest: empty rollback/reapply preserves existing execution and audit tables
+ok 34 - empty rollback/reapply preserves existing execution and audit tables
+  ---
+  duration_ms: 32.708869
+  type: 'test'
+  ...
+# Subtest: audit failure at settlement rolls back time, sequence and account totals
+ok 35 - audit failure at settlement rolls back time, sequence and account totals
+  ---
+  duration_ms: 22.088311
+  type: 'test'
+  ...
+# Subtest: tenant budget combines reservations for different jobs
+ok 36 - tenant budget combines reservations for different jobs
+  ---
+  duration_ms: 19.049646
+  type: 'test'
+  ...
+# Subtest: actual HTTP + worker adapter + SQL produces durable tenant-scoped shadow evidence
+ok 37 - actual HTTP + worker adapter + SQL produces durable tenant-scoped shadow evidence
+  ---
+  duration_ms: 36.072355
+  type: 'test'
+  ...
+# Subtest: HTTP authenticated usage boundary 401
+ok 38 - HTTP authenticated usage boundary 401
+  ---
+  duration_ms: 10.241436
+  type: 'test'
+  ...
+# Subtest: HTTP authenticated usage boundary 403
+ok 39 - HTTP authenticated usage boundary 403
+  ---
+  duration_ms: 10.542945
+  type: 'test'
+  ...
+# Subtest: HTTP release off does not mutate records; worker observation action is not exposed
+ok 40 - HTTP release off does not mutate records; worker observation action is not exposed
+  ---
+  duration_ms: 13.284614
+  type: 'test'
+  ...
+# Subtest: same subject cannot accrue overlapping job reservations in one tenant
+ok 41 - same subject cannot accrue overlapping job reservations in one tenant
+  ---
+  duration_ms: 16.394984
+  type: 'test'
+  ...
+# Subtest: malformed existing job-to-run scope is rejected rather than trusting foreign keys independently
+ok 42 - malformed existing job-to-run scope is rejected rather than trusting foreign keys independently
+  ---
+  duration_ms: 13.526602
+  type: 'test'
+  ...
+# Subtest: existing runtime + worker wrapper + actual SQL excludes model wait and persists final estimate
+ok 43 - existing runtime + worker wrapper + actual SQL excludes model wait and persists final estimate
+  ---
+  duration_ms: 118.886928
+  type: 'test'
+  ...
+# Subtest: on-disk ledger and idempotent receipts survive database close/reopen
+ok 44 - on-disk ledger and idempotent receipts survive database close/reopen
+  ---
+  duration_ms: 1115.773504
+  type: 'test'
+  ...
+# (node:3742) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-runtime.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: provider and memory waits are excluded while runtime processing is active
+ok 45 - provider and memory waits are excluded while runtime processing is active
+  ---
+  duration_ms: 28.079264
+  type: 'test'
+  ...
+# Subtest: entire parallel tool round and persistence are excluded without phase races
+ok 46 - entire parallel tool round and persistence are excluded without phase races
+  ---
+  duration_ms: 3.283167
+  type: 'test'
+  ...
+# Subtest: meter rejection stops before first provider request
+ok 47 - meter rejection stops before first provider request
+  ---
+  duration_ms: 0.586103
+  type: 'test'
+  ...
+# Subtest: meter rejection is not swallowed by best-effort memory loading
+ok 48 - meter rejection is not swallowed by best-effort memory loading
+  ---
+  duration_ms: 0.512061
+  type: 'test'
+  ...
+# Subtest: meter rejection before tool round prevents tool execution
+ok 49 - meter rejection before tool round prevents tool execution
+  ---
+  duration_ms: 1.754807
+  type: 'test'
+  ...
+# Subtest: legacy runtime remains functional without accounting hook
+ok 50 - legacy runtime remains functional without accounting hook
+  ---
+  duration_ms: 6.027039
+  type: 'test'
+  ...
+# Subtest: actual execution-worker entrypoint parses and wires default-off usage into runtime
+ok 51 - actual execution-worker entrypoint parses and wires default-off usage into runtime
+  ---
+  duration_ms: 98.618937
+  type: 'test'
+  ...
+# (node:3751) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-usage-service.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: release defaults off before any database calls
+ok 52 - release defaults off before any database calls
+  ---
+  duration_ms: 2.291131
+  type: 'test'
+  ...
+# Subtest: staff cannot configure or read usage via service handler
+ok 53 - staff cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.157243
+  type: 'test'
+  ...
+# Subtest: manager cannot configure or read usage via service handler
+ok 54 - manager cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.076006
+  type: 'test'
+  ...
+# Subtest: finance cannot configure or read usage via service handler
+ok 55 - finance cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.109947
+  type: 'test'
+  ...
+# Subtest: contractor cannot configure or read usage via service handler
+ok 56 - contractor cannot configure or read usage via service handler
+  ---
+  duration_ms: 0.132768
+  type: 'test'
+  ...
+# Subtest: mismatched authenticated actor fails before RPC
+ok 57 - mismatched authenticated actor fails before RPC
+  ---
+  duration_ms: 0.106291
+  type: 'test'
+  ...
+# Subtest: caller cannot choose actor, tenant, rate or charging mode
+ok 58 - caller cannot choose actor, tenant, rate or charging mode
+  ---
+  duration_ms: 0.723469
+  type: 'test'
+  ...
+# Subtest: invalid configure {"confirm":false}
+ok 59 - invalid configure {"confirm":false}
+  ---
+  duration_ms: 0.110247
+  type: 'test'
+  ...
+# Subtest: invalid configure {"requestId":"x"}
+ok 60 - invalid configure {"requestId":"x"}
+  ---
+  duration_ms: 0.289996
+  type: 'test'
+  ...
+# Subtest: invalid configure {"expectedVersion":-1}
+ok 61 - invalid configure {"expectedVersion":-1}
+  ---
+  duration_ms: 0.279506
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":-1}
+ok 62 - invalid configure {"budgetMicros":-1}
+  ---
+  duration_ms: 0.168336
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":1.5}
+ok 63 - invalid configure {"budgetMicros":1.5}
+  ---
+  duration_ms: 0.059279
+  type: 'test'
+  ...
+# Subtest: invalid configure {"policy":"live"}
+ok 64 - invalid configure {"policy":"live"}
+  ---
+  duration_ms: 0.043762
+  type: 'test'
+  ...
+# Subtest: invalid configure {"budgetMicros":1000000000001}
+ok 65 - invalid configure {"budgetMicros":1000000000001}
+  ---
+  duration_ms: 0.056
+  type: 'test'
+  ...
+# Subtest: browser cannot invoke meter, provide interval timestamps, or close usage as worker
+ok 66 - browser cannot invoke meter, provide interval timestamps, or close usage as worker
+  ---
+  duration_ms: 0.12395
+  type: 'test'
+  ...
+# Subtest: reserve maps only explicit bounded inputs
+ok 67 - reserve maps only explicit bounded inputs
+  ---
+  duration_ms: 0.133335
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"maxMicros":0}
+ok 68 - invalid reserve {"maxMicros":0}
+  ---
+  duration_ms: 0.12253
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"maxMicros":1000000001}
+ok 69 - invalid reserve {"maxMicros":1000000001}
+  ---
+  duration_ms: 0.048807
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"subjectReference":""}
+ok 70 - invalid reserve {"subjectReference":""}
+  ---
+  duration_ms: 0.04369
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"subjectReference":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+ok 71 - invalid reserve {"subjectReference":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+  ---
+  duration_ms: 0.040058
+  type: 'test'
+  ...
+# Subtest: invalid reserve {"jobId":"bad"}
+ok 72 - invalid reserve {"jobId":"bad"}
+  ---
+  duration_ms: 0.038144
+  type: 'test'
+  ...
+# Subtest: snapshot cannot read another supplied tenant; reconcile uses authenticated actor
+ok 73 - snapshot cannot read another supplied tenant; reconcile uses authenticated actor
+  ---
+  duration_ms: 0.21039
+  type: 'test'
+  ...
+# Subtest: database 42501 is sanitised
+ok 74 - database 42501 is sanitised
+  ---
+  duration_ms: 0.167576
+  type: 'test'
+  ...
+# Subtest: database 40001 is sanitised
+ok 75 - database 40001 is sanitised
+  ---
+  duration_ms: 0.049432
+  type: 'test'
+  ...
+# Subtest: database 54000 is sanitised
+ok 76 - database 54000 is sanitised
+  ---
+  duration_ms: 0.042565
+  type: 'test'
+  ...
+# Subtest: database 22023 is sanitised
+ok 77 - database 22023 is sanitised
+  ---
+  duration_ms: 0.040064
+  type: 'test'
+  ...
+# Subtest: database XX000 is sanitised
+ok 78 - database XX000 is sanitised
+  ---
+  duration_ms: 0.039905
+  type: 'test'
+  ...
+# Subtest: network failure and incomplete receipt are never acknowledged as success
+ok 79 - network failure and incomplete receipt are never acknowledged as success
+  ---
+  duration_ms: 0.173377
+  type: 'test'
+  ...
+# Subtest: worker adapter sends no duration or cost, and uses acknowledged sequence
+ok 80 - worker adapter sends no duration or cost, and uses acknowledged sequence
+  ---
+  duration_ms: 2.867206
+  type: 'test'
+  ...
+# Subtest: ambiguous outcome blocks new observations and explicit replay reuses exact request
+ok 81 - ambiguous outcome blocks new observations and explicit replay reuses exact request
+  ---
+  duration_ms: 0.216153
+  type: 'test'
+  ...
+# Subtest: concurrent requests cannot race a usage sequence
+ok 82 - concurrent requests cannot race a usage sequence
+  ---
+  duration_ms: 0.232485
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"job_id":"00000000-0000-4000-8000-000000000020"}
+ok 83 - worker rejects invalid receipt {"job_id":"00000000-0000-4000-8000-000000000020"}
+  ---
+  duration_ms: 0.122815
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"sequence":44}
+ok 84 - worker rejects invalid receipt {"sequence":44}
+  ---
+  duration_ms: 0.129881
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"mode":"billable"}
+ok 85 - worker rejects invalid receipt {"mode":"billable"}
+  ---
+  duration_ms: 0.082441
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"charged":true}
+ok 86 - worker rejects invalid receipt {"charged":true}
+  ---
+  duration_ms: 0.423064
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"active_microseconds":-1}
+ok 87 - worker rejects invalid receipt {"active_microseconds":-1}
+  ---
+  duration_ms: 0.199281
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"estimate_micros":0.1}
+ok 88 - worker rejects invalid receipt {"estimate_micros":0.1}
+  ---
+  duration_ms: 0.08733
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"deadline":null}
+ok 89 - worker rejects invalid receipt {"deadline":null}
+  ---
+  duration_ms: 0.076615
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"phase":"paused"}
+ok 90 - worker rejects invalid receipt {"phase":"paused"}
+  ---
+  duration_ms: 0.065057
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"status":"settled"}
+ok 91 - worker rejects invalid receipt {"status":"settled"}
+  ---
+  duration_ms: 0.101875
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"uncertain":null}
+ok 92 - worker rejects invalid receipt {"uncertain":null}
+  ---
+  duration_ms: 0.082783
+  type: 'test'
+  ...
+# Subtest: worker rejects invalid receipt {"observed_at":"not a timestamp"}
+ok 93 - worker rejects invalid receipt {"observed_at":"not a timestamp"}
+  ---
+  duration_ms: 0.070315
+  type: 'test'
+  ...
+# Subtest: server closure for uncertainty prevents continuing work
+ok 94 - server closure for uncertainty prevents continuing work
+  ---
+  duration_ms: 0.179347
+  type: 'test'
+  ...
+# Subtest: disabled metering never touches a legacy job or requires new schema
+ok 95 - disabled metering never touches a legacy job or requires new schema
+  ---
+  duration_ms: 0.20843
+  type: 'test'
+  ...
+# Subtest: enabled but unreserved job remains unmetered
+ok 96 - enabled but unreserved job remains unmetered
+  ---
+  duration_ms: 0.169309
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"lookupError":{"message":"PRIVATE"}}
+ok 97 - worker stops before runtime when usage cannot be confirmed {"lookupError":{"message":"PRIVATE"}}
+  ---
+  duration_ms: 0.07759
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000004","status":"settled","sequence":2}}
+ok 98 - worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000004","status":"settled","sequence":2}}
+  ---
+  duration_ms: 0.058796
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000008","status":"open","sequence":0}}
+ok 99 - worker stops before runtime when usage cannot be confirmed {"row":{"job_id":"00000000-0000-4000-8000-000000000002","school_id":"00000000-0000-4000-8000-000000000008","status":"open","sequence":0}}
+  ---
+  duration_ms: 0.046371
+  type: 'test'
+  ...
+# Subtest: worker stops before runtime when usage cannot be confirmed {"rpcError":{"message":"PRIVATE"}}
+ok 100 - worker stops before runtime when usage cannot be confirmed {"rpcError":{"message":"PRIVATE"}}
+  ---
+  duration_ms: 0.153507
+  type: 'test'
+  ...
+# Subtest: worker fences before runtime and settles after successful execution
+ok 101 - worker fences before runtime and settles after successful execution
+  ---
+  duration_ms: 0.17689
+  type: 'test'
+  ...
+# Subtest: worker preserves failed task outcome and closes confirmed estimate without replay
+ok 102 - worker preserves failed task outcome and closes confirmed estimate without replay
+  ---
+  duration_ms: 0.237557
+  type: 'test'
+  ...
+# Subtest: server boundary closure stops execution before work
+ok 103 - server boundary closure stops execution before work
+  ---
+  duration_ms: 0.14253
+  type: 'test'
+  ...
+# Subtest: unexpected transport errors do not expose private diagnostics
+ok 104 - unexpected transport errors do not expose private diagnostics
+  ---
+  duration_ms: 0.129521
+  type: 'test'
+  ...
+1..104
+# tests 104
+# suites 0
+# pass 104
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3978.972962

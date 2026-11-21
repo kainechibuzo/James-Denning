@@ -5,7 +5,8 @@ export async function handleAgentRegistry({payload,admin,profile,actorId,json,en
  if(!['owner','admin'].includes(profile?.role)||profile?.id!==actorId||!profile?.school_id)return json({error:'Workspace administrator required'},403);
  if(!enabled)return json({error:'Agent registry needs a reviewed backend and database release.',releaseEnabled:false},409);
  const action=payload?.action;
- if(!['registry.read','registry.save','registry.evaluate','registry.request_review','registry.approve','registry.reject','registry.publish','registry.suspend'].includes(action))return json({error:'Unsupported registry action'},400);
+ const executionAction=typeof action==='string'&&action.startsWith('registry.execution.')?action.slice('registry.execution.'.length):null;
+ if(!['registry.read','registry.save','registry.evaluate','registry.request_review','registry.approve','registry.reject','registry.publish','registry.suspend','registry.execution.request_grant','registry.execution.approve','registry.execution.reject','registry.execution.grant','registry.execution.revoke'].includes(action))return json({error:'Unsupported registry action'},400);
  if(payload.agentId!=null&&!uuid(payload.agentId))return json({error:'Invalid agent identifier'},400);
  const call=async(name:string,args:any)=>{const {data,error}=await admin.rpc(name,args);if(error)throw {dbCode:error.code};if(!data||data.hiring_enabled!==false)throw {dbCode:'receipt'};return data;};
  const read=(id:string|null)=>call('jd_read_agent_registry',{p_actor:actorId,p_agent:id});
@@ -26,6 +27,12 @@ export async function handleAgentRegistry({payload,admin,profile,actorId,json,en
     const started=await call('jd_start_agent_evaluation',{p_actor:actorId,p_request:payload.requestId,p_agent:payload.agentId,p_expected:payload.expectedVersion,p_kind:'contract',p_runner:CONTRACT_RUNNER});
     if(!uuid(started.evaluation_id)||started.content_hash!==version.content_hash)throw {dbCode:'receipt'};
     receipt=await call('jd_finish_agent_evaluation',{p_evaluation:started.evaluation_id,p_runner:CONTRACT_RUNNER,p_report:report});
+   }else if(executionAction){
+    // Execution authority is recorded only; the registry never executes agents.
+    try{safeText(payload.note,'Review note',10,1000);}catch{return json({error:'A review note of 10–1000 characters without credentials is required'},400);}
+    receipt=await call('jd_agent_execution',{p_actor:actorId,p_request:payload.requestId,p_agent:payload.agentId,p_expected:payload.expectedVersion,p_action:executionAction,p_note:payload.note,p_expected_evaluation:payload.evaluationId||null,p_expected_approval:payload.approvalId||null});
+    if(receipt?.execution_authorized!==true&&receipt?.execution_authorized!==false)throw {dbCode:'receipt'};
+    if(receipt?.execution_enabled!==false||receipt?.hiring_enabled!==false)throw {dbCode:'receipt'};
    }else{
     try{safeText(payload.note,'Review note',10,1000);}catch{return json({error:'A review note of 10–1000 characters without credentials is required'},400);}
     receipt=await call('jd_agent_publication',{p_actor:actorId,p_request:payload.requestId,p_agent:payload.agentId,p_expected:payload.expectedVersion,p_action:action.slice('registry.'.length),p_note:payload.note,p_expected_evaluation:payload.evaluationId||null,p_expected_approval:payload.approvalId||null});

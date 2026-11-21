@@ -15,6 +15,7 @@ Built as a React single-page application backed by Supabase.
 - [Business foundation](documentation/JD_BUSINESS_FOUNDATION.md) — versioned Business DNA, SaaS definitions, draft workforce and billing policy.
 - [Employee usage ledger](documentation/JD_EMPLOYEE_USAGE_LEDGER.md) — shadow budgets and usage events.
 - [Versioned agent registry](documentation/JD_AGENT_REGISTRY.md) — customisable specialist definitions, immutable evaluation evidence and independent tenant-private publication review. Contract checks are not operational employee evaluations.
+- [Agent execution engine](documentation/JD_AGENT_EXECUTION_ENGINE.md) — JD deploys specialist agents on bounded read-only assignments, the Agent Factory proposes new specialists, and per-agent execution authority is granted/revoked through independent registry review. Release-gated; not yet deployed.
 - [SaaS Agent Studio](documentation/JD_SAAS_AGENT_STUDIO.md) — agent-team designs and exports (design stage).
 - [Business settings](documentation/JD_BUSINESS_SETTINGS.md) — JD-reviewed settings changes.
 - [Backend release procedure](documentation/JD_BACKEND_RELEASE.md) and [cancellation acceptance](documentation/JD_CANCELLATION_ACCEPTANCE.md).
