@@ -627,7 +627,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               {item.streaming&&!item.pollUnavailable&&<div className="jd-run">JD is writing its response…</div>}
               <div className="jd-message-actions">
                 {item.role==="user"&&<><button type="button" title="Copy prompt" aria-label="Copy prompt" onClick={()=>copyPrompt(item.content)}><Copy size={13}/>Copy</button><button type="button" title="Retry prompt as a new request" aria-label="Retry prompt" onClick={()=>retryPrompt(item)} disabled={sending||queuePaused}><RotateCcw size={13}/>Retry</button></>}
-                {item.role==="assistant"&&item.jobId&&["queued","retry_wait"].includes(item.jobStatus||item.run?.status)&&<button type="button" title="Stop this queued or waiting execution" aria-label="Stop queued execution" onClick={()=>cancelExecution(item)} disabled={item.cancelling}><Square size={12}/>{item.cancelling?"Stopping…":"Stop"}</button>}
+                {item.role==="assistant"&&["owner","admin"].includes(user?.role)&&item.jobId&&["queued","retry_wait"].includes(item.jobStatus||item.run?.status)&&<button type="button" title="Stop this queued or waiting execution" aria-label="Stop queued execution" onClick={()=>cancelExecution(item)} disabled={item.cancelling}><Square size={12}/>{item.cancelling?"Stopping…":"Stop"}</button>}
                 {item.role==="assistant"&&item.id===messages.filter(m=>m.role==="assistant").slice(-1)[0]?.id&&conversationId&&<button type="button" title="Branch this conversation" aria-label="Branch conversation" onClick={branchConversation}><GitBranch size={13}/>Branch</button>}
               </div>
             </div>)}
