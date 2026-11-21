@@ -59,7 +59,7 @@ try{for(const width of [320,708,1280]){
   await page.clock.install();
   await page.evaluate(()=>{window.__pollFailure=true;});
   const follow=page.getByRole('form',{name:'Continue to the plan?',exact:true}).last();
-  await follow.getByLabel('Review plan',{exact:true}).check();await follow.getByRole('button',{name:'Submit',exact:true}).click();
+  await follow.getByRole('radio',{name:/Review plan/}).check();await follow.getByRole('button',{name:'Submit',exact:true}).click();
   await page.clock.fastForward(500);await follow.getByText('Answer recorded.',{exact:false}).waitFor();
   for(let n=0;n<7;n++){await page.clock.fastForward(16000);await page.waitForTimeout(1);}
   await page.getByText('Live status could not be refreshed.',{exact:false}).first().waitFor();
