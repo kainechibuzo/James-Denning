@@ -27,9 +27,9 @@ before(async()=>{
  insert into profiles values
  ('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000001','owner'),
  ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000001','staff');
- insert into jd_automation_runs(id,school_id,requested_by,status) values
- ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000003','awaiting_approval');
- insert into jd_approvals(id,school_id,run_id,requested_by,status,action_key,execution_status) values
+ insert into jd_automation_runs(id,school_id,requested_by,status,request_text) values
+ ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000003','awaiting_approval','Launch my approved project');
+ insert into jd_approvals(id,school_id,run_id,requested_by,status,action_key,execution_status,proposal_json) values
  ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000003','approved','unclassified_request','not_executed',jsonb_build_object('request_text','Launch my approved project'));
  `);
  await db.exec(migration);
