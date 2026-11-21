@@ -1222,6 +1222,10 @@ export function resolveFollowupModel(configuredModel: string, currentModel: stri
   return selected;
 }
 
+function getOptionalEnv(name: string): string | undefined {
+  try { return Deno.env.get(name); } catch { return undefined; }
+}
+
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
   const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
   const isOpenRouterGemini = baseUrl.includes("openrouter.ai") && String(input.model || "").startsWith("google/gemini-");
@@ -1241,7 +1245,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
           ...(isGemini ? {} : {
-            "HTTP-Referer": Deno.env.get("OPENROUTER_SITE_URL") || "https://james-denning.com",
+            "HTTP-Referer": getOptionalEnv("OPENROUTER_SITE_URL") || "https://james-denning.com",
             "X-OpenRouter-Title": "James Denning JD",
           }),
         },
