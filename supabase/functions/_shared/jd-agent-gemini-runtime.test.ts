@@ -65,7 +65,7 @@ Deno.test("OpenRouter Gemini preserves provider tool metadata across a multi-rou
       history: [],
       context: { admin, schoolId: "school-test", userId: "user-test", role: "owner" },
       apiKey: "test-key",
-      model: "gemini-3.1-flash-lite",
+      model: "google/gemini-3.1-flash-lite",
       baseUrl: "https://openrouter.ai/api/v1",
       onToolEvent: async (event) => { events.push(event); },
       onCheckpoint: async (state) => { checkpoints.push(structuredClone(state)); },
