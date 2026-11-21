@@ -9,12 +9,15 @@
     "npm:@capacitor/splash-screen@^8.0.1": "8.0.2_@capacitor+core@8.6.2",
     "npm:@capacitor/status-bar@^8.0.1": "8.0.4_@capacitor+core@8.6.2",
     "npm:@electric-sql/pglite@~0.3.14": "0.3.16",
+    "npm:@supabase/supabase-js@2": "2.119.0",
     "npm:@supabase/supabase-js@^2.99.1": "2.119.0",
     "npm:@types/react-dom@^18.3.1": "18.3.7_@types+react@18.3.31",
     "npm:@types/react@^18.3.1": "18.3.31",
     "npm:@vitejs/plugin-react@^6.3.0": "6.3.0_vite@8.3.8",
     "npm:exceljs@^4.4.0": "4.4.0",
+    "npm:highlight.js@^11.11.1": "11.12.0",
     "npm:jsdom@^26.1.0": "26.1.0",
+    "npm:katex@~0.19.1": "0.19.1",
     "npm:lucide-react@^1.6.0": "1.73.0_@types+react@18.3.31_react@18.3.1",
     "npm:playwright-core@^1.58.2": "1.65.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
@@ -939,6 +942,9 @@
     "commander@12.1.0": {
       "integrity": "sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA=="
     },
+    "commander@15.1.0": {
+      "integrity": "sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ=="
+    },
     "commander@8.3.0": {
       "integrity": "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww=="
     },
@@ -1457,6 +1463,9 @@
       "integrity": "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==",
       "bin": true
     },
+    "highlight.js@11.12.0": {
+      "integrity": "sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg=="
+    },
     "html-encoding-sniffer@4.0.0": {
       "integrity": "sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==",
       "dependencies": [
@@ -1723,6 +1732,13 @@
         "readable-stream@2.3.8",
         "setimmediate"
       ]
+    },
+    "katex@0.19.1": {
+      "integrity": "sha512-jG8uKntjSEcm2EpQOh0XturpPuuC9r3Sq5HLHdsFdWZT27E672SF19QEi+of0/YeOy15lDgRhKvr5614uRrEfA==",
+      "dependencies": [
+        "commander@15.1.0"
+      ],
+      "bin": true
     },
     "kleur@3.0.3": {
       "integrity": "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="

@@ -3,560 +3,560 @@
 > node --experimental-strip-types --test scripts/test-agent-registry.mjs scripts/test-agent-registry-database.mjs scripts/test-agent-registry-ui.mjs
 
 TAP version 13
-# (node:3485) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-registry-service.ts is not specified and it doesn't parse as CommonJS.
+# (node:5373) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/James-Denning/supabase/functions/_shared/jd-agent-registry-service.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 # To eliminate this warning, add "type": "module" to /home/user/James-Denning/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: save persists immutable tenant version and audit without authority
 ok 1 - save persists immutable tenant version and audit without authority
   ---
-  duration_ms: 1340.596362
+  duration_ms: 1283.388271
   type: 'test'
   ...
 # Subtest: save replay, request collisions and expected versions are enforced
 ok 2 - save replay, request collisions and expected versions are enforced
   ---
-  duration_ms: 28.986721
+  duration_ms: 26.835728
   type: 'test'
   ...
 # Subtest: actor 00000000-0000-4000-8000-000000000004 cannot modify/read another authorised scope
 ok 3 - actor 00000000-0000-4000-8000-000000000004 cannot modify/read another authorised scope
   ---
-  duration_ms: 14.864038
+  duration_ms: 21.768048
   type: 'test'
   ...
 # Subtest: actor 00000000-0000-4000-8000-000000000005 cannot modify/read another authorised scope
 ok 4 - actor 00000000-0000-4000-8000-000000000005 cannot modify/read another authorised scope
   ---
-  duration_ms: 18.35801
+  duration_ms: 19.616506
   type: 'test'
   ...
 # Subtest: anon cannot forge actor/evaluator or read private tables
 ok 5 - anon cannot forge actor/evaluator or read private tables
   ---
-  duration_ms: 28.177186
+  duration_ms: 37.504606
   type: 'test'
   ...
 # Subtest: authenticated cannot forge actor/evaluator or read private tables
 ok 6 - authenticated cannot forge actor/evaluator or read private tables
   ---
-  duration_ms: 16.7174
+  duration_ms: 16.518557
   type: 'test'
   ...
 # Subtest: service role cannot directly modify registry or enable operational evaluators
 ok 7 - service role cannot directly modify registry or enable operational evaluators
   ---
-  duration_ms: 14.137558
+  duration_ms: 14.295482
   type: 'test'
   ...
 # Subtest: schema-level versions cannot be changed or deleted even by fixture owner
 ok 8 - schema-level versions cannot be changed or deleted even by fixture owner
   ---
-  duration_ms: 12.389421
+  duration_ms: 12.766285
   type: 'test'
   ...
 # Subtest: contract runner records actual contract outcomes but cannot unlock review/publication
 ok 9 - contract runner records actual contract outcomes but cannot unlock review/publication
   ---
-  duration_ms: 47.673347
+  duration_ms: 38.943459
   type: 'test'
   ...
 # Subtest: operational execution is refused without a reviewed evaluator and pinned model
 ok 10 - operational execution is refused without a reviewed evaluator and pinned model
   ---
-  duration_ms: 20.332764
+  duration_ms: 23.244732
   type: 'test'
   ...
 # Subtest: evaluation report must contain every pinned case exactly once
 ok 11 - evaluation report must contain every pinned case exactly once
   ---
-  duration_ms: 26.574308
+  duration_ms: 24.299554
   type: 'test'
   ...
 # Subtest: evaluation completion replay is exact and reports are immutable
 ok 12 - evaluation completion replay is exact and reports are immutable
   ---
-  duration_ms: 20.362122
+  duration_ms: 19.381723
   type: 'test'
   ...
 # Subtest: failed/blocked operational runs remain evidence and never unlock publication
 ok 13 - failed/blocked operational runs remain evidence and never unlock publication
   ---
-  duration_ms: 27.569607
+  duration_ms: 26.331672
   type: 'test'
   ...
 # Subtest: independent human review uses existing approval RPC and publication never hires
 ok 14 - independent human review uses existing approval RPC and publication never hires
   ---
-  duration_ms: 45.478517
+  duration_ms: 42.172509
   type: 'test'
   ...
 # Subtest: generic approval self-approval cannot bypass registry review transition
 ok 15 - generic approval self-approval cannot bypass registry review transition
   ---
-  duration_ms: 39.258718
+  duration_ms: 41.825997
   type: 'test'
   ...
 # Subtest: independent rejection is retained and blocks publishing
 ok 16 - independent rejection is retained and blocks publishing
   ---
-  duration_ms: 31.616098
+  duration_ms: 29.56883
   type: 'test'
   ...
 # Subtest: changing instructions invalidates evaluation and approval, preserving old evidence
 ok 17 - changing instructions invalidates evaluation and approval, preserving old evidence
   ---
-  duration_ms: 37.148792
+  duration_ms: 42.177125
   type: 'test'
   ...
 # Subtest: changing capabilities invalidates evaluation and approval, preserving old evidence
 ok 18 - changing capabilities invalidates evaluation and approval, preserving old evidence
   ---
-  duration_ms: 37.309005
+  duration_ms: 34.419821
   type: 'test'
   ...
 # Subtest: changing model invalidates evaluation and approval, preserving old evidence
 ok 19 - changing model invalidates evaluation and approval, preserving old evidence
   ---
-  duration_ms: 38.525429
+  duration_ms: 39.573149
   type: 'test'
   ...
 # Subtest: changing evaluationCases invalidates evaluation and approval, preserving old evidence
 ok 20 - changing evaluationCases invalidates evaluation and approval, preserving old evidence
   ---
-  duration_ms: 40.212871
+  duration_ms: 33.301776
   type: 'test'
   ...
 # Subtest: late evaluation cannot restore eligibility of a revised definition
 ok 21 - late evaluation cannot restore eligibility of a revised definition
   ---
-  duration_ms: 21.490401
+  duration_ms: 22.662431
   type: 'test'
   ...
 # Subtest: new evaluation replaces eligibility even if earlier one later passes
 ok 22 - new evaluation replaces eligibility even if earlier one later passes
   ---
-  duration_ms: 24.827458
+  duration_ms: 21.524007
   type: 'test'
   ...
 # Subtest: revoked evaluator blocks completion/review and current evaluation flag
 ok 23 - revoked evaluator blocks completion/review and current evaluation flag
   ---
-  duration_ms: 25.215472
+  duration_ms: 25.301527
   type: 'test'
   ...
 # Subtest: reviewer role revocation blocks publication
 ok 24 - reviewer role revocation blocks publication
   ---
-  duration_ms: 32.809486
+  duration_ms: 31.201169
   type: 'test'
   ...
 # Subtest: expired approval cannot publish; suspension is immediate and needs fresh review
 ok 25 - expired approval cannot publish; suspension is immediate and needs fresh review
   ---
-  duration_ms: 37.249064
+  duration_ms: 37.612922
   type: 'test'
   ...
 # Subtest: audit failure rolls back version, pointer and replay receipt
 ok 26 - audit failure rolls back version, pointer and replay receipt
   ---
-  duration_ms: 18.665141
+  duration_ms: 15.24043
   type: 'test'
   ...
 # Subtest: populated rollback refuses data loss; empty rollback/reapply preserves approvals
 ok 27 - populated rollback refuses data loss; empty rollback/reapply preserves approvals
   ---
-  duration_ms: 15.849777
+  duration_ms: 13.998993
   type: 'test'
   ...
 # Subtest: empty rollback/reapply preserves control plane
 ok 28 - empty rollback/reapply preserves control plane
   ---
-  duration_ms: 38.024248
+  duration_ms: 35.780532
   type: 'test'
   ...
 # Subtest: actual HTTP save/readback/evaluate cannot accept forged operational results
 ok 29 - actual HTTP save/readback/evaluate cannot accept forged operational results
   ---
-  duration_ms: 37.947379
+  duration_ms: 37.127657
   type: 'test'
   ...
 # Subtest: actual HTTP boundary 401
 ok 30 - actual HTTP boundary 401
   ---
-  duration_ms: 10.059162
+  duration_ms: 8.018746
   type: 'test'
   ...
 # Subtest: actual HTTP boundary 403
 ok 31 - actual HTTP boundary 403
   ---
-  duration_ms: 13.012969
+  duration_ms: 11.502631
   type: 'test'
   ...
 # Subtest: release gate and unknown evaluation-completion endpoint fail before any mutation
 ok 32 - release gate and unknown evaluation-completion endpoint fail before any mutation
   ---
-  duration_ms: 10.983747
+  duration_ms: 9.923554
   type: 'test'
   ...
 # Subtest: HTTP rejects invalid definitions before invoking SQL
 ok 33 - HTTP rejects invalid definitions before invoking SQL
   ---
-  duration_ms: 12.251898
+  duration_ms: 12.517535
   type: 'test'
   ...
 # Subtest: stale same-version review cannot approve a replacement evaluation or approval
 ok 34 - stale same-version review cannot approve a replacement evaluation or approval
   ---
-  duration_ms: 35.351572
+  duration_ms: 37.626159
   type: 'test'
   ...
 # Subtest: generic Review Centre route redirects registry decisions without approving unseen evidence
 ok 35 - generic Review Centre route redirects registry decisions without approving unseen evidence
   ---
-  duration_ms: 23.607591
+  duration_ms: 26.448117
   type: 'test'
   ...
 # Subtest: actual HTTP independent publication review pins evaluation and approval identities
 ok 36 - actual HTTP independent publication review pins evaluation and approval identities
   ---
-  duration_ms: 37.877179
+  duration_ms: 39.582438
   type: 'test'
   ...
 # Subtest: revocation and expiry invalidate effective publication, without rewriting retained history
 ok 37 - revocation and expiry invalidate effective publication, without rewriting retained history
   ---
-  duration_ms: 41.921365
+  duration_ms: 41.046012
   type: 'test'
   ...
 # Subtest: expired evaluation run cannot accept a late operational-looking report
 ok 38 - expired evaluation run cannot accept a late operational-looking report
   ---
-  duration_ms: 17.446145
+  duration_ms: 18.496109
   type: 'test'
   ...
 # Subtest: credential-like evaluator evidence is rejected before persistence
 ok 39 - credential-like evaluator evidence is rejected before persistence
   ---
-  duration_ms: 17.884839
+  duration_ms: 16.927353
   type: 'test'
   ...
 # Subtest: blocked operational outcome is retained without treating it as a passing run
 ok 40 - blocked operational outcome is retained without treating it as a passing run
   ---
-  duration_ms: 18.999596
+  duration_ms: 19.288174
   type: 'test'
   ...
 # Subtest: HTTP review notes cannot store credentials in audit evidence
 ok 41 - HTTP review notes cannot store credentials in audit evidence
   ---
-  duration_ms: 19.436588
+  duration_ms: 19.880811
   type: 'test'
   ...
 # Subtest: saved definition and contract evidence survive local database close/reopen
 ok 42 - saved definition and contract evidence survive local database close/reopen
   ---
-  duration_ms: 1118.520671
+  duration_ms: 1097.774991
   type: 'test'
   ...
 # Subtest: save/readback/contract checks remain distinct from operational evaluation and hiring
 ok 43 - save/readback/contract checks remain distinct from operational evaluation and hiring
   ---
-  duration_ms: 101.046452
+  duration_ms: 122.867139
   type: 'test'
   ...
 # Subtest: material edits lock review until saved, and new version does not inherit evaluation
 ok 44 - material edits lock review until saved, and new version does not inherit evaluation
   ---
-  duration_ms: 44.313584
+  duration_ms: 41.86947
   type: 'test'
   ...
 # Subtest: copying old content creates a local draft, not old approval authority
 ok 45 - copying old content creates a local draft, not old approval authority
   ---
-  duration_ms: 32.888042
+  duration_ms: 33.034737
   type: 'test'
   ...
 # Subtest: invalid secret-like instructions never reach transport
 ok 46 - invalid secret-like instructions never reach transport
   ---
-  duration_ms: 16.66499
+  duration_ms: 18.64702
   type: 'test'
   ...
 # Subtest: duplicate pending saves lock and late scope responses are discarded
 ok 47 - duplicate pending saves lock and late scope responses are discarded
   ---
-  duration_ms: 19.334119
+  duration_ms: 22.7427
   type: 'test'
   ...
 # Subtest: role downgrade removes definition/evidence controls and clears edits
 ok 48 - role downgrade removes definition/evidence controls and clears edits
   ---
-  duration_ms: 21.431302
+  duration_ms: 28.05203
   type: 'test'
   ...
 # Subtest: uncertain save retry uses exact request identity, not a second creation
 ok 49 - uncertain save retry uses exact request identity, not a second creation
   ---
-  duration_ms: 15.883829
+  duration_ms: 24.711138
   type: 'test'
   ...
 # Subtest: failed release/save never displays success or private diagnostic
 ok 50 - failed release/save never displays success or private diagnostic
   ---
-  duration_ms: 11.92642
+  duration_ms: 21.806952
   type: 'test'
   ...
 # Subtest: suspension needs explicit note and second confirmation
 ok 51 - suspension needs explicit note and second confirmation
   ---
-  duration_ms: 33.196414
+  duration_ms: 37.69022
   type: 'test'
   ...
 # Subtest: business-advisor derives a valid definition from the existing single catalogue
 ok 52 - business-advisor derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 3.30342
+  duration_ms: 3.682777
   type: 'test'
   ...
 # Subtest: inventory-analyst derives a valid definition from the existing single catalogue
 ok 53 - inventory-analyst derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.528338
+  duration_ms: 0.501624
   type: 'test'
   ...
 # Subtest: dispatch-planner derives a valid definition from the existing single catalogue
 ok 54 - dispatch-planner derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.244298
+  duration_ms: 0.239411
   type: 'test'
   ...
 # Subtest: customer-support derives a valid definition from the existing single catalogue
 ok 55 - customer-support derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.310548
+  duration_ms: 0.354261
   type: 'test'
   ...
 # Subtest: sales-researcher derives a valid definition from the existing single catalogue
 ok 56 - sales-researcher derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.379535
+  duration_ms: 0.269783
   type: 'test'
   ...
 # Subtest: finance-analyst derives a valid definition from the existing single catalogue
 ok 57 - finance-analyst derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.74551
+  duration_ms: 1.066946
   type: 'test'
   ...
 # Subtest: admissions-assistant derives a valid definition from the existing single catalogue
 ok 58 - admissions-assistant derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.330305
+  duration_ms: 0.513407
   type: 'test'
   ...
 # Subtest: software-coordinator derives a valid definition from the existing single catalogue
 ok 59 - software-coordinator derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.286803
+  duration_ms: 0.564618
   type: 'test'
   ...
 # Subtest: software-research derives a valid definition from the existing single catalogue
 ok 60 - software-research derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.437813
+  duration_ms: 0.754873
   type: 'test'
   ...
 # Subtest: software-design derives a valid definition from the existing single catalogue
 ok 61 - software-design derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.383694
+  duration_ms: 0.789493
   type: 'test'
   ...
 # Subtest: software-frontend derives a valid definition from the existing single catalogue
 ok 62 - software-frontend derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.205794
+  duration_ms: 0.35729
   type: 'test'
   ...
 # Subtest: software-backend derives a valid definition from the existing single catalogue
 ok 63 - software-backend derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.257951
+  duration_ms: 0.239216
   type: 'test'
   ...
 # Subtest: software-database derives a valid definition from the existing single catalogue
 ok 64 - software-database derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.212724
+  duration_ms: 0.205182
   type: 'test'
   ...
 # Subtest: software-qa derives a valid definition from the existing single catalogue
 ok 65 - software-qa derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.190344
+  duration_ms: 0.217241
   type: 'test'
   ...
 # Subtest: software-security derives a valid definition from the existing single catalogue
 ok 66 - software-security derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.190295
+  duration_ms: 0.233294
   type: 'test'
   ...
 # Subtest: software-release derives a valid definition from the existing single catalogue
 ok 67 - software-release derives a valid definition from the existing single catalogue
   ---
-  duration_ms: 0.290825
+  duration_ms: 0.203517
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 1
 ok 68 - strict definition rejects invalid case 1
   ---
-  duration_ms: 0.333855
+  duration_ms: 0.312915
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 2
 ok 69 - strict definition rejects invalid case 2
   ---
-  duration_ms: 0.181113
+  duration_ms: 0.707382
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 3
 ok 70 - strict definition rejects invalid case 3
   ---
-  duration_ms: 0.716812
+  duration_ms: 0.233769
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 4
 ok 71 - strict definition rejects invalid case 4
   ---
-  duration_ms: 0.255472
+  duration_ms: 0.194672
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 5
 ok 72 - strict definition rejects invalid case 5
   ---
-  duration_ms: 0.18935
+  duration_ms: 0.144057
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 6
 ok 73 - strict definition rejects invalid case 6
   ---
-  duration_ms: 0.210862
+  duration_ms: 0.198466
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 7
 ok 74 - strict definition rejects invalid case 7
   ---
-  duration_ms: 0.177426
+  duration_ms: 0.131458
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 8
 ok 75 - strict definition rejects invalid case 8
   ---
-  duration_ms: 0.160786
+  duration_ms: 0.203365
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 9
 ok 76 - strict definition rejects invalid case 9
   ---
-  duration_ms: 0.200011
+  duration_ms: 0.182775
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 10
 ok 77 - strict definition rejects invalid case 10
   ---
-  duration_ms: 0.185564
+  duration_ms: 0.156459
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 11
 ok 78 - strict definition rejects invalid case 11
   ---
-  duration_ms: 0.21619
+  duration_ms: 0.19067
   type: 'test'
   ...
 # Subtest: strict definition rejects invalid case 12
 ok 79 - strict definition rejects invalid case 12
   ---
-  duration_ms: 0.191045
+  duration_ms: 0.147069
   type: 'test'
   ...
 # Subtest: definition rejects weakened/duplicate evaluation coverage
 ok 80 - definition rejects weakened/duplicate evaluation coverage
   ---
-  duration_ms: 0.769977
+  duration_ms: 0.727359
   type: 'test'
   ...
 # Subtest: contract runner executes checks but never claims operational coverage or hiring
 ok 81 - contract runner executes checks but never claims operational coverage or hiring
   ---
-  duration_ms: 0.398062
+  duration_ms: 0.441013
   type: 'test'
   ...
 # Subtest: client confirms canonical saved definition and contract evidence
 ok 82 - client confirms canonical saved definition and contract evidence
   ---
-  duration_ms: 1.956201
+  duration_ms: 2.429441
   type: 'test'
   ...
 # Subtest: client invalid definition/role fails before transport
 ok 83 - client invalid definition/role fails before transport
   ---
-  duration_ms: 0.402291
+  duration_ms: 0.57201
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 84 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.432309
+  duration_ms: 0.337356
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 85 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.338608
+  duration_ms: 0.446639
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 86 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.494967
+  duration_ms: 0.397572
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 87 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.454775
+  duration_ms: 0.55042
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 88 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.335906
+  duration_ms: 0.293141
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 89 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.412415
+  duration_ms: 1.632568
   type: 'test'
   ...
 # Subtest: client refuses tampered/incomplete save/read-back
 ok 90 - client refuses tampered/incomplete save/read-back
   ---
-  duration_ms: 0.800035
+  duration_ms: 0.564435
   type: 'test'
   ...
 # Subtest: release/database failures have no local success fallback or private diagnostics
 ok 91 - release/database failures have no local success fallback or private diagnostics
   ---
-  duration_ms: 0.451236
+  duration_ms: 0.559837
   type: 'test'
   ...
 # Subtest: replaying save cannot silently overwrite a newer revision
 ok 92 - replaying save cannot silently overwrite a newer revision
   ---
-  duration_ms: 1.209895
+  duration_ms: 1.413913
   type: 'test'
   ...
 1..92
@@ -567,4 +567,4 @@ ok 92 - replaying save cannot silently overwrite a newer revision
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4529.026072
+# duration_ms 4515.063995

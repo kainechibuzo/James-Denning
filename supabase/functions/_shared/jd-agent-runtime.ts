@@ -1091,6 +1091,8 @@ export async function buildLaunchChecklistBatchKey(
   return Array.from(new Uint8Array(digest).slice(0, 16), (value) => value.toString(16).padStart(2, "0")).join("");
 }
 
+export const JD_AGENT_TOOL_NAMES = tools.map((tool) => tool.name);
+
 /**
  * Agent Factory executor. Validates a JD-proposed specialist definition and
  * saves it as an immutable registry draft for independent human review. The

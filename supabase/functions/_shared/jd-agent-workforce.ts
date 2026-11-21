@@ -157,13 +157,11 @@ export type WorkforcePlan = {
 
 const plain = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
-const fail = (message: string): never => { throw new Error(message); };
+function fail(message: string): never { throw new Error(message); }
 
 const boundedText = (value: unknown, label: string, min: number, max: number): string => {
-  if (typeof value !== "string" || value.trim().length < min || value.length > max) {
-    fail(`${label} must contain ${min}\u2013${max} characters`);
-  }
-  return value.trim();
+  if (typeof value === "string" && value.trim().length >= min && value.length <= max) return value.trim();
+  return fail(`${label} must contain ${min}\u2013${max} characters`);
 };
 
 const uuid = (value: unknown): value is string =>
@@ -188,21 +186,22 @@ export function validateWorkforcePlan(
 ): WorkforcePlan & { deniedTools: Record<string, string[]> } {
   if (!plain(raw)) fail("A workforce objective and assignments are required");
   const objective = boundedText(raw.objective, "Objective", WORKFORCE_LIMITS.objectiveMinLength, WORKFORCE_LIMITS.objectiveMaxLength);
-  if (!Array.isArray(raw.assignments) || raw.assignments.length < 1 || raw.assignments.length > WORKFORCE_LIMITS.maxAgents) {
-    fail(`Between 1 and ${WORKFORCE_LIMITS.maxAgents} specialist assignments are required`);
+  const requestedAssignments = Array.isArray(raw.assignments) ? raw.assignments : null;
+  if (!requestedAssignments || requestedAssignments.length < 1 || requestedAssignments.length > WORKFORCE_LIMITS.maxAgents) {
+    return fail(`Between 1 and ${WORKFORCE_LIMITS.maxAgents} specialist assignments are required`);
   }
   const available = new Set(availableToolNames);
   const deniedTools: Record<string, string[]> = {};
-  const assignments = raw.assignments.map((entry: unknown, index: number): WorkforceAssignment => {
-    if (!plain(entry)) fail(`Assignment ${index + 1} must be an object`);
+  const assignments = requestedAssignments.map((entry: unknown, index: number): WorkforceAssignment => {
+    if (!plain(entry)) return fail(`Assignment ${index + 1} must be an object`);
     const ref = entry.agent as AgentRef;
-    const resolved = resolveAgent(ref) ||
+    const resolved = resolveAgent(ref) ??
       fail(`Assignment ${index + 1} names a specialist that is not available for deployment`);
     const task = boundedText(entry.task, `Assignment ${index + 1} task`, WORKFORCE_LIMITS.taskMinLength, WORKFORCE_LIMITS.taskMaxLength);
     const context = typeof entry.context === "string" && entry.context.trim()
       ? boundedText(entry.context, `Assignment ${index + 1} context`, 1, WORKFORCE_LIMITS.contextMaxLength)
       : "";
-    const requested = Array.isArray(entry.tools) ? entry.tools.map((tool) => String(tool)) : [];
+    const requested = Array.isArray(entry.tools) ? entry.tools.map((tool: unknown) => String(tool)) : [];
     const base = new Set(resolved.allowedTools);
     const granted: string[] = [];
     const denied: string[] = [];
@@ -220,10 +219,9 @@ export function validateWorkforcePlan(
 }
 
 export function agentRefLabel(ref: AgentRef): string {
-  if (!plain(ref)) fail("A specialist reference is required");
-  if (ref.kind === "builtin") return `builtin:${String(ref.id)}`;
-  if (ref.kind === "registry") return `registry:${String(ref.agentId)}`;
-  fail("Unknown specialist reference kind");
+  if (plain(ref) && ref.kind === "builtin") return `builtin:${String(ref.id)}`;
+  if (plain(ref) && ref.kind === "registry") return `registry:${String(ref.agentId)}`;
+  return fail("Unknown specialist reference kind");
 }
 
 export function resolveAssignmentTools(resolved: ResolvedAgent, availableToolNames: readonly string[]): readonly string[] {
@@ -248,12 +246,12 @@ export function buildAgentInstructions(resolved: ResolvedAgent, assignment: Work
     : "No tools are granted. Reason only from the supplied task and context.";
   return [
     ...AGENT_BOUNDARY_RULES,
-    `Specialist role: ${resolved.name}. ${resolved.charter}`,
+    `Specialist role: ${resolved.name}.`,
     resolved.source === "registry"
       ? "Follow the tenant-published definition instructions saved for this specialist."
       : "",
     toolLines,
-    resolved.instructions.length ? "Definition instructions:\n- " + resolved.instructions.join("\n- ") : "",
+    resolved.instructions.length ? "Role and definition instructions:\n- " + resolved.instructions.join("\n- ") : "",
   ].filter(Boolean).join("\n");
 }
 
@@ -324,12 +322,13 @@ export function mapRegistryDefinition(input: {
   if (!input.published || !input.executionAuthorized) {
     fail("This definition is not published with execution authority");
   }
-  let definition: ReturnType<typeof validateAgentDefinition>;
+  let definition: ReturnType<typeof validateAgentDefinition> | null = null;
   try {
     definition = validateAgentDefinition(input.content);
   } catch {
-    fail("The saved definition could not be validated for execution");
+    definition = null;
   }
+  if (!definition) return fail("The saved definition could not be validated for execution");
   return {
     ref: { kind: "registry", agentId: "" },
     name: definition.name,

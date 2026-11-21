@@ -37,3 +37,23 @@ Not runnable in this sandbox: `deno check`/`deno test` (CI runs them) and the Pl
 
 - Contract/operational evaluation separation is unchanged; synthetic evaluator fixtures are not employee evaluations.
 - No production deployment, migration push or live acceptance is authorised by this evidence.
+
+## CI type-check fix (post-PR review)
+
+The first CI run failed `deno check` on the automation/worker entrypoints (Deno
+type-checks, while local `node --experimental-strip-types` only strips). Fixed
+in the same PR before merge:
+
+- `jd-agent-workforce.ts`: `fail` is now a `function` declaration and every
+  rejection path uses `return fail(...)` / explicit null-guards instead of
+  relying on never-return control-flow through a const arrow; `ResolvedAgent`
+  no longer references a nonexistent `charter` field.
+- `jd-agent-runtime.ts`: restored the `JD_AGENT_TOOL_NAMES` export that the
+  Agent Factory insertion had displaced; `getOptionalEnv` guards both release
+  gates.
+- Deno executor tests: typed `ResolvedAgent`/`WorkforceAssignment` literals and
+  corrected the role-name assertion. `deno check` (automation + worker) and
+  `jd-agent-runtime.test.ts` (18/18), `jd-agent-gemini-runtime.test.ts`,
+  `jd-conversation-response.test.ts` pass locally; `jd-execution-recovery`,
+  `jd-mcp-schema` and `jd-mcp-server` tests could not fetch deno.land/jsr.io
+  in this sandbox (network-allowlisted) and run in CI.

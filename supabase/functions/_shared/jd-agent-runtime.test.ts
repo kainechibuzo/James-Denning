@@ -1,5 +1,5 @@
 import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence, runAgentAssignment, proposeAgentDefinition } from "./jd-agent-runtime.ts";
-import { builtinSpecialist, WORKFORCE_GRANTABLE_TOOLS } from "./jd-agent-workforce.ts";
+import { builtinSpecialist, WORKFORCE_GRANTABLE_TOOLS, type ResolvedAgent, type WorkforceAssignment } from "./jd-agent-workforce.ts";
 
 function assistantMessage(text: string) {
   return { output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text }] }], status: "completed" };
@@ -159,17 +159,17 @@ Deno.test("GitHub repository access trusts only explicitly annotated persisted r
 
 Deno.test("workforce assignments run a bounded read-only tool loop and reject ungranted tools", async () => {
   const role = builtinSpecialist({ kind: "builtin", id: "finance_analyst" })!;
-  const resolved = {
+  const resolved: ResolvedAgent = {
     ref: { kind: "builtin", id: "finance_analyst" },
     name: role.name,
     instructions: [role.charter],
     allowedTools: role.allowedTools,
     maxModelRounds: role.maxModelRounds,
     maxOutputTokens: role.maxOutputTokens,
-    source: "builtin" as const,
+    source: "builtin",
   };
-  const assignment = {
-    agent: { kind: "builtin" as const, id: "finance_analyst" },
+  const assignment: WorkforceAssignment = {
+    agent: { kind: "builtin", id: "finance_analyst" },
     task: "Analyse the supplied expense summary and flag budget risks.",
     context: "",
     requestedTools: ["get_billing_snapshot"],
@@ -205,20 +205,20 @@ Deno.test("workforce assignments run a bounded read-only tool loop and reject un
   assertEqual(result.toolEvents[1].name, "deploy_specialist_workforce", "forbidden tool recorded");
   assertEqual(result.toolEvents[1].status, "failed", "forbidden tool never executes");
   assertEqual(result.toolEvents[2].status, "failed", "malformed arguments fail closed");
-  assertEqual((requests[0].input[0] as any).content.includes("finance_analyst"), true, "assignment brief includes the role");
+  assertEqual(String(requests[0].instructions).includes("Finance Analyst"), true, "assignment instructions include the specialist role");
   assertEqual(JSON.stringify(requests[1].input).includes("This tool was not granted with the assignment"), true, "ungranted tool output tells the specialist");
 });
 
 Deno.test("assignments that never produce a report fail their round limit", async () => {
   const role = builtinSpecialist({ kind: "builtin", id: "research_analyst" })!;
-  const resolved = {
+  const resolved: ResolvedAgent = {
     ref: { kind: "builtin", id: "research_analyst" },
     name: role.name,
     instructions: [role.charter],
     allowedTools: role.allowedTools,
     maxModelRounds: 2,
     maxOutputTokens: 2000,
-    source: "builtin" as const,
+    source: "builtin",
   };
   let requests = 0;
   let message = "";
