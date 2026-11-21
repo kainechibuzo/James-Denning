@@ -27,14 +27,14 @@ Deno.test("OpenRouter Gemini preserves provider tool metadata across a multi-rou
     requestNumber += 1;
     if (requestNumber === 1) {
       return sseResponse([
-        'data: {"id":"gemini-cycle-1","model":"gemini-3.1-flash-lite","choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_people","type":"function","extra_content":{"google":{"thought_signature":"opaque-test-signature"}},"function":{"name":"get_people_intelligence","arguments":"{}"}},{"index":1,"id":"call_ops","type":"function","function":{"name":"get_operations_intelligence","arguments":"{}"}}]},"finish_reason":null}]}\n',
+        'data: {"id":"gemini-cycle-1","model":"google/gemini-3.1-flash-lite","choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_people","type":"function","extra_content":{"google":{"thought_signature":"opaque-test-signature"}},"function":{"name":"get_people_intelligence","arguments":"{}"}},{"index":1,"id":"call_ops","type":"function","function":{"name":"get_operations_intelligence","arguments":"{}"}}]},"finish_reason":null}]}\n',
         'data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n',
         'data: {"choices":[],"usage":{"prompt_tokens":40,"completion_tokens":12,"total_tokens":52}}\n',
         "data: [DONE]\n",
       ]);
     }
     return sseResponse([
-      'data: {"id":"gemini-cycle-2","model":"gemini-3.1-flash-lite","choices":[{"delta":{"content":"There are 2 members and 1 open task."},"finish_reason":null}]}\n',
+      'data: {"id":"gemini-cycle-2","model":"google/gemini-3.1-flash-lite","choices":[{"delta":{"content":"There are 2 members and 1 open task."},"finish_reason":null}]}\n',
       'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n',
       "data: [DONE]\n",
     ]);
