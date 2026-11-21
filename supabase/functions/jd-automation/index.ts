@@ -593,6 +593,25 @@ Deno.serve(async (req) => {
    return json({error:"This approval request has expired",approval:result},410);
   }
   let execution:any={status:"not_executed",message:decision==="approved"?"Approved. The requested change is not yet available for automatic completion.":"Rejected. No changes were made."};
+  if(decision==="approved"&&before.action_key==="unclassified_request"){
+   const {data:released,error:releaseError}=await admin.rpc("jd_release_approved_execution",{
+    p_approval_id:approvalId,p_actor_id:authData.user.id
+   });
+   if(releaseError||!released?.job_id||released.execution_status!=="queued"){
+    const code=String(releaseError?.code||"");
+    const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:503;
+    return json({approval:result,execution:{status:"not_executed",message:"Approval was recorded, but JD could not confirm a durable execution job. No completion is claimed; inspect the run before retrying."}},status);
+   }
+   execution={status:"queued",jobId:released.job_id,message:"Approval recorded and the original request was released to JD's durable execution queue. This is not completion."};
+   const workerSecret=getJdSecret("JD_WORKER_SECRET");
+   const workerUrl=Deno.env.get("SUPABASE_URL");
+   if(workerSecret&&workerUrl){
+    EdgeRuntime.waitUntil(fetch(workerUrl.replace(/\\/$/,"")+"/functions/v1/jd-execution-worker",{
+     method:"POST",headers:{"Content-Type":"application/json","x-jd-worker-secret":workerSecret},body:"{}"
+    }).then(async response=>{if(!response.ok)console.error("JD approved-run dispatch returned",response.status);await response.text();})
+      .catch(error=>console.error("JD approved-run dispatch failed",String(error).slice(0,160))));
+   }
+  }
   if(decision==="approved"&&before.action_key==="organisation.provision_departments"){
    const {data:provisioned,error:provisionError}=await admin.rpc("jd_provision_approved_departments",{p_approval_id:approvalId,p_actor_id:authData.user.id});
    if(provisionError){
