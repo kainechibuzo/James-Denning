@@ -62,3 +62,14 @@ test("database release RPC is service_role-only",async()=>{
  const result=(await db.query("select has_function_privilege('anon','jd_release_approved_execution(uuid,uuid)','EXECUTE') anon,has_function_privilege('authenticated','jd_release_approved_execution(uuid,uuid)','EXECUTE') authenticated,has_function_privilege('service_role','jd_release_approved_execution(uuid,uuid)','EXECUTE') service")).rows[0];
  assert.deepEqual(result,{anon:false,authenticated:false,service:true});
 });
+
+test("response style is stored separately from the user's message and is immutable for the run",async()=>{
+ const first=(await db.query("select jd_set_chat_response_style($1,$2,'concise') receipt",[run,staff])).rows[0].receipt;
+ assert.equal(first.response_style,"concise");
+ assert.equal(first.duplicate,false);
+ const second=(await db.query("select jd_set_chat_response_style($1,$2,'concise') receipt",[run,staff])).rows[0].receipt;
+ assert.equal(second.duplicate,true);
+ await assert.rejects(db.query("select jd_set_chat_response_style($1,$2,'detailed')",[run,staff]),/already fixed/);
+ const stored=(await db.query("select result_json->>'response_style' style from jd_automation_runs where id=$1",[run])).rows[0];
+ assert.equal(stored.style,"concise");
+});
