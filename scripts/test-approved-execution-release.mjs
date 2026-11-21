@@ -13,7 +13,7 @@ before(async()=>{
  create table jd_approvals(id uuid primary key,school_id uuid,run_id uuid,requested_by uuid,status text,action_key text,execution_status text,execution_result_json jsonb,proposal_json jsonb not null default '{}'::jsonb,updated_at timestamptz default now());
  create table jd_execution_jobs(id uuid primary key default gen_random_uuid(),run_id uuid unique,status text);
  create table jd_audit_events(id bigint generated always as identity primary key,school_id uuid,actor_id uuid,run_id uuid,event_type text,event_json jsonb);
- create function jd_enqueue_execution_job(p_run_id uuid) returns jsonb language plpgsql as $$
+ create function jd_enqueue_execution_job(p_run_id uuid) returns jsonb language plpgsql set search_path=public as $
  declare j jd_execution_jobs%rowtype;
  begin
   select * into j from jd_execution_jobs where run_id=p_run_id;
