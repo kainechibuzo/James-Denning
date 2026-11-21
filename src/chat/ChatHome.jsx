@@ -182,6 +182,7 @@ function friendlyActivityLabel(name) {
 
 export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
   const [draft, setDraft] = useState("");
+  const [responseStyle, setResponseStyle] = useState("balanced");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
@@ -369,7 +370,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
@@ -509,6 +510,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
         .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--jd-muted)}
         .jd-activity-step.done{color:var(--jd-muted)}
+        .jd-response-style{width:min(760px,100%);margin:0 auto 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.jd-response-style>span{font-size:10px;color:var(--jd-muted);margin-right:3px}.jd-response-style button{border:1px solid var(--jd-border);background:var(--jd-card);color:var(--jd-text-soft);border-radius:999px;padding:6px 10px;font-size:10px;cursor:pointer}.jd-response-style button.active{background:var(--jd-text);color:var(--jd-card);border-color:var(--jd-text)}.jd-response-style button:focus-visible{outline:2px solid var(--jd-muted);outline-offset:2px}
         .jd-compose-wrap{flex:0 0 auto;width:min(780px,calc(100% - 40px));margin:0 auto calc(14px + env(safe-area-inset-bottom,0px))}
         .jd-compose{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:18px;padding:12px 13px 10px;box-shadow:0 8px 30px rgba(22,26,32,.055)}
         .jd-compose textarea{width:100%;min-height:48px;max-height:180px;resize:vertical;border:0;outline:0;background:transparent;color:var(--jd-text);font:inherit;font-size:13px;line-height:1.65}
@@ -593,6 +595,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
+          <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
           <div className="jd-compose">
             <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
               onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>

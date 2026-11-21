@@ -172,7 +172,7 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-stream.test.ts
 
       - name: Test Gemini end-to-end tool execution cycle
-        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-gemini-runtime.test.ts
+        run: deno test --node-modules-dir=auto --allow-env=OPENROUTER_SITE_URL supabase/functions/_shared/jd-agent-gemini-runtime.test.ts
 
       - name: Test JD execution evidence and crash recovery
         run: |
@@ -239,7 +239,7 @@ jobs:
       - name: Stage nested Edge Function shared modules
         run: |
           for entrypoint in supabase/functions/*/index.ts; do
-            if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint"; then
+            if grep -q 'from "./_shared/' "$entrypoint" || grep -q "from './_shared/" "$entrypoint" || grep -q 'from "../_shared/' "$entrypoint" || grep -q "from '../_shared/" "$entrypoint"; then
               function_dir="${entrypoint%/index.ts}"
               mkdir -p "$function_dir/_shared"
               cp supabase/functions/_shared/*.ts supabase/functions/_shared/*.mjs "$function_dir/_shared/"

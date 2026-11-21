@@ -29,23 +29,24 @@ try{for(const width of [320,708,1280]){
  await page.locator('.katex').first().waitFor();assert.ok(await page.locator('.hljs-keyword').count()>0);assert.equal(await page.locator('.jd-table tbody tr').count(),1);
  assert.equal(await page.locator('.jd-visual-workspace').count(),0);
  const single=page.getByRole('form',{name:'Which structure?',exact:true});
+ assert.ok(await single.getByText('A.',{exact:true}).count()||await single.getByText('A. Flat',{exact:false}).count(),'choice options have letter labels');
  await single.getByLabel('Flat',{exact:false}).check();
  await page.reload();await single.waitFor();assert.ok(await single.getByLabel('Flat',{exact:false}).isChecked(),'selection survives reload');
  await open('Ordinary conversation');assert.equal(await page.locator('.jd-response-interaction').count(),0);await open('Setup conversation');assert.ok(await single.getByLabel('Flat',{exact:false}).isChecked());
- await single.getByRole('button',{name:'Continue',exact:true}).evaluate(b=>{b.click();b.click();});
+ await single.getByRole('button',{name:'Submit',exact:true}).evaluate(b=>{b.click();b.click();});
  await single.getByText('Answer recorded.',{exact:false}).waitFor();assert.equal(await count(),1);
  // First status update is incomplete structured JSON: no malformed controls.
  assert.equal(await page.getByText('{"version":1,"blocks":[',{exact:false}).count(),0);
  await page.getByRole('form',{name:'Continue to the plan?',exact:true}).waitFor({timeout:15000});
  await page.reload();await single.getByText('Answer recorded.',{exact:false}).waitFor();assert.ok(await single.getByLabel('Flat',{exact:false}).isDisabled());
- const multi=page.getByRole('form',{name:'Which channels?',exact:true});await multi.getByLabel('Email',{exact:true}).check();await multi.getByLabel('Phone',{exact:true}).check();await multi.getByRole('button',{name:'Continue',exact:true}).click();await multi.getByText('Answer recorded.',{exact:false}).waitFor();
- const dropdown=page.getByRole('form',{name:'Choose your region',exact:true});await dropdown.getByRole('combobox').selectOption('lagos');await dropdown.getByRole('button',{name:'Continue',exact:true}).click();await dropdown.getByText('Answer recorded.',{exact:false}).waitFor();
- const form=page.getByRole('form',{name:'Name your business',exact:true});const before=await count();await form.getByRole('button',{name:'Continue',exact:true}).click();assert.equal(await count(),before,'invalid form makes no request');
- await form.getByLabel('Business name',{exact:false}).fill('Acme');await form.getByLabel('Budget',{exact:false}).fill('12.5');await form.getByLabel('Launch date',{exact:false}).fill('2026-12-01');await form.getByLabel('Preferred structure',{exact:false}).selectOption('flat');await form.getByLabel('Notes',{exact:false}).fill('Asset-light');
- await page.evaluate(()=>{window.__failAnswer=true;});await form.getByRole('button',{name:'Continue',exact:true}).click();await form.getByRole('alert').waitFor();await form.getByRole('button',{name:'Continue',exact:true}).click();await form.getByText('Answer recorded.',{exact:false}).waitFor();
+ const multi=page.getByRole('form',{name:'Which channels?',exact:true});await multi.getByRole('checkbox',{name:/Email/}).last().check();await multi.getByRole('checkbox',{name:/Phone/}).last().check();await multi.getByRole('button',{name:'Submit',exact:true}).last().click();await multi.getByText('Answer recorded.',{exact:false}).waitFor();
+ const dropdown=page.getByRole('form',{name:'Choose your region',exact:true});await dropdown.getByRole('combobox').last().selectOption('lagos');await dropdown.getByRole('button',{name:'Submit',exact:true}).last().click();await dropdown.getByText('Answer recorded.',{exact:false}).waitFor();
+ const form=page.getByRole('form',{name:'Name your business',exact:true});const before=await count();await form.getByRole('button',{name:'Submit',exact:true}).last().click();assert.equal(await count(),before,'invalid form makes no request');
+ await form.getByLabel('Business name',{exact:false}).last().fill('Acme');await form.getByLabel('Budget',{exact:false}).last().fill('12.5');await form.getByLabel('Launch date',{exact:false}).last().fill('2026-12-01');await form.getByLabel('Preferred structure',{exact:false}).last().selectOption('flat');await form.getByLabel('Notes',{exact:false}).last().fill('Asset-light');
+ await page.evaluate(()=>{window.__failAnswer=true;});await form.getByRole('button',{name:'Submit',exact:true}).last().click();await form.getByRole('alert').waitFor();await form.getByRole('button',{name:'Submit',exact:true}).last().click();await form.getByText('Answer recorded.',{exact:false}).waitFor();
  const requests=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('engine-db')).requests.filter(r=>r.action==='submit'));
  assert.deepEqual(requests[0].interaction.values,['flat']);assert.deepEqual(requests[1].interaction.values,['email','phone']);assert.deepEqual(requests[2].interaction.values,['lagos']);assert.equal(requests.at(-1).interaction.values.budget,12.5);assert.equal(requests.at(-1).idempotencyKey,requests.at(-2).idempotencyKey,'uncertain transport retries reuse request id');
- assert.ok(requests.every(r=>r.conversationId==='a'&&r.interaction.messageId==='00000000-0000-4000-8000-000000000001'));
+ assert.ok(requests.every(r=>r.conversationId==='a'&&typeof r.interaction.messageId==='string'&&r.interaction.messageId.length>0));assert.equal(requests[0].interaction.messageId,'00000000-0000-4000-8000-000000000001');assert.equal(requests.at(-1).interaction.messageId,requests.at(-2).interaction.messageId,'uncertain transport retries retain assistant message provenance');
  await open('Ordinary conversation');await page.waitForTimeout(3000);assert.equal(await page.locator('.jd-response-interaction').count(),0,'late polling cannot leak into another conversation');assert.equal(await page.locator('.jd-visual-workspace').count(),0);
  await open('Requested operations');await page.getByText('Department workload',{exact:true}).waitFor();
  await page.getByRole('heading',{name:'Recorded workforce',exact:true}).waitFor();
@@ -58,7 +59,7 @@ try{for(const width of [320,708,1280]){
   await page.clock.install();
   await page.evaluate(()=>{window.__pollFailure=true;});
   const follow=page.getByRole('form',{name:'Continue to the plan?',exact:true}).last();
-  await follow.getByLabel('Review plan',{exact:true}).check();await follow.getByRole('button',{name:'Continue',exact:true}).click();
+  await follow.getByRole('radio',{name:/Review plan/}).check();await follow.getByRole('button',{name:'Submit',exact:true}).click();
   await page.clock.fastForward(500);await follow.getByText('Answer recorded.',{exact:false}).waitFor();
   for(let n=0;n<7;n++){await page.clock.fastForward(16000);await page.waitForTimeout(1);}
   await page.getByText('Live status could not be refreshed.',{exact:false}).first().waitFor();

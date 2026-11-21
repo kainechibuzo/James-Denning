@@ -33,7 +33,12 @@ export const supabase={functions:{invoke:async(_name,{body})=>{
   if(window.__pollFailure)return{error:{message:'Synthetic status outage'}};
   const job=db.jobs[body.jobId];if(!job)throw Error('Unknown synthetic job');job.polls++;
   const streaming=job.polls===1;
-  const followup={version:1,blocks:[{id:'next',type:'choice',question:'Continue to the plan?',multiple:false,options:[{label:'Review plan',value:'review'},{label:'Pause here',value:'pause'}]}]};
+  const followup={version:1,blocks:[
+   {id:'next',type:'choice',question:'Continue to the plan?',multiple:false,options:[{label:'Review plan',value:'review'},{label:'Pause here',value:'pause'}]},
+   {id:'channels',type:'choice',question:'Which channels?',multiple:true,options:[{label:'Email',value:'email'},{label:'Phone',value:'phone'}]},
+   {id:'region',type:'choice',question:'Choose your region',multiple:false,presentation:'dropdown',options:[{label:'Lagos',value:'lagos'},{label:'Abuja',value:'abuja'}]},
+   {id:'identity',type:'form',title:'Name your business',fields:[{id:'name',label:'Business name',type:'text',required:true},{id:'budget',label:'Budget',type:'number',required:true,min:1,max:1000},{id:'notes',label:'Notes',type:'textarea',required:false},{id:'date',label:'Launch date',type:'date',required:true},{id:'structure',label:'Preferred structure',type:'select',required:true,options}]}
+  ]};
   const assistant={...job.assistant,content:streaming?'{"version":1,"blocks":[':'Continue to the plan?',content_json:{...job.assistant.content_json,streaming,job_status:streaming?'running':'completed',response:streaming?null:followup}};
   db[job.id]=db[job.id].map(m=>m.id===assistant.id?assistant:m);save(db);
   return{data:{job:{id:body.jobId,status:streaming?'running':'completed'},run:{id:body.jobId,status:streaming?'running':'completed'},assistantMessage:assistant,steps:[]}};

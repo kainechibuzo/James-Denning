@@ -40,7 +40,7 @@ try{for(const width of [320,393,1280]){
    // Heritage colours are intentional, not legacy accent leakage. Resolve
    // tokens to RGB so this audit follows the shared light/dark palette.
    const probe=document.createElement('span');document.body.append(probe);
-   const approved=new Set(['#2b3447','#1e2a42','#8d2f26'].map(value=>{probe.style.color=value;return getComputedStyle(probe).color;}));
+   const approved=new Set(['#2b3447','#313c52','#1e2a42','#8d2f26'].map(value=>{probe.style.color=value;return getComputedStyle(probe).color;}));
    for(const token of ['--jd-paper','--jd-paper-raised','--jd-paper-sunk','--jd-paper-deep','--jd-ink','--jd-ink-heading','--jd-ink-soft','--jd-ink-muted','--jd-rule-navy']){
     probe.style.color=`var(${token})`;approved.add(getComputedStyle(probe).color);
    }
@@ -84,7 +84,7 @@ try{for(const width of [320,393,1280]){
   await page.getByRole('searchbox',{name:'Search workspace navigation'}).fill(label);
   await page.locator('#workspace-navigation').getByRole('button',{name:label,exact:true}).click();await settle();
  };
- if(themeAudit){const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await check('sidebar-pills');if(width<768)await page.getByRole('button',{name:'Close navigation',exact:true}).click();}
+ if(themeAudit){const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();await check('sidebar-pills');if(width<768)await page.keyboard.press('Escape');}
  await check('chat',true);
  if(themeAudit){
   for(const [label,selector] of [['Departments','.jd-departments'],['AI usage','.jd-usage'],['Review Centre','.jd-review'],['Automation runs','.jd-runs']]){
@@ -113,7 +113,7 @@ try{for(const width of [320,393,1280]){
   await navigate('Conversation history');await navigate('JD Assistant');await page.locator('.jd-compose').waitFor();
   await navigate('Conversation history');await page.locator('.jd-history-create').click();await page.locator('.jd-compose').waitFor();assert.equal(await page.locator('.jd-markdown').count(),0);
   await page.locator('.reference-workspace-header').getByRole('button',{name:'Help / Product Tour',exact:true}).click();await check('product-tour');await page.getByRole('button',{name:'Skip',exact:true}).click();
-  await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
+  if(width>=561)await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();else await navigate('Organisation Settings');await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
  }
 
  // Same header and actual role-filtered sidebar for every main route.

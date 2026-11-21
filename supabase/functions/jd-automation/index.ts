@@ -593,6 +593,25 @@ Deno.serve(async (req) => {
    return json({error:"This approval request has expired",approval:result},410);
   }
   let execution:any={status:"not_executed",message:decision==="approved"?"Approved. The requested change is not yet available for automatic completion.":"Rejected. No changes were made."};
+  if(decision==="approved"&&before.action_key==="unclassified_request"){
+   const {data:released,error:releaseError}=await admin.rpc("jd_release_approved_execution",{
+    p_approval_id:approvalId,p_actor_id:authData.user.id
+   });
+   if(releaseError||!released?.job_id||released.execution_status!=="queued"){
+    const code=String(releaseError?.code||"");
+    const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:503;
+    return json({approval:result,execution:{status:"not_executed",message:"Approval was recorded, but JD could not confirm a durable execution job. No completion is claimed; inspect the run before retrying."}},status);
+   }
+   execution={status:"queued",jobId:released.job_id,message:"Approval recorded and the original request was released to JD's durable execution queue. This is not completion."};
+   const workerSecret=getJdSecret("JD_WORKER_SECRET");
+   const workerUrl=Deno.env.get("SUPABASE_URL");
+   if(workerSecret&&workerUrl){
+    EdgeRuntime.waitUntil(fetch(workerUrl.replace(/\/$/,"")+"/functions/v1/jd-execution-worker",{
+     method:"POST",headers:{"Content-Type":"application/json","x-jd-worker-secret":workerSecret},body:"{}"
+    }).then(async response=>{if(!response.ok)console.error("JD approved-run dispatch returned",response.status);await response.text();})
+      .catch(error=>console.error("JD approved-run dispatch failed",String(error).slice(0,160))));
+   }
+  }
   if(decision==="approved"&&before.action_key==="organisation.provision_departments"){
    const {data:provisioned,error:provisionError}=await admin.rpc("jd_provision_approved_departments",{p_approval_id:approvalId,p_actor_id:authData.user.id});
    if(provisionError){
@@ -732,7 +751,7 @@ Deno.serve(async (req) => {
  if(payload.action!=="submit") return json({error:"Unsupported action"},400);
  const recorded=await recordChatSubmission({payload,profile,actorId:authData.user.id,admin,needsApproval});
  if(recorded.error)return json({error:recorded.error},recorded.status);
- const {conversationId,run,receipt,submission,risk}=recorded;
+ const {conversationId,run,receipt,submission,risk,responseStyle}=recorded;
  if(submission.replayed){
   const {data:existingJob,error:jobReadError}=await admin.from("jd_execution_jobs").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).maybeSingle();
   if(jobReadError)return json({error:"The saved execution status could not be confirmed. Retry safely with the same request identifier."},503);
@@ -755,11 +774,11 @@ Deno.serve(async (req) => {
    proposal_json:{request_text:run.request_text,execution_enabled:false},audience_text:null,execution_status:"not_executed",created_by_agent:true
   }).select("id,status,expires_at").single();
   if(approvalErr||!approval) return json({error:"The request was paused but its approval record could not be created"},500);
-  const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. Approval records the decision only; execution remains disabled until a separately verified action handler is available.";
+  const reply="I've placed this request in the Review Centre. It is waiting for an administrator decision. If approved, JD will release the original request to its durable worker; any additional connector-specific approvals are still required, and approval is not completion.";
   const response={version:1,blocks:[{id:"approval",type:"approval",actionId:approval.id,description:reply}]};
   const {error:approvalMessageError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id,response},created_by_agent:true});
   if(approvalMessageError)return json({error:"The approval exists but its response could not be saved. Open Review Centre to inspect it."},500);
-  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id);
+  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{...(run.result_json||{}),response_style:responseStyle||"balanced",approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,response,blocked:true,approval,...receipt});
  }
  // Routine requests enter the durable queue. The worker owns model execution,

@@ -130,15 +130,18 @@ serve(async (req) => {
       const settingsSeed = preset?.settings_seed && typeof preset.settings_seed === "object"
         ? Object.entries(preset.settings_seed).map(([key, value]) => ({ school_id: school.id, key, value: String(value) }))
         : [];
+      // Presets may override standard settings. Deduplicate by conflict key
+      // before bulk upsert to avoid PostgreSQL's duplicate-row conflict error.
+      const settingsByKey = new Map([
+        ["school_name", { school_id: school.id, key: "school_name", value: schoolName }],
+        ["admin_email", { school_id: school.id, key: "admin_email", value: normalizedEmail }],
+        ["workspace_type", { school_id: school.id, key: "workspace_type", value: "business" }],
+        ["education_module_enabled", { school_id: school.id, key: "education_module_enabled", value: "false" }],
+      ]);
+      for (const setting of settingsSeed) settingsByKey.set(setting.key, setting);
       const { error: settingsErr } = await supabaseAdmin
         .from("school_settings")
-        .upsert([
-          { school_id: school.id, key: "school_name", value: schoolName },
-          { school_id: school.id, key: "admin_email", value: normalizedEmail },
-          { school_id: school.id, key: "workspace_type", value: "business" },
-          { school_id: school.id, key: "education_module_enabled", value: "false" },
-          ...settingsSeed,
-        ], { onConflict: "school_id,key" });
+        .upsert([...settingsByKey.values()], { onConflict: "school_id,key" });
       if (settingsErr) {
         await rollbackRegistration(school.id);
         return json({ error: settingsErr.message }, 400);

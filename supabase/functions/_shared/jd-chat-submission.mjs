@@ -5,6 +5,8 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  let message=typeof payload.message==="string"?payload.message.trim():"";
  let interaction = null;
  let expectedResponse = null;
+ const requestedStyle=payload.responseStyle==null?null:payload.responseStyle;
+ if(requestedStyle!==null&&!["concise","balanced","detailed"].includes(requestedStyle))return {error:"Invalid response style",status:400};
  const requestedConversation = typeof payload.conversationId === "string" ? payload.conversationId : null;
  if (payload.interaction !== undefined) {
   const value=payload.interaction;
@@ -31,6 +33,13 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  if(submissionError||!submission?.run)return {error:submissionError?.code==="42501"?"Conversation not found":submissionError?.code==="23505"?"This question was already answered. Refresh the conversation.":"The request could not be recorded. Retry with the same request identifier.",status:submissionError?.code==="42501"?404:409};
  const conversationId=submission.conversationId;
  const run=submission.run;
+ if(requestedStyle!==null){
+  const {data:styleReceipt,error:styleError}=await admin.rpc("jd_set_chat_response_style",{
+   p_run_id:run.id,p_actor_id:actorId,p_style:requestedStyle
+  });
+  if(styleError||styleReceipt?.response_style!==requestedStyle)return {error:"The request was recorded, but JD could not confirm its response preference. Retry safely with the same request identifier.",status:503};
+ }
+ const responseStyle=requestedStyle||"balanced";
  const receipt={userMessageId:submission.messageId,clientRequestId:requestId};
- return {conversationId,run,receipt,submission,risk};
+ return {conversationId,run:{...run,response_style:responseStyle},receipt,submission,risk,responseStyle};
 }
