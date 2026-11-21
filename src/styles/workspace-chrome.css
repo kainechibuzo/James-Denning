@@ -339,3 +339,19 @@
  .jd-topbar-wordmark{font-size:15px!important}
  .jd-topbar-brand{gap:6px}
 }
+
+
+/* Keep drawer controls opaque above the mobile scrim and preserve readable
+   text contrast in the true-black theme. */
+:root[data-theme='dark'] #workspace-navigation.jd-drawer{background-color:#141414!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-field{background-color:#1b1b1b!important;color:#f2efe9!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-search input{background:transparent!important;color:#f2efe9!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-search input::placeholder{color:#a9a49b!important;opacity:1}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-kbd{background:#262626!important;color:#f2efe9!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-account{background:#1b1b1b!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-avatar{background:#333!important;color:#faf7f2!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-account-name{color:#faf7f2!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-account-role{color:#a9a49b!important}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-plate{background-color:#141414}
+:root[data-theme='dark'] #workspace-navigation .jd-drawer-foot{background-color:#141414}
+:root :is(input,textarea)::placeholder{color:var(--jd-ink-muted)!important;opacity:1}
