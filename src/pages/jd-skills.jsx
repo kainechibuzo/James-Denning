@@ -6,8 +6,10 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from '../supabaseClient.js';
 import {skillsRequest} from '../software-factory/skills-client.mjs';
+import {discoveryRequest} from '../software-factory/discovery-client.mjs';
 import {STARTER_SKILLS,STARTER_SKILLS_SOURCE} from '../config/starter-skills.mjs';
-import {AlertCircle,Archive,Clock,FileCheck,Loader2,Package,RefreshCw,Search,ShieldCheck,Upload,XCircle} from 'lucide-react';
+import {AUTONOMOUS_SKILL_SOURCES} from '../../supabase/functions/_shared/jd-skills-source-index.mjs';
+import {AlertCircle,Archive,Clock,Compass,FileCheck,Loader2,Package,RefreshCw,Search,ShieldCheck,Sparkles,Upload,XCircle} from 'lucide-react';
 
 const styles={
  page:{maxWidth:1180,margin:'0 auto',padding:'26px 22px 48px',color:'var(--jd-text, #22252b)',fontFamily:"var(--jd-font-display, 'JD Caslon Text', Georgia, serif)"},
@@ -47,6 +49,8 @@ export function JdSkillsPage({ctx,client=supabase}){
  const [confirm,setConfirm]=useState(null),[note,setNote]=useState('');
  const [discoverTask,setDiscoverTask]=useState(''),[discover,setDiscover]=useState(null);
  const [searchTask,setSearchTask]=useState(''),[searchResult,setSearchResult]=useState(null),[acquireReceipt,setAcquireReceipt]=useState(null);
+ const [discoveryIdea,setDiscoveryIdea]=useState(''),[discoveryResult,setDiscoveryResult]=useState(null),[discoveryNote,setDiscoveryNote]=useState('');
+ const [autonomyInfo,setAutonomyInfo]=useState(null);
  const alive=useRef(true),lock=useRef(false),requests=useRef(new Map());
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const requestId=key=>{if(!requests.current.has(key))requests.current.set(key,crypto.randomUUID());return requests.current.get(key);};
@@ -107,6 +111,20 @@ export function JdSkillsPage({ctx,client=supabase}){
    :'JD acquired the package and inspected it without executing anything, but validation was not fully clean, so nothing was published automatically. Review the recorded report.');
   load(selected);
  });
+ const dapi=body=>discoveryRequest(client,role,body);
+ const loadAutonomy=()=>run(async()=>dapi({action:'autonomy.read'}),a=>setAutonomyInfo(a),true);
+ useEffect(()=>{loadAutonomy();},[]);
+ const startDiscovery=()=>run(async()=>{
+  const result=await dapi({action:'discovery.start',confirm:true,requestId:requestId(`discovery:${discoveryIdea.slice(0,40)}`),idea:discoveryIdea});
+  return result;
+ },d=>{setDiscoveryResult(d);setDiscoveryNote('');loadAutonomy();});
+ const decideDiscovery=(decision,session)=>run(async()=>dapi({action:'discovery.decide',confirm:true,requestId:requestId(`discovery-decision:${session}`),
+  sessionId:session,decision,note:discoveryNote||'Independent decision on this discovery proposal for the workspace.'}),()=>{
+  setNotice(decision==='approve'?'Proposal approved. JD can now acquire the planned capabilities and proceed.':'Proposal declined and recorded. Nothing was acquired or spent.');
+  setDiscoveryResult(null);loadAutonomy();
+ });
+ const proceedDiscovery=session=>run(async()=>dapi({action:'discovery.proceed',confirm:true,requestId:requestId(`discovery-proceed:${session}`),sessionId:session}),
+  d=>{setDiscoveryResult(d);loadAutonomy();});
  if(!isAdmin)return <p role="status" style={{...styles.page,...styles.muted}}>Workspace administrator access is required.</p>;
  return <div style={styles.page}>
   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
@@ -136,12 +154,49 @@ export function JdSkillsPage({ctx,client=supabase}){
     </div>}
    </section>
    <section aria-label="Starter catalogue" style={styles.card}>
-    <h3 style={{marginTop:0}}>Starter catalogue</h3>
+    <h3 style={{marginTop:0}}>Bring your own package (advanced)</h3>
     <p style={styles.muted}>Curated skills packaged from Anthropic's public skills repository ({STARTER_SKILLS_SOURCE}). Instruction and reference text only: upstream executable scripts were omitted because JD records package files as inert attachments and never executes, installs or fetches package content. Importing runs the same quarantine inspection; publication still requires an independent review.</p>
     <ul style={styles.list}>{STARTER_SKILLS.map(pkg=><li key={pkg.id} style={{display:'flex',alignItems:'center',gap:10,marginBottom:6,flexWrap:'wrap'}}>
      <button type="button" style={styles.secondary} disabled={busy} title={pkg.blurb} onClick={()=>importStarter(pkg)}>{pkg.title}</button>
      <span style={{...styles.muted,fontSize:12,flex:1,minWidth:200}}>{pkg.blurb}</span>
     </li>)}</ul>
+   </section>
+   <section aria-label="Included capabilities" style={styles.card}>
+    <h3 style={{marginTop:0}}>Included capabilities — already there</h3>
+    <p style={styles.muted}>Every capability below is part of your workspace: when a task needs one, JD acquires it automatically from the pinned public source (inspected without execution, provenance recorded) and it is ready within seconds. Nothing to upload, nothing to set up. Agentic time is metered per run against your workspace ceiling.</p>
+    <div style={styles.nav}>{AUTONOMOUS_SKILL_SOURCES.map(entry=><span key={entry.id} style={styles.chip} title={`${entry.description} — ≈${entry.expectedMinutes} min/run`}>{entry.id.replace(/-/g,' ')}</span>)}</div>
+    <p style={{...styles.muted,fontSize:11,margin:'8px 0 0'}}>{AUTONOMOUS_SKILL_SOURCES.length} capabilities · source {STARTER_SKILLS_SOURCE} · estimates shown on hover</p>
+   </section>
+   <section aria-label="Describe the work" style={styles.card}>
+    <h3 style={{marginTop:0,display:'flex',alignItems:'center',gap:8}}><Compass size={17} aria-hidden="true"/>Describe the work — JD cooks it</h3>
+    <p style={styles.muted}>Tell JD what you need done. The discovery agent researches it against the included capabilities, picks the skills and the specialist roles, and — {autonomyInfo?.mode==='autonomous'?'because this workspace runs autonomous, it proceeds without asking (spend ceiling still enforced)':'in assisted mode, waits for an independent administrator approval before anything is acquired or spent'}.</p>
+    {autonomyInfo&&<p style={{...styles.muted,fontSize:11,margin:'0 0 8px'}}>Autonomy mode: <strong>{autonomyInfo.mode}</strong> · ceiling {Math.round(autonomyInfo.spend_ceiling_seconds/60)} min of agent time · rate {(autonomyInfo.agentic_rate_minor_per_hour/100).toFixed(2)} {autonomyInfo.currency}/h</p>}
+    <form onSubmit={e=>{e.preventDefault();startDiscovery();}}>
+     <label style={{display:'grid',gap:6,fontSize:12,fontWeight:650}}>What should JD get done?
+      <textarea aria-label="Work description" rows={3} maxLength={4000} style={styles.input} value={discoveryIdea} onChange={e=>setDiscoveryIdea(e.target.value)} placeholder="Reconcile this month's supplier invoices against the ledger and draft the monthly leadership update"/>
+     </label>
+     <button type="submit" style={styles.button} disabled={busy||discoveryIdea.trim().length<10}><Sparkles size={14} aria-hidden="true"/> Cook this</button>
+    </form>
+    {discoveryResult&&<div role="status" aria-label="Discovery result" style={{...styles.boundary,marginTop:12}}>
+     {discoveryResult.status==='proposed'&&<h4 style={{margin:'0 0 6px'}}>Proposal ready — independent approval required before acquisition</h4>}
+     {discoveryResult.status==='proceeding'&&<h4 style={{margin:'0 0 6px'}}>Autonomous mode — JD is acquiring the planned capabilities</h4>}
+     {discoveryResult.status==='completed'&&<h4 style={{margin:'0 0 6px'}}>Cooked — capabilities acquired, playbooks bound, nothing executed</h4>}
+     {discoveryResult.plan&&<div style={{fontSize:12}}>
+      {discoveryResult.plan.skills.map(s=><p key={s.id} style={{margin:'2px 0'}}><Sparkles size={12} aria-hidden="true"/> <strong>{s.name}</strong> — {s.description} <Clock size={11} aria-hidden="true"/> ≈{Math.round(s.expected_seconds/60)} min</p>)}
+      <p style={{...styles.muted,margin:'4px 0'}}>Specialist roles: {(discoveryResult.plan.roles||[]).join(', ')||'—'} · estimated agent time ≈ {Math.round((discoveryResult.plan.estimated_seconds||0)/60)} min</p>
+     </div>}
+     {discoveryResult.receipt&&(discoveryResult.receipt.acquired?.length||discoveryResult.receipt.bound?.length||discoveryResult.receipt.errors?.length)?<div style={{fontSize:12}}>
+      <p style={{margin:'4px 0'}}>Acquired: {discoveryResult.receipt.acquired?.map(a=>a.source?.path||a.skill_id).join(', ')||'none'} · bound playbooks: {discoveryResult.receipt.bound?.map(b=>`${b.role} ← v${b.version}`).join(', ')||'none'}{discoveryResult.receipt.errors?.length?` · stopped on: ${discoveryResult.receipt.errors.map(e=>e.id).join(', ')}`:''}</p>
+     </div>:null}
+     {discoveryResult.status==='proposed'&&<div style={{marginTop:8}}>
+      <textarea aria-label="Decision note" rows={2} maxLength={1000} style={styles.input} value={discoveryNote} onChange={e=>setDiscoveryNote(e.target.value)} placeholder="Decision note (optional; recorded with the decision)"/>
+      <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
+       <button type="button" style={styles.button} disabled={busy} onClick={()=>decideDiscovery('approve',discoveryResult.session_id)}>Approve and let JD proceed</button>
+       <button type="button" style={styles.danger} disabled={busy} onClick={()=>decideDiscovery('decline',discoveryResult.session_id)}>Decline</button>
+      </div>
+     </div>}
+     {discoveryResult.status==='completed'&&<p style={{...styles.muted,fontSize:12,margin:'6px 0 0'}}>Nothing was executed. Every billable run that loads an acquired capability still records its exact version and works within the spend ceiling.</p>}
+    </div>}
    </section>
    <section aria-label="Ask JD to find a skill" style={styles.card}>
     <h3 style={{marginTop:0}}>Ask JD to find a skill</h3>

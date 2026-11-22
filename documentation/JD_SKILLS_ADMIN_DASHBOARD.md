@@ -95,6 +95,17 @@ The user never uploads a package. They describe the work; JD searches the **allo
 - **Dashboard**: "Ask JD to find a skill" panel on the Skills Catalog page (search → candidates with provenance + estimates → one-tap Acquire → receipt with commit, package hash and inspection outcome).
 - **Contract fix found during build**: a fully clean inspection reports `validated`, which the phase-4 importer rejected (`22023`) — clean starter imports could never complete. The importer now records `validated` as `needs_review` (review still required for human uploads) with the true inspection status preserved in the report; the service maps identically. Covered by new PGlite tests (`scripts/test-skills-autonomous.mjs`, 11 tests: zip toolkit, frontmatter repackage, upstream selection, index/search, autonomous publish provenance + refusals, cost-confirmation gate, terminal-time trigger, human-path regression, validated mapping).
 
+
+## Phase 7: the autonomy dial, the discovery agent and agentic-time billing
+
+Skills are the product: capabilities are always "already there" (acquisition is automatic and invisible when a task needs one), the customer describes the work, and JD assembles the rest.
+
+- **Workspace autonomy dial** (`jd_workspace_autonomy`, Settings → Agent Autonomy): `assisted` (default) — the discovery agent researches and proposes, an independent administrator approves before anything is acquired or spent; `autonomous` — JD proceeds without per-run prompts. Autonomous never removes the ceiling, the metering or the audit trail; it removes the prompts only. Changes are administrator-only, confirmed, idempotent and audited.
+- **Discovery agent** (`_shared/jd-discovery-agent.ts`, actions `discovery.*`): describe the work → offline deterministic plan (allowlisted skills + the 8 real specialist roles + bounded estimate) → assisted: proposal held for independent decision (decider ≠ requester); autonomous: immediate proceed. Proceed acquires each missing capability through the phase-6 quarantine pipeline, binds specialist playbooks (`jd_agent_playbooks` — instruction text only, never tools) and records the completion receipt. Any failed acquisition stops the session with a partial receipt; JD never silently continues.
+- **Agentic-time billing plumbing**: `jd_autonomous_cost_authorize` (autonomous standing authorisation, ceiling-bounded) and `jd_confirm_run_skill_cost` (assisted per-run confirmation) both enforce the workspace spend ceiling (`54000` at the boundary); `jd_read_billing_summary` computes due-at-settlement amounts from measured actual seconds at the recorded rate; `agentic-seconds-v1` pricing policy. Charging itself stays behind `BILLING_RELEASE.agenticTimeChargingEnabled: false` — the commercial Paystack stack (`jd_billing_*`, phases of the employee-usage model) is extended, never duplicated. Queued/waiting time is never billable.
+- **UX**: Skills page shows the included capabilities as ready ("already there") with the discovery panel ("Describe the work — JD cooks it"); the upload form is relabelled "Bring your own package (advanced)"; Settings gains the Agent Autonomy tab; Billing gains the agent work-time summary.
+- Tests: `scripts/test-discovery-autonomy.mjs` (7 PGlite + unit tests) wired into CI; billing config contract extended with `agenticTimeChargingEnabled: false`.
+
 ## Standing guarantees
 
 - Uploading is never execution approval; review is mandatory before publication.

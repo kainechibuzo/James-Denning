@@ -24,5 +24,6 @@ test("all live billing operations remain disabled until provider and end-to-end 
     invoiceIssuanceEnabled: false,
     paymentCollectionEnabled: false,
     employeeUsageChargingEnabled: false,
+    agenticTimeChargingEnabled: false,
   });
 });
