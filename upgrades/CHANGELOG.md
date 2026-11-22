@@ -1,5 +1,13 @@
 # Change log
 
+## 2026-11-22 — JD Skills phase 6: autonomous acquisition + per-run agentic-time metering (jd-autonomous-v1)
+
+- **Ask, don't upload**: JD searches a curated, code-reviewed allowlist of `anthropics/skills` (18 capabilities, offline deterministic matching), pins the upstream commit, fetches only the skill's instruction/reference text, repackages it through the same quarantine inspector and publishes validated versions automatically — no upload form, no review queue. Provenance (repo/ref/commit/path/package hash/policy) is recorded immutably in `jd_skill_acquisitions`; no human review row is fabricated, and anything that is not fully clean stays on the human path.
+- **Pay per agentic time, with the human checkpoint at spend**: loading an acquired skill for a run requires `jd_confirm_run_skill_cost` — an explicit recorded confirmation with a bounded estimate — enforced inside `jd_skills_load`; actual wall-clock agentic seconds are written to `jd_agent_time_ledger` by a trigger when the run completes. Pricing recorded as not-yet-computed; metering first.
+- **Hard allowlists**: hosts (`api.github.com`, `codeload.github.com`), source repo/ref/policy, pinned 40-hex commit, upstream path shape, text-only file selection (`bin`/`scripts`/`hooks`/`install` and all binaries never selected), size bounds everywhere. Nothing is ever executed.
+- **Live bug fixed**: clean packages inspecting as `validated` were rejected by the importer (its tests only covered `needs_review`) — starter imports could never complete. Importer now records `validated` as `needs_review` with the true status preserved; service maps identically.
+- New/changed: `_shared/jd-skills-source-index.mjs`, `_shared/jd-skills-zip.mjs`, `_shared/jd-skills-acquire.ts`, `jd-skills-service.ts` (`skills.search`, `skills.acquire`), `jd-automation` flag `JD_SKILLS_AUTONOMOUS`, migration `20261122210000_jd_skills_autonomous.sql` (+ rollback), skills-client + dashboard "Ask JD to find a skill" panel, `scripts/test-skills-autonomous.mjs` (11 PGlite/unit tests). Gates: skills 61/61, usage 104, registry 92, agents 63, execution 276+2, backend-release 82, history 25, navigation 93, workforce 36, deno check clean, runtime tests 20, verify:web + build green.
+
 ## 2026-11-22 — JD Skills phase 5: catalog schema live and release flag set (function release pending)
 
 - **Database:** migration `jd_skills_catalog` applied to the live James-Denning project (`thklwiybjuhrjqrrxyid`) via the Supabase Management API with automatic rollback-on-failure. Verified live: 7 `jd_skill_*` tables with RLS enabled, 10 catalog functions, 3 immutability triggers, service-role-only execute grants, private `jd-skill-packages` bucket (ZIP only, 20 MiB cap).

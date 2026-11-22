@@ -85,6 +85,16 @@ Six curated starter packages are vendored under `public/skills/` and listed by `
 
 ### Open decisions (architecture doc §13)
 
+## Phase 6: autonomous acquisition and per-run agentic-time metering (jd-autonomous-v1)
+
+The user never uploads a package. They describe the work; JD searches the **allowlisted source catalogue** and acquires the capability itself.
+
+- **Search (`skills.search`)**: offline, deterministic keyword matching over a curated, code-reviewed index (`_shared/jd-skills-source-index.mjs`) of `anthropics/skills` (18 capabilities). No network at search time; results carry per-capability agentic-time estimates and current in-workspace availability.
+- **Acquisition (`skills.acquire`)**: gated by `JD_SKILLS_AUTONOMOUS=true` (project secret) + administrator + explicit confirmation + idempotent request id. JD pins the upstream commit (`api.github.com`), downloads the archive (`codeload.github.com` only — both hosts hard-allowlisted), selects **text files only** (`.md`/`.txt`; `bin/`, `scripts/`, `hooks/`, `install/` and binaries never selected), completes the packaging frontmatter (licence, semver, category, tags) exactly like the phase-4 starter packager, builds the ZIP in-memory, runs the **same quarantine inspector**, records the import, and — only when validation is fully clean — publishes under **policy `jd-autonomous-v1`** with immutable provenance in `jd_skill_acquisitions` (repo, ref, commit, path, package hash, policy, actor). No review row is ever fabricated; a `needs_review` or `validation_failed` inspection publishes nothing automatically and stays on the human path.
+- **Per-run agentic-time metering (the human checkpoint moved from publication to spend)**: every billable run that loads an **acquired** skill requires `jd_confirm_run_skill_cost` — an explicit, recorded confirmation (run, skill version, bounded estimate 30 s–24 h) before `jd_skills_load` allows it; the loader hard-fails otherwise. A trigger on `jd_automation_runs` writes the measured actual seconds into `jd_agent_time_ledger` when the run reaches a terminal state; completed ledger rows are immutable. Pricing is explicitly recorded as `not_computed_in_this_release` — metering first, charging later. Human-reviewed starter/uploaded skills keep the phase-4 behaviour and need no cost confirmation.
+- **Dashboard**: "Ask JD to find a skill" panel on the Skills Catalog page (search → candidates with provenance + estimates → one-tap Acquire → receipt with commit, package hash and inspection outcome).
+- **Contract fix found during build**: a fully clean inspection reports `validated`, which the phase-4 importer rejected (`22023`) — clean starter imports could never complete. The importer now records `validated` as `needs_review` (review still required for human uploads) with the true inspection status preserved in the report; the service maps identically. Covered by new PGlite tests (`scripts/test-skills-autonomous.mjs`, 11 tests: zip toolkit, frontmatter repackage, upstream selection, index/search, autonomous publish provenance + refusals, cost-confirmation gate, terminal-time trigger, human-path regression, validated mapping).
+
 ## Standing guarantees
 
 - Uploading is never execution approval; review is mandatory before publication.
