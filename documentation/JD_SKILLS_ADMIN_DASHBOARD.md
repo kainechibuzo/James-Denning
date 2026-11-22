@@ -70,11 +70,20 @@ Six curated starter packages are vendored under `public/skills/` and listed by `
 5. The outcome carries a bounded reference (`skill:{name,version,content_hash}` — never the instruction text); the runs monitor maps it to the workforce card (`Skill: xlsx v1`), validated by `run-history.mjs` (name string + integer version, or absent).
 6. Any failure (flag off, no run, resolve empty, RPC error) leaves the assignment unchanged — the specialist simply runs without skill context.
 
-## Release sequence (phase 5, not yet performed)
+## Release sequence (phase 5)
 
-1. Apply migration `20261122120000_jd_skills_catalog.sql` to staging (rollback script available); run `jd-backend-release` verification.
-2. Set `JD_SKILLS_ENABLED=true` as a Supabase Edge secret after a reviewed backend release; verify the dashboard and the workforce skill-context path against staging with two admin accounts (importer ≠ reviewer).
-3. Rollout decision on a curated global catalogue stays open (architecture doc §13); no write path exists.
+### Applied to the live James-Denning project (`thklwiybjuhrjqrrxyid`, 2026-11-22)
+
+1. **Migration applied** via the Supabase Management API (`create_migration`, name `jd_skills_catalog`; the connector rolls back automatically on failure). Verified live afterwards: 7 `jd_skill_*` tables all with RLS enabled, 10 catalog functions present, 3 immutability triggers active, `jd_skills_load` granted to `service_role`, and the private `jd-skill-packages` bucket created (not public, 20 MiB cap).
+2. **Functional smoke test passed** with a real workspace admin profile: `jd_read_skills_catalog` returned the correct empty tenant catalog (all authority flags `false`, scope `tenant_private`) and `jd_create_skill_import` issued a real quarantine target (`<tenant>/imports/<uuid>.zip`). The smoke-test import was recorded, then marked `rejected` with an explanatory note; the audit trail was not altered.
+3. **Release flag set**: `JD_SKILLS_ENABLED=true` is stored as a project secret (visible in the secrets list alongside the other release gates, value hash consistent with the enabled `JD_AGENT_*` flags).
+
+### Still required before the skills surface goes live
+
+4. **Backend function release.** The deployed `jd-automation` (v24) was built before the skills service merged; with the old code the dashboard's `skills.*` calls are rejected regardless of the flag. Deploy through the reviewed `deploy.yml` workflow (`workflow_dispatch`, `deploy_functions=true`, functions `jd-automation`, `jd-execution-worker`, `jd-mcp`) at SHA `cb34d425623e9da71106b477429d3f0bbe6644aa` or later. The release bundler automatically stages `supabase/functions/_shared/jd-skills-{package,service}.ts`. Note: the release contract pins `thklwiybjuhrjqrrxyid` as the production project — there is no separate staging project in this Supabase organisation, so the schema and flag went live there directly; the code path stays dark until the function release, and the workflow's env vars (`JD_BACKEND_RELEASE_APPROVED_SHA`, `JD_BACKEND_APPROVAL_REFERENCE`, staging-verified gate) must be updated by the owner as part of the reviewed release.
+5. **Live two-admin verification** (after the function release): import a starter skill from the Skills Catalog as admin A; approve the review as admin B (A must be refused for their own import); publish with a note; confirm the skill appears in discovery; revoke and confirm discovery/loading stop. Then exercise a hostile package (e.g. a text file renamed `.zip` containing a private-key block) and confirm it lands in `validation_failed` with no skill created.
+
+### Open decisions (architecture doc §13)
 
 ## Standing guarantees
 

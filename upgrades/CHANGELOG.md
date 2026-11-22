@@ -1,5 +1,12 @@
 # Change log
 
+## 2026-11-22 — JD Skills phase 5: catalog schema live and release flag set (function release pending)
+
+- **Database:** migration `jd_skills_catalog` applied to the live James-Denning project (`thklwiybjuhrjqrrxyid`) via the Supabase Management API with automatic rollback-on-failure. Verified live: 7 `jd_skill_*` tables with RLS enabled, 10 catalog functions, 3 immutability triggers, service-role-only execute grants, private `jd-skill-packages` bucket (ZIP only, 20 MiB cap).
+- **Smoke test:** with a real admin profile, `jd_read_skills_catalog` returned the correct empty tenant catalog and `jd_create_skill_import` issued a genuine quarantine target; the smoke import was then marked `rejected` with an explanatory note (audit trail untouched).
+- **Release flag:** `JD_SKILLS_ENABLED=true` set as a project Edge secret alongside the existing release gates.
+- **Pending:** the deployed `jd-automation` (v24) predates the skills service, so the code path stays dark until a reviewed `deploy.yml` function release at SHA `cb34d42…` or later (the bundler stages the skills modules automatically). Live two-admin verification (import → independent review → publish → discovery → revoke) follows the function release. Steps recorded in `documentation/JD_SKILLS_ADMIN_DASHBOARD.md`.
+
 ## 2026-11-21 — JD Skills: starter catalogue of real Claude skills and workforce runtime discovery (phase 4)
 
 - **Status:** implemented in source on the skills branch; release-gated off (`JD_SKILLS_ENABLED` default absent → closed); staging migration and rollout still pending.
