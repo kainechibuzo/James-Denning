@@ -98,8 +98,11 @@ jobs:
           # The output directory has only these three entrypoints and reviewed JWT settings.
           # CLI calls are sequential, NOT atomic. On a failure stop; review partial release
           # metadata before an explicitly approved rollback. Never fall back automatically.
+          # --yes answers the CLI v3 non-interactive guard: every human approval gate
+          # (approved SHA, confirmation phrase, staging-verified SHA) has already run in
+          # the steps above, and CI has no terminal for the prompt to ask.
           for function_name in jd-automation jd-execution-worker jd-mcp; do
-            supabase functions deploy "$function_name" --project-ref "$JD_BACKEND_PROJECT_REF" --workdir build/jd-backend-release
+            supabase functions deploy "$function_name" --project-ref "$JD_BACKEND_PROJECT_REF" --workdir build/jd-backend-release --yes
           done
       - name: Release boundary summary
         if: success()
