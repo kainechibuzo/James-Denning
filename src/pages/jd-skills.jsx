@@ -5,7 +5,8 @@
 // inert, loading a skill never grants tools, execution, hiring or billing.
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from '../supabaseClient.js';
-import {skillsRequest,stable} from '../software-factory/skills-client.mjs';
+import {skillsRequest} from '../software-factory/skills-client.mjs';
+import {STARTER_SKILLS,STARTER_SKILLS_SOURCE} from '../config/starter-skills.mjs';
 import {AlertCircle,Archive,FileCheck,Loader2,Package,RefreshCw,ShieldCheck,Upload,XCircle} from 'lucide-react';
 
 const styles={
@@ -63,11 +64,22 @@ export function JdSkillsPage({ctx,client=supabase}){
  const versions=catalog?.versions||[],reviews=catalog?.reviews||[],imports=catalog?.imports||[];
  const select=id=>{setSelected(id);setConfirm(null);setReport(null);setDiscover(null);load(id);};
  function startImport(){
-  if(!file)return;
+  if(file)performImport(file,`${file.name}:${file.size}:${file.lastModified}`);
+ }
+ async function importStarter(pkg){
+  setError('');setNotice('');
+  try{
+   const res=await fetch(`${import.meta.env?.BASE_URL||'/'}skills/${pkg.file}`,{cache:'no-store'});
+   if(!res.ok)throw Error('The starter package could not be loaded from this device.');
+   const blob=await res.blob();
+   performImport(new File([blob],pkg.file,{type:'application/zip'}),`starter:${pkg.id}:${blob.size}`);
+  }catch(e){setError(e.message||'The starter package could not be loaded.');}
+ }
+ function performImport(importFile,requestBase){
   setImporting(true);
   run(async()=>{
-   const create=await api({action:'skills.import.create',confirm:true,requestId:requestId(`create:${file.name}:${file.size}:${file.lastModified}`),filename:file.name});
-   const stored=await client.storage.from(create.bucket).uploadToSignedUrl(create.upload.path,create.upload.token,file);
+   const create=await api({action:'skills.import.create',confirm:true,requestId:requestId(`create:${requestBase}`),filename:importFile.name});
+   const stored=await client.storage.from(create.bucket).uploadToSignedUrl(create.upload.path,create.upload.token,importFile);
    if(stored?.error)throw Error('Quarantine upload failed; nothing was inspected or imported.');
    return await api({action:'skills.import.complete',confirm:true,requestId:requestId(`complete:${create.import_id}`),importId:create.import_id});
   },receipt=>{
@@ -113,6 +125,14 @@ export function JdSkillsPage({ctx,client=supabase}){
      <h4 style={{margin:'0 0 6px'}}><FileCheck size={15} aria-hidden="true"/> Inspection complete — {report.status==='needs_review'?'independent review required before publication':'validation failed; nothing published'}</h4>
      <p style={{...styles.muted,fontSize:12,margin:0}}>Import <code style={styles.code}>{report.import_id}</code> recorded with its full inspection report and manifest hash. The package was never executed.</p>
     </div>}
+   </section>
+   <section aria-label="Starter catalogue" style={styles.card}>
+    <h3 style={{marginTop:0}}>Starter catalogue</h3>
+    <p style={styles.muted}>Curated skills packaged from Anthropic's public skills repository ({STARTER_SKILLS_SOURCE}). Instruction and reference text only: upstream executable scripts were omitted because JD records package files as inert attachments and never executes, installs or fetches package content. Importing runs the same quarantine inspection; publication still requires an independent review.</p>
+    <ul style={styles.list}>{STARTER_SKILLS.map(pkg=><li key={pkg.id} style={{display:'flex',alignItems:'center',gap:10,marginBottom:6,flexWrap:'wrap'}}>
+     <button type="button" style={styles.secondary} disabled={busy} title={pkg.blurb} onClick={()=>importStarter(pkg)}>{pkg.title}</button>
+     <span style={{...styles.muted,fontSize:12,flex:1,minWidth:200}}>{pkg.blurb}</span>
+    </li>)}</ul>
    </section>
    <section aria-label="Skill catalogue" style={styles.card}>
     <h3 style={{marginTop:0}}>Catalogue</h3>

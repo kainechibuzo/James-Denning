@@ -25,7 +25,7 @@ export async function readRunHistory(client){
   ids.add(run.id);const steps=new Set();
   return run.steps.some(step=>{
    if(!isTaskId(step?.id)||steps.has(step.id)||typeof step.status!=='string'||typeof step.tool_key!=='string')return true;
-   if(step.workforce!=null&&(!Array.isArray(step.workforce)||step.workforce.length>5||step.workforce.some(agent=>!agent||typeof agent!=='object'||Array.isArray(agent)||typeof agent.agent_ref!=='string'||typeof agent.name!=='string'||!['builtin','registry'].includes(agent.source)||!['report_returned','failed'].includes(agent.status)||!Array.isArray(agent.tools_granted)||typeof agent.verification!=='string'||typeof agent.report_returned!=='boolean')))return true;
+   if(step.workforce!=null&&(!Array.isArray(step.workforce)||step.workforce.length>5||step.workforce.some(agent=>!agent||typeof agent!=='object'||Array.isArray(agent)||typeof agent.agent_ref!=='string'||typeof agent.name!=='string'||!['builtin','registry'].includes(agent.source)||!['report_returned','failed'].includes(agent.status)||!Array.isArray(agent.tools_granted)||typeof agent.verification!=='string'||typeof agent.report_returned!=='boolean'||(agent.skill!=null&&(typeof agent.skill!=='object'||Array.isArray(agent.skill)||typeof agent.skill.name!=='string'||!Number.isInteger(agent.skill.version))))))return true;
    steps.add(step.id);return false;
   });
  }))throw Error('Run history returned incomplete records. No current execution state has been confirmed.');

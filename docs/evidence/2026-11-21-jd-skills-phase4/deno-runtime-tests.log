@@ -1,0 +1,28 @@
+[0m[33mWarning[0m failed to parse npm overrides: Failed to parse override value "file:vendor/picomatch" for key "picomatch": Invalid version requirement
+[0m[32mDownload[0m https://esm.sh/xlsx@0.18.5
+[0m[32mDownload[0m https://esm.sh/docx@8.5.0
+[0m[32mDownload[0m https://esm.sh/pptxgenjs@3.12.0
+[0m[38;5;245mrunning 20 tests from ./supabase/functions/_shared/jd-agent-runtime.test.ts[0m
+usage normalisation never invents total tokens ... [0m[32mok[0m [0m[38;5;245m(439µs)[0m
+usage aggregation counts model requests and preserves missing totals ... [0m[32mok[0m [0m[38;5;245m(143µs)[0m
+only transient provider statuses are retried ... [0m[32mok[0m [0m[38;5;245m(53µs)[0m
+retry delay is bounded and respects Retry-After seconds ... [0m[32mok[0m [0m[38;5;245m(85µs)[0m
+free router follow-up requests stay on the first selected model ... [0m[32mok[0m [0m[38;5;245m(147µs)[0m
+configured model choices are never replaced by provider response metadata ... [0m[32mok[0m [0m[38;5;245m(94µs)[0m
+launch checklist batch keys are stable but separate distinct checklists ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+business finance intelligence tools are registered in JD ... [0m[32mok[0m [0m[38;5;245m(77µs)[0m
+native MCP calls are audited before and after execution without recording argument values ... [0m[32mok[0m [0m[38;5;245m(543µs)[0m
+native MCP tool is not invoked when its audit start cannot be persisted ... [0m[32mok[0m [0m[38;5;245m(484µs)[0m
+pending approvals inventory is registered as a read-only native capability ... [0m[32mok[0m [0m[38;5;245m(49µs)[0m
+tool evidence records approval requests without claiming provider execution ... [0m[32mok[0m [0m[38;5;245m(286µs)[0m
+Claude MCP exposes first-class GitHub repository search and file-reading capabilities ... [0m[32mok[0m [0m[38;5;245m(46µs)[0m
+GitHub repository access trusts only explicitly annotated persisted read-only tools ... [0m[32mok[0m [0m[38;5;245m(82µs)[0m
+workforce assignments run a bounded read-only tool loop and reject ungranted tools ... [0m[32mok[0m [0m[38;5;245m(928µs)[0m
+assignments that never produce a report fail their round limit ... [0m[32mok[0m [0m[38;5;245m(229µs)[0m
+workforce tool grants never include delegation or write-capable tools ... [0m[32mok[0m [0m[38;5;245m(69µs)[0m
+the agent factory fails closed before any database write when release-gated ... [0m[32mok[0m [0m[38;5;245m(459µs)[0m
+assignment skill context is release-gated, run-recorded and hostile-receipt-proof ... [0m[32mok[0m [0m[38;5;245m(508µs)[0m
+loaded skill text is banner-marked untrusted inside assignment instructions ... [0m[32mok[0m [0m[38;5;245m(227µs)[0m
+
+[0m[32mok[0m | 20 passed | 0 failed [0m[38;5;245m(13ms)[0m
+

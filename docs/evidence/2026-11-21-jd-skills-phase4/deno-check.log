@@ -1,0 +1,4 @@
+[0m[33mWarning[0m failed to parse npm overrides: Failed to parse override value "file:vendor/picomatch" for key "picomatch": Invalid version requirement
+[0m[32mDownload[0m https://esm.sh/xlsx@0.18.5
+[0m[32mDownload[0m https://esm.sh/pptxgenjs@3.12.0
+[0m[32mDownload[0m https://esm.sh/docx@8.5.0
