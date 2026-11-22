@@ -1,5 +1,13 @@
 # Change log
 
+## 2026-11-22 — JD phase 7: autonomy dial, discovery agent, agent work-time billing
+
+- **Autonomy dial** (Settings → Agent Autonomy): assisted (ask an independent admin) vs autonomous (JD proceeds; ceiling, metering and audit remain). Server-enforced in `jd_workspace_autonomy`; changes audited and idempotent.
+- **Discovery agent**: idea → plan (allowlisted skills + real specialist roles + estimate) → proposal or silent proceed; acquisition reuses the phase-6 quarantine pipeline; acquired skills bind to specialist roles as instruction-only playbooks (`jd_agent_playbooks`); failed acquisition stops with a partial receipt.
+- **Agent work-time billing**: spend ceiling enforced at both `jd_autonomous_cost_authorize` (autonomous standing authorisation) and `jd_confirm_run_skill_cost` (assisted); `jd_read_billing_summary` computes due-at-settlement from measured actual seconds; pricing policy `agentic-seconds-v1`; charging stays disabled behind `BILLING_RELEASE.agenticTimeChargingEnabled:false` until the owner flips it.
+- **Skills page** now presents capabilities as included ("already there") with the "Describe the work — JD cooks it" panel; upload moved to "Bring your own package (advanced)". Billing page gains the agent work-time summary.
+- New: migration `20261122220000_jd_discovery_autonomy.sql` (+ rollback), `_shared/jd-discovery-agent.ts`, `src/software-factory/discovery-client.mjs`, `scripts/test-discovery-autonomy.mjs` (7 tests, wired into CI). Gates: discovery 7/7, skills 61/61, billing 21, usage 104, settings 51, navigation 93, deno check clean, verify:web + build green.
+
 ## 2026-11-22 — JD Skills phase 6: autonomous acquisition + per-run agentic-time metering (jd-autonomous-v1)
 
 - **Ask, don't upload**: JD searches a curated, code-reviewed allowlist of `anthropics/skills` (18 capabilities, offline deterministic matching), pins the upstream commit, fetches only the skill's instruction/reference text, repackages it through the same quarantine inspector and publishes validated versions automatically — no upload form, no review queue. Provenance (repo/ref/commit/path/package hash/policy) is recorded immutably in `jd_skill_acquisitions`; no human review row is fabricated, and anything that is not fully clean stays on the human path.

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, CalendarDays, CheckCircle2, Clock3, CreditCard, FileText, LoaderCircle, RefreshCw, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
+import { discoveryRequest } from "../software-factory/discovery-client.mjs";
 import "./billing.css";
 
 const money = (minor, currency = "USD") => new Intl.NumberFormat("en-US", {
@@ -26,6 +27,7 @@ function Status({ status }) {
 
 export function BillingPage({ ctx }) {
   const [snapshot, setSnapshot] = useState(null);
+  const [agentic, setAgentic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState("");
   const [error, setError] = useState("");
@@ -62,7 +64,18 @@ export function BillingPage({ ctx }) {
     }
   }, [call]);
 
+  const loadAgentic = useCallback(async () => {
+    if (!ctx?.user?.role) return;
+    try {
+      const summary = await discoveryRequest(supabase, ctx.user.role, { action: "billing.summary" });
+      setAgentic(summary);
+    } catch {
+      setAgentic(null); // agentic metering is informational; billing page stays usable without it
+    }
+  }, [ctx?.user?.role]);
+
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { loadAgentic(); }, [loadAgentic]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -226,6 +239,19 @@ export function BillingPage({ ctx }) {
       </section>
 
       <section className="jd-billing-detail-grid">
+        <article className="jd-billing-detail-card">
+          <div className="jd-billing-detail-icon"><Clock3 size={17}/></div>
+          <div>
+            <h3>Agent work time</h3>
+            {agentic ? (
+              <>
+                <p>Billed per actual agent work time — queued and waiting time is never billable. Autonomy mode: <strong>{agentic.mode}</strong>. Measured work: <strong>{Math.round((agentic.actual_seconds || 0) / 60)} min</strong> · confirmed estimates in flight: <strong>{Math.round((agentic.confirmed_estimate_seconds || 0) / 60)} min</strong> · ceiling: <strong>{Math.round((agentic.spend_ceiling_seconds || 0) / 60)} min</strong>.</p>
+                <p style={{ fontWeight: 700 }}>Due at settlement: {money(agentic.amount_minor_actual, agentic.currency)} <span style={{ fontWeight: 400, fontSize: 11 }}>({money(agentic.agentic_rate_minor_per_hour, agentic.currency)}/agent-hour)</span></p>
+                <p style={{ fontSize: 11 }}>Charging is disabled until the platform release flag is enabled; the ledger records every confirmed and measured second in the meantime.</p>
+              </>
+            ) : <p>Agentic-time metering could not be read in this workspace. Runs still meter in the background; reload later.</p>}
+          </div>
+        </article>
         <article className="jd-billing-detail-card">
           <div className="jd-billing-detail-icon"><ShieldCheck size={17}/></div>
           <div><h3>Protected payments</h3><p>Every payment is verified directly with Paystack before JD updates your subscription. A browser redirect is never treated as proof of payment.</p></div>

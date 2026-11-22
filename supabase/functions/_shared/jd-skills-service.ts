@@ -8,7 +8,7 @@
 import { safeText } from './jd-business-foundation.mjs';
 import { inspectSkillPackage, SKILL_PACKAGE_LIMITS, SKILLS_RELEASE_FLAG, SKILLS_STORAGE_BUCKET } from './jd-skills-package.ts';
 import { matchSkillsForTask, AUTONOMOUS_SOURCE } from './jd-skills-source-index.mjs';
-import { acquireSkill } from './jd-skills-acquire.ts';
+import { acquireSkillCore } from './jd-skills-acquire.ts';
 
 const uuid=(v:unknown)=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const plainFile=(v:unknown)=>typeof v==='string'&&v.length>=1&&v.length<=200&&/^[A-Za-z0-9._ -]+$/.test(v)&&!/^[. -]/.test(v);
@@ -80,10 +80,11 @@ export async function handleSkills({payload,admin,auth,actorId,profile,json,enab
    if(payload.confirm!==true||!uuid(payload.requestId))return json({error:'Confirmation and request identifier required'},400);
    if(typeof payload.name!=='string')return json({error:'An allowlisted capability name is required'},400);
    try{
-    return await acquireSkill({entryId:payload.name,admin,actorId,requestId:payload.requestId,json,
+    const result=await acquireSkillCore({entryId:payload.name,admin,actorId,requestId:payload.requestId,
      createRpc:(args)=>call('jd_create_skill_import',args),
      completeRpc:(args)=>call('jd_complete_skill_import',args),
      publishRpc:(args)=>call('jd_acquire_publish_skill',args)});
+    return 'error' in result?json({error:result.error.message},result.error.status):json({receipt:result.receipt});
    }catch(e:any){
     if(e?.dbCode)throw e;
     return json({error:e?.message||'The upstream source could not be acquired; nothing may have been recorded. Retry with the same request identifier only after checking the catalogue.'},502);

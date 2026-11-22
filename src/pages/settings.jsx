@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ArrowLeft, Bell, Building2, Calendar, Clock, Settings } from "lucide-react";
 import { db, supabase } from "../supabaseClient.js";
+import { discoveryRequest } from "../software-factory/discovery-client.mjs";
 import { C } from "../config/theme.js";
 import { OrganizationCtx } from "../contexts/organization.jsx";
 import { Card, Btn, Badge, Spinner } from "../components/ui.jsx";
@@ -126,6 +127,7 @@ export function SettingsPage({ctx}){
   const tabs=[
     {id:"workspace",     label:"Workspace"},
     {id:"organization",  label:"Organization Info"},
+    {id:"autonomy",      label:"Agent Autonomy"},
     {id:"security",      label:"Security"},
     {id:"integrations",   label:"JD Connect"},
     {id:"portal",        label:"About"},
@@ -234,6 +236,9 @@ export function SettingsPage({ctx}){
           </div>
         </Card>
       )}
+
+      {/* ── AGENT AUTONOMY ── */}
+      {tab==="autonomy"&&<AgentAutonomyCard ctx={ctx} C={C} Card={Card} Btn={Btn} Badge={Badge}/>}
 
       {/* ── JD CONNECT ── */}
       {tab==="integrations"&&<ConnectorDirectory organizationName={ctx.selectedSchool?.name} role={ctx.user?.role}/>}
@@ -661,3 +666,71 @@ export function NotificationsPage({ctx}){
 }
 
 // ─── REPORT CARDS PAGE ────────────────────────────────────────────────────────
+
+const AUTONOMY_ROLES = ["owner","admin"];
+
+export function AgentAutonomyCard({ctx,C,Card,Btn,Badge}){
+  const role=ctx?.user?.role;
+  const isAdmin=AUTONOMY_ROLES.includes(role);
+  const [autonomy,setAutonomy]=useState(null);
+  const [mode,setMode]=useState("assisted");
+  const [ceilingHours,setCeilingHours]=useState("1");
+  const [ratePerHour,setRatePerHour]=useState("100.00");
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
+  const [notice,setNotice]=useState("");
+  const alive=useState(true);
+  const load=async()=>{
+    setBusy(true);setError("");
+    try{
+      const a=await discoveryRequest(supabase,role,{action:"autonomy.read"});
+      if(alive[0]){setAutonomy(a);setMode(a.mode);setCeilingHours(String(Math.round(a.spend_ceiling_seconds/60)));setRatePerHour((a.agentic_rate_minor_per_hour/100).toFixed(2));}
+    }catch(e){if(alive[0])setError(e.message||"The autonomy dial could not be read.");}
+    finally{if(alive[0])setBusy(false);}
+  };
+  useEffect(()=>{if(isAdmin)load();return()=>{alive[0]=false;};},[]);
+  const save=async()=>{
+    setBusy(true);setError("");setNotice("");
+    try{
+      const ceilingSeconds=Math.round(parseFloat(ceilingHours||"0")*60);
+      const rateMinor=Math.round(parseFloat(ratePerHour||"0")*100);
+      const receipt=await discoveryRequest(supabase,role,{action:"autonomy.set",confirm:true,
+        requestId:crypto.randomUUID(),mode,ceilingSeconds,rateMinorPerHour:rateMinor});
+      setNotice(receipt.mode==="autonomous"
+        ?"Autonomous mode saved. JD proceeds without per-run prompts — the spend ceiling, immutable metering and audit trail still apply."
+        :"Assisted mode saved. Discovery proposals wait for an independent approval before anything is acquired or spent.");
+      load();
+    }catch(e){setError(e.message||"The autonomy dial could not be saved.");}
+    finally{setBusy(false);}
+  };
+  if(!isAdmin)return <Card><p style={{color:C.muted,fontSize:13}}>Workspace administrator access is required to change the agent autonomy dial.</p></Card>;
+  return <Card>
+    <div style={{fontWeight:900,color:C.blue,fontSize:15,marginBottom:4}}>Agent Autonomy</div>
+    <p style={{color:C.muted,fontSize:12,lineHeight:1.6,marginBottom:14}}>Controls whether the discovery agent asks before acting. Assisted: JD researches the work, then an independent administrator approves acquisition and spend. Autonomous: JD proceeds without per-run prompts — the spend ceiling below is a hard stop, every acquisition keeps its immutable provenance, and all agent work time is metered. Neither mode grants packages tools or authority.</p>
+    {error&&<p role="alert" style={{color:"#8d2f26",fontWeight:650,fontSize:12}}>{error}</p>}
+    {notice&&<p role="status" style={{color:C.green||"#2f6b3a",fontWeight:650,fontSize:12}}>{notice}</p>}
+    {!autonomy&&!busy&&<Btn onClick={load}>Load current dial</Btn>}
+    {autonomy&&<div>
+      <div style={{display:"grid",gap:10,marginBottom:16}}>
+        {[["assisted","Assisted — ask before acquiring or spending","JD researches and proposes; an independent administrator approves before JD acquires capabilities or spends agent time."],
+          ["autonomous","Autonomous — cook without asking","JD researches, acquires what it needs and proceeds. Bounded by the spend ceiling below; charging happens per actual agent work time at the recorded rate."]].map(([value,label,desc])=>(
+          <label key={value} style={{display:"flex",gap:10,alignItems:"flex-start",border:`1.5px solid ${mode===value?C.blue:C.border}`,borderRadius:10,padding:12,cursor:"pointer",background:mode===value?"color-mix(in srgb, "+C.blue+" 6%, transparent)":"transparent"}}>
+            <input type="radio" name="autonomy-mode" value={value} checked={mode===value} onChange={()=>setMode(value)} style={{marginTop:3}}/>
+            <span><div style={{fontWeight:800,fontSize:13,color:C.text}}>{label}</div><div style={{fontSize:12,color:C.muted,marginTop:2}}>{desc}</div></span>
+          </label>))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+        <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Spend ceiling (hours of agent time)
+          <input type="number" min="0.02" max="24" step="0.02" value={ceilingHours} onChange={e=>setCeilingHours(e.target.value)}
+            style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:9,fontSize:13,marginTop:6}}/>
+        </label>
+        <label style={{display:"block",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:.5}}>Rate ({autonomy.currency} per agent-hour)
+          <input type="number" min="1" max="1000000" step="0.5" value={ratePerHour} onChange={e=>setRatePerHour(e.target.value)}
+            style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:9,fontSize:13,marginTop:6}}/>
+        </label>
+      </div>
+      <p style={{fontSize:11,color:C.muted,marginBottom:14}}>Charging itself stays disabled until the platform release flag is enabled; the ledger records confirmed estimates and measured actual seconds in the meantime. Queued and waiting time is never billable.</p>
+      <Btn onClick={save} disabled={busy}>Save autonomy dial</Btn>
+    </div>}
+  </Card>;
+}

@@ -83,25 +83,28 @@ export type AcquisitionReceipt = {
  hiring_enabled: false; execution_enabled: false;
 };
 
-export async function acquireSkill({entryId, admin, actorId, requestId, json, completeRpc, createRpc, publishRpc}: {
- entryId: string; admin: any; actorId: string; requestId: string; json: (body: any, status?: number) => Response;
+// Core acquisition without the HTTP shell: returns the receipt object on
+// success or {error} with an HTTP status so both the JSON action and the
+// discovery agent can consume it. The caller supplies UUID request ids.
+export async function acquireSkillCore({entryId, admin, actorId, requestId, completeRpc, createRpc, publishRpc}: {
+ entryId: string; admin: any; actorId: string; requestId: string;
  completeRpc: (args: any) => Promise<any>; createRpc: (args: any) => Promise<any>; publishRpc: (args: any) => Promise<any>;
-}) {
+}): Promise<{receipt: AcquisitionReceipt} | {error: {message: string; status: number}}> {
  const entry = getAutonomousSourceEntry(entryId);
- if (!entry) return json({error: 'The requested capability is not in the allowlisted source catalogue.'}, 400);
+ if (!entry) return {error: {message: 'The requested capability is not in the allowlisted source catalogue.', status: 400}};
  const commit = await resolveUpstreamCommit();
  const archiveRes = await fetchGuarded(`https://${AUTONOMOUS_SOURCE.archiveHost}/${AUTONOMOUS_SOURCE.repo}/zip/${commit}`, 'application/zip');
  const raw = new Uint8Array(await archiveRes.arrayBuffer());
- if (raw.length === 0 || raw.length > MAX_ZIPBALL_BYTES) return json({error: 'The upstream archive exceeded the acquisition size bound.'}, 502);
+ if (raw.length === 0 || raw.length > MAX_ZIPBALL_BYTES) return {error: {message: 'The upstream archive exceeded the acquisition size bound.', status: 502}};
  const root = readZipEntries(raw);
  const first = root.entries[0]?.path || '';
  const rootDir = first.slice(0, first.indexOf('/') + 1);
- if (!rootDir) return json({error: 'The upstream archive has no readable root.'}, 502);
+ if (!rootDir) return {error: {message: 'The upstream archive has no readable root.', status: 502}};
  let selected: string[];
  try {
   selected = selectUpstreamFiles(root.entries.map((e) => e.path), entry.id);
  } catch (e: any) {
-  return json({error: `Upstream skill directory is not acquirable: ${e?.message || 'missing SKILL.md'}`}, 502);
+  return {error: {message: `Upstream skill directory is not acquirable: ${e?.message || 'missing SKILL.md'}`, status: 502}};
  }
  const extract = async (path: string) => {
   const found = root.entries.find((e) => e.path === path);
@@ -115,14 +118,14 @@ export async function acquireSkill({entryId, admin, actorId, requestId, json, co
   const data = await extract(path);
   if (data.length > SKILL_PACKAGE_LIMITS.maxPerFileUncompressedBytes) continue;
   total += data.length;
-  if (total > MAX_SELECTED_BYTES) return json({error: 'The upstream skill text exceeded the acquisition size bound.'}, 502);
+  if (total > MAX_SELECTED_BYTES) return {error: {message: 'The upstream skill text exceeded the acquisition size bound.', status: 502}};
   files.set(rel, data);
  }
  let skillMd: string;
  try {
   skillMd = repackageSkillFrontmatter(new TextDecoder().decode(files.get('SKILL.md')), entry);
  } catch (e: any) {
-  return json({error: `Upstream SKILL.md could not be repackaged: ${e?.message || 'invalid frontmatter'}`}, 502);
+  return {error: {message: `Upstream SKILL.md could not be repackaged: ${e?.message || 'invalid frontmatter'}`, status: 502}};
  }
  const entries = [...files.entries()].map(([path, data]) => ({path, data: path === 'SKILL.md' ? new TextEncoder().encode(skillMd) : data}));
  entries.push({path: 'PACKAGING.md', data: new TextEncoder().encode(packagingNote(commit, entry.id))});
@@ -133,7 +136,7 @@ export async function acquireSkill({entryId, admin, actorId, requestId, json, co
  const importReceipt = await createRpc({p_actor: actorId, p_request: requestId, p_filename: filename});
  const {error: uploadError} = await admin.storage.from(SKILLS_STORAGE_BUCKET).upload(importReceipt.storage_path, zipBytes, {contentType: 'application/zip', upsert: false});
  if (uploadError && !/exist/i.test(String(uploadError?.message || ''))) {
-  return json({error: 'The acquired package could not be quarantined; nothing was recorded. Retry with the same request identifier.'}, 502);
+  return {error: {message: 'The acquired package could not be quarantined; nothing was recorded. Retry with a fresh request identifier.', status: 502}};
  }
  const report = {
   kind: 'skills_package_report',
@@ -167,5 +170,13 @@ export async function acquireSkill({entryId, admin, actorId, requestId, json, co
   receipt.skill_id = published.skill_id;
   receipt.autonomous = true;
  }
- return json({receipt});
+ return {receipt};
+}
+
+export async function acquireSkill({entryId, admin, actorId, requestId, json, completeRpc, createRpc, publishRpc}: {
+ entryId: string; admin: any; actorId: string; requestId: string; json: (body: any, status?: number) => Response;
+ completeRpc: (args: any) => Promise<any>; createRpc: (args: any) => Promise<any>; publishRpc: (args: any) => Promise<any>;
+}) {
+ const result = await acquireSkillCore({entryId, admin, actorId, requestId, completeRpc, createRpc, publishRpc});
+ return 'error' in result ? json({error: result.error.message}, result.error.status) : json({receipt: result.receipt});
 }
