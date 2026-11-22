@@ -695,6 +695,7 @@ Deno.serve(async (req) => {
       source:agent?.source==="registry"?"registry":"builtin",
       status:agent?.status==="report_returned"?"report_returned":"failed",
       tools_granted:Array.isArray(agent?.tools_granted)?agent.tools_granted.slice(0,6).map((tool:any)=>String(tool).slice(0,80)):[],
+      skill:agent?.skill&&typeof agent?.skill==="object"?{name:String(agent.skill.name||"").slice(0,120),version:Number.isInteger(agent.skill.version)?agent.skill.version:null}:null,
       verification:String(agent?.verification?.status||"unknown").slice(0,40),
       report_returned:agent?.status==="report_returned"&&typeof agent?.report==="string"&&agent.report.length>0,
      })));

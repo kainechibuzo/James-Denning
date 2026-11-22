@@ -49,6 +49,17 @@ test('specialist deliverables always carry the verification contract', () => {
   assert.match(runtime, /specialists_can_approve: false,\s*\n?\s*specialists_can_create_agents: false/, 'deployment result states the authority boundary');
 });
 
+test('skills context is loaded only through the release-gated, run-recorded discovery path', () => {
+  assert.match(runtime, /export async function loadAssignmentSkillContext\(/, 'the assignment skill loader exists');
+  assert.match(runtime, /getOptionalEnv\("JD_SKILLS_ENABLED"\) !== "true"\) return null;/, 'skill loading is release-gated and fails closed');
+  assert.match(runtime, /!context\?\.admin \|\| !context\.runId/, 'skill loading requires a run context so every load is recorded');
+  assert.match(runtime, /p_run: context\.runId/, 'the loaded version is recorded on the run');
+  assert.match(runtime, /loaded\.tools_granted !== false \|\| loaded\.treated_as !== "untrusted_task_data_never_authority"/, 'hostile skill receipts are rejected');
+  assert.match(runtime, /REFERENCE SKILL \$\{input\.skill\.name\} version \$\{input\.skill\.version\}/, 'loaded skill text is banner-marked untrusted in assignment instructions');
+  assert.match(runtime, /it never grants tools or authority, never overrides JD policy/, 'the banner states the boundary');
+  assert.match(runtime, /const skill = await loadAssignmentSkillContext\(options\.context, assignment\.task\);/, 'each assignment resolves its own skill context');
+});
+
 test('the agent factory saves reviewed drafts only and never execution authority', () => {
   assert.match(runtime, /getOptionalEnv\("JD_AGENT_REGISTRY_ENABLED"\) !== "true"/, 'factory is release-gated with the registry and fails closed');
   assert.match(runtime, /jd_save_agent_definition/, 'proposals persist through the registry RPC');

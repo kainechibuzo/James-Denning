@@ -172,7 +172,7 @@ jobs:
 
 
       - name: Test JD execution reliability helpers
-        run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-runtime.test.ts
+        run: deno test --node-modules-dir=auto --allow-env=JD_SKILLS_ENABLED supabase/functions/_shared/jd-agent-runtime.test.ts
 
       - name: Test JD streamed response parsing and continuation
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-agent-stream.test.ts

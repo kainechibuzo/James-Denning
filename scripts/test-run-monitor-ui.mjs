@@ -42,3 +42,14 @@ test('body error is unavailable rather than empty success and malformed records 
 test('genuine empty response states only what the bounded read returned',async()=>{
  const m=await mount(async()=>response());try{assert.match(text(),/No automation runs were returned for this workspace/);assert.doesNotMatch(text(),/No automation runs have been recorded/);}finally{await m.cleanup();}
 });
+test('workforce cards show the recorded skill reference without instruction text',async()=>{
+ const workforce=[{agent_ref:'builtin:finance_analyst',name:'Finance Analyst',source:'builtin',status:'report_returned',tools_granted:['get_billing_snapshot'],skill:{name:'xlsx',version:1},verification:'pending_jd_verification',report_returned:true},
+  {agent_ref:'builtin:operations_manager',name:'Operations Manager',source:'builtin',status:'report_returned',tools_granted:[],skill:null,verification:'pending_jd_verification',report_returned:true}];
+ const deployed=()=>({id:step,status:'completed',tool_key:'deploy_specialist_workforce',workforce});
+ const m=await mount(async()=>response({id,status:'completed',request_preview:'Deploy specialists with a published skill',steps:[deployed()]}));try{
+  await act(async()=>document.querySelector('.jd-runs-card-head').click());
+  assert.match(text(),/Skill: xlsx v1/);
+  assert.match(text(),/Operations Manager/);
+  assert.doesNotMatch(text(),/untrusted|REFERENCE SKILL|instructions/);
+ }finally{await m.cleanup();}
+});

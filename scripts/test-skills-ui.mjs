@@ -134,6 +134,22 @@ test('revoke records the lifecycle action with a note',async()=>{
   assert.equal(m.calls[2].action,'skills.lifecycle');assert.equal(m.calls[2].lifecycleAction,'revoke');assert.equal(m.calls[3].action,'skills.read');
   assert.match(text(),/Revoked skills disappear from discovery/);
  }finally{await m.cleanup();}});
+test('starter packages flow through the same quarantine import pipeline',async()=>{
+ const originalFetch=globalThis.fetch;
+ globalThis.fetch=async()=>new Response(new Blob([new Uint8Array([80,75,3,4])]),{status:200});
+ const m=await mount({handler:async body=>{
+  if(body.action==='skills.import.create')return{data:{receipt:createReceipt}};
+  if(body.action==='skills.import.complete')return{data:{receipt}};
+  return{data:{catalog:catalog(body)}};
+ }});
+ try{
+  await click('Spreadsheet workbooks (XLSX)');
+  assert.equal(m.calls[1].action,'skills.import.create');assert.equal(m.calls[1].filename,'xlsx.zip');
+  assert.match(m.calls[1].requestId,/^[a-f0-9-]{36}$/);assert.equal(m.calls[1].confirm,true);
+  assert.equal(m.uploads[0].file.name,'xlsx.zip');
+  assert.equal(m.calls[2].action,'skills.import.complete');assert.equal(m.calls[2].importId,uid(31));
+  assert.match(text(),/Inspection complete without execution/);
+ }finally{globalThis.fetch=originalFetch;await m.cleanup();}});
 test('discovery preview shows metadata only and never instruction text',async()=>{
  const m=await mount({handler:async body=>body.action==='skills.resolve'
   ?{data:{discover:{skills:[{id:uid(21),name:'Invoice Reconciler',version:1,description:'Reconciles supplier invoices against the ledger.'}],scope:'tenant_private',execution_granted:false,instructions_included:false,notice:'Skill metadata only; loading an approved skill records its exact version and never grants tools or authority.'}}}

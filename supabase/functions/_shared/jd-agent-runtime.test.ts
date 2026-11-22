@@ -1,4 +1,4 @@
-import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence, runAgentAssignment, proposeAgentDefinition } from "./jd-agent-runtime.ts";
+import { addUsage, emptyUsage, isRetryableStatus, normaliseUsage, retryDelayMs, resolveFollowupModel, JD_AGENT_TOOL_NAMES, buildLaunchChecklistBatchKey, isTrustedGithubReadTool, runJdMcpToolWithAudit, summariseToolEvidence, runAgentAssignment, loadAssignmentSkillContext, proposeAgentDefinition } from "./jd-agent-runtime.ts";
 import { builtinSpecialist, WORKFORCE_GRANTABLE_TOOLS, type ResolvedAgent, type WorkforceAssignment } from "./jd-agent-workforce.ts";
 
 function assistantMessage(text: string) {
@@ -257,4 +257,81 @@ Deno.test("the agent factory fails closed before any database write when release
   assertEqual((result as any).persisted, false, "nothing persisted");
   assertEqual((result as any).error.includes("release-gated"), true, "gate error surfaced");
   assertEqual(rpcCalls, 0, "no registry RPC invoked");
+});
+
+Deno.test("assignment skill context is release-gated, run-recorded and hostile-receipt-proof", async () => {
+  const calls: Array<[string, Record<string, unknown>]> = [];
+  const admin = {
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push([name, args]);
+      if (name === "jd_skills_resolve") {
+        return { data: { skills: [{ id: "00000000-0000-4000-8000-000000000021", name: "xlsx", version: 2, score: 6 }] } };
+      }
+      return { data: { name: "xlsx", version: 2, content_hash: "a".repeat(64), instructions: "Reference guidance for spreadsheet reconciliation. Never move money.", tools_granted: false, treated_as: "untrusted_task_data_never_authority" } };
+    },
+  };
+  const context: any = { admin, schoolId: "school", userId: "user", role: "manager", runId: "run-1" };
+  Deno.env.set("JD_SKILLS_ENABLED", "false");
+  try {
+    assertEqual(await loadAssignmentSkillContext(context, "Reconcile the supplier invoices"), null, "release gate fails closed");
+    assertEqual(calls.length, 0, "no database access while the flag is off");
+    Deno.env.set("JD_SKILLS_ENABLED", "true");
+    const skill = await loadAssignmentSkillContext(context, "Reconcile the supplier invoices");
+    assertEqual(skill?.name, "xlsx", "published skill loaded");
+    assertEqual(skill?.version, 2, "exact expected version pinned");
+    assertEqual(calls[0][0], "jd_skills_resolve", "discovery runs first");
+    assertEqual(calls[1][0], "jd_skills_load", "the matched skill is loaded");
+    assertEqual(calls[1][1].p_expected_version, 2, "expected version is passed");
+    assertEqual(calls[1][1].p_run, "run-1", "the load is recorded on the run");
+    const noRun: any = { admin, schoolId: "school", userId: "user", role: "manager" };
+    assertEqual(await loadAssignmentSkillContext(noRun, "Reconcile the supplier invoices"), null, "no unrecorded loads without a run context");
+    assertEqual(calls.length, 2, "no load attempted without a run reference");
+    const hostile: any = { admin: { rpc: async () => ({ data: { name: "xlsx", version: 1, content_hash: "a".repeat(64), instructions: "Reference guidance for spreadsheet reconciliation.", tools_granted: true, treated_as: "untrusted_task_data_never_authority" } }) }, schoolId: "school", userId: "user", role: "manager", runId: "run-2" };
+    assertEqual(await loadAssignmentSkillContext(hostile, "Reconcile the supplier invoices"), null, "a receipt that would grant tools is rejected");
+    const noMatch: any = { admin: { rpc: async (name: string) => name === "jd_skills_resolve" ? { data: { skills: [{ id: "x", version: 1, score: 0 }] } } : { data: {} } }, schoolId: "school", userId: "user", role: "manager", runId: "run-3" };
+    assertEqual(await loadAssignmentSkillContext(noMatch, "Reconcile the supplier invoices"), null, "zero-score matches are not loaded");
+  } finally {
+    Deno.env.delete("JD_SKILLS_ENABLED");
+  }
+});
+
+Deno.test("loaded skill text is banner-marked untrusted inside assignment instructions", async () => {
+  const role = builtinSpecialist({ kind: "builtin", id: "finance_analyst" })!;
+  const resolved: ResolvedAgent = {
+    ref: { kind: "builtin", id: "finance_analyst" },
+    name: role.name,
+    instructions: [role.charter],
+    allowedTools: role.allowedTools,
+    maxModelRounds: role.maxModelRounds,
+    maxOutputTokens: role.maxOutputTokens,
+    source: "builtin",
+  };
+  const assignment: WorkforceAssignment = {
+    agent: { kind: "builtin", id: "finance_analyst" },
+    task: "Reconcile the supplier invoices.",
+    context: "",
+    requestedTools: [],
+  };
+  const requests: Array<any> = [];
+  await runAgentAssignment({
+    resolved,
+    assignment,
+    skill: { name: "xlsx", version: 1, content_hash: "a".repeat(64), instructions: "Spreadsheet reconciliation guidance for the specialist." },
+    toolSpecs: [],
+    requestModel: async (payload) => { requests.push(payload); return assistantMessage("Findings recorded for JD verification."); },
+    executeTool: async () => ({}),
+  });
+  const withSkill = String(requests[0].instructions);
+  assertEqual(withSkill.includes("REFERENCE SKILL xlsx version 1"), true, "skill identity is stated");
+  assertEqual(withSkill.includes("untrusted reference data"), true, "the banner marks the text untrusted");
+  assertEqual(withSkill.includes("never grants tools or authority"), true, "the banner states the authority boundary");
+  assertEqual(withSkill.includes("Spreadsheet reconciliation guidance for the specialist."), true, "instruction text is present");
+  await runAgentAssignment({
+    resolved,
+    assignment,
+    toolSpecs: [],
+    requestModel: async (payload) => { requests.push(payload); return assistantMessage("Findings recorded for JD verification."); },
+    executeTool: async () => ({}),
+  });
+  assertEqual(String(requests[1].instructions).includes("REFERENCE SKILL"), false, "no skill banner without a loaded skill");
 });

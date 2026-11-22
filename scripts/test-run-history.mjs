@@ -26,3 +26,14 @@ test('transport rejection is sanitised and never retried',async()=>{
 for(const patch of [{model:{}},{model_requests:'bad'},{model_requests:[null]},{token_usage:[]}])test(`optional run metrics cannot crash the UI: ${JSON.stringify(patch)}`,async()=>{
  await assert.rejects(readRunHistory(client({data:{runs:[{...run(),...patch}]}})),/incomplete records/);
 });
+const deployStep=skill=>({id:'00000000-0000-4000-8000-000000000002',status:'completed',tool_key:'deploy_specialist_workforce',
+ workforce:[{agent_ref:'builtin:finance_analyst',name:'Finance Analyst',source:'builtin',status:'report_returned',tools_granted:['get_billing_snapshot'],skill,verification:'pending_jd_verification',report_returned:true}]});
+test('workforce skill references must be an exact name/version pair or absent',async()=>{
+ const valid=deployStep({name:'xlsx',version:1});
+ assert.deepEqual(await readRunHistory(client({data:{runs:[{...run(),steps:[valid]}]}})),[{...run(),steps:[valid]}]);
+ for(const bad of ['xlsx',{name:'xlsx'},{name:'xlsx',version:'1'},{name:'xlsx',version:1.5},[],42]){
+  if(bad===null)continue;
+  await assert.rejects(readRunHistory(client({data:{runs:[{...run(),steps:[deployStep(bad)]}]}})),/incomplete records/);
+ }
+ assert.deepEqual(await readRunHistory(client({data:{runs:[{...run(),steps:[deployStep(null)]}]}})),[{...run(),steps:[deployStep(null)]}]);
+});
