@@ -7,7 +7,7 @@ import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from '../supabaseClient.js';
 import {skillsRequest} from '../software-factory/skills-client.mjs';
 import {STARTER_SKILLS,STARTER_SKILLS_SOURCE} from '../config/starter-skills.mjs';
-import {AlertCircle,Archive,FileCheck,Loader2,Package,RefreshCw,ShieldCheck,Upload,XCircle} from 'lucide-react';
+import {AlertCircle,Archive,Clock,FileCheck,Loader2,Package,RefreshCw,Search,ShieldCheck,Upload,XCircle} from 'lucide-react';
 
 const styles={
  page:{maxWidth:1180,margin:'0 auto',padding:'26px 22px 48px',color:'var(--jd-text, #22252b)',fontFamily:"var(--jd-font-display, 'JD Caslon Text', Georgia, serif)"},
@@ -46,6 +46,7 @@ export function JdSkillsPage({ctx,client=supabase}){
  const [file,setFile]=useState(null),[importing,setImporting]=useState(false);
  const [confirm,setConfirm]=useState(null),[note,setNote]=useState('');
  const [discoverTask,setDiscoverTask]=useState(''),[discover,setDiscover]=useState(null);
+ const [searchTask,setSearchTask]=useState(''),[searchResult,setSearchResult]=useState(null),[acquireReceipt,setAcquireReceipt]=useState(null);
  const alive=useRef(true),lock=useRef(false),requests=useRef(new Map());
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const requestId=key=>{if(!requests.current.has(key))requests.current.set(key,crypto.randomUUID());return requests.current.get(key);};
@@ -98,6 +99,14 @@ export function JdSkillsPage({ctx,client=supabase}){
    load(selected);
   });
  }
+ const searchSources=()=>run(async()=>api({action:'skills.search',task:searchTask,limit:6}),s=>{setSearchResult(s);setAcquireReceipt(null);});
+ const acquireCandidate=id=>run(async()=>api({action:'skills.acquire',confirm:true,requestId:requestId(`acquire:${id}`),name:id}),receipt=>{
+  setAcquireReceipt(receipt);setSearchResult(null);
+  setNotice(receipt.state==='published'
+   ?`JD acquired ${receipt.source.path.split('/').pop()} from ${receipt.source.repo} at pinned commit ${receipt.source.commit.slice(0,8)}, inspected it without executing anything and published it under policy jd-autonomous-v1. Every billable run that loads it still needs an explicit recorded cost confirmation.`
+   :'JD acquired the package and inspected it without executing anything, but validation was not fully clean, so nothing was published automatically. Review the recorded report.');
+  load(selected);
+ });
  if(!isAdmin)return <p role="status" style={{...styles.page,...styles.muted}}>Workspace administrator access is required.</p>;
  return <div style={styles.page}>
   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
@@ -133,6 +142,31 @@ export function JdSkillsPage({ctx,client=supabase}){
      <button type="button" style={styles.secondary} disabled={busy} title={pkg.blurb} onClick={()=>importStarter(pkg)}>{pkg.title}</button>
      <span style={{...styles.muted,fontSize:12,flex:1,minWidth:200}}>{pkg.blurb}</span>
     </li>)}</ul>
+   </section>
+   <section aria-label="Ask JD to find a skill" style={styles.card}>
+    <h3 style={{marginTop:0}}>Ask JD to find a skill</h3>
+    <p style={styles.muted}>Describe the work: JD searches the allowlisted source catalogue (Anthropic's public skills repository), and can acquire a capability itself — fetch the pinned upstream text, inspect it in quarantine without executing anything and publish the validated version under policy jd-autonomous-v1. Provenance (repo, commit, package hash) is recorded immutably. Per-run agentic time is billed only after an explicit cost confirmation.</p>
+    <form onSubmit={e=>{e.preventDefault();searchSources();}}>
+     <label style={{display:'grid',gap:6,fontSize:12,fontWeight:650}}>What should the specialist be able to do?
+      <textarea aria-label="Capability description" rows={2} maxLength={2000} style={styles.input} value={searchTask} onChange={e=>setSearchTask(e.target.value)} placeholder="Prepare a monthly supplier invoice reconciliation against the ledger"/>
+     </label>
+     <button type="submit" style={styles.secondary} disabled={busy||searchTask.trim().length<4}><Search size={14} aria-hidden="true"/> Search source catalogue</button>
+    </form>
+    {searchResult&&<div role="status" aria-label="Source catalogue matches" style={{...styles.boundary,marginTop:12}}>
+     {searchResult.candidates.length===0?'No allowlisted source matched this description.':searchResult.candidates.map(c=><div key={c.id} style={{display:'flex',gap:10,alignItems:'flex-start',marginBottom:8,flexWrap:'wrap'}}>
+      <div style={{flex:1,minWidth:220}}>
+       <strong>{c.name}</strong> <span style={styles.chip}>{c.category}</span> {c.availability?.acquired&&<span style={styles.chip}>already in catalogue · {c.availability.status} · v{c.availability.version}</span>}
+       <p style={{...styles.muted,fontSize:12,margin:'2px 0'}}>{c.description}</p>
+       <p style={{...styles.muted,fontSize:11,margin:0}}><Clock size={11} aria-hidden="true"/> estimated agentic time ≈ {c.expectedMinutes} min/run · source {c.source.repo}/{c.source.path}</p>
+      </div>
+      {!c.availability?.acquired&&<button type="button" style={styles.button} disabled={busy} title="Fetch, inspect without execution and publish under jd-autonomous-v1" onClick={()=>acquireCandidate(c.id)}>Acquire</button>}
+     </div>)}
+     <p style={{...styles.muted,fontSize:12,margin:'6px 0 0'}}>{searchResult.notice}</p>
+    </div>}
+    {acquireReceipt&&<div role="status" aria-label="Acquisition receipt" style={{...styles.boundary,marginTop:12}}>
+     <h4 style={{margin:'0 0 6px'}}><FileCheck size={15} aria-hidden="true"/> {acquireReceipt.state==='published'?'Acquired and published — provenance recorded':'Acquired and inspected — nothing published automatically'}</h4>
+     <p style={{...styles.muted,fontSize:12,margin:0}}>Source {acquireReceipt.source.repo}/{acquireReceipt.source.path} @ <code style={styles.code}>{acquireReceipt.source.commit}</code> · package hash <code style={styles.code}>{acquireReceipt.package_hash}</code> · inspection {acquireReceipt.inspection.status} ({acquireReceipt.inspection.errors} errors, {acquireReceipt.inspection.warnings} warnings) · estimated agentic time ≈ {Math.round(acquireReceipt.estimated_seconds/60)} min/run · billing: {acquireReceipt.billing.model}. The package was never executed.</p>
+    </div>}
    </section>
    <section aria-label="Skill catalogue" style={styles.card}>
     <h3 style={{marginTop:0}}>Catalogue</h3>

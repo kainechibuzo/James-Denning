@@ -7,14 +7,16 @@
 // execution authority, hiring or billing.
 import { safeText } from './jd-business-foundation.mjs';
 import { inspectSkillPackage, SKILL_PACKAGE_LIMITS, SKILLS_RELEASE_FLAG, SKILLS_STORAGE_BUCKET } from './jd-skills-package.ts';
+import { matchSkillsForTask, AUTONOMOUS_SOURCE } from './jd-skills-source-index.mjs';
+import { acquireSkill } from './jd-skills-acquire.ts';
 
 const uuid=(v:unknown)=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const plainFile=(v:unknown)=>typeof v==='string'&&v.length>=1&&v.length<=200&&/^[A-Za-z0-9._ -]+$/.test(v)&&!/^[. -]/.test(v);
 
-const SKILLS_ACTIONS=['skills.read','skills.resolve','skills.load','skills.import.create','skills.import.complete','skills.decide','skills.publish','skills.lifecycle'] as const;
+const SKILLS_ACTIONS=['skills.read','skills.resolve','skills.load','skills.search','skills.acquire','skills.import.create','skills.import.complete','skills.decide','skills.publish','skills.lifecycle'] as const;
 
-export async function handleSkills({payload,admin,auth,actorId,profile,json,enabled=false}:{
- payload:any;admin:any;auth:any;actorId:string;profile:any;json:(body:any,status?:number)=>Response;enabled?:boolean;
+export async function handleSkills({payload,admin,auth,actorId,profile,json,enabled=false,autonomous=false}:{
+ payload:any;admin:any;auth:any;actorId:string;profile:any;json:(body:any,status?:number)=>Response;enabled?:boolean;autonomous?:boolean;
 }){
  if(!['owner','admin'].includes(profile?.role)||profile?.id!==actorId||!profile?.school_id)return json({error:'Workspace administrator required'},403);
  if(!enabled)return json({error:'Skills import needs a reviewed backend and database release.',releaseEnabled:false,releaseFlag:SKILLS_RELEASE_FLAG},409);
@@ -50,6 +52,43 @@ export async function handleSkills({payload,admin,auth,actorId,profile,json,enab
    if(receipt.tools_granted!==false||typeof receipt.instructions!=='string'||receipt.instructions.length<20)throw {dbCode:'receipt'};
    return json({skill:receipt});
   }
+  // Search matches the task against the allowlisted source catalogue only
+  // (offline, curated, code-reviewed). Available to the workspace roles that
+  // run specialist work; acquisition itself stays administrator-only.
+  if(action==='skills.search'){
+   if(!['owner','admin','manager'].includes(profile.role))return json({error:'Manager permission required to search the source catalogue'},403);
+   let candidates;
+   try{candidates=matchSkillsForTask(payload.task,typeof payload.limit==='number'?payload.limit:5);}
+   catch(e:any){return json({error:e?.message||'A bounded task description is required'},400);}
+   const names=candidates.map((c:any)=>c.id);
+   const {data:owned,error:ownedError}=await admin.from('jd_skills')
+    .select('id,name,status,current_version').eq('school_id',profile.school_id).in('name',names.length?names:['__none__']);
+   if(ownedError)return json({error:'Existing catalogue could not be checked'},503);
+   const byName=new Map(((owned||[]) as any[]).map((s:any)=>[s.name,s] as [string,any]));
+   return json({search:{
+    candidates:candidates.map((c:any)=>({...c,availability:byName.has(c.id)
+     ?{acquired:true,skill_id:byName.get(c.id).id,status:byName.get(c.id).status,version:byName.get(c.id).current_version}
+     :{acquired:false}})),
+    source:{repo:AUTONOMOUS_SOURCE.repo,ref:AUTONOMOUS_SOURCE.ref},policy:'jd-autonomous-v1',
+    acquisition_enabled:autonomous,
+    notice:'Metadata search over the allowlisted catalogue only. Acquisition fetches pinned upstream text through the quarantine inspector and publishes validated versions under policy jd-autonomous-v1 without human review; every billable run that loads an acquired skill requires an explicit recorded cost confirmation. Loading never grants tools or authority.',
+    hiring_enabled:false,execution_enabled:false,
+   }});
+  }
+  if(action==='skills.acquire'){
+   if(!autonomous)return json({error:'Autonomous skill acquisition needs the reviewed release flag.',autonomousEnabled:false,releaseFlag:'JD_SKILLS_AUTONOMOUS'},409);
+   if(payload.confirm!==true||!uuid(payload.requestId))return json({error:'Confirmation and request identifier required'},400);
+   if(typeof payload.name!=='string')return json({error:'An allowlisted capability name is required'},400);
+   try{
+    return await acquireSkill({entryId:payload.name,admin,actorId,requestId:payload.requestId,json,
+     createRpc:(args)=>call('jd_create_skill_import',args),
+     completeRpc:(args)=>call('jd_complete_skill_import',args),
+     publishRpc:(args)=>call('jd_acquire_publish_skill',args)});
+   }catch(e:any){
+    if(e?.dbCode)throw e;
+    return json({error:e?.message||'The upstream source could not be acquired; nothing may have been recorded. Retry with the same request identifier only after checking the catalogue.'},502);
+   }
+  }
   // Every mutating action below is administrator-only, confirmed and
   // idempotent under a request identifier held by the database.
   if(payload.confirm!==true||!uuid(payload.requestId))return json({error:'Confirmation and request identifier required'},400);
@@ -83,7 +122,12 @@ export async function handleSkills({payload,admin,auth,actorId,profile,json,enab
     result=await inspectSkillPackage(bytes,{originalFilename:typeof filename==='string'?filename:undefined});
    }
    const report={
-    kind:'skills_package_report',status:result.status,archiveBytes:bytes.length,entryCount:result.entryCount??0,
+    kind:'skills_package_report',
+    // The database records only review outcomes; a fully clean inspection is
+    // recorded as needs_review with its real inspection status preserved, so
+    // the import still requires an independent human review before publication.
+    status:result.status==='validated'?'needs_review':result.status,inspection_status:result.status,
+    archiveBytes:bytes.length,entryCount:result.entryCount??0,
     summary:result.ok?'Inspection complete; independent review required before publication.':'Inspection failed; the package was never executed.',
     errors:result.errors,warnings:result.warnings,findings:result.findings,license:result.license,
     packageHash:result.packageHash,manifestHash:result.manifestHash,
