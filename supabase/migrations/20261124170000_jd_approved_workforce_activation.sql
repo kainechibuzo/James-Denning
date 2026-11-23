@@ -10,6 +10,7 @@ alter table public.jd_workforce_employees
   add column requested_access jsonb not null default '[]'::jsonb;
 alter table public.jd_workforce_teams
   add column department text,
+  add column coordinator_specialist_ref text,
   add column responsibilities jsonb not null default '[]'::jsonb,
   add column requested_access jsonb not null default '[]'::jsonb;
 
@@ -127,7 +128,7 @@ begin
   v_name := btrim(coalesce(v_proposal->>'name',''));
   v_department := nullif(btrim(coalesce(v_proposal->>'department','')),'');
   v_purpose := btrim(coalesce(v_proposal->>'purpose',''));
-  if length(v_name) not between 2 and 120 or length(v_department) > 120 or length(v_purpose) not between 12 and 1200
+  if length(v_name) not between 2 and 120 or length(coalesce(v_department,'')) not between 2 and 120 or length(v_purpose) not between 12 and 1200
      or jsonb_typeof(v_proposal->'responsibilities') is distinct from 'array'
      or jsonb_array_length(v_proposal->'responsibilities') < 1
      or (v_proposal ? 'requested_access' and jsonb_typeof(v_proposal->'requested_access') is distinct from 'array') then
@@ -136,7 +137,7 @@ begin
 
   if v_kind = 'employee' then
     v_specialist := v_proposal->>'specialist_ref';
-    if not (v_specialist = any(v_allowed)) then
+    if v_specialist is null or not (v_specialist = any(v_allowed)) then
       raise exception 'Choose an available built-in specialist before activation' using errcode = '22023';
     end if;
     v_created := public.jd_workforce_create_employee(
@@ -155,6 +156,10 @@ begin
       'employee_id', v_employee_id, 'name', v_name, 'specialist_ref', v_specialist
     ));
   else
+    v_specialist := v_proposal->>'specialist_ref';
+    if v_specialist is null or not (v_specialist = any(v_allowed)) then
+      raise exception 'A team coordinator must use a supported built-in specialist' using errcode = '22023';
+    end if;
     if jsonb_typeof(v_proposal->'members') is distinct from 'array' then
       raise exception 'A team must contain a member list' using errcode = '22023';
     end if;
@@ -172,6 +177,7 @@ begin
     end if;
     update public.jd_workforce_teams
     set department = v_department,
+        coordinator_specialist_ref = v_specialist,
         responsibilities = coalesce(v_proposal->'responsibilities','[]'::jsonb),
         requested_access = coalesce(v_proposal->'requested_access','[]'::jsonb)
     where id = v_team_id and school_id = v_school;
@@ -181,7 +187,7 @@ begin
       v_specialist := v_member->>'specialist_ref';
       v_name := btrim(coalesce(v_member->>'name',''));
       if jsonb_typeof(v_member) is distinct from 'object'
-         or not (v_specialist = any(v_allowed)) or length(v_name) not between 2 and 120
+         or v_specialist is null or not (v_specialist = any(v_allowed)) or length(v_name) not between 2 and 120
          or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120
          or jsonb_typeof(v_member->'responsibilities') is distinct from 'array'
          or (v_member ? 'requested_access' and jsonb_typeof(v_member->'requested_access') is distinct from 'array') then
