@@ -100,12 +100,11 @@ begin
   updated_at=clock_timestamp()
  where school_id=new.school_id and team_id=v_team;
  if v_budget.budget_micros>0 and v_next>v_budget.budget_micros then
-   update public.jd_workforce_employee_usage set reconciliation_status='disputed'
-   where id=new.id and school_id=new.school_id;
+   new.reconciliation_status:='disputed';
  end if;
  return new;
 end;
 $function$;
-create trigger jd_workforce_team_usage_budget_after_insert
-after insert on public.jd_workforce_employee_usage
+create trigger jd_workforce_team_usage_budget_before_insert
+before insert on public.jd_workforce_employee_usage
 for each row execute function public.jd_workforce_apply_team_usage_budget();
