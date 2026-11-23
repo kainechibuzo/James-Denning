@@ -48,7 +48,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   const action=payload.targetKind+"."+payload.operation;
   const {data,error}=await admin.rpc("jd_workforce_control",{p_actor:actorId,p_request:payload.requestId,p_target_kind:payload.targetKind,p_target:payload.targetId,p_action:action});
   if(error){const status=error.code==="42501"?403:error.code==="P0002"?404:error.code==="40001"?409:400;return json({error:status===409?"Workforce state changed or request conflicts. Refresh before retrying.":"Workforce control was not confirmed.",code:error.code||"control_failed"},status);}
-  if(data?.state!==({pause:"paused",resume:"active",retire:"retired"}[payload.operation])||!uuid(data?.event_id))return json({error:"Workforce control receipt was incomplete. Refresh before retrying."},502);
+  if(data?.state!==(({pause:"paused",resume:"active",retire:"retired"}) as Record<string,string>)[payload.operation]||!uuid(data?.event_id))return json({error:"Workforce control receipt was incomplete. Refresh before retrying."},502);
   return json({receipt:data});
  }
  return json({error:"Unsupported workforce control action"},400);
