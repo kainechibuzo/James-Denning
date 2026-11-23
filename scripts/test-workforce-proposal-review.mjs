@@ -7,6 +7,7 @@ const contract = readFileSync("supabase/functions/_shared/jd-capability-contract
 const review = readFileSync("src/chat/ReviewCentre.jsx", "utf8");
 const workforceService = readFileSync("supabase/functions/_shared/jd-workforce-control-service.ts", "utf8");
 const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.sql", "utf8");
+const workforceRollback = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.rollback.sql", "utf8");
 const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
 const privateChatMigration = readFileSync("supabase/migrations/20261124180000_jd_workforce_private_chat.sql", "utf8");
 const assignmentAttribution = readFileSync("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql", "utf8");
@@ -110,4 +111,13 @@ test("employee-bound assignments verify active employee and team membership", ()
   assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
   assert.match(assignmentAttribution, /add column employee_id uuid/);
   assert.match(assignmentAttribution, /add column team_id uuid/);
+});
+
+test("workforce activation rollback restores valid pre-feature SQL contracts", () => {
+  assert.equal((workforceRollback.match(/create or replace function public\\.jd_workforce_create_employee/g)||[]).length,1);
+  assert.equal((workforceRollback.match(/create or replace function public\\.jd_decide_approval/g)||[]).length,1);
+  assert.match(workforceRollback, /grant execute on function public\\.jd_workforce_create_employee\\(uuid,uuid,text,text,integer,text,text\\) to service_role/);
+  assert.match(workforceRollback, /grant execute on function public\\.jd_workforce_create_team\\(uuid,uuid,text,text\\) to service_role/);
+  assert.match(workforceRollback, /Cannot restore unique employee-specialist constraint while duplicate employee instances exist/);
+  assert.doesNotMatch(workforceRollback, /p_ref !~\\* '[^']*\\n grant/);
 });
