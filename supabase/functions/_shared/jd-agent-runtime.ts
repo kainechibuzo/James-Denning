@@ -427,6 +427,71 @@ const tools: ToolSpec[] = [
     },
   },
   {
+    name: "submit_workforce_proposal_for_review",
+    description: "Submit one proposed AI employee or a drafted AI team to the owner's Review Centre. This is a permission request for review only: it does not hire, activate, publish, grant tools, connect services, start billable work or create employee instances. Use after the user has asked to propose an employee or team. Include exact responsibilities and requested access so the owner can make an informed decision.",
+    risk: "low",
+    roles: ["owner","admin"],
+    strict: true,
+    parameters: {
+      type: "object",
+      properties: {
+        kind: { type: "string", enum: ["employee","team"] },
+        name: { type: "string", minLength: 2, maxLength: 120 },
+        department: { type: "string", minLength: 2, maxLength: 120 },
+        purpose: { type: "string", minLength: 12, maxLength: 1200 },
+        responsibilities: { type: "array", minItems: 1, maxItems: 12, items: { type: "string", minLength: 3, maxLength: 500 } },
+        requested_access: { type: "array", maxItems: 12, items: { type: "string", minLength: 2, maxLength: 180 } },
+        members: { type: "array", minItems: 1, maxItems: 20, items: { type: "object", properties: {
+          name: { type: "string", minLength: 2, maxLength: 120 },
+          role: { type: "string", minLength: 2, maxLength: 120 },
+          responsibilities: { type: "array", minItems: 1, maxItems: 8, items: { type: "string", minLength: 3, maxLength: 300 } },
+          requested_access: { type: "array", maxItems: 8, items: { type: "string", minLength: 2, maxLength: 180 } }
+        }, required: ["name","role","responsibilities","requested_access"], additionalProperties: false } }
+      },
+      required: ["kind","name","department","purpose","responsibilities","requested_access"],
+      additionalProperties: false
+    },
+    execute: async (args, ctx) => {
+      if (!ctx.runId || !ctx.conversationId) throw new Error("This workforce proposal is not linked to an active JD conversation");
+      const kind = String(args.kind);
+      const name = String(args.name || "").trim();
+      const department = String(args.department || "").trim();
+      const purpose = String(args.purpose || "").trim();
+      const responsibilities = Array.isArray(args.responsibilities) ? args.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
+      const requestedAccess = Array.isArray(args.requested_access) ? args.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
+      const members = Array.isArray(args.members) ? args.members.slice(0,20).map((member: any) => ({
+        name: String(member?.name || "").trim().slice(0,120),
+        role: String(member?.role || "").trim().slice(0,120),
+        responsibilities: Array.isArray(member?.responsibilities) ? member.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : [],
+        requested_access: Array.isArray(member?.requested_access) ? member.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : []
+      })) : [];
+      if (!["employee","team"].includes(kind) || name.length < 2 || department.length < 2 || purpose.length < 12 || !responsibilities.length) {
+        throw new Error("The employee or team proposal is incomplete");
+      }
+      if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !member.responsibilities.length))) {
+        throw new Error("A drafted team needs at least one fully described member");
+      }
+      if (kind === "employee" && members.length) throw new Error("An individual employee proposal cannot contain team members");
+      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, members, activation: "not_started", tools_granted: false, billing_enabled: false };
+      const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
+      const { data: approval, error } = await ctx.admin.from("jd_approvals").insert({
+        school_id: ctx.schoolId, run_id: ctx.runId, requested_by: ctx.userId,
+        status: "pending", reason: "Review the proposed workforce profile, responsibilities and requested access before any employee or team can be activated.",
+        title: kind === "employee" ? "Review AI employee proposal · " + name : "Review drafted AI team · " + name,
+        action_key: actionKey, risk_level: "medium", created_by_agent: true,
+        proposal_json: { workforce_proposal: proposal, conversation_id: ctx.conversationId, execution_enabled: false },
+        audience_text: "AI workforce"
+      }).select("id,status,title,created_at").single();
+      if (error || !approval) throw new Error("JD could not save the workforce proposal in the Review Centre");
+      return {
+        submitted: true, approval, proposal_kind: kind, proposal_name: name,
+        member_count: kind === "team" ? members.length : 1,
+        persisted: true, requires_owner_review: true, activated: false, tools_granted: false, billing_enabled: false,
+        message: "The proposal is saved and waiting for owner review. Approval records the decision on this proposal; employee activation, tool grants and billable execution remain separate steps."
+      };
+    },
+  },
+  {
     name: "preview_hiring_vacancy",
     description: "Prepare and validate a vacancy draft with title, department, description and requirements. This tool does not publish a vacancy, contact candidates or make hiring decisions.",
     risk: "low",
