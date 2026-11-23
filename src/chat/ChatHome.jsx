@@ -15,29 +15,17 @@ import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
+import { Send, Pause, Play, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
+import { WorkforceControlCentre } from "./WorkforceControlCentre.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 import { JDDepartments } from "./JDDepartments.jsx";
 import {savedTaskKey} from "./operational-task-records.mjs";
 import {useOperationalTaskRecords} from "./use-operational-task-records.jsx";
-
-const actions = [
-  { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
-  { icon: Users, label: "People", prompt: "Give me an overview of people, teams and outstanding people-related work." },
-  { icon: CalendarDays, label: "Schedule", prompt: "Review today's schedule and identify conflicts or missing items." },
-  { icon: ClipboardList, label: "Attendance", prompt: "Review recent attendance and identify exceptions that need attention." },
-  { icon: Wallet, label: "Billing", prompt: "Summarise billing, payments and outstanding balances." },
-  { icon: Mail, label: "Email", prompt: "Help me draft a clear professional email. Ask for any missing details." },
-  { icon: FileText, label: "Reports", prompt: "Prepare an organisation report using the latest available records." },
-  { icon: Command, label: "Capabilities", prompt: "Show me what you can currently do in this workspace. Check the registered tools available to my role. Separate callable actions, approval requirements and independent live verification. Missing verification is not proof that a tool is unavailable. Do not execute writes just to demonstrate a capability." },
-  { icon: Activity, label: "Logs", prompt: "Inspect recent activity and audit logs. Highlight failures and unusual activity." },
-  { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
-];
 
 function renderInlineMarkdown(value, keyPrefix = "inline") {
   const tokenPattern = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|\x60[^\x60]+\x60|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"')]+)/g;
@@ -187,6 +175,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
+  const [showWorkforce, setShowWorkforce] = useState(false);
   const [showDepartments, setShowDepartments] = useState(false);
   const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -443,7 +432,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     handledNavigation.current = navigationRequest;
     const view = navigationRequest.view;
     setShowReview(view === "review"); setShowUsage(view === "usage");
-    setShowRuns(view === "runs"); setShowDepartments(view === "departments");
+    setShowRuns(view === "runs"); setShowWorkforce(view === "workforce"); setShowDepartments(view === "departments");
     setShowConnectors(view === "connectors");
     conversationSequence.current++;setOpeningId(null);
     setHistoryOpen(view === "history");
@@ -460,9 +449,9 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-message-actions button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--jd-border);background:var(--jd-card);color:var(--jd-text-soft);border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer}
         .jd-message-actions button:hover{color:var(--jd-text);border-color:var(--jd-muted)}
         .jd-message-actions button:disabled{opacity:.5;cursor:not-allowed}
-        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:radial-gradient(ellipse at 12% 18%,rgba(196,201,207,.19),transparent 28%),radial-gradient(ellipse at 88% 78%,rgba(196,201,207,.15),transparent 26%),var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--jd-canvas);border-bottom:1px solid var(--jd-border)}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid var(--jd-border);background:color-mix(in srgb, var(--jd-card) 94%, transparent);border-radius:10px;color:var(--jd-text-soft);display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:var(--jd-text-soft);background:color-mix(in srgb, var(--jd-card) 96%, transparent);border:1px solid var(--jd-border);border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--jd-canvas);border-bottom:1px solid var(--jd-border)}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid var(--jd-border);background:color-mix(in srgb, var(--jd-card) 94%, transparent);border-radius:10px;color:var(--jd-text-soft);display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:var(--jd-muted);background:color-mix(in srgb,var(--jd-canvas) 86%,transparent);border:1px solid color-mix(in srgb,var(--jd-border) 62%,transparent);border-radius:20px;padding:7px 11px;display:inline-flex;align-items:center;gap:7px}
         .jd-utility-status.is-working{color:var(--jd-text-soft);border-color:var(--jd-border)}
         .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--jd-muted);animation:jd-pulse 1.25s ease-in-out infinite}
         @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:var(--jd-soft);border-right:1px solid var(--jd-border);padding:18px 13px;display:flex;flex-direction:column;gap:16px}
@@ -487,14 +476,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-top{display:none}
         .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
         .jd-icon-btn{border:0;background:transparent;color:var(--jd-muted);padding:7px;border-radius:8px;cursor:pointer}
-        .jd-top-title{font-size:12px;font-weight:700;color:var(--jd-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:var(--jd-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .jd-top-title{font-family:Georgia,"Times New Roman",serif;font-size:14px;font-weight:600;letter-spacing:.01em;color:var(--jd-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:var(--jd-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--jd-muted);flex-shrink:0;white-space:nowrap}
         .jd-dot{width:7px;height:7px;border-radius:50%;background:var(--jd-muted)}
         .jd-scroll{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:12px 20px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:var(--jd-text);color:var(--jd-card);display:grid;place-items:center;margin-bottom:20px}
-        .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
-        .jd-subtitle{font-size:13px;line-height:1.65;color:var(--jd-muted);text-align:center;margin:0 0 25px}
+        .jd-heading{font-size:clamp(27px,3.6vw,39px);font-weight:520;letter-spacing:-1.2px;margin:0 0 9px;text-align:center;color:var(--jd-text);line-height:1.18}.jd-script{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;letter-spacing:-.8px;color:var(--jd-text-soft)}.jd-welcome-mark{width:42px;height:42px;border:1px solid var(--jd-border);border-radius:13px;background:color-mix(in srgb,var(--jd-card) 78%,transparent);color:var(--jd-text);display:grid;place-items:center;font-family:Georgia,serif;font-size:14px;letter-spacing:-1px;margin-bottom:22px;box-shadow:0 5px 18px rgba(22,26,32,.035)}
+        .jd-subtitle{font-family:Georgia,"Times New Roman",serif;font-size:16px;line-height:1.6;color:var(--jd-text-soft);text-align:center;margin:0 0 8px}.jd-welcome-description{font-size:12px;line-height:1.7;color:var(--jd-muted);text-align:center;max-width:420px;margin:0}
         .jd-actions{width:min(690px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
         .jd-action{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:12px;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;min-height:59px;cursor:pointer;color:var(--jd-text-soft)}
         .jd-action:hover{border-color:var(--jd-muted);box-shadow:0 3px 12px rgba(20,24,30,.045)}
@@ -568,9 +557,9 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-scroll{padding:12px 14px 8px}
           .jd-welcome{width:100%;padding:8px 0 12px}
           .jd-spark{width:38px;height:38px;border-radius:12px;margin-bottom:14px}
-          .jd-heading{font-size:25px;letter-spacing:-.9px;margin-bottom:7px}
+          .jd-heading{font-size:27px;letter-spacing:-.8px;margin-bottom:8px}
           .jd-subtitle{font-size:12px;line-height:1.6;margin-bottom:18px}
-          .jd-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+          .jd-actions{display:none}
           .jd-action{min-height:52px;padding:10px 9px;gap:9px}
           .jd-action span:last-child{font-size:11px}
           .jd-actions>.jd-action:last-child:nth-child(odd){grid-column:1/-1}
@@ -582,10 +571,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-status .jd-dot{width:8px;height:8px}
         }
         @media(max-width:360px){
-          .jd-actions{grid-template-columns:1fr 1fr}
-          .jd-action{gap:7px;padding:9px 8px}
-          .jd-action span:last-child{font-size:10px}
-          .jd-heading{font-size:23px}
+          .jd-heading{font-size:24px}
         }
       `}</style>
       {showConnectors ? <ConnectorDirectory organizationName={organizationName} role={user?.role} onBack={()=>setShowConnectors(false)}/> : historyOpen ? <ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
@@ -594,18 +580,18 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setHistoryOpen(v=>!v)}>{historyOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
-            <div><div className="jd-top-title">JD Assistant</div><div className="jd-top-sub">{organizationName} · Command centre</div></div>
+            <div><div className="jd-top-title">James-Denning</div><div className="jd-top-sub">{organizationName}</div></div>
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
         <div className="jd-utility">
-          <button className="jd-history-trigger" type="button" aria-label="Open conversation history" title="Conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button>
+          <button className="jd-history-trigger" type="button" aria-label="Open menu and conversation history" title="Menu" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><Menu size={18}/></button>
           <span className={"jd-utility-status" + (isWorking ? " is-working" : "")} role="status">{isWorking ? (activeJobCount > 0 ? `Working · ${activeJobCount} run${activeJobCount===1?"":"s"} active` : "Working on your request") : "Workspace Active"}</span>
         </div><div className="jd-scroll">
           {historyCursor&&<button className="jd-load-earlier" type="button" disabled={earlierLoading||sending} onClick={()=>loadConversation(conversationId,historyCursor)}>{earlierLoading?"Loading earlier messages…":"Load earlier messages"}</button>}
           {messages.length===0 ? <div className="jd-welcome">
+            <div className="jd-welcome-mark" aria-hidden="true">JD</div>
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
-            <div style={{margin:"2px 0 16px"}}><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">
@@ -638,8 +624,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
           <div className="jd-compose">
-            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
-              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>
+            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={[]}
+              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowWorkforce(view==="workforce");setShowUsage(false);setShowDepartments(false);}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
           </div>
@@ -648,6 +634,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
       </section>)}
       {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
+      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)}/></div>}
       {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
       {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{

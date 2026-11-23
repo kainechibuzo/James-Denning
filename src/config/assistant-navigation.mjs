@@ -7,6 +7,7 @@ export const JD_ASSISTANT_TOOLS = Object.freeze([
   {id:'departments',label:'Departments',icon:'building'},
   {id:'usage',label:'AI usage',icon:'activity'},
   {id:'runs',label:'Automation runs',icon:'activity'},
+  {id:'workforce',label:'Workforce control centre',icon:'people'},
   {id:'connectors',label:'Connectors',icon:'link'},
 ].map(Object.freeze));
 export function assistantNavigation(authorisedNavigation,query=''){

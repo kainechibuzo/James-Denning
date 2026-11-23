@@ -19,7 +19,7 @@ Deno.test('runtime supplies interaction instructions, streams safely and carries
  try{
   let partial='';const result=await run('I want to start a business.',[],delta=>{partial+=delta;equal(streamText(partial),'');});
   equal(decodeResponse(result.text,{allowOperational:false}).response,envelope);
-  const instructions=JSON.stringify(requests[0]);if(!instructions.includes('Response interface protocol v1')||!instructions.includes('Do not convert every question mark'))throw Error('Missing intent and protocol instructions');
+  const instructions=JSON.stringify(requests[0]);if(!instructions.includes('Response interface protocol v1')||!instructions.includes('Do not convert every question mark')||!instructions.includes('allowCustom:true')||!instructions.includes('recommend a small, relevant specialist team')||!instructions.includes('currently registered and role-available specialist catalogue'))throw Error('Missing intent and protocol instructions');
   const followup=await run('Name your business\nBusiness name: Acme',[{role:'assistant',content:'Name your business\n- Business name'}]);
   equal(followup.text,'Your chosen business name is Acme.');
   if(!JSON.stringify(requests[1]).includes('Business name: Acme'))throw Error('Follow-up context was lost');

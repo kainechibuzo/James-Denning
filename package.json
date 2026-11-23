@@ -22,7 +22,7 @@
     "test:reference-layout": "node scripts/test-reference-layout.mjs",
     "test:chat-layout": "node scripts/test-chat-layout.mjs && node scripts/test-settings-layout.mjs && node scripts/test-agent-studio-layout.mjs && node scripts/test-foundation-layout.mjs && node scripts/test-agent-registry-layout.mjs && npm run test:reference-layout && npm run test:site-layout && npm run test:conversation-layout && npm run test:theme-layout && npm run test:connectors && node scripts/test-mobile-polish-layout.mjs && node scripts/test-connector-tokens-layout.mjs",
     "test:registry": "node --experimental-strip-types --test scripts/test-agent-registry.mjs scripts/test-agent-registry-database.mjs scripts/test-agent-registry-ui.mjs",
-    "test:workforce": "node --experimental-strip-types --test scripts/test-agent-workforce-engine.mjs scripts/test-agent-workforce-runtime.mjs scripts/test-agent-workforce-database.mjs scripts/test-agent-workforce-ui.mjs",
+    "test:workforce": "node --experimental-strip-types --test scripts/test-agent-workforce-engine.mjs scripts/test-agent-workforce-runtime.mjs scripts/test-agent-workforce-database.mjs scripts/test-agent-workforce-ui.mjs && npm run test:workforce-control-centre",
     "test:workforce-assignments": "node --experimental-strip-types --test scripts/test-workforce-assignments.mjs",
     "test:run-capabilities": "node --experimental-strip-types --test scripts/test-run-capabilities.mjs",
     "test:skills": "node --experimental-strip-types --test scripts/test-skills-package.mjs scripts/test-skills-database.mjs scripts/test-skills-ui.mjs scripts/test-skills-service.mjs scripts/test-skills-autonomous.mjs scripts/test-starter-skills.mjs",
@@ -47,7 +47,8 @@
     "test:responses": "node --test scripts/test-response-protocol.mjs scripts/test-conversation-interactions-database.mjs",
     "test:responses:layout": "node scripts/test-response-engine-layout.mjs",
     "test:discovery": "node --experimental-strip-types --test scripts/test-discovery-autonomy.mjs",
-    "test:auto-release": "node --test scripts/test-auto-release.mjs"
+    "test:auto-release": "node --test scripts/test-auto-release.mjs",
+    "test:workforce-control-centre": "node --experimental-strip-types --test scripts/test-workforce-control-centre.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

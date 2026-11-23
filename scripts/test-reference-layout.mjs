@@ -125,7 +125,7 @@ try{
       if(await control.isVisible()){await control.click();actions.push(action);}
     }
     assert.deepEqual(await page.evaluate(()=>window.__actions),actions);
-    await page.getByRole('button',{name:'Open conversation history'}).click();
+    await page.getByRole('button',{name:'Open menu and conversation history'}).click();
     await page.getByRole('button',{name:/Saved conversation/}).click();
     await page.getByText('Saved fixture message. No real records were read.').waitFor();
     await input.fill('A synthetic message');await input.press('Shift+Enter');await input.press('X');

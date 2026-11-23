@@ -1321,7 +1321,7 @@ function AppInner(){
 
   const navigationQuery = sideOpen || isMobile ? sidebarSearch : "";
   const visibleNavigation = searchNavigation(NAV,navigationQuery);
-  const assistantTools = assistantNavigation(NAV,navigationQuery);
+  const assistantTools = assistantNavigation(NAV,navigationQuery).filter(tool=>tool.id!=="workforce"||["owner","admin"].includes(role));
   const groupCollapsed = (id) => isNavGroupCollapsed(id,collapsedGroups,navigationQuery,sideOpen||isMobile);
   const chatEntry = NAV.find(entry=>entry.id==="jd-chat"&&!entry.group);
 
