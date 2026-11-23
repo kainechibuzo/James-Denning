@@ -56,6 +56,24 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
     }catch{if(alive.current){setError('Decision was not confirmed. Refresh before another action; no request was retried.');setNeedsRefresh(true);}}
     finally{lock.current=false;if(alive.current)setBusyId('');}
   };
+  const activateWorkforceProposal = async item => {
+    if(lock.current||loading||needsRefresh||item.status!=="approved"||!["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key))return;
+    lock.current=true;setBusyId(item.id);setError("");setNotice("");
+    try{
+      const {data,error:invokeError}=await client.functions.invoke("jd-automation",{body:{
+        action:"workforce.proposal.activate",approvalId:item.id,requestId:crypto.randomUUID()
+      }});
+      const receipt=data?.receipt;
+      if(invokeError||data?.error||receipt?.activated!==true||receipt?.tools_granted!==false||receipt?.billing_enabled!==false)throw new Error(data?.error||invokeError?.message||"Activation could not be confirmed.");
+      if(!alive.current)return;
+      const count=Array.isArray(receipt.employee_ids)?receipt.employee_ids.length:1;
+      setNotice(item.action_key==="workforce.team.proposal"
+        ? "Approved team activated with "+count+" employee identities. No tools, connector access, assignments or billing were enabled."
+        : "Approved employee activated. No tools, connector access, assignments or billing were enabled.");
+      if(await load())onDecision?.("activate",item,data,"");
+    }catch(error){if(alive.current)setError(error.message||"Activation was not confirmed. Refresh before retrying.");}
+    finally{lock.current=false;if(alive.current)setBusyId("");}
+  };
   const apply = async item=>{
     if(lock.current||loading||needsRefresh||confirmApply!==item.id)return;
     lock.current=true;setBusyId(item.id);setNotice('');setError('');
@@ -130,7 +148,7 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
             {item.action_key==="settings.apply"&&item.status==="approved"&&settingsDiff(item)&&['not_executed','running'].includes(item.execution_status)&&<div className="jd-review-actions">
               {confirmApply===item.id?<><span>Apply only the approved values above? Earlier completed steps will not be repeated.</span><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>setConfirmApply('')}>Keep unchanged</button><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>apply(item)}>Confirm apply settings</button></>:<button type="button" disabled={!!busyId||needsRefresh||loading} onClick={()=>setConfirmApply(item.id)}>Apply approved settings</button>}
             </div>}
-            {item.status==="approved"&&["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&<div className="jd-review-safe-note">Proposal approved. No employee or team has been activated, no tools or connectors have been granted, and no billable work has started. JD must complete the separate evaluated activation and permission workflow.</div>}
+            {item.status==="approved"&&["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&<><div className="jd-review-safe-note">{item.execution_status==="completed"?"This approved proposal has been activated. Tool permissions, connector access, assignment execution and billing remain separate and disabled.":"Proposal approved. No employee or team has been activated, no tools or connectors have been granted, and no billable work has started. Activation creates only the approved workforce identities."}</div>{item.execution_status!=="completed"&&<div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>activateWorkforceProposal(item)}>Activate approved {item.action_key==="workforce.team.proposal"?"team":"employee"}</button></div>}</>}
             {item.status==="approved"&&item.action_key==="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==='completed'?'The execution record reports completed. This is not independent verification of a business outcome.':item.execution_status==='failed'?'Execution needs administrator review. Some steps may already have been saved; do not resubmit blindly.':'Approval recorded. No settings change is confirmed until application and read-back succeed.'}</div>}
             {item.status==="approved"&&item.action_key!=="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==="completed"?"JD completed the approved setup. Created items are tagged as created by JD.":item.execution_status==="failed"?"Your approval was recorded, but JD could not complete the setup. Ask JD to review the issue before retrying.":["queued","running","retry_wait"].includes(item.execution_status)?"Approved and released to JD's execution queue. Work is not yet complete.":"Your approval was recorded. The requested change has not been confirmed as complete."}</div>}
           </article>
