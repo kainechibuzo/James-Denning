@@ -43,7 +43,9 @@
     "test:connector-tokens": "node --experimental-strip-types --test scripts/test-connector-tokens.mjs scripts/test-connector-oauth-endpoint.mjs scripts/test-connector-oauth-database.mjs",
     "test:billing": "node --test scripts/test-billing-config.mjs scripts/test-billing-foundation.mjs scripts/test-billing-ui.mjs",
     "test:responses": "node --test scripts/test-response-protocol.mjs scripts/test-conversation-interactions-database.mjs",
-    "test:responses:layout": "node scripts/test-response-engine-layout.mjs"
+    "test:responses:layout": "node scripts/test-response-engine-layout.mjs",
+    "test:discovery": "node --experimental-strip-types --test scripts/test-discovery-autonomy.mjs",
+    "test:auto-release": "node --test scripts/test-auto-release.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

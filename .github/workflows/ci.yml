@@ -53,6 +53,9 @@ jobs:
       - name: Test backend assignment compatibility and release safety
         run: npm run test:backend-release
 
+      - name: Test merge-to-master auto release contract
+        run: npm run test:auto-release
+
       - name: Test connector OAuth, token rotation, private access and brand assets
         run: npm run test:connector-oauth
 
@@ -79,6 +82,9 @@ jobs:
 
       - name: Test skills package inspection, secure import and lifecycle authority
         run: npm run test:skills
+
+      - name: Test workspace autonomy, discovery agent and agentic-time billing
+        run: npm run test:discovery
 
       - name: Test shadow usage ledger, worker fencing and runtime boundaries
         run: npm run test:usage
