@@ -80,6 +80,9 @@ jobs:
       - name: Test agent execution engine, workforce grants and specialist boundaries
         run: npm run test:workforce
 
+      - name: Test workforce assignment persistence and read-back contract
+        run: npm run test:workforce-assignments
+
       - name: Test skills package inspection, secure import and lifecycle authority
         run: npm run test:skills
 
