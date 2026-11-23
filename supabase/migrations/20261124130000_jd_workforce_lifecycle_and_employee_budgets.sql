@@ -150,7 +150,9 @@ begin
  return receipt;
 end; $$;
 
-revoke all on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) from public,anon,authenticated;\ngrant execute on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) to service_role;\nrevoke all on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from public,anon,authenticated;
+revoke all on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) from public,anon,authenticated;
+grant execute on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) to service_role;
+revoke all on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from public,anon,authenticated;
 revoke all on function public.jd_workforce_create_team(uuid,uuid,text,text) from public,anon,authenticated;
 revoke all on function public.jd_workforce_team_membership(uuid,uuid,uuid,uuid,text,text) from public,anon,authenticated;
 grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;
