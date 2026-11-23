@@ -189,7 +189,7 @@ const tools: ToolSpec[] = [
       const teamRows=teams.data||[];
       const employeeRows=(employees.data||[]).map((employee:any)=>({
         employee_id:employee.id,name:employee.display_name,role_title:employee.role_title,
-        department:employee.department,specialist:{kind:employee.agent_kind,id:employee.agent_ref,version:employee.agent_version},
+        department:employee.department,specialist:employee.agent_kind==="builtin"?{kind:"builtin",id:employee.agent_ref}:{kind:"registry",agentId:employee.agent_ref},
         teams:(members.data||[]).filter((member:any)=>member.employee_id===employee.id).map((member:any)=>{
           const team=teamRows.find((item:any)=>item.id===member.team_id);
           return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
