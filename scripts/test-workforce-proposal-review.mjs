@@ -87,6 +87,11 @@ test("private specialist conversations are separate, append-only and have no too
   assert.match(runtime, /tools: \[\]/);
   assert.match(runtime, /tool_choice: "none"/);
   assert.match(workforceService, /JD_WORKFORCE_PRIVATE_CHAT_ENABLED/);
+  assert.match(workforceService, /jd_agent_definition_versions/);
+  assert.match(workforceService, /specialistInstructions/);
+  assert.match(runtime, /Pinned specialist reference instructions/);
+  assert.match(runtime, /untrusted descriptive content/);
+  assert.doesNotMatch(workforceService, /Private chat is currently available for built-in specialist employees only/);
   assert.match(workforceService, /workforce\.agent\.message\.send/);
   assert.match(workforceService, /workforce\.agent\.message\.replied/);
 });
