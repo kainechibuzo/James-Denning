@@ -118,6 +118,7 @@ test('capability classification stays customer-legible for the new surfaces', ()
   assert.equal(capabilityEffect('deploy_specialist_workforce').effect, 'workforce_orchestration');
   assert.equal(capabilityEffect('propose_agent_definition').effect, 'saved_internal_record');
   assert.equal(capabilityEffect('get_workforce_roster').effect, 'read_only');
+  assert.equal(capabilityEffect('get_published_workforce_specialists').effect, 'read_only');
   assert.match(runtime, /"workforce\.deployed": "Specialist workforce deployment recorded"/, 'audit activity is described in plain language');
 });
 
