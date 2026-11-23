@@ -117,15 +117,20 @@ begin
 
   v_proposal := v_approval.proposal_json->'workforce_proposal';
   v_kind := v_proposal->>'kind';
-  if v_kind = 'employee' and v_approval.action_key <> 'workforce.employee.proposal'
-     or v_kind = 'team' and v_approval.action_key <> 'workforce.team.proposal'
+  if jsonb_typeof(v_proposal) is distinct from 'object'
+     or v_kind is null
+     or (v_kind = 'employee' and v_approval.action_key <> 'workforce.employee.proposal')
+     or (v_kind = 'team' and v_approval.action_key <> 'workforce.team.proposal')
      or v_kind not in ('employee','team') then
     raise exception 'Proposal kind does not match its approval' using errcode = '22023';
   end if;
   v_name := btrim(coalesce(v_proposal->>'name',''));
   v_department := nullif(btrim(coalesce(v_proposal->>'department','')),'');
   v_purpose := btrim(coalesce(v_proposal->>'purpose',''));
-  if length(v_name) not between 2 and 120 or length(v_department) > 120 or length(v_purpose) not between 12 and 1200 then
+  if length(v_name) not between 2 and 120 or length(v_department) > 120 or length(v_purpose) not between 12 and 1200
+     or jsonb_typeof(v_proposal->'responsibilities') is distinct from 'array'
+     or jsonb_array_length(v_proposal->'responsibilities') < 1
+     or (v_proposal ? 'requested_access' and jsonb_typeof(v_proposal->'requested_access') is distinct from 'array') then
     raise exception 'Proposal details are incomplete or invalid' using errcode = '22023';
   end if;
 
@@ -150,8 +155,10 @@ begin
       'employee_id', v_employee_id, 'name', v_name, 'specialist_ref', v_specialist
     ));
   else
-    if jsonb_typeof(v_proposal->'members') <> 'array'
-       or jsonb_array_length(v_proposal->'members') not between 1 and 20 then
+    if jsonb_typeof(v_proposal->'members') is distinct from 'array' then
+      raise exception 'A team must contain a member list' using errcode = '22023';
+    end if;
+    if jsonb_array_length(v_proposal->'members') not between 1 and 20 then
       raise exception 'A team must contain between one and twenty described members' using errcode = '22023';
     end if;
     v_team_name := v_name;
@@ -173,11 +180,15 @@ begin
       v_member_index := v_member_index + 1;
       v_specialist := v_member->>'specialist_ref';
       v_name := btrim(coalesce(v_member->>'name',''));
-      if not (v_specialist = any(v_allowed)) or length(v_name) not between 2 and 120
+      if jsonb_typeof(v_member) is distinct from 'object'
+         or not (v_specialist = any(v_allowed)) or length(v_name) not between 2 and 120
          or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120
-         or jsonb_typeof(v_member->'responsibilities') <> 'array'
-         or jsonb_array_length(v_member->'responsibilities') < 1 then
+         or jsonb_typeof(v_member->'responsibilities') is distinct from 'array'
+         or (v_member ? 'requested_access' and jsonb_typeof(v_member->'requested_access') is distinct from 'array') then
         raise exception 'Every team member needs a supported specialist and complete role details' using errcode = '22023';
+      end if;
+      if jsonb_array_length(v_member->'responsibilities') < 1 then
+        raise exception 'Every team member needs at least one responsibility' using errcode = '22023';
       end if;
       v_created := public.jd_workforce_create_employee(
         p_actor, gen_random_uuid(), 'builtin', v_specialist, null, v_name, v_department
