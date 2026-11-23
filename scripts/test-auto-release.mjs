@@ -21,6 +21,7 @@ test('the workflow token only needs to dispatch a workflow', () => {
   assert.match(workflow, /contents:\s*read/);
   assert.doesNotMatch(workflow, /administration:/);
   assert.doesNotMatch(workflow, /uses: actions\/checkout/); // pure dispatch: no repo content is checked out
+  assert.match(workflow, /GH_REPO: \$\{\{ github\.repository \}\}/); // gh must not probe git remotes on a bare workspace
 });
 
 test('the release approval evidence is carried as dispatch inputs, not variable writes', () => {
