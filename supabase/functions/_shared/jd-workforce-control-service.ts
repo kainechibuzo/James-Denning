@@ -14,6 +14,22 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   if(employees.error||teams.error||members.error||assignments.error||budgets.error||employeeUsage.error)return json({error:"Workforce records are not available. Confirm the reviewed schema is present before enabling this feature.",releaseReady:false},503);
   return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],budgets:budgets.data||[],employeeUsage:employeeUsage.data||[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:false,billingMode:"shadow_only"});
  }
+ if(payload?.action==="workforce.employee.create"||payload?.action==="workforce.team.create"){
+  return json({error:"Employee and team identities can only be created by activating an explicitly approved Review Centre proposal."},409);
+ }
+ if(payload?.action==="workforce.proposal.activate"){
+  if(!uuid(payload.approvalId)||!uuid(payload.requestId))return json({error:"A valid approved proposal and request identifier are required"},400);
+  const {data,error}=await admin.rpc("jd_workforce_activate_approved_proposal",{
+   p_actor:actorId,p_approval:payload.approvalId,p_request:payload.requestId
+  });
+  if(error){
+   const code=String(error.code||"");
+   const status=code==="42501"?403:code==="P0002"?404:code==="40001"?409:code==="22023"?400:500;
+   return json({error:"The approved workforce proposal was not activated. Refresh the Review Centre and inspect its status before retrying.",code:code||"activation_failed"},status);
+  }
+  if(data?.activated!==true||data?.tools_granted!==false||data?.connectors_authorised!==false||data?.assignment_started!==false||data?.billing_enabled!==false||(!uuid(data?.team_id)&&!Array.isArray(data?.employee_ids)))return json({error:"Activation receipt was incomplete; refresh before retrying."},502);
+  return json({receipt:data},201);
+ }
  if(payload?.action==="workforce.employee.create"){
   const {kind,ref,version,name,department,requestId}=payload;
   if(!uuid(requestId)||!["builtin","registry"].includes(kind)||typeof ref!=="string"||ref.length>120||typeof name!=="string"||name.trim().length<2||name.trim().length>120||!(department==null||typeof department==="string"&&department.length<=120)||!(version==null||Number.isInteger(version)&&version>0))return json({error:"Invalid employee activation request"},400);
