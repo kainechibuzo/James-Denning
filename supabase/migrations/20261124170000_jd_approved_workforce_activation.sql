@@ -185,6 +185,7 @@ begin
      or v_kind not in ('employee','team') then
     raise exception 'Proposal kind does not match its approval' using errcode='22023';
   end if;
+
   v_name:=btrim(coalesce(v_proposal->>'name',''));
   v_department:=nullif(btrim(coalesce(v_proposal->>'department','')),'');
   v_purpose:=btrim(coalesce(v_proposal->>'purpose',''));
@@ -206,22 +207,80 @@ begin
   if v_kind='employee' then
     v_specialist:=v_proposal->>'specialist_ref';
     v_specialist_kind:=coalesce(v_proposal->>'specialist_kind','builtin');
-    v_specialist_version:=case when coalesce(v_proposal->>'specialist_version','') ~ '^[1-9][0-9]*
+    v_specialist_version:=null;
+    if jsonb_typeof(v_proposal->'specialist_version')='number' then
+      if (v_proposal->>'specialist_version')::numeric <> trunc((v_proposal->>'specialist_version')::numeric) then
+        raise exception 'Registry specialist version must be an integer' using errcode='22023';
+      end if;
+      v_specialist_version:=(v_proposal->>'specialist_version')::integer;
+    end if;
+    if v_specialist_kind='builtin' then
+      if v_specialist is null or not (v_specialist=any(v_allowed)) or v_specialist_version is not null then
+        raise exception 'Choose an available built-in specialist before activation' using errcode='22023';
+      end if;
+      v_specialist_name:=replace(v_specialist,'_',' ');
+    elsif v_specialist_kind='registry' then
+      if v_specialist is null or v_specialist !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+         or v_specialist_version is null
+         or not exists(select 1 from public.jd_agent_definitions a where a.id=v_specialist::uuid and a.school_id=v_school and a.state='published' and a.execution_authorized is true and a.current_version=v_specialist_version) then
+        raise exception 'Registry specialist must be current, published and execution-authorized' using errcode='42501';
+      end if;
+      select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
+      where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+      if coalesce(v_specialist_name,'')='' then raise exception 'Registry specialist version has no display name' using errcode='22023'; end if;
+    else
+      raise exception 'Unknown specialist kind' using errcode='22023';
+    end if;
+
+    v_created:=public.jd_workforce_create_employee(
+      p_actor,gen_random_uuid(),v_specialist_kind,v_specialist,v_specialist_version,v_name,v_department
+    );
+    v_employee_id:=(v_created->>'employee_id')::uuid;
+    if v_employee_id is null then raise exception 'Employee identity creation was not confirmed' using errcode='P0001'; end if;
+    update public.jd_workforce_employees
+    set role_title=coalesce(v_specialist_name,replace(v_specialist,'_',' ')),purpose=v_purpose,
+        responsibilities=coalesce(v_proposal->'responsibilities','[]'::jsonb),
+        requested_access=coalesce(v_proposal->'requested_access','[]'::jsonb)
+    where id=v_employee_id and school_id=v_school;
     v_employee_ids:=jsonb_build_array(jsonb_build_object(
-      'employee_id',v_employee_id,'name',v_name,'specialist_ref',v_specialist
+      'employee_id',v_employee_id,'name',v_name,'specialist_ref',v_specialist,
+      'specialist_kind',v_specialist_kind,'specialist_version',v_specialist_version
     ));
   else
     v_specialist:=v_proposal->>'specialist_ref';
     v_specialist_kind:=coalesce(v_proposal->>'specialist_kind','builtin');
-    v_specialist_version:=case when coalesce(v_proposal->>'specialist_version','') ~ '^[1-9][0-9]*
+    v_specialist_version:=null;
+    if jsonb_typeof(v_proposal->'specialist_version')='number' then
+      if (v_proposal->>'specialist_version')::numeric <> trunc((v_proposal->>'specialist_version')::numeric) then
+        raise exception 'Registry coordinator version must be an integer' using errcode='22023';
+      end if;
+      v_specialist_version:=(v_proposal->>'specialist_version')::integer;
+    end if;
+    if v_specialist_kind='builtin' then
+      if v_specialist is null or not (v_specialist=any(v_allowed)) or v_specialist_version is not null then
+        raise exception 'A team coordinator must use a supported built-in specialist' using errcode='22023';
+      end if;
+      v_specialist_name:=replace(v_specialist,'_',' ');
+    elsif v_specialist_kind='registry' then
+      if v_specialist is null or v_specialist !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+         or v_specialist_version is null
+         or not exists(select 1 from public.jd_agent_definitions a where a.id=v_specialist::uuid and a.school_id=v_school and a.state='published' and a.execution_authorized is true and a.current_version=v_specialist_version) then
+        raise exception 'Registry team coordinator must be current, published and execution-authorized' using errcode='42501';
+      end if;
+      select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
+      where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+      if coalesce(v_specialist_name,'')='' then raise exception 'Registry coordinator version has no display name' using errcode='22023'; end if;
+    else
+      raise exception 'Unknown team coordinator specialist kind' using errcode='22023';
+    end if;
+    if jsonb_typeof(v_proposal->'members') is distinct from 'array' then
       raise exception 'A team must contain a member list' using errcode='22023';
     end if;
     if jsonb_array_length(v_proposal->'members') not between 1 and 20 then
       raise exception 'A team must contain between one and twenty described members' using errcode='22023';
     end if;
     v_team_name:=v_name;
-    if exists(select 1 from public.jd_workforce_teams
-      where school_id=v_school and lower(name)=lower(v_team_name) and retired_at is null) then
+    if exists(select 1 from public.jd_workforce_teams where school_id=v_school and lower(name)=lower(v_team_name) and retired_at is null) then
       raise exception 'An active team already uses this name; revise the proposal before activation' using errcode='40001';
     end if;
     v_created:=public.jd_workforce_create_team(p_actor,gen_random_uuid(),v_team_name,v_purpose);
@@ -241,7 +300,37 @@ begin
       v_member_index:=v_member_index+1;
       v_specialist:=v_member->>'specialist_ref';
       v_specialist_kind:=coalesce(v_member->>'specialist_kind','builtin');
-      v_specialist_version:=case when coalesce(v_member->>'specialist_version','') ~ '^[1-9][0-9]*
+      v_specialist_version:=null;
+      if jsonb_typeof(v_member->'specialist_version')='number' then
+        if (v_member->>'specialist_version')::numeric <> trunc((v_member->>'specialist_version')::numeric) then
+          raise exception 'Registry team member version must be an integer' using errcode='22023';
+        end if;
+        v_specialist_version:=(v_member->>'specialist_version')::integer;
+      end if;
+      v_name:=btrim(coalesce(v_member->>'name',''));
+      if jsonb_typeof(v_member) is distinct from 'object'
+         or length(v_name) not between 2 and 120
+         or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120 then
+        raise exception 'Every team member needs a supported specialist and complete role details' using errcode='22023';
+      end if;
+      if v_specialist_kind='builtin' then
+        if v_specialist is null or not (v_specialist=any(v_allowed)) or v_specialist_version is not null then
+          raise exception 'Team member must use a supported built-in specialist' using errcode='22023';
+        end if;
+        v_specialist_name:=replace(v_specialist,'_',' ');
+      elsif v_specialist_kind='registry' then
+        if v_specialist is null or v_specialist !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+           or v_specialist_version is null
+           or not exists(select 1 from public.jd_agent_definitions a where a.id=v_specialist::uuid and a.school_id=v_school and a.state='published' and a.execution_authorized is true and a.current_version=v_specialist_version) then
+          raise exception 'Registry team member must be current, published and execution-authorized' using errcode='42501';
+        end if;
+        select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
+        where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+        if coalesce(v_specialist_name,'')='' then raise exception 'Registry team member version has no display name' using errcode='22023'; end if;
+      else
+        raise exception 'Unknown team member specialist kind' using errcode='22023';
+      end if;
+      if jsonb_typeof(v_member->'responsibilities') is distinct from 'array' then
         raise exception 'Team member responsibilities must be a list' using errcode='22023';
       end if;
       if v_member ? 'requested_access' and jsonb_typeof(v_member->'requested_access') is distinct from 'array' then
@@ -266,7 +355,8 @@ begin
       );
       v_employee_ids:=v_employee_ids||jsonb_build_array(jsonb_build_object(
         'employee_id',v_employee_id,'name',v_name,'role',v_member->>'role',
-        'specialist_ref',v_specialist
+        'specialist_ref',v_specialist,'specialist_kind',v_specialist_kind,
+        'specialist_version',v_specialist_version
       ));
     end loop;
   end if;
