@@ -58,8 +58,10 @@ test("workforce UI exposes only approved activation outcomes plus membership and
  assert.ok(service.includes("workforce.employee.budget"));
  assert.ok(ui.includes("Add member"));
  assert.ok(ui.includes("Set budget"));
+ assert.ok(ui.includes("Access requested (not granted)"));
+ assert.ok(service.includes("role_title,purpose,responsibilities,requested_access"));
  assert.ok(ui.includes("employeeUsage.length"));
- assert.doesNotMatch(ui,/Add employee|Create team|workforce\\.employee\\.create|workforce\\.team\\.create/);
+ assert.doesNotMatch(ui,/Add employee|Create team|workforce\.employee\.create|workforce\.team\.create/);
 });
 test("private agent chat and checked worker controls remain honestly gated",()=>{
  assert.ok(service.includes("agentChatEnabled:false"));
