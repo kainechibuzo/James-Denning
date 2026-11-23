@@ -474,6 +474,17 @@ const tools: ToolSpec[] = [
       if (kind === "employee" && members.length) throw new Error("An individual employee proposal cannot contain team members");
       const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, members, activation: "not_started", tools_granted: false, billing_enabled: false };
       const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
+      const { data: prior, error: priorError } = await ctx.admin.from("jd_approvals")
+        .select("id,status,title,created_at,proposal_json").eq("school_id", ctx.schoolId).eq("run_id", ctx.runId)
+        .eq("action_key", actionKey).eq("status", "pending").order("created_at", { ascending: false }).limit(10);
+      if (priorError) throw new Error("Could not check for an existing workforce review request");
+      const existing = (prior || []).find((item: any) => JSON.stringify(item.proposal_json?.workforce_proposal) === JSON.stringify(proposal));
+      if (existing) return {
+        submitted: true, approval: { id: existing.id, status: existing.status, title: existing.title, created_at: existing.created_at },
+        proposal_kind: kind, proposal_name: name, member_count: kind === "team" ? members.length : 1,
+        persisted: true, reused_existing_request: true, activated: false, tools_granted: false, billing_enabled: false,
+        message: "This exact proposal is already waiting for owner review. No duplicate request was created."
+      };
       const { data: approval, error } = await ctx.admin.from("jd_approvals").insert({
         school_id: ctx.schoolId, run_id: ctx.runId, requested_by: ctx.userId,
         status: "pending", reason: "Review the proposed workforce profile, responsibilities and requested access before any employee or team can be activated.",
