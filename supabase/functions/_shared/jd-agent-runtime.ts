@@ -195,7 +195,7 @@ const tools: ToolSpec[] = [
           return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
         }).filter(Boolean)
       }));
-      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,members:(members.data||[]).filter((member:any)=>member.team_id===team.id).length})),read_only:true};
+      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,members:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id)).length})),read_only:true};
     },
   },
   {
