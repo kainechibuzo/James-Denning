@@ -187,7 +187,7 @@ const tools: ToolSpec[] = [
   },
   {
     name:"get_workforce_roster",risk:"low",roles:["owner","admin"],
-    description:"Read the real tenant workforce roster before assigning work to an existing AI employee or team. Returns active employee identities, exact specialist references, team membership and availability. A specialist definition is not an employee instance. Use returned employee_id and team_id only for bounded assignments; paused or retired identities cannot be assigned. This is a read-only operation.",
+    description:"Read the real tenant workforce roster before assigning work. Returns active employee identities, exact specialist references, active team membership and member roles, plus persisted workload counts derived from assignment history. Use workload only as a routing signal, not as proof of ability or performance. A specialist definition is not an employee instance. Use returned employee_id and team_id only for bounded assignments; paused or retired identities cannot be assigned. This is read-only.",
     parameters:{type:"object",properties:{},additionalProperties:false},
     execute:async(_args,ctx)=>{
       const [employees,teams,members]=await Promise.all([
@@ -196,16 +196,27 @@ const tools: ToolSpec[] = [
         ctx.admin.from("jd_workforce_team_members").select("team_id,employee_id,member_role").eq("school_id",ctx.schoolId).is("left_at",null).limit(1000)
       ]);
       if(employees.error||teams.error||members.error)throw new Error("The current workforce roster could not be verified");
+      const employeeIds=(employees.data||[]).map((employee:any)=>employee.id);
+      const workload=employeeIds.length?await ctx.admin.from("jd_workforce_assignments")
+        .select("employee_id,status,created_at").eq("school_id",ctx.schoolId)
+        .in("employee_id",employeeIds).order("created_at",{ascending:false}).limit(1000):{data:[],error:null};
+      if(workload.error)throw new Error("Employee workload could not be verified; no assignment recommendation can be made");
+      const workloadRows=workload.data||[];
+      const terminal=new Set(["report_returned","failed","completed","cancelled"]);
       const teamRows=teams.data||[];
-      const employeeRows=(employees.data||[]).map((employee:any)=>({
-        employee_id:employee.id,name:employee.display_name,role_title:employee.role_title,
-        department:employee.department,agent:employee.agent_kind==="builtin"?{kind:"builtin",id:employee.agent_ref}:{kind:"registry",agentId:employee.agent_ref},agent_version:employee.agent_version,
-        teams:(members.data||[]).filter((member:any)=>member.employee_id===employee.id).map((member:any)=>{
-          const team=teamRows.find((item:any)=>item.id===member.team_id);
-          return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
-        }).filter(Boolean)
-      }));
-      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,coordinator:team.coordinator_specialist_name||team.coordinator_specialist_ref,members:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id)).length})),read_only:true};
+      const employeeRows=(employees.data||[]).map((employee:any)=>{
+        const history=workloadRows.filter((item:any)=>item.employee_id===employee.id);
+        return {
+          employee_id:employee.id,name:employee.display_name,role_title:employee.role_title,
+          department:employee.department,agent:employee.agent_kind==="builtin"?{kind:"builtin",id:employee.agent_ref}:{kind:"registry",agentId:employee.agent_ref},agent_version:employee.agent_version,
+          workload:{active_assignments:history.filter((item:any)=>!terminal.has(item.status)).length,completed_assignments:history.filter((item:any)=>item.status==="report_returned"||item.status==="completed").length,failed_assignments:history.filter((item:any)=>item.status==="failed").length,last_assignment_at:history[0]?.created_at||null},
+          teams:(members.data||[]).filter((member:any)=>member.employee_id===employee.id).map((member:any)=>{
+            const team=teamRows.find((item:any)=>item.id===member.team_id);
+            return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
+          }).filter(Boolean)
+        };
+      });
+      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,coordinator:team.coordinator_specialist_name||team.coordinator_specialist_ref,members:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id)).length,lead_employee_ids:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id&&membership.member_role==="lead")).map((employee:any)=>employee.employee_id)})),read_only:true,workload_is_routing_signal_only:true};
     },
   },
   {
