@@ -3,6 +3,16 @@
 -- activate the approved proposal. This transaction creates identities only;
 -- it never grants tools, connector access, assignment execution or billable use.
 
+alter table public.jd_workforce_employees
+  add column role_title text,
+  add column purpose text,
+  add column responsibilities jsonb not null default '[]'::jsonb,
+  add column requested_access jsonb not null default '[]'::jsonb;
+alter table public.jd_workforce_teams
+  add column department text,
+  add column responsibilities jsonb not null default '[]'::jsonb,
+  add column requested_access jsonb not null default '[]'::jsonb;
+
 create table public.jd_workforce_proposal_activations (
   school_id uuid not null references public.schools(id),
   approval_id uuid not null references public.jd_approvals(id),
@@ -44,6 +54,7 @@ declare
   v_member_index integer := 0;
   v_specialist text;
   v_name text;
+  v_team_name text;
   v_department text;
   v_purpose text;
   v_allowed text[] := array['business_advisor','research_analyst','finance_analyst','operations_planner','product_designer','software_engineer','security_reviewer','quality_assurance'];
@@ -113,6 +124,11 @@ begin
     if v_employee_id is null then
       raise exception 'Employee identity creation was not confirmed' using errcode = 'P0001';
     end if;
+    update public.jd_workforce_employees
+    set role_title = replace(v_specialist,'_',' '), purpose = v_purpose,
+        responsibilities = coalesce(v_proposal->'responsibilities','[]'::jsonb),
+        requested_access = coalesce(v_proposal->'requested_access','[]'::jsonb)
+    where id = v_employee_id and school_id = v_school;
     v_employee_ids := jsonb_build_array(jsonb_build_object(
       'employee_id', v_employee_id, 'name', v_name, 'specialist_ref', v_specialist
     ));
@@ -121,11 +137,17 @@ begin
        or jsonb_array_length(v_proposal->'members') not between 1 and 20 then
       raise exception 'A team must contain between one and twenty described members' using errcode = '22023';
     end if;
-    v_team := public.jd_workforce_create_team(p_actor, gen_random_uuid(), v_name, v_purpose);
+    v_team_name := v_name;
+    v_team := public.jd_workforce_create_team(p_actor, gen_random_uuid(), v_team_name, v_purpose);
     v_team_id := (v_team->>'team_id')::uuid;
     if v_team_id is null then
       raise exception 'Team creation was not confirmed' using errcode = 'P0001';
     end if;
+    update public.jd_workforce_teams
+    set department = v_department,
+        responsibilities = coalesce(v_proposal->'responsibilities','[]'::jsonb),
+        requested_access = coalesce(v_proposal->'requested_access','[]'::jsonb)
+    where id = v_team_id and school_id = v_school;
     for v_member in select value from jsonb_array_elements(v_proposal->'members')
     loop
       v_member_index := v_member_index + 1;
@@ -134,8 +156,9 @@ begin
       if not (v_specialist = any(v_allowed)) or length(v_name) not between 2 and 120
          or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120
          or jsonb_typeof(v_member->'responsibilities') <> 'array'
-         or jsonb_array_length(v_member->'responsibilities') < 1 then
-        raise exception 'Every team member needs a supported specialist and complete role details' using errcode = '22023';
+         or jsonb_array_length(v_member->'responsibilities') < 1
+         or exists(select 1 from jsonb_array_elements(v_employee_ids) prior where prior->>'specialist_ref' = v_specialist) then
+        raise exception 'Every team member needs a distinct supported specialist and complete role details' using errcode = '22023';
       end if;
       v_created := public.jd_workforce_create_employee(
         p_actor, gen_random_uuid(), 'builtin', v_specialist, null, v_name, v_department
@@ -144,6 +167,11 @@ begin
       if v_employee_id is null then
         raise exception 'A team employee identity was not confirmed' using errcode = 'P0001';
       end if;
+      update public.jd_workforce_employees
+      set role_title = btrim(v_member->>'role'), purpose = v_purpose,
+          responsibilities = coalesce(v_member->'responsibilities','[]'::jsonb),
+          requested_access = coalesce(v_member->'requested_access','[]'::jsonb)
+      where id = v_employee_id and school_id = v_school;
       perform public.jd_workforce_team_membership(
         p_actor, gen_random_uuid(), v_team_id, v_employee_id, 'add',
         case when v_member_index = 1 then 'lead' else 'member' end
