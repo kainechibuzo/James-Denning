@@ -33,11 +33,13 @@ test("approval never implies employee activation, tool grants or billable work",
 
 test("employee and team activation is bound to an approved Review Centre proposal", () => {
   assert.match(runtime, /specialist_ref: \{ type: "string", enum:/);
+  assert.match(runtime, /required: \["kind","specialist_ref","name","department","purpose","responsibilities","requested_access"\]/);
   assert.match(runtime, /member\.specialist_ref/);
   assert.match(review, /workforce\.proposal\.activate/);
   assert.match(review, /Activate approved/);
   assert.match(workforceService, /jd_workforce_activate_approved_proposal/);
-  assert.match(workforceService, /Only an explicitly approved proposal/);
+  assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
+  assert.match(workforceMigration, /Only an explicitly approved proposal can be activated/);
   assert.match(workforceMigration, /v_approval\.status <> 'approved'/);
   assert.match(workforceMigration, /workforce\.employee\.proposal/);
   assert.match(workforceMigration, /workforce\.team\.proposal/);
@@ -54,6 +56,8 @@ test("identity creation cannot bypass owner approval and does not grant executio
   assert.match(workforceMigration, /'connectors_authorised', false/);
   assert.match(workforceMigration, /'assignment_started', false/);
   assert.match(workforceMigration, /'billing_enabled', false/);
+  assert.match(workforceMigration, /add column role_title text/);
+  assert.match(workforceMigration, /add column requested_access jsonb/);
   assert.doesNotMatch(workforceUi, /workforce\.employee\.create|workforce\.team\.create/);
 });
 
