@@ -137,3 +137,11 @@ test('employee-bound assignments require a live employee and active team members
   assert.match(assignmentAttributionSql, /add column employee_id uuid/);
   assert.match(assignmentAttributionSql, /add column team_id uuid/);
 });
+
+test('employee-bound assignments record runtime duration through the shadow ledger', () => {
+  assert.match(runtime, /execution_time_ms/);
+  assert.match(runtime, /jd_workforce_record_employee_usage/);
+  assert.match(runtime, /shadow_usage/);
+  assert.match(runtime, /billing_mode:"shadow_only"/);
+  assert.match(runtime, /charged:false/);
+});
