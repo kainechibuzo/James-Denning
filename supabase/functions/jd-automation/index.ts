@@ -6,6 +6,7 @@ import { handleUsage } from "../_shared/jd-usage-service.ts";
 import { handleFoundation } from "../_shared/jd-foundation-service.ts";
 import { buildSaasAgentTeam } from "../_shared/jd-agent-architect.mjs";
 import { handleExecutionCancellation } from "../_shared/jd-execution-cancellation.mjs";
+import { handleWorkforceControl } from "../_shared/jd-workforce-control-service.ts";
 import { handleReleasedTaskAssignment } from "../_shared/jd-task-assignment-release.mjs";
 import { buildSettingsChangePlan } from "../_shared/jd-settings-change-planner.ts";
 import { buildCapabilityAssessment } from "../_shared/jd-capability-intelligence.ts";
@@ -48,6 +49,7 @@ Deno.serve(async (req) => {
 
 
  if(!payload||typeof payload!=="object"||Array.isArray(payload))return json({error:"Invalid request object"},400);
+ if(typeof payload.action==="string"&&payload.action.startsWith("workforce.control"))return handleWorkforceControl({payload,admin,profile,actorId:authData.user.id,json});
  if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("skills."))return handleSkills({payload,admin,auth,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true",autonomous:Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"});
  if(typeof payload.action==="string"&&["discovery.","autonomy.","billing."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
