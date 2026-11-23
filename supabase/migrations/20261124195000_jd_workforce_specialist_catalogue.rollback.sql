@@ -1,0 +1,1 @@
+drop function if exists public.jd_list_workforce_specialists(uuid);
