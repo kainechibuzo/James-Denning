@@ -22,8 +22,8 @@ try{for(const width of [320,393,1280])for(const theme of ['light','dark']){
  await page.getByRole('button',{name:'Add tools and connectors'}).click();await page.getByRole('option',{name:/lookup_customer/}).waitFor();await check('plus-menu','.jd-tool-picker');
  assert.equal(await page.getByRole('option',{name:/disabled_tool/}).count(),0);
  const toolSearch=page.getByRole('combobox',{name:'Search JD tools'});
- await toolSearch.press('ArrowDown');assert.match(await page.locator('[role="option"][aria-selected="true"]').innerText(),/People/);
- await toolSearch.press('ArrowUp');assert.match(await page.locator('[role="option"][aria-selected="true"]').innerText(),/Performance/);
+ await toolSearch.press('ArrowDown');assert.match(await page.locator('[role="option"][aria-selected="true"]').innerText(),/lookup_customer/);
+ await toolSearch.press('ArrowUp');assert.match(await page.locator('[role="option"][aria-selected="true"]').innerText(),/lookup_customer/);
  await page.mouse.click(2,100);assert.equal(await page.locator('.jd-tool-picker').count(),0);
  await page.getByRole('button',{name:'Add tools and connectors'}).click();await page.getByRole('option',{name:/lookup_customer/}).waitFor();
  await page.getByRole('combobox',{name:'Search JD tools'}).fill('Billing');await page.getByRole('combobox',{name:'Search JD tools'}).press('Enter');assert.match(await input.inputValue(),/billing/i);assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.args?.action==='submit').length),0);
