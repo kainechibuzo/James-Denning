@@ -17,7 +17,7 @@ begin
   select school_id into v_school from public.profiles
   where id=p_actor and role in ('owner','admin') for share;
   if v_school is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
-  if p_assignment is null or p_source_event is null or p_active_microseconds is null
+  if p_assignment is null or p_source_event is null or p_source_event<>p_assignment or p_active_microseconds is null
      or p_active_microseconds not between 0 and 3600000000
      or jsonb_typeof(coalesce(p_evidence,'{}'::jsonb)) is distinct from 'object'
      or pg_column_size(coalesce(p_evidence,'{}'::jsonb))>16384 then
