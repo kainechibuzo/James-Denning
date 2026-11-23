@@ -4,8 +4,8 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
  if(!adminRoles.includes(profile?.role)||profile?.id!==actorId||!uuid(actorId)||!uuid(profile.school_id))return json({error:"Workspace administrator required"},403);
  if(payload?.action==="workforce.control.snapshot"){
   const [employees,teams,members,assignments,budgets,employeeUsage]=await Promise.all([
-   admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,department,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
-   admin.from("jd_workforce_teams").select("id,name,purpose,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
+   admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,department,role_title,purpose,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
+   admin.from("jd_workforce_teams").select("id,name,purpose,department,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
    admin.from("jd_workforce_team_members").select("team_id,employee_id,member_role,joined_at,left_at").eq("school_id",profile.school_id).is("left_at",null).limit(500),
    admin.from("jd_workforce_assignments").select("id,run_id,agent_kind,agent_ref,agent_name,agent_version,task,status,verification_status,created_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
    admin.from("jd_workforce_employee_budgets").select("employee_id,budget_micros,reserved_micros,accrued_micros,rate_micros_per_hour,version,updated_at").eq("school_id",profile.school_id).limit(100),
