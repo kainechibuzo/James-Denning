@@ -72,6 +72,7 @@ test("private specialist conversations are separate, append-only and have no too
   assert.match(privateChatMigration, /jd_workforce_agent_messages/);
   assert.match(privateChatMigration, /sender_kind text not null check \(sender_kind in \('user','agent'\)\)/);
   assert.match(privateChatMigration, /jd_workforce_agent_messages_immutable/);
+  assert.match(privateChatMigration, /usage_json jsonb not null/);
   assert.match(runtime, /runPrivateSpecialistReply/);
   assert.match(runtime, /tools: \[\]/);
   assert.match(runtime, /tool_choice: "none"/);
