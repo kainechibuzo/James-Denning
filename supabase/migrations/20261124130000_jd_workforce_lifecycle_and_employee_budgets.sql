@@ -47,7 +47,7 @@ alter table public.jd_workforce_provision_requests enable row level security;
 revoke all on public.jd_workforce_provision_requests from public,anon,authenticated,service_role;
 grant select on public.jd_workforce_provision_requests to service_role;
 create function public.jd_workforce_set_employee_budget(p_actor uuid,p_request uuid,p_employee uuid,p_expected_version integer,p_budget_micros bigint,p_rate_micros_per_hour bigint)
-returns jsonb language plpgsql security definer set search_path='' as $
+returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid; b public.jd_workforce_employee_budgets%rowtype; prior public.jd_workforce_provision_requests%rowtype; req jsonb; receipt jsonb;
 begin
  select school_id into tenant from public.profiles where id=p_actor and role in ('owner','admin');
