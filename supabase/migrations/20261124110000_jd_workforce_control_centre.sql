@@ -90,8 +90,8 @@ alter table public.jd_workforce_agent_threads enable row level security;
 alter table public.jd_workforce_agent_messages enable row level security;
 alter table public.jd_workforce_control_events enable row level security;
 revoke all on public.jd_workforce_employees,public.jd_workforce_teams,public.jd_workforce_team_members,public.jd_workforce_agent_threads,public.jd_workforce_agent_messages,public.jd_workforce_control_events from anon,authenticated;
-grant select,insert,update on public.jd_workforce_employees,public.jd_workforce_teams,public.jd_workforce_team_members,public.jd_workforce_agent_threads,public.jd_workforce_agent_messages to service_role;
-grant select,insert on public.jd_workforce_control_events to service_role;
+grant select on public.jd_workforce_employees,public.jd_workforce_teams,public.jd_workforce_team_members,public.jd_workforce_agent_threads,public.jd_workforce_agent_messages,public.jd_workforce_control_events to service_role;
+-- All mutations are routed through narrow audited security-definer RPCs; the service role has no direct table write grant.
 
 create function public.jd_workforce_forbid_event_mutation() returns trigger language plpgsql as $$
 begin raise exception 'Workforce control events are append-only' using errcode='55000'; end; $$;
