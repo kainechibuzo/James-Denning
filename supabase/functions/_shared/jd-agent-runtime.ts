@@ -2279,7 +2279,7 @@ export async function runPrivateSpecialistReply(input: {
   model: string;
   apiKey: string;
   baseUrl: string;
-}): Promise<{ content: string; model: string; attempts: number }> {
+}): Promise<{ content: string; model: string; usage: unknown; attempts: number }> {
   const role = String(input.employee.role_title || input.employee.agent_ref).slice(0, 120);
   const responsibilities = Array.isArray(input.employee.responsibilities)
     ? input.employee.responsibilities.map((item) => String(item).slice(0, 300)).slice(0, 12)
