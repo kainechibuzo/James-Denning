@@ -37,10 +37,19 @@ alter table public.jd_workforce_employee_usage enable row level security;
 revoke all on public.jd_workforce_employee_budgets,public.jd_workforce_employee_usage from public,anon,authenticated,service_role;
 grant select on public.jd_workforce_employee_budgets,public.jd_workforce_employee_usage to service_role;
 
+create table public.jd_workforce_provision_requests (
+ school_id uuid not null references public.schools(id), request_id uuid not null, actor_id uuid not null references auth.users(id),
+ operation text not null check(operation in ('employee.create','team.create','team.member.add','team.member.remove')),
+ request jsonb not null, receipt jsonb not null, created_at timestamptz not null default clock_timestamp(),
+ primary key(school_id,request_id)
+);
+alter table public.jd_workforce_provision_requests enable row level security;
+revoke all on public.jd_workforce_provision_requests from public,anon,authenticated,service_role;
+grant select on public.jd_workforce_provision_requests to service_role;
 create function public.jd_workforce_create_employee(
  p_actor uuid,p_request uuid,p_kind text,p_ref text,p_version integer,p_name text,p_department text
 ) returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid; existing public.jd_workforce_employees%rowtype; new_id uuid; req jsonb; specialist constant text[]:=array['business_advisor','research_analyst','finance_analyst','operations_planner','product_designer','software_engineer','security_reviewer','quality_assurance'];
+declare tenant uuid; existing public.jd_workforce_employees%rowtype; new_id uuid; req jsonb; prior public.jd_workforce_provision_requests%rowtype; receipt jsonb; specialist constant text[]:=array['business_advisor','research_analyst','finance_analyst','operations_planner','product_designer','software_engineer','security_reviewer','quality_assurance'];
 begin
  select school_id into tenant from public.profiles where id=p_actor and role in ('owner','admin');
  if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
@@ -54,39 +63,50 @@ begin
  end if;
  perform pg_advisory_xact_lock(hashtextextended(tenant::text,241300));
  req:=jsonb_build_array(p_actor,p_kind,p_ref,p_version,p_name,p_department);
- select * into existing from public.jd_workforce_employees where school_id=tenant and created_by=p_actor and id=(select null::uuid);
+ select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
+ if found then if prior.operation<>'employee.create' or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  -- Employee creation is naturally unique by specialist version; return the existing identity on retry.
  select * into existing from public.jd_workforce_employees where school_id=tenant and agent_kind=p_kind and agent_ref=p_ref and agent_version is not distinct from p_version and lifecycle_state<>'retired' for update;
- if found then return jsonb_build_object('employee',to_jsonb(existing),'existing',true,'execution_started',false); end if;
+ if found then receipt:=jsonb_build_object('employee',to_jsonb(existing),'existing',true,'execution_started',false); insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'employee.create',req,receipt,clock_timestamp()); return receipt; end if;
  insert into public.jd_workforce_employees(school_id,agent_kind,agent_ref,agent_version,display_name,department,created_by)
  values(tenant,p_kind,p_ref,p_version,trim(p_name),nullif(trim(p_department),''),p_actor) returning id into new_id;
- insert into public.jd_workforce_employee_budgets(school_id,employee_id,budget_micros)
- values(tenant,new_id,0);
- return jsonb_build_object('employee_id',new_id,'lifecycle_state','active','execution_started',false,'billing_mode','shadow_only');
+ insert into public.jd_workforce_employee_budgets(school_id,employee_id,budget_micros) values(tenant,new_id,0);
+ receipt:=jsonb_build_object('employee_id',new_id,'lifecycle_state','active','execution_started',false,'billing_mode','shadow_only');
+ insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'employee.create',req,receipt,clock_timestamp());
+ insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.employee.created',receipt||jsonb_build_object('request_id',p_request));
+ return receipt;
 end; $$;
 
 create function public.jd_workforce_create_team(p_actor uuid,p_request uuid,p_name text,p_purpose text)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid; tid uuid;
+declare tenant uuid; tid uuid; req jsonb; prior public.jd_workforce_provision_requests%rowtype; receipt jsonb;
 begin
  select school_id into tenant from public.profiles where id=p_actor and role in ('owner','admin');
  if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
  if p_request is null or length(trim(coalesce(p_name,''))) not between 2 and 120 or length(trim(coalesce(p_purpose,''))) not between 10 and 1000 then raise exception 'Invalid team definition' using errcode='22023'; end if;
+ req:=jsonb_build_array(p_actor,p_name,p_purpose);
+ select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
+ if found then if prior.operation<>'team.create' or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||lower(trim(p_name)),241301));
  select id into tid from public.jd_workforce_teams where school_id=tenant and lower(name)=lower(trim(p_name)) and retired_at is null;
- if tid is not null then return jsonb_build_object('team_id',tid,'existing',true); end if;
+ if tid is not null then receipt:=jsonb_build_object('team_id',tid,'existing',true); insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'team.create',req,receipt,clock_timestamp()); return receipt; end if;
  insert into public.jd_workforce_teams(school_id,name,purpose,created_by) values(tenant,trim(p_name),trim(p_purpose),p_actor) returning id into tid;
- insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.team.created',jsonb_build_object('team_id',tid,'request_id',p_request));
- return jsonb_build_object('team_id',tid,'lifecycle_state','active','existing',false);
+ receipt:=jsonb_build_object('team_id',tid,'lifecycle_state','active','existing',false);
+ insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'team.create',req,receipt,clock_timestamp());
+ insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.team.created',receipt||jsonb_build_object('request_id',p_request));
+ return receipt;
 end; $$;
 
 create function public.jd_workforce_team_membership(p_actor uuid,p_request uuid,p_team uuid,p_employee uuid,p_action text,p_member_role text default 'member')
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid; team_state text; employee_state text; old public.jd_workforce_team_members%rowtype;
+declare tenant uuid; team_state text; employee_state text; old public.jd_workforce_team_members%rowtype; req jsonb; prior public.jd_workforce_provision_requests%rowtype; receipt jsonb;
 begin
  select school_id into tenant from public.profiles where id=p_actor and role in ('owner','admin');
  if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
  if p_request is null or p_action not in ('add','remove') or p_member_role not in ('lead','member') then raise exception 'Invalid membership request' using errcode='22023'; end if;
+ req:=jsonb_build_array(p_actor,p_team,p_employee,p_action,p_member_role);
+ select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
+ if found then if prior.operation<>('team.member.'||p_action) or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  select lifecycle_state into team_state from public.jd_workforce_teams where id=p_team and school_id=tenant for update;
  select lifecycle_state into employee_state from public.jd_workforce_employees where id=p_employee and school_id=tenant for share;
  if team_state is null or employee_state is null then raise exception 'Team or employee unavailable' using errcode='P0002'; end if;
@@ -99,8 +119,10 @@ begin
   update public.jd_workforce_team_members set left_at=clock_timestamp() where school_id=tenant and team_id=p_team and employee_id=p_employee and left_at is null;
   if not found then raise exception 'Active membership not found' using errcode='P0002'; end if;
  end if;
- insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.team.'||p_action,jsonb_build_object('team_id',p_team,'employee_id',p_employee,'member_role',p_member_role,'request_id',p_request));
- return jsonb_build_object('team_id',p_team,'employee_id',p_employee,'action',p_action,'confirmed',true);
+ receipt:=jsonb_build_object('team_id',p_team,'employee_id',p_employee,'action',p_action,'confirmed',true);
+ insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'team.member.'||p_action,req,receipt,clock_timestamp());
+ insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.team.'||p_action,receipt||jsonb_build_object('request_id',p_request));
+ return receipt;
 end; $$;
 
 revoke all on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from public,anon,authenticated;
