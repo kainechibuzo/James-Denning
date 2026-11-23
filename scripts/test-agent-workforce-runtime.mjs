@@ -20,9 +20,9 @@ test('the runtime registers the workforce deployment and agent factory tools', (
 });
 
 test('specialist role selection preserves the parent objective and never invents a task', () => {
-  assert.match(runtime, /A specialist name or selection such as[\\s\\S]{0,800}role choice, not a task/);
-  assert.match(runtime, /most recent unresolved user request[\\s\\S]{0,260}pass that original request/);
-  assert.match(runtime, /If there is no concrete unresolved objective[\\s\\S]{0,180}do not start a run/);
+  assert.match(runtime, /A specialist name or selection such as[\s\S]{0,800}role choice, not a task/);
+  assert.match(runtime, /most recent unresolved user request[\s\S]{0,260}pass that original request/);
+  assert.match(runtime, /If there is no concrete unresolved objective[\s\S]{0,180}do not start a run/);
 });
 
 test('every grantable tool is a registered, classified read or preview tool', () => {
