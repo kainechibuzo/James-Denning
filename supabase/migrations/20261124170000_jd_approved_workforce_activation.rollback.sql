@@ -10,6 +10,7 @@ alter table public.jd_workforce_employees
   drop column if exists requested_access;
 alter table public.jd_workforce_teams
   drop column if exists department,
+  drop column if exists coordinator_specialist_ref,
   drop column if exists responsibilities,
   drop column if exists requested_access;
 
