@@ -21,6 +21,7 @@ import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
+import { WorkforceControlCentre } from "./WorkforceControlCentre.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 import { JDDepartments } from "./JDDepartments.jsx";
 import {savedTaskKey} from "./operational-task-records.mjs";
@@ -443,7 +444,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     handledNavigation.current = navigationRequest;
     const view = navigationRequest.view;
     setShowReview(view === "review"); setShowUsage(view === "usage");
-    setShowRuns(view === "runs"); setShowDepartments(view === "departments");
+    setShowRuns(view === "runs"); setShowWorkforce(view === "workforce"); setShowDepartments(view === "departments");
     setShowConnectors(view === "connectors");
     conversationSequence.current++;setOpeningId(null);
     setHistoryOpen(view === "history");
@@ -639,7 +640,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
           <div className="jd-compose">
             <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
-              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>
+              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowWorkforce(view==="workforce");setShowUsage(false);setShowDepartments(false);}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
           </div>
@@ -648,6 +649,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
       </section>)}
       {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
+      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)}/></div>}
       {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
       {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
