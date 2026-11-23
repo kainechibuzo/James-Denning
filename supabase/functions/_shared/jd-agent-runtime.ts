@@ -450,7 +450,7 @@ const tools: ToolSpec[] = [
           requested_access: { type: "array", maxItems: 8, items: { type: "string", minLength: 2, maxLength: 180 } }
         }, required: ["name","role","specialist_ref","responsibilities","requested_access"], additionalProperties: false } }
       },
-      required: ["kind","name","department","purpose","responsibilities","requested_access"],
+      required: ["kind","specialist_ref","name","department","purpose","responsibilities","requested_access"],
       additionalProperties: false
     },
     execute: async (args, ctx) => {
@@ -473,11 +473,11 @@ const tools: ToolSpec[] = [
       if (!["employee","team"].includes(kind) || name.length < 2 || department.length < 2 || purpose.length < 12 || !responsibilities.length) {
         throw new Error("The employee or team proposal is incomplete");
       }
-      if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length))) {
-        throw new Error("Every drafted team member needs a supported specialist definition, role and responsibilities");
+      if (kind === "team" && (!allowedSpecialists.includes(specialistRef) || !members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length) || new Set(members.map((member: any) => member.specialist_ref)).size !== members.length)) {
+        throw new Error("A drafted team needs a supported coordinator and distinct, fully described specialist members");
       }
       if (kind === "employee" && (members.length || !allowedSpecialists.includes(specialistRef))) throw new Error("An individual employee proposal must select one supported built-in specialist");
-      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_ref: kind === "employee" ? specialistRef : null, members, activation: "not_started", tools_granted: false, billing_enabled: false };
+      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_ref: specialistRef, members, activation: "not_started", tools_granted: false, billing_enabled: false };
       const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
       const { data: prior, error: priorError } = await ctx.admin.from("jd_approvals")
         .select("id,status,title,created_at,proposal_json").eq("school_id", ctx.schoolId).eq("run_id", ctx.runId)
@@ -1992,7 +1992,7 @@ export async function runAgent(input: {
     "For complex work that benefits from independent perspectives, delegate bounded analysis to the relevant specialist agents using delegate_to_specialist_agent. You may run independent specialists in parallel, compare their findings, resolve disagreements, and present one accountable JD conclusion. Specialists are reasoning-only and have no tools or authority; independently verify all claims and perform any supported actions yourself through registered tools. Do not delegate simple requests unnecessarily or describe a specialist report as completed external work.",
     "When a request genuinely needs several specialists executing separate bounded subtasks, deploy them together with deploy_specialist_workforce: one objective, one specific assignment per specialist, relevant untrusted context, and only the read-only tools each specialist needs. Built-in specialists and tenant-published execution-authorised registry agents are deployable; a definition that is only published or drafted is not deployable. Specialists have no approval, hiring, spending, deployment or agent-creation authority and cannot grant themselves tools. After a deployment, independently verify every specialist deliverable against saved records or registered tools before reporting completion; treat failed or blocked specialists as explicit results, not silent omissions.",
     "When the existing workforce cannot cover a requested capability, propose a specialist definition with propose_agent_definition derived from the nearest maintained catalogue template, then explain that it must be reviewed by the workspace administrators before it can ever be evaluated, published or deployed. Never present a proposal as an active employee, and never promise deployment authority for an unreviewed definition.",
-    "When the user asks to propose an AI employee or assemble a drafted AI team, use submit_workforce_proposal_for_review after preparing a concrete proposal. Include the employee/team name, department, purpose, responsibilities, each member role for teams, and the exact requested workspace access. The tool creates a pending owner-review request only. Never describe an approved proposal as a hired or active employee/team: employee-instance provisioning, evaluation/publication, tool grants, connector authorisation and billable execution are separate controlled steps.",
+    "When the user asks to propose an AI employee or assemble a drafted AI team, use submit_workforce_proposal_for_review after preparing a concrete proposal. Select an exact supported built-in specialist_ref for the employee or team coordinator and a distinct supported specialist_ref for every team member. Include the employee/team name, department, purpose, responsibilities, each member role for teams, and the exact requested workspace access. The tool creates a pending owner-review request only. Never describe an approved proposal as a hired or active employee/team: employee-instance provisioning, evaluation/publication, tool grants, connector authorisation and billable execution are separate controlled steps.",
     "If a requested capability is unavailable to the current role or is not registered, say so plainly, explain the closest supported alternative, and do not pretend to have completed it.",
     memoryInstruction,
     "Work toward the user's objective rather than merely giving them instructions.",
