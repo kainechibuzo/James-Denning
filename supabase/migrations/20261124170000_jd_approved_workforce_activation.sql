@@ -495,6 +495,7 @@ revoke execute on function public.jd_workforce_create_team(uuid,uuid,text,text) 
       end if;
       select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
       where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+      if coalesce(v_specialist_name,'')='' then raise exception 'Registry specialist version has no display name' using errcode='22023'; end if;
     else
       raise exception 'Unknown specialist kind' using errcode='22023';
     end if;
@@ -1098,6 +1099,7 @@ revoke execute on function public.jd_workforce_create_team(uuid,uuid,text,text) 
       end if;
       select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
       where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+      if coalesce(v_specialist_name,'')='' then raise exception 'Registry coordinator version has no display name' using errcode='22023'; end if;
     else
       raise exception 'Unknown team coordinator specialist kind' using errcode='22023';
     end if;
@@ -2855,6 +2857,7 @@ revoke execute on function public.jd_workforce_create_team(uuid,uuid,text,text) 
         end if;
         select v.content->>'name' into v_specialist_name from public.jd_agent_definition_versions v
         where v.agent_id=v_specialist::uuid and v.school_id=v_school and v.version=v_specialist_version;
+        if coalesce(v_specialist_name,'')='' then raise exception 'Registry team member version has no display name' using errcode='22023'; end if;
       else
         raise exception 'Unknown team member specialist kind' using errcode='22023';
       end if;
