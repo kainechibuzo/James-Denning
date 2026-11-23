@@ -113,7 +113,15 @@ try{for(const width of [320,393,1280]){
   await navigate('Conversation history');await navigate('JD Assistant');await page.locator('.jd-compose').waitFor();
   await navigate('Conversation history');await page.locator('.jd-history-create').click();await page.locator('.jd-compose').waitFor();assert.equal(await page.locator('.jd-markdown').count(),0);
   await page.locator('.reference-workspace-header').getByRole('button',{name:'Help / Product Tour',exact:true}).click();await check('product-tour');await page.getByRole('button',{name:'Skip',exact:true}).click();
-  await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
+  const accountSettings=page.locator('.reference-workspace-header [data-account-settings]');
+  if(await accountSettings.isVisible()){
+   const settingsLabel=await accountSettings.getAttribute('aria-label');await accountSettings.click();
+   if(settingsLabel==='Open settings')await page.getByText('Workspace Profile',{exact:true}).waitFor();else await page.getByRole('dialog').waitFor();
+   await check('header-settings');
+  }else{
+   await page.locator('.reference-workspace-header').getByRole('button',{name:'My profile',exact:true}).click();
+   await page.getByRole('dialog').waitFor();await check('mobile-header-profile');await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+  }
  }
 
  // Audit the current single-entry JD Assistant shell rather than legacy standalone routes.
