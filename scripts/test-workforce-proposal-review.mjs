@@ -9,6 +9,7 @@ const workforceService = readFileSync("supabase/functions/_shared/jd-workforce-c
 const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.sql", "utf8");
 const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
 const privateChatMigration = readFileSync("supabase/migrations/20261124180000_jd_workforce_private_chat.sql", "utf8");
+const assignmentAttribution = readFileSync("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql", "utf8");
 
 test("JD can submit an individual AI employee proposal for owner review", () => {
   assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
@@ -70,7 +71,8 @@ test("approval decisions support both owner and admin roles", () => {
 test("private specialist conversations are separate, append-only and have no tool authority", () => {
   assert.match(privateChatMigration, /jd_workforce_agent_threads/);
   assert.match(privateChatMigration, /jd_workforce_agent_messages/);
-  assert.match(privateChatMigration, /sender_kind text not null check \(sender_kind in \('user','agent'\)\)/);
+  assert.match(privateChatMigration, /add column request_id uuid/);
+  assert.match(privateChatMigration, /add column reply_to_message_id uuid/);
   assert.match(privateChatMigration, /jd_workforce_agent_messages_immutable/);
   assert.match(privateChatMigration, /usage_json jsonb not null/);
   assert.match(runtime, /runPrivateSpecialistReply/);
@@ -79,4 +81,16 @@ test("private specialist conversations are separate, append-only and have no too
   assert.match(workforceService, /JD_WORKFORCE_PRIVATE_CHAT_ENABLED/);
   assert.match(workforceService, /workforce\.agent\.message\.send/);
   assert.match(workforceService, /workforce\.agent\.message\.replied/);
+});
+
+test("employee-bound assignments verify active employee and team membership", () => {
+  assert.match(runtime, /name:"get_workforce_roster"/);
+  assert.match(runtime, /employee_id:\{type:"string",maxLength:36\}/);
+  assert.match(runtime, /team_id:\{type:"string",maxLength:36\}/);
+  assert.match(runtime, /employee\.lifecycle_state !== "active"/);
+  assert.match(runtime, /team\.lifecycle_state !== "active"/);
+  assert.match(runtime, /membershipRows\.data/);
+  assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
+  assert.match(assignmentAttribution, /add column employee_id uuid/);
+  assert.match(assignmentAttribution, /add column team_id uuid/);
 });
