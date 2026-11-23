@@ -436,6 +436,7 @@ const tools: ToolSpec[] = [
       type: "object",
       properties: {
         kind: { type: "string", enum: ["employee","team"] },
+        specialist_ref: { type: "string", enum: ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"] },
         name: { type: "string", minLength: 2, maxLength: 120 },
         department: { type: "string", minLength: 2, maxLength: 120 },
         purpose: { type: "string", minLength: 12, maxLength: 1200 },
@@ -444,9 +445,10 @@ const tools: ToolSpec[] = [
         members: { type: "array", minItems: 1, maxItems: 20, items: { type: "object", properties: {
           name: { type: "string", minLength: 2, maxLength: 120 },
           role: { type: "string", minLength: 2, maxLength: 120 },
+          specialist_ref: { type: "string", enum: ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"] },
           responsibilities: { type: "array", minItems: 1, maxItems: 8, items: { type: "string", minLength: 3, maxLength: 300 } },
           requested_access: { type: "array", maxItems: 8, items: { type: "string", minLength: 2, maxLength: 180 } }
-        }, required: ["name","role","responsibilities","requested_access"], additionalProperties: false } }
+        }, required: ["name","role","specialist_ref","responsibilities","requested_access"], additionalProperties: false } }
       },
       required: ["kind","name","department","purpose","responsibilities","requested_access"],
       additionalProperties: false
@@ -459,20 +461,23 @@ const tools: ToolSpec[] = [
       const purpose = String(args.purpose || "").trim();
       const responsibilities = Array.isArray(args.responsibilities) ? args.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
       const requestedAccess = Array.isArray(args.requested_access) ? args.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
+      const allowedSpecialists = ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"];
+      const specialistRef = String(args.specialist_ref || "").trim();
       const members = Array.isArray(args.members) ? args.members.slice(0,20).map((member: any) => ({
         name: String(member?.name || "").trim().slice(0,120),
         role: String(member?.role || "").trim().slice(0,120),
+        specialist_ref: String(member?.specialist_ref || "").trim(),
         responsibilities: Array.isArray(member?.responsibilities) ? member.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : [],
         requested_access: Array.isArray(member?.requested_access) ? member.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : []
       })) : [];
       if (!["employee","team"].includes(kind) || name.length < 2 || department.length < 2 || purpose.length < 12 || !responsibilities.length) {
         throw new Error("The employee or team proposal is incomplete");
       }
-      if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !member.responsibilities.length))) {
-        throw new Error("A drafted team needs at least one fully described member");
+      if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length))) {
+        throw new Error("Every drafted team member needs a supported specialist definition, role and responsibilities");
       }
-      if (kind === "employee" && members.length) throw new Error("An individual employee proposal cannot contain team members");
-      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, members, activation: "not_started", tools_granted: false, billing_enabled: false };
+      if (kind === "employee" && (members.length || !allowedSpecialists.includes(specialistRef))) throw new Error("An individual employee proposal must select one supported built-in specialist");
+      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_ref: kind === "employee" ? specialistRef : null, members, activation: "not_started", tools_granted: false, billing_enabled: false };
       const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
       const { data: prior, error: priorError } = await ctx.admin.from("jd_approvals")
         .select("id,status,title,created_at,proposal_json").eq("school_id", ctx.schoolId).eq("run_id", ctx.runId)
