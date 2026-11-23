@@ -4,6 +4,18 @@ Status: implementation specification for the workforce control-centre programme.
 Base: PR #151 merge commit `d3b9ed72c434091f39c0db7b08b618f41b6b3274`.
 Release policy: code and isolated verification only. Do not deploy Vercel, apply production migrations, enable release flags, or charge customers as part of this work.
 
+## Implementation status — PR #154 follow-on
+
+The approval-to-activation foundation is implemented in the feature branch; it is not deployed.
+
+- **Phase 1 — approval-to-activation:** implemented as a single tenant-scoped database transaction. Employee/team activation requires an approved Review Centre record, an explicit owner/admin activation command, an exact supported specialist reference, an idempotent activation receipt and an audit event. Direct employee/team creation endpoints and service-role helper grants are blocked. Owner approval alone does not activate anything.
+- **Phase 2 — employee instances:** identity records now retain role title, purpose, responsibilities and requested-access metadata. Multiple employee instances may reference the same specialist definition. Existing pause/resume/retire and budget controls remain available. Private specialist conversations and assignment-linked employee profiles are not yet enabled.
+- **Phase 3 — teams:** approved team activation creates the team, its employee identities and memberships atomically; member roles and responsibilities are retained. Team membership can be managed in the control centre. Coordinated live execution, batch pause/cancel acknowledgement and per-member worker outcomes remain unimplemented.
+- **Phase 4 — economics:** versioned shadow budgets and usage evidence tables exist. The execution worker does not yet emit employee-attributed usage events, so accrued payable amounts, reconciliation and invoices remain disabled.
+- **Phase 5 — workforce manager:** JD can propose employees and teams, but cannot yet autonomously route work to employee instances, coordinate team workloads or manage employee conversations. This phase remains gated on the assignment and worker contracts below.
+
+No migration has been applied to production, no Edge Function or Vercel production deployment has occurred, and no execution/billing release flag has been enabled.
+
 ## Product model
 
 James-Denning has one primary operating surface: the AI conversation. The Workforce Control Centre is an optional owner/administrator management surface for users who want to inspect or directly manage the workforce. It must never become a required step for ordinary work.
