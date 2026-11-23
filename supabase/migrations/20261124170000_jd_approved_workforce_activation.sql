@@ -16,8 +16,20 @@ alter table public.jd_workforce_teams
 
 -- A specialist definition can have multiple employee instances in one tenant.
 -- Idempotency belongs to the activation/request ledger, not to the role itself.
-alter table public.jd_workforce_employees
-  drop constraint if exists jd_workforce_employees_school_id_agent_kind_agent_ref_agent_version_key;
+do $
+declare v_constraint record;
+begin
+  for v_constraint in
+    select conname
+    from pg_constraint
+    where conrelid = 'public.jd_workforce_employees'::regclass
+      and contype = 'u'
+      and pg_get_constraintdef(oid) like 'UNIQUE (school_id, agent_kind, agent_ref, agent_version)%'
+  loop
+    execute format('alter table public.jd_workforce_employees drop constraint %I', v_constraint.conname);
+  end loop;
+end;
+$;
 
 create or replace function public.jd_workforce_create_employee(
  p_actor uuid,p_request uuid,p_kind text,p_ref text,p_version integer,p_name text,p_department text
