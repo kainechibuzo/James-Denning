@@ -38,6 +38,10 @@ test('the isolated executor never grants delegation tools and rechecks grants at
   assert.match(runtime, /mapRegistryDefinition\(/, 'registry definitions map through the engine validator');
   assert.match(runtime, /registryAgentsUnavailable = true;/, 'registry read failure is reported, never hidden');
   assert.match(runtime, /event_type: "workforce\.deployed"/, 'deployment writes a bounded audit event');
+  assert.match(runtime, /!options\.context\.runId \|\| !options\.context\.schoolId \|\| !options\.context\.userId/, 'deployment requires an authenticated tenant and durable run context');
+  assert.match(runtime, /if \(auditError\) \{[\s\S]{0,320}throw new Error\("Workforce assignments ran, but the deployment audit could not be persisted/, 'audit failure prevents an accepted deployment result');
+  assert.match(runtime, /audit_persisted: true,\s*\n\s*result_persistence: "parent_run_checkpoint"/, 'result distinguishes audit persistence from parent run checkpoint persistence');
+  assert.doesNotMatch(runtime, /persisted: false,\s*\n\s*execution_authority: "assigned_read_only_tasks_only"/, 'deployment never returns a misleading persistence status');
   assert.match(runtime, /buildWorkforceAuditPayload\(/, 'audit payload comes from the engine module');
 });
 
