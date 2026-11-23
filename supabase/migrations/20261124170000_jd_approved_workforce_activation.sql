@@ -155,6 +155,9 @@ begin
       raise exception 'A team must contain between one and twenty described members' using errcode = '22023';
     end if;
     v_team_name := v_name;
+    if exists(select 1 from public.jd_workforce_teams where school_id=v_school and lower(name)=lower(v_team_name) and retired_at is null) then
+      raise exception 'An active team already uses this name; revise the proposal before activation' using errcode = '40001';
+    end if;
     v_team := public.jd_workforce_create_team(p_actor, gen_random_uuid(), v_team_name, v_purpose);
     v_team_id := (v_team->>'team_id')::uuid;
     if v_team_id is null then
