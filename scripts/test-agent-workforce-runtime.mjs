@@ -93,7 +93,8 @@ test('the agent factory saves reviewed drafts only and never execution authority
 test('sub-agent model calls stay silent and metered on the run usage ledger', () => {
   assert.match(runtime, /options\?\.silent \? undefined : \(delta\) => \{/, 'requestModel supports silent sub-agent calls');
   assert.match(runtime, /requestModel: \(payload\) => requestModel\(payload, \{ silent: true \}\)/, 'workforce specialists never stream into the visible answer');
-  assert.match(runtime, /usage_note: "Specialist model usage is metered on this run's existing usage records/, 'no new billing path is announced');
+  assert.match(runtime, /usage_note: "For employee-bound assignments, JD attempts to record observed execution time at the owner-configured hourly shadow rate\./, 'employee usage is recorded only at the configured shadow rate');
+  assert.match(runtime, /charged:false,billing_mode:"shadow_only"/, 'shadow usage never creates a charge or invoice');
   assert.match(engine, /workforce planning contracts/i, 'engine module documents its scope');
 });
 
