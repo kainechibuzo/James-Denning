@@ -1566,6 +1566,9 @@ export async function runWorkforceDeployment(
   if (getOptionalEnv(WORKFORCE_RELEASE_FLAG) !== "true") {
     return { error: "Agent workforce execution is release-gated; no specialist was deployed", deployed: false };
   }
+  if (!options.context?.admin || !options.context.runId || !options.context.schoolId || !options.context.userId) {
+    return { error: "Agent workforce execution requires an authenticated tenant and durable run context; no specialist was deployed", deployed: false };
+  }
   const availableToolNames = options.available.map((candidate) => candidate.name);
   // Load tenant-published definitions that carry execution authority. A read
   // failure never blocks built-in specialists; it is reported, not hidden.
@@ -1690,23 +1693,22 @@ export async function runWorkforceDeployment(
       });
     }
   }
-  try {
-    const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
-      school_id: options.context.schoolId,
-      actor_id: options.context.userId,
-      run_id: options.context.runId || null,
-      event_type: "workforce.deployed",
-      event_json: buildWorkforceAuditPayload({
-        objective: plan.objective,
-        outcomes: outcomes.map((outcome) => ({
-          agent_ref: outcome.agent_ref, name: outcome.name, source: outcome.source,
-          status: outcome.status, tool_calls: outcome.tool_evidence.length, tools_granted: outcome.tools_granted,
-        })),
-      }),
-    });
-    if (auditError) console.error("Workforce deployment audit write failed", String(auditError.message || "unknown").slice(0, 160));
-  } catch (auditFailure) {
-    console.error("Workforce deployment audit write failed", String(auditFailure).slice(0, 160));
+  const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
+    school_id: options.context.schoolId,
+    actor_id: options.context.userId,
+    run_id: options.context.runId,
+    event_type: "workforce.deployed",
+    event_json: buildWorkforceAuditPayload({
+      objective: plan.objective,
+      outcomes: outcomes.map((outcome) => ({
+        agent_ref: outcome.agent_ref, name: outcome.name, source: outcome.source,
+        status: outcome.status, tool_calls: outcome.tool_evidence.length, tools_granted: outcome.tools_granted,
+      })),
+    }),
+  });
+  if (auditError) {
+    console.error("Workforce deployment audit write failed", String(auditError.message || "unknown").slice(0, 160));
+    throw new Error("Workforce assignments ran, but the deployment audit could not be persisted. The result is not accepted; inspect the run before retrying.");
   }
   const deniedEntries = Object.entries(plan.deniedTools).filter(([, denied]) => denied.length);
   return {
@@ -1724,7 +1726,8 @@ export async function runWorkforceDeployment(
       instruction: "Independently verify each specialist deliverable against saved records or registered tools before reporting completion. A specialist report is never proof that an external action occurred.",
     },
     usage_note: "Specialist model usage is metered on this run's existing usage records; no separate billing path was created.",
-    persisted: false,
+    audit_persisted: true,
+    result_persistence: "parent_run_checkpoint",
     execution_authority: "assigned_read_only_tasks_only",
   };
 }
