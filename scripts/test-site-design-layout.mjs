@@ -123,8 +123,11 @@ try{for(const width of [320,393,1280]){
   await page.locator('#workspace-navigation').getByRole('button',{name:label,exact:true}).waitFor();
  }
  await page.keyboard.press('Escape');
- await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();
- await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings',true);
+ const accountSettings=page.locator('.reference-workspace-header [data-account-settings]');
+ await accountSettings.waitFor();const settingsLabel=await accountSettings.getAttribute('aria-label');await accountSettings.click();
+ if(settingsLabel==='Open settings')await page.getByText('Workspace Profile',{exact:true}).waitFor();
+ else await page.getByRole('dialog').waitFor();
+ await check('header-settings',true);
  await page.locator('.reference-workspace-header').getByRole('button',{name:'My profile',exact:true}).click();await check('profile-dialog',true);await page.getByRole('button',{name:'Close dialog',exact:true}).click();
  await page.locator('.reference-workspace-header').getByRole('button',{name:'Switch to dark mode'}).click();await check('dark-chat-shell',true);
  await page.locator('.reference-workspace-header').getByRole('button',{name:'Switch to light mode'}).click();
