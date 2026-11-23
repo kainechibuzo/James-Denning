@@ -41,5 +41,39 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  }
  const responseStyle=requestedStyle||"balanced";
  const receipt={userMessageId:submission.messageId,clientRequestId:requestId};
+ // Roadmap sequence 1–2: when the skills product is release-gated on, a chat
+ // objective is also a discovery request. The session is linked to this run so
+ // the persisted provenance chain is complete (run → discovery → ledger →
+ // assignments). Acquisition reuses the phase-6 quarantine pipeline; in
+ // assisted mode the plan simply waits for the independent administrator
+ // decision. Discovery never blocks or fails the chat: capabilities are
+ // presented as "already there", so any problem is audited and the run
+ // proceeds without the skill context.
+ if(Deno.env.get("JD_SKILLS_ENABLED")==="true"&&Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"&&message.length>=10){
+  try{
+   const{planDiscovery,runDiscoveryAcquisition}=await import('./jd-discovery-agent.ts');
+   const idea=message.slice(0,2000);
+   const plan=planDiscovery(idea);
+   const{data:existing}=await admin.from("jd_discovery_sessions").select("id,status")
+    .eq("school_id",profile.school_id).eq("idea",idea.trim())
+    .in("status",["proposed","approved","proceeding","completed"]).limit(1).maybeSingle();
+   if(!existing){
+    const{data:autonomy}=await admin.rpc("jd_read_workspace_autonomy",{p_actor:actorId});
+    const mode=autonomy?.mode==="autonomous"?"autonomous":"assisted";
+    const{data:started,error:startError}=await admin.rpc("jd_start_discovery",{
+     p_actor:actorId,p_request:crypto.randomUUID(),p_idea:idea,p_plan:plan,p_mode:mode,p_run:run.id
+    });
+    if(startError)throw new Error(startError.message||"discovery start refused");
+    if(started?.status==="proceeding"){
+     await runDiscoveryAcquisition({session:started,plan,admin,actorId,tenantId:profile.school_id,requestId:crypto.randomUUID()});
+    }
+   }
+  }catch(discoveryFailure){
+   try{
+    await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,run_id:run.id,
+     event_type:"discovery.start_skipped",event_json:{reason:String(discoveryFailure?.message||"unknown").slice(0,200)}});
+   }catch{/* audit is best effort; the run proceeds */}
+  }
+ }
  return {conversationId,run:{...run,response_style:responseStyle},receipt,submission,risk,responseStyle};
 }

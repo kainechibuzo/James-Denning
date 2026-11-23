@@ -130,6 +130,37 @@ definitions and evidence survive.
 CI additionally runs the Deno executor tests appended to
 `supabase/functions/_shared/jd-agent-runtime.test.ts`.
 
+## Execution wiring (roadmap sequence 1–2)
+
+The chat objective is the front door. When the skills product is release-gated
+on (`JD_SKILLS_ENABLED` + `JD_SKILLS_AUTONOMOUS`), `recordChatSubmission` also
+starts a discovery session for the objective — linked to the run (`run_id`),
+deduplicated against an existing session for the same idea, and never blocking
+or failing the chat (failures are audited as `discovery.start_skipped`). In
+autonomous mode the session proceeds through the phase-6 acquisition pipeline
+immediately; in assisted mode it waits for the independent administrator
+decision.
+
+At worker claim time — while the run is still queued/planning, as the cost
+RPCs require — `jd-run-capabilities.ts` pre-authorises the acquired-skill
+agentic time the run needs: assisted runs confirm per skill through
+`jd_confirm_run_skill_cost`, autonomous runs through the standing
+`jd_autonomous_cost_authorize`, both ceiling-bounded (54000) and idempotent by
+a deterministic per-(run, skill, version, estimate) request key, so worker
+replays never double-charge. A ceiling breach is a hard stop: the run finishes
+failed with an audited `autonomy.ceiling_stop` instead of degrading silently.
+Curated (non-acquired) skills never pre-authorise and load without a ledger
+row.
+
+During deployment, a run with a discovery plan is constrained to the planned
+specialist roles: built-in assignments outside `plan.roles` are dropped and
+reported, never executed. Loads of acquired skills then succeed because their
+ledger rows exist, and the exact skill version lands in the persisted
+assignment records. The provenance chain is fully persisted and read-backable:
+run → discovery session (plan, receipt) → ledger rows (estimate, basis) →
+assignments (agent/version, skill version, tools, budget, outcome) → settlement
+(actual seconds).
+
 ## Assignment persistence (roadmap sequence 1–2)
 
 Every specialist assignment now leaves an immutable, tenant-scoped record in
