@@ -192,7 +192,7 @@ const tools: ToolSpec[] = [
     execute:async(_args,ctx)=>{
       const [employees,teams,members]=await Promise.all([
         ctx.admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,role_title,department,lifecycle_state").eq("school_id",ctx.schoolId).eq("lifecycle_state","active").order("created_at",{ascending:false}).limit(200),
-        ctx.admin.from("jd_workforce_teams").select("id,name,purpose,lifecycle_state").eq("school_id",ctx.schoolId).eq("lifecycle_state","active").order("created_at",{ascending:false}).limit(100),
+        ctx.admin.from("jd_workforce_teams").select("id,name,purpose,coordinator_specialist_kind,coordinator_specialist_ref,coordinator_specialist_name,lifecycle_state").eq("school_id",ctx.schoolId).eq("lifecycle_state","active").order("created_at",{ascending:false}).limit(100),
         ctx.admin.from("jd_workforce_team_members").select("team_id,employee_id,member_role").eq("school_id",ctx.schoolId).is("left_at",null).limit(1000)
       ]);
       if(employees.error||teams.error||members.error)throw new Error("The current workforce roster could not be verified");
@@ -205,7 +205,7 @@ const tools: ToolSpec[] = [
           return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
         }).filter(Boolean)
       }));
-      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,members:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id)).length})),read_only:true};
+      return {employees:employeeRows,teams:teamRows.map((team:any)=>({team_id:team.id,name:team.name,purpose:team.purpose,coordinator:team.coordinator_specialist_name||team.coordinator_specialist_ref,members:employeeRows.filter((employee:any)=>employee.teams.some((membership:any)=>membership.team_id===team.id)).length})),read_only:true};
     },
   },
   {
