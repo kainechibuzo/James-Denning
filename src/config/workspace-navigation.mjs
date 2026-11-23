@@ -40,27 +40,12 @@ export function defaultCollapsedGroups(page) {
 
 // Derive groups from permitted children: never leave an orphan or empty header.
 export function buildWorkspaceNavigation({role, canAccess = () => false}) {
-  const permitted = new Map();
-  for (const entry of WORKSPACE_NAVIGATION) {
-    if (!entry.roles.includes(role) || permitted.has(entry.id)) continue;
-    if (role !== "admin" && !canAccess(entry.id)) continue; // Preserve existing admin semantics.
-    permitted.set(entry.id, {...entry});
-  }
-  const output = [];
-  const take = (id, gid) => {
-    if (!permitted.has(id)) return;
-    const page = {...permitted.get(id)};
-    if (gid) page.gid = gid; else delete page.gid;
-    output.push(page); permitted.delete(id);
-  };
-  for (const id of ["jd-chat","jd-operations"]) take(id);
-  for (const group of BUSINESS_GROUPS) {
-    const children = group.pages.filter((id) => permitted.has(id));
-    if (!children.length) continue;
-    output.push({id:group.id,group:group.group});
-    for (const id of children) take(id,group.id);
-  }
-  // Future authorised routes must not disappear merely because layout metadata is missing.
-  for (const id of [...permitted.keys()]) take(id);
-  return output;
+  // JD is a chat-first business operating system. Keep the workspace shell
+  // intentionally single-entry: business areas remain implemented and
+  // permission-checked, but are reached through JD rather than separate
+  // sidebar destinations. This is presentation only, not an access grant.
+  const chat = WORKSPACE_NAVIGATION.find((entry) => entry.id === "jd-chat");
+  if (!chat || !chat.roles.includes(role)) return [];
+  if (role !== "admin" && !canAccess("jd-chat")) return [];
+  return [{...chat}];
 }
