@@ -9,6 +9,7 @@ import {WORKFORCE_GRANTABLE_TOOLS, FORBIDDEN_AGENT_TOOLS, WORKFORCE_RELEASE_FLAG
 const runtime = readFileSync('supabase/functions/_shared/jd-agent-runtime.ts', 'utf8');
 const engine = readFileSync('supabase/functions/_shared/jd-agent-workforce.ts', 'utf8');
 const assignmentsSql = readFileSync('supabase/migrations/20261124090000_jd_workforce_assignments.sql', 'utf8');
+const assignmentAttributionSql = readFileSync('supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql', 'utf8');
 
 test('the runtime registers the workforce deployment and agent factory tools', () => {
   assert.match(runtime, /name:"deploy_specialist_workforce"/);
@@ -117,4 +118,19 @@ test('capability classification stays customer-legible for the new surfaces', ()
   assert.equal(capabilityEffect('deploy_specialist_workforce').effect, 'workforce_orchestration');
   assert.equal(capabilityEffect('propose_agent_definition').effect, 'saved_internal_record');
   assert.match(runtime, /"workforce\.deployed": "Specialist workforce deployment recorded"/, 'audit activity is described in plain language');
+});
+
+test('employee-bound assignments require a live employee and active team membership', () => {
+  assert.match(runtime, /name:"get_workforce_roster"/);
+  assert.match(runtime, /employee_id:\{type:"string",maxLength:36\}/);
+  assert.match(runtime, /team_id:\{type:"string",maxLength:36\}/);
+  assert.match(engine, /employeeId\?: string/);
+  assert.match(engine, /teamId && !employeeId/);
+  assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
+  assert.match(runtime, /employee\.lifecycle_state !== "active"/);
+  assert.match(runtime, /team\.lifecycle_state !== "active"/);
+  assert.match(runtime, /membershipRows\.data/);
+  assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
+  assert.match(assignmentAttributionSql, /add column employee_id uuid/);
+  assert.match(assignmentAttributionSql, /add column team_id uuid/);
 });
