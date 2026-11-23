@@ -13,7 +13,8 @@ create table public.jd_workforce_employees (
  created_at timestamptz not null default clock_timestamp(),
  updated_at timestamptz not null default clock_timestamp(),
  retired_at timestamptz,
- unique(school_id,agent_kind,agent_ref,agent_version)
+ unique(school_id,agent_kind,agent_ref,agent_version),
+ unique(school_id,id)
 );
 create index jd_workforce_employees_tenant_state on public.jd_workforce_employees(school_id,lifecycle_state,created_at desc);
 
@@ -26,18 +27,21 @@ create table public.jd_workforce_teams (
  created_by uuid not null references auth.users(id),
  created_at timestamptz not null default clock_timestamp(),
  updated_at timestamptz not null default clock_timestamp(),
- retired_at timestamptz
+ retired_at timestamptz,
+ unique(school_id,id)
 );
 create unique index jd_workforce_teams_tenant_name_active on public.jd_workforce_teams(school_id,lower(name)) where retired_at is null;
 
 create table public.jd_workforce_team_members (
  school_id uuid not null references public.schools(id),
- team_id uuid not null references public.jd_workforce_teams(id),
- employee_id uuid not null references public.jd_workforce_employees(id),
+ team_id uuid not null,
+ employee_id uuid not null,
  member_role text not null default 'member' check(member_role in ('lead','member')),
  joined_at timestamptz not null default clock_timestamp(),
  left_at timestamptz,
- primary key(team_id,employee_id)
+ primary key(team_id,employee_id),
+ foreign key(school_id,team_id) references public.jd_workforce_teams(school_id,id),
+ foreign key(school_id,employee_id) references public.jd_workforce_employees(school_id,id)
 );
 create index jd_workforce_team_members_tenant on public.jd_workforce_team_members(school_id,team_id) where left_at is null;
 
@@ -48,16 +52,19 @@ create table public.jd_workforce_agent_threads (
  created_by uuid not null references auth.users(id),
  created_at timestamptz not null default clock_timestamp(),
  updated_at timestamptz not null default clock_timestamp(),
- unique(school_id,employee_id,created_by)
+ unique(school_id,employee_id,created_by),
+ unique(school_id,id),
+ foreign key(school_id,employee_id) references public.jd_workforce_employees(school_id,id)
 );
 create table public.jd_workforce_agent_messages (
  id uuid primary key default gen_random_uuid(),
  school_id uuid not null references public.schools(id),
- thread_id uuid not null references public.jd_workforce_agent_threads(id),
+ thread_id uuid not null,
  sender_id uuid not null references auth.users(id),
  sender_kind text not null check(sender_kind in ('user','agent')),
  content text not null check(length(btrim(content)) between 1 and 12000),
- created_at timestamptz not null default clock_timestamp()
+ created_at timestamptz not null default clock_timestamp(),
+ foreign key(school_id,thread_id) references public.jd_workforce_agent_threads(school_id,id)
 );
 create index jd_workforce_agent_messages_thread on public.jd_workforce_agent_messages(school_id,thread_id,created_at);
 
