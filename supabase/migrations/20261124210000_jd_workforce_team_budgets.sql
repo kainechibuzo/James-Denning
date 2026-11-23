@@ -8,8 +8,7 @@ create table public.jd_workforce_team_budgets (
  version integer not null default 1,
  updated_at timestamptz not null default clock_timestamp(),
  primary key (school_id,team_id),
- foreign key (school_id,team_id) references public.jd_workforce_teams(school_id,id),
- check (budget_micros=0 or accrued_micros<=budget_micros)
+ foreign key (school_id,team_id) references public.jd_workforce_teams(school_id,id)
 );
 create table public.jd_workforce_team_budget_requests (
  school_id uuid not null references public.schools(id),
