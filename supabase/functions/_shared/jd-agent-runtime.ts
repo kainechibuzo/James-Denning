@@ -528,6 +528,7 @@ const tools: ToolSpec[] = [
         ...(specialistKind === "registry" ? [specialistRef] : []),
         ...members.filter((member: any) => member.specialist_kind === "registry").map((member: any) => member.specialist_ref)
       ])];
+      const registryNames = new Map<string,string>();
       if (registryRefs.length) {
         const {data:registryRows,error:registryError}=await ctx.admin.from("jd_agent_definitions")
           .select("id,current_version,state,execution_authorized").eq("school_id",ctx.schoolId).in("id",registryRefs);
@@ -536,8 +537,23 @@ const tools: ToolSpec[] = [
         const requested=[{kind:specialistKind,ref:specialistRef,version:specialistVersion},...members.map((member:any)=>({kind:member.specialist_kind,ref:member.specialist_ref,version:member.specialist_version}))].filter(item=>item.kind==="registry");
         if (requested.some(item=>{const row:any=registryMap.get(item.ref);return !row||row.state!=="published"||row.execution_authorized!==true||row.current_version!==item.version;}))
           throw new Error("Every registry specialist must be current, published and explicitly execution-authorized");
+        const versions=[...new Set(requested.map(item=>item.version).filter((value):value is number=>Number.isInteger(value)))];
+        const {data:versionRows,error:versionError}=await ctx.admin.from("jd_agent_definition_versions")
+          .select("agent_id,version,content").eq("school_id",ctx.schoolId).in("agent_id",registryRefs).in("version",versions);
+        if(versionError)throw new Error("Published specialist display names could not be verified");
+        for(const row of versionRows||[]){
+          const displayName=typeof row.content?.name==="string"?row.content.name.trim():"";
+          if(displayName)registryNames.set(row.agent_id+":"+row.version,displayName);
+        }
+        if(requested.some(item=>!registryNames.has(item.ref+":"+item.version)))
+          throw new Error("A published specialist version is missing its canonical display name");
       }
-      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_kind: specialistKind, specialist_ref: specialistRef, specialist_version: specialistVersion, members, activation: "not_started", tools_granted: false, billing_enabled: false };
+      const specialistName=specialistKind==="builtin"?specialistRef.replaceAll("_"," "):registryNames.get(specialistRef+":"+specialistVersion);
+      const proposalMembers=members.map((member:any)=>({
+        ...member,
+        specialist_name:member.specialist_kind==="builtin"?member.specialist_ref.replaceAll("_"," "):registryNames.get(member.specialist_ref+":"+member.specialist_version)
+      }));
+      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_kind: specialistKind, specialist_ref: specialistRef, specialist_version: specialistVersion, specialist_name:specialistName, members:proposalMembers, activation: "not_started", tools_granted: false, billing_enabled: false };
       const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
       const { data: prior, error: priorError } = await ctx.admin.from("jd_approvals")
         .select("id,status,title,created_at,proposal_json").eq("school_id", ctx.schoolId).eq("run_id", ctx.runId)
