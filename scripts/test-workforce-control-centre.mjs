@@ -129,7 +129,7 @@ test("team shadow budgets are tenant-scoped, versioned and idempotent",()=>{
  assert.ok(teamBudgetsMigration.includes("jd_workforce_team_budget_requests"));
  assert.ok(teamBudgetsMigration.includes("enable row level security"));
  assert.ok(teamBudgetsMigration.includes("jd_workforce_set_team_budget"));
- assert.ok(teamBudgetsMigration.includes("request identifier reused"));
+ assert.match(teamBudgetsMigration,/request identifier reused/i);
  assert.ok(teamBudgetsMigration.includes("p_expected_version"));
  assert.ok(teamBudgetsMigration.includes("workforce.team.budget_set"));
  assert.ok(teamBudgetsMigration.includes("grant execute on function public.jd_workforce_set_team_budget"));
