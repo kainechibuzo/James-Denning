@@ -3,7 +3,7 @@
 ## 2026-11-23 — Release automation: merge = release (no more manual dispatch ritual)
 
 - New `auto-release.yml`: on every merge to master it records the release approval variables (approved SHA, the merged PR as the approval reference, staging-verified SHA) and automatically dispatches the reviewed Supabase Deploy workflow for that exact commit. Owner controls: PR review before merge, `JD_AUTO_RELEASE_DISABLED` kill switch, manual overrides. Static contract `scripts/test-auto-release.mjs` wired into CI.
-- Also closes the phase-7 deployment gap this created: the pending function release now happens automatically the moment the automation itself merges.
+- Also closes the pending phase-7 function release: the first auto-release run deploys the discovery/autonomy functions by itself.
 
 ## 2026-11-22 — JD phase 7: autonomy dial, discovery agent, agent work-time billing
 
