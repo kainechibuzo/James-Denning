@@ -1,7 +1,11 @@
 -- Attribute bounded specialist assignment history to activated workforce identities.
 alter table public.jd_workforce_assignments
-  add column employee_id uuid references public.jd_workforce_employees(id),
-  add column team_id uuid references public.jd_workforce_teams(id),
+  add column employee_id uuid,
+  add column team_id uuid,
+  add constraint jd_workforce_assignment_employee_tenant_fk
+    foreign key(school_id,employee_id) references public.jd_workforce_employees(school_id,id),
+  add constraint jd_workforce_assignment_team_tenant_fk
+    foreign key(school_id,team_id) references public.jd_workforce_teams(school_id,id),
   add constraint jd_workforce_assignment_team_requires_employee
     check (team_id is null or employee_id is not null);
 
