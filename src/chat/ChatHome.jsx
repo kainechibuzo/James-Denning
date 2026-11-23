@@ -15,7 +15,7 @@ import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
+import { Send, Pause, Play, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
