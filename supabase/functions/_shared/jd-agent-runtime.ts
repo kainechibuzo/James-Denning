@@ -1653,6 +1653,8 @@ export type WorkforceDeploymentOutcome = {
   rounds_used?: number;
   tool_evidence: Array<Record<string, unknown>>;
   verification: { required: boolean; status: string };
+  employee_id?: string;
+  team_id?: string;
 };
 
 /**
@@ -1755,6 +1757,43 @@ export async function runWorkforceDeployment(
     droppedByPlan = plan.assignments.length - kept.length;
     plan.assignments = kept;
   }
+  const boundAssignments = plan.assignments.filter((assignment) => assignment.employeeId);
+  if (boundAssignments.length) {
+    const employeeIds = [...new Set(boundAssignments.map((assignment) => assignment.employeeId as string))];
+    const teamIds = [...new Set(boundAssignments.map((assignment) => assignment.teamId).filter(Boolean) as string[])];
+    const [employeeRows, teamRows, membershipRows] = await Promise.all([
+      options.context.admin.from("jd_workforce_employees")
+        .select("id,agent_kind,agent_ref,agent_version,lifecycle_state")
+        .eq("school_id", options.context.schoolId).in("id", employeeIds),
+      teamIds.length ? options.context.admin.from("jd_workforce_teams")
+        .select("id,lifecycle_state").eq("school_id", options.context.schoolId).in("id", teamIds) : Promise.resolve({data:[],error:null}),
+      teamIds.length ? options.context.admin.from("jd_workforce_team_members")
+        .select("team_id,employee_id,left_at").eq("school_id", options.context.schoolId)
+        .in("team_id", teamIds).in("employee_id", employeeIds).is("left_at", null) : Promise.resolve({data:[],error:null}),
+    ]);
+    if (employeeRows.error || teamRows.error || membershipRows.error) {
+      return {error:"The employee/team roster could not be verified; no specialist assignment was started",deployed:false};
+    }
+    const employeeMap = new Map((employeeRows.data||[]).map((row:any)=>[row.id,row]));
+    const teamMap = new Map((teamRows.data||[]).map((row:any)=>[row.id,row]));
+    for (const assignment of boundAssignments) {
+      const employee:any = employeeMap.get(assignment.employeeId as string);
+      const ref = assignment.agent.kind === "builtin" ? (assignment.agent as any).id : (assignment.agent as any).agentId;
+      if (!employee || employee.lifecycle_state !== "active" || employee.agent_kind !== assignment.agent.kind || employee.agent_ref !== ref) {
+        return {error:"A selected employee is missing, paused, retired or does not match the requested specialist; no assignment was started",deployed:false};
+      }
+      if (assignment.agent.kind === "registry" && employee.agent_version !== (registryAgents.get(ref)?.definitionVersion ?? null)) {
+        return {error:"The selected employee does not reference the current published specialist version; no assignment was started",deployed:false};
+      }
+      if (assignment.teamId) {
+        const team:any = teamMap.get(assignment.teamId);
+        const membership = (membershipRows.data||[]).some((row:any)=>row.team_id===assignment.teamId&&row.employee_id===assignment.employeeId&&row.left_at===null);
+        if (!team || team.lifecycle_state !== "active" || !membership) {
+          return {error:"The selected employee is not an active member of the requested active team; no assignment was started",deployed:false};
+        }
+      }
+    }
+  }
   const specByName = new Map(options.available.map((candidate) => [candidate.name, {
     type: "function",
     name: candidate.name,
@@ -1792,6 +1831,10 @@ export async function runWorkforceDeployment(
       outcomes.push({
         agent_ref: agentRefLabel(assignment.agent),
         name: resolved.name,
+        ...(assignment.employeeId ? {employee_id:assignment.employeeId} : {}),
+        ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
+        ...(assignment.employeeId ? {employee_id:assignment.employeeId} : {}),
+        ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
         source: resolved.source,
         status: "report_returned",
         report: executed.report,
@@ -1843,7 +1886,9 @@ export async function runWorkforceDeployment(
           skill_version: skill?.version ?? null,
           skill_content_hash: skill?.content_hash ?? null,
           task: assignment.task.slice(0, 4000),
-          task_hash: workforceTaskHash(assignment.task),
+          employee_id: assignment.employeeId || null,
+          team_id: assignment.teamId || null,
+          task_hash: workforceTaskHash([assignment.employeeId || "",assignment.teamId || "",assignment.task].join("|")),
           tool_allowlist: [...assignment.requestedTools],
           budget: { max_model_rounds: resolved.maxModelRounds, max_output_tokens: resolved.maxOutputTokens },
           status: outcome.status,
@@ -1873,6 +1918,7 @@ export async function runWorkforceDeployment(
       outcomes: outcomes.map((outcome) => ({
         agent_ref: outcome.agent_ref, name: outcome.name, source: outcome.source,
         status: outcome.status, tool_calls: outcome.tool_evidence.length, tools_granted: outcome.tools_granted,
+        employee_id: outcome.employee_id || null, team_id: outcome.team_id || null,
       })),
     }),
   });
