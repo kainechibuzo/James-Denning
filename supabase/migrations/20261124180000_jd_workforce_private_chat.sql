@@ -26,6 +26,8 @@ create table public.jd_workforce_agent_messages (
   content text not null check (length(content) between 1 and 12000),
   request_id uuid,
   reply_to_message_id uuid references public.jd_workforce_agent_messages(id),
+  model_name text,
+  usage_json jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default clock_timestamp(),
   unique (school_id,id)
 );
