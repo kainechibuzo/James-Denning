@@ -26,7 +26,7 @@ test("HTTP exposes workforce control only after authenticated profile resolution
  assert.ok(endpoint.includes("handleWorkforceControl({payload,admin,profile,actorId:authData.user.id,json})"));
 });
 test("control centre never claims in-flight cancellation or payable billing",()=>{
- assert.ok(ui.includes("does not cancel or resume an in-flight assignment"));
+ assert.ok(ui.includes("does not stop or resume an in-flight assignment"));
  assert.ok(ui.includes("not invoices"));
  assert.ok(service.includes("agentChatEnabled:false"));
 });
