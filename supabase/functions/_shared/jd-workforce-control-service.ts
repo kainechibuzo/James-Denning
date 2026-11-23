@@ -1,3 +1,5 @@
+import { runPrivateSpecialistReply } from "./jd-agent-runtime.ts";
+import { selectJdModel } from "./jd-agent-routing.ts";
 const uuid=(v:unknown)=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const adminRoles=["owner","admin"];
 export async function handleWorkforceControl({payload,admin,profile,actorId,json}:any){
@@ -12,7 +14,110 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
    admin.from("jd_workforce_employee_usage").select("id,employee_id,assignment_id,rate_micros_per_hour,active_microseconds,amount_micros,reconciliation_status,created_at,reconciled_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500)
   ]);
   if(employees.error||teams.error||members.error||assignments.error||budgets.error||employeeUsage.error)return json({error:"Workforce records are not available. Confirm the reviewed schema is present before enabling this feature.",releaseReady:false},503);
-  return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],budgets:budgets.data||[],employeeUsage:employeeUsage.data||[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:false,billingMode:"shadow_only"});
+  return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],budgets:budgets.data||[],employeeUsage:employeeUsage.data||[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true",billingMode:"shadow_only"});
+ }
+ if(payload?.action==="workforce.agent.thread.open"||payload?.action==="workforce.agent.thread.history"||payload?.action==="workforce.agent.message.send"){
+  if(Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")!=="true")return json({error:"Private specialist conversations are not enabled in this release."},503);
+  const employeeId=payload.employeeId,threadId=payload.threadId;
+  if(!uuid(employeeId))return json({error:"A valid employee identity is required"},400);
+  const {data:employee,error:employeeError}=await admin.from("jd_workforce_employees")
+   .select("id,agent_kind,agent_ref,display_name,role_title,purpose,responsibilities,lifecycle_state")
+   .eq("school_id",profile.school_id).eq("id",employeeId).maybeSingle();
+  if(employeeError)return json({error:"Could not verify this employee identity"},503);
+  if(!employee)return json({error:"Employee not found in this workspace"},404);
+  if(employee.agent_kind!=="builtin")return json({error:"Private chat is currently available for built-in specialist employees only."},409);
+  if(employee.lifecycle_state!=="active")return json({error:"This employee is not currently available for a private conversation."},409);
+  if(payload.action==="workforce.agent.thread.open"){
+   const {data:prior,error:priorError}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
+    .eq("school_id",profile.school_id).eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
+   if(priorError)return json({error:"Could not open the private specialist conversation"},503);
+   if(prior)return json({thread:prior,employee});
+   const {data:created,error:createError}=await admin.from("jd_workforce_agent_threads")
+    .insert({school_id:profile.school_id,employee_id:employeeId,created_by:actorId,status:"active"})
+    .select("id,employee_id,status,created_at,updated_at").single();
+   if(createError){
+    const {data:retry}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
+     .eq("school_id",profile.school_id).eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
+    if(retry)return json({thread:retry,employee});
+    return json({error:"Private specialist conversation could not be created"},503);
+   }
+   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.thread.opened",event_json:{thread_id:created.id,employee_id:employeeId}});
+   return json({thread:created,employee},201);
+  }
+  if(!uuid(threadId))return json({error:"A valid private conversation is required"},400);
+  const {data:thread,error:threadError}=await admin.from("jd_workforce_agent_threads")
+   .select("id,employee_id,status,created_by").eq("school_id",profile.school_id).eq("id",threadId)
+   .eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
+  if(threadError)return json({error:"Could not verify the private conversation"},503);
+  if(!thread)return json({error:"Private conversation not found"},404);
+  if(thread.status!=="active")return json({error:"This private conversation is archived"},409);
+  if(payload.action==="workforce.agent.thread.history"){
+   const {data:messages,error:messagesError}=await admin.from("jd_workforce_agent_messages")
+    .select("id,sender_kind,content,reply_to_message_id,created_at").eq("school_id",profile.school_id)
+    .eq("thread_id",threadId).order("created_at",{ascending:true}).limit(100);
+   if(messagesError)return json({error:"Could not load private conversation history"},503);
+   return json({thread,messages:messages||[],employee});
+  }
+  const content=typeof payload.content==="string"?payload.content.trim():"";
+  if(!uuid(payload.requestId)||content.length<1||content.length>8000)return json({error:"Enter a message of up to 8,000 characters"},400);
+  let userMessage:any=null;
+  const {data:existingUser,error:existingError}=await admin.from("jd_workforce_agent_messages")
+   .select("id,content,created_at").eq("school_id",profile.school_id).eq("thread_id",threadId)
+   .eq("sender_id",actorId).eq("sender_kind","user").eq("request_id",payload.requestId).maybeSingle();
+  if(existingError)return json({error:"Could not verify whether this message was already sent"},503);
+  userMessage=existingUser;
+  if(!userMessage){
+   const {data:inserted,error:insertError}=await admin.from("jd_workforce_agent_messages").insert({
+    school_id:profile.school_id,thread_id:threadId,employee_id:employeeId,
+    sender_kind:"user",sender_id:actorId,content,request_id:payload.requestId
+   }).select("id,content,created_at").single();
+   if(insertError){
+    const {data:retry}=await admin.from("jd_workforce_agent_messages").select("id,content,created_at")
+     .eq("school_id",profile.school_id).eq("thread_id",threadId).eq("sender_id",actorId)
+     .eq("sender_kind","user").eq("request_id",payload.requestId).maybeSingle();
+    if(!retry)return json({error:"Your message was not saved; refresh before retrying."},503);
+    userMessage=retry;
+   }else userMessage=inserted;
+   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.message.sent",event_json:{thread_id:threadId,employee_id:employeeId,message_id:userMessage.id}});
+  }
+  const {data:existingReply,error:replyLookupError}=await admin.from("jd_workforce_agent_messages")
+   .select("id,content,created_at").eq("school_id",profile.school_id)
+   .eq("reply_to_message_id",userMessage.id).eq("sender_kind","agent").maybeSingle();
+  if(replyLookupError)return json({error:"Could not verify the specialist reply"},503);
+  if(existingReply)return json({thread,messages:[userMessage,existingReply],replayed:true});
+  const {data:priorMessages,error:historyError}=await admin.from("jd_workforce_agent_messages")
+   .select("sender_kind,content,created_at").eq("school_id",profile.school_id).eq("thread_id",threadId)
+   .lt("created_at",userMessage.created_at).order("created_at",{ascending:true}).limit(20);
+  if(historyError)return json({error:"Could not prepare private conversation context"},503);
+  const apiKey=Deno.env.get("OPENROUTER_API_KEY")||"";
+  if(!apiKey)return json({error:"Private specialist chat is not configured with a model provider."},503);
+  const configuredModel=Deno.env.get("JD_MODEL_NAME")||"google/gemini-3.1-flash-lite";
+  const model=selectJdModel(content,configuredModel,{fast:Deno.env.get("JD_MODEL_FAST_NAME"),reasoning:Deno.env.get("JD_MODEL_REASONING_NAME")});
+  const baseUrl=Deno.env.get("JD_MODEL_BASE_URL")||"https://openrouter.ai/api/v1";
+  let reply:any;
+  try{
+   reply=await runPrivateSpecialistReply({
+    employee,history:(priorMessages||[]).map((m:any)=>({role:m.sender_kind==="agent"?"assistant":"user",content:m.content})),
+    message:userMessage.content,model,apiKey,baseUrl
+   });
+  }catch(error){
+   console.error("Private specialist response failed",String(error instanceof Error?error.message:error).slice(0,180));
+   return json({error:"The message was saved, but the specialist could not reply yet. Retry this same message after checking the provider."},502);
+  }
+  const {data:assistantMessage,error:assistantError}=await admin.from("jd_workforce_agent_messages").insert({
+   school_id:profile.school_id,thread_id:threadId,employee_id:employeeId,
+   sender_kind:"agent",sender_id:actorId,content:reply.content,reply_to_message_id:userMessage.id
+  }).select("id,sender_kind,content,reply_to_message_id,created_at").single();
+  if(assistantError){
+   const {data:concurrentReply}=await admin.from("jd_workforce_agent_messages").select("id,sender_kind,content,reply_to_message_id,created_at")
+    .eq("school_id",profile.school_id).eq("reply_to_message_id",userMessage.id).eq("sender_kind","agent").maybeSingle();
+   if(!concurrentReply)return json({error:"The specialist reply could not be saved. Refresh before retrying."},503);
+   return json({thread,messages:[userMessage,concurrentReply],replayed:true});
+  }
+  await admin.from("jd_workforce_agent_threads").update({updated_at:new Date().toISOString()})
+   .eq("school_id",profile.school_id).eq("id",threadId);
+  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.message.replied",event_json:{thread_id:threadId,employee_id:employeeId,message_id:assistantMessage.id,model:reply.model}});
+  return json({thread,messages:[userMessage,assistantMessage],replayed:false});
  }
  if(payload?.action==="workforce.employee.create"||payload?.action==="workforce.team.create"){
   return json({error:"Employee and team identities can only be created by activating an explicitly approved Review Centre proposal."},409);
