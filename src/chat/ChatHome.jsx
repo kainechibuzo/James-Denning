@@ -188,6 +188,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
+  const [showWorkforce, setShowWorkforce] = useState(false);
   const [showDepartments, setShowDepartments] = useState(false);
   const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
