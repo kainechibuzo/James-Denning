@@ -54,6 +54,7 @@ test("employee and team activation is bound to an approved Review Centre proposa
   assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
   assert.match(workforceMigration, /Only an explicitly approved proposal can be activated/);
   assert.match(workforceMigration, /v_approval\.status is distinct from 'approved'/);
+  assert.match(workforceMigration, /v_approval\.expires_at is null[\s\S]{0,120}v_approval\.expires_at <= clock_timestamp\(\)/, "expired approvals cannot be activated even if their status was previously approved");
   assert.match(workforceMigration, /workforce\.employee\.proposal/);
   assert.match(workforceMigration, /workforce\.team\.proposal/);
   assert.match(workforceMigration, /jd_workforce_proposal_activations/);
