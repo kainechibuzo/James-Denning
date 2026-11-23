@@ -47,6 +47,8 @@ test("employee and team activation is bound to an approved Review Centre proposa
   assert.match(runtime, /member\.specialist_ref/);
   assert.match(review, /workforce\.proposal\.activate/);
   assert.match(review, /Activate approved/);
+  assert.match(review, /proposal\.specialist_name/);
+  assert.match(review, /member\.specialist_name/);
   assert.match(workforceService, /jd_workforce_activate_approved_proposal/);
   assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
   assert.match(workforceMigration, /Only an explicitly approved proposal can be activated/);
@@ -55,6 +57,8 @@ test("employee and team activation is bound to an approved Review Centre proposa
   assert.match(workforceMigration, /workforce\.team\.proposal/);
   assert.match(workforceMigration, /jd_workforce_proposal_activations/);
   assert.match(workforceMigration, /workforce\.proposal\.activated/);
+  assert.match(workforceMigration, /The approval ID is the durable idempotency key/);
+  assert.match(workforceMigration, /v_existing\.receipt\|\|jsonb_build_object\('replayed',true/);
 });
 
 test("identity creation cannot bypass owner approval and does not grant execution or billing", () => {
