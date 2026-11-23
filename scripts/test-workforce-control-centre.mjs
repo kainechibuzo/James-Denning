@@ -28,7 +28,7 @@ test("HTTP exposes workforce control only after authenticated profile resolution
 test("control centre never claims in-flight cancellation or payable billing",()=>{
  assert.ok(ui.includes("does not cancel or resume an in-flight assignment"));
  assert.ok(ui.includes("not payable"));
- assert.ok(ui.includes("agentChatEnabled:false"));
+ assert.ok(service.includes("agentChatEnabled:false"));
 });
 test("workforce control centre is reachable from the chat tool surface",()=>{
  assert.ok(nav.includes("id:'workforce',label:'Workforce control centre'"));
