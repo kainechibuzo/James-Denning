@@ -28,7 +28,7 @@ test("HTTP exposes workforce control only after authenticated profile resolution
 test("control centre never claims in-flight cancellation or payable billing",()=>{
  assert.ok(ui.includes("does not stop or resume an in-flight assignment"));
  assert.ok(ui.includes("not invoices"));
- assert.ok(service.includes("agentChatEnabled:false"));
+ assert.ok(service.includes('agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true"'));
 });
 test("workforce control centre is reachable from the chat tool surface",()=>{
  assert.ok(nav.includes("id:'workforce',label:'Workforce control centre'"));
@@ -67,5 +67,10 @@ test("private agent chat and checked worker controls remain honestly gated",()=>
  assert.ok(service.includes("agentChatEnabled:false"));
  assert.ok(service.includes("executionControlsEnabled:false"));
  assert.ok(ui.includes("private agent conversations"));
+ assert.ok(service.includes("workforce.agent.message.send"));
+ assert.ok(service.includes("workforce.agent.thread.open"));
+ assert.ok(service.includes("runPrivateSpecialistReply"));
+ assert.ok(ui.includes("Private chat"));
+ assert.ok(ui.includes("Reasoning only"));
  assert.ok(ui.includes("not yet emitting employee-attributed usage receipts"));
 });
