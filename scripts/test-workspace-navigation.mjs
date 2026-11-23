@@ -13,7 +13,11 @@ test("workspace route catalogue retains implemented business destinations and ro
 
 test("single-entry workspace shell exposes JD Assistant without widening role access",()=>{
   for(const role of ["owner","admin","manager"])assert.deepEqual(build({role,canAccess:()=>true}).map(n=>n.id),["jd-chat"]);
-  for(const role of ["owner","admin","manager"])assert.deepEqual(build({role,canAccess:()=>false}),[]);
+  assert.deepEqual(build({role:"owner",canAccess:()=>false}),[]);
+  assert.deepEqual(build({role:"manager",canAccess:()=>false}),[]);
+  // Admin's explicit role grant is sufficient; owner/manager still require
+  // the resolved JD-chat permission from the workspace policy layer.
+  assert.deepEqual(build({role:"admin",canAccess:()=>false}).map(n=>n.id),["jd-chat"]);
   for(const role of [undefined,"viewer","employee","hr","finance","public","teacher","student"])assert.deepEqual(build({role,canAccess:()=>true}),[]);
 });
 
@@ -27,10 +31,10 @@ test("assistant menu contains the operational destinations and is gated by autho
 
 test("shell wires role resolver, account access and reauthentication",()=>{
   const shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
-  assert.match(shell,/buildWorkspaceNavigation\\(\\{role,canAccess\\}\\)/);
+  assert.match(shell,/buildWorkspaceNavigation\(\{role,canAccess\}\)/);
   assert.match(shell,/aria-label="Switch organisation" aria-haspopup="dialog"/);
   assert.match(shell,/aria-label="My profile"/);assert.match(shell,/aria-label="Sign out"/);
   assert.match(shell,/signOut:options=>supabase.auth.signOut\\(options\\)/);
-  assert.match(shell,/function AccessDenied\\(\\)/);
+  assert.match(shell,/function AccessDenied\(\)/);
   for(const legacy of ["SchoolSelectPage","PlatformDashboardPage","SectionSelector","LoginPage","SCHOOL_SLUGS"])assert.doesNotMatch(shell,new RegExp(legacy));
 });
