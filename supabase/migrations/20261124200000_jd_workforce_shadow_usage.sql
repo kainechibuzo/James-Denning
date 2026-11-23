@@ -57,7 +57,19 @@ begin
   ) values(
     v_school,v_assignment.employee_id,p_assignment,p_source_event,v_budget.rate_micros_per_hour,
     p_active_microseconds,v_amount,v_status,v_evidence
-  ) returning * into v_usage;
+  ) on conflict(school_id,assignment_id,employee_id,source_event_id) do nothing
+  returning * into v_usage;
+  if not found then
+    select * into v_usage from public.jd_workforce_employee_usage
+    where school_id=v_school and assignment_id=p_assignment
+      and employee_id=v_assignment.employee_id and source_event_id=p_source_event;
+    return jsonb_build_object(
+      'usage_id',v_usage.id,'employee_id',v_usage.employee_id,'assignment_id',v_usage.assignment_id,
+      'rate_micros_per_hour',v_usage.rate_micros_per_hour,
+      'active_microseconds',v_usage.active_microseconds,'amount_micros',v_usage.amount_micros,
+      'reconciliation_status',v_usage.reconciliation_status,'charged',false,'replayed',true
+    );
+  end if;
 
   update public.jd_workforce_employee_budgets
   set accrued_micros=accrued_micros+v_amount,version=version+1,updated_at=clock_timestamp()
