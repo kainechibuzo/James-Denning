@@ -41,14 +41,22 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
    const {data:prior,error:priorError}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
     .eq("school_id",profile.school_id).eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
    if(priorError)return json({error:"Could not open the private specialist conversation"},503);
-   if(prior)return json({thread:prior,employee});
+   if(prior){
+    if(!await auditEvent("workforce.agent.thread.opened",{thread_id:prior.id,employee_id:employeeId}))
+     return json({error:"The conversation exists but its audit receipt could not be confirmed."},503);
+    return json({thread:prior,employee});
+   }
    const {data:created,error:createError}=await admin.from("jd_workforce_agent_threads")
     .insert({school_id:profile.school_id,employee_id:employeeId,created_by:actorId,status:"active"})
     .select("id,employee_id,status,created_at,updated_at").single();
    if(createError){
     const {data:retry}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
      .eq("school_id",profile.school_id).eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
-    if(retry)return json({thread:retry,employee});
+    if(retry){
+     if(!await auditEvent("workforce.agent.thread.opened",{thread_id:retry.id,employee_id:employeeId}))
+      return json({error:"The conversation exists but its audit receipt could not be confirmed."},503);
+     return json({thread:retry,employee});
+    }
     return json({error:"Private specialist conversation could not be created"},503);
    }
    if(!await auditEvent("workforce.agent.thread.opened",{thread_id:created.id,employee_id:employeeId}))
@@ -73,7 +81,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   if(!uuid(payload.requestId)||content.length<1||content.length>8000)return json({error:"Enter a message of up to 8,000 characters"},400);
   let userMessage:any=null;
   const {data:existingUser,error:existingError}=await admin.from("jd_workforce_agent_messages")
-   .select("id,content,created_at").eq("school_id",profile.school_id).eq("thread_id",threadId)
+   .select("id,sender_kind,content,created_at").eq("school_id",profile.school_id).eq("thread_id",threadId)
    .eq("sender_id",actorId).eq("sender_kind","user").eq("request_id",payload.requestId).maybeSingle();
   if(existingError)return json({error:"Could not verify whether this message was already sent"},503);
   userMessage=existingUser;
@@ -94,7 +102,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   if(!await auditEvent("workforce.agent.message.sent",{thread_id:threadId,employee_id:employeeId,message_id:userMessage.id,request_id:payload.requestId}))
    return json({error:"Your message was saved but its audit receipt could not be confirmed. Retry the same message."},503);
   const {data:existingReply,error:replyLookupError}=await admin.from("jd_workforce_agent_messages")
-   .select("id,content,created_at").eq("school_id",profile.school_id)
+   .select("id,sender_kind,content,created_at").eq("school_id",profile.school_id)
    .eq("reply_to_message_id",userMessage.id).eq("sender_kind","agent").maybeSingle();
   if(replyLookupError)return json({error:"Could not verify the specialist reply"},503);
   if(existingReply){
@@ -129,7 +137,9 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
    const {data:concurrentReply}=await admin.from("jd_workforce_agent_messages").select("id,sender_kind,content,reply_to_message_id,created_at")
     .eq("school_id",profile.school_id).eq("reply_to_message_id",userMessage.id).eq("sender_kind","agent").maybeSingle();
    if(!concurrentReply)return json({error:"The specialist reply could not be saved. Refresh before retrying."},503);
-   return json({thread,messages:[userMessage,concurrentReply],replayed:true});
+   if(!await auditEvent("workforce.agent.message.replied",{thread_id:threadId,employee_id:employeeId,message_id:concurrentReply.id}))
+    return json({error:"The specialist reply exists but its audit receipt could not be confirmed."},503);
+   return json({thread,messages:[{...userMessage,sender_kind:"user"},concurrentReply],replayed:true});
   }
   await admin.from("jd_workforce_agent_threads").update({updated_at:new Date().toISOString()})
    .eq("school_id",profile.school_id).eq("id",threadId);
