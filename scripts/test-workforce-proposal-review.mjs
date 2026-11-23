@@ -8,6 +8,7 @@ const review = readFileSync("src/chat/ReviewCentre.jsx", "utf8");
 const workforceService = readFileSync("supabase/functions/_shared/jd-workforce-control-service.ts", "utf8");
 const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.sql", "utf8");
 const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
+const privateChatMigration = readFileSync("supabase/migrations/20261124180000_jd_workforce_private_chat.sql", "utf8");
 
 test("JD can submit an individual AI employee proposal for owner review", () => {
   assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
@@ -64,4 +65,17 @@ test("identity creation cannot bypass owner approval and does not grant executio
 test("approval decisions support both owner and admin roles", () => {
   assert.match(workforceMigration, /role in \('owner','admin'\)/);
   assert.match(workforceMigration, /create or replace function public\.jd_decide_approval/);
+});
+
+test("private specialist conversations are separate, append-only and have no tool authority", () => {
+  assert.match(privateChatMigration, /jd_workforce_agent_threads/);
+  assert.match(privateChatMigration, /jd_workforce_agent_messages/);
+  assert.match(privateChatMigration, /sender_kind text not null check \(sender_kind in \('user','agent'\)\)/);
+  assert.match(privateChatMigration, /jd_workforce_agent_messages_immutable/);
+  assert.match(runtime, /runPrivateSpecialistReply/);
+  assert.match(runtime, /tools: \[\]/);
+  assert.match(runtime, /tool_choice: "none"/);
+  assert.match(workforceService, /JD_WORKFORCE_PRIVATE_CHAT_ENABLED/);
+  assert.match(workforceService, /workforce\.agent\.message\.send/);
+  assert.match(workforceService, /workforce\.agent\.message\.replied/);
 });
