@@ -31,11 +31,20 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   const employeeId=payload.employeeId,threadId=payload.threadId;
   if(!uuid(employeeId))return json({error:"A valid employee identity is required"},400);
   const {data:employee,error:employeeError}=await admin.from("jd_workforce_employees")
-   .select("id,agent_kind,agent_ref,display_name,role_title,purpose,responsibilities,lifecycle_state")
+   .select("id,agent_kind,agent_ref,agent_version,display_name,role_title,purpose,responsibilities,lifecycle_state")
    .eq("school_id",profile.school_id).eq("id",employeeId).maybeSingle();
   if(employeeError)return json({error:"Could not verify this employee identity"},503);
   if(!employee)return json({error:"Employee not found in this workspace"},404);
-  if(employee.agent_kind!=="builtin")return json({error:"Private chat is currently available for built-in specialist employees only."},409);
+  let specialistInstructions:string[]=[];
+  if(employee.agent_kind==="registry"){
+   if(!Number.isInteger(employee.agent_version)||!employee.agent_version)return json({error:"The employee's pinned specialist version is unavailable."},409);
+   const {data:definition,error:definitionError}=await admin.from("jd_agent_definition_versions")
+    .select("content").eq("school_id",profile.school_id).eq("agent_id",employee.agent_ref)
+    .eq("version",employee.agent_version).maybeSingle();
+   if(definitionError||!definition||!definition.content||typeof definition.content!=="object")return json({error:"The employee's pinned specialist definition could not be verified."},503);
+   specialistInstructions=Array.isArray(definition.content.instructions)
+    ?definition.content.instructions.filter((value:any)=>typeof value==="string").slice(0,20).map((value:string)=>value.slice(0,2000)):[];
+  }else if(employee.agent_kind!=="builtin")return json({error:"This employee uses an unsupported specialist type."},409);
   if(payload.action==="workforce.agent.thread.open"&&employee.lifecycle_state!=="active")return json({error:"This employee is not currently available for a new private conversation."},409);
   if(payload.action==="workforce.agent.thread.open"){
    const {data:prior,error:priorError}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
@@ -123,7 +132,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   let reply:any;
   try{
    reply=await runPrivateSpecialistReply({
-    employee,history:(priorMessages||[]).map((m:any)=>({role:m.sender_kind==="agent"?"assistant":"user",content:m.content})),
+    employee,specialistInstructions,history:(priorMessages||[]).map((m:any)=>({role:m.sender_kind==="agent"?"assistant":"user",content:m.content})),
     message:userMessage.content,model,apiKey,baseUrl
    });
   }catch(error){
