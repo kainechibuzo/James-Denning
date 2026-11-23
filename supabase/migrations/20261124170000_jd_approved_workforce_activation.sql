@@ -170,6 +170,9 @@ begin
   if v_approval.status is distinct from 'approved' or v_approval.decided_by is null then
     raise exception 'Only an explicitly approved proposal can be activated' using errcode='42501';
   end if;
+  if v_approval.expires_at is null or v_approval.expires_at <= clock_timestamp() then
+    raise exception 'Workforce proposal approval has expired' using errcode='40001';
+  end if;
   if v_approval.action_key is null or v_approval.action_key not in ('workforce.employee.proposal','workforce.team.proposal') then
     raise exception 'Approval is not a workforce proposal' using errcode='22023';
   end if;
