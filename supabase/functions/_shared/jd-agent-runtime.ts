@@ -202,14 +202,14 @@ const tools: ToolSpec[] = [
         .in("employee_id",employeeIds).order("created_at",{ascending:false}).limit(1000):{data:[],error:null};
       if(workload.error)throw new Error("Employee workload could not be verified; no assignment recommendation can be made");
       const workloadRows=workload.data||[];
-      const terminal=new Set(["report_returned","failed","completed","cancelled"]);
+      const activeStates=new Set(["queued","running","retry_wait","paused","awaiting_approval"]);
       const teamRows=teams.data||[];
       const employeeRows=(employees.data||[]).map((employee:any)=>{
         const history=workloadRows.filter((item:any)=>item.employee_id===employee.id);
         return {
           employee_id:employee.id,name:employee.display_name,role_title:employee.role_title,
           department:employee.department,agent:employee.agent_kind==="builtin"?{kind:"builtin",id:employee.agent_ref}:{kind:"registry",agentId:employee.agent_ref},agent_version:employee.agent_version,
-          workload:{active_assignments:history.filter((item:any)=>!terminal.has(item.status)).length,completed_assignments:history.filter((item:any)=>item.status==="report_returned"||item.status==="completed").length,failed_assignments:history.filter((item:any)=>item.status==="failed").length,last_assignment_at:history[0]?.created_at||null},
+          workload:{active_assignments:history.filter((item:any)=>activeStates.has(item.status)).length,report_returned_assignments:history.filter((item:any)=>item.status==="report_returned").length,failed_assignments:history.filter((item:any)=>item.status==="failed").length,last_assignment_at:history[0]?.created_at||null},
           teams:(members.data||[]).filter((member:any)=>member.employee_id===employee.id).map((member:any)=>{
             const team=teamRows.find((item:any)=>item.id===member.team_id);
             return team?{team_id:team.id,name:team.name,member_role:member.member_role}:null;
