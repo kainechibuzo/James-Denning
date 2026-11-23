@@ -89,7 +89,7 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
             {item.action_key==="workforce.employee.proposal"&&<div className="jd-review-jd-tag">✦ AI employee proposal · owner permission required</div>}
             {item.action_key==="workforce.team.proposal"&&<div className="jd-review-jd-tag">✦ Drafted AI team · {item.proposal_json?.workforce_proposal?.members?.length||0} proposed members</div>}
             <p>{item.reason}</p>
-            {item.source==="connector"?<div className="jd-review-request">External action details are protected. Viewing this request does not approve or execute it.</div>:item.action_key!=="settings.apply"&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
+            {item.source==="connector"?<div className="jd-review-request">External action details are protected. Viewing this request does not approve or execute it.</div>:!["settings.apply","workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
             {["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&(()=>{
               const proposal=item.proposal_json?.workforce_proposal||{};
               const team=item.action_key==="workforce.team.proposal";
