@@ -1690,6 +1690,7 @@ export type WorkforceDeploymentOutcome = {
   verification: { required: boolean; status: string };
   employee_id?: string;
   team_id?: string;
+  execution_time_ms?: number;
 };
 
 /**
@@ -1846,6 +1847,7 @@ export async function runWorkforceDeployment(
   for (const assignment of plan.assignments) {
     const resolved = resolveAgent(assignment.agent) as ResolvedAgent;
     const agentEvents: AssignmentToolEvent[] = [];
+    const assignmentStartedAt = Date.now();
     // Skills context is loaded per assignment, recorded on the run, and is
     // untrusted reference data only. Failures leave the assignment unchanged.
     const skill = await loadAssignmentSkillContext(options.context, assignment.task);
@@ -1873,6 +1875,7 @@ export async function runWorkforceDeployment(
         ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
         source: resolved.source,
         status: "report_returned",
+        execution_time_ms: Math.max(0,Date.now()-assignmentStartedAt),
         report: executed.report,
         tools_granted: [...assignment.requestedTools],
         rounds_used: executed.rounds,
@@ -1889,6 +1892,7 @@ export async function runWorkforceDeployment(
         ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
         source: resolved.source,
         status: "failed",
+        execution_time_ms: Math.max(0,Date.now()-assignmentStartedAt),
         error: message.slice(0, 240),
         tools_granted: [...assignment.requestedTools],
         tool_evidence: summariseAssignmentEvidence(agentEvents),
@@ -1931,8 +1935,8 @@ export async function runWorkforceDeployment(
           budget: { max_model_rounds: resolved.maxModelRounds, max_output_tokens: resolved.maxOutputTokens },
           status: outcome.status,
           outcome: outcome.status === "report_returned"
-            ? { report: String(outcome.report || "").slice(0, 20000), rounds_used: outcome.rounds_used ?? 0 }
-            : { error: String(outcome.error || "").slice(0, 240) },
+            ? { report: String(outcome.report || "").slice(0, 20000), rounds_used: outcome.rounds_used ?? 0, execution_time_ms: outcome.execution_time_ms ?? 0 }
+            : { error: String(outcome.error || "").slice(0, 240), execution_time_ms: outcome.execution_time_ms ?? 0 },
           tool_evidence: outcome.tool_evidence.slice(0, 50),
           verification_status: outcome.verification.status,
         };
@@ -1946,19 +1950,53 @@ export async function runWorkforceDeployment(
       console.error("Workforce assignment persistence failed", String(persistenceFailure instanceof Error ? persistenceFailure.message : persistenceFailure).slice(0, 160));
     }
   }
+  const employeeBoundAssignments = plan.assignments.filter((assignment)=>assignment.employeeId);
+  const usageReceipts: Array<Record<string,unknown>> = [];
+  const usageErrors: string[] = [];
+  if (persistedAssignments && employeeBoundAssignments.length && options.context.runId) {
+    try {
+      const taskHashes=employeeBoundAssignments.map((assignment)=>workforceTaskHash([assignment.employeeId||"",assignment.teamId||"",assignment.task].join("|")));
+      const {data:savedRows,error:savedError}=await options.context.admin.from("jd_workforce_assignments")
+        .select("id,employee_id,team_id,task_hash,agent_ref,status,outcome")
+        .eq("school_id",options.context.schoolId).eq("run_id",options.context.runId).in("task_hash",taskHashes);
+      if(savedError)throw new Error(savedError.message);
+      for(const saved of savedRows||[]){
+        if(!saved.employee_id)continue;
+        const durationMs=Number((saved.outcome as any)?.execution_time_ms??0);
+        if(!Number.isFinite(durationMs)||durationMs<0){usageErrors.push("An assignment duration was missing or invalid");continue;}
+        const activeMicroseconds=Math.min(3600000000,Math.max(0,Math.round(durationMs*1000)));
+        const {data:receipt,error:usageError}=await options.context.admin.rpc("jd_workforce_record_employee_usage",{
+          p_actor:options.context.userId,p_assignment:saved.id,p_source_event:saved.id,
+          p_active_microseconds:activeMicroseconds,
+          p_evidence:{task_hash:saved.task_hash,agent_ref:saved.agent_ref,team_id:saved.team_id,status:saved.status,execution_time_ms:durationMs}
+        });
+        if(usageError)usageErrors.push(String(usageError.message||"Usage receipt failed").slice(0,160));
+        else if(receipt&&typeof receipt==="object")usageReceipts.push(receipt as Record<string,unknown>);
+      }
+      if(usageReceipts.length<employeeBoundAssignments.length&&usageErrors.length===0)usageErrors.push("One or more employee usage receipts were not returned");
+    }catch(usageFailure){
+      usageErrors.push(String(usageFailure instanceof Error?usageFailure.message:usageFailure).slice(0,160));
+    }
+  } else if(employeeBoundAssignments.length) {
+    usageErrors.push("Employee usage could not be recorded because assignment persistence was not confirmed");
+  }
+  const usageRecordingStatus=employeeBoundAssignments.length===0?"not_applicable":usageErrors.length===0&&usageReceipts.length===employeeBoundAssignments.length?"recorded":usageReceipts.length?"partial":"failed";
   const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
     school_id: options.context.schoolId,
     actor_id: options.context.userId,
     run_id: options.context.runId,
     event_type: "workforce.deployed",
-    event_json: buildWorkforceAuditPayload({
+    event_json: {
+      ...buildWorkforceAuditPayload({
       objective: plan.objective,
       outcomes: outcomes.map((outcome) => ({
         agent_ref: outcome.agent_ref, name: outcome.name, source: outcome.source,
         status: outcome.status, tool_calls: outcome.tool_evidence.length, tools_granted: outcome.tools_granted,
         employee_id: outcome.employee_id || null, team_id: outcome.team_id || null,
       })),
-    }),
+      }),
+      shadow_usage:{status:usageRecordingStatus,records:usageReceipts.length,charged:false,billing_mode:"shadow_only"}
+    },
   });
   if (auditError) {
     console.error("Workforce deployment audit write failed", String(auditError.message || "unknown").slice(0, 160));
@@ -1980,7 +2018,8 @@ export async function runWorkforceDeployment(
       required: true,
       instruction: "Independently verify each specialist deliverable against saved records or registered tools before reporting completion. A specialist report is never proof that an external action occurred.",
     },
-    usage_note: "Specialist model usage is metered on this run's existing usage records; no separate billing path was created.",
+    usage_note: "Employee-attributed execution time is recorded at the owner-configured hourly shadow rate. This is observed usage only; no payable reconciliation, invoice or charge is created.",
+    shadow_usage:{status:usageRecordingStatus,records:usageReceipts.length,errors:usageErrors.slice(0,5),charged:false,billing_mode:"shadow_only"},
     audit_persisted: true,
     result_persistence: "parent_run_checkpoint",
     persisted: persistedAssignments,
