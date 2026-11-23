@@ -119,5 +119,5 @@ test("workforce activation rollback restores valid pre-feature SQL contracts", (
   assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;"));
   assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_team(uuid,uuid,text,text) to service_role;"));
   assert.ok(workforceRollback.includes("Cannot restore unique employee-specialist constraint while duplicate employee instances exist"));
-  assert.doesNotMatch(workforceRollback, /p_ref !~\\* '[^']*\\n grant/);
+  assert.doesNotMatch(workforceRollback, /p_ref !~\* '[^']*\n grant/);
 });
