@@ -293,7 +293,7 @@ export function summariseAssignmentEvidence(events: readonly AssignmentToolEvent
  */
 export function buildWorkforceAuditPayload(input: {
   objective: string;
-  outcomes: Array<{ agent_ref: string; name: string; source: string; status: string; tool_calls: number; tools_granted: readonly string[] }>;
+  outcomes: Array<{ agent_ref: string; name: string; source: string; status: string; tool_calls: number; tools_granted: readonly string[]; employee_id?: string | null; team_id?: string | null }>;
 }): Record<string, unknown> {
   return {
     event_kind: "workforce.deployment",
@@ -306,6 +306,8 @@ export function buildWorkforceAuditPayload(input: {
       status: outcome.status,
       tool_calls: outcome.tool_calls,
       tools_granted: outcome.tools_granted.slice(0, WORKFORCE_LIMITS.maxGrantedToolsPerAgent),
+      employee_id: outcome.employee_id || null,
+      team_id: outcome.team_id || null,
     })),
     reports_content_recorded: false,
     execution_authority: "assigned_read_only_tasks_only",
