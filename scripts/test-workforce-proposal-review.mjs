@@ -10,6 +10,7 @@ const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_a
 const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
 const privateChatMigration = readFileSync("supabase/migrations/20261124180000_jd_workforce_private_chat.sql", "utf8");
 const assignmentAttribution = readFileSync("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql", "utf8");
+const registryCatalogueMigration = readFileSync("supabase/migrations/20261124195000_jd_workforce_specialist_catalogue.sql", "utf8");
 
 test("JD can submit an individual AI employee proposal for owner review", () => {
   assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
@@ -34,8 +35,15 @@ test("approval never implies employee activation, tool grants or billable work",
 });
 
 test("employee and team activation is bound to an approved Review Centre proposal", () => {
-  assert.match(runtime, /specialist_ref: \{ type: "string", enum:/);
-  assert.match(runtime, /required: \["kind","specialist_ref","name","department","purpose","responsibilities","requested_access"\]/);
+  assert.match(runtime, /specialist_kind: \{ type: "string", enum: \["builtin","registry"\] \}/);
+  assert.match(runtime, /specialist_ref: \{ type: "string", minLength: 1, maxLength: 120 \}/);
+  assert.match(runtime, /specialist_version: \{ type: "integer", minimum: 1 \}/);
+  assert.match(runtime, /name:"get_published_workforce_specialists"/);
+  assert.match(runtime, /jd_list_workforce_specialists/);
+  assert.match(workforceMigration, /specialist_kind='registry'/);
+  assert.match(workforceMigration, /execution_authorized is true/);
+  assert.match(registryCatalogueMigration, /limit 500/);
+  assert.match(runtime, /required: \["kind","specialist_kind","specialist_ref","name","department","purpose","responsibilities","requested_access"\]/);
   assert.match(runtime, /member\.specialist_ref/);
   assert.match(review, /workforce\.proposal\.activate/);
   assert.match(review, /Activate approved/);
