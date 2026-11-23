@@ -158,9 +158,9 @@ begin
   select * into v_existing from public.jd_workforce_proposal_activations
   where school_id=v_school and approval_id=p_approval;
   if found then
-    if v_existing.request_id is distinct from p_request then
-      raise exception 'Approval activation request identifier was already consumed' using errcode='40001';
-    end if;
+    -- The approval ID is the durable idempotency key. A retry after a lost
+    -- response may carry a new transport request ID but must return the
+    -- original activation receipt, never create another employee or team.
     return v_existing.receipt||jsonb_build_object('replayed',true,'activated_by',v_existing.actor_id);
   end if;
 
