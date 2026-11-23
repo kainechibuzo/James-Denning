@@ -18,5 +18,7 @@ drop index if exists public.jd_workforce_assignments_employee_recent;
 drop index if exists public.jd_workforce_assignments_team_recent;
 alter table public.jd_workforce_assignments
   drop constraint if exists jd_workforce_assignment_team_requires_employee,
+  drop constraint if exists jd_workforce_assignment_employee_tenant_fk,
+  drop constraint if exists jd_workforce_assignment_team_tenant_fk,
   drop column if exists employee_id,
   drop column if exists team_id;
