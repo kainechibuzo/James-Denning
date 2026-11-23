@@ -498,7 +498,7 @@ const tools: ToolSpec[] = [
         submitted: true, approval, proposal_kind: kind, proposal_name: name,
         member_count: kind === "team" ? members.length : 1,
         persisted: true, requires_owner_review: true, activated: false, tools_granted: false, billing_enabled: false,
-        message: "The proposal is saved and waiting for owner review. Approval records the decision on this proposal; employee activation, tool grants and billable execution remain separate steps."
+        message: "The proposal is saved and waiting for owner review. Approval records the decision only; employee activation, tool grants and billable execution remain separate steps."
       };
     },
   },
