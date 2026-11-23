@@ -25,6 +25,16 @@ test('specialist role selection preserves the parent objective and never invents
   assert.match(runtime, /If there is no concrete unresolved objective[\s\S]{0,180}do not start a run/);
 });
 
+test('employee and drafted team proposals require owner review and never self-activate', () => {
+  assert.match(runtime, /name: "submit_workforce_proposal_for_review"/);
+  assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
+  assert.match(runtime, /actionKey = kind === "employee" \? "workforce\.employee\.proposal" : "workforce\.team\.proposal"/);
+  assert.match(runtime, /status: "pending"[\s\S]{0,900}execution_enabled: false/);
+  assert.match(runtime, /activated: false, tools_granted: false, billing_enabled: false/);
+  assert.match(runtime, /Approval records the decision only; employee activation, tool grants and billable execution remain separate steps/);
+  assert.equal(capabilityEffect('submit_workforce_proposal_for_review').effect, 'approval_request');
+});
+
 test('every grantable tool is a registered, classified read or preview tool', () => {
   for (const tool of WORKFORCE_GRANTABLE_TOOLS) {
     assert.match(runtime, new RegExp(`name:\\s*"${tool}"`), `${tool} is registered in the runtime`);
