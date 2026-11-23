@@ -1833,8 +1833,6 @@ export async function runWorkforceDeployment(
         name: resolved.name,
         ...(assignment.employeeId ? {employee_id:assignment.employeeId} : {}),
         ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
-        ...(assignment.employeeId ? {employee_id:assignment.employeeId} : {}),
-        ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
         source: resolved.source,
         status: "report_returned",
         report: executed.report,
@@ -1849,6 +1847,8 @@ export async function runWorkforceDeployment(
       outcomes.push({
         agent_ref: agentRefLabel(assignment.agent),
         name: resolved.name,
+        ...(assignment.employeeId ? {employee_id:assignment.employeeId} : {}),
+        ...(assignment.teamId ? {team_id:assignment.teamId} : {}),
         source: resolved.source,
         status: "failed",
         error: message.slice(0, 240),
