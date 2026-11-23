@@ -136,6 +136,32 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       return { job_id: jobId, status: "cancelled" };
     }
 
+    // Roadmap sequence 1–2: authorise the acquired-skill agentic time this run
+    // needs while the run is still queued/planning — the cost RPCs refuse
+    // executing or finished runs. The workspace spend ceiling is a hard stop
+    // even in autonomous mode: a 54000 from the database finishes the run as
+    // failed with an audited reason instead of degrading silently.
+    try {
+      const { preauthorizeRunSkillCosts } = await import("../_shared/jd-run-capabilities.ts");
+      const capabilities = await preauthorizeRunSkillCosts({
+        admin, schoolId, userId: requestedBy, runId, requestText: run.request_text,
+      });
+      if (capabilities.ceiling_stop) {
+        await admin.from("jd_audit_events").insert({
+          school_id: schoolId, actor_id: requestedBy, run_id: runId,
+          event_type: "autonomy.ceiling_stop",
+          event_json: { reason: "Spend ceiling reached during pre-authorization; the run stopped before executing.", mode: capabilities.mode },
+        });
+        const { data: ceilingFinished } = await admin.rpc("jd_finish_execution_job", {
+          p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "failed",
+        });
+        if (ceilingFinished) await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
+        return { job_id: jobId, status: "failed", reason: "spend_ceiling" };
+      }
+    } catch (capabilitiesFailure) {
+      console.error("Run capability pre-authorization skipped", String(capabilitiesFailure instanceof Error ? capabilitiesFailure.message : capabilitiesFailure).slice(0, 160));
+    }
+
     const { data: rows, error: historyError } = await admin.from("jd_messages")
       .select("id,role,content,created_at")
       .eq("school_id", schoolId).eq("conversation_id", run.conversation_id).lte("created_at",run.created_at)

@@ -91,10 +91,10 @@ export async function handleDiscovery({payload, admin, actorId, profile, json, e
    let plan: DiscoveryPlan;
    try { plan = planDiscovery(payload.idea); } catch (e: any) { return json({error: e?.message || 'A bounded idea is required'}, 400); }
    const started = await call('jd_start_discovery', {p_actor: actorId, p_request: payload.requestId, p_idea: payload.idea,
-    p_plan: plan as any, p_mode: current.mode});
+    p_plan: plan as any, p_mode: current.mode, p_run: typeof payload.runId === 'string' && uuid(payload.runId) ? payload.runId : null});
    if (started.status !== 'proceeding') return json({discovery: started});
-   const finish = await proceedWithAcquisition({session: started, plan, admin, actorId, profile, json, call, requestId: payload.requestId});
-   return finish;
+   const finish = await runDiscoveryAcquisition({session: started, plan, admin, actorId, tenantId: profile.school_id, requestId: crypto.randomUUID()});
+   return json(finish.http);
   }
   if (action === 'discovery.decide') {
    if (!['owner', 'admin'].includes(profile.role)) return json({error: 'Administrator required to decide a discovery proposal'}, 403);
@@ -113,8 +113,8 @@ export async function handleDiscovery({payload, admin, actorId, profile, json, e
     .select('id,status,plan,idea').eq('id', payload.sessionId).eq('school_id', profile.school_id).maybeSingle();
    if (sessionError || !session) return json({error: 'Discovery session not found in this workspace'}, 404);
    if (session.status !== 'approved') return json({error: 'Only an approved proposal can proceed'}, 409);
-   const finish = await proceedWithAcquisition({session: {session_id: session.id}, plan: session.plan, admin, actorId, profile, json, call, requestId: payload.requestId});
-   return finish;
+   const finish = await runDiscoveryAcquisition({session: {session_id: session.id}, plan: session.plan, admin, actorId, tenantId: profile.school_id, requestId: crypto.randomUUID()});
+   return json(finish.http);
   }
   return json({error: 'Unsupported discovery action'}, 400);
  } catch (e: any) {
@@ -133,13 +133,23 @@ export async function handleDiscovery({payload, admin, actorId, profile, json, e
 // phase-6 quarantine pipeline, bind the top specialist playbook per acquired
 // skill and record the completion receipt. Any failure stops the session with
 // its partial receipt — JD never silently continues past a failed acquisition.
-async function proceedWithAcquisition({session, plan, admin, actorId, profile, json, call, requestId}: any) {
+// The core is HTTP-free so the chat submission flow can run the same
+// acquisition for a run-linked discovery session.
+export async function runDiscoveryAcquisition({session, plan, admin, actorId, tenantId, requestId}: {
+ session: {session_id: string}; plan: DiscoveryPlan | any; admin: any; actorId: string; tenantId: string; requestId: string;
+}): Promise<{http: {discovery: any}}> {
  const {acquireSkillCore} = await import('./jd-skills-acquire.ts');
+ const call = async (name: string, args: any) => {
+  const {data, error} = await admin.rpc(name, args);
+  if (error) throw {dbCode: error.code};
+  if (!data || typeof data !== 'object' || data.hiring_enabled !== false || data.execution_enabled !== false) throw {dbCode: 'receipt'};
+  return data;
+ };
  const receipt: any = {acquired: [], bound: [], skipped: [], errors: []};
  for (const skill of (plan?.skills || []).slice(0, 3)) {
   try {
    const owned = await admin.from('jd_skills').select('id,status,current_version,name')
-    .eq('school_id', profile.school_id).eq('name', skill.id).maybeSingle();
+    .eq('school_id', tenantId).eq('name', skill.id).maybeSingle();
    if (owned.data?.status === 'published') { receipt.skipped.push({id: skill.id, reason: 'already_published'}); continue; }
    const result = await acquireSkillCore({entryId: skill.id, admin, actorId, requestId: crypto.randomUUID(),
     createRpc: (args: any) => call('jd_create_skill_import', args),
@@ -159,11 +169,11 @@ async function proceedWithAcquisition({session, plan, admin, actorId, profile, j
   }
  }
  try {
-  const completed = await call('jd_complete_discovery', {p_actor: actorId, p_request: crypto.randomUUID(),
+  const completed = await call('jd_complete_discovery', {p_actor: actorId, p_request: requestId,
    p_session: session.session_id, p_receipt: receipt});
-  return json({discovery: {...completed, plan}});
+  return {http: {discovery: {...completed, plan}}};
  } catch (e: any) {
-  return json({discovery: {session_id: session.session_id, status: 'proceeding', receipt, plan,
-   error: 'Acquisition finished but completion could not be recorded; reload the session.'}});
+  return {http: {discovery: {session_id: session.session_id, status: 'proceeding', receipt, plan,
+   error: 'Acquisition finished but completion could not be recorded; reload the session.'}}};
  }
 }

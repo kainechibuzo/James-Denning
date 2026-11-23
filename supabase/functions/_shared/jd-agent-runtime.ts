@@ -33,6 +33,7 @@ import {
   mapRegistryDefinition,
   agentRefLabel,
 } from "./jd-agent-workforce.ts";
+import { readRunDiscoveryPlan } from "./jd-run-capabilities.ts";
 import { validateAgentDefinition } from "./jd-agent-registry.mjs";
 export type AgentContext = {
   admin: any;
@@ -1636,6 +1637,18 @@ export async function runWorkforceDeployment(
     return null;
   };
   const plan = validateWorkforcePlan(args, resolveAgent, availableToolNames);
+  // Roadmap sequence 2: when this run has a discovery plan, the deployed
+  // specialists must come from the plan's roles. Built-in assignments outside
+  // the plan are dropped and reported, never executed; tenant-published
+  // registry agents keep their independent authorisation path.
+  const discoveryPlan = await readRunDiscoveryPlan(options.context.admin, options.context.schoolId, options.context.runId || "");
+  let droppedByPlan = 0;
+  if (discoveryPlan?.roles?.length) {
+    const allowedRoles = new Set(discoveryPlan.roles);
+    const kept = plan.assignments.filter((assignment) => assignment.agent.kind !== "builtin" || allowedRoles.has((assignment.agent as { id: string }).id));
+    droppedByPlan = plan.assignments.length - kept.length;
+    plan.assignments = kept;
+  }
   const specByName = new Map(options.available.map((candidate) => [candidate.name, {
     type: "function",
     name: candidate.name,
@@ -1767,6 +1780,7 @@ export async function runWorkforceDeployment(
     objective: plan.objective,
     agents: outcomes,
     ...(deniedEntries.length ? { denied_tools: Object.fromEntries(deniedEntries.map(([ref, denied]) => [ref, denied.slice(0, 12)])) } : {}),
+    ...(discoveryPlan ? { discovery_plan: { session_id: discoveryPlan.session_id, status: discoveryPlan.status, roles: discoveryPlan.roles, dropped_assignments: droppedByPlan } } : {}),
     execution_scope: "bounded_read_only_assignments",
     specialists_can_approve: false,
     specialists_can_create_agents: false,

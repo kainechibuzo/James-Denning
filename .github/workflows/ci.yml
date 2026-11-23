@@ -83,6 +83,9 @@ jobs:
       - name: Test workforce assignment persistence and read-back contract
         run: npm run test:workforce-assignments
 
+      - name: Test run capability pre-authorization, discovery linkage and cost gates
+        run: npm run test:run-capabilities
+
       - name: Test skills package inspection, secure import and lifecycle authority
         run: npm run test:skills
 
