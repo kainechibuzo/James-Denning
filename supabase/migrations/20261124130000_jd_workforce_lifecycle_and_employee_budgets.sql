@@ -66,7 +66,7 @@ begin
  insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'employee.budget.set',req,receipt,clock_timestamp());
  insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.employee.budget_set',receipt||jsonb_build_object('request_id',p_request));
  return receipt;
-end; $;
+end; $$;
 
 create function public.jd_workforce_create_employee(
  p_actor uuid,p_request uuid,p_kind text,p_ref text,p_version integer,p_name text,p_department text
