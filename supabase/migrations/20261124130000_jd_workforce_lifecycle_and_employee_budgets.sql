@@ -85,6 +85,7 @@ begin
  end if;
  perform pg_advisory_xact_lock(hashtextextended(tenant::text,241300));
  req:=jsonb_build_array(p_actor,p_kind,p_ref,p_version,p_name,p_department);
+ perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||p_request::text,241303));
  select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
  if found then if prior.operation<>'employee.create' or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  -- Employee creation is naturally unique by specialist version; return the existing identity on retry.
@@ -107,6 +108,7 @@ begin
  if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
  if p_request is null or length(trim(coalesce(p_name,''))) not between 2 and 120 or length(trim(coalesce(p_purpose,''))) not between 10 and 1000 then raise exception 'Invalid team definition' using errcode='22023'; end if;
  req:=jsonb_build_array(p_actor,p_name,p_purpose);
+ perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||p_request::text,241304));
  select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
  if found then if prior.operation<>'team.create' or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||lower(trim(p_name)),241301));
@@ -127,6 +129,7 @@ begin
  if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
  if p_request is null or p_action not in ('add','remove') or p_member_role not in ('lead','member') then raise exception 'Invalid membership request' using errcode='22023'; end if;
  req:=jsonb_build_array(p_actor,p_team,p_employee,p_action,p_member_role);
+ perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||p_request::text,241305));
  select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
  if found then if prior.operation<>('team.member.'||p_action) or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
  select lifecycle_state into team_state from public.jd_workforce_teams where id=p_team and school_id=tenant for update;
