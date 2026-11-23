@@ -28,6 +28,40 @@ Built as a React single-page application backed by Supabase.
 A merged PR or successful assistant response is not acceptance: require tests,
 persisted records and evidence of the actual outcome.
 
+### Product completion priorities
+
+The roadmap below is the active delivery order. The detailed scope, dependencies and
+acceptance evidence are maintained in
+[docs/ROADMAP_2026-11-23.md](docs/ROADMAP_2026-11-23.md).
+
+1. **AI workforce and specialist routing** — connect JD requests to the existing specialist
+   roles, skill discovery, bounded assignments, coordination and independently verified
+   outcomes. Expand the catalogue only through reviewed, evaluated definitions.
+2. **Autonomous execution and software factory** — provide isolated workspaces, scoped
+   repository tools, real build/test evidence and approval-gated releases.
+3. **Corporate management and executive oversight** — add the executive coordinator,
+   department reporting, objectives, KPI tracking and escalation.
+4. **Commercial billing and agent time** — reconcile billing migrations and Edge Functions,
+   verify Paystack payment finalisation, usage metering, budgets and spend ceilings.
+5. **Connectors and skill acquisition** — verify tenant grants, real connector operations,
+   secure skill acquisition, provenance, publication and revocation.
+6. **Continuous operations and reliability** — prove bounded long-running work, pause,
+   resume, cancellation, retries, crash recovery and monitoring.
+7. **Business operations and recruitment** — complete department workflows, vacancy and
+   application lifecycles, human-reviewed hiring and verified operational outcomes.
+
+**Release standard:** no feature is considered complete merely because source code exists,
+a PR is merged, a job is queued or an AI reports success. Each release must pass tests for
+tenant isolation, permissions, idempotency and auditability; verify migrations and deployed
+function versions; and demonstrate persisted state transitions and the real outcome.
+Production must not be used as a staging sandbox. Consequential financial, legal, hiring
+and deployment actions remain behind the appropriate human approval boundary.
+
+**First vertical slice:** JD request → specialist selection → skill resolution → bounded
+persisted run → result review → independent verification. This is the first milestone
+before broadening the workforce or enabling additional autonomy.
+
+
 ## Product surface
 
 | Area | Page id | Notes |
