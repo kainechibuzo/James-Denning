@@ -127,7 +127,13 @@ test('employee-bound assignments require a live employee and active team members
   assert.match(runtime, /name:"get_workforce_roster"/);
   assert.match(runtime, /employee_id:\{type:"string",maxLength:36\}/);
   assert.match(runtime, /team_id:\{type:"string",maxLength:36\}/);
-  assert.match(engine, /employeeId\?: string/);
+
+  assert.match(runtime, /active_assignments:history\\.filter/);
+  assert.match(runtime, /completed_assignments:history\\.filter/);
+  assert.match(runtime, /failed_assignments:history\\.filter/);
+  assert.match(runtime, /lead_employee_ids:employeeRows\\.filter/);
+  assert.match(runtime, /workload_is_routing_signal_only:true/);
+  assert.match(runtime, /Employee workload could not be verified; no assignment recommendation can be made/);  assert.match(engine, /employeeId\?: string/);
   assert.match(engine, /teamId && !employeeId/);
   assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
   assert.match(runtime, /employee\.lifecycle_state !== "active"/);
