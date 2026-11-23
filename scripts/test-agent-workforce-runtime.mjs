@@ -129,6 +129,7 @@ test('employee-bound assignments require a live employee and active team members
   assert.match(engine, /teamId && !employeeId/);
   assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
   assert.match(runtime, /employee\.lifecycle_state !== "active"/);
+  assert.match(runtime, /Only workspace owners and administrators can assign work to activated employee or team identities/);
   assert.match(runtime, /team\.lifecycle_state !== "active"/);
   assert.match(runtime, /membershipRows\.data/);
   assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
