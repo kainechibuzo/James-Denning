@@ -282,6 +282,12 @@ begin
     if jsonb_array_length(v_proposal->'members') not between 1 and 20 then
       raise exception 'A team must contain between one and twenty described members' using errcode='22023';
     end if;
+    if coalesce(v_proposal->'members'->0->>'specialist_kind','builtin') is distinct from v_specialist_kind
+       or v_proposal->'members'->0->>'specialist_ref' is distinct from v_specialist
+       or (case when jsonb_typeof(v_proposal->'members'->0->'specialist_version')='number'
+          then (v_proposal->'members'->0->>'specialist_version')::numeric::integer else null end) is distinct from v_specialist_version then
+      raise exception 'The first team member must be the selected coordinator specialist' using errcode='22023';
+    end if;
     v_team_name:=v_name;
     if exists(select 1 from public.jd_workforce_teams where school_id=v_school and lower(name)=lower(v_team_name) and retired_at is null) then
       raise exception 'An active team already uses this name; revise the proposal before activation' using errcode='40001';
