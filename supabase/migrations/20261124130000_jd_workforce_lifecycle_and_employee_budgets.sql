@@ -39,13 +39,35 @@ grant select on public.jd_workforce_employee_budgets,public.jd_workforce_employe
 
 create table public.jd_workforce_provision_requests (
  school_id uuid not null references public.schools(id), request_id uuid not null, actor_id uuid not null references auth.users(id),
- operation text not null check(operation in ('employee.create','team.create','team.member.add','team.member.remove')),
+ operation text not null check(operation in ('employee.create','team.create','team.member.add','team.member.remove','employee.budget.set')),
  request jsonb not null, receipt jsonb not null, created_at timestamptz not null default clock_timestamp(),
  primary key(school_id,request_id)
 );
 alter table public.jd_workforce_provision_requests enable row level security;
 revoke all on public.jd_workforce_provision_requests from public,anon,authenticated,service_role;
 grant select on public.jd_workforce_provision_requests to service_role;
+create function public.jd_workforce_set_employee_budget(p_actor uuid,p_request uuid,p_employee uuid,p_expected_version integer,p_budget_micros bigint,p_rate_micros_per_hour bigint)
+returns jsonb language plpgsql security definer set search_path='' as $
+declare tenant uuid; b public.jd_workforce_employee_budgets%rowtype; prior public.jd_workforce_provision_requests%rowtype; req jsonb; receipt jsonb;
+begin
+ select school_id into tenant from public.profiles where id=p_actor and role in ('owner','admin');
+ if tenant is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
+ if p_request is null or p_employee is null or p_expected_version is null or p_expected_version<0 or p_budget_micros not between 0 and 1000000000000 or p_rate_micros_per_hour not between 0 and 1000000000 then raise exception 'Invalid employee budget' using errcode='22023'; end if;
+ perform pg_advisory_xact_lock(hashtextextended(tenant::text||':'||p_request::text,241302));
+ req:=jsonb_build_array(p_actor,p_employee,p_expected_version,p_budget_micros,p_rate_micros_per_hour);
+ select * into prior from public.jd_workforce_provision_requests where school_id=tenant and request_id=p_request;
+ if found then if prior.operation<>'employee.budget.set' or prior.request<>req then raise exception 'Request identifier reused' using errcode='40001'; end if; return prior.receipt; end if;
+ select * into b from public.jd_workforce_employee_budgets where school_id=tenant and employee_id=p_employee for update;
+ if not found or b.version<>p_expected_version then raise exception 'Employee budget version changed' using errcode='40001'; end if;
+ if p_budget_micros<b.reserved_micros+b.accrued_micros then raise exception 'Budget is below current reserved or accrued usage' using errcode='22023'; end if;
+ update public.jd_workforce_employee_budgets set budget_micros=p_budget_micros,rate_micros_per_hour=p_rate_micros_per_hour,version=version+1,updated_at=clock_timestamp()
+ where school_id=tenant and employee_id=p_employee returning * into b;
+ receipt:=jsonb_build_object('employee_id',p_employee,'budget_micros',b.budget_micros,'reserved_micros',b.reserved_micros,'accrued_micros',b.accrued_micros,'rate_micros_per_hour',b.rate_micros_per_hour,'version',b.version,'charged',false,'mode','shadow');
+ insert into public.jd_workforce_provision_requests values(tenant,p_request,p_actor,'employee.budget.set',req,receipt,clock_timestamp());
+ insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'workforce.employee.budget_set',receipt||jsonb_build_object('request_id',p_request));
+ return receipt;
+end; $;
+
 create function public.jd_workforce_create_employee(
  p_actor uuid,p_request uuid,p_kind text,p_ref text,p_version integer,p_name text,p_department text
 ) returns jsonb language plpgsql security definer set search_path='' as $$
@@ -125,7 +147,7 @@ begin
  return receipt;
 end; $$;
 
-revoke all on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from public,anon,authenticated;
+revoke all on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) from public,anon,authenticated;\ngrant execute on function public.jd_workforce_set_employee_budget(uuid,uuid,uuid,integer,bigint,bigint) to service_role;\nrevoke all on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from public,anon,authenticated;
 revoke all on function public.jd_workforce_create_team(uuid,uuid,text,text) from public,anon,authenticated;
 revoke all on function public.jd_workforce_team_membership(uuid,uuid,uuid,uuid,text,text) from public,anon,authenticated;
 grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;
