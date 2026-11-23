@@ -180,7 +180,7 @@ const tools: ToolSpec[] = [
     description:"Read up to 500 current tenant-private registry agents that are already published and explicitly execution-authorized. These are eligible specialist definitions for proposed employees and team members; this does not hire them, grant tools or enable billing. Use the exact specialist_ref and specialist_version returned. This is read-only.",
     parameters:{type:"object",properties:{},additionalProperties:false},
     execute:async(_args,ctx)=>{
-      const {data,error}=await ctx.admin.rpc("jd_list_workforce_specialists",{p_actor:ctx.actorId});
+      const {data,error}=await ctx.admin.rpc("jd_list_workforce_specialists",{p_actor:ctx.userId});
       if(error||!data||data.hiring_enabled!==false||data.billing_enabled!==false)throw new Error("The published specialist catalogue could not be verified");
       return data;
     },
