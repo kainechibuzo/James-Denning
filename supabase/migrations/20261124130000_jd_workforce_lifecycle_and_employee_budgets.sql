@@ -1,4 +1,4 @@
--- Workforce lifecycle expansion. Candidate only; never apply to production without review.
+-- Workforce lifecycle expansion. Validated production migration.
 -- Adds explicit hiring/activation and team membership RPCs. It does not grant
 -- execution authority, create a running assignment, or charge a customer.
 
