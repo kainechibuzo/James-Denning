@@ -12,6 +12,28 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   if(employees.error||teams.error||members.error||assignments.error)return json({error:"Workforce records are not available. Confirm the reviewed schema is present before enabling this feature.",releaseReady:false},503);
   return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:false,billingMode:"shadow_only"});
  }
+ if(payload?.action==="workforce.employee.create"){
+  const {kind,ref,version,name,department,requestId}=payload;
+  if(!uuid(requestId)||!["builtin","registry"].includes(kind)||typeof ref!=="string"||ref.length>120||typeof name!=="string"||name.trim().length<2||name.trim().length>120||!(department==null||typeof department==="string"&&department.length<=120)||!(version==null||Number.isInteger(version)&&version>0))return json({error:"Invalid employee activation request"},400);
+  const {data,error}=await admin.rpc("jd_workforce_create_employee",{p_actor:actorId,p_request:requestId,p_kind:kind,p_ref:ref,p_version:version??null,p_name:name.trim(),p_department:department??null});
+  if(error){const status=error.code==="42501"?403:error.code==="22023"?400:error.code==="40001"?409:500;return json({error:"Employee activation was not confirmed. Refresh before retrying.",code:error.code||"activation_failed"},status);}
+  if(!data?.employee_id&&!data?.employee?.id)return json({error:"Employee activation receipt was incomplete"},502);
+  return json({receipt:data},201);
+ }
+ if(payload?.action==="workforce.team.create"){
+  if(!uuid(payload.requestId)||typeof payload.name!=="string"||payload.name.trim().length<2||payload.name.length>120||typeof payload.purpose!=="string"||payload.purpose.trim().length<10||payload.purpose.length>1000)return json({error:"Invalid team creation request"},400);
+  const {data,error}=await admin.rpc("jd_workforce_create_team",{p_actor:actorId,p_request:payload.requestId,p_name:payload.name.trim(),p_purpose:payload.purpose.trim()});
+  if(error){const status=error.code==="42501"?403:error.code==="22023"?400:error.code==="40001"?409:500;return json({error:"Team creation was not confirmed.",code:error.code||"team_create_failed"},status);}
+  if(!uuid(data?.team_id))return json({error:"Team creation receipt was incomplete"},502);
+  return json({receipt:data},201);
+ }
+ if(payload?.action==="workforce.team.membership"){
+  if(!uuid(payload.requestId)||!uuid(payload.teamId)||!uuid(payload.employeeId)||!["add","remove"].includes(payload.operation)||!(payload.memberRole==null||["lead","member"].includes(payload.memberRole)))return json({error:"Invalid team membership request"},400);
+  const {data,error}=await admin.rpc("jd_workforce_team_membership",{p_actor:actorId,p_request:payload.requestId,p_team:payload.teamId,p_employee:payload.employeeId,p_action:payload.operation,p_member_role:payload.memberRole||"member"});
+  if(error){const status=error.code==="42501"?403:error.code==="P0002"?404:error.code==="40001"?409:400;return json({error:"Team membership change was not confirmed.",code:error.code||"membership_failed"},status);}
+  if(data?.confirmed!==true||data.team_id!==payload.teamId||data.employee_id!==payload.employeeId)return json({error:"Team membership receipt was incomplete"},502);
+  return json({receipt:data});
+ }
  if(payload?.action==="workforce.control"){
   if(!uuid(payload.requestId)||!uuid(payload.targetId)||!["employee","team"].includes(payload.targetKind)||!["pause","resume","retire"].includes(payload.operation))return json({error:"Invalid workforce control request"},400);
   const action=payload.targetKind+"."+payload.operation;
