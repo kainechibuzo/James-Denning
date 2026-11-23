@@ -10,6 +10,7 @@ Built as a React single-page application backed by Supabase.
 
 ## Mission and execution roadmap
 
+- [Product completion roadmap (2026-11-23)](docs/ROADMAP_2026-11-23.md) — remaining programmes, priority order, live acceptance gates and the first workforce vertical slice.
 - [Master execution checklist](docs/JD_MASTER_EXECUTION_CHECKLIST.md) — eight phases, delivery order, evidence gates and the acceptance scorecard.
 - [Reconciled checklist status](docs/JD_CHECKLIST_STATUS.md) — every item mapped to code/evidence, gaps and next actions.
 - [Business foundation](documentation/JD_BUSINESS_FOUNDATION.md) — versioned Business DNA, SaaS definitions, draft workforce and billing policy.
