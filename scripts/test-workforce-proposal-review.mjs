@@ -5,6 +5,9 @@ import { readFileSync } from "node:fs";
 const runtime = readFileSync("supabase/functions/_shared/jd-agent-runtime.ts", "utf8");
 const contract = readFileSync("supabase/functions/_shared/jd-capability-contract.ts", "utf8");
 const review = readFileSync("src/chat/ReviewCentre.jsx", "utf8");
+const workforceService = readFileSync("supabase/functions/_shared/jd-workforce-control-service.ts", "utf8");
+const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.sql", "utf8");
+const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
 
 test("JD can submit an individual AI employee proposal for owner review", () => {
   assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
@@ -26,4 +29,35 @@ test("approval never implies employee activation, tool grants or billable work",
   assert.match(contract, /submit_workforce_proposal_for_review: \{effect:"approval_request"/);
   assert.match(review, /Approval records your decision only/);
   assert.match(review, /Proposal approved\. No employee or team has been activated/);
+});
+
+test("employee and team activation is bound to an approved Review Centre proposal", () => {
+  assert.match(runtime, /specialist_ref: \{ type: "string", enum:/);
+  assert.match(runtime, /member\.specialist_ref/);
+  assert.match(review, /workforce\.proposal\.activate/);
+  assert.match(review, /Activate approved/);
+  assert.match(workforceService, /jd_workforce_activate_approved_proposal/);
+  assert.match(workforceService, /Only an explicitly approved proposal/);
+  assert.match(workforceMigration, /v_approval\.status <> 'approved'/);
+  assert.match(workforceMigration, /workforce\.employee\.proposal/);
+  assert.match(workforceMigration, /workforce\.team\.proposal/);
+  assert.match(workforceMigration, /jd_workforce_proposal_activations/);
+  assert.match(workforceMigration, /workforce\.proposal\.activated/);
+});
+
+test("identity creation cannot bypass owner approval and does not grant execution or billing", () => {
+  assert.match(workforceService, /workforce\.employee\.create.*workforce\.team\.create/);
+  assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
+  assert.match(workforceMigration, /revoke execute on function public\.jd_workforce_create_employee[\s\S]*from service_role/);
+  assert.match(workforceMigration, /revoke execute on function public\.jd_workforce_create_team[\s\S]*from service_role/);
+  assert.match(workforceMigration, /'tools_granted', false/);
+  assert.match(workforceMigration, /'connectors_authorised', false/);
+  assert.match(workforceMigration, /'assignment_started', false/);
+  assert.match(workforceMigration, /'billing_enabled', false/);
+  assert.doesNotMatch(workforceUi, /workforce\.employee\.create|workforce\.team\.create/);
+});
+
+test("approval decisions support both owner and admin roles", () => {
+  assert.match(workforceMigration, /role in \('owner','admin'\)/);
+  assert.match(workforceMigration, /create or replace function public\.jd_decide_approval/);
 });
