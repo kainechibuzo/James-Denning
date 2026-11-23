@@ -176,6 +176,16 @@ const tools: ToolSpec[] = [
     execute:async(args,ctx)=>proposeAgentDefinition(args,ctx),
   },
   {
+    name:"get_published_workforce_specialists",risk:"low",roles:["owner","admin"],
+    description:"Read up to 500 current tenant-private registry agents that are already published and explicitly execution-authorized. These are eligible specialist definitions for proposed employees and team members; this does not hire them, grant tools or enable billing. Use the exact specialist_ref and specialist_version returned. This is read-only.",
+    parameters:{type:"object",properties:{},additionalProperties:false},
+    execute:async(_args,ctx)=>{
+      const {data,error}=await ctx.admin.rpc("jd_list_workforce_specialists",{p_actor:ctx.actorId});
+      if(error||!data||data.hiring_enabled!==false||data.billing_enabled!==false)throw new Error("The published specialist catalogue could not be verified");
+      return data;
+    },
+  },
+  {
     name:"get_workforce_roster",risk:"low",roles:["owner","admin"],
     description:"Read the real tenant workforce roster before assigning work to an existing AI employee or team. Returns active employee identities, exact specialist references, team membership and availability. A specialist definition is not an employee instance. Use returned employee_id and team_id only for bounded assignments; paused or retired identities cannot be assigned. This is a read-only operation.",
     parameters:{type:"object",properties:{},additionalProperties:false},
@@ -461,7 +471,9 @@ const tools: ToolSpec[] = [
       type: "object",
       properties: {
         kind: { type: "string", enum: ["employee","team"] },
-        specialist_ref: { type: "string", enum: ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"] },
+        specialist_kind: { type: "string", enum: ["builtin","registry"] },
+        specialist_ref: { type: "string", minLength: 1, maxLength: 120 },
+        specialist_version: { type: "integer", minimum: 1 },
         name: { type: "string", minLength: 2, maxLength: 120 },
         department: { type: "string", minLength: 2, maxLength: 120 },
         purpose: { type: "string", minLength: 12, maxLength: 1200 },
@@ -470,12 +482,14 @@ const tools: ToolSpec[] = [
         members: { type: "array", minItems: 1, maxItems: 20, items: { type: "object", properties: {
           name: { type: "string", minLength: 2, maxLength: 120 },
           role: { type: "string", minLength: 2, maxLength: 120 },
-          specialist_ref: { type: "string", enum: ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"] },
+          specialist_kind: { type: "string", enum: ["builtin","registry"] },
+          specialist_ref: { type: "string", minLength: 1, maxLength: 120 },
+          specialist_version: { type: "integer", minimum: 1 },
           responsibilities: { type: "array", minItems: 1, maxItems: 8, items: { type: "string", minLength: 3, maxLength: 300 } },
           requested_access: { type: "array", maxItems: 8, items: { type: "string", minLength: 2, maxLength: 180 } }
-        }, required: ["name","role","specialist_ref","responsibilities","requested_access"], additionalProperties: false } }
+        }, required: ["name","role","specialist_kind","specialist_ref","responsibilities","requested_access"], additionalProperties: false } }
       },
-      required: ["kind","specialist_ref","name","department","purpose","responsibilities","requested_access"],
+      required: ["kind","specialist_kind","specialist_ref","name","department","purpose","responsibilities","requested_access"],
       additionalProperties: false
     },
     execute: async (args, ctx) => {
