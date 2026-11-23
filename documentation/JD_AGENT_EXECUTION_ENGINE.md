@@ -121,10 +121,32 @@ definitions and evidence survive.
 - `scripts/test-agent-workforce-database.mjs` — real candidate SQL in isolated
   PGlite: full grant lifecycle, independence, expiry, version reset, tenant
   boundaries, rollback rehearsal and the HTTP routing guards.
+- `scripts/test-workforce-assignments.mjs` — the assignment persistence
+  contract in isolated PGlite: append-only records, idempotent re-deployment,
+  administrator-only tenant-scoped read-back, limit clamping and the full
+  per-record field contract.
 - `scripts/test-agent-workforce-ui.mjs` — execution-authority UI flows in JSDOM.
 
 CI additionally runs the Deno executor tests appended to
 `supabase/functions/_shared/jd-agent-runtime.test.ts`.
+
+## Assignment persistence (roadmap sequence 1–2)
+
+Every specialist assignment now leaves an immutable, tenant-scoped record in
+`public.jd_workforce_assignments` (migration `20261124090000`): the selected
+agent kind/ref/name and registry version (built-ins stay `null`), content hash,
+the exact skill name/version/content hash loaded for the task, the task text
+and its idempotency hash, the granted tool allowlist, the assignment budget,
+status (`report_returned`/`failed`), the bounded outcome and the verification
+state. Writes are idempotent on retry (`unique (school_id, run_id, agent_kind,
+agent_ref, task_hash)`), a persistence failure is reported and never fatal to
+the deployment, and the deployment result reports `persisted` truthfully.
+Records are append-only (UPDATE/DELETE raise `55000`), unreadable by clients
+directly (RLS, no policies), and readable by owner/admin through
+`jd_read_workforce_assignments(actor, limit)`, which reuses the registry
+administrator boundary. A stored assignment record is provenance evidence, not
+verification: verification still requires independent checks against saved
+records or registered tools.
 
 ## Remaining limits
 

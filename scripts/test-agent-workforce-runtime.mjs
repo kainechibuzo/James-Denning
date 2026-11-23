@@ -8,6 +8,7 @@ import {WORKFORCE_GRANTABLE_TOOLS, FORBIDDEN_AGENT_TOOLS, WORKFORCE_RELEASE_FLAG
 
 const runtime = readFileSync('supabase/functions/_shared/jd-agent-runtime.ts', 'utf8');
 const engine = readFileSync('supabase/functions/_shared/jd-agent-workforce.ts', 'utf8');
+const assignmentsSql = readFileSync('supabase/migrations/20261124090000_jd_workforce_assignments.sql', 'utf8');
 
 test('the runtime registers the workforce deployment and agent factory tools', () => {
   assert.match(runtime, /name:"deploy_specialist_workforce"/);
@@ -77,6 +78,22 @@ test('sub-agent model calls stay silent and metered on the run usage ledger', ()
   assert.match(runtime, /requestModel: \(payload\) => requestModel\(payload, \{ silent: true \}\)/, 'workforce specialists never stream into the visible answer');
   assert.match(runtime, /usage_note: "Specialist model usage is metered on this run's existing usage records/, 'no new billing path is announced');
   assert.match(engine, /workforce planning contracts/i, 'engine module documents its scope');
+});
+
+test('every specialist assignment persists an immutable record on the run', () => {
+  assert.match(runtime, /const skillContexts: Array<AssignmentSkill \| null> = \[\];/, 'skill context is captured per assignment');
+  assert.match(runtime, /from\("jd_workforce_assignments"\)/, 'assignments persist to the immutable workforce table');
+  assert.match(runtime, /onConflict: "school_id,run_id,agent_kind,agent_ref,task_hash", ignoreDuplicates: true/, 'retries are idempotent');
+  assert.match(runtime, /agent_version: resolved\.ref\.kind === "registry" \? \(resolved\.definitionVersion \?\? null\) : null/, 'registry versions are recorded; built-ins stay null');
+  assert.match(runtime, /skill_version: skill\?\.version \?\? null/, 'the exact skill version is recorded');
+  assert.match(runtime, /tool_allowlist: \[\.\.\.assignment\.requestedTools\]/, 'the granted tool allowlist is recorded');
+  assert.match(runtime, /budget: \{ max_model_rounds: resolved\.maxModelRounds, max_output_tokens: resolved\.maxOutputTokens \}/, 'the assignment budget is recorded');
+  assert.match(runtime, /verification_status: outcome\.verification\.status/, 'verification state is recorded');
+  assert.match(runtime, /run_id: options\.context\.runId \|\| null/, 'records trace to the automation run');
+  assert.match(runtime, /persisted: persistedAssignments/, 'the result reports real persistence, never a constant');
+  assert.match(runtime, /Workforce assignment persistence failed/, 'a persistence failure is reported, never fatal to the deployment');
+  assert.match(assignmentsSql, /before update or delete on public\.jd_workforce_assignments/, 'records are immutable in SQL');
+  assert.match(assignmentsSql, /jd_agent_registry_tenant\(p_actor\)/, 'read-back reuses the registry administrator boundary');
 });
 
 test('capability classification stays customer-legible for the new surfaces', () => {

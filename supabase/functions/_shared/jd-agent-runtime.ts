@@ -1644,6 +1644,9 @@ export async function runWorkforceDeployment(
     parameters: candidate.parameters,
   } as Record<string, unknown>]));
   const outcomes: WorkforceDeploymentOutcome[] = [];
+  // Skill context per assignment, aligned with `outcomes` by index; both are
+  // persisted below so every record carries the exact skill version used.
+  const skillContexts: Array<AssignmentSkill | null> = [];
   for (const assignment of plan.assignments) {
     const resolved = resolveAgent(assignment.agent) as ResolvedAgent;
     const agentEvents: AssignmentToolEvent[] = [];
@@ -1666,6 +1669,7 @@ export async function runWorkforceDeployment(
         },
         onToolEvent: (event) => { agentEvents.push(event); },
       });
+      skillContexts.push(skill);
       outcomes.push({
         agent_ref: agentRefLabel(assignment.agent),
         name: resolved.name,
@@ -1691,6 +1695,53 @@ export async function runWorkforceDeployment(
         ...(skill ? { skill: { name: skill.name, version: skill.version, content_hash: skill.content_hash } } : {}),
         verification: { required: true, status: "blocked_no_deliverable" },
       });
+      skillContexts.push(skill);
+    }
+  }
+  // Roadmap sequence 1–2: persist one immutable record per assignment —
+  // agent/version, skill version, task scope, tool allowlist, budget, status
+  // and outcome — so deployments are provable from stored records. Writes are
+  // idempotent on retry (unique school/run/agent/task hash) and a persistence
+  // failure is reported, never silently swallowed and never fatal to the
+  // deployment result.
+  let persistedAssignments = false;
+  if (options.context.runId && outcomes.length === plan.assignments.length && skillContexts.length === plan.assignments.length) {
+    try {
+      const rows = plan.assignments.map((assignment, index) => {
+        const outcome = outcomes[index];
+        const resolved = resolveAgent(assignment.agent) as ResolvedAgent;
+        const skill = skillContexts[index];
+        return {
+          school_id: options.context.schoolId,
+          run_id: options.context.runId || null,
+          objective: plan.objective.slice(0, 4000),
+          agent_kind: resolved.ref.kind === "registry" ? "registry" : "builtin",
+          agent_ref: resolved.ref.kind === "registry" ? resolved.ref.agentId : resolved.ref.id,
+          agent_name: resolved.name,
+          agent_version: resolved.ref.kind === "registry" ? (resolved.definitionVersion ?? null) : null,
+          content_hash: resolved.contentHash ?? null,
+          skill_name: skill?.name ?? null,
+          skill_version: skill?.version ?? null,
+          skill_content_hash: skill?.content_hash ?? null,
+          task: assignment.task.slice(0, 4000),
+          task_hash: workforceTaskHash(assignment.task),
+          tool_allowlist: [...assignment.requestedTools],
+          budget: { max_model_rounds: resolved.maxModelRounds, max_output_tokens: resolved.maxOutputTokens },
+          status: outcome.status,
+          outcome: outcome.status === "report_returned"
+            ? { report: String(outcome.report || "").slice(0, 20000), rounds_used: outcome.rounds_used ?? 0 }
+            : { error: String(outcome.error || "").slice(0, 240) },
+          tool_evidence: outcome.tool_evidence.slice(0, 50),
+          verification_status: outcome.verification.status,
+        };
+      });
+      const { error: assignmentError } = await options.context.admin
+        .from("jd_workforce_assignments")
+        .upsert(rows, { onConflict: "school_id,run_id,agent_kind,agent_ref,task_hash", ignoreDuplicates: true });
+      if (assignmentError) throw new Error(assignmentError.message);
+      persistedAssignments = true;
+    } catch (persistenceFailure) {
+      console.error("Workforce assignment persistence failed", String(persistenceFailure instanceof Error ? persistenceFailure.message : persistenceFailure).slice(0, 160));
     }
   }
   const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
@@ -1728,8 +1779,19 @@ export async function runWorkforceDeployment(
     usage_note: "Specialist model usage is metered on this run's existing usage records; no separate billing path was created.",
     audit_persisted: true,
     result_persistence: "parent_run_checkpoint",
+    persisted: persistedAssignments,
     execution_authority: "assigned_read_only_tasks_only",
   };
+}
+
+/** Deterministic FNV-1a task digest for idempotent assignment records. */
+function workforceTaskHash(value: string): string {
+  let hash = 0xcbf29ce484222325n;
+  for (let index = 0; index < value.length; index++) {
+    hash ^= BigInt(value.charCodeAt(index));
+    hash = (hash * 0x100000001b3n) & 0xffffffffffffffffn;
+  }
+  return hash.toString(16).padStart(16, "0");
 }
 
 export type AgentRuntimeCheckpoint = {
