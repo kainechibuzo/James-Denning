@@ -47,7 +47,7 @@ begin
   select school_id into v_school from public.profiles
   where id=p_actor and role in ('owner','admin');
   if v_school is null then raise exception 'Workspace administrator required' using errcode='42501'; end if;
-  if p_request is null or p_kind not in ('builtin','registry') or p_ref is null
+  if p_request is null or p_kind is null or p_kind not in ('builtin','registry') or p_ref is null
      or length(trim(p_ref)) not between 1 and 120
      or length(trim(p_name)) not between 2 and 120
      or length(coalesce(trim(p_department),'')) > 120 then
@@ -152,17 +152,16 @@ begin
   select * into v_existing from public.jd_workforce_proposal_activations
   where school_id=v_school and approval_id=p_approval;
   if found then
-    if v_existing.actor_id<>p_actor then raise exception 'Activation belongs to another actor' using errcode='42501'; end if;
-    return v_existing.receipt||jsonb_build_object('replayed',true);
+    return v_existing.receipt||jsonb_build_object('replayed',true,'activated_by',v_existing.actor_id);
   end if;
 
   select * into v_approval from public.jd_approvals
   where id=p_approval and school_id=v_school for update;
   if not found then raise exception 'Workforce approval not found' using errcode='P0002'; end if;
-  if v_approval.status<>'approved' or v_approval.decided_by is null then
+  if v_approval.status is distinct from 'approved' or v_approval.decided_by is null then
     raise exception 'Only an explicitly approved proposal can be activated' using errcode='42501';
   end if;
-  if v_approval.action_key not in ('workforce.employee.proposal','workforce.team.proposal') then
+  if v_approval.action_key is null or v_approval.action_key not in ('workforce.employee.proposal','workforce.team.proposal') then
     raise exception 'Approval is not a workforce proposal' using errcode='22023';
   end if;
   if v_approval.execution_status is distinct from 'not_executed' and v_approval.execution_status is distinct from 'failed' then
@@ -175,8 +174,8 @@ begin
   end if;
   v_kind:=v_proposal->>'kind';
   if v_kind is null
-     or (v_kind='employee' and v_approval.action_key<>'workforce.employee.proposal')
-     or (v_kind='team' and v_approval.action_key<>'workforce.team.proposal')
+     or (v_kind='employee' and v_approval.action_key is distinct from 'workforce.employee.proposal')
+     or (v_kind='team' and v_approval.action_key is distinct from 'workforce.team.proposal')
      or v_kind not in ('employee','team') then
     raise exception 'Proposal kind does not match its approval' using errcode='22023';
   end if;
