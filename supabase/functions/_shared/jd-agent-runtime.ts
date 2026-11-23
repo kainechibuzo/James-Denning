@@ -501,22 +501,43 @@ const tools: ToolSpec[] = [
       const responsibilities = Array.isArray(args.responsibilities) ? args.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
       const requestedAccess = Array.isArray(args.requested_access) ? args.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,12) : [];
       const allowedSpecialists = ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"];
+      const specialistKind = String(args.specialist_kind || "builtin").trim();
       const specialistRef = String(args.specialist_ref || "").trim();
+      const specialistVersion = Number.isInteger(args.specialist_version) ? Number(args.specialist_version) : null;
       const members = Array.isArray(args.members) ? args.members.slice(0,20).map((member: any) => ({
         name: String(member?.name || "").trim().slice(0,120),
         role: String(member?.role || "").trim().slice(0,120),
+        specialist_kind: String(member?.specialist_kind || "builtin").trim(),
         specialist_ref: String(member?.specialist_ref || "").trim(),
+        specialist_version: Number.isInteger(member?.specialist_version) ? Number(member.specialist_version) : null,
         responsibilities: Array.isArray(member?.responsibilities) ? member.responsibilities.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : [],
         requested_access: Array.isArray(member?.requested_access) ? member.requested_access.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0,8) : []
       })) : [];
       if (!["employee","team"].includes(kind) || name.length < 2 || department.length < 2 || purpose.length < 12 || !responsibilities.length) {
         throw new Error("The employee or team proposal is incomplete");
       }
-      if (kind === "team" && (!allowedSpecialists.includes(specialistRef) || !members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length))) {
-        throw new Error("A drafted team needs a supported coordinator and distinct, fully described specialist members");
+      const validSpecialist = (kindValue: string, refValue: string, versionValue: number | null) =>
+        kindValue === "builtin" ? allowedSpecialists.includes(refValue) && versionValue === null
+          : kindValue === "registry" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(refValue) && Number.isInteger(versionValue) && Number(versionValue) > 0;
+      if (!validSpecialist(specialistKind,specialistRef,specialistVersion)) throw new Error("Select an exact supported built-in or published registry specialist reference and version");
+      if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !validSpecialist(member.specialist_kind,member.specialist_ref,member.specialist_version) || !member.responsibilities.length))) {
+        throw new Error("A drafted team needs fully described members with exact specialist references");
       }
-      if (kind === "employee" && (members.length || !allowedSpecialists.includes(specialistRef))) throw new Error("An individual employee proposal must select one supported built-in specialist");
-      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_ref: specialistRef, members, activation: "not_started", tools_granted: false, billing_enabled: false };
+      if (kind === "employee" && members.length) throw new Error("An individual employee proposal cannot contain team members");
+      const registryRefs = [...new Set([
+        ...(specialistKind === "registry" ? [specialistRef] : []),
+        ...members.filter((member: any) => member.specialist_kind === "registry").map((member: any) => member.specialist_ref)
+      ])];
+      if (registryRefs.length) {
+        const {data:registryRows,error:registryError}=await ctx.admin.from("jd_agent_definitions")
+          .select("id,current_version,state,execution_authorized").eq("school_id",ctx.schoolId).in("id",registryRefs);
+        if (registryError) throw new Error("The published specialist registry could not be verified");
+        const registryMap=new Map((registryRows||[]).map((row:any)=>[row.id,row]));
+        const requested=[{kind:specialistKind,ref:specialistRef,version:specialistVersion},...members.map((member:any)=>({kind:member.specialist_kind,ref:member.specialist_ref,version:member.specialist_version}))].filter(item=>item.kind==="registry");
+        if (requested.some(item=>{const row:any=registryMap.get(item.ref);return !row||row.state!=="published"||row.execution_authorized!==true||row.current_version!==item.version;}))
+          throw new Error("Every registry specialist must be current, published and explicitly execution-authorized");
+      }
+      const proposal = { kind, name, department, purpose, responsibilities, requested_access: requestedAccess, specialist_kind: specialistKind, specialist_ref: specialistRef, specialist_version: specialistVersion, members, activation: "not_started", tools_granted: false, billing_enabled: false };
       const actionKey = kind === "employee" ? "workforce.employee.proposal" : "workforce.team.proposal";
       const { data: prior, error: priorError } = await ctx.admin.from("jd_approvals")
         .select("id,status,title,created_at,proposal_json").eq("school_id", ctx.schoolId).eq("run_id", ctx.runId)
@@ -2081,7 +2102,7 @@ export async function runAgent(input: {
     "When a request genuinely needs several specialists executing separate bounded subtasks, deploy them together with deploy_specialist_workforce: one objective, one specific assignment per specialist, relevant untrusted context, and only the read-only tools each specialist needs. Built-in specialists and tenant-published execution-authorised registry agents are deployable; a definition that is only published or drafted is not deployable. Specialists have no approval, hiring, spending, deployment or agent-creation authority and cannot grant themselves tools. After a deployment, independently verify every specialist deliverable against saved records or registered tools before reporting completion; treat failed or blocked specialists as explicit results, not silent omissions.",
     "When the existing workforce cannot cover a requested capability, propose a specialist definition with propose_agent_definition derived from the nearest maintained catalogue template, then explain that it must be reviewed by the workspace administrators before it can ever be evaluated, published or deployed. Never present a proposal as an active employee, and never promise deployment authority for an unreviewed definition.",
     "When the user asks to assign work to an existing AI employee or team, call get_workforce_roster first and use only active, tenant-scoped employee_id and team_id values returned by that tool. Include employee_id on the matching specialist assignment and team_id only when that employee is an active member of the selected active team. The assignment specialist reference must exactly match the employee's saved specialist definition. Never invent IDs or assign paused/retired employees or teams. Existing assignment execution remains behind the workforce release gate and only receives the bounded read-only tools explicitly allowed for the assignment.",
-    "When the user asks to propose an AI employee or assemble a drafted AI team, use submit_workforce_proposal_for_review after preparing a concrete proposal. Select an exact supported built-in specialist_ref for the employee or team coordinator and a supported specialist_ref for every team member. Include the employee/team name, department, purpose, responsibilities, each member role for teams, and the exact requested workspace access. The tool creates a pending owner-review request only. Never describe an approved proposal as a hired or active employee/team: employee-instance provisioning, evaluation/publication, tool grants, connector authorisation and billable execution are separate controlled steps.",
+    "When proposing employees or teams, inspect get_ai_workforce_catalogue for built-in specialists and get_published_workforce_specialists for current tenant-published registry agents. JD chooses the best matching skill/agent; users do not need to select skills. For each employee or team member, save the exact specialist_kind, specialist_ref and specialist_version returned by the catalogue. Registry agents must be published and explicitly execution-authorized. Include name, department, purpose, responsibilities, each member role and requested access. The tool creates a pending owner-review request only; approval, activation, tool grants, connector authorisation and billable execution remain separate controlled steps.",
     "If a requested capability is unavailable to the current role or is not registered, say so plainly, explain the closest supported alternative, and do not pretend to have completed it.",
     memoryInstruction,
     "Work toward the user's objective rather than merely giving them instructions.",
