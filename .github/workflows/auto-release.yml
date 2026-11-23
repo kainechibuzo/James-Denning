@@ -1,22 +1,28 @@
-# Merge-to-master IS the release approval. This workflow records the reviewed
-# release variables for the merged commit and dispatches the reviewed Supabase
-# Deploy workflow automatically, so no manual variable edits or Run clicks are
-# needed. The owner keeps control: PR review happens before merge, the
-# JD_AUTO_RELEASE_DISABLED repository variable is a kill switch, and any
-# variable can still be overridden manually before dispatch (this workflow
-# runs at push time; a manual override requires setting the kill switch first).
+# Merge-to-master IS the release approval. This workflow dispatches the
+# reviewed Supabase Deploy workflow for the merged commit, carrying the
+# approval evidence (merged SHA and pull request reference) as workflow
+# inputs — deploy.yml treats its input as authoritative and falls back to the
+# repository variables for manual dispatches. The owner keeps control: PR
+# review happens before merge, direct pushes without a pull request are never
+# released, and the JD_AUTO_RELEASE_DISABLED repository variable is a kill
+# switch. No repository variables are written here, so no elevated token
+# permissions are needed beyond dispatching a workflow.
 name: Auto Release
+
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   workflow_dispatch: {}
+
 permissions:
   contents: read
   actions: write
-  administration: write
+
 concurrency:
   group: auto-release-master
   cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -28,36 +34,19 @@ jobs:
         if: env.AUTO_RELEASE_DISABLED == 'true'
         run: |
           echo "JD_AUTO_RELEASE_DISABLED=true; skipping automatic release." >> "$GITHUB_STEP_SUMMARY"
-          exit 0
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
       - name: Resolve the reviewed pull request for this merge
         if: env.AUTO_RELEASE_DISABLED != 'true'
         id: pr
         run: |
           set -euo pipefail
           SHA="${{ github.sha }}"
-          NUMBER=$(gh api "repos/${{ github.repository }}/commits/$SHA/pulls" -q '.[0].number' || true)
+          NUMBER=$(gh api "repos/${{ github.repository }}/commits/$SHA/pulls" --jq '.[0].number' || true)
           if [ -z "$NUMBER" ]; then
             echo "No reviewed pull request is associated with $SHA. Auto release skips direct pushes; merge through a pull request or release manually." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-      - name: Record the release approval variables
-        if: env.AUTO_RELEASE_DISABLED != 'true'
-        run: |
-          set -euo pipefail
-          api="repos/${{ github.repository }}/actions/variables"
-          put() { gh api -X PUT "$api/$1" -f name="$1" -f value="$2"; }
-          put JD_BACKEND_RELEASE_APPROVED_SHA "${{ steps.pr.outputs.sha }}"
-          put JD_BACKEND_APPROVAL_REFERENCE "https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}"
-          put JD_BACKEND_STAGING_VERIFIED_SHA "${{ steps.pr.outputs.sha }}"
       - name: Dispatch the reviewed Supabase Deploy workflow
         if: env.AUTO_RELEASE_DISABLED != 'true'
         run: |
@@ -66,12 +55,15 @@ jobs:
             -f release_stage=production \
             -f release_sha="${{ steps.pr.outputs.sha }}" \
             -f confirmation=deploy-reviewed-jd-backend \
-            -f deploy_functions=true
+            -f deploy_functions=true \
+            -f approved_sha="${{ steps.pr.outputs.sha }}" \
+            -f approval_reference="https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}" \
+            -f staging_verified_sha="${{ steps.pr.outputs.sha }}"
       - name: Record the dispatched release run
         if: env.AUTO_RELEASE_DISABLED != 'true'
         run: |
           set -euo pipefail
-          sleep 6
-          RUN_URL=$(gh run list --workflow=deploy.yml --limit 1 --json url -q '.[0].url' || true)
+          sleep 8
+          RUN_URL=$(gh run list --workflow=deploy.yml --limit 1 --json url --jq '.[0].url' || true)
           echo "Release dispatched for pull #${{ steps.pr.outputs.number }} at ${{ steps.pr.outputs.sha }}." >> "$GITHUB_STEP_SUMMARY"
           echo "Deploy run: ${RUN_URL:-check the Actions tab}" >> "$GITHUB_STEP_SUMMARY"

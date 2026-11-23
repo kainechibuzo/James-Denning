@@ -73,8 +73,9 @@ test('manual workflow defaults to artifact-only; exact SHA, independent approval
  assert.doesNotMatch(events,/^\s+(push|pull_request|schedule):/m);assert.match(events,/deploy_functions:[\s\S]*?default: false/);
  assert.match(workflow,/cancel-in-progress: false/);assert.match(workflow,/if: github.ref == 'refs\/heads\/master'/);
  assert.match(workflow,/environment: supabase-\$\{\{ inputs.release_stage \}\}/);
- assert.match(workflow,/JD_BACKEND_RELEASE_APPROVED_SHA: \$\{\{ vars.JD_BACKEND_RELEASE_APPROVED_SHA \}\}/);
- assert.match(workflow,/JD_BACKEND_STAGING_VERIFIED_SHA: \$\{\{ vars.JD_BACKEND_STAGING_VERIFIED_SHA \}\}/);
+ assert.match(workflow,/JD_BACKEND_RELEASE_APPROVED_SHA: \$\{\{ inputs\.approved_sha \|\| vars\.JD_BACKEND_RELEASE_APPROVED_SHA \}\}/);
+ assert.match(workflow,/JD_BACKEND_APPROVAL_REFERENCE: \$\{\{ inputs\.approval_reference \|\| vars\.JD_BACKEND_APPROVAL_REFERENCE \}\}/);
+ assert.match(workflow,/JD_BACKEND_STAGING_VERIFIED_SHA: \$\{\{ inputs\.staging_verified_sha \|\| vars\.JD_BACKEND_STAGING_VERIFIED_SHA \}\}/);
  assert.match(workflow,/for function_name in jd-automation jd-execution-worker jd-mcp;/);
  assert.match(workflow,/supabase functions deploy "\$function_name" --project-ref "\$JD_BACKEND_PROJECT_REF" --workdir build\/jd-backend-release/);
  assert.doesNotMatch(workflow,/supabase db|--include-all|--no-verify-jwt|JD_SECRETS_JSON|SUPABASE_DB_PASSWORD/);
