@@ -143,7 +143,7 @@ const tools: ToolSpec[] = [
   {
     name:"deploy_specialist_workforce",
     risk:"low",roles:["owner","admin","manager"],strict:false,
-    description:"Deploy 1-5 specialist agents on separate bounded assignments for one objective. Available specialists are the eight built-in roles and tenant-published registry agents whose owners granted execution authority. Each specialist receives its own task, context and at most a few read-only tools; specialists cannot write records, approve actions, hire, spend, deploy or create further agents. Specialist deliverables are reports that you must independently verify before claiming completion. Use for work that genuinely needs separate specialist assignments; never treat a deployment as completed business work.",
+    description:"Deploy 1-5 specialist agents on separate bounded assignments for one objective. Available specialists are the eight built-in roles and tenant-published registry agents whose owners granted execution authority. To assign work to an existing employee, first read get_workforce_roster and include that exact employee_id; optionally include team_id only if the employee is an active member of that active team. The employee specialist reference must match the saved identity. Each specialist receives its own task, context and at most a few read-only tools; specialists cannot write records, approve actions, hire, spend, deploy or create further agents. Specialist deliverables are reports that you must independently verify before claiming completion. Use for work that genuinely needs separate specialist assignments; never treat a deployment as completed business work.",
     parameters:{type:"object",properties:{
       objective:{type:"string",minLength:12,maxLength:4000},
       assignments:{type:"array",minItems:1,maxItems:5,items:{type:"object",properties:{
@@ -1758,6 +1758,9 @@ export async function runWorkforceDeployment(
     plan.assignments = kept;
   }
   const boundAssignments = plan.assignments.filter((assignment) => assignment.employeeId);
+  if (boundAssignments.length && !["owner","admin"].includes(options.context.role)) {
+    return {error:"Only workspace owners and administrators can assign work to activated employee or team identities; no assignment was started",deployed:false};
+  }
   if (boundAssignments.length) {
     const employeeIds = [...new Set(boundAssignments.map((assignment) => assignment.employeeId as string))];
     const teamIds = [...new Set(boundAssignments.map((assignment) => assignment.teamId).filter(Boolean) as string[])];
