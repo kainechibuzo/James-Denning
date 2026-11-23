@@ -36,7 +36,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   if(employeeError)return json({error:"Could not verify this employee identity"},503);
   if(!employee)return json({error:"Employee not found in this workspace"},404);
   if(employee.agent_kind!=="builtin")return json({error:"Private chat is currently available for built-in specialist employees only."},409);
-  if(employee.lifecycle_state!=="active")return json({error:"This employee is not currently available for a private conversation."},409);
+  if(payload.action==="workforce.agent.thread.open"&&employee.lifecycle_state!=="active")return json({error:"This employee is not currently available for a new private conversation."},409);
   if(payload.action==="workforce.agent.thread.open"){
    const {data:prior,error:priorError}=await admin.from("jd_workforce_agent_threads").select("id,employee_id,status,created_at,updated_at")
     .eq("school_id",profile.school_id).eq("employee_id",employeeId).eq("created_by",actorId).maybeSingle();
@@ -77,6 +77,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
    if(messagesError)return json({error:"Could not load private conversation history"},503);
    return json({thread,messages:messages||[],employee});
   }
+  if(employee.lifecycle_state!=="active")return json({error:"This employee is not currently available to reply to a new message."},409);
   const content=typeof payload.content==="string"?payload.content.trim():"";
   if(!uuid(payload.requestId)||content.length<1||content.length>8000)return json({error:"Enter a message of up to 8,000 characters"},400);
   let userMessage:any=null;
