@@ -29,6 +29,9 @@ jobs:
     env:
       AUTO_RELEASE_DISABLED: ${{ vars.JD_AUTO_RELEASE_DISABLED }}
       GH_TOKEN: ${{ github.token }}
+      # No checkout step: gh resolves the repository from GH_REPO instead of
+      # probing git remotes, so the dispatch works on a bare workspace.
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Respect the kill switch
         if: env.AUTO_RELEASE_DISABLED == 'true'
