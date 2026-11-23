@@ -34,7 +34,7 @@ test("shell wires role resolver, account access and reauthentication",()=>{
   assert.match(shell,/buildWorkspaceNavigation\(\{role,canAccess\}\)/);
   assert.match(shell,/aria-label="Switch organisation" aria-haspopup="dialog"/);
   assert.match(shell,/aria-label="My profile"/);assert.match(shell,/aria-label="Sign out"/);
-  assert.match(shell,/signOut:options=>supabase.auth.signOut\\(options\\)/);
+  assert.match(shell,/signOut:options=>supabase\.auth\.signOut\(options\)/);
   assert.match(shell,/function AccessDenied\(\)/);
   for(const legacy of ["SchoolSelectPage","PlatformDashboardPage","SectionSelector","LoginPage","SCHOOL_SLUGS"])assert.doesNotMatch(shell,new RegExp(legacy));
 });
