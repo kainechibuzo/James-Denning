@@ -473,7 +473,7 @@ const tools: ToolSpec[] = [
       if (!["employee","team"].includes(kind) || name.length < 2 || department.length < 2 || purpose.length < 12 || !responsibilities.length) {
         throw new Error("The employee or team proposal is incomplete");
       }
-      if (kind === "team" && (!allowedSpecialists.includes(specialistRef) || !members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length) || new Set(members.map((member: any) => member.specialist_ref)).size !== members.length)) {
+      if (kind === "team" && (!allowedSpecialists.includes(specialistRef) || !members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !allowedSpecialists.includes(member.specialist_ref) || !member.responsibilities.length))) {
         throw new Error("A drafted team needs a supported coordinator and distinct, fully described specialist members");
       }
       if (kind === "employee" && (members.length || !allowedSpecialists.includes(specialistRef))) throw new Error("An individual employee proposal must select one supported built-in specialist");
