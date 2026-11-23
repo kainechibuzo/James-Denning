@@ -25,6 +25,18 @@ on:
         description: "Deploy the three reviewed functions after preparing the artifact"
         type: boolean
         default: false
+      approved_sha:
+        description: "Optional: reviewed approval SHA override (auto release passes the merged commit)"
+        type: string
+        required: false
+      approval_reference:
+        description: "Optional: reviewed PR/evidence URL override (auto release passes the merged pull request)"
+        type: string
+        required: false
+      staging_verified_sha:
+        description: "Optional: staging-verified SHA override (auto release passes the merged commit)"
+        type: string
+        required: false
 
 concurrency:
   group: supabase-jd-backend-release
@@ -44,11 +56,11 @@ jobs:
       JD_RELEASE_STAGE: ${{ inputs.release_stage }}
       JD_RELEASE_EXPECTED_SHA: ${{ inputs.release_sha }}
       JD_RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
-      JD_BACKEND_RELEASE_APPROVED_SHA: ${{ vars.JD_BACKEND_RELEASE_APPROVED_SHA }}
-      JD_BACKEND_APPROVAL_REFERENCE: ${{ vars.JD_BACKEND_APPROVAL_REFERENCE }}
+      JD_BACKEND_RELEASE_APPROVED_SHA: ${{ inputs.approved_sha || vars.JD_BACKEND_RELEASE_APPROVED_SHA }}
+      JD_BACKEND_APPROVAL_REFERENCE: ${{ inputs.approval_reference || vars.JD_BACKEND_APPROVAL_REFERENCE }}
       JD_BACKEND_PROJECT_REF: ${{ vars.JD_BACKEND_PROJECT_REF }}
       JD_STAGING_PROJECT_REF: ${{ vars.JD_STAGING_PROJECT_REF }}
-      JD_BACKEND_STAGING_VERIFIED_SHA: ${{ vars.JD_BACKEND_STAGING_VERIFIED_SHA }}
+      JD_BACKEND_STAGING_VERIFIED_SHA: ${{ inputs.staging_verified_sha || vars.JD_BACKEND_STAGING_VERIFIED_SHA }}
     steps:
       - name: Checkout exact dispatch commit
         uses: actions/checkout@v4
