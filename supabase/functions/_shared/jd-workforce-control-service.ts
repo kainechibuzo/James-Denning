@@ -132,7 +132,7 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   }
   const {data:assistantMessage,error:assistantError}=await admin.from("jd_workforce_agent_messages").insert({
    school_id:profile.school_id,thread_id:threadId,employee_id:employeeId,
-   sender_kind:"agent",sender_id:actorId,content:reply.content,reply_to_message_id:userMessage.id
+   sender_kind:"agent",sender_id:actorId,content:reply.content,reply_to_message_id:userMessage.id,model_name:reply.model,usage_json:reply.usage||{}
   }).select("id,sender_kind,content,reply_to_message_id,created_at").single();
   if(assistantError){
    const {data:concurrentReply}=await admin.from("jd_workforce_agent_messages").select("id,sender_kind,content,reply_to_message_id,created_at")
