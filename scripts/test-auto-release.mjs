@@ -11,24 +11,27 @@ const workflow = readFileSync('.github/workflows/auto-release.yml', 'utf8');
 const deploy = readFileSync('.github/workflows/deploy.yml', 'utf8');
 
 test('auto release triggers on master pushes and manual re-runs only', () => {
-  assert.match(workflow, /on:\s*\n\s*push:\s*\n\s*branches:\s*\[master\]/);
+  assert.match(workflow, /on:\s*\n\s*push:\s*\n\s*branches:\s*\n\s*- master/);
   assert.match(workflow, /workflow_dispatch:\s*\{\}/);
   assert.doesNotMatch(workflow, /branches:\s*\[[^\]]*,/);
 });
 
-test('the workflow token can record variables and dispatch the deploy', () => {
-  assert.match(workflow, /administration:\s*write/);
+test('the workflow token only needs to dispatch a workflow', () => {
   assert.match(workflow, /actions:\s*write/);
   assert.match(workflow, /contents:\s*read/);
-  assert.match(workflow, /persist-credentials:\s*false/);
+  assert.doesNotMatch(workflow, /administration:/);
+  assert.doesNotMatch(workflow, /uses: actions\/checkout/); // pure dispatch: no repo content is checked out
 });
 
-test('the release approval variables are recorded for the merged commit', () => {
-  for (const name of ['JD_BACKEND_RELEASE_APPROVED_SHA', 'JD_BACKEND_APPROVAL_REFERENCE', 'JD_BACKEND_STAGING_VERIFIED_SHA']) {
-    assert.ok(workflow.includes(name), `missing ${name}`);
-  }
-  assert.match(workflow, /pull\/\$\{\{ steps\.pr\.outputs\.number \}\}/);
+test('the release approval evidence is carried as dispatch inputs, not variable writes', () => {
+  assert.match(workflow, /approved_sha="\$\{\{ steps\.pr\.outputs\.sha \}\}"/);
+  assert.match(workflow, /approval_reference="https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/pull\/\$\{\{ steps\.pr\.outputs\.number \}\}"/);
+  assert.match(workflow, /staging_verified_sha="\$\{\{ steps\.pr\.outputs\.sha \}\}"/);
   assert.match(workflow, /commits\/\$SHA\/pulls/);
+  // deploy.yml honours the inputs and still falls back to the reviewed variables.
+  assert.match(deploy, /inputs\.approved_sha \|\| vars\.JD_BACKEND_RELEASE_APPROVED_SHA/);
+  assert.match(deploy, /inputs\.approval_reference \|\| vars\.JD_BACKEND_APPROVAL_REFERENCE/);
+  assert.match(deploy, /inputs\.staging_verified_sha \|\| vars\.JD_BACKEND_STAGING_VERIFIED_SHA/);
 });
 
 test('the dispatch uses the reviewed workflow with the exact release inputs', () => {
