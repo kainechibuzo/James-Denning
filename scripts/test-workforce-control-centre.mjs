@@ -11,6 +11,8 @@ const nav=read("src/config/assistant-navigation.mjs");
 const privateChat=read("supabase/migrations/20261124180000_jd_workforce_private_chat.sql");
 const assignmentAttribution=read("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql");
 const shadowUsage=read("supabase/migrations/20261124200000_jd_workforce_shadow_usage.sql");
+const teamBudgetsMigration=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.sql");
+const teamBudgetsRollback=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.rollback.sql");
 test("workforce identity and control records are tenant-scoped and service-only",()=>{
  for(const table of ["jd_workforce_employees","jd_workforce_teams","jd_workforce_team_members","jd_workforce_agent_threads","jd_workforce_agent_messages","jd_workforce_control_events"])assert.ok(migration.includes("alter table public."+table+" enable row level security"));
  assert.ok(migration.includes("revoke all on public.jd_workforce_employees"));
@@ -120,4 +122,29 @@ test("shadow usage ledger links observed employee time to immutable assignment e
  assert.ok(ui.includes("Shadow usage ledger"));
  assert.ok(ui.includes("Assignment "));
  assert.ok(ui.includes("shadow estimate"));
+});
+
+test("team shadow budgets are tenant-scoped, versioned and idempotent",()=>{
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_team_budgets"));
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_team_budget_requests"));
+ assert.ok(teamBudgetsMigration.includes("enable row level security"));
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_set_team_budget"));
+ assert.ok(teamBudgetsMigration.includes("request identifier reused"));
+ assert.ok(teamBudgetsMigration.includes("p_expected_version"));
+ assert.ok(teamBudgetsMigration.includes("workforce.team.budget_set"));
+ assert.ok(teamBudgetsMigration.includes("grant execute on function public.jd_workforce_set_team_budget"));
+ assert.ok(teamBudgetsMigration.includes("revoke all on public.jd_workforce_team_budgets"));
+ assert.ok(teamBudgetsRollback.includes("drop trigger if exists jd_workforce_team_usage_budget_before_insert"));
+ assert.ok(teamBudgetsRollback.includes("drop table if exists public.jd_workforce_team_budgets"));
+});
+test("team shadow budget ceilings are enforced against employee-attributed team usage",()=>{
+ assert.ok(teamBudgetsMigration.includes("before insert on public.jd_workforce_employee_usage"));
+ assert.ok(teamBudgetsMigration.includes("v_budget.accrued_micros+new.amount_micros"));
+ assert.ok(teamBudgetsMigration.includes("new.reconciliation_status:='disputed'"));
+ assert.ok(teamBudgetsMigration.includes("charged',false"));
+ assert.ok(service.includes("workforce.team.budget"));
+ assert.ok(service.includes("jd_workforce_team_budgets"));
+ assert.ok(ui.includes("Set team budget"));
+ assert.ok(ui.includes("teamBudgets"));
+ assert.ok(ui.includes("aggregate shadow ceiling"));
 });
