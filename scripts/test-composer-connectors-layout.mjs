@@ -27,7 +27,7 @@ try{for(const width of [320,393,1280])for(const theme of ['light','dark']){
  await page.mouse.click(2,100);assert.equal(await page.locator('.jd-tool-picker').count(),0);
  await page.getByRole('button',{name:'Add tools and connectors'}).click();await page.getByRole('option',{name:/lookup_customer/}).waitFor();
  await page.getByRole('combobox',{name:'Search JD tools'}).fill('Billing');await page.getByText('No matching tools. Try another name.',{exact:true}).waitFor();assert.equal(await input.inputValue(),'');assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.args?.action==='submit').length),0);await page.getByRole('button',{name:'Close tools menu'}).click();
- await input.fill('Please @People');await check('mention-menu','.jd-tool-picker');await input.press('Enter');assert.match(await input.inputValue(),/^Please Give me an overview of people/);
+ await input.fill('Please @People');await page.getByText('No matching tools. Try another name.',{exact:true}).waitFor();assert.equal(await input.inputValue(),'Please @People');await input.fill('');
  await input.fill('contact@example.com');assert.equal(await page.locator('.jd-tool-picker').count(),0);
  await input.fill('@lookup');await page.getByRole('option',{name:/lookup_customer/}).waitFor();await input.press('Tab');assert.match(await input.inputValue(),/tool reference sample-tool/);assert.equal(await page.evaluate(()=>window.__siteCalls.filter(c=>c.args?.action==='tools.call').length),0);
  await input.fill('@');await input.press('Escape');assert.equal(await page.locator('.jd-tool-picker').count(),0);
