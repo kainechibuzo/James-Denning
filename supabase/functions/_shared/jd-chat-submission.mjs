@@ -49,7 +49,10 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  // decision. Discovery never blocks or fails the chat: capabilities are
  // presented as "already there", so any problem is audited and the run
  // proceeds without the skill context.
- if(Deno.env.get("JD_SKILLS_ENABLED")==="true"&&Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"&&message.length>=10){
+ // Environment flags are read through process.env, which exists both in the
+ // Deno 2 runtime (Node-compatibility layer) and under the Node test runner.
+ const envFlag=(key)=>{try{return typeof process!=="undefined"&&process.env?process.env[key]==="true":false;}catch{return false;}};
+ if(envFlag("JD_SKILLS_ENABLED")&&envFlag("JD_SKILLS_AUTONOMOUS")&&message.length>=10){
   try{
    const{planDiscovery,runDiscoveryAcquisition}=await import('./jd-discovery-agent.ts');
    const idea=message.slice(0,2000);
