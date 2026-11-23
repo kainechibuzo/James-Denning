@@ -431,7 +431,7 @@ const tools: ToolSpec[] = [
     description: "Submit one proposed AI employee or a drafted AI team to the owner's Review Centre. This is a permission request for review only: it does not hire, activate, publish, grant tools, connect services, start billable work or create employee instances. Use after the user has asked to propose an employee or team. Include exact responsibilities and requested access so the owner can make an informed decision.",
     risk: "low",
     roles: ["owner","admin"],
-    strict: true,
+    strict: false,
     parameters: {
       type: "object",
       properties: {
