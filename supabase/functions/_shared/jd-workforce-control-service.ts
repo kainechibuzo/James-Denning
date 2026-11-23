@@ -4,6 +4,16 @@ const uuid=(v:unknown)=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9
 const adminRoles=["owner","admin"];
 export async function handleWorkforceControl({payload,admin,profile,actorId,json}:any){
  if(!adminRoles.includes(profile?.role)||profile?.id!==actorId||!uuid(actorId)||!uuid(profile.school_id))return json({error:"Workspace administrator required"},403);
+ const auditEvent=async(eventType:string,eventJson:Record<string,unknown>)=>{
+  const {data:prior,error:lookupError}=await admin.from("jd_audit_events").select("id")
+   .eq("school_id",profile.school_id).eq("event_type",eventType).contains("event_json",eventJson).limit(1).maybeSingle();
+  if(lookupError)return false;
+  if(prior)return true;
+  const {error}=await admin.from("jd_audit_events").insert({
+   school_id:profile.school_id,actor_id:actorId,event_type:eventType,event_json:eventJson
+  });
+  return !error;
+ };
  if(payload?.action==="workforce.control.snapshot"){
   const [employees,teams,members,assignments,budgets,employeeUsage]=await Promise.all([
    admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,department,role_title,purpose,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
@@ -41,7 +51,8 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
     if(retry)return json({thread:retry,employee});
     return json({error:"Private specialist conversation could not be created"},503);
    }
-   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.thread.opened",event_json:{thread_id:created.id,employee_id:employeeId}});
+   if(!await auditEvent("workforce.agent.thread.opened",{thread_id:created.id,employee_id:employeeId}))
+    return json({error:"The conversation was created but its audit receipt could not be confirmed. Refresh before retrying."},503);
    return json({thread:created,employee},201);
   }
   if(!uuid(threadId))return json({error:"A valid private conversation is required"},400);
@@ -66,25 +77,31 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
    .eq("sender_id",actorId).eq("sender_kind","user").eq("request_id",payload.requestId).maybeSingle();
   if(existingError)return json({error:"Could not verify whether this message was already sent"},503);
   userMessage=existingUser;
+  if(userMessage&&userMessage.content!==content)return json({error:"This request identifier was already used for a different message."},409);
   if(!userMessage){
    const {data:inserted,error:insertError}=await admin.from("jd_workforce_agent_messages").insert({
     school_id:profile.school_id,thread_id:threadId,employee_id:employeeId,
     sender_kind:"user",sender_id:actorId,content,request_id:payload.requestId
-   }).select("id,content,created_at").single();
+   }).select("id,sender_kind,content,created_at").single();
    if(insertError){
-    const {data:retry}=await admin.from("jd_workforce_agent_messages").select("id,content,created_at")
+    const {data:retry}=await admin.from("jd_workforce_agent_messages").select("id,sender_kind,content,created_at")
      .eq("school_id",profile.school_id).eq("thread_id",threadId).eq("sender_id",actorId)
      .eq("sender_kind","user").eq("request_id",payload.requestId).maybeSingle();
     if(!retry)return json({error:"Your message was not saved; refresh before retrying."},503);
     userMessage=retry;
    }else userMessage=inserted;
-   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.message.sent",event_json:{thread_id:threadId,employee_id:employeeId,message_id:userMessage.id}});
   }
+  if(!await auditEvent("workforce.agent.message.sent",{thread_id:threadId,employee_id:employeeId,message_id:userMessage.id,request_id:payload.requestId}))
+   return json({error:"Your message was saved but its audit receipt could not be confirmed. Retry the same message."},503);
   const {data:existingReply,error:replyLookupError}=await admin.from("jd_workforce_agent_messages")
    .select("id,content,created_at").eq("school_id",profile.school_id)
    .eq("reply_to_message_id",userMessage.id).eq("sender_kind","agent").maybeSingle();
   if(replyLookupError)return json({error:"Could not verify the specialist reply"},503);
-  if(existingReply)return json({thread,messages:[userMessage,existingReply],replayed:true});
+  if(existingReply){
+   if(!await auditEvent("workforce.agent.message.replied",{thread_id:threadId,employee_id:employeeId,message_id:existingReply.id}))
+    return json({error:"The specialist reply exists but its audit receipt could not be confirmed. Retry the same message."},503);
+   return json({thread,messages:[{...userMessage,sender_kind:"user"},existingReply],replayed:true});
+  }
   const {data:priorMessages,error:historyError}=await admin.from("jd_workforce_agent_messages")
    .select("sender_kind,content,created_at").eq("school_id",profile.school_id).eq("thread_id",threadId)
    .lt("created_at",userMessage.created_at).order("created_at",{ascending:true}).limit(20);
@@ -116,8 +133,9 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   }
   await admin.from("jd_workforce_agent_threads").update({updated_at:new Date().toISOString()})
    .eq("school_id",profile.school_id).eq("id",threadId);
-  await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:actorId,event_type:"workforce.agent.message.replied",event_json:{thread_id:threadId,employee_id:employeeId,message_id:assistantMessage.id,model:reply.model}});
-  return json({thread,messages:[userMessage,assistantMessage],replayed:false});
+  if(!await auditEvent("workforce.agent.message.replied",{thread_id:threadId,employee_id:employeeId,message_id:assistantMessage.id,model:reply.model}))
+   return json({error:"The specialist reply was saved but its audit receipt could not be confirmed. Retry the same message."},503);
+  return json({thread,messages:[{...userMessage,sender_kind:"user"},assistantMessage],replayed:false});
  }
  if(payload?.action==="workforce.employee.create"||payload?.action==="workforce.team.create"){
   return json({error:"Employee and team identities can only be created by activating an explicitly approved Review Centre proposal."},409);
