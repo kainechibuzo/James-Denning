@@ -163,9 +163,16 @@ function friendlyActivityLabel(name) {
     get_billing_snapshot: "Checking billing records",
     get_business_expense_anomalies: "Reviewing recorded business costs",
     get_recent_activity_logs: "Checking recent workspace activity",
-    create_business_document_draft: "Preparing your document"
+    create_business_document_draft: "Preparing your document",
+    delegate_to_specialist_agent: "Delegating the requested analysis to a specialist",
+    deploy_specialist_workforce: "Assigning work to the specialist team",
+    research_analyst: "Research analyst reviewing the assigned task",
+    workforce_deployed: "Specialist assignments recorded"
   };
-  return labels[String(name || "")] || "Working on your request";
+  const key = String(name || "").trim();
+  if (labels[key]) return labels[key];
+  if (!key) return "Processing an execution step";
+  return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
 export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
@@ -533,6 +540,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-activity-title{display:flex;align-items:center;gap:8px;color:var(--jd-text-soft);font-size:11px;font-weight:650}
         .jd-activity-dot{width:7px;height:7px;border-radius:50%;background:var(--jd-muted);animation:jd-pulse 1.25s ease-in-out infinite;flex:0 0 auto}
         .jd-activity-detail{font-size:10px;color:var(--jd-muted);line-height:1.5;padding-left:15px}
+        .jd-activity-step.failed{color:var(--jd-text)}.jd-activity-error{display:block;color:var(--jd-muted);font-size:11px;line-height:1.45;margin-top:2px}
         .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
         .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--jd-muted)}
         .jd-activity-step.done{color:var(--jd-muted)}
@@ -602,11 +610,13 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               {item.role === "assistant" && !item.pollUnavailable && !item.content && (item.submitting || ["queued", "planning", "running", "retry_wait"].includes(item.run?.status)) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
-                  {item.toolEvents?.length ? <div className="jd-activity-steps">{item.toolEvents.slice(-4).map((event,i) => {
-                    const label = friendlyActivityLabel(event.name);
-                    const done = event.status === "completed";
-                    return <div className={"jd-activity-step" + (done ? " done" : "")} key={String(event.name)+"-"+i}><span>{done ? "✓" : "·"}</span>{label}</div>;
-                  })}</div> : <div className="jd-activity-detail">JD is organising the work and checking what it needs.</div>}
+                  {item.toolEvents?.length ? <div className="jd-activity-steps">{[...new Map(item.toolEvents.map((event,i) => [String(event.name||"step")+"-"+String(event.status||"running"),{...event,_key:String(event.name||"step")+"-"+String(event.status||"running")+"-"+i}])).values()].slice(-5).map((event) => {
+                    const status = String(event.status || "running");
+                    const failed = ["failed","outcome_unknown"].includes(status);
+                    const done = status === "completed";
+                    const detail = failed && event.error ? String(event.error).slice(0,180) : null;
+                    return <div className={"jd-activity-step" + (done ? " done" : "") + (failed ? " failed" : "")} key={event._key}><span>{done ? "✓" : failed ? "!" : "·"}</span><span><strong>{friendlyActivityLabel(event.name)}</strong>{detail && <small className="jd-activity-error">{detail}</small>}</span></div>;
+                  })}</div> : <div className="jd-activity-detail">{item.run?.status === "queued" ? "Your original request is saved and waiting for a worker." : item.run?.status === "retry_wait" ? "The worker is retrying this saved request. Your original prompt remains attached." : "JD has accepted your original request. Waiting for a confirmed execution event."}</div>}
                 </div>
               )}
               {item.pollUnavailable&&<div className="jd-response-result" role="status">Live status could not be refreshed. The job may still be running; no new execution was requested.<button type="button" onClick={()=>loadConversation(conversationId)}>Refresh conversation</button><button type="button" onClick={()=>setShowRuns(true)}>View execution runs</button></div>}
