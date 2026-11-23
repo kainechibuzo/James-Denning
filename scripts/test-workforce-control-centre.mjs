@@ -40,7 +40,7 @@ const lifecycle=read("supabase/migrations/20261124130000_jd_workforce_lifecycle_
 test("employee activation and team membership are tenant-scoped and idempotent",()=>{
  for(const table of ["jd_workforce_employee_budgets","jd_workforce_employee_usage","jd_workforce_provision_requests"])assert.ok(lifecycle.includes("alter table public."+table+" enable row level security"));
  for(const fn of ["jd_workforce_create_employee","jd_workforce_create_team","jd_workforce_team_membership"])assert.ok(lifecycle.includes("grant execute on function public."+fn));
- assert.ok(lifecycle.includes("request identifier reused"));
+ assert.match(lifecycle,/request identifier reused/i);
  assert.ok(lifecycle.includes("execution_authorized=true"));
  assert.ok(lifecycle.includes("jd_audit_events"));
 });
