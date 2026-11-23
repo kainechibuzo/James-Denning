@@ -3,6 +3,15 @@
 
 drop function if exists public.jd_workforce_activate_approved_proposal(uuid,uuid,uuid);
 drop table if exists public.jd_workforce_proposal_activations;
+alter table public.jd_workforce_employees
+  drop column if exists role_title,
+  drop column if exists purpose,
+  drop column if exists responsibilities,
+  drop column if exists requested_access;
+alter table public.jd_workforce_teams
+  drop column if exists department,
+  drop column if exists responsibilities,
+  drop column if exists requested_access;
 
 grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;
 grant execute on function public.jd_workforce_create_team(uuid,uuid,text,text) to service_role;
