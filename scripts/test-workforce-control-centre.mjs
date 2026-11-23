@@ -52,12 +52,14 @@ test("employee budgets are versioned shadow limits, not charges",()=>{
  assert.ok(service.includes("workforce.employee.budget"));
  assert.ok(service.includes("jd_workforce_employee_usage"));
 });
-test("provisioning UI exposes employee, team, membership and budget operations",()=>{
- for(const action of ["workforce.employee.create","workforce.team.create","workforce.team.membership","workforce.employee.budget"])assert.ok(ui.includes(action));
- assert.ok(ui.includes("Add employee"));
- assert.ok(ui.includes("Create team"));
+test("workforce UI exposes only approved activation outcomes plus membership and budget controls",()=>{
+ assert.ok(service.includes("workforce.proposal.activate"));
+ assert.ok(service.includes("workforce.team.membership"));
+ assert.ok(service.includes("workforce.employee.budget"));
+ assert.ok(ui.includes("Add member"));
  assert.ok(ui.includes("Set budget"));
  assert.ok(ui.includes("employeeUsage.length"));
+ assert.doesNotMatch(ui,/Add employee|Create team|workforce\\.employee\\.create|workforce\\.team\\.create/);
 });
 test("private agent chat and checked worker controls remain honestly gated",()=>{
  assert.ok(service.includes("agentChatEnabled:false"));
