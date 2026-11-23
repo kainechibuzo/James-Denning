@@ -42,7 +42,7 @@ test("employee and team activation is bound to an approved Review Centre proposa
   assert.match(workforceService, /jd_workforce_activate_approved_proposal/);
   assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
   assert.match(workforceMigration, /Only an explicitly approved proposal can be activated/);
-  assert.match(workforceMigration, /v_approval\.status\s*<>\s*'approved'/);
+  assert.match(workforceMigration, /v_approval\.status is distinct from 'approved'/);
   assert.match(workforceMigration, /workforce\.employee\.proposal/);
   assert.match(workforceMigration, /workforce\.team\.proposal/);
   assert.match(workforceMigration, /jd_workforce_proposal_activations/);
