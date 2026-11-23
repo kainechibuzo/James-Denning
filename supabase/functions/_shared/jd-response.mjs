@@ -16,7 +16,7 @@ export function validateResponse(value, { allowOperational = true } = {}) {
     if (!object(b) || !id(b.id)) return null;
     if (b.type === 'message') { if (!text(b.content, 60000)) return null; }
     else if (b.type === 'choice') {
-      if (!text(b.question) || !options(b.options) || typeof b.multiple !== 'boolean' || (b.presentation !== undefined && !['list','dropdown'].includes(b.presentation)) || (b.multiple && b.presentation === 'dropdown')) return null;
+      if (!text(b.question) || !options(b.options) || typeof b.multiple !== 'boolean' || (b.presentation !== undefined && !['list','dropdown'].includes(b.presentation)) || (b.multiple && b.presentation === 'dropdown') || (b.allowCustom !== undefined && typeof b.allowCustom !== 'boolean') || (b.customLabel !== undefined && !text(b.customLabel, 120))) return null;
     } else if (b.type === 'form') {
       if (!text(b.title, 300) || !Array.isArray(b.fields) || !b.fields.length || b.fields.length > 16 || !unique(b.fields.map(f => f?.id))) return null;
       for (const f of b.fields) {
@@ -55,7 +55,7 @@ export function streamText(raw) {
 }
 export function validateAnswer(block, value) {
   if (block?.type === 'choice') {
-    if (!Array.isArray(value) || !value.length || !unique(value) || (!block.multiple && value.length !== 1) || value.some(v => !block.options.some(o => o.value === v))) throw Error('Choose a valid option.');
+    if (!Array.isArray(value) || !value.length || !unique(value) || (!block.multiple && value.length !== 1) || value.some(v => !block.options.some(o => o.value === v) && !(block.allowCustom && typeof v === 'string' && v.startsWith('custom:') && v.length > 7 && v.length <= 507))) throw Error('Choose a valid option.');
     return value;
   }
   if (block?.type !== 'form' || !object(value) || Object.keys(value).some(k => !block.fields.some(f => f.id === k))) throw Error('Invalid form answer.');
@@ -79,7 +79,7 @@ export function validateAnswer(block, value) {
 }
 export function answerText(block, value) {
   const answer = validateAnswer(block, value);
-  return block.type === 'choice' ? block.question + '\nMy selection: ' + answer.map(v => block.options.find(o => o.value === v).label).join(', ') : block.title + '\n' + block.fields.filter(f => Object.hasOwn(answer, f.id)).map(f => f.label + ': ' + (f.type === 'select' ? f.options.find(o => o.value === answer[f.id]).label : answer[f.id])).join('\n');
+  return block.type === 'choice' ? block.question + '\nMy selection: ' + answer.map(v => block.options.find(o => o.value === v)?.label || ('Other: ' + v.slice(7))).join(', ') : block.title + '\n' + block.fields.filter(f => Object.hasOwn(answer, f.id)).map(f => f.label + ': ' + (f.type === 'select' ? f.options.find(o => o.value === answer[f.id]).label : answer[f.id])).join('\n');
 }
 /** Legacy unconditional dashboards are deliberately not restored from history.
  * New worker attachments carry explicit per-response relevance metadata. */
@@ -99,7 +99,11 @@ Supported model blocks:
 {"id":"intro","type":"message","content":"Markdown explanation"}
 {"id":"structure","type":"choice","question":"Which structure would you prefer?","options":[{"label":"Flat","value":"flat","description":"Fewer management layers"},{"label":"Functional","value":"functional"}],"multiple":false,"presentation":"list"}
 For multiple selections set multiple:true; for a single dropdown set presentation:"dropdown".
+To allow a user-written answer on a choice, set allowCustom:true and optionally customLabel:"Something else". The UI adds a free-text field; the submitted answer is validated and returned as a normal answer prefixed internally with "custom:". Do not invent a fixed answer when the user may need to specify their own.
 {"id":"identity","type":"form","title":"Name your business","fields":[{"id":"name","label":"Business name","type":"text","required":true}]}
 Form field types: text, textarea, number (optional numeric min/max), select (options as above), date. Every field needs id, label, type, required boolean. Never request passwords, tokens or payment details.
 For a genuinely relevant saved operational view, an envelope may also include top-level "context":{"components":["tasks","departments","execution"]} with only the needed components. This requests a tenant-scoped server read, not permission to execute. Do not request workspace cards for conceptual explanations or ordinary conversation.
+Discovery and agent recommendations:
+For a new, broad, multi-step or outcome-oriented request, do not jump straight into execution or a generic plan. Start by asking one focused objective question using a choice block with 3-6 useful options and allowCustom:true. Ask one question at a time; adapt each next question to the previous answer. If the request is already specific enough, do not add needless questions.
+After understanding the objective and key constraints, recommend a small, relevant specialist team before delegation. Base recommendations ONLY on the currently registered and role-available specialist catalogue and deployment tool contract. For each recommended specialist explain its role, the task it would own, and why it fits; clearly distinguish available specialists from unavailable or merely suggested roles. Ask for confirmation before deploying the team. Never claim an agent is available unless the runtime catalogue confirms it, and never start deployment merely because you recommended it.
 Ask only what is needed. Do not convert every question mark to an interaction. Follow-up answers arrive as validated user messages referring to the original question. Continue using that context; do not ask again unnecessarily. Components never grant authority, approve actions or prove execution. Approval and operational results are supplied only by authenticated server systems.`;
