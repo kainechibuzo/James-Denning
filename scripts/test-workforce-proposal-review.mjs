@@ -114,10 +114,10 @@ test("employee-bound assignments verify active employee and team membership", ()
 });
 
 test("workforce activation rollback restores valid pre-feature SQL contracts", () => {
-  assert.equal((workforceRollback.match(/create or replace function public\\.jd_workforce_create_employee/g)||[]).length,1);
-  assert.equal((workforceRollback.match(/create or replace function public\\.jd_decide_approval/g)||[]).length,1);
-  assert.match(workforceRollback, /grant execute on function public\\.jd_workforce_create_employee\\(uuid,uuid,text,text,integer,text,text\\) to service_role/);
-  assert.match(workforceRollback, /grant execute on function public\\.jd_workforce_create_team\\(uuid,uuid,text,text\\) to service_role/);
-  assert.match(workforceRollback, /Cannot restore unique employee-specialist constraint while duplicate employee instances exist/);
+  assert.equal(workforceRollback.split("create or replace function public.jd_workforce_create_employee(").length-1,1);
+  assert.equal(workforceRollback.split("create or replace function public.jd_decide_approval(").length-1,1);
+  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;"));
+  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_team(uuid,uuid,text,text) to service_role;"));
+  assert.ok(workforceRollback.includes("Cannot restore unique employee-specialist constraint while duplicate employee instances exist"));
   assert.doesNotMatch(workforceRollback, /p_ref !~\\* '[^']*\\n grant/);
 });
