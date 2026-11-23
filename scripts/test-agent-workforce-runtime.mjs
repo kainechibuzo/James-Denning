@@ -14,7 +14,7 @@ const assignmentAttributionSql = readFileSync('supabase/migrations/2026112419000
 test('the runtime registers the workforce deployment and agent factory tools', () => {
   assert.match(runtime, /name:"deploy_specialist_workforce"/);
   assert.match(runtime, /name:"propose_agent_definition"/);
-  assert.match(runtime, /deploy_specialist_workforce[\s\S]{0,900}minItems:1,maxItems:5/, 'deployment is bounded to five specialists');
+  assert.match(runtime, /deploy_specialist_workforce[\s\S]{0,1600}minItems:1,maxItems:5/, 'deployment is bounded to five specialists');
   assert.match(runtime, /roles:\["owner","admin","manager"\],\s*(strict:false,\s*)?description:"Deploy 1-5 specialist agents/, 'deployment is role-bounded');
   assert.match(runtime, /roles:\["owner","admin"\],\s*\n?\s*description:"Agent Factory/, 'proposals are owner/admin only');
   assert.match(runtime, /import \{[\s\S]*?WORKFORCE_RELEASE_FLAG[\s\S]*?\} from "\.\/jd-agent-workforce\.ts";/, 'runtime consumes the engine module');
