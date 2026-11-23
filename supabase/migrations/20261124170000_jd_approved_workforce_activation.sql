@@ -252,3 +252,9 @@ end;
 $$;
 revoke all on function public.jd_decide_approval(uuid,uuid,text,text) from public, anon, authenticated;
 grant execute on function public.jd_decide_approval(uuid,uuid,text,text) to service_role;
+
+-- These lower-level helpers must not be callable directly by Edge Functions.
+-- The approved activation RPC runs as the function owner and is the sole path
+-- that can invoke them for proposal-backed identity creation.
+revoke execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) from service_role;
+revoke execute on function public.jd_workforce_create_team(uuid,uuid,text,text) from service_role;
