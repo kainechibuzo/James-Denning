@@ -165,7 +165,7 @@ begin
   if v_approval.action_key not in ('workforce.employee.proposal','workforce.team.proposal') then
     raise exception 'Approval is not a workforce proposal' using errcode='22023';
   end if;
-  if v_approval.execution_status not in ('not_executed','failed') then
+  if v_approval.execution_status is distinct from 'not_executed' and v_approval.execution_status is distinct from 'failed' then
     raise exception 'Proposal activation is already in progress or complete' using errcode='40001';
   end if;
 
@@ -185,11 +185,17 @@ begin
   v_purpose:=btrim(coalesce(v_proposal->>'purpose',''));
   if length(v_name) not between 2 and 120
      or length(coalesce(v_department,'')) not between 2 and 120
-     or length(v_purpose) not between 12 and 1200
-     or jsonb_typeof(v_proposal->'responsibilities') is distinct from 'array'
-     or jsonb_array_length(v_proposal->'responsibilities')<1
-     or (v_proposal ? 'requested_access' and jsonb_typeof(v_proposal->'requested_access') is distinct from 'array') then
+     or length(v_purpose) not between 12 and 1200 then
     raise exception 'Proposal details are incomplete or invalid' using errcode='22023';
+  end if;
+  if jsonb_typeof(v_proposal->'responsibilities') is distinct from 'array' then
+    raise exception 'Proposal responsibilities must be a list' using errcode='22023';
+  end if;
+  if jsonb_array_length(v_proposal->'responsibilities')<1 then
+    raise exception 'Proposal must include at least one responsibility' using errcode='22023';
+  end if;
+  if v_proposal ? 'requested_access' and jsonb_typeof(v_proposal->'requested_access') is distinct from 'array' then
+    raise exception 'Requested access must be a list' using errcode='22023';
   end if;
 
   if v_kind='employee' then
@@ -243,10 +249,14 @@ begin
       if jsonb_typeof(v_member) is distinct from 'object'
          or v_specialist is null or not (v_specialist=any(v_allowed))
          or length(v_name) not between 2 and 120
-         or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120
-         or jsonb_typeof(v_member->'responsibilities') is distinct from 'array'
-         or (v_member ? 'requested_access' and jsonb_typeof(v_member->'requested_access') is distinct from 'array') then
+         or length(btrim(coalesce(v_member->>'role',''))) not between 2 and 120 then
         raise exception 'Every team member needs a supported specialist and complete role details' using errcode='22023';
+      end if;
+      if jsonb_typeof(v_member->'responsibilities') is distinct from 'array' then
+        raise exception 'Team member responsibilities must be a list' using errcode='22023';
+      end if;
+      if v_member ? 'requested_access' and jsonb_typeof(v_member->'requested_access') is distinct from 'array' then
+        raise exception 'Team member requested access must be a list' using errcode='22023';
       end if;
       if jsonb_array_length(v_member->'responsibilities')<1 then
         raise exception 'Every team member needs at least one responsibility' using errcode='22023';
