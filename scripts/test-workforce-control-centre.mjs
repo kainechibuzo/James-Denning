@@ -11,6 +11,7 @@ const nav=read("src/config/assistant-navigation.mjs");
 const privateChat=read("supabase/migrations/20261124180000_jd_workforce_private_chat.sql");
 const assignmentAttribution=read("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql");
 const shadowUsage=read("supabase/migrations/20261124200000_jd_workforce_shadow_usage.sql");
+const shadowUsage=read("supabase/migrations/20261124200000_jd_workforce_shadow_usage.sql");
 test("workforce identity and control records are tenant-scoped and service-only",()=>{
  for(const table of ["jd_workforce_employees","jd_workforce_teams","jd_workforce_team_members","jd_workforce_agent_threads","jd_workforce_agent_messages","jd_workforce_control_events"])assert.ok(migration.includes("alter table public."+table+" enable row level security"));
  assert.ok(migration.includes("revoke all on public.jd_workforce_employees"));
@@ -105,4 +106,15 @@ test("employee execution time is recorded as idempotent shadow usage only",()=>{
  assert.ok(shadowUsage.includes("'shadow_only'"));
  assert.ok(shadowUsage.includes("'charged',false"));
  assert.ok(ui.includes("shadow"));
+});
+
+test("shadow usage ledger links observed employee time to immutable assignment evidence",()=>{
+ assert.ok(shadowUsage.includes("jd_workforce_record_employee_usage"));
+ assert.ok(shadowUsage.includes("source_event_id=p_source_event"));
+ assert.ok(shadowUsage.includes("v_assignment.employee_id"));
+ assert.ok(shadowUsage.includes("billing_mode','shadow_only"));
+ assert.ok(shadowUsage.includes("charged',false"));
+ assert.ok(ui.includes("Shadow usage ledger"));
+ assert.ok(ui.includes("Assignment "));
+ assert.ok(ui.includes("shadow estimate"));
 });
