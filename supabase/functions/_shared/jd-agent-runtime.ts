@@ -1956,6 +1956,7 @@ export async function runWorkforceDeployment(
   if (persistedAssignments && employeeBoundAssignments.length && options.context.runId) {
     try {
       const taskHashes=employeeBoundAssignments.map((assignment)=>workforceTaskHash([assignment.employeeId||"",assignment.teamId||"",assignment.task].join("|")));
+      const expectedUsageRecords=new Set(taskHashes).size;
       const {data:savedRows,error:savedError}=await options.context.admin.from("jd_workforce_assignments")
         .select("id,employee_id,team_id,task_hash,agent_ref,status,outcome")
         .eq("school_id",options.context.schoolId).eq("run_id",options.context.runId).in("task_hash",taskHashes);
@@ -1973,14 +1974,15 @@ export async function runWorkforceDeployment(
         if(usageError)usageErrors.push(String(usageError.message||"Usage receipt failed").slice(0,160));
         else if(receipt&&typeof receipt==="object")usageReceipts.push(receipt as Record<string,unknown>);
       }
-      if(usageReceipts.length<employeeBoundAssignments.length&&usageErrors.length===0)usageErrors.push("One or more employee usage receipts were not returned");
+      if(usageReceipts.length<expectedUsageRecords&&usageErrors.length===0)usageErrors.push("One or more employee usage receipts were not returned");
     }catch(usageFailure){
       usageErrors.push(String(usageFailure instanceof Error?usageFailure.message:usageFailure).slice(0,160));
     }
   } else if(employeeBoundAssignments.length) {
     usageErrors.push("Employee usage could not be recorded because assignment persistence was not confirmed");
   }
-  const usageRecordingStatus=employeeBoundAssignments.length===0?"not_applicable":usageErrors.length===0&&usageReceipts.length===employeeBoundAssignments.length?"recorded":usageReceipts.length?"partial":"failed";
+  const expectedUsageCount=new Set(employeeBoundAssignments.map((assignment)=>workforceTaskHash([assignment.employeeId||"",assignment.teamId||"",assignment.task].join("|")))).size;
+  const usageRecordingStatus=employeeBoundAssignments.length===0?"not_applicable":usageErrors.length===0&&usageReceipts.length===expectedUsageCount?"recorded":usageReceipts.length?"partial":"failed";
   const { error: auditError } = await options.context.admin.from("jd_audit_events").insert({
     school_id: options.context.schoolId,
     actor_id: options.context.userId,
@@ -2018,7 +2020,7 @@ export async function runWorkforceDeployment(
       required: true,
       instruction: "Independently verify each specialist deliverable against saved records or registered tools before reporting completion. A specialist report is never proof that an external action occurred.",
     },
-    usage_note: "Employee-attributed execution time is recorded at the owner-configured hourly shadow rate. This is observed usage only; no payable reconciliation, invoice or charge is created.",
+    usage_note: "For employee-bound assignments, JD attempts to record observed execution time at the owner-configured hourly shadow rate. Check shadow_usage.status; this is not payable reconciliation, an invoice or a charge.",
     shadow_usage:{status:usageRecordingStatus,records:usageReceipts.length,errors:usageErrors.slice(0,5),charged:false,billing_mode:"shadow_only"},
     audit_persisted: true,
     result_persistence: "parent_run_checkpoint",
