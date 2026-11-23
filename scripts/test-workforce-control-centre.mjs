@@ -8,6 +8,8 @@ const endpoint=read("supabase/functions/jd-automation/index.ts");
 const ui=read("src/chat/WorkforceControlCentre.jsx");
 const chat=read("src/chat/ChatHome.jsx");
 const nav=read("src/config/assistant-navigation.mjs");
+const privateChat=read("supabase/migrations/20261124180000_jd_workforce_private_chat.sql");
+const assignmentAttribution=read("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql");
 test("workforce identity and control records are tenant-scoped and service-only",()=>{
  for(const table of ["jd_workforce_employees","jd_workforce_teams","jd_workforce_team_members","jd_workforce_agent_threads","jd_workforce_agent_messages","jd_workforce_control_events"])assert.ok(migration.includes("alter table public."+table+" enable row level security"));
  assert.ok(migration.includes("revoke all on public.jd_workforce_employees"));
@@ -64,7 +66,7 @@ test("workforce UI exposes only approved activation outcomes plus membership and
  assert.doesNotMatch(ui,/Add employee|Create team|workforce\.employee\.create|workforce\.team\.create/);
 });
 test("private agent chat and checked worker controls remain honestly gated",()=>{
- assert.ok(service.includes("agentChatEnabled:false"));
+ assert.ok(service.includes('agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true"'));
  assert.ok(service.includes("executionControlsEnabled:false"));
  assert.ok(ui.includes("private agent conversations"));
  assert.ok(service.includes("workforce.agent.message.send"));
@@ -73,4 +75,23 @@ test("private agent chat and checked worker controls remain honestly gated",()=>
  assert.ok(ui.includes("Private chat"));
  assert.ok(ui.includes("Reasoning only"));
  assert.ok(ui.includes("not yet emitting employee-attributed usage receipts"));
+});
+
+test("private specialist chat is append-only, tenant-scoped and release-gated",()=>{
+ assert.ok(privateChat.includes("add column status text not null default 'active'"));
+ assert.ok(privateChat.includes("add column request_id uuid"));
+ assert.ok(privateChat.includes("add column reply_to_message_id uuid"));
+ assert.ok(privateChat.includes("jd_workforce_agent_user_request_once"));
+ assert.ok(privateChat.includes("jd_workforce_agent_reply_once"));
+ assert.ok(privateChat.includes("jd_workforce_agent_messages_immutable"));
+ assert.ok(service.includes("JD_WORKFORCE_PRIVATE_CHAT_ENABLED"));
+ assert.ok(service.includes("workforce.agent.message.sent"));
+ assert.ok(service.includes("workforce.agent.message.replied"));
+});
+
+test("workforce assignment records retain employee and team attribution",()=>{
+ assert.ok(assignmentAttribution.includes("add column employee_id uuid"));
+ assert.ok(assignmentAttribution.includes("add column team_id uuid"));
+ assert.ok(service.includes("employee_id,team_id,task,status"));
+ assert.ok(ui.includes("Employee: "));
 });
