@@ -29,7 +29,7 @@ const effects: Record<string, {effect:string; boundary:string}> = {
   propose_agent_definition: {effect:"saved_internal_record",boundary:"Saves a validated specialist proposal as an immutable registry draft for independent human review. Not evaluated, published, executable, hireable or billable."},
 };
 const readers = new Set([
-  "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence",
+  "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence", "get_workforce_roster",
   "get_organisation_departments", "get_business_memory", "get_workspace_overview",
   "get_hiring_pipeline", "get_billing_snapshot", "get_business_expense_anomalies",
   "get_business_kpi_trends", "get_recent_activity_logs", "get_email_delivery_logs",
