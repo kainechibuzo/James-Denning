@@ -523,6 +523,8 @@ const tools: ToolSpec[] = [
       if (kind === "team" && (!members.length || members.some((member: any) => member.name.length < 2 || member.role.length < 2 || !validSpecialist(member.specialist_kind,member.specialist_ref,member.specialist_version) || !member.responsibilities.length))) {
         throw new Error("A drafted team needs fully described members with exact specialist references");
       }
+      if(kind==="team"&&(members[0].specialist_kind!==specialistKind||members[0].specialist_ref!==specialistRef||members[0].specialist_version!==specialistVersion))
+        throw new Error("The first team member must match the selected coordinator specialist so the lead role is assigned to the correct employee");
       if (kind === "employee" && members.length) throw new Error("An individual employee proposal cannot contain team members");
       const registryRefs = [...new Set([
         ...(specialistKind === "registry" ? [specialistRef] : []),
