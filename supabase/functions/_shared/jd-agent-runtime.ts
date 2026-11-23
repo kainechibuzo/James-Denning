@@ -2318,6 +2318,7 @@ export async function runPrivateSpecialistReply(input: {
   return {
     content: content.slice(0, 12000),
     model: typeof result.response.model === "string" ? result.response.model : input.model,
+    usage: result.response.usage ?? null,
     attempts: result.attempts,
   };
 }
