@@ -5,6 +5,7 @@ drop function if exists public.jd_workforce_assignment_recover(integer);
 drop function if exists public.jd_workforce_assignment_finish(uuid,text,uuid,text,jsonb);
 drop function if exists public.jd_workforce_assignment_ack_cancel(uuid,text,uuid,boolean);
 drop function if exists public.jd_workforce_assignment_request_cancel(uuid,uuid);
+drop function if exists public.jd_workforce_assignment_begin_tool_call(uuid,text,uuid,integer);
 drop function if exists public.jd_workforce_assignment_may_continue(uuid,text,uuid);
 drop function if exists public.jd_workforce_assignment_heartbeat(uuid,text,uuid,integer);
 drop function if exists public.jd_workforce_assignment_ack_started(uuid,text,uuid);

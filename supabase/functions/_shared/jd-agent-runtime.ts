@@ -1938,10 +1938,8 @@ export async function runWorkforceDeployment(
             throw new Error("This tool was not granted with the assignment");
           }
           if(lifecycleId&&lifecycleToken) {
-            const {data:alive,error:leaseError}=await options.context.admin.rpc("jd_workforce_assignment_may_continue",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken});
-            if(leaseError||alive!==true) throw new Error("Assignment lease is fenced or cancellation was requested; no further tool call is permitted");
-            const {data:heartbeat,error:heartbeatError}=await options.context.admin.rpc("jd_workforce_assignment_heartbeat",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_lease_seconds:300});
-            if(heartbeatError||heartbeat!==true) throw new Error("Assignment worker lease could not be renewed; no tool call was started");
+            const {data:admitted,error:admissionError}=await options.context.admin.rpc("jd_workforce_assignment_begin_tool_call",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_lease_seconds:300});
+            if(admissionError||admitted!==true) throw new Error("Assignment lease is fenced or cancellation was requested; no further tool call is permitted");
           }
           return await tool.execute(toolArgs, options.context);
         },

@@ -118,6 +118,24 @@ end; $$;
 revoke all on function public.jd_workforce_assignment_heartbeat(uuid,text,uuid,integer) from public,anon,authenticated;
 grant execute on function public.jd_workforce_assignment_heartbeat(uuid,text,uuid,integer) to service_role;
 
+
+-- Atomic admission gate: serializes tool-call admission with owner cancellation.
+-- Once cancellation commits, no later call can pass this row lock/state check.
+create function public.jd_workforce_assignment_begin_tool_call(p_assignment uuid,p_worker text,p_token uuid,p_lease_seconds integer default 300)
+returns boolean language plpgsql security definer set search_path='' as $
+declare v public.jd_workforce_assignment_lifecycle%rowtype;
+begin
+ select * into v from public.jd_workforce_assignment_lifecycle where id=p_assignment for update;
+ if not found or v.status<>'running' or v.worker_id is distinct from p_worker
+   or v.lease_token is distinct from p_token or v.lease_expires_at<=clock_timestamp() then return false; end if;
+ update public.jd_workforce_assignment_lifecycle set last_heartbeat_at=clock_timestamp(),
+  lease_expires_at=clock_timestamp()+make_interval(secs=>least(greatest(coalesce(p_lease_seconds,300),30),900)),updated_at=clock_timestamp()
+ where id=p_assignment;
+ return true;
+end; $;
+revoke all on function public.jd_workforce_assignment_begin_tool_call(uuid,text,uuid,integer) from public,anon,authenticated;
+grant execute on function public.jd_workforce_assignment_begin_tool_call(uuid,text,uuid,integer) to service_role;
+
 create function public.jd_workforce_assignment_may_continue(p_assignment uuid,p_worker text,p_token uuid)
 returns boolean language sql security definer set search_path='' as $$
  select exists(select 1 from public.jd_workforce_assignment_lifecycle where id=p_assignment and status='running'
