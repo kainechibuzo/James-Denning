@@ -52,7 +52,7 @@ export function buildWorkspaceNavigation({role, canAccess = () => false}) {
   const accountPages = WORKSPACE_NAVIGATION.filter((entry) =>
     ["billing", "settings"].includes(entry.id)
     && entry.roles.includes(role)
-    && (role === "admin" || canAccess(entry.id))
+    && canAccess(entry.id)
     && organisation?.pages.includes(entry.id)
   );
   if (!accountPages.length) return [{...chat}];
