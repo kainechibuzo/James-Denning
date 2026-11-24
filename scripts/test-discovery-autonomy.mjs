@@ -34,6 +34,7 @@ async function initialise(){
  await db.exec(read('supabase/migrations/20261122210000_jd_skills_autonomous.sql'));
  await db.exec(read('supabase/migrations/20261122220000_jd_discovery_autonomy.sql'));
  await db.exec(read('supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql'));
+ await db.exec(read('supabase/migrations/20261124170000_jd_specialist_quote_only_estimates.sql'));
  await db.query('insert into schools values($1),($2)',[tenant,otherTenant]);
  for(const [who,school,role] of [[admin,tenant,'owner'],[second,tenant,'admin'],[staff,tenant,'manager'],[other,otherTenant,'owner']]){
   await db.query('insert into auth.users values($1)',[who]);await db.query('insert into profiles values($1,$2,$3,$4)',[who,school,role,'Synthetic actor']);
