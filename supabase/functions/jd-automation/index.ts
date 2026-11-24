@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
  if(typeof payload.action==="string"&&payload.action.startsWith("workforce."))return handleWorkforceControl({payload,admin,profile,actorId:authData.user.id,json});
  if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("skills."))return handleSkills({payload,admin,auth,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true",autonomous:Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"});
- if(typeof payload.action==="string"&&["discovery.","autonomy.","billing."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
+ if(typeof payload.action==="string"&&["discovery.","autonomy.","billing.","agent.proposal."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("usage."))return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){
