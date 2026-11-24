@@ -65,7 +65,7 @@ end; $$;
 
 create function public.jd_specialist_proposal_approve(p_actor uuid,p_request uuid,p_proposal uuid,p_decision text)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;
+declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  if not exists(select 1 from public.profiles where id=p_actor and school_id=tenant and role in ('owner','admin')) then raise exception 'Workspace administrator required to approve agent spend' using errcode='42501';end if;
@@ -77,13 +77,10 @@ begin
  if not found or p.status<>'awaiting_approval' or p.expires_at<=clock_timestamp() then raise exception 'Pending, unexpired proposal required' using errcode='40001';end if;
  if p.requested_by<>p_actor then raise exception 'Only the requesting owner/admin can confirm this specialist run' using errcode='42501';end if;
  if p_decision='approve' then
-  declare ceiling_value integer;committed integer;
-  begin
-   select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
-   if ceiling_value is null then ceiling_value:=3600;end if;
-   select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
-   if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before approval' using errcode='54000';end if;
-  end;
+  select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
+  if ceiling_value is null then ceiling_value:=3600;end if;
+  select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
+  if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before approval' using errcode='54000';end if;
  end if;
  update public.jd_specialist_run_proposals set status=case when p_decision='approve' then 'approved' else 'declined' end,approved_by=case when p_decision='approve' then p_actor else null end,approved_at=case when p_decision='approve' then clock_timestamp() else null end where id=p.id returning * into p;
  result:=jsonb_build_object('proposal_id',p.id,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'estimated_amount_minor',p.estimated_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
@@ -97,12 +94,12 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;r public.jd_automation_runs%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
- select * into p from public.jd_specialist_run_proposals where id=p_proposal and school_id=tenant for update;
- select * into r from public.jd_automation_runs where id=p_run and school_id=tenant for update;
- if p.id is null or p.status<>'approved' or p.expires_at<=clock_timestamp() or r.id is null or r.requested_by<>p_actor or r.status not in ('queued','planning') then raise exception 'Approved proposal and queued run required' using errcode='42501';end if;
  req:=jsonb_build_array('agent.specialist.link',p_actor,p_proposal,p_run);
  select * into old from public.jd_skill_requests where school_id=tenant and request_id=p_request;
  if found then if old.request<>req then raise exception 'Request conflict' using errcode='40001';end if;return old.receipt;end if;
+ select * into p from public.jd_specialist_run_proposals where id=p_proposal and school_id=tenant for update;
+ select * into r from public.jd_automation_runs where id=p_run and school_id=tenant for update;
+ if p.id is null or p.status<>'approved' or p.expires_at<=clock_timestamp() or r.id is null or r.requested_by<>p_actor or r.status not in ('queued','planning') then raise exception 'Approved proposal and queued run required' using errcode='42501';end if;
  update public.jd_specialist_run_proposals set run_id=p_run,status='linked' where id=p.id returning * into p;
  result:=jsonb_build_object('proposal_id',p.id,'run_id',p_run,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  insert into public.jd_skill_requests values(tenant,p_request,req,result);
@@ -112,7 +109,7 @@ end; $$;
 
 create function public.jd_specialist_run_start(p_actor uuid,p_run uuid,p_role text)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;a public.jd_workspace_autonomy%rowtype;
+declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;a public.jd_workspace_autonomy%rowtype;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
@@ -120,13 +117,14 @@ begin
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
- declare ceiling_value integer;committed integer;
- begin
-  select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
-  if ceiling_value is null then ceiling_value:=3600;end if;
-  select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
-  if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before execution' using errcode='54000';end if;
- end;
+ if p.status='running' then
+  return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
+ end if;
+ if p.status<>'linked' then raise exception 'Approved specialist proposal must be linked to this run' using errcode='42501';end if;
+ select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
+ if ceiling_value is null then ceiling_value:=3600;end if;
+ select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
+ if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before execution' using errcode='54000';end if;
  update public.jd_specialist_run_proposals set status='running',started_at=clock_timestamp() where id=p.id returning * into p;
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.started',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds));
  return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
@@ -138,7 +136,11 @@ declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;seconds integer
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
- if not found or p.status<>'running' or p.started_at is null then raise exception 'Running specialist proposal required for settlement' using errcode='40001';end if;
+ if not found then raise exception 'Specialist proposal unavailable for settlement' using errcode='40001';end if;
+ if p.status in ('completed','timed_out','failed') then
+  return jsonb_build_object('proposal_id',p.id,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
+ end if;
+ if p.status<>'running' or p.started_at is null then raise exception 'Running specialist proposal required for settlement' using errcode='40001';end if;
  seconds:=greatest(0,least(p.allocated_seconds,extract(epoch from (clock_timestamp()-p.started_at))::integer));
  amount:=round(seconds*p.rate_minor_per_hour/3600.0)::bigint;
  status_value:=case when p_outcome='timed_out' or extract(epoch from (clock_timestamp()-p.started_at))>=p.allocated_seconds then 'timed_out' when p_outcome='completed' then 'completed' else 'failed' end;
