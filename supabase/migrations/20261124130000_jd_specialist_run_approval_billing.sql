@@ -47,7 +47,7 @@ begin
   return jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
- if s.status not in ('trialing','active') or (s.status='trialing' and s.trial_ends_at is not null and s.trial_ends_at<=clock_timestamp()) then raise exception 'An active subscription or valid trial is required for specialist execution' using errcode='42501';end if;
+ if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'An active subscription or valid trial is required for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
  rate:=coalesce(a.agentic_rate_minor_per_hour,10000);
  if p_spend_cap_seconds>coalesce(a.spend_ceiling_seconds,3600) then raise exception 'The requested time cap exceeds the workspace ceiling' using errcode='54000';end if;
@@ -76,6 +76,15 @@ begin
  select * into p from public.jd_specialist_run_proposals where id=p_proposal and school_id=tenant for update;
  if not found or p.status<>'awaiting_approval' or p.expires_at<=clock_timestamp() then raise exception 'Pending, unexpired proposal required' using errcode='40001';end if;
  if p.requested_by<>p_actor then raise exception 'Only the requesting owner/admin can confirm this specialist run' using errcode='42501';end if;
+ if p_decision='approve' then
+  declare ceiling_value integer;committed integer;
+  begin
+   select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
+   if ceiling_value is null then ceiling_value:=3600;end if;
+   select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
+   if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before approval' using errcode='54000';end if;
+  end;
+ end if;
  update public.jd_specialist_run_proposals set status=case when p_decision='approve' then 'approved' else 'declined' end,approved_by=case when p_decision='approve' then p_actor else null end,approved_at=case when p_decision='approve' then clock_timestamp() else null end where id=p.id returning * into p;
  result:=jsonb_build_object('proposal_id',p.id,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'estimated_amount_minor',p.estimated_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  insert into public.jd_skill_requests values(tenant,p_request,req,result);
@@ -109,8 +118,15 @@ begin
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
  if not found or p.status<>'linked' or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
- if s.status not in ('trialing','active') or (s.status='trialing' and s.trial_ends_at is not null and s.trial_ends_at<=clock_timestamp()) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
+ if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
+ declare ceiling_value integer;committed integer;
+ begin
+  select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
+  if ceiling_value is null then ceiling_value:=3600;end if;
+  select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
+  if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before execution' using errcode='54000';end if;
+ end;
  update public.jd_specialist_run_proposals set status='running',started_at=clock_timestamp() where id=p.id returning * into p;
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.started',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds));
  return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
@@ -125,7 +141,7 @@ begin
  if not found or p.status<>'running' or p.started_at is null then raise exception 'Running specialist proposal required for settlement' using errcode='40001';end if;
  seconds:=greatest(0,least(p.allocated_seconds,extract(epoch from (clock_timestamp()-p.started_at))::integer));
  amount:=round(seconds*p.rate_minor_per_hour/3600.0)::bigint;
- status_value:=case when extract(epoch from (clock_timestamp()-p.started_at))>p.allocated_seconds then 'timed_out' when p_outcome='completed' then 'completed' else 'failed' end;
+ status_value:=case when p_outcome='timed_out' or extract(epoch from (clock_timestamp()-p.started_at))>=p.allocated_seconds then 'timed_out' when p_outcome='completed' then 'completed' else 'failed' end;
  update public.jd_specialist_run_proposals set status=status_value,completed_at=clock_timestamp(),actual_seconds=seconds,actual_amount_minor=amount,outcome=left(coalesce(p_outcome,'unknown'),120) where id=p.id returning * into p;
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.settled',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false));
  return jsonb_build_object('proposal_id',p.id,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
@@ -133,3 +149,32 @@ end; $$;
 
 revoke all on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) from public,anon,authenticated;
 grant execute on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) to service_role;
+
+-- Include specialist-run usage in the same verified billing summary.
+create or replace function public.jd_read_billing_summary(p_actor uuid)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare tenant uuid;a public.jd_workspace_autonomy%rowtype;s public.jd_billing_subscriptions%rowtype;skill_tally record;specialist_tally record;
+begin
+ tenant:=public.jd_skills_tenant(p_actor);
+ select * into a from public.jd_workspace_autonomy where school_id=tenant;
+ select * into s from public.jd_billing_subscriptions where school_id=tenant;
+ select coalesce(sum(actual_seconds) filter(where status='completed'),0)::integer as actual_seconds,
+  coalesce(sum(estimated_seconds) filter(where status='confirmed'),0)::integer as confirmed_seconds,
+  coalesce(sum(actual_seconds*coalesce(a.agentic_rate_minor_per_hour,10000)/3600.0) filter(where status='completed'),0)::bigint as amount_minor
+ into skill_tally from public.jd_agent_time_ledger where school_id=tenant;
+ select coalesce(sum(actual_seconds),0)::integer as actual_seconds,
+  coalesce(sum(allocated_seconds) filter(where status in ('approved','linked','running')),0)::integer as confirmed_seconds,
+  coalesce(sum(actual_amount_minor),0)::bigint as amount_minor,
+  count(*)::integer as specialist_runs
+ into specialist_tally from public.jd_specialist_run_proposals where school_id=tenant;
+ return jsonb_build_object('mode',coalesce(a.mode,'assisted'),'spend_ceiling_seconds',coalesce(a.spend_ceiling_seconds,3600),
+  'agentic_rate_minor_per_hour',coalesce(a.agentic_rate_minor_per_hour,10000),'currency',coalesce(a.currency,'USD'),
+  'actual_seconds',skill_tally.actual_seconds+specialist_tally.actual_seconds,
+  'confirmed_estimate_seconds',skill_tally.confirmed_seconds+specialist_tally.confirmed_seconds,
+  'ledger_rows',(select count(*)::integer from public.jd_agent_time_ledger where school_id=tenant)+specialist_tally.specialist_runs,
+  'specialist_runs',specialist_tally.specialist_runs,
+  'amount_minor_actual',skill_tally.amount_minor+specialist_tally.amount_minor,
+  'subscription_status',coalesce(s.status,'not_started'),
+  'charging_enabled',false,'pricing_policy','agentic-seconds-v1',
+  'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
+end; $$;
