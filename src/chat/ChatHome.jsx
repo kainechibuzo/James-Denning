@@ -321,7 +321,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: !terminal && finalMessage?.content_json?.streaming === true,
-            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
+            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message, toolOutput: step.output_json?.tool_output || null })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
             id: finalMessage?.id || message.id,
             response: validateResponse(finalMessage?.content_json?.response),
             visualWorkspace: contextualWorkspace(finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui),
