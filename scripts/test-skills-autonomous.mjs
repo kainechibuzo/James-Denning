@@ -9,7 +9,7 @@ import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 import {buildZip,readZipEntries,crc32} from '../supabase/functions/_shared/jd-skills-zip.mjs';
 import {AUTONOMOUS_SOURCE,AUTONOMOUS_SKILL_SOURCES,matchSkillsForTask,getAutonomousSourceEntry} from '../supabase/functions/_shared/jd-skills-source-index.mjs';
-import {repackageSkillFrontmatter,selectUpstreamFiles,resolveUpstreamCommit} from '../supabase/functions/_shared/jd-skills-acquire.ts';
+import {repackageSkillFrontmatter,selectUpstreamFiles,resolveUpstreamCommit,deriveSkillStageRequestId} from '../supabase/functions/_shared/jd-skills-acquire.ts';
 
 const COMMIT='a'.repeat(40);
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -56,6 +56,19 @@ const expectFail=async (promise,code)=>{
 const createImport=async(who=importer,request=id(n++),filename='xlsx-a1b2c3d4.zip')=>(await rpc('jd_create_skill_import',[who,request,filename])).import_id;
 const completeImport=(imp,who=importer,request=id(n++),rep=report(),man=manifest(),pkg=null)=>rpc('jd_complete_skill_import',[who,request,imp,pkg||rep.packageHash||'b'.repeat(64),rep,man]);
 const createRun=(who=importer,request=id(n++))=>db.query('insert into jd_automation_runs(school_id,requested_by,status,request_text) values($1,$2,$3,$4) returning id',[tenant,who,'queued','Synthetic acquisition run']);
+
+test('acquisition stages use distinct deterministic idempotency keys',async()=>{
+ const request=id(909);
+ const create=await deriveSkillStageRequestId(request,'import.create');
+ const complete=await deriveSkillStageRequestId(request,'import.complete');
+ const publish=await deriveSkillStageRequestId(request,'import.publish');
+ assert.match(create,/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+ assert.equal(await deriveSkillStageRequestId(request,'import.create'),create,'retry must reproduce the same create key');
+ assert.equal(await deriveSkillStageRequestId(request,'import.complete'),complete,'retry must reproduce the same completion key');
+ assert.equal(await deriveSkillStageRequestId(request,'import.publish'),publish,'retry must reproduce the same publication key');
+ assert.equal(new Set([create,complete,publish]).size,3,'different stages must never collide');
+ await assert.rejects(()=>deriveSkillStageRequestId('not-a-uuid','import.create'),/Invalid skill acquisition request identifier/);
+});
 
 test('zip toolkit: writer/reader roundtrip with deflate and stored entries',async()=>{
  const bytes=new TextEncoder().encode('Reconcile supplier invoices against the ledger. '.repeat(40));

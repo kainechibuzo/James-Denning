@@ -10,6 +10,19 @@ import {inspectSkillPackage, SKILL_PACKAGE_LIMITS, SKILLS_STORAGE_BUCKET} from '
 import {buildZip, readZipEntries} from './jd-skills-zip.mjs';
 import {AUTONOMOUS_SOURCE, getAutonomousSourceEntry} from './jd-skills-source-index.mjs';
 
+// One client request spans three independent database idempotency ledgers.
+// Derive a stable UUID per stage so retries replay the same stage receipt without
+// reusing one request key for different payloads (which correctly raises 40001).
+export const deriveSkillStageRequestId = async (requestId: string, stage: 'import.create' | 'import.complete' | 'import.publish'): Promise<string> => {
+ if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) throw Error('Invalid skill acquisition request identifier');
+ const bytes = new TextEncoder().encode(`jd-skills-stage:v1:${requestId.toLowerCase()}:${stage}`);
+ const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+ const hex = Array.from(digest.slice(0, 16), (b) => b.toString(16).padStart(2, '0')).join('');
+ // UUIDv5-shaped deterministic identifier; SHA-256 provides the derivation.
+ const value = hex.slice(0, 12) + '5' + hex.slice(13, 16) + ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16) + hex.slice(17);
+ return value.slice(0, 8) + '-' + value.slice(8, 12) + '-' + value.slice(12, 16) + '-' + value.slice(16, 20) + '-' + value.slice(20);
+};
+
 const MAX_ZIPBALL_BYTES = 32 * 1024 * 1024;
 const MAX_SELECTED_BYTES = 4 * 1024 * 1024;
 const BLOCKED_SEGMENTS = new Set(['bin', 'scripts', 'hooks', 'install', '__macosx']);
@@ -133,7 +146,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  const zipBytes = await buildZip(entries);
  const inspection = await inspectSkillPackage(zipBytes, {originalFilename: `${entry.id}.zip`});
  const filename = `${entry.id}-${commit.slice(0, 8)}.zip`;
- const importReceipt = await createRpc({p_actor: actorId, p_request: requestId, p_filename: filename});
+ const importReceipt = await createRpc({p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.create'), p_filename: filename});
  const {error: uploadError} = await admin.storage.from(SKILLS_STORAGE_BUCKET).upload(importReceipt.storage_path, zipBytes, {contentType: 'application/zip', upsert: false});
  if (uploadError && !/exist/i.test(String(uploadError?.message || ''))) {
   return {error: {message: 'The acquired package could not be quarantined; nothing was recorded. Retry with a fresh request identifier.', status: 502}};
@@ -150,7 +163,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
   packageHash: inspection.packageHash, manifestHash: inspection.manifestHash, originalFilename: filename,
  };
  const manifest = inspection.manifest ? {...inspection.manifest, content_hash: inspection.manifestHash} : null;
- const completed = await completeRpc({p_actor: actorId, p_request: requestId, p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
+ const completed = await completeRpc({p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.complete'), p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
  const receipt: AcquisitionReceipt = {
   skill_id: completed.skill_id || null, version: completed.version || null,
   state: completed.status === 'validation_failed' ? 'validation_failed' : 'needs_review', autonomous: false,
@@ -161,7 +174,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  };
  if (completed.status === 'needs_review') {
   const published = await publishRpc({
-   p_actor: actorId, p_request: requestId, p_import: importReceipt.import_id,
+   p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.publish'), p_import: importReceipt.import_id,
    p_source: {repo: AUTONOMOUS_SOURCE.repo, ref: AUTONOMOUS_SOURCE.ref, commit, path: `skills/${entry.id}`, policy: AUTONOMOUS_SOURCE.policy},
    p_note: `Autonomous acquisition from ${AUTONOMOUS_SOURCE.repo}@${commit.slice(0, 8)} under policy ${AUTONOMOUS_SOURCE.policy}; validated clean, never executed; per-run cost confirmation still required.`,
   });
