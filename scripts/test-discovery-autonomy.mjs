@@ -193,7 +193,7 @@ test('specialist quote verifies subscription, approval, run gate, time cap and s
  const proposal=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst','Research the market, competitors, customer demand and pricing evidence for this product.',1800,1800]);
  assert.equal(proposal.status,'awaiting_approval');assert.equal(proposal.subscription_status,'trialing');assert.equal(proposal.rate_minor_per_hour,15000);assert.equal(proposal.estimated_amount_minor,7500);assert.equal(proposal.charging_enabled,false);
  const run=(await db.query("insert into jd_automation_runs(school_id,requested_by,status,request_text) values($1,$2,'queued','Approved specialist run') returning id",[tenant,admin])).rows[0].id;
- await expectFail(rpc('jd_specialist_run_start',[admin,run,'research_analyst']),'42501');
+ await expectFail(rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']),'42501');
  await expectFail(rpc('jd_specialist_proposal_approve',[staff,id(n++),proposal.proposal_id,'approve']),'42501');
  const approved=await rpc('jd_specialist_proposal_approve',[admin,id(n++),proposal.proposal_id,'approve']);assert.equal(approved.status,'approved');
  const linked=await rpc('jd_specialist_proposal_link_run',[admin,id(n++),proposal.proposal_id,run]);assert.equal(linked.status,'linked');
