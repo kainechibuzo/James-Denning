@@ -17,6 +17,7 @@ create table public.jd_specialist_run_proposals (
  status text not null default 'awaiting_approval' check(status in ('awaiting_approval','approved','linked','running','completed','timed_out','failed','declined','expired')),
  approved_by uuid references auth.users(id),
  approved_at timestamptz,
+ tool_call_id text,
  started_at timestamptz,
  completed_at timestamptz,
  actual_seconds integer check(actual_seconds is null or actual_seconds between 0 and 86400),
@@ -107,25 +108,25 @@ begin
  return result;
 end; $$;
 
-create function public.jd_specialist_run_start(p_actor uuid,p_run uuid,p_role text)
+create function public.jd_specialist_run_start(p_actor uuid,p_run uuid,p_role text,p_call_id text)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;a public.jd_workspace_autonomy%rowtype;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
- if not found or p.status not in ('linked','running') or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
+ if not found or p.status not in ('linked','running') or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor or p_call_id is null or length(p_call_id) not between 1 and 100 then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
- if p.status='running' then
+ if p.status='running' and p.tool_call_id=p_call_id then
   return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  end if;
- if p.status<>'linked' then raise exception 'Approved specialist proposal must be linked to this run' using errcode='42501';end if;
+ if p.status<>'linked' then raise exception 'This run already consumed its approved specialist assignment' using errcode='42501';end if;
  select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
  if ceiling_value is null then ceiling_value:=3600;end if;
  select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
  if committed+p.allocated_seconds>ceiling_value then raise exception 'Workspace agent-time ceiling reached before execution' using errcode='54000';end if;
- update public.jd_specialist_run_proposals set status='running',started_at=clock_timestamp() where id=p.id returning * into p;
+ update public.jd_specialist_run_proposals set status='running',tool_call_id=p_call_id,started_at=clock_timestamp() where id=p.id returning * into p;
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.started',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds));
  return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
 end; $$;
@@ -149,7 +150,7 @@ begin
  return jsonb_build_object('proposal_id',p.id,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
 end; $$;
 
-revoke all on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) from public,anon,authenticated;
+revoke all on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text,text),public.jd_specialist_run_settle(uuid,uuid,text) from public,anon,authenticated;
 grant execute on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) to service_role;
 
 -- Include specialist-run usage in the same verified billing summary.
