@@ -40,7 +40,7 @@ async function initialise(){
  }
 }
 before(initialise);
-beforeEach(async()=>{n=100;await db.exec('reset role;truncate jd_skill_packages,jd_skill_imports,jd_skills,jd_skill_versions,jd_skill_reviews,jd_skill_run_references,jd_skill_requests,jd_skill_acquisitions,jd_agent_time_ledger,jd_workspace_autonomy,jd_agent_playbooks,jd_discovery_sessions,jd_audit_events,jd_automation_runs cascade');});
+beforeEach(async()=>{n=100;await db.exec('reset role;truncate jd_billing_subscriptions,jd_skill_packages,jd_skill_imports,jd_skills,jd_skill_versions,jd_skill_reviews,jd_skill_run_references,jd_skill_requests,jd_skill_acquisitions,jd_agent_time_ledger,jd_workspace_autonomy,jd_agent_playbooks,jd_discovery_sessions,jd_audit_events,jd_automation_runs cascade');});
 after(()=>db.close());
 async function rpc(name,args,role='service_role'){
  await db.exec(`set role ${role}`);
