@@ -1676,6 +1676,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
       });
     } catch (error) {
       lastNetworkError = error;
+      if (signal?.aborted) throw new Error('Specialist time allocation reached');
       if (attempt === maxAttempts) {
         const detail = error instanceof Error ? error.message : "Network request failed";
         throw new Error(`Model provider request failed after ${maxAttempts} attempts: ${detail.slice(0, 180)}`);
