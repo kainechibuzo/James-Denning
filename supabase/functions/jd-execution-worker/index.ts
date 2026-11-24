@@ -154,6 +154,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
         });
         const { data: ceilingFinished } = await admin.rpc("jd_finish_execution_job", {
           p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "failed",
+          p_error_code: "autonomy_ceiling_stop", p_error_message: "Spend ceiling reached during pre-authorization; the run stopped before executing.",
         });
         if (ceilingFinished) await admin.rpc("jd_ack_execution_message", { p_job_id: jobId, p_queue_message_id: message.message_id });
         return { job_id: jobId, status: "failed", reason: "spend_ceiling" };
@@ -455,6 +456,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       }
       const { data: finished, error: finishError } = await admin.rpc("jd_finish_execution_job", {
         p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "partially_completed",
+        p_error_code: "execution_evidence_persistence_failed", p_error_message: "Some actions ran, but JD could not save their verification evidence; the run stopped with unknown outcomes.",
       });
       if (finishError || finished !== true) throw new Error("Could not finalise the unknown-outcome job");
       const { data: acknowledged, error: ackError } = await admin.rpc("jd_ack_execution_message", {
@@ -478,6 +480,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       if (failedRunError || !failedRun) throw new Error("Malformed model response was detected, but the run could not be marked failed");
       const { data: finished, error: finishError } = await admin.rpc("jd_finish_execution_job", {
         p_job_id: jobId, p_lease_token: leaseToken, p_terminal_status: "failed",
+        p_error_code: errorCode, p_error_message: safeMessage,
       });
       if (finishError || finished !== true) throw new Error("Malformed model response was detected, but the job could not be finalised");
       const { data: pendingMessage } = await admin.from("jd_messages").select("id")
