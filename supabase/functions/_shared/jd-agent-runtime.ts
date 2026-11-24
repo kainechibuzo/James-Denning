@@ -2481,6 +2481,8 @@ export async function runAgent(input: {
           }
           result = {agent_id:"jd-specialist-"+specialist,agent_role:specialist,status:specialistOutcome==="timed_out"?"time_limit_reached":"report_returned",execution_scope:"reasoning_only_no_tools",allocated_seconds:authorization.allocated_seconds,report};
         } else if (tool.name === "deploy_specialist_workforce") {
+          explicitToolFailure = true;
+          throw new Error("Multi-agent workforce deployment is blocked here until every assigned agent has its own approved quote and time budget. No team was deployed.");
           result = await runWorkforceDeployment(args, {
             context: input.context,
             available,
