@@ -185,7 +185,8 @@ Deno.serve(async (req) => {
   const {data:steps}=await admin.from("jd_automation_steps")
    .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
    .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true}).limit(50);
-  return json({job,run,assistantMessage,steps:steps||[]});
+  const {data:specialistUsage}=await admin.rpc("jd_specialist_run_status",{p_actor:authData.user.id,p_run:run.id});
+  return json({job,run,assistantMessage,steps:steps||[],specialistUsage:specialistUsage||null});
  }
  if(payload.action==="execution.monitor.list"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect execution history"},403);
