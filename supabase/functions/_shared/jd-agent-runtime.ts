@@ -1919,8 +1919,9 @@ export async function runWorkforceDeployment(
     }
     // Skill context is loaded per assignment, recorded on the run, and is
     // untrusted reference data only. Failures leave the assignment unchanged.
-    const skill = await loadAssignmentSkillContext(options.context, assignment.task);
+    let skill: AssignmentSkill | null = null;
     try {
+      skill = await loadAssignmentSkillContext(options.context, assignment.task);
       const executed = await runAgentAssignment({
         resolved,
         assignment,

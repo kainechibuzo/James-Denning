@@ -180,7 +180,7 @@ begin
  with stale as (
   select id,status from public.jd_workforce_assignment_lifecycle
   where status in ('claimed','running') and lease_expires_at<=clock_timestamp()
-  order by lease_expires_at for update skip locked limit least(greatest(coalesce(p_limit,100),1),500)
+  order by lease_expires_at limit least(greatest(coalesce(p_limit,100),1),500) for update skip locked
  ), changed as (
   update public.jd_workforce_assignment_lifecycle a set
    status=case when stale.status='claimed' and a.attempt_count<5 then 'queued' else 'failed' end,
