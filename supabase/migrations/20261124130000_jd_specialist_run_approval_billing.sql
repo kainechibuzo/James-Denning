@@ -44,7 +44,7 @@ begin
  select * into old from public.jd_specialist_run_proposals where school_id=tenant and request_id=p_request;
  if found then
   if old.specialist_role<>p_role or old.task<>p_task or old.allocated_seconds<>p_seconds or old.spend_cap_seconds<>p_spend_cap_seconds then raise exception 'Request conflict' using errcode='40001';end if;
-  return jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false);
+  return jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
  if s.status not in ('trialing','active') or (s.status='trialing' and s.trial_ends_at is not null and s.trial_ends_at<=clock_timestamp()) then raise exception 'An active subscription or valid trial is required for specialist execution' using errcode='42501';end if;
@@ -58,7 +58,7 @@ begin
  insert into public.jd_specialist_run_proposals(school_id,request_id,requested_by,specialist_role,task,allocated_seconds,spend_cap_seconds,rate_minor_per_hour,estimated_amount_minor,subscription_status)
  values(tenant,p_request,p_actor,p_role,trim(p_task),p_seconds,p_spend_cap_seconds,rate,amount,s.status)
  returning * into old;
- result:=jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false);
+ result:=jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'agent.specialist.proposed',result);
  return result;
 end; $$;
@@ -77,7 +77,7 @@ begin
  if not found or p.status<>'awaiting_approval' or p.expires_at<=clock_timestamp() then raise exception 'Pending, unexpired proposal required' using errcode='40001';end if;
  if p.requested_by<>p_actor then raise exception 'Only the requesting owner/admin can confirm this specialist run' using errcode='42501';end if;
  update public.jd_specialist_run_proposals set status=case when p_decision='approve' then 'approved' else 'declined' end,approved_by=case when p_decision='approve' then p_actor else null end,approved_at=case when p_decision='approve' then clock_timestamp() else null end where id=p.id returning * into p;
- result:=jsonb_build_object('proposal_id',p.id,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'estimated_amount_minor',p.estimated_amount_minor,'currency',p.currency,'charging_enabled',false);
+ result:=jsonb_build_object('proposal_id',p.id,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'estimated_amount_minor',p.estimated_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  insert into public.jd_skill_requests values(tenant,p_request,req,result);
  insert into public.jd_audit_events(school_id,actor_id,event_type,event_json) values(tenant,p_actor,'agent.specialist.'||p_decision,result);
  return result;
@@ -95,7 +95,7 @@ begin
  select * into old from public.jd_skill_requests where school_id=tenant and request_id=p_request;
  if found then if old.request<>req then raise exception 'Request conflict' using errcode='40001';end if;return old.receipt;end if;
  update public.jd_specialist_run_proposals set run_id=p_run,status='linked' where id=p.id returning * into p;
- result:=jsonb_build_object('proposal_id',p.id,'run_id',p_run,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'charging_enabled',false);
+ result:=jsonb_build_object('proposal_id',p.id,'run_id',p_run,'status',p.status,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  insert into public.jd_skill_requests values(tenant,p_request,req,result);
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.linked',result);
  return result;
@@ -113,7 +113,7 @@ begin
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
  update public.jd_specialist_run_proposals set status='running',started_at=clock_timestamp() where id=p.id returning * into p;
  insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.started',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds));
- return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false);
+ return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
 end; $$;
 
 create function public.jd_specialist_run_settle(p_actor uuid,p_run uuid,p_outcome text)
@@ -127,8 +127,8 @@ begin
  amount:=round(seconds*p.rate_minor_per_hour/3600.0)::bigint;
  status_value:=case when extract(epoch from (clock_timestamp()-p.started_at))>p.allocated_seconds then 'timed_out' when p_outcome='completed' then 'completed' else 'failed' end;
  update public.jd_specialist_run_proposals set status=status_value,completed_at=clock_timestamp(),actual_seconds=seconds,actual_amount_minor=amount,outcome=left(coalesce(p_outcome,'unknown'),120) where id=p.id returning * into p;
- insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.settled',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false));
- return jsonb_build_object('proposal_id',p.id,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false);
+ insert into public.jd_audit_events(school_id,actor_id,run_id,event_type,event_json) values(tenant,p_actor,p_run,'agent.specialist.settled',jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false));
+ return jsonb_build_object('proposal_id',p.id,'status',p.status,'actual_seconds',p.actual_seconds,'actual_amount_minor',p.actual_amount_minor,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
 end; $$;
 
 revoke all on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) from public,anon,authenticated;
