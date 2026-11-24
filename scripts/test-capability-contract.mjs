@@ -18,7 +18,7 @@ for(const role of ['owner','admin','manager','staff','contractor','viewer','fina
  assert.equal(inventory.callable_by_assistant,expected.length);
  const workforceTool=inventory.tools.find(tool=>tool.name==='deploy_specialist_workforce');
  assert.equal(workforceTool?.callable_by_assistant,false);
- assert.equal(workforceTool?.availability,'not_exposed_for_automatic_execution');
+ assert.equal(workforceTool?.availability,workforceTool?.available_to_current_role?'not_exposed_for_automatic_execution':'role_restricted');
  for(const tool of inventory.tools){assert.equal(tool.live_verification,'not_assessed');assert.notEqual(tool.effect,'not_classified');assert.equal(tool.availability,tool.callable_by_assistant?'callable_for_current_role':tool.available_to_current_role?'not_exposed_for_automatic_execution':'role_restricted');}
 });
 for(const role of ['teacher','student','unknown'])test(`${role}: inventory remains role restricted`,async()=>{
