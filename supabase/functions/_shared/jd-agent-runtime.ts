@@ -1837,6 +1837,10 @@ export async function runWorkforceDeployment(
     plan.assignments = kept;
   }
   const boundAssignments = plan.assignments.filter((assignment) => assignment.employeeId);
+  if(boundAssignments.length) {
+    const {error:recoveryError}=await options.context.admin.rpc("jd_workforce_assignment_recover",{p_limit:100});
+    if(recoveryError) return {error:"Stale workforce assignments could not be safely recovered; no new employee assignment was started",deployed:false};
+  }
   if (boundAssignments.length && !["owner","admin"].includes(options.context.role)) {
     return {error:"Only workspace owners and administrators can assign work to activated employee or team identities; no assignment was started",deployed:false};
   }
