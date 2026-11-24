@@ -1457,7 +1457,7 @@ const modelTools = (context: AgentContext) => tools
  * role checks, risk boundary, schemas and execute handlers as JD chat. */
 export function getJdMcpToolDefinitions(context: AgentContext) {
   return tools
-    .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
+    .filter((tool) => tool.name !== "deploy_specialist_workforce" && (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
     .map((tool) => ({
       name: tool.name,
       description: tool.description,
