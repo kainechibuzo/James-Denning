@@ -1546,7 +1546,7 @@ function AppInner(){
           {page==="audit-log"     && (canAccess("audit-log")    ?<AuditLogPage ctx={ctx}/>           :<AccessDenied/>)}
           {page==="admin-tools"   && (role==="admin"            ?<AdminToolsPage ctx={ctx}/>         :<AccessDenied/>)}
           {page==="permissions"   && (role==="admin"            ?<PermissionsPage ctx={ctx}/>        :<AccessDenied/>)}
-          {page==="settings"      && (role==="admin"            ?<SettingsPage ctx={{...ctx,notify}}/>:<AccessDenied/>)}
+          {page==="settings"      && (canAccess("settings") ? <SettingsPage ctx={{...ctx,notify}}/> : <AccessDenied/>)}
           {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
         </main>
