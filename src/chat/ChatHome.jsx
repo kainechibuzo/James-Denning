@@ -203,6 +203,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const submissions=useRef(new Set());
+  const agentProposalRequests=useRef(new Map());
   const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id]);
   const pendingKey=(message,id)=>"jd:request:"+resumeKey+":"+(id||"new")+":"+message;
   const rememberConversation=id=>{try{if(id)sessionStorage.setItem("jd:active:"+resumeKey,id);else sessionStorage.removeItem("jd:active:"+resumeKey);}catch{}};
@@ -402,17 +403,21 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
 
   const prepareAgentProposal = async (item,recommendation) => {
     const seconds=Number(agentDurations[item.id]||1800);
+    const quoteKey=item.id+":"+recommendation.id+":"+seconds;
+    if(!agentProposalRequests.current.has(quoteKey))agentProposalRequests.current.set(quoteKey,crypto.randomUUID());
     setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
     try{
-      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:crypto.randomUUID(),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:agentProposalRequests.current.get(quoteKey),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
       if(error||data?.error||!data?.proposal?.proposal_id){let message=data?.error||error?.message||"JD could not verify the specialist quote.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
       setAgentProposals(current=>({...current,[item.id]:data.proposal}));
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
   };
   const decideAgentProposal = async (item,proposal,decision) => {
     setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
+    const decisionKey="decision:"+proposal.proposal_id+":"+decision;
+    if(!agentProposalRequests.current.has(decisionKey))agentProposalRequests.current.set(decisionKey,crypto.randomUUID());
     try{
-      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:crypto.randomUUID(),proposalId:proposal.proposal_id}});
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:agentProposalRequests.current.get(decisionKey),proposalId:proposal.proposal_id}});
       if(error||data?.error){let message=data?.error||error?.message||"The approval decision was not confirmed.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
       if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
       if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
