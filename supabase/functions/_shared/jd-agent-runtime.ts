@@ -12,7 +12,7 @@ import { buildOrganisationBlueprintDraft, validateOrganisationBlueprint } from "
 import { validateVacancy } from "./jd-hiring.ts";
 import { analyseExpenseAnomalies } from "./jd-expense-anomalies.ts";
 import { analyseKpiTrends } from "./jd-kpi-trends.ts";
-import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse } from "./jd-agent-stream.ts";
+import { readResponsesStream, readChatCompletionsStream, responsesInputToChatMessages, responsesToolsToChatTools, responseOutputText, shouldContinueResponse, sanitiseModelConversationInput } from "./jd-agent-stream.ts";
 import { generateJdDocument, sanitizeGeneratedFilename, type JdDocumentFormat } from "./jd-agent-file-generator.ts";
 import { isExplicitToolFailure, isSuccessfulToolResult } from "./jd-tool-evidence.ts";
 import {
@@ -1471,6 +1471,12 @@ function getOptionalEnv(name: string): string | undefined {
 }
 
 async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
+  // One sanitisation pass here protects every request path — fresh turns,
+  // continuations, checkpoint resumes and specialist assignments — because
+  // all model traffic flows through this function. Broken tool-call history
+  // must never reach the provider (it fails the whole run, including instant
+  // failures on resumed checkpoints).
+  input = { ...input, input: sanitiseModelConversationInput(input.input) };
   const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
   const isOpenRouterGemini = baseUrl.includes("openrouter.ai") && String(input.model || "").startsWith("google/gemini-");
   const useChatCompletions = isGemini || isOpenRouterGemini;
