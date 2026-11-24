@@ -197,7 +197,7 @@ test('specialist quote verifies subscription, approval, run gate, time cap and s
  await expectFail(rpc('jd_specialist_proposal_approve',[staff,id(n++),proposal.proposal_id,'approve']),'42501');
  const approved=await rpc('jd_specialist_proposal_approve',[admin,id(n++),proposal.proposal_id,'approve']);assert.equal(approved.status,'approved');
  const linked=await rpc('jd_specialist_proposal_link_run',[admin,id(n++),proposal.proposal_id,run]);assert.equal(linked.status,'linked');
- const started=await rpc('jd_specialist_run_start',[admin,run,'research_analyst']);assert.equal(started.allocated_seconds,1800);
+ const started=await rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']);assert.equal(started.allocated_seconds,1800);\n const replay=await rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']);assert.equal(replay.proposal_id,started.proposal_id);\n await expectFail(rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-002']),'42501');
  await db.query("update jd_specialist_run_proposals set started_at=clock_timestamp()-interval '31 minutes' where run_id=$1",[run]);
  const settled=await rpc('jd_specialist_run_settle',[admin,run,'timed_out']);assert.equal(settled.status,'timed_out');assert.equal(settled.actual_seconds,1800);assert.equal(settled.actual_amount_minor,7500);
  const summary=await rpc('jd_read_billing_summary',[admin]);assert.equal(summary.specialist_runs,1);assert.equal(summary.actual_seconds,1800);assert.equal(summary.amount_minor_actual,7500);assert.equal(summary.charging_enabled,false);
