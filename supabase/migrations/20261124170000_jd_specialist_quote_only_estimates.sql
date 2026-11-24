@@ -52,7 +52,7 @@ begin
   subscription_state:='missing'; block_reason:='subscription_required';
  elsif s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp()) then
   subscription_state:='expired'; block_reason:='subscription_expired';
- elsif s.status='active' and s.current_period_end is not null and s.current_period_end<=clock_timestamp() then
+ elsif s.status='expired' or (s.status='active' and s.current_period_end is not null and s.current_period_end<=clock_timestamp()) then
   subscription_state:='expired'; block_reason:='subscription_expired';
  elsif s.status not in ('trialing','active') then
   subscription_state:=s.status; block_reason:='subscription_not_eligible';
