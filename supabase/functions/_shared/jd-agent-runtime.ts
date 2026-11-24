@@ -132,7 +132,7 @@ const tools: ToolSpec[] = [
   {
     name:"delegate_to_specialist_agent",
     risk:"low",roles:["owner","admin","manager"],
-    description:"Delegate a bounded analysis task to one specialist reasoning agent. The specialist returns a report for JD to review and combine. It cannot call tools, access connectors, write records, approve actions, hire, spend or deploy. Use for independent strategy, research synthesis, finance analysis, operations planning, product design, engineering review, security review or QA analysis. Delegate only a specific subtask and never treat its report as proof that an external action occurred.",
+    description:"Delegate a bounded analysis task to one specialist reasoning agent only when the current run has a linked, unexpired, user-approved proposal with a verified subscription, hourly rate, time allocation and spend ceiling. The runtime blocks the call unless that exact role is authorised and settles measured usage. The specialist has no tools, connector access, database access or authority to make changes. Never invoke without approval or treat a reasoning-only report as live research or proof of an external action.",
     parameters:{type:"object",properties:{
       specialist:{type:"string",enum:["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"]},
       task:{type:"string",minLength:20,maxLength:5000},
@@ -1444,7 +1444,7 @@ export async function runAgentAssignment(input: {
 
 
 const modelTools = (context: AgentContext) => tools
-  .filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
+  .filter((tool) => tool.name !== "deploy_specialist_workforce" && (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(context, tool.roles))
   .map((tool) => ({
     type: "function",
     name: tool.name,
@@ -2192,7 +2192,7 @@ export async function runAgent(input: {
   onUsagePhase?: (phase: "active" | "external_wait") => Promise<void>;
 }) {
   const baseUrl = input.baseUrl || "https://openrouter.ai/api/v1";
-  const available = tools.filter((tool) => (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(input.context, tool.roles));
+  const available = tools.filter((tool) => tool.name !== "deploy_specialist_workforce" && (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(input.context, tool.roles));
   await input.onUsagePhase?.("external_wait");
   let sharedBusinessMemory: Array<{ memory_key: string; category: string; content: string; confidence: string }> = [];
   try {
