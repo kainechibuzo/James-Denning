@@ -38,6 +38,7 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid;a public.jd_workspace_autonomy%rowtype;s public.jd_billing_subscriptions%rowtype;old public.jd_specialist_run_proposals%rowtype;rate bigint;amount bigint;result jsonb;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(tenant::text,0));
  if not exists(select 1 from public.profiles where id=p_actor and school_id=tenant and role in ('owner','admin','manager')) then raise exception 'Workspace member required' using errcode='42501';end if;
  if p_role not in ('business_advisor','research_analyst','finance_analyst','operations_planner','product_designer','software_engineer','security_reviewer','quality_assurance')
  or p_task is null or length(trim(p_task)) not between 20 and 5000 or p_seconds not between 60 and 86400
@@ -69,6 +70,7 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(tenant::text,0));
  if not exists(select 1 from public.profiles where id=p_actor and school_id=tenant and role in ('owner','admin')) then raise exception 'Workspace administrator required to approve agent spend' using errcode='42501';end if;
  if p_decision not in ('approve','decline') then raise exception 'Explicit decision required' using errcode='22023';end if;
  req:=jsonb_build_array('agent.specialist.decision',p_actor,p_proposal,p_decision);
@@ -115,6 +117,7 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;a public.jd_workspace_autonomy%rowtype;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(tenant::text,0));
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
  if not found or p.status not in ('linked','running') or (p.status<>'running' and p.expires_at<=clock_timestamp()) or p.specialist_role<>p_role or p.requested_by<>p_actor or p_call_id is null or length(p_call_id) not between 1 and 100 then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
