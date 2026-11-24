@@ -1640,7 +1640,7 @@ function getOptionalEnv(name: string): string | undefined {
   try { return Deno.env.get(name); } catch { return undefined; }
 }
 
-async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void) {
+async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl: string, onTextDelta?: (delta: string) => void, signal?: AbortSignal) {
   const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
   const isOpenRouterGemini = baseUrl.includes("openrouter.ai") && String(input.model || "").startsWith("google/gemini-");
   const useChatCompletions = isGemini || isOpenRouterGemini;
@@ -1672,7 +1672,7 @@ async function callModel(input: Record<string, unknown>, apiKey: string, baseUrl
           stream: true,
           stream_options: { include_usage: true },
         } : { ...input, stream: true }),
-        signal: AbortSignal.timeout(45000),
+        signal: signal || AbortSignal.timeout(45000),
       });
     } catch (error) {
       lastNetworkError = error;
@@ -2293,14 +2293,14 @@ export async function runAgent(input: {
   let activeModel = restored?.activeModel ||
     resolveFollowupModel(input.model, input.model, modelRequests[modelRequests.length - 1]?.model);
 
-  const requestModel = async (payload: Record<string, unknown>, options?: { silent?: boolean }) => {
+  const requestModel = async (payload: Record<string, unknown>, options?: { silent?: boolean; signal?: AbortSignal }) => {
     await input.onUsagePhase?.("external_wait");
     const startedAt = performance.now();
     let firstTokenMs: number | null = null;
     const result = await callModel({ ...payload, model: activeModel }, input.apiKey, baseUrl, options?.silent ? undefined : (delta) => {
       if (firstTokenMs === null) firstTokenMs = Math.max(0, Math.round(performance.now() - startedAt));
       input.onTextDelta?.(delta);
-    });
+    }, options?.signal);
     const latencyMs = Math.max(0, Math.round(performance.now() - startedAt));
     await input.onUsagePhase?.("active");
     requestIndex += 1;
@@ -2434,6 +2434,7 @@ export async function runAgent(input: {
           let specialistError: unknown = null;
           const allocatedMs = Math.max(60_000, Math.min(86_400_000, Number(authorization.allocated_seconds) * 1000));
           let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+          const specialistAbort = new AbortController();
           try {
             specialistResponse = await Promise.race([
               requestModel({
@@ -2450,8 +2451,8 @@ export async function runAgent(input: {
                 max_output_tokens:2500,
                 tool_choice:"none",
                 store:false
-              }, { silent: true }),
-              new Promise((_, reject) => { timeoutHandle = setTimeout(() => reject(new Error("Specialist time allocation reached")), allocatedMs); }),
+              }, { silent: true, signal: specialistAbort.signal }),
+              new Promise((_, reject) => { timeoutHandle = setTimeout(() => { specialistAbort.abort(new Error("Specialist time allocation reached")); reject(new Error("Specialist time allocation reached")); }, allocatedMs); }),
             ]);
             specialistOutcome = "completed";
           } catch (error) {
