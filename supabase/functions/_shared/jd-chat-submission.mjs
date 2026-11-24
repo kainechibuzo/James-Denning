@@ -33,6 +33,12 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  if(submissionError||!submission?.run)return {error:submissionError?.code==="42501"?"Conversation not found":submissionError?.code==="23505"?"This question was already answered. Refresh the conversation.":"The request could not be recorded. Retry with the same request identifier.",status:submissionError?.code==="42501"?404:409};
  const conversationId=submission.conversationId;
  const run=submission.run;
+ if(payload.agentApprovalId!==undefined){
+  if(typeof payload.agentApprovalId!=="string"||!/^[0-9a-f-]{36}$/i.test(payload.agentApprovalId))return {error:"Invalid specialist approval reference",status:400};
+  const {data:linked,error:linkError}=await admin.rpc("jd_specialist_proposal_link_run",{p_actor:actorId,p_request:crypto.randomUUID(),p_proposal:payload.agentApprovalId,p_run:run.id});
+  if(linkError||linked?.status!=="linked")return {error:"The approved specialist could not be securely linked to this queued run. No specialist was started.",status:409};
+ }
+
  if(requestedStyle!==null){
   const {data:styleReceipt,error:styleError}=await admin.rpc("jd_set_chat_response_style",{
    p_run_id:run.id,p_actor_id:actorId,p_style:requestedStyle
