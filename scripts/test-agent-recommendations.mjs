@@ -37,6 +37,8 @@ test("specialist execution is approval-gated, time-bounded and settled server-si
   const migration=readFileSync(new URL("../supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql",import.meta.url),"utf8");
   const chat=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
   assert.match(runtime,/jd_specialist_run_start/);
+  assert.match(runtime,/tool.name !== "deploy_specialist_workforce"/);
+  assert.match(runtime,/Multi-agent workforce deployment is blocked/);
   assert.match(runtime,/jd_specialist_run_settle/);
   assert.match(runtime,/specialistAbort\.abort/);
   assert.match(runtime,/No valid, approved, priced specialist authorisation/);
