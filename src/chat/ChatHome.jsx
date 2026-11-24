@@ -412,6 +412,19 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       setAgentProposals(current=>({...current,[item.id]:data.proposal}));
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
   };
+  const launchApprovedAgent = async (item,proposal) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,launching:true,error:null}}));
+    try{
+      const originalPrompt=messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"";
+      const task=recommendSpecialist(originalPrompt)?.task||originalPrompt;
+      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      const launchKey="run:"+proposal.proposal_id;
+      if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,crypto.randomUUID());
+      const queued=await send(approvedText,null,null,agentProposalRequests.current.get(launchKey),proposal.proposal_id);
+      if(!queued)throw new Error("Approval is saved, but JD could not confirm the specialist run was queued. You can retry this approved assignment.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"submitted",launching:false,error:null}}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved",launching:false,error:error?.message||"Could not queue approved agent"}}));}
+  };
   const decideAgentProposal = async (item,proposal,decision) => {
     setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
     const decisionKey="decision:"+proposal.proposal_id+":"+decision;
@@ -422,8 +435,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
       if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
       setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
-      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+recommendSpecialist(messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"")?.task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
-      await send(approvedText,null,null,null,proposal.proposal_id);
+      await launchApprovedAgent(item,{...proposal,status:"approved"});
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,error:error?.message||"Approval could not be confirmed"}}));}
   };
 
