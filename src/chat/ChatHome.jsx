@@ -187,6 +187,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showDepartments, setShowDepartments] = useState(false);
   const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [agentProposals,setAgentProposals]=useState({});
+  const [agentDurations,setAgentDurations]=useState({});
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError,setHistoryError] = useState("");
@@ -396,6 +398,28 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   };
 
 
+
+  const prepareAgentProposal = async (item,recommendation) => {
+    const seconds=Number(agentDurations[item.id]||1800);
+    setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:crypto.randomUUID(),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
+      if(error||data?.error||!data?.proposal?.proposal_id)throw new Error(data?.error||"JD could not verify the specialist quote.");
+      setAgentProposals(current=>({...current,[item.id]:data.proposal}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
+  };
+  const decideAgentProposal = async (item,proposal,decision) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:crypto.randomUUID(),proposalId:proposal.proposal_id}});
+      if(error||data?.error)throw new Error(data?.error||"The approval decision was not confirmed.");
+      if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
+      if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
+      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+recommendSpecialist(messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"")?.task+". Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      await send(approvedText,null,null,null,proposal.proposal_id);
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,error:error?.message||"Approval could not be confirmed"}}));}
+  };
 
   const cancelExecution = async (item) => {
     if(!item?.jobId)return;
