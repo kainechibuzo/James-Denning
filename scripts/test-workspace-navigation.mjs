@@ -11,12 +11,13 @@ test("workspace route catalogue retains implemented business destinations and ro
   for(const entry of WORKSPACE_NAVIGATION)assert.ok(Array.isArray(entry.roles)&&entry.roles.length>0);
 });
 
-test("single-entry workspace shell exposes JD Assistant without widening role access",()=>{
-  for(const role of ["owner","admin","manager"])assert.deepEqual(build({role,canAccess:()=>true}).map(n=>n.id),["jd-chat"]);
+test("workspace shell exposes JD Assistant and permission-scoped owner/admin account destinations",()=>{
+  assert.deepEqual(build({role:"owner",canAccess:()=>true}).map(n=>n.id),["jd-chat","g-organisation","billing","settings"]);
+  assert.deepEqual(build({role:"admin",canAccess:()=>true}).map(n=>n.id),["jd-chat","g-organisation","billing","settings"]);
+  assert.deepEqual(build({role:"manager",canAccess:()=>true}).map(n=>n.id),["jd-chat"]);
   assert.deepEqual(build({role:"owner",canAccess:()=>false}),[]);
+  assert.deepEqual(build({role:"owner",canAccess:page=>page==="jd-chat"}).map(n=>n.id),["jd-chat"]);
   assert.deepEqual(build({role:"manager",canAccess:()=>false}),[]);
-  // Admin's explicit role grant is sufficient; owner/manager still require
-  // the resolved JD-chat permission from the workspace policy layer.
   assert.deepEqual(build({role:"admin",canAccess:()=>false}).map(n=>n.id),["jd-chat"]);
   for(const role of [undefined,"viewer","employee","hr","finance","public","teacher","student"])assert.deepEqual(build({role,canAccess:()=>true}),[]);
 });

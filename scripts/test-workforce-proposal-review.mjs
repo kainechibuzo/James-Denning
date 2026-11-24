@@ -54,6 +54,7 @@ test("employee and team activation is bound to an approved Review Centre proposa
   assert.match(workforceService, /can only be created by activating an explicitly approved Review Centre proposal/);
   assert.match(workforceMigration, /Only an explicitly approved proposal can be activated/);
   assert.match(workforceMigration, /v_approval\.status is distinct from 'approved'/);
+  assert.match(workforceMigration, /v_approval\.expires_at is null[\s\S]{0,120}v_approval\.expires_at <= clock_timestamp\(\)/, "expired approvals cannot be activated even if their status was previously approved");
   assert.match(workforceMigration, /workforce\.employee\.proposal/);
   assert.match(workforceMigration, /workforce\.team\.proposal/);
   assert.match(workforceMigration, /jd_workforce_proposal_activations/);
@@ -114,10 +115,10 @@ test("employee-bound assignments verify active employee and team membership", ()
 });
 
 test("workforce activation rollback restores valid pre-feature SQL contracts", () => {
-  assert.equal(workforceRollback.split("create or replace function public.jd_workforce_create_employee").length-1,1);
-  assert.equal(workforceRollback.split("create or replace function public.jd_decide_approval").length-1,1);
-  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role"));
-  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_team(uuid,uuid,text,text) to service_role"));
+  assert.equal(workforceRollback.split("create or replace function public.jd_workforce_create_employee(").length-1,1);
+  assert.equal(workforceRollback.split("create or replace function public.jd_decide_approval(").length-1,1);
+  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_employee(uuid,uuid,text,text,integer,text,text) to service_role;"));
+  assert.ok(workforceRollback.includes("grant execute on function public.jd_workforce_create_team(uuid,uuid,text,text) to service_role;"));
   assert.ok(workforceRollback.includes("Cannot restore unique employee-specialist constraint while duplicate employee instances exist"));
-  assert.ok(!/p_ref !~\\* '[^']*\\n grant/.test(workforceRollback));
+  assert.doesNotMatch(workforceRollback, /p_ref !~\* '[^']*\n grant/);
 });

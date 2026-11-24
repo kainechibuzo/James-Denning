@@ -16,10 +16,17 @@ test('profile, authenticated actor and workspace identities must agree before pe
  const source=readFileSync('src/App.jsx','utf8');assert.ok(source.indexOf('const user=workspaceIdentity(')<source.indexOf('db.setSchool(school.id'));assert.doesNotMatch(source,/profile\.role\|\|"admin"/);
  assert.doesNotMatch(source,/from\("(teachers|students|student_profiles)"\)/);
 });
-test('owner gets JD-only routes with explicit denial preserved',()=>{
+test('owner gets JD Assistant, Billing and Settings only when explicitly permitted',()=>{
  const build=canAccess=>buildWorkspaceNavigation({role:'owner',canAccess});
- assert.deepEqual(build(()=>true).map(n=>n.id),['jd-chat']);
+ assert.deepEqual(build(()=>true).map(n=>n.id),['jd-chat','g-organisation','billing','settings']);
+ assert.deepEqual(build(page=>page==='jd-chat').map(n=>n.id),['jd-chat']);
  assert.deepEqual(build(()=>false),[]);
+});
+test('manager keeps the chat-first navigation and does not inherit account controls',()=>{
+ assert.deepEqual(buildWorkspaceNavigation({role:'manager',canAccess:()=>true}).map(n=>n.id),['jd-chat']);
+});
+test('admin sees the account destinations in the Organisation group',()=>{
+ assert.deepEqual(buildWorkspaceNavigation({role:'admin',canAccess:()=>true}).map(n=>n.id),['jd-chat','g-organisation','billing','settings']);
 });
 test('owner access is additive and scoped, not blanket legacy admin access',()=>{
  for(const role of ['owner','admin','manager'])assert.equal(canOpenOperations(role),true);

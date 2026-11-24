@@ -56,6 +56,24 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
     }catch{if(alive.current){setError('Decision was not confirmed. Refresh before another action; no request was retried.');setNeedsRefresh(true);}}
     finally{lock.current=false;if(alive.current)setBusyId('');}
   };
+  const activateWorkforceProposal = async item => {
+    if(lock.current||loading||needsRefresh||item.status!=="approved"||!["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key))return;
+    lock.current=true;setBusyId(item.id);setError("");setNotice("");
+    try{
+      const {data,error:invokeError}=await client.functions.invoke("jd-automation",{body:{
+        action:"workforce.proposal.activate",approvalId:item.id,requestId:crypto.randomUUID()
+      }});
+      const receipt=data?.receipt;
+      if(invokeError||data?.error||receipt?.activated!==true||receipt?.tools_granted!==false||receipt?.billing_enabled!==false)throw new Error(data?.error||invokeError?.message||"Activation could not be confirmed.");
+      if(!alive.current)return;
+      const count=Array.isArray(receipt.employee_ids)?receipt.employee_ids.length:1;
+      setNotice(item.action_key==="workforce.team.proposal"
+        ? "Approved team activated with "+count+" employee identities. No tools, connector access, assignments or billing were enabled."
+        : "Approved employee activated. No tools, connector access, assignments or billing were enabled.");
+      if(await load())onDecision?.("activate",item,data,"");
+    }catch(error){if(alive.current)setError(error.message||"Activation was not confirmed. Refresh before retrying.");}
+    finally{lock.current=false;if(alive.current)setBusyId("");}
+  };
   const apply = async item=>{
     if(lock.current||loading||needsRefresh||confirmApply!==item.id)return;
     lock.current=true;setBusyId(item.id);setNotice('');setError('');
@@ -86,8 +104,23 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
             <h3>{item.title||"JD action request"}</h3>
             {item.action_key==="organisation.provision_departments"&&<div className="jd-review-jd-tag">✦ Prepared by JD · {item.proposal_json?.blueprint?.departments?.length||0} proposed departments</div> }
             {item.source==="connector"&&<div className="jd-review-jd-tag">Connected provider · {item.tool_name}</div>}
+            {item.action_key==="workforce.employee.proposal"&&<div className="jd-review-jd-tag">✦ AI employee proposal · owner permission required</div>}
+            {item.action_key==="workforce.team.proposal"&&<div className="jd-review-jd-tag">✦ Drafted AI team · {item.proposal_json?.workforce_proposal?.members?.length||0} proposed members</div>}
             <p>{item.reason}</p>
-            {item.source==="connector"?<div className="jd-review-request">External action details are protected. Viewing this request does not approve or execute it.</div>:item.action_key!=="settings.apply"&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
+            {item.source==="connector"?<div className="jd-review-request">External action details are protected. Viewing this request does not approve or execute it.</div>:!["settings.apply","workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&<div className="jd-review-request">{item.proposal_json?.request_text||"Request details unavailable."}</div>}
+            {["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&(()=>{
+              const proposal=item.proposal_json?.workforce_proposal||{};
+              const team=item.action_key==="workforce.team.proposal";
+              return <section className="jd-review-blueprint" aria-label={team?"Drafted AI team proposal":"AI employee proposal"}>
+                <div className="jd-review-blueprint-head"><strong>{proposal.name||"Workforce proposal"}</strong><span>{team?"Drafted team":"Individual AI employee"} · {proposal.department||"Department not specified"}</span></div>
+                <p>{proposal.purpose||"No purpose supplied."}</p>
+                <div className="jd-review-department"><strong>Selected specialist</strong><span>{proposal.specialist_name||proposal.specialist_ref||"Not specified"}{proposal.specialist_kind==="registry"?" · Published registry agent": " · Built-in specialist"}{proposal.specialist_version? " · v"+proposal.specialist_version:""}</span></div>
+                <div className="jd-review-department"><strong>Responsibilities</strong><span>{(proposal.responsibilities||[]).join(" · ")||"Not supplied"}</span></div>
+                {team&&<div className="jd-review-team-members">{(proposal.members||[]).map((member,index)=><div className="jd-review-department" key={member.name||index}><strong>{member.name} · {member.role}</strong><small>{member.specialist_name||member.specialist_ref||"Specialist"}{member.specialist_kind==="registry"?" · Published registry agent":" · Built-in specialist"}{member.specialist_version?" · v"+member.specialist_version:""}</small><p>{(member.responsibilities||[]).join(" · ")}</p><div><small>Requested access</small><span>{(member.requested_access||[]).join(" · ")||"None requested"}</span></div></div>)}</div>}
+                <div className="jd-review-department"><strong>Requested workspace access</strong><span>{(proposal.requested_access||[]).join(" · ")||"No additional access requested"}</span></div>
+                <div className="jd-review-safe-note">This is a proposal, not an active employee or team. Approval records your decision only; activation, tool permissions, connector access and billing require separate verified steps.</div>
+              </section>;
+            })()}
             {item.action_key==="settings.apply"&&(settingsDiff(item)?<section aria-label="Proposed settings changes" className="jd-settings-diff">
               <p>Review each exact value. JD has not applied these settings. Missing contact details must be supplied, not guessed.</p>
               {settingsDiff(item).map(change=><div className="jd-settings-diff-row" key={change.key}><strong>{change.label}</strong><div><small>Current at proposal</small><span>{change.before===null?'Not configured':String(change.before)}</span></div><div><small>Proposed</small><span>{String(change.after)}</span></div>{!change.changed&&<small>No change</small>}</div>)}
@@ -109,13 +142,14 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
               ))}
             </div>}
             <div className="jd-review-meta"><span>Risk: {item.risk_level}</span><span>Execution: {item.execution_status?.replaceAll("_"," ")||"not executed"}</span></div>
-            {item.status==="pending"&&item.source!=="connector"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"approve")}><Check size={14}/> Accept</button></div></>}
+            {item.status==="pending"&&item.source!=="connector"&&<><label className="jd-review-note-label" htmlFor={"decision-note-"+item.id}>Message to JD (optional)</label><textarea id={"decision-note-"+item.id} className="jd-review-note" value={decisionNote} onChange={(event)=>setDecisionNote(event.target.value)} placeholder="Tell JD what to change or consider…" rows={2}/><div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"reject")}><X size={14}/> Reject</button><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>decide(item,"approve")}><Check size={14}/> {item.action_key==="workforce.employee.proposal"||item.action_key==="workforce.team.proposal"?"Approve proposal":"Accept"}</button></div></>}
             {item.status==="pending"&&item.source==="connector"&&<div className="jd-review-safe-note">Pending connector approval. This record is read-only here; no external action has been approved or executed.</div>}
             {item.status==="expired"&&<div className="jd-review-safe-note">This request expired automatically. No approval or external action was granted.</div>}
             {item.status==="rejected"&&<div className="jd-review-safe-note">This request was rejected. No external action was authorised.</div>}
             {item.action_key==="settings.apply"&&item.status==="approved"&&settingsDiff(item)&&['not_executed','running'].includes(item.execution_status)&&<div className="jd-review-actions">
               {confirmApply===item.id?<><span>Apply only the approved values above? Earlier completed steps will not be repeated.</span><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>setConfirmApply('')}>Keep unchanged</button><button type="button" disabled={!!busyId||needsRefresh} onClick={()=>apply(item)}>Confirm apply settings</button></>:<button type="button" disabled={!!busyId||needsRefresh||loading} onClick={()=>setConfirmApply(item.id)}>Apply approved settings</button>}
             </div>}
+            {item.status==="approved"&&["workforce.employee.proposal","workforce.team.proposal"].includes(item.action_key)&&<><div className="jd-review-safe-note">{item.execution_status==="completed"?"This approved proposal has been activated. Tool permissions, connector access, assignment execution and billing remain separate and disabled.":"Proposal approved. No employee or team has been activated, no tools or connectors have been granted, and no billable work has started. Activation creates only the approved workforce identities."}</div>{item.execution_status!=="completed"&&<div className="jd-review-actions"><button type="button" disabled={!!busyId||loading||needsRefresh} onClick={()=>activateWorkforceProposal(item)}>Activate approved {item.action_key==="workforce.team.proposal"?"team":"employee"}</button></div>}</>}
             {item.status==="approved"&&item.action_key==="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==='completed'?'The execution record reports completed. This is not independent verification of a business outcome.':item.execution_status==='failed'?'Execution needs administrator review. Some steps may already have been saved; do not resubmit blindly.':'Approval recorded. No settings change is confirmed until application and read-back succeed.'}</div>}
             {item.status==="approved"&&item.action_key!=="settings.apply"&&<div className="jd-review-safe-note">{item.execution_status==="completed"?"JD completed the approved setup. Created items are tagged as created by JD.":item.execution_status==="failed"?"Your approval was recorded, but JD could not complete the setup. Ask JD to review the issue before retrying.":["queued","running","retry_wait"].includes(item.execution_status)?"Approved and released to JD's execution queue. Work is not yet complete.":"Your approval was recorded. The requested change has not been confirmed as complete."}</div>}
           </article>
@@ -138,6 +172,7 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
         .jd-review-date{display:flex;align-items:center;gap:5px;color:var(--jd-muted);font-size:9px}
         .jd-review-jd-tag{display:inline-flex;margin:2px 0 10px;padding:5px 8px;border:1px solid var(--jd-border);border-radius:20px;background:var(--jd-soft);color:var(--jd-text-soft);font-size:9px;font-weight:700}
         .jd-review-blueprint{margin-top:12px;padding:13px;background:var(--jd-card);border:1px solid var(--jd-border);border-radius:12px}
+        .jd-review-team-members{margin-top:8px;border-top:1px solid var(--jd-soft)}
         .jd-review-blueprint-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
         .jd-review-blueprint-head strong{font-size:13px;color:var(--jd-text)}
         .jd-review-blueprint-head span{font-size:10px;color:var(--jd-muted)}

@@ -8,6 +8,11 @@ const endpoint=read("supabase/functions/jd-automation/index.ts");
 const ui=read("src/chat/WorkforceControlCentre.jsx");
 const chat=read("src/chat/ChatHome.jsx");
 const nav=read("src/config/assistant-navigation.mjs");
+const privateChat=read("supabase/migrations/20261124180000_jd_workforce_private_chat.sql");
+const assignmentAttribution=read("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql");
+const shadowUsage=read("supabase/migrations/20261124200000_jd_workforce_shadow_usage.sql");
+const teamBudgetsMigration=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.sql");
+const teamBudgetsRollback=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.rollback.sql");
 test("workforce identity and control records are tenant-scoped and service-only",()=>{
  for(const table of ["jd_workforce_employees","jd_workforce_teams","jd_workforce_team_members","jd_workforce_agent_threads","jd_workforce_agent_messages","jd_workforce_control_events"])assert.ok(migration.includes("alter table public."+table+" enable row level security"));
  assert.ok(migration.includes("revoke all on public.jd_workforce_employees"));
@@ -28,7 +33,7 @@ test("HTTP exposes workforce control only after authenticated profile resolution
 test("control centre never claims in-flight cancellation or payable billing",()=>{
  assert.ok(ui.includes("does not stop or resume an in-flight assignment"));
  assert.ok(ui.includes("not invoices"));
- assert.ok(service.includes("agentChatEnabled:false"));
+ assert.ok(service.includes('agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true"'));
 });
 test("workforce control centre is reachable from the chat tool surface",()=>{
  assert.ok(nav.includes("id:'workforce',label:'Workforce control centre'"));
@@ -52,16 +57,94 @@ test("employee budgets are versioned shadow limits, not charges",()=>{
  assert.ok(service.includes("workforce.employee.budget"));
  assert.ok(service.includes("jd_workforce_employee_usage"));
 });
-test("provisioning UI exposes employee, team, membership and budget operations",()=>{
- for(const action of ["workforce.employee.create","workforce.team.create","workforce.team.membership","workforce.employee.budget"])assert.ok(ui.includes(action));
- assert.ok(ui.includes("Add employee"));
- assert.ok(ui.includes("Create team"));
+test("workforce UI exposes only approved activation outcomes plus membership and budget controls",()=>{
+ assert.ok(service.includes("workforce.proposal.activate"));
+ assert.ok(service.includes("workforce.team.membership"));
+ assert.ok(service.includes("workforce.employee.budget"));
+ assert.ok(ui.includes("Add member"));
  assert.ok(ui.includes("Set budget"));
+ assert.ok(ui.includes("Access requested (not granted)"));
+ assert.ok(service.includes("role_title,purpose,responsibilities,requested_access"));
  assert.ok(ui.includes("employeeUsage.length"));
+ assert.doesNotMatch(ui,/Add employee|Create team|workforce\.employee\.create|workforce\.team\.create/);
 });
 test("private agent chat and checked worker controls remain honestly gated",()=>{
- assert.ok(service.includes("agentChatEnabled:false"));
+ assert.ok(service.includes('agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true"'));
  assert.ok(service.includes("executionControlsEnabled:false"));
  assert.ok(ui.includes("private agent conversations"));
- assert.ok(ui.includes("not yet emitting employee-attributed usage receipts"));
+ assert.ok(service.includes("workforce.agent.message.send"));
+ assert.ok(service.includes("workforce.agent.thread.open"));
+ assert.ok(service.includes("runPrivateSpecialistReply"));
+ assert.ok(ui.includes("Private chat"));
+ assert.ok(ui.includes("Reasoning only"));
+ assert.ok(ui.includes("Shadow usage ledger"));
+ assert.ok(ui.includes("not invoices"));
+ assert.ok(ui.includes("Assignment "));
+ assert.ok(service.includes("specialistInstructions"));
+ assert.doesNotMatch(service,/Private chat is currently available for built-in specialist employees only/);
+});
+
+test("private specialist chat is append-only, tenant-scoped and release-gated",()=>{
+ assert.ok(privateChat.includes("add column status text not null default 'active'"));
+ assert.ok(privateChat.includes("add column request_id uuid"));
+ assert.ok(privateChat.includes("add column reply_to_message_id uuid"));
+ assert.ok(privateChat.includes("jd_workforce_agent_user_request_once"));
+ assert.ok(privateChat.includes("jd_workforce_agent_reply_once"));
+ assert.ok(privateChat.includes("jd_workforce_agent_messages_immutable"));
+ assert.ok(service.includes("JD_WORKFORCE_PRIVATE_CHAT_ENABLED"));
+ assert.ok(service.includes("workforce.agent.message.sent"));
+ assert.ok(service.includes("workforce.agent.message.replied"));
+});
+
+test("workforce assignment records retain employee and team attribution",()=>{
+ assert.ok(assignmentAttribution.includes("add column employee_id uuid"));
+ assert.ok(assignmentAttribution.includes("add column team_id uuid"));
+ assert.ok(service.includes("employee_id,team_id,task,status"));
+ assert.ok(ui.includes("Employee: "));
+});
+
+test("employee execution time is recorded as idempotent shadow usage only",()=>{
+ assert.ok(shadowUsage.includes("jd_workforce_record_employee_usage"));
+ assert.ok(shadowUsage.includes("p_source_event<>p_assignment"));
+ assert.ok(shadowUsage.includes("'observed'"));
+ assert.ok(shadowUsage.includes("'disputed'"));
+ assert.ok(shadowUsage.includes("'shadow_only'"));
+ assert.ok(shadowUsage.includes("'charged',false"));
+ assert.ok(ui.includes("shadow"));
+});
+
+test("shadow usage ledger links observed employee time to immutable assignment evidence",()=>{
+ assert.ok(shadowUsage.includes("jd_workforce_record_employee_usage"));
+ assert.ok(shadowUsage.includes("source_event_id=p_source_event"));
+ assert.ok(shadowUsage.includes("v_assignment.employee_id"));
+ assert.ok(shadowUsage.includes("billing_mode','shadow_only"));
+ assert.ok(shadowUsage.includes("charged',false"));
+ assert.ok(ui.includes("Shadow usage ledger"));
+ assert.ok(ui.includes("Assignment "));
+ assert.ok(ui.includes("shadow estimate"));
+});
+
+test("team shadow budgets are tenant-scoped, versioned and idempotent",()=>{
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_team_budgets"));
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_team_budget_requests"));
+ assert.ok(teamBudgetsMigration.includes("enable row level security"));
+ assert.ok(teamBudgetsMigration.includes("jd_workforce_set_team_budget"));
+ assert.match(teamBudgetsMigration,/request identifier reused/i);
+ assert.ok(teamBudgetsMigration.includes("p_expected_version"));
+ assert.ok(teamBudgetsMigration.includes("workforce.team.budget_set"));
+ assert.ok(teamBudgetsMigration.includes("grant execute on function public.jd_workforce_set_team_budget"));
+ assert.ok(teamBudgetsMigration.includes("revoke all on public.jd_workforce_team_budgets"));
+ assert.ok(teamBudgetsRollback.includes("drop trigger if exists jd_workforce_team_usage_budget_before_insert"));
+ assert.ok(teamBudgetsRollback.includes("drop table if exists public.jd_workforce_team_budgets"));
+});
+test("team shadow budget ceilings are enforced against employee-attributed team usage",()=>{
+ assert.ok(teamBudgetsMigration.includes("before insert on public.jd_workforce_employee_usage"));
+ assert.ok(teamBudgetsMigration.includes("v_budget.accrued_micros+new.amount_micros"));
+ assert.ok(teamBudgetsMigration.includes("new.reconciliation_status:='disputed'"));
+ assert.ok(teamBudgetsMigration.includes("charged',false"));
+ assert.ok(service.includes("workforce.team.budget"));
+ assert.ok(service.includes("jd_workforce_team_budgets"));
+ assert.ok(ui.includes("Set team budget"));
+ assert.ok(ui.includes("teamBudgets"));
+ assert.ok(ui.includes("aggregate shadow ceiling"));
 });

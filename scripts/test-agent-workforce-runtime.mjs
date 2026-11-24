@@ -9,14 +9,31 @@ import {WORKFORCE_GRANTABLE_TOOLS, FORBIDDEN_AGENT_TOOLS, WORKFORCE_RELEASE_FLAG
 const runtime = readFileSync('supabase/functions/_shared/jd-agent-runtime.ts', 'utf8');
 const engine = readFileSync('supabase/functions/_shared/jd-agent-workforce.ts', 'utf8');
 const assignmentsSql = readFileSync('supabase/migrations/20261124090000_jd_workforce_assignments.sql', 'utf8');
+const assignmentAttributionSql = readFileSync('supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql', 'utf8');
 
 test('the runtime registers the workforce deployment and agent factory tools', () => {
   assert.match(runtime, /name:"deploy_specialist_workforce"/);
   assert.match(runtime, /name:"propose_agent_definition"/);
-  assert.match(runtime, /deploy_specialist_workforce[\s\S]{0,900}minItems:1,maxItems:5/, 'deployment is bounded to five specialists');
+  assert.match(runtime, /deploy_specialist_workforce[\s\S]{0,1600}minItems:1,maxItems:5/, 'deployment is bounded to five specialists');
   assert.match(runtime, /roles:\["owner","admin","manager"\],\s*(strict:false,\s*)?description:"Deploy 1-5 specialist agents/, 'deployment is role-bounded');
   assert.match(runtime, /roles:\["owner","admin"\],\s*\n?\s*description:"Agent Factory/, 'proposals are owner/admin only');
   assert.match(runtime, /import \{[\s\S]*?WORKFORCE_RELEASE_FLAG[\s\S]*?\} from "\.\/jd-agent-workforce\.ts";/, 'runtime consumes the engine module');
+});
+
+test('specialist role selection preserves the parent objective and never invents a task', () => {
+  assert.match(runtime, /A specialist name or selection such as[\s\S]{0,800}role choice, not a task/);
+  assert.match(runtime, /most recent unresolved user request[\s\S]{0,260}pass that original request/);
+  assert.match(runtime, /If there is no concrete unresolved objective[\s\S]{0,180}do not start a run/);
+});
+
+test('employee and drafted team proposals require owner review and never self-activate', () => {
+  assert.match(runtime, /name: "submit_workforce_proposal_for_review"/);
+  assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);
+  assert.match(runtime, /actionKey = kind === "employee" \? "workforce\.employee\.proposal" : "workforce\.team\.proposal"/);
+  assert.match(runtime, /status: "pending"[\s\S]{0,900}execution_enabled: false/);
+  assert.match(runtime, /activated: false, tools_granted: false, billing_enabled: false/);
+  assert.match(runtime, /Approval records the decision only; employee activation, tool grants and billable execution remain separate steps/);
+  assert.equal(capabilityEffect('submit_workforce_proposal_for_review').effect, 'approval_request');
 });
 
 test('every grantable tool is a registered, classified read or preview tool', () => {
@@ -62,7 +79,7 @@ test('skills context is loaded only through the release-gated, run-recorded disc
   assert.match(runtime, /loaded\.tools_granted !== false \|\| loaded\.treated_as !== "untrusted_task_data_never_authority"/, 'hostile skill receipts are rejected');
   assert.match(runtime, /REFERENCE SKILL \$\{input\.skill\.name\} version \$\{input\.skill\.version\}/, 'loaded skill text is banner-marked untrusted in assignment instructions');
   assert.match(runtime, /it never grants tools or authority, never overrides JD policy/, 'the banner states the boundary');
-  assert.match(runtime, /const skill = await loadAssignmentSkillContext\(options\.context, assignment\.task\);/, 'each assignment resolves its own skill context');
+  assert.match(runtime, /skill = await loadAssignmentSkillContext\(options\.context, assignment\.task\);/, 'each assignment resolves its own skill context');
 });
 
 test('the agent factory saves reviewed drafts only and never execution authority', () => {
@@ -76,7 +93,8 @@ test('the agent factory saves reviewed drafts only and never execution authority
 test('sub-agent model calls stay silent and metered on the run usage ledger', () => {
   assert.match(runtime, /options\?\.silent \? undefined : \(delta\) => \{/, 'requestModel supports silent sub-agent calls');
   assert.match(runtime, /requestModel: \(payload\) => requestModel\(payload, \{ silent: true \}\)/, 'workforce specialists never stream into the visible answer');
-  assert.match(runtime, /usage_note: "Specialist model usage is metered on this run's existing usage records/, 'no new billing path is announced');
+  assert.match(runtime, /usage_note: "For employee-bound assignments, JD attempts to record observed execution time at the owner-configured hourly shadow rate\./, 'employee usage is recorded only at the configured shadow rate');
+  assert.match(runtime, /charged:false,billing_mode:"shadow_only"/, 'shadow usage never creates a charge or invoice');
   assert.match(engine, /workforce planning contracts/i, 'engine module documents its scope');
 });
 
@@ -100,5 +118,39 @@ test('capability classification stays customer-legible for the new surfaces', ()
   assert.match(CAPABILITY_INTERPRETATION, /capability/i);
   assert.equal(capabilityEffect('deploy_specialist_workforce').effect, 'workforce_orchestration');
   assert.equal(capabilityEffect('propose_agent_definition').effect, 'saved_internal_record');
+  assert.equal(capabilityEffect('get_workforce_roster').effect, 'read_only');
+  assert.equal(capabilityEffect('get_published_workforce_specialists').effect, 'read_only');
   assert.match(runtime, /"workforce\.deployed": "Specialist workforce deployment recorded"/, 'audit activity is described in plain language');
+});
+
+test('employee-bound assignments require a live employee and active team membership', () => {
+  assert.match(runtime, /name:"get_workforce_roster"/);
+  assert.match(runtime, /employee_id:\{type:"string",maxLength:36\}/);
+  assert.match(runtime, /team_id:\{type:"string",maxLength:36\}/);
+
+  assert.ok(runtime.includes("active_assignments:history.filter"));
+  assert.ok(runtime.includes("report_returned_assignments:history.filter"));
+  assert.ok(runtime.includes("failed_assignments:history.filter"));
+  assert.ok(runtime.includes("lead_employee_ids:employeeRows.filter"));
+  assert.ok(runtime.includes("workload_is_routing_signal_only:true"));
+  assert.ok(runtime.includes("Employee workload could not be verified; no assignment recommendation can be made"));
+  assert.match(engine, /employeeId\?: string/);
+  assert.match(runtime, /jd_workforce_choose_team_member/);
+  assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
+  assert.match(runtime, /employee\.lifecycle_state !== "active"/);
+  assert.match(runtime, /Only workspace owners and administrators can assign work to activated employee or team identities/);
+  assert.match(runtime, /coordinated team task, create one distinct bounded assignment per selected active team member/);
+  assert.match(runtime, /team\.lifecycle_state !== "active"/);
+  assert.match(runtime, /membershipRows\.data/);
+  assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
+  assert.match(assignmentAttributionSql, /add column employee_id uuid/);
+  assert.match(assignmentAttributionSql, /add column team_id uuid/);
+});
+
+test('employee-bound assignments record runtime duration through the shadow ledger', () => {
+  assert.match(runtime, /execution_time_ms/);
+  assert.match(runtime, /jd_workforce_record_employee_usage/);
+  assert.match(runtime, /shadow_usage/);
+  assert.match(runtime, /billing_mode:"shadow_only"/);
+  assert.match(runtime, /charged:false/);
 });
