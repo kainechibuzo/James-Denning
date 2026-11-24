@@ -151,7 +151,7 @@ begin
 end; $$;
 
 revoke all on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text,text),public.jd_specialist_run_settle(uuid,uuid,text) from public,anon,authenticated;
-grant execute on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text),public.jd_specialist_run_settle(uuid,uuid,text) to service_role;
+grant execute on function public.jd_specialist_proposal_create(uuid,uuid,text,text,integer,integer),public.jd_specialist_proposal_approve(uuid,uuid,uuid,text),public.jd_specialist_proposal_link_run(uuid,uuid,uuid,uuid),public.jd_specialist_run_start(uuid,uuid,text,text),public.jd_specialist_run_settle(uuid,uuid,text) to service_role;
 
 -- Include specialist-run usage in the same verified billing summary.
 create or replace function public.jd_read_billing_summary(p_actor uuid)
