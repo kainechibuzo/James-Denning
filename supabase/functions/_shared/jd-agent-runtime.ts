@@ -2423,7 +2423,7 @@ export async function runAgent(input: {
             throw new Error("Specialist execution requires a durable approved run");
           }
           const { data: authorization, error: authorizationError } = await input.context.admin.rpc("jd_specialist_run_start", {
-            p_actor: input.context.userId, p_run: input.context.runId, p_role: specialist,
+            p_actor: input.context.userId, p_run: input.context.runId, p_role: specialist, p_call_id: String(call.call_id || ""),
           });
           if (authorizationError || !authorization || authorization.role !== specialist) {
             explicitToolFailure = true;
