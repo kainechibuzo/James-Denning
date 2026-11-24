@@ -135,7 +135,7 @@ test('employee-bound assignments require a live employee and active team members
   assert.ok(runtime.includes("workload_is_routing_signal_only:true"));
   assert.ok(runtime.includes("Employee workload could not be verified; no assignment recommendation can be made"));
   assert.match(engine, /employeeId\?: string/);
-  assert.match(engine, /teamId && !employeeId/);
+  assert.match(runtime, /jd_workforce_choose_team_member/);
   assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
   assert.match(runtime, /employee\.lifecycle_state !== "active"/);
   assert.match(runtime, /Only workspace owners and administrators can assign work to activated employee or team identities/);
