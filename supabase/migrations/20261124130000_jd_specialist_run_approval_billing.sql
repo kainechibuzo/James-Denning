@@ -180,3 +180,17 @@ begin
   'charging_enabled',false,'pricing_policy','agentic-seconds-v1',
   'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
 end; $$;
+
+create function public.jd_specialist_run_status(p_actor uuid,p_run uuid)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;seconds integer;amount bigint;
+begin
+ tenant:=public.jd_skills_tenant(p_actor);
+ select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant;
+ if not found then return null;end if;
+ seconds:=case when p.status='running' and p.started_at is not null then greatest(0,least(p.allocated_seconds,extract(epoch from (clock_timestamp()-p.started_at))::integer)) else coalesce(p.actual_seconds,0) end;
+ amount:=case when p.actual_amount_minor is not null then p.actual_amount_minor else round(seconds*p.rate_minor_per_hour/3600.0)::bigint end;
+ return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'status',p.status,'allocated_seconds',p.allocated_seconds,'elapsed_seconds',seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'estimated_amount_minor',p.estimated_amount_minor,'actual_amount_minor',amount,'currency',p.currency,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
+end; $$;
+revoke all on function public.jd_specialist_run_status(uuid,uuid) from public,anon,authenticated;
+grant execute on function public.jd_specialist_run_status(uuid,uuid) to service_role;
