@@ -417,7 +417,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
       if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
       setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
-      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+recommendSpecialist(messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"")?.task+". Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+recommendSpecialist(messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"")?.task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
       await send(approvedText,null,null,null,proposal.proposal_id);
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,error:error?.message||"Approval could not be confirmed"}}));}
   };
