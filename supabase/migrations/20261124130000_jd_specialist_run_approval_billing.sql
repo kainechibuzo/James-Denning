@@ -48,7 +48,7 @@ begin
   return jsonb_build_object('proposal_id',old.id,'status',old.status,'role',old.specialist_role,'allocated_seconds',old.allocated_seconds,'spend_cap_seconds',old.spend_cap_seconds,'rate_minor_per_hour',old.rate_minor_per_hour,'estimated_amount_minor',old.estimated_amount_minor,'currency',old.currency,'subscription_status',old.subscription_status,'expires_at',old.expires_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
  end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
- if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'An active subscription or valid trial is required for specialist execution' using errcode='42501';end if;
+ if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) or (s.status='active' and s.current_period_end is not null and s.current_period_end<=clock_timestamp()) then raise exception 'An active subscription or valid trial is required for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
  rate:=coalesce(a.agentic_rate_minor_per_hour,10000);
  if p_spend_cap_seconds>coalesce(a.spend_ceiling_seconds,3600) then raise exception 'The requested time cap exceeds the workspace ceiling' using errcode='54000';end if;
@@ -79,7 +79,7 @@ begin
  if p.requested_by<>p_actor then raise exception 'Only the requesting owner/admin can confirm this specialist run' using errcode='42501';end if;
  if p_decision='approve' then
   select * into s from public.jd_billing_subscriptions where school_id=tenant;
-  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is no longer eligible for specialist execution' using errcode='42501';end if;
+  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) or (s.status='active' and s.current_period_end is not null and s.current_period_end<=clock_timestamp()) then raise exception 'Subscription is no longer eligible for specialist execution' using errcode='42501';end if;
   select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
   if ceiling_value is null then ceiling_value:=3600;end if;
   select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
@@ -118,7 +118,7 @@ begin
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
  if not found or p.status not in ('linked','running') or (p.status<>'running' and p.expires_at<=clock_timestamp()) or p.specialist_role<>p_role or p.requested_by<>p_actor or p_call_id is null or length(p_call_id) not between 1 and 100 then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
- if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
+ if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) or (s.status='active' and s.current_period_end is not null and s.current_period_end<=clock_timestamp()) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
  if p.status='running' and p.tool_call_id=p_call_id then
   return jsonb_build_object('proposal_id',p.id,'role',p.specialist_role,'allocated_seconds',p.allocated_seconds,'spend_cap_seconds',p.spend_cap_seconds,'rate_minor_per_hour',p.rate_minor_per_hour,'currency',p.currency,'started_at',p.started_at,'charging_enabled',false,'hiring_enabled',false,'execution_enabled',false,'billing_enabled',false);
