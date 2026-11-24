@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {recommendSpecialist,extractAgentDeliverables} from "../src/chat/agent-recommendations.mjs";
 
 test("recommends a research analyst for explicit market research requests",()=>{
@@ -28,4 +29,23 @@ test("attributes only completed specialist reports with readable report content"
 
 test("does not mislabel empty or malformed tool results as agent deliverables",()=>{
   assert.deepEqual(extractAgentDeliverables([{name:"delegate_to_specialist_agent",status:"completed",toolOutput:JSON.stringify({ok:true,result:{agent_role:"research_analyst"}})}]),[]);
+});
+
+test("specialist execution is approval-gated, time-bounded and settled server-side",()=>{
+  const runtime=readFileSync(new URL("../supabase/functions/_shared/jd-agent-runtime.ts",import.meta.url),"utf8");
+  const submission=readFileSync(new URL("../supabase/functions/_shared/jd-chat-submission.mjs",import.meta.url),"utf8");
+  const migration=readFileSync(new URL("../supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql",import.meta.url),"utf8");
+  const chat=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
+  assert.match(runtime,/jd_specialist_run_start/);
+  assert.match(runtime,/jd_specialist_run_settle/);
+  assert.match(runtime,/specialistAbort\.abort/);
+  assert.match(runtime,/No valid, approved, priced specialist authorisation/);
+  assert.match(submission,/jd_specialist_proposal_link_run/);
+  assert.match(migration,/jd_billing_subscriptions/);
+  assert.match(migration,/Workspace agent-time ceiling reached before execution/);
+  assert.match(migration,/jd_specialist_run_status/);
+  assert.match(chat,/agent\.proposal\.create/);
+  assert.match(chat,/agent\.proposal\.approve/);
+  assert.match(chat,/value=\{900\}/);
+  assert.match(chat,/specialistUsage/);
 });
