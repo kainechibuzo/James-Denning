@@ -78,6 +78,16 @@ export async function handleDiscovery({payload, admin, actorId, profile, json, e
    const receipt = await call('jd_read_billing_summary', {p_actor: actorId});
    return json({billing: receipt});
   }
+  if (action === 'agent.proposal.create') {
+   if (payload.confirm !== true || !uuid(payload.requestId) || !Number.isInteger(payload.seconds) || !Number.isInteger(payload.spendCapSeconds)) return json({error:'Explicit quote request, duration and spend cap are required'},400);
+   const receipt = await call('jd_specialist_proposal_create',{p_actor:actorId,p_request:payload.requestId,p_role:payload.specialist,p_task:payload.task,p_seconds:payload.seconds,p_spend_cap_seconds:payload.spendCapSeconds});
+   return json({proposal:receipt});
+  }
+  if (action === 'agent.proposal.approve' || action === 'agent.proposal.decline') {
+   if (payload.confirm !== true || !uuid(payload.requestId) || !uuid(payload.proposalId)) return json({error:'Explicit approval decision and proposal are required'},400);
+   const receipt = await call('jd_specialist_proposal_approve',{p_actor:actorId,p_request:payload.requestId,p_proposal:payload.proposalId,p_decision:action.endsWith('approve')?'approve':'decline'});
+   return json({receipt});
+  }
   if (action === 'discovery.read') {
    const {data: rows, error} = await admin.from('jd_discovery_sessions')
     .select('id,idea,status,plan,receipt,requested_by,decided_by,created_at,completed_at')

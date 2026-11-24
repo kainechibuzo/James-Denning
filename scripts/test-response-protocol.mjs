@@ -26,6 +26,12 @@ test('single and multiple answers must use exact known unique values',()=>{
  for(const value of [[],['bad'],['flat','functional'],['flat','flat'],'flat',null])assert.throws(()=>validateAnswer(choice,value));
  assert.deepEqual(validateAnswer({...choice,multiple:true},['flat','functional']),['flat','functional']);
  assert.match(answerText(choice,['flat']),/My selection: Flat/);
+ const customChoice={...choice,allowCustom:true,customLabel:'Something else'};
+ assert.ok(validateResponse(wrap(customChoice)));
+ assert.deepEqual(validateAnswer(customChoice,['custom:Build a hybrid business']),['custom:Build a hybrid business']);
+ assert.match(answerText(customChoice,['custom:Build a hybrid business']),/Other: Build a hybrid business/);
+ for(const value of [['custom:'],['custom:'+('x'.repeat(501))],['unknown']])assert.throws(()=>validateAnswer(customChoice,value));
+ assert.equal(validateResponse(wrap({...customChoice,allowCustom:'yes'})),null);
 });
 test('forms enforce required, types, ranges, selections, dates and extra keys',()=>{
  assert.equal(validateAnswer(form,{name:'Acme',budget:'12.5'}).budget,12.5);

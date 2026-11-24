@@ -245,8 +245,8 @@ export function BillingPage({ ctx }) {
             <h3>Agent work time</h3>
             {agentic ? (
               <>
-                <p>Billed per actual agent work time — queued and waiting time is never billable. Autonomy mode: <strong>{agentic.mode}</strong>. Measured work: <strong>{Math.round((agentic.actual_seconds || 0) / 60)} min</strong> · confirmed estimates in flight: <strong>{Math.round((agentic.confirmed_estimate_seconds || 0) / 60)} min</strong> · ceiling: <strong>{Math.round((agentic.spend_ceiling_seconds || 0) / 60)} min</strong>.</p>
-                <p style={{ fontWeight: 700 }}>Due at settlement: {money(agentic.amount_minor_actual, agentic.currency)} <span style={{ fontWeight: 400, fontSize: 11 }}>({money(agentic.agentic_rate_minor_per_hour, agentic.currency)}/agent-hour)</span></p>
+                <p>Agent time is metered by actual work seconds; queued and waiting time is excluded. Subscription: <strong>{agentic.subscription_status || "not verified"}</strong> · autonomy: <strong>{agentic.mode}</strong> · specialist runs: <strong>{agentic.specialist_runs || 0}</strong>. Measured work: <strong>{Math.round((agentic.actual_seconds || 0) / 60)} min</strong> · approved estimates in flight: <strong>{Math.round((agentic.confirmed_estimate_seconds || 0) / 60)} min</strong> · workspace ceiling: <strong>{Math.round((agentic.spend_ceiling_seconds || 0) / 60)} min</strong>.</p>
+                <p style={{ fontWeight: 700 }}>Measured usage value (not charged): {money(agentic.amount_minor_actual, agentic.currency)} <span style={{ fontWeight: 400, fontSize: 11 }}>({money(agentic.agentic_rate_minor_per_hour, agentic.currency)}/agent-hour)</span></p>
                 <p style={{ fontSize: 11 }}>Charging is disabled until the platform release flag is enabled; the ledger records every confirmed and measured second in the meantime.</p>
               </>
             ) : <p>Agentic-time metering could not be read in this workspace. Runs still meter in the background; reload later.</p>}

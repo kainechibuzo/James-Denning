@@ -21,6 +21,7 @@ const effects: Record<string, {effect:string; boundary:string}> = {
   remember_business_fact: {effect:"saved_internal_record",boundary:"May save confirmed business context. Not a draft approval and not proof of a real-world action; never store secrets."},
   create_operational_setup_tasks: {effect:"saved_internal_record",boundary:"May save task records. Per-task approval requirements apply to later actions; saving a task does not complete that activity."},
   submit_organisation_blueprint_for_review: {effect:"approval_request",boundary:"May save a proposal and request review. Does not create departments; approval and successful provisioning are separate."},
+  submit_workforce_proposal_for_review: {effect:"approval_request",boundary:"Saves an individual AI employee or drafted AI team proposal for owner review. Approval records the decision only; it does not activate employees, create team instances, grant tools/connectors or enable billing."},
   create_business_document_draft: {effect:"private_document_draft",boundary:"Only on an explicit file request. Saves a private draft; never sends or publishes it."},
   call_connected_mcp_tool: {effect:"connector_dependent",boundary:"Discover first. Read-only calls may execute; write-capable calls request approval. Check execution evidence after approval, never treat an approval as execution."},
   delegate_to_specialist_agent: {effect:"workforce_orchestration",boundary:"Returns one bounded reasoning-only specialist report inside the conversation. The specialist has no tools, approvals, hiring, spending or deployment authority, and JD verifies the report independently."},
@@ -28,7 +29,7 @@ const effects: Record<string, {effect:string; boundary:string}> = {
   propose_agent_definition: {effect:"saved_internal_record",boundary:"Saves a validated specialist proposal as an immutable registry draft for independent human review. Not evaluated, published, executable, hireable or billable."},
 };
 const readers = new Set([
-  "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence",
+  "get_approved_business_context", "get_people_intelligence", "get_performance_intelligence", "get_operations_intelligence", "get_workforce_roster", "get_published_workforce_specialists",
   "get_organisation_departments", "get_business_memory", "get_workspace_overview",
   "get_hiring_pipeline", "get_billing_snapshot", "get_business_expense_anomalies",
   "get_business_kpi_trends", "get_recent_activity_logs", "get_email_delivery_logs",

@@ -1321,7 +1321,7 @@ function AppInner(){
 
   const navigationQuery = sideOpen || isMobile ? sidebarSearch : "";
   const visibleNavigation = searchNavigation(NAV,navigationQuery);
-  const assistantTools = assistantNavigation(NAV,navigationQuery);
+  const assistantTools = assistantNavigation(NAV,navigationQuery).filter(tool=>tool.id!=="workforce"||["owner","admin"].includes(role));
   const groupCollapsed = (id) => isNavGroupCollapsed(id,collapsedGroups,navigationQuery,sideOpen||isMobile);
   const chatEntry = NAV.find(entry=>entry.id==="jd-chat"&&!entry.group);
 
@@ -1546,7 +1546,7 @@ function AppInner(){
           {page==="audit-log"     && (canAccess("audit-log")    ?<AuditLogPage ctx={ctx}/>           :<AccessDenied/>)}
           {page==="admin-tools"   && (role==="admin"            ?<AdminToolsPage ctx={ctx}/>         :<AccessDenied/>)}
           {page==="permissions"   && (role==="admin"            ?<PermissionsPage ctx={ctx}/>        :<AccessDenied/>)}
-          {page==="settings"      && (role==="admin"            ?<SettingsPage ctx={{...ctx,notify}}/>:<AccessDenied/>)}
+          {page==="settings"      && (canAccess("settings") ? <SettingsPage ctx={{...ctx,notify}}/> : <AccessDenied/>)}
           {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
         </main>

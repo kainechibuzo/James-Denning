@@ -113,31 +113,41 @@ try{for(const width of [320,393,1280]){
   await navigate('Conversation history');await navigate('JD Assistant');await page.locator('.jd-compose').waitFor();
   await navigate('Conversation history');await page.locator('.jd-history-create').click();await page.locator('.jd-compose').waitFor();assert.equal(await page.locator('.jd-markdown').count(),0);
   await page.locator('.reference-workspace-header').getByRole('button',{name:'Help / Product Tour',exact:true}).click();await check('product-tour');await page.getByRole('button',{name:'Skip',exact:true}).click();
-  if(width>=561)await page.locator('.reference-workspace-header').getByRole('button',{name:'Open settings'}).click();else await navigate('Organisation Settings');await page.getByText('Workspace Profile',{exact:true}).waitFor();await check('header-settings');
- }
-
- // Same header and actual role-filtered sidebar for every main route.
- for(const label of ['Recruitment','Email Logs','Notifications','Permissions','Organisation Settings','Admin Tools','Register organisation']){
-  await navigate(label);await check(label.toLowerCase().replaceAll(' ','-'),true);
- }
- await navigate('Organisation Settings');
- for(const tab of ['Workspace','Organization Info','Security','JD Connect','About']){await page.locator('.jd-workspace-page').getByRole('button',{name:tab,exact:true}).click();await check('settings-'+tab.toLowerCase().replaceAll(' ','-'),tab==='JD Connect');}
- await navigate('Tasks & Operations');await check('operations-overview',true);
- const operationTabs=['SaaS Agents','Business Builder','Workflow Studio','Recurring & Assignment','Collaboration','Business Platform','Organisation','Operations','Hiring','Capabilities','JD Runs','Intelligence'];
- for(const tab of operationTabs){
-  await page.locator('.jd-workspace-page>div>nav').getByRole('button',{name:tab,exact:true}).click();
-  await check('operations-'+tab.toLowerCase().replaceAll(/[^a-z0-9]+/g,'-'),['SaaS Agents','Workflow Studio'].includes(tab));
-  if(tab==='Business Platform'){
-   for(const sub of ['CRM','Sales','Expenses','Contracts','Support','SLA policies','Documents','Integrations','Cash flow','Revenue intelligence','Expense budgets','KPI trends','Predictive analysis','Executive reports','Business health']){
-    await page.locator('.jd-workspace-page').getByRole('button',{name:sub,exact:true}).click();await check('business-'+sub.toLowerCase().replaceAll(' ','-'),false);
-   }
+  const accountSettings=page.locator('.reference-workspace-header [data-account-settings]');
+  if(await accountSettings.isVisible()){
+   const settingsLabel=await accountSettings.getAttribute('aria-label');await accountSettings.click();
+   if(settingsLabel==='Open settings')await page.getByText('Workspace Profile',{exact:true}).waitFor();else await page.getByRole('dialog').waitFor();
+   await check('header-settings');
+  }else{
+   await page.locator('.reference-workspace-header').getByRole('button',{name:'My profile',exact:true}).click();
+   await page.getByRole('dialog').waitFor();await check('mobile-header-profile');await page.getByRole('button',{name:'Close dialog',exact:true}).click();
   }
  }
+
+ // Audit the current single-entry JD Assistant shell rather than legacy standalone routes.
+ const menuToggle=page.locator('[data-tour="workspace-menu"]');
+ if(await menuToggle.getAttribute('aria-expanded')==='false')await menuToggle.click();
+ for(const label of ['Conversation history','Review Centre','Departments','AI usage','Automation runs','Connectors']){
+  await page.locator('#workspace-navigation').getByRole('button',{name:label,exact:true}).waitFor();
+ }
+ await page.keyboard.press('Escape');
+ const accountSettings=page.locator('.reference-workspace-header [data-account-settings]');
+ await accountSettings.waitFor({state:'attached'});
+ if(await accountSettings.isVisible()){
+  const settingsLabel=await accountSettings.getAttribute('aria-label');await accountSettings.click();
+  if(settingsLabel==='Open settings')await page.getByText('Workspace Profile',{exact:true}).waitFor();
+  else await page.getByRole('dialog').waitFor();
+  await check('header-settings',true);
+ }else{
+  assert.equal(await accountSettings.count(),1,'mobile retains the settings control in the responsive header');
+  await page.locator('.reference-workspace-header').getByRole('button',{name:'My profile',exact:true}).click();
+  await page.getByRole('dialog').waitFor();await check('mobile-header-profile',true);
+  await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+ }
  await page.locator('.reference-workspace-header').getByRole('button',{name:'My profile',exact:true}).click();await check('profile-dialog',true);await page.getByRole('button',{name:'Close dialog',exact:true}).click();
- await page.locator('.reference-workspace-header').getByRole('button',{name:'Switch to dark mode'}).click();await check('dark-operations',true);
- await navigate('Organisation Settings');await check('dark-settings',true);
+ await page.locator('.reference-workspace-header').getByRole('button',{name:'Switch to dark mode'}).click();await check('dark-chat-shell',true);
  await page.locator('.reference-workspace-header').getByRole('button',{name:'Switch to light mode'}).click();
- const toggle=page.locator('[data-tour="workspace-menu"]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();
+ if(await menuToggle.getAttribute('aria-expanded')==='false')await menuToggle.click();
  await page.locator('#workspace-navigation').getByRole('button',{name:'Switch organisation',exact:true}).click();await check('workspace-switch-dialog',true);await page.getByRole('button',{name:'Stay here'}).click();
  for(const mode of ['signin','signup','reset','update','invite-sent']){await page.evaluate(mode=>window.__mountSite(mode),mode);await check('auth-'+mode,['signin','signup'].includes(mode));}
  await page.evaluate(()=>{history.replaceState({},'','/oauth/consent?authorization_id=synthetic');window.__mountSite('oauth');});await check('oauth-consent',true);

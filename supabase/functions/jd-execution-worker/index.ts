@@ -14,7 +14,7 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 
-import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError, type QueueMessage } from "../_shared/jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, isTerminalProviderRejection, isProviderRateLimit, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError, type QueueMessage } from "../_shared/jd-execution-worker-helpers.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
@@ -465,7 +465,7 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       if (ackError || acknowledged !== true) throw new Error("Could not acknowledge the unknown-outcome job");
       return { job_id: jobId, status: "partially_completed", outcome: "unknown", automatic_retry: false };
     }
-    if (error instanceof NonRetryableAgentResponseError || /Model provider returned HTTP 4\d\d/.test(detail)) {
+    if (error instanceof NonRetryableAgentResponseError || isTerminalProviderRejection(detail)) {
       const completedAt = new Date().toISOString();
       const providerRejected = !(error instanceof NonRetryableAgentResponseError);
       const errorCode = providerRejected ? "provider_request_rejected" : "invalid_model_response";
@@ -499,8 +499,10 @@ async function processMessage(admin: any, message: QueueMessage, workerId: strin
       p_lease_token: leaseToken,
       p_queue_message_id: message.message_id,
       p_delay_seconds: retryDelaySeconds(Number(claim.attempt_count || 1)),
-      p_error_code: "worker_execution_failed",
-      p_safe_error_message: detail.slice(0, MAX_ERROR_LENGTH),
+      p_error_code: isProviderRateLimit(detail) ? "provider_rate_limited" : "worker_execution_failed",
+      p_safe_error_message: isProviderRateLimit(detail)
+        ? "Model provider temporarily rate-limited JD; a bounded durable retry was scheduled."
+        : detail.slice(0, MAX_ERROR_LENGTH),
     });
     if (retryError) throw new Error("Execution failed and retry could not be scheduled");
     const { data: pendingMessage } = await admin.from("jd_messages").select("id")

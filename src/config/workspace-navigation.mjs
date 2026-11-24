@@ -14,7 +14,7 @@ const entries = [
   {id:"mail-logs",     label:"Email Logs",            icon:"mail-logs",  roles:["admin"]},
   {id:"notifications", label:"Notifications",         icon:"bell",       roles:["admin"]},
   {id:"permissions",   label:"Permissions",           icon:"shield",     roles:["admin"]},
-  {id:"settings",      label:"Organisation Settings", icon:"settings",   roles:["admin"]},
+  {id:"settings",      label:"Settings",               icon:"settings",   roles:["owner","admin"]},
   {id:"admin-tools",   label:"Admin Tools",           icon:"database",   roles:["admin"]},
   {id:"org-create",    label:"Register organisation", icon:"building",   roles:["admin"]},
 ];
@@ -40,27 +40,26 @@ export function defaultCollapsedGroups(page) {
 
 // Derive groups from permitted children: never leave an orphan or empty header.
 export function buildWorkspaceNavigation({role, canAccess = () => false}) {
-  const permitted = new Map();
-  for (const entry of WORKSPACE_NAVIGATION) {
-    if (!entry.roles.includes(role) || permitted.has(entry.id)) continue;
-    if (role !== "admin" && !canAccess(entry.id)) continue; // Preserve existing admin semantics.
-    permitted.set(entry.id, {...entry});
-  }
-  const output = [];
-  const take = (id, gid) => {
-    if (!permitted.has(id)) return;
-    const page = {...permitted.get(id)};
-    if (gid) page.gid = gid; else delete page.gid;
-    output.push(page); permitted.delete(id);
-  };
-  for (const id of ["jd-chat","jd-operations"]) take(id);
-  for (const group of BUSINESS_GROUPS) {
-    const children = group.pages.filter((id) => permitted.has(id));
-    if (!children.length) continue;
-    output.push({id:group.id,group:group.group});
-    for (const id of children) take(id,group.id);
-  }
-  // Future authorised routes must not disappear merely because layout metadata is missing.
-  for (const id of [...permitted.keys()]) take(id);
-  return output;
+  // Keep JD Assistant as the primary destination, with the two account-level
+  // destinations owners/admins need to manage their workspace and subscription.
+  // This is presentation only: every destination still passes the permission
+  // resolver here and the route/backend must enforce access independently.
+  const chat = WORKSPACE_NAVIGATION.find((entry) => entry.id === "jd-chat");
+  if (!chat || !chat.roles.includes(role)) return [];
+  if (role !== "admin" && !canAccess("jd-chat")) return [];
+
+  const organisation = BUSINESS_GROUPS.find((group) => group.id === "g-organisation");
+  const accountPages = WORKSPACE_NAVIGATION.filter((entry) =>
+    ["billing", "settings"].includes(entry.id)
+    && entry.roles.includes(role)
+    && canAccess(entry.id)
+    && organisation?.pages.includes(entry.id)
+  );
+  if (!accountPages.length) return [{...chat}];
+
+  return [
+    {...chat},
+    {id: organisation.id, group: organisation.group},
+    ...accountPages.map((entry) => ({...entry, gid: organisation.id})),
+  ];
 }

@@ -27,19 +27,21 @@ const report=over=>({kind:'skills_package_report',status:'needs_review',archiveB
  license:{declared:'Apache-2.0',licenseFile:true,status:'declared_with_license_file'},packageHash:'b'.repeat(64),manifestHash:'c'.repeat(64),...over});
 
 async function initialise(){
- await db.exec("create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key,school_id uuid,role text,full_name text);create schema extensions;create function extensions.digest(data bytea,algorithm text) returns bytea language sql immutable as $$select sha256(data)$$;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);");
+ await db.exec("create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key,school_id uuid,role text,full_name text);create schema extensions;create function extensions.digest(data bytea,algorithm text) returns bytea language sql immutable as $$select sha256(data)$$;create schema storage;create table public.jd_billing_subscriptions(id uuid primary key default gen_random_uuid(),school_id uuid not null unique references public.schools(id),status text not null,currency text not null default 'USD',trial_ends_at timestamptz,current_period_end timestamptz);create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);");
  const source=read('supabase/migrations/20261111085143_jd_autonomous_automation.sql');
  for(const t of ['jd_conversations','jd_automation_runs','jd_automation_steps','jd_approvals','jd_audit_events'])await db.exec(source.match(new RegExp(`create table if not exists public\\.${t} \\([\\s\\S]*?\\n\\);`))[0]);
  await db.exec(read('supabase/migrations/20261122120000_jd_skills_catalog.sql'));
  await db.exec(read('supabase/migrations/20261122210000_jd_skills_autonomous.sql'));
  await db.exec(read('supabase/migrations/20261122220000_jd_discovery_autonomy.sql'));
+ await db.exec(read('supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql'));
+ await db.exec(read('supabase/migrations/20261124170000_jd_specialist_quote_only_estimates.sql'));
  await db.query('insert into schools values($1),($2)',[tenant,otherTenant]);
  for(const [who,school,role] of [[admin,tenant,'owner'],[second,tenant,'admin'],[staff,tenant,'manager'],[other,otherTenant,'owner']]){
   await db.query('insert into auth.users values($1)',[who]);await db.query('insert into profiles values($1,$2,$3,$4)',[who,school,role,'Synthetic actor']);
  }
 }
 before(initialise);
-beforeEach(async()=>{n=100;await db.exec('reset role;truncate jd_skill_packages,jd_skill_imports,jd_skills,jd_skill_versions,jd_skill_reviews,jd_skill_run_references,jd_skill_requests,jd_skill_acquisitions,jd_agent_time_ledger,jd_workspace_autonomy,jd_agent_playbooks,jd_discovery_sessions,jd_audit_events,jd_automation_runs cascade');});
+beforeEach(async()=>{n=100;await db.exec('reset role;truncate jd_billing_subscriptions,jd_skill_packages,jd_skill_imports,jd_skills,jd_skill_versions,jd_skill_reviews,jd_skill_run_references,jd_skill_requests,jd_skill_acquisitions,jd_agent_time_ledger,jd_workspace_autonomy,jd_agent_playbooks,jd_discovery_sessions,jd_audit_events,jd_automation_runs cascade');});
 after(()=>db.close());
 async function rpc(name,args,role='service_role'){
  await db.exec(`set role ${role}`);
@@ -184,4 +186,43 @@ test('discovery client validates read-backs and enforces the charging boundary',
  await assert.rejects(()=>discoveryRequest(client,role,{action:'discovery.decide',confirm:true,requestId:id(62),sessionId:id(63),decision:'maybe',note:'nonsense note here'}),/explicit decision/);
  await assert.rejects(()=>discoveryRequest(client,role,{action:'discovery.start',confirm:true,requestId:id(64),idea:'too short'}),/at least 10/);
  await assert.rejects(()=>discoveryRequest(client,'staff',{action:'autonomy.read'}),/membership/);
+});
+
+test('specialist quote verifies subscription, approval, run gate, time cap and settlement',async()=>{
+ await db.query("insert into jd_billing_subscriptions(school_id,status,trial_ends_at) values($1,'trialing',clock_timestamp()+interval '2 days')",[tenant]);
+ await rpc('jd_set_workspace_autonomy',[admin,id(n++),'assisted',3600,15000]);
+ const proposal=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst','Research the market, competitors, customer demand and pricing evidence for this product.',1800,1800]);
+ assert.equal(proposal.status,'awaiting_approval');assert.equal(proposal.subscription_status,'trialing');assert.equal(proposal.rate_minor_per_hour,15000);assert.equal(proposal.estimated_amount_minor,7500);assert.equal(proposal.charging_enabled,false);
+ const run=(await db.query("insert into jd_automation_runs(school_id,requested_by,status,request_text) values($1,$2,'queued','Approved specialist run') returning id",[tenant,admin])).rows[0].id;
+ await expectFail(rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']),'42501');
+ await expectFail(rpc('jd_specialist_proposal_approve',[staff,id(n++),proposal.proposal_id,'approve']),'42501');
+ const approved=await rpc('jd_specialist_proposal_approve',[admin,id(n++),proposal.proposal_id,'approve']);assert.equal(approved.status,'approved');
+ const linked=await rpc('jd_specialist_proposal_link_run',[admin,id(n++),proposal.proposal_id,run]);assert.equal(linked.status,'linked');
+ const started=await rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']);assert.equal(started.allocated_seconds,1800);
+ const replay=await rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-001']);assert.equal(replay.proposal_id,started.proposal_id);
+ await expectFail(rpc('jd_specialist_run_start',[admin,run,'research_analyst','call-002']),'42501');
+ await db.query("update jd_specialist_run_proposals set started_at=clock_timestamp()-interval '31 minutes' where run_id=$1",[run]);
+ const settled=await rpc('jd_specialist_run_settle',[admin,run,'timed_out']);assert.equal(settled.status,'timed_out');assert.equal(settled.actual_seconds,1800);assert.equal(settled.actual_amount_minor,7500);
+ const summary=await rpc('jd_read_billing_summary',[admin]);assert.equal(summary.specialist_runs,1);assert.equal(summary.actual_seconds,1800);assert.equal(summary.amount_minor_actual,7500);assert.equal(summary.charging_enabled,false);
+});
+
+test('quote-only estimates are available without subscription or capacity and never authorise execution',async()=>{
+ const task='Research the market, competitors, customer demand and pricing evidence for this product.';
+ const missing=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,600,600]);
+ assert.equal(missing.status,'quote_only');assert.equal(missing.subscription_status,'missing');
+ assert.equal(missing.authorization_eligible,false);assert.equal(missing.authorization_block_reason,'subscription_required');
+ assert.equal(missing.estimated_amount_minor,Math.round(600*10000/3600));assert.equal(missing.charging_enabled,false);
+ await expectFail(rpc('jd_specialist_proposal_approve',[admin,id(n++),missing.proposal_id,'approve']),'40001');
+ await expectFail(rpc('jd_specialist_proposal_link_run',[admin,id(n++),missing.proposal_id,id(88)]),'42501');
+ await db.query("insert into jd_billing_subscriptions(school_id,status,trial_ends_at) values($1,'expired',clock_timestamp()-interval '1 day')",[tenant]);
+ const expired=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,600,600]);
+ assert.equal(expired.status,'quote_only');assert.equal(expired.subscription_status,'expired');
+ assert.equal(expired.authorization_block_reason,'subscription_expired');
+ await db.query("update jd_billing_subscriptions set status='active',trial_ends_at=null where school_id=$1",[tenant]);
+ await rpc('jd_set_workspace_autonomy',[admin,id(n++),'assisted',600,15000]);
+ const overCeiling=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,900,900]);
+ assert.equal(overCeiling.status,'quote_only');assert.equal(overCeiling.authorization_eligible,false);
+ assert.equal(overCeiling.authorization_block_reason,'workspace_time_ceiling_exceeded');
+ const eligible=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,300,300]);
+ assert.equal(eligible.status,'awaiting_approval');assert.equal(eligible.authorization_eligible,true);
 });

@@ -38,3 +38,12 @@ export function isNonRetryableExecutionEvidenceError(error: unknown): boolean {
     || (!!error && typeof error === "object"
       && (error as Record<string, unknown>).code === "JD_EXECUTION_EVIDENCE_PERSISTENCE_FAILED");
 }
+
+/** HTTP 429 is temporary provider backpressure and must use the bounded durable job retry path. */
+export function isTerminalProviderRejection(detail: string): boolean {
+  return /Model provider returned HTTP 4\d\d/.test(detail) && !/Model provider returned HTTP 429/.test(detail);
+}
+
+export function isProviderRateLimit(detail: string): boolean {
+  return /Model provider returned HTTP 429/.test(detail);
+}

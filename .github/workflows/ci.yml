@@ -98,6 +98,9 @@ jobs:
       - name: Test workspace autonomy, discovery agent and agentic-time billing
         run: npm run test:discovery
 
+      - name: Test specialist recommendations, approval lifecycle and chat attribution
+        run: npm run test:agent-recommendations
+
       - name: Test shadow usage ledger, worker fencing and runtime boundaries
         run: npm run test:usage
 

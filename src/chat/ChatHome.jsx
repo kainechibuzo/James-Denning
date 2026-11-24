@@ -1,4 +1,5 @@
 import {newRequestId} from "./conversation-state.mjs";
+import {recommendSpecialist,extractAgentDeliverables} from "./agent-recommendations.mjs";
 import { StructuredResponse } from "./StructuredResponse.jsx";
 import { validateResponse, contextualWorkspace, streamText, answerText, decodeResponse } from "../../supabase/functions/_shared/jd-response.mjs";
 import hljs from "highlight.js/lib/core";
@@ -15,29 +16,17 @@ import {ComposerTools} from "./ComposerTools.jsx";
 import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
 import {ConversationHistory} from "./ConversationHistory.jsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, ArrowUp, Pause, Play, Plus, Sparkles, BarChart3, Users, ClipboardList, FileText, Menu, History, LoaderCircle, PanelLeftClose, Activity, Mail, CalendarDays, Wallet, ShieldCheck, Search, Paperclip, ChevronDown, Command, Building2, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
+import { Send, Pause, Play, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
 import { ReviewCentre } from "./ReviewCentre.jsx";
 import { AgentUsage } from "./AgentUsage.jsx";
 import { RunMonitor } from "./RunMonitor.jsx";
+import { WorkforceControlCentre } from "./WorkforceControlCentre.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
 import { JDDepartments } from "./JDDepartments.jsx";
 import {savedTaskKey} from "./operational-task-records.mjs";
 import {useOperationalTaskRecords} from "./use-operational-task-records.jsx";
-
-const actions = [
-  { icon: BarChart3, label: "Performance", prompt: "Review organisation performance and highlight what needs attention." },
-  { icon: Users, label: "People", prompt: "Give me an overview of people, teams and outstanding people-related work." },
-  { icon: CalendarDays, label: "Schedule", prompt: "Review today's schedule and identify conflicts or missing items." },
-  { icon: ClipboardList, label: "Attendance", prompt: "Review recent attendance and identify exceptions that need attention." },
-  { icon: Wallet, label: "Billing", prompt: "Summarise billing, payments and outstanding balances." },
-  { icon: Mail, label: "Email", prompt: "Help me draft a clear professional email. Ask for any missing details." },
-  { icon: FileText, label: "Reports", prompt: "Prepare an organisation report using the latest available records." },
-  { icon: Command, label: "Capabilities", prompt: "Show me what you can currently do in this workspace. Check the registered tools available to my role. Separate callable actions, approval requirements and independent live verification. Missing verification is not proof that a tool is unavailable. Do not execute writes just to demonstrate a capability." },
-  { icon: Activity, label: "Logs", prompt: "Inspect recent activity and audit logs. Highlight failures and unusual activity." },
-  { icon: ShieldCheck, label: "Permissions", prompt: "Review organisation permissions and identify access concerns. Do not change access without approval." },
-];
 
 function renderInlineMarkdown(value, keyPrefix = "inline") {
   const tokenPattern = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|\x60[^\x60]+\x60|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"')]+)/g;
@@ -175,9 +164,16 @@ function friendlyActivityLabel(name) {
     get_billing_snapshot: "Checking billing records",
     get_business_expense_anomalies: "Reviewing recorded business costs",
     get_recent_activity_logs: "Checking recent workspace activity",
-    create_business_document_draft: "Preparing your document"
+    create_business_document_draft: "Preparing your document",
+    delegate_to_specialist_agent: "Delegating the requested analysis to a specialist",
+    deploy_specialist_workforce: "Assigning work to the specialist team",
+    research_analyst: "Research analyst reviewing the assigned task",
+    workforce_deployed: "Specialist assignments recorded"
   };
-  return labels[String(name || "")] || "Working on your request";
+  const key = String(name || "").trim();
+  if (labels[key]) return labels[key];
+  if (!key) return "Processing an execution step";
+  return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
 export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
@@ -187,9 +183,12 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const [showRuns, setShowRuns] = useState(false);
+  const [showWorkforce, setShowWorkforce] = useState(false);
   const [showDepartments, setShowDepartments] = useState(false);
   const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [agentProposals,setAgentProposals]=useState({});
+  const [agentDurations,setAgentDurations]=useState({});
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError,setHistoryError] = useState("");
@@ -204,6 +203,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const submissions=useRef(new Set());
+  const agentProposalRequests=useRef(new Map());
   const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id]);
   const pendingKey=(message,id)=>"jd:request:"+resumeKey+":"+(id||"new")+":"+message;
   const rememberConversation=id=>{try{if(id)sessionStorage.setItem("jd:active:"+resumeKey,id);else sessionStorage.removeItem("jd:active:"+resumeKey);}catch{}};
@@ -322,13 +322,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: !terminal && finalMessage?.content_json?.streaming === true,
-            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
+            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message, toolOutput: step.output_json?.tool_output || null })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
             id: finalMessage?.id || message.id,
             response: validateResponse(finalMessage?.content_json?.response),
             visualWorkspace: contextualWorkspace(finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job?.status || status,
             job: update.job,
+            specialistUsage: update.specialistUsage || message.specialistUsage || null,
           };
         }));
         delay = hadError ? Math.min(15000, Math.round(delay * 1.8)) : 2500;
@@ -343,7 +344,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [pendingJobKey]);
 
-  const send = async (override, targetConversationId = null, interaction = null, requestId = null) => {
+  const send = async (override, targetConversationId = null, interaction = null, requestId = null, agentApprovalId = null) => {
     const message = (override ?? draft).trim();
     if (!message || queuePaused) return false;
     const storageKey=pendingKey(message,targetConversationId||conversationIdRef.current);
@@ -370,7 +371,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}), ...(agentApprovalId?{agentApprovalId}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
@@ -399,6 +400,44 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   };
 
 
+
+  const prepareAgentProposal = async (item,recommendation) => {
+    const seconds=Number(agentDurations[item.id]||1800);
+    const quoteKey=item.id+":"+recommendation.id+":"+seconds;
+    if(!agentProposalRequests.current.has(quoteKey))agentProposalRequests.current.set(quoteKey,crypto.randomUUID());
+    setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:agentProposalRequests.current.get(quoteKey),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
+      if(error||data?.error||!data?.proposal?.proposal_id){let message=data?.error||error?.message||"JD could not verify the specialist quote.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
+      setAgentProposals(current=>({...current,[item.id]:data.proposal}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
+  };
+  const launchApprovedAgent = async (item,proposal) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,launching:true,error:null}}));
+    try{
+      const originalPrompt=messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"";
+      const task=recommendSpecialist(originalPrompt)?.task||originalPrompt;
+      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      const launchKey="run:"+proposal.proposal_id;
+      if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,crypto.randomUUID());
+      const queued=await send(approvedText,null,null,agentProposalRequests.current.get(launchKey),proposal.proposal_id);
+      if(!queued)throw new Error("Approval is saved, but JD could not confirm the specialist run was queued. You can retry this approved assignment.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"submitted",launching:false,error:null}}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved",launching:false,error:error?.message||"Could not queue approved agent"}}));}
+  };
+  const decideAgentProposal = async (item,proposal,decision) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
+    const decisionKey="decision:"+proposal.proposal_id+":"+decision;
+    if(!agentProposalRequests.current.has(decisionKey))agentProposalRequests.current.set(decisionKey,crypto.randomUUID());
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:agentProposalRequests.current.get(decisionKey),proposalId:proposal.proposal_id}});
+      if(error||data?.error){let message=data?.error||error?.message||"The approval decision was not confirmed.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
+      if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
+      if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
+      await launchApprovedAgent(item,{...proposal,status:"approved"});
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,error:error?.message||"Approval could not be confirmed"}}));}
+  };
 
   const cancelExecution = async (item) => {
     if(!item?.jobId)return;
@@ -443,7 +482,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     handledNavigation.current = navigationRequest;
     const view = navigationRequest.view;
     setShowReview(view === "review"); setShowUsage(view === "usage");
-    setShowRuns(view === "runs"); setShowDepartments(view === "departments");
+    setShowRuns(view === "runs"); setShowWorkforce(view === "workforce"); setShowDepartments(view === "departments");
     setShowConnectors(view === "connectors");
     conversationSequence.current++;setOpeningId(null);
     setHistoryOpen(view === "history");
@@ -457,12 +496,15 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       <style>{`
 
         .jd-message-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;opacity:.82}
+        .jd-agent-recommendation,.jd-agent-deliverable{width:100%;margin:14px 0;padding:14px;border:1px solid var(--jd-border);border-radius:13px;background:var(--jd-card);color:var(--jd-text)}
+        .jd-agent-recommendation-top,.jd-agent-deliverable-head{display:flex;align-items:center;gap:9px}.jd-agent-avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:var(--jd-soft);border:1px solid var(--jd-border);font-size:10px;font-weight:800}.jd-agent-recommendation-top>span:nth-child(2),.jd-agent-deliverable-head>span:nth-child(2){display:grid;gap:2px}.jd-agent-recommendation-top strong,.jd-agent-deliverable-head strong{font-size:12px;color:var(--jd-text)}.jd-agent-recommendation-top small,.jd-agent-deliverable-head small{font-size:10px;color:var(--jd-muted)}.jd-agent-recommendation-status{margin-left:auto;font-size:9px;color:var(--jd-muted);border:1px solid var(--jd-border);border-radius:20px;padding:4px 7px}.jd-agent-recommendation p{font-size:12px;line-height:1.6;color:var(--jd-text-soft);margin:11px 0}.jd-agent-recommendation-actions{display:flex;flex-wrap:wrap;gap:8px}.jd-agent-recommendation-actions button{border:1px solid var(--jd-border);border-radius:9px;background:var(--jd-soft);color:var(--jd-text);padding:9px 12px;font-size:11px;cursor:pointer}.jd-agent-recommendation-actions button:first-child{background:var(--jd-text);color:var(--jd-card);border-color:var(--jd-text)}.jd-agent-duration{display:grid;gap:5px;font-size:10px;color:var(--jd-muted)}.jd-agent-duration select{border:1px solid var(--jd-border);border-radius:8px;padding:8px;background:var(--jd-card);color:var(--jd-text)}.jd-agent-quote{display:grid;gap:7px;margin-top:12px;padding:12px;border:1px solid var(--jd-border);border-radius:10px;font-size:11px;color:var(--jd-text)}.jd-agent-quote strong{font-size:12px}.jd-agent-live-usage{font-size:10px;color:var(--jd-muted);padding:7px 0;border-top:1px solid var(--jd-soft);margin-top:4px}.jd-agent-deliverable-head{padding-bottom:10px;border-bottom:1px solid var(--jd-soft)}.jd-agent-deliverable-body{padding-top:12px}.jd-agent-deliverable-foot{border-top:1px solid var(--jd-soft);padding-top:8px;margin-top:10px;color:var(--jd-muted);font-size:9px}
+
         .jd-message-actions button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--jd-border);background:var(--jd-card);color:var(--jd-text-soft);border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer}
         .jd-message-actions button:hover{color:var(--jd-text);border-color:var(--jd-muted)}
         .jd-message-actions button:disabled{opacity:.5;cursor:not-allowed}
-        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .jd-command{position:relative;height:calc(100dvh - 57px);min-height:0;display:flex;background:radial-gradient(ellipse at 12% 18%,rgba(196,201,207,.19),transparent 28%),radial-gradient(ellipse at 88% 78%,rgba(196,201,207,.15),transparent 26%),var(--jd-canvas);color:var(--jd-text);font-family:"JD Inter",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .jd-command *{box-sizing:border-box}
-        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--jd-canvas);border-bottom:1px solid var(--jd-border)}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid var(--jd-border);background:color-mix(in srgb, var(--jd-card) 94%, transparent);border-radius:10px;color:var(--jd-text-soft);display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:var(--jd-text-soft);background:color-mix(in srgb, var(--jd-card) 96%, transparent);border:1px solid var(--jd-border);border-radius:20px;padding:7px 11px;box-shadow:0 2px 8px rgba(20,24,30,.04);display:inline-flex;align-items:center;gap:7px}
+        .jd-history-scrim{display:none}\n        .jd-tool-overlay{position:absolute;z-index:12;inset:0;overflow:auto;background:rgba(20,24,30,.22);backdrop-filter:blur(3px);padding:14px}\n        .jd-tool-overlay>*{min-height:100%;max-width:100%;border-radius:16px;box-shadow:0 18px 60px rgba(20,24,30,.18)}\n        @media(max-width:760px){.jd-tool-overlay{padding:0}.jd-tool-overlay>*{border-radius:0}}\n        .jd-utility{position:relative;flex:0 0 auto;min-width:0;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--jd-canvas);border-bottom:1px solid var(--jd-border)}\n        .jd-utility button,.jd-utility-status{pointer-events:auto}\n        .jd-history-trigger{width:36px;height:36px;border:1px solid var(--jd-border);background:color-mix(in srgb, var(--jd-card) 94%, transparent);border-radius:10px;color:var(--jd-text-soft);display:grid;place-items:center;cursor:pointer}\n        .jd-utility-status{font-size:10px;color:var(--jd-muted);background:color-mix(in srgb,var(--jd-canvas) 86%,transparent);border:1px solid color-mix(in srgb,var(--jd-border) 62%,transparent);border-radius:20px;padding:7px 11px;display:inline-flex;align-items:center;gap:7px}
         .jd-utility-status.is-working{color:var(--jd-text-soft);border-color:var(--jd-border)}
         .jd-utility-status.is-working:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--jd-muted);animation:jd-pulse 1.25s ease-in-out infinite}
         @keyframes jd-pulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}\n        .jd-rail{width:258px;flex:0 0 258px;background:var(--jd-soft);border-right:1px solid var(--jd-border);padding:18px 13px;display:flex;flex-direction:column;gap:16px}
@@ -487,14 +529,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-top{display:none}
         .jd-top-left{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
         .jd-icon-btn{border:0;background:transparent;color:var(--jd-muted);padding:7px;border-radius:8px;cursor:pointer}
-        .jd-top-title{font-size:12px;font-weight:700;color:var(--jd-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:var(--jd-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .jd-top-title{font-family:Georgia,"Times New Roman",serif;font-size:14px;font-weight:600;letter-spacing:.01em;color:var(--jd-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jd-top-sub{font-size:10px;color:var(--jd-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .jd-status{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--jd-muted);flex-shrink:0;white-space:nowrap}
         .jd-dot{width:7px;height:7px;border-radius:50%;background:var(--jd-muted)}
         .jd-scroll{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:12px 20px}
         .jd-welcome{width:min(760px,100%);margin:auto 0;display:flex;flex-direction:column;align-items:center;padding:20px 0 28px}
         .jd-spark{width:42px;height:42px;border-radius:14px;background:var(--jd-text);color:var(--jd-card);display:grid;place-items:center;margin-bottom:20px}
-        .jd-heading{font-size:clamp(25px,3.3vw,34px);font-weight:620;letter-spacing:-1.4px;margin:0 0 8px;text-align:center}
-        .jd-subtitle{font-size:13px;line-height:1.65;color:var(--jd-muted);text-align:center;margin:0 0 25px}
+        .jd-heading{font-size:clamp(27px,3.6vw,39px);font-weight:520;letter-spacing:-1.2px;margin:0 0 9px;text-align:center;color:var(--jd-text);line-height:1.18}.jd-script{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;letter-spacing:-.8px;color:var(--jd-text-soft)}.jd-welcome-mark{width:42px;height:42px;border:1px solid var(--jd-border);border-radius:13px;background:color-mix(in srgb,var(--jd-card) 78%,transparent);color:var(--jd-text);display:grid;place-items:center;font-family:Georgia,serif;font-size:14px;letter-spacing:-1px;margin-bottom:22px;box-shadow:0 5px 18px rgba(22,26,32,.035)}
+        .jd-subtitle{font-family:Georgia,"Times New Roman",serif;font-size:16px;line-height:1.6;color:var(--jd-text-soft);text-align:center;margin:0 0 8px}.jd-welcome-description{font-size:12px;line-height:1.7;color:var(--jd-muted);text-align:center;max-width:420px;margin:0}
         .jd-actions{width:min(690px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
         .jd-action{border:1px solid var(--jd-border);background:var(--jd-card);border-radius:12px;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;min-height:59px;cursor:pointer;color:var(--jd-text-soft)}
         .jd-action:hover{border-color:var(--jd-muted);box-shadow:0 3px 12px rgba(20,24,30,.045)}
@@ -544,6 +586,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         .jd-activity-title{display:flex;align-items:center;gap:8px;color:var(--jd-text-soft);font-size:11px;font-weight:650}
         .jd-activity-dot{width:7px;height:7px;border-radius:50%;background:var(--jd-muted);animation:jd-pulse 1.25s ease-in-out infinite;flex:0 0 auto}
         .jd-activity-detail{font-size:10px;color:var(--jd-muted);line-height:1.5;padding-left:15px}
+        .jd-activity-step.failed{color:var(--jd-text)}.jd-activity-error{display:block;color:var(--jd-muted);font-size:11px;line-height:1.45;margin-top:2px}
         .jd-activity-steps{display:grid;gap:5px;padding-left:15px}
         .jd-activity-step{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--jd-muted)}
         .jd-activity-step.done{color:var(--jd-muted)}
@@ -568,9 +611,9 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-scroll{padding:12px 14px 8px}
           .jd-welcome{width:100%;padding:8px 0 12px}
           .jd-spark{width:38px;height:38px;border-radius:12px;margin-bottom:14px}
-          .jd-heading{font-size:25px;letter-spacing:-.9px;margin-bottom:7px}
+          .jd-heading{font-size:27px;letter-spacing:-.8px;margin-bottom:8px}
           .jd-subtitle{font-size:12px;line-height:1.6;margin-bottom:18px}
-          .jd-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+          .jd-actions{display:none}
           .jd-action{min-height:52px;padding:10px 9px;gap:9px}
           .jd-action span:last-child{font-size:11px}
           .jd-actions>.jd-action:last-child:nth-child(odd){grid-column:1/-1}
@@ -582,10 +625,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-status .jd-dot{width:8px;height:8px}
         }
         @media(max-width:360px){
-          .jd-actions{grid-template-columns:1fr 1fr}
-          .jd-action{gap:7px;padding:9px 8px}
-          .jd-action span:last-child{font-size:10px}
-          .jd-heading{font-size:23px}
+          .jd-heading{font-size:24px}
         }
       `}</style>
       {showConnectors ? <ConnectorDirectory organizationName={organizationName} role={user?.role} onBack={()=>setShowConnectors(false)}/> : historyOpen ? <ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
@@ -594,33 +634,42 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         <header className="jd-top">
           <div className="jd-top-left">
             <button className="jd-icon-btn" type="button" aria-label="Toggle sidebar" onClick={()=>setHistoryOpen(v=>!v)}>{historyOpen?<PanelLeftClose size={17}/>:<Menu size={18}/>}</button>
-            <div><div className="jd-top-title">JD Assistant</div><div className="jd-top-sub">{organizationName} · Command centre</div></div>
+            <div><div className="jd-top-title">James-Denning</div><div className="jd-top-sub">{organizationName}</div></div>
           </div>
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
         <div className="jd-utility">
-          <button className="jd-history-trigger" type="button" aria-label="Open conversation history" title="Conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={18}/></button>
+          <button className="jd-history-trigger" type="button" aria-label="Open menu and conversation history" title="Menu" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><Menu size={18}/></button>
           <span className={"jd-utility-status" + (isWorking ? " is-working" : "")} role="status">{isWorking ? (activeJobCount > 0 ? `Working · ${activeJobCount} run${activeJobCount===1?"":"s"} active` : "Working on your request") : "Workspace Active"}</span>
         </div><div className="jd-scroll">
           {historyCursor&&<button className="jd-load-earlier" type="button" disabled={earlierLoading||sending} onClick={()=>loadConversation(conversationId,historyCursor)}>{earlierLoading?"Loading earlier messages…":"Load earlier messages"}</button>}
           {messages.length===0 ? <div className="jd-welcome">
+            <div className="jd-welcome-mark" aria-hidden="true">JD</div>
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
-            <div style={{margin:"2px 0 16px"}}><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>
             <p className="jd-subtitle">Your organisation, one conversation.</p>
             <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={item.id||item.jobId||index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.pollUnavailable?<span className="jd-job-state is-unavailable">Status unavailable</span>:waitingForAnswer(item)?<span className="jd-job-state is-awaiting">Waiting for your answer</span>:item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.role==="assistant" && item.streaming ? <div className="jd-stream-text">{streamText(item.content)}</div> : item.role==="assistant"&&validateResponse(item.response) ? <StructuredResponse response={item.response} messageId={item.id} scope={taskScope} answers={messages.filter(m=>m.role==="user"&&m.interaction).map(m=>m.interaction)} disabled={sending||queuePaused} renderMarkdown={renderMessageContent} onReview={()=>setShowReview(true)} onAnswer={(interaction,requestId)=>{const block=item.response.blocks.find(b=>b.id===interaction.blockId);return send(answerText(block,interaction.values),conversationId,interaction,requestId);}}/> : item.content ? renderMessageContent(item.role==="assistant"?decodeResponse(item.content).content:item.content) : null}
+              {item.role==="assistant" && extractAgentDeliverables(item.toolEvents).map((agent,agentIndex)=><section className="jd-agent-deliverable" key={agent.id+"-"+agentIndex} aria-label={"Result from "+agent.role}>
+                <div className="jd-agent-deliverable-head"><span className="jd-agent-avatar">AI</span><span><strong>{agent.role.replace(/\b\w/g,letter=>letter.toUpperCase())}</strong><small>Specialist agent · {agent.status.replaceAll("_"," ")}</small></span></div>
+                <div className="jd-agent-deliverable-body">{renderMessageContent(agent.report)}</div>
+                <div className="jd-agent-deliverable-foot">Agent output · {agent.scope==="reasoning_only_no_tools"?"Reasoning only; no external research or actions performed":"Execution scope recorded by JD"}{item.specialistUsage&&<> · {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s · {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency}</>}</div>
+              </section>)}
+              {item.role==="assistant" && index===messages.map(m=>m.role).lastIndexOf("assistant") && !extractAgentDeliverables(item.toolEvents).length && !item.agentRecommendationDismissed && (()=>{const prompt=messages.slice(0,index).filter(m=>m.role==="user").slice(-1)[0]?.content||"";const recommendation=recommendSpecialist(prompt);return recommendation?<section className="jd-agent-recommendation" aria-label="JD specialist recommendation"><div className="jd-agent-recommendation-top"><span className="jd-agent-avatar">AI</span><span><strong>JD recommends a specialist</strong><small>{recommendation.name}</small></span><span className="jd-agent-recommendation-status">Suggested</span></div><p>{item.toolEvents?.some(event=>event.name==="delegate_to_specialist_agent")?"JD blocked the previous specialist attempt because approval was missing. No specialist work was started. Request a priced proposal below, then approve it before JD retries.":"This request may benefit from a dedicated "+recommendation.name+". JD can prepare the assignment and show its verified time and cost estimate before anything runs."}</p>{!agentProposals[item.id]&&<div className="jd-agent-recommendation-actions"><label className="jd-agent-duration">Time allocation <select value={agentDurations[item.id]||1800} onChange={event=>setAgentDurations(current=>({...current,[item.id]:Number(event.target.value)}))}><option value={900}>15 minutes</option><option value={1800}>30 minutes</option><option value={3600}>1 hour</option><option value={7200}>2 hours</option></select></label><button type="button" onClick={()=>prepareAgentProposal(item,recommendation)}>Check price and request approval</button><button type="button" onClick={()=>setMessages(current=>current.map(m=>m.id===item.id?{...m,agentRecommendationDismissed:true}:m))}>No, continue without agent</button></div>}{agentProposals[item.id]?.loading&&<p>Verifying subscription, rate and spend limit…</p>}{agentProposals[item.id]?.error&&<p role="alert">{agentProposals[item.id].error}</p>}{agentProposals[item.id]?.proposal_id&&<div className="jd-agent-quote"><strong>Verified agent quote</strong><div>Rate: {(agentProposals[item.id].rate_minor_per_hour/100).toFixed(2)} {agentProposals[item.id].currency}/hour</div><div>Allocated time: {Math.round(agentProposals[item.id].allocated_seconds/60)} minutes</div><div>Estimated maximum spend cap: {(agentProposals[item.id].estimated_amount_minor/100).toFixed(2)} {agentProposals[item.id].currency}</div><div>Spend cap: {Math.round(agentProposals[item.id].spend_cap_seconds/60)} minutes</div><div>Subscription: {agentProposals[item.id].subscription_status}</div>{agentProposals[item.id].status==="quote_only"&&<div role="status">Estimate only — not authorised to run. {({subscription_required:"An eligible subscription is required.",subscription_expired:"The subscription or trial has expired.",subscription_not_eligible:"The subscription is not eligible.",workspace_time_ceiling_exceeded:"This allocation exceeds the workspace time ceiling.",workspace_time_capacity_unavailable:"The workspace time allocation is currently reserved."})[agentProposals[item.id].authorization_block_reason]||"Execution prerequisites are not met."} You can review this estimate, but JD will not reserve time or start the specialist.</div>}<div>Payment collection: disabled; this is an estimate, not a charge.</div>{agentProposals[item.id].status==="awaiting_approval"&&<div className="jd-agent-recommendation-actions"><button type="button" disabled={agentProposals[item.id].decisionLoading} onClick={()=>decideAgentProposal(item,agentProposals[item.id],"approve")}>Yes, approve and run</button><button type="button" disabled={agentProposals[item.id].decisionLoading} onClick={()=>decideAgentProposal(item,agentProposals[item.id],"decline")}>No, decline</button></div>}{agentProposals[item.id].status==="approved"&&<div className="jd-agent-recommendation-actions"><button type="button" disabled={agentProposals[item.id].launching} onClick={()=>launchApprovedAgent(item,agentProposals[item.id])}>{agentProposals[item.id].launching?"Queueing approved agent…":"Run approved agent"}</button></div>}{agentProposals[item.id].status==="submitted"&&<p>Approval confirmed and the specialist assignment was submitted to JD.</p>}{agentProposals[item.id].error&&<p role="alert">{agentProposals[item.id].error}</p>}{agentProposals[item.id].status==="declined"&&<p>Declined. No agent was started.</p>}</div>}</section>:null})()}
               {item.role === "assistant" && !item.streaming && contextualWorkspace(item.visualWorkspace) && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role} onRefreshTasks={taskRecords.refresh} onViewRuns={()=>setShowRuns(true)} onTaskWork={task=>send(`Review saved operational task ${task.id} (${JSON.stringify(task.title)}). Check its current status, dependencies, inputs and required approvals. Work on the next supported, authorised step using the available tools; if blocked, explain exactly what is needed. Do not treat changing a checklist status as executing the task, do not bypass approval, and do not claim completion without evidence.`)}/>}
               {item.role === "assistant" && !item.pollUnavailable && !item.content && (item.submitting || ["queued", "planning", "running", "retry_wait"].includes(item.run?.status)) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
-                  {item.toolEvents?.length ? <div className="jd-activity-steps">{item.toolEvents.slice(-4).map((event,i) => {
-                    const label = friendlyActivityLabel(event.name);
-                    const done = event.status === "completed";
-                    return <div className={"jd-activity-step" + (done ? " done" : "")} key={String(event.name)+"-"+i}><span>{done ? "✓" : "·"}</span>{label}</div>;
-                  })}</div> : <div className="jd-activity-detail">JD is organising the work and checking what it needs.</div>}
+                  {item.specialistUsage&&<div className="jd-agent-live-usage">Agent time: {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s / {Math.floor(item.specialistUsage.allocated_seconds/60)}m · current estimate {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency} · {item.specialistUsage.status.replaceAll("_"," ")}</div>}
+                  {item.toolEvents?.length ? <div className="jd-activity-steps">{[...new Map(item.toolEvents.map((event,i) => [String(event.name||"step")+"-"+String(event.status||"running"),{...event,_key:String(event.name||"step")+"-"+String(event.status||"running")+"-"+i}])).values()].slice(-5).map((event) => {
+                    const status = String(event.status || "running");
+                    const failed = ["failed","outcome_unknown"].includes(status);
+                    const done = status === "completed";
+                    const detail = failed && event.error ? String(event.error).slice(0,180) : null;
+                    return <div className={"jd-activity-step" + (done ? " done" : "") + (failed ? " failed" : "")} key={event._key}><span>{done ? "✓" : failed ? "!" : "·"}</span><span><strong>{friendlyActivityLabel(event.name)}</strong>{detail && <small className="jd-activity-error">{detail}</small>}</span></div>;
+                  })}</div> : <div className="jd-activity-detail">{item.run?.status === "queued" ? "Your original request is saved and waiting for a worker." : item.run?.status === "retry_wait" ? "The worker is retrying this saved request. Your original prompt remains attached." : "JD has accepted your original request. Waiting for a confirmed execution event."}</div>}
                 </div>
               )}
               {item.pollUnavailable&&<div className="jd-response-result" role="status">Live status could not be refreshed. The job may still be running; no new execution was requested.<button type="button" onClick={()=>loadConversation(conversationId)}>Refresh conversation</button><button type="button" onClick={()=>setShowRuns(true)}>View execution runs</button></div>}
@@ -638,8 +687,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           {error&&<div className="jd-error">{error}</div>}
           <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
           <div className="jd-compose">
-            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={actions}
-              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowUsage(false);setShowDepartments(false);}}>
+            <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={[]}
+              onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowWorkforce(view==="workforce");setShowUsage(false);setShowDepartments(false);}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
           </div>
@@ -648,6 +697,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
       </section>)}
       {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
+      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)}/></div>}
       {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
       {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
