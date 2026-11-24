@@ -113,7 +113,7 @@ declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_bil
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
- if not found or p.status<>'linked' or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
+ if not found or p.status not in ('linked','running') or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
