@@ -173,7 +173,7 @@ begin
  select coalesce(sum(actual_seconds),0)::integer as actual_seconds,
   coalesce(sum(allocated_seconds) filter(where status in ('approved','linked','running')),0)::integer as confirmed_seconds,
   coalesce(sum(actual_amount_minor),0)::bigint as amount_minor,
-  count(*)::integer as specialist_runs
+  count(*) filter(where status in ('linked','running','completed','timed_out','failed'))::integer as specialist_runs
  into specialist_tally from public.jd_specialist_run_proposals where school_id=tenant;
  return jsonb_build_object('mode',coalesce(a.mode,'assisted'),'spend_ceiling_seconds',coalesce(a.spend_ceiling_seconds,3600),
   'agentic_rate_minor_per_hour',coalesce(a.agentic_rate_minor_per_hour,10000),'currency',coalesce(a.currency,'USD'),
