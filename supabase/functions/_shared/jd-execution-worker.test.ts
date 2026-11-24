@@ -1,4 +1,4 @@
-import { isQueueMessage, retryDelaySeconds, safeWorkerId, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError } from "./jd-execution-worker-helpers.ts";
+import { isQueueMessage, retryDelaySeconds, safeWorkerId, isTerminalProviderRejection, isProviderRateLimit, NonRetryableExecutionEvidenceError, isNonRetryableExecutionEvidenceError } from "./jd-execution-worker-helpers.ts";
 
 function assertEquals(actual: unknown, expected: unknown, message: string) {
   if (actual !== expected) throw new Error(`${message}: expected ${String(expected)}, received ${String(actual)}`);
@@ -29,4 +29,16 @@ Deno.test("execution evidence persistence failures are terminal and non-retryabl
   assertEquals(isNonRetryableExecutionEvidenceError(error), true, "typed evidence failure recognised");
   assertEquals(isNonRetryableExecutionEvidenceError({ code: "JD_EXECUTION_EVIDENCE_PERSISTENCE_FAILED" }), true, "serialised evidence failure recognised");
   assertEquals(isNonRetryableExecutionEvidenceError(new Error("temporary network error")), false, "ordinary transient error remains retryable");
+});
+
+Deno.test("HTTP 429 uses bounded durable retry instead of terminal provider rejection", () => {
+  const detail = "Model provider returned HTTP 429 after 3 attempt(s): upstream rate limited";
+  assertEquals(isProviderRateLimit(detail), true, "429 is classified as rate limited");
+  assertEquals(isTerminalProviderRejection(detail), false, "429 is not terminal");
+});
+
+Deno.test("permanent provider 4xx remains terminal", () => {
+  const detail = "Model provider returned HTTP 400 after 1 attempt(s): malformed request";
+  assertEquals(isProviderRateLimit(detail), false, "400 is not rate limited");
+  assertEquals(isTerminalProviderRejection(detail), true, "400 is terminal");
 });
