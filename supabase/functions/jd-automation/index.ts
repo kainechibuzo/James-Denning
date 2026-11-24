@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
  if(typeof payload.action==="string"&&payload.action.startsWith("workforce."))return handleWorkforceControl({payload,admin,profile,actorId:authData.user.id,json});
  if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("skills."))return handleSkills({payload,admin,auth,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true",autonomous:Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"});
- if(typeof payload.action==="string"&&["discovery.","autonomy.","billing."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
+ if(typeof payload.action==="string"&&["discovery.","autonomy.","billing.","agent.proposal."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("usage."))return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){
@@ -183,9 +183,10 @@ Deno.serve(async (req) => {
    .order("created_at",{ascending:false}).limit(1).maybeSingle();
   assistantMessage=message||null;
   const {data:steps}=await admin.from("jd_automation_steps")
-   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
+   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at,output_json")
    .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true}).limit(50);
-  return json({job,run,assistantMessage,steps:steps||[]});
+  const {data:specialistUsage}=await admin.rpc("jd_specialist_run_status",{p_actor:authData.user.id,p_run:run.id});
+  return json({job,run,assistantMessage,steps:steps||[],specialistUsage:specialistUsage||null});
  }
  if(payload.action==="execution.monitor.list"){
   if(!hasRole(MANAGER_ROLES,profile.role)) return json({error:"Manager permission required to inspect execution history"},403);

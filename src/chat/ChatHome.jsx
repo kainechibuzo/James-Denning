@@ -1,4 +1,5 @@
 import {newRequestId} from "./conversation-state.mjs";
+import {recommendSpecialist,extractAgentDeliverables} from "./agent-recommendations.mjs";
 import { StructuredResponse } from "./StructuredResponse.jsx";
 import { validateResponse, contextualWorkspace, streamText, answerText, decodeResponse } from "../../supabase/functions/_shared/jd-response.mjs";
 import hljs from "highlight.js/lib/core";
@@ -186,6 +187,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const [showDepartments, setShowDepartments] = useState(false);
   const [showConnectors,setShowConnectors] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [agentProposals,setAgentProposals]=useState({});
+  const [agentDurations,setAgentDurations]=useState({});
   const [conversations, setConversations] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError,setHistoryError] = useState("");
@@ -200,6 +203,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const conversationCreationRef = useRef(null);
   const sending = activeSends > 0;
   const submissions=useRef(new Set());
+  const agentProposalRequests=useRef(new Map());
   const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id]);
   const pendingKey=(message,id)=>"jd:request:"+resumeKey+":"+(id||"new")+":"+message;
   const rememberConversation=id=>{try{if(id)sessionStorage.setItem("jd:active:"+resumeKey,id);else sessionStorage.removeItem("jd:active:"+resumeKey);}catch{}};
@@ -318,13 +322,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
             ...message,
             content: finalMessage?.content || (terminal ? fallback : message.content),
             streaming: !terminal && finalMessage?.content_json?.streaming === true,
-            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
+            toolEvents: update.steps?.length ? update.steps.map((step) => ({ name: step.tool_key, status: step.status, risk: step.risk_level, error: step.error_message, toolOutput: step.output_json?.tool_output || null })) : (finalMessage?.content_json?.toolEvents || message.toolEvents || []),
             id: finalMessage?.id || message.id,
             response: validateResponse(finalMessage?.content_json?.response),
             visualWorkspace: contextualWorkspace(finalMessage?.content_json?.visual_workspace || finalMessage?.content_json?.ui),
             run: { ...message.run, ...update.run, status },
             jobStatus: update.job?.status || status,
             job: update.job,
+            specialistUsage: update.specialistUsage || message.specialistUsage || null,
           };
         }));
         delay = hadError ? Math.min(15000, Math.round(delay * 1.8)) : 2500;
@@ -339,7 +344,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [pendingJobKey]);
 
-  const send = async (override, targetConversationId = null, interaction = null, requestId = null) => {
+  const send = async (override, targetConversationId = null, interaction = null, requestId = null, agentApprovalId = null) => {
     const message = (override ?? draft).trim();
     if (!message || queuePaused) return false;
     const storageKey=pendingKey(message,targetConversationId||conversationIdRef.current);
@@ -366,7 +371,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}), ...(agentApprovalId?{agentApprovalId}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
@@ -395,6 +400,44 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   };
 
 
+
+  const prepareAgentProposal = async (item,recommendation) => {
+    const seconds=Number(agentDurations[item.id]||1800);
+    const quoteKey=item.id+":"+recommendation.id+":"+seconds;
+    if(!agentProposalRequests.current.has(quoteKey))agentProposalRequests.current.set(quoteKey,crypto.randomUUID());
+    setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:agentProposalRequests.current.get(quoteKey),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
+      if(error||data?.error||!data?.proposal?.proposal_id){let message=data?.error||error?.message||"JD could not verify the specialist quote.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
+      setAgentProposals(current=>({...current,[item.id]:data.proposal}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
+  };
+  const launchApprovedAgent = async (item,proposal) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,launching:true,error:null}}));
+    try{
+      const originalPrompt=messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"";
+      const task=recommendSpecialist(originalPrompt)?.task||originalPrompt;
+      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      const launchKey="run:"+proposal.proposal_id;
+      if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,crypto.randomUUID());
+      const queued=await send(approvedText,null,null,agentProposalRequests.current.get(launchKey),proposal.proposal_id);
+      if(!queued)throw new Error("Approval is saved, but JD could not confirm the specialist run was queued. You can retry this approved assignment.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"submitted",launching:false,error:null}}));
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved",launching:false,error:error?.message||"Could not queue approved agent"}}));}
+  };
+  const decideAgentProposal = async (item,proposal,decision) => {
+    setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
+    const decisionKey="decision:"+proposal.proposal_id+":"+decision;
+    if(!agentProposalRequests.current.has(decisionKey))agentProposalRequests.current.set(decisionKey,crypto.randomUUID());
+    try{
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:agentProposalRequests.current.get(decisionKey),proposalId:proposal.proposal_id}});
+      if(error||data?.error){let message=data?.error||error?.message||"The approval decision was not confirmed.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
+      if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
+      if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
+      setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
+      await launchApprovedAgent(item,{...proposal,status:"approved"});
+    }catch(error){setAgentProposals(current=>({...current,[item.id]:{...proposal,error:error?.message||"Approval could not be confirmed"}}));}
+  };
 
   const cancelExecution = async (item) => {
     if(!item?.jobId)return;
@@ -453,6 +496,9 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       <style>{`
 
         .jd-message-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;opacity:.82}
+        .jd-agent-recommendation,.jd-agent-deliverable{width:100%;margin:14px 0;padding:14px;border:1px solid var(--jd-border);border-radius:13px;background:var(--jd-card);color:var(--jd-text)}
+        .jd-agent-recommendation-top,.jd-agent-deliverable-head{display:flex;align-items:center;gap:9px}.jd-agent-avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:var(--jd-soft);border:1px solid var(--jd-border);font-size:10px;font-weight:800}.jd-agent-recommendation-top>span:nth-child(2),.jd-agent-deliverable-head>span:nth-child(2){display:grid;gap:2px}.jd-agent-recommendation-top strong,.jd-agent-deliverable-head strong{font-size:12px;color:var(--jd-text)}.jd-agent-recommendation-top small,.jd-agent-deliverable-head small{font-size:10px;color:var(--jd-muted)}.jd-agent-recommendation-status{margin-left:auto;font-size:9px;color:var(--jd-muted);border:1px solid var(--jd-border);border-radius:20px;padding:4px 7px}.jd-agent-recommendation p{font-size:12px;line-height:1.6;color:var(--jd-text-soft);margin:11px 0}.jd-agent-recommendation-actions{display:flex;flex-wrap:wrap;gap:8px}.jd-agent-recommendation-actions button{border:1px solid var(--jd-border);border-radius:9px;background:var(--jd-soft);color:var(--jd-text);padding:9px 12px;font-size:11px;cursor:pointer}.jd-agent-recommendation-actions button:first-child{background:var(--jd-text);color:var(--jd-card);border-color:var(--jd-text)}.jd-agent-duration{display:grid;gap:5px;font-size:10px;color:var(--jd-muted)}.jd-agent-duration select{border:1px solid var(--jd-border);border-radius:8px;padding:8px;background:var(--jd-card);color:var(--jd-text)}.jd-agent-quote{display:grid;gap:7px;margin-top:12px;padding:12px;border:1px solid var(--jd-border);border-radius:10px;font-size:11px;color:var(--jd-text)}.jd-agent-quote strong{font-size:12px}.jd-agent-live-usage{font-size:10px;color:var(--jd-muted);padding:7px 0;border-top:1px solid var(--jd-soft);margin-top:4px}.jd-agent-deliverable-head{padding-bottom:10px;border-bottom:1px solid var(--jd-soft)}.jd-agent-deliverable-body{padding-top:12px}.jd-agent-deliverable-foot{border-top:1px solid var(--jd-soft);padding-top:8px;margin-top:10px;color:var(--jd-muted);font-size:9px}
+
         .jd-message-actions button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--jd-border);background:var(--jd-card);color:var(--jd-text-soft);border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer}
         .jd-message-actions button:hover{color:var(--jd-text);border-color:var(--jd-muted)}
         .jd-message-actions button:disabled{opacity:.5;cursor:not-allowed}
@@ -606,10 +652,17 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={item.id||item.jobId||index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> JD {item.pollUnavailable?<span className="jd-job-state is-unavailable">Status unavailable</span>:waitingForAnswer(item)?<span className="jd-job-state is-awaiting">Waiting for your answer</span>:item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.role==="assistant" && item.streaming ? <div className="jd-stream-text">{streamText(item.content)}</div> : item.role==="assistant"&&validateResponse(item.response) ? <StructuredResponse response={item.response} messageId={item.id} scope={taskScope} answers={messages.filter(m=>m.role==="user"&&m.interaction).map(m=>m.interaction)} disabled={sending||queuePaused} renderMarkdown={renderMessageContent} onReview={()=>setShowReview(true)} onAnswer={(interaction,requestId)=>{const block=item.response.blocks.find(b=>b.id===interaction.blockId);return send(answerText(block,interaction.values),conversationId,interaction,requestId);}}/> : item.content ? renderMessageContent(item.role==="assistant"?decodeResponse(item.content).content:item.content) : null}
+              {item.role==="assistant" && extractAgentDeliverables(item.toolEvents).map((agent,agentIndex)=><section className="jd-agent-deliverable" key={agent.id+"-"+agentIndex} aria-label={"Result from "+agent.role}>
+                <div className="jd-agent-deliverable-head"><span className="jd-agent-avatar">AI</span><span><strong>{agent.role.replace(/\b\w/g,letter=>letter.toUpperCase())}</strong><small>Specialist agent · {agent.status.replaceAll("_"," ")}</small></span></div>
+                <div className="jd-agent-deliverable-body">{renderMessageContent(agent.report)}</div>
+                <div className="jd-agent-deliverable-foot">Agent output · {agent.scope==="reasoning_only_no_tools"?"Reasoning only; no external research or actions performed":"Execution scope recorded by JD"}{item.specialistUsage&&<> · {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s · {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency}</>}</div>
+              </section>)}
+              {item.role==="assistant" && index===messages.map(m=>m.role).lastIndexOf("assistant") && !extractAgentDeliverables(item.toolEvents).length && !item.toolEvents?.some(event=>event.name==="delegate_to_specialist_agent") && !item.agentRecommendationDismissed && (()=>{const prompt=messages.slice(0,index).filter(m=>m.role==="user").slice(-1)[0]?.content||"";const recommendation=recommendSpecialist(prompt);return recommendation?<section className="jd-agent-recommendation" aria-label="JD specialist recommendation"><div className="jd-agent-recommendation-top"><span className="jd-agent-avatar">AI</span><span><strong>JD recommends a specialist</strong><small>{recommendation.name}</small></span><span className="jd-agent-recommendation-status">Suggested</span></div><p>This request may benefit from a dedicated {recommendation.name}. JD can prepare the assignment and show its verified time and cost estimate before anything runs.</p>{!agentProposals[item.id]&&<div className="jd-agent-recommendation-actions"><label className="jd-agent-duration">Time allocation <select value={agentDurations[item.id]||1800} onChange={event=>setAgentDurations(current=>({...current,[item.id]:Number(event.target.value)}))}><option value={900}>15 minutes</option><option value={1800}>30 minutes</option><option value={3600}>1 hour</option><option value={7200}>2 hours</option></select></label><button type="button" onClick={()=>prepareAgentProposal(item,recommendation)}>Check price and request approval</button><button type="button" onClick={()=>setMessages(current=>current.map(m=>m.id===item.id?{...m,agentRecommendationDismissed:true}:m))}>No, continue without agent</button></div>}{agentProposals[item.id]?.loading&&<p>Verifying subscription, rate and spend limit…</p>}{agentProposals[item.id]?.error&&<p role="alert">{agentProposals[item.id].error}</p>}{agentProposals[item.id]?.proposal_id&&<div className="jd-agent-quote"><strong>Verified agent quote</strong><div>Rate: {(agentProposals[item.id].rate_minor_per_hour/100).toFixed(2)} {agentProposals[item.id].currency}/hour</div><div>Allocated time: {Math.round(agentProposals[item.id].allocated_seconds/60)} minutes</div><div>Estimated maximum spend cap: {(agentProposals[item.id].estimated_amount_minor/100).toFixed(2)} {agentProposals[item.id].currency}</div><div>Spend cap: {Math.round(agentProposals[item.id].spend_cap_seconds/60)} minutes</div><div>Subscription: {agentProposals[item.id].subscription_status}</div><div>Payment collection: disabled; this is an estimate, not a charge.</div>{agentProposals[item.id].status==="awaiting_approval"&&<div className="jd-agent-recommendation-actions"><button type="button" disabled={agentProposals[item.id].decisionLoading} onClick={()=>decideAgentProposal(item,agentProposals[item.id],"approve")}>Yes, approve and run</button><button type="button" disabled={agentProposals[item.id].decisionLoading} onClick={()=>decideAgentProposal(item,agentProposals[item.id],"decline")}>No, decline</button></div>}{agentProposals[item.id].status==="approved"&&<div className="jd-agent-recommendation-actions"><button type="button" disabled={agentProposals[item.id].launching} onClick={()=>launchApprovedAgent(item,agentProposals[item.id])}>{agentProposals[item.id].launching?"Queueing approved agent…":"Run approved agent"}</button></div>}{agentProposals[item.id].status==="submitted"&&<p>Approval confirmed and the specialist assignment was submitted to JD.</p>}{agentProposals[item.id].error&&<p role="alert">{agentProposals[item.id].error}</p>}{agentProposals[item.id].status==="declined"&&<p>Declined. No agent was started.</p>}</div>}</section>:null})()}
               {item.role === "assistant" && !item.streaming && contextualWorkspace(item.visualWorkspace) && <JDVisualWorkspace key={taskScope+":"+index} ui={item.visualWorkspace} onAnswer={(answer) => send("For the decision above, I choose: " + answer + ". Continue using this choice.")} onTaskToggle={taskRecords.transition} taskRecords={taskRecords.state} taskRole={user?.role} onRefreshTasks={taskRecords.refresh} onViewRuns={()=>setShowRuns(true)} onTaskWork={task=>send(`Review saved operational task ${task.id} (${JSON.stringify(task.title)}). Check its current status, dependencies, inputs and required approvals. Work on the next supported, authorised step using the available tools; if blocked, explain exactly what is needed. Do not treat changing a checklist status as executing the task, do not bypass approval, and do not claim completion without evidence.`)}/>}
               {item.role === "assistant" && !item.pollUnavailable && !item.content && (item.submitting || ["queued", "planning", "running", "retry_wait"].includes(item.run?.status)) && (
                 <div className="jd-activity" role="status" aria-live="polite">
                   <div className="jd-activity-title"><span className="jd-activity-dot"/>{item.run?.status === "queued" ? "Getting things ready" : item.run?.status === "retry_wait" ? "Picking up where I left off" : item.toolEvents?.length ? "Working through the details" : "Thinking through your request"}</div>
+                  {item.specialistUsage&&<div className="jd-agent-live-usage">Agent time: {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s / {Math.floor(item.specialistUsage.allocated_seconds/60)}m · current estimate {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency} · {item.specialistUsage.status.replaceAll("_"," ")}</div>}
                   {item.toolEvents?.length ? <div className="jd-activity-steps">{[...new Map(item.toolEvents.map((event,i) => [String(event.name||"step")+"-"+String(event.status||"running"),{...event,_key:String(event.name||"step")+"-"+String(event.status||"running")+"-"+i}])).values()].slice(-5).map((event) => {
                     const status = String(event.status || "running");
                     const failed = ["failed","outcome_unknown"].includes(status);

@@ -48,7 +48,8 @@
     "test:responses:layout": "node scripts/test-response-engine-layout.mjs",
     "test:discovery": "node --experimental-strip-types --test scripts/test-discovery-autonomy.mjs",
     "test:auto-release": "node --test scripts/test-auto-release.mjs",
-    "test:workforce-control-centre": "node --experimental-strip-types --test scripts/test-workforce-control-centre.mjs scripts/test-workforce-team-budgets.mjs"
+    "test:workforce-control-centre": "node --experimental-strip-types --test scripts/test-workforce-control-centre.mjs scripts/test-workforce-team-budgets.mjs",
+    "test:agent-recommendations": "node --test scripts/test-agent-recommendations.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
