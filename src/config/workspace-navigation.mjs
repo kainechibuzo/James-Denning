@@ -14,7 +14,7 @@ const entries = [
   {id:"mail-logs",     label:"Email Logs",            icon:"mail-logs",  roles:["admin"]},
   {id:"notifications", label:"Notifications",         icon:"bell",       roles:["admin"]},
   {id:"permissions",   label:"Permissions",           icon:"shield",     roles:["admin"]},
-  {id:"settings",      label:"Organisation Settings", icon:"settings",   roles:["admin"]},
+  {id:"settings",      label:"Settings",               icon:"settings",   roles:["owner","admin"]},
   {id:"admin-tools",   label:"Admin Tools",           icon:"database",   roles:["admin"]},
   {id:"org-create",    label:"Register organisation", icon:"building",   roles:["admin"]},
 ];
@@ -40,12 +40,26 @@ export function defaultCollapsedGroups(page) {
 
 // Derive groups from permitted children: never leave an orphan or empty header.
 export function buildWorkspaceNavigation({role, canAccess = () => false}) {
-  // JD is a chat-first business operating system. Keep the workspace shell
-  // intentionally single-entry: business areas remain implemented and
-  // permission-checked, but are reached through JD rather than separate
-  // sidebar destinations. This is presentation only, not an access grant.
+  // Keep JD Assistant as the primary destination, with the two account-level
+  // destinations owners/admins need to manage their workspace and subscription.
+  // This is presentation only: every destination still passes the permission
+  // resolver here and the route/backend must enforce access independently.
   const chat = WORKSPACE_NAVIGATION.find((entry) => entry.id === "jd-chat");
   if (!chat || !chat.roles.includes(role)) return [];
   if (role !== "admin" && !canAccess("jd-chat")) return [];
-  return [{...chat}];
+
+  const organisation = BUSINESS_GROUPS.find((group) => group.id === "g-organisation");
+  const accountPages = WORKSPACE_NAVIGATION.filter((entry) =>
+    ["billing", "settings"].includes(entry.id)
+    && entry.roles.includes(role)
+    && (role === "admin" || canAccess(entry.id))
+    && organisation?.pages.includes(entry.id)
+  );
+  if (!accountPages.length) return [{...chat}];
+
+  return [
+    {...chat},
+    {id: organisation.id, group: organisation.group},
+    ...accountPages.map((entry) => ({...entry, gid: organisation.id})),
+  ];
 }
