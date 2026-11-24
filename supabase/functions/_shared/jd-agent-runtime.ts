@@ -2483,11 +2483,6 @@ export async function runAgent(input: {
         } else if (tool.name === "deploy_specialist_workforce") {
           explicitToolFailure = true;
           throw new Error("Multi-agent workforce deployment is blocked here until every assigned agent has its own approved quote and time budget. No team was deployed.");
-          result = await runWorkforceDeployment(args, {
-            context: input.context,
-            available,
-            requestModel: (payload) => requestModel(payload, { silent: true }),
-          });
         } else {
           result = await tool.execute(args, input.context);
         }
