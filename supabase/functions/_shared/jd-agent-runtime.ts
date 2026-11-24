@@ -302,7 +302,7 @@ const tools: ToolSpec[] = [
         .filter((tool) => tool.name !== "get_jd_capability_inventory")
         .map((tool) => {
           const roleAllowedHere = roleAllowed(ctx, tool.roles);
-          const callableByAssistant = roleAllowedHere && (tool.risk === "low" || tool.name === "create_business_document_draft");
+          const callableByAssistant = roleAllowedHere && tool.name !== "deploy_specialist_workforce" && (tool.risk === "low" || tool.name === "create_business_document_draft");
           return {
             name: tool.name,
             description: tool.description,
