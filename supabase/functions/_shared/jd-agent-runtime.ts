@@ -1810,6 +1810,20 @@ export async function runWorkforceDeployment(
     return null;
   };
   const plan = validateWorkforcePlan(args, resolveAgent, availableToolNames);
+  // Team-only assignments are distributed by the tenant-scoped SQL router.
+  // It considers active members only and selects the lowest active assignment count.
+  for (const assignment of plan.assignments) {
+    if (assignment.teamId && !assignment.employeeId) {
+      if (!["owner","admin"].includes(options.context.role)) return {error:"Only workspace owners and administrators can route team assignments",deployed:false};
+      const refKind=assignment.agent.kind;
+      const refValue=refKind==="builtin"?(assignment.agent as any).id:(assignment.agent as any).agentId;
+      const {data:employeeId,error:routeError}=await options.context.admin.rpc("jd_workforce_choose_team_member",{
+        p_actor:options.context.userId,p_team:assignment.teamId,p_agent_kind:refKind,p_agent_ref:refValue
+      });
+      if(routeError||!employeeId) return {error:"No eligible active team member could be selected; no assignment was started",deployed:false};
+      assignment.employeeId=String(employeeId);
+    }
+  }
   // Roadmap sequence 2: when this run has a discovery plan, the deployed
   // specialists must come from the plan's roles. Built-in assignments outside
   // the plan are dropped and reported, never executed; tenant-published
@@ -1877,7 +1891,33 @@ export async function runWorkforceDeployment(
     const resolved = resolveAgent(assignment.agent) as ResolvedAgent;
     const agentEvents: AssignmentToolEvent[] = [];
     const assignmentStartedAt = Date.now();
-    // Skills context is loaded per assignment, recorded on the run, and is
+    const assignmentHash=workforceTaskHash([assignment.employeeId||"",assignment.teamId||"",assignment.task].join("|"));
+    const lifecycleWorkerId="jd-runtime-"+String(options.context.runId||"run").slice(0,48)+"-"+String(outcomes.length+1);
+    let lifecycleId:string|null=null, lifecycleToken:string|null=null;
+    if(assignment.employeeId && options.context.runId) {
+      const {data:enqueued,error:enqueueError}=await options.context.admin.rpc("jd_workforce_assignment_enqueue",{
+        p_actor:options.context.userId,p_run:options.context.runId,p_employee:assignment.employeeId||null,p_team:assignment.teamId||null,
+        p_agent_kind:assignment.agent.kind,p_agent_ref:assignment.agent.kind==="builtin"?(assignment.agent as any).id:(assignment.agent as any).agentId,
+        p_task_hash:assignmentHash
+      });
+      lifecycleId=String(enqueued?.assignment_id||"");
+      if(enqueueError||!lifecycleId) {
+        outcomes.push({agent_ref:agentRefLabel(assignment.agent),name:resolved.name,...(assignment.employeeId?{employee_id:assignment.employeeId}:{}),...(assignment.teamId?{team_id:assignment.teamId}:{}),source:resolved.source,status:"failed",execution_time_ms:0,error:"Assignment lifecycle could not be persisted; execution was not started",tools_granted:[...assignment.requestedTools],tool_evidence:[],verification:{required:true,status:"blocked_no_deliverable"}});
+        skillContexts.push(null); continue;
+      }
+      const {data:claim,error:claimError}=await options.context.admin.rpc("jd_workforce_assignment_claim",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_lease_seconds:300});
+      lifecycleToken=String(claim?.lease_token||"");
+      if(claimError||claim?.claimed!==true||!lifecycleToken) {
+        outcomes.push({agent_ref:agentRefLabel(assignment.agent),name:resolved.name,...(assignment.employeeId?{employee_id:assignment.employeeId}:{}),...(assignment.teamId?{team_id:assignment.teamId}:{}),source:resolved.source,status:"failed",execution_time_ms:0,error:"Assignment was not claimed by a worker; no execution was started",tools_granted:[...assignment.requestedTools],tool_evidence:[],verification:{required:true,status:"blocked_no_deliverable"}});
+        skillContexts.push(null); continue;
+      }
+      const {data:acknowledged,error:ackError}=await options.context.admin.rpc("jd_workforce_assignment_ack_started",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken});
+      if(ackError||acknowledged!==true) {
+        outcomes.push({agent_ref:agentRefLabel(assignment.agent),name:resolved.name,...(assignment.employeeId?{employee_id:assignment.employeeId}:{}),...(assignment.teamId?{team_id:assignment.teamId}:{}),source:resolved.source,status:"failed",execution_time_ms:0,error:"Worker start acknowledgement was not confirmed; no execution was started",tools_granted:[...assignment.requestedTools],tool_evidence:[],verification:{required:true,status:"blocked_no_deliverable"}});
+        skillContexts.push(null); continue;
+      }
+    }
+    // Skill context is loaded per assignment, recorded on the run, and is
     // untrusted reference data only. Failures leave the assignment unchanged.
     const skill = await loadAssignmentSkillContext(options.context, assignment.task);
     try {
@@ -1887,15 +1927,25 @@ export async function runWorkforceDeployment(
         skill,
         toolSpecs: assignment.requestedTools.map((name) => specByName.get(name)).filter(Boolean) as Array<Record<string, unknown>>,
         requestModel: (payload) => options.requestModel(payload),
-        executeTool: (name, toolArgs) => {
+        executeTool: async (name, toolArgs) => {
           const tool = options.available.find((candidate) => candidate.name === name);
           if (!tool || !assignment.requestedTools.includes(name) || FORBIDDEN_AGENT_TOOLS.includes(name)) {
             throw new Error("This tool was not granted with the assignment");
           }
-          return tool.execute(toolArgs, options.context);
+          if(lifecycleId&&lifecycleToken) {
+            const {data:alive,error:leaseError}=await options.context.admin.rpc("jd_workforce_assignment_may_continue",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken});
+            if(leaseError||alive!==true) throw new Error("Assignment lease is fenced or cancellation was requested; no further tool call is permitted");
+            const {data:heartbeat,error:heartbeatError}=await options.context.admin.rpc("jd_workforce_assignment_heartbeat",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_lease_seconds:300});
+            if(heartbeatError||heartbeat!==true) throw new Error("Assignment worker lease could not be renewed; no tool call was started");
+          }
+          return await tool.execute(toolArgs, options.context);
         },
         onToolEvent: (event) => { agentEvents.push(event); },
       });
+      if(lifecycleId&&lifecycleToken) {
+        const {data:finished,error:finishError}=await options.context.admin.rpc("jd_workforce_assignment_finish",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_terminal:"report_returned",p_outcome:{execution_time_ms:Math.max(0,Date.now()-assignmentStartedAt)}});
+        if(finishError||finished!==true) throw new Error("Worker could not persist its report-returned acknowledgement");
+      }
       skillContexts.push(skill);
       outcomes.push({
         agent_ref: agentRefLabel(assignment.agent),
@@ -1914,6 +1964,12 @@ export async function runWorkforceDeployment(
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Specialist assignment failed";
+      if(lifecycleId&&lifecycleToken) {
+        const {data:cancelled}=await options.context.admin.rpc("jd_workforce_assignment_ack_cancel",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_outcome_unknown:agentEvents.some(event=>event.status==="completed")});
+        if(cancelled!==true) {
+          await options.context.admin.rpc("jd_workforce_assignment_finish",{p_assignment:lifecycleId,p_worker:lifecycleWorkerId,p_token:lifecycleToken,p_terminal:"failed",p_outcome:{error:message.slice(0,240),outcome_unknown:agentEvents.some(event=>event.status==="completed")}});
+        }
+      }
       outcomes.push({
         agent_ref: agentRefLabel(assignment.agent),
         name: resolved.name,

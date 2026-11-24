@@ -201,7 +201,6 @@ export function validateWorkforcePlan(
       fail(`Assignment ${index + 1} names a specialist that is not available for deployment`);
     const employeeId = entry.employee_id == null ? undefined : uuid(entry.employee_id) ? String(entry.employee_id) : fail(`Assignment ${index + 1} employee identity is invalid`);
     const teamId = entry.team_id == null ? undefined : uuid(entry.team_id) ? String(entry.team_id) : fail(`Assignment ${index + 1} team identity is invalid`);
-    if (teamId && !employeeId) fail(`Assignment ${index + 1} must select an employee from the requested team`);
     const task = boundedText(entry.task, `Assignment ${index + 1} task`, WORKFORCE_LIMITS.taskMinLength, WORKFORCE_LIMITS.taskMaxLength);
     const context = typeof entry.context === "string" && entry.context.trim()
       ? boundedText(entry.context, `Assignment ${index + 1} context`, 1, WORKFORCE_LIMITS.contextMaxLength)

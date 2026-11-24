@@ -15,17 +15,25 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   return !error;
  };
  if(payload?.action==="workforce.control.snapshot"){
-  const [employees,teams,members,assignments,budgets,employeeUsage,teamBudgets]=await Promise.all([
+  const [employees,teams,members,assignments,budgets,employeeUsage,teamBudgets,lifecycle]=await Promise.all([
    admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,department,role_title,purpose,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
    admin.from("jd_workforce_teams").select("id,name,purpose,department,coordinator_specialist_ref,coordinator_specialist_kind,coordinator_specialist_version,coordinator_specialist_name,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
    admin.from("jd_workforce_team_members").select("team_id,employee_id,member_role,joined_at,left_at").eq("school_id",profile.school_id).is("left_at",null).limit(500),
    admin.from("jd_workforce_assignments").select("id,run_id,agent_kind,agent_ref,agent_name,agent_version,employee_id,team_id,task,status,verification_status,created_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
    admin.from("jd_workforce_employee_budgets").select("employee_id,budget_micros,reserved_micros,accrued_micros,rate_micros_per_hour,version,updated_at").eq("school_id",profile.school_id).limit(100),
    admin.from("jd_workforce_employee_usage").select("id,employee_id,assignment_id,rate_micros_per_hour,active_microseconds,amount_micros,reconciliation_status,created_at,reconciled_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(500),
-   admin.from("jd_workforce_team_budgets").select("team_id,budget_micros,accrued_micros,version,updated_at").eq("school_id",profile.school_id).limit(100)
+   admin.from("jd_workforce_team_budgets").select("team_id,budget_micros,accrued_micros,version,updated_at").eq("school_id",profile.school_id).limit(100),
+   admin.rpc("jd_read_workforce_assignment_lifecycle",{p_actor:actorId,p_limit:200})
   ]);
-  if(employees.error||teams.error||members.error||assignments.error||budgets.error||employeeUsage.error||teamBudgets.error)return json({error:"Workforce records are not available. Confirm the reviewed schema is present before enabling this feature.",releaseReady:false},503);
-  return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],budgets:budgets.data||[],employeeUsage:employeeUsage.data||[],teamBudgets:teamBudgets.data||[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true",billingMode:"shadow_only"});
+  if(employees.error||teams.error||members.error||assignments.error||budgets.error||employeeUsage.error||teamBudgets.error||lifecycle.error)return json({error:"Workforce records are not available. Confirm the reviewed schema is present before enabling this feature.",releaseReady:false},503);
+  return json({employees:employees.data||[],teams:teams.data||[],members:members.data||[],assignments:assignments.data||[],budgets:budgets.data||[],employeeUsage:employeeUsage.data||[],teamBudgets:teamBudgets.data||[],assignmentLifecycle:Array.isArray(lifecycle.data)?lifecycle.data:[],snapshotAt:new Date().toISOString(),executionControlsEnabled:false,agentChatEnabled:Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")==="true",billingMode:"shadow_only"});
+ }
+ if(payload?.action==="workforce.assignment.cancel"){
+  if(!uuid(payload.assignmentId))return json({error:"A valid assignment identity is required"},400);
+  const {data,error}=await admin.rpc("jd_workforce_assignment_request_cancel",{p_actor:actorId,p_assignment:payload.assignmentId});
+  if(error){const status=error.code==="42501"?403:error.code==="P0002"?404:error.code==="40001"?409:500;return json({error:"Assignment cancellation was not confirmed. Refresh the workforce records.",code:error.code||"assignment_cancel_failed"},status);}
+  if(data?.assignment_id!==payload.assignmentId||!["cancelled","cancellation_requested"].includes(data.status))return json({error:"Cancellation acknowledgement was incomplete"},502);
+  return json({receipt:data},data.status==="cancelled"?200:202);
  }
  if(payload?.action==="workforce.agent.thread.open"||payload?.action==="workforce.agent.thread.history"||payload?.action==="workforce.agent.message.send"){
   if(Deno.env.get("JD_WORKFORCE_PRIVATE_CHAT_ENABLED")!=="true")return json({error:"Private specialist conversations are not enabled in this release."},503);
