@@ -66,7 +66,7 @@ end; $$;
 
 create function public.jd_specialist_proposal_approve(p_actor uuid,p_request uuid,p_proposal uuid,p_decision text)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;ceiling_value integer;committed integer;
+declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_billing_subscriptions%rowtype;old public.jd_skill_requests%rowtype;req jsonb;result jsonb;ceiling_value integer;committed integer;
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  if not exists(select 1 from public.profiles where id=p_actor and school_id=tenant and role in ('owner','admin')) then raise exception 'Workspace administrator required to approve agent spend' using errcode='42501';end if;
@@ -78,6 +78,8 @@ begin
  if not found or p.status<>'awaiting_approval' or p.expires_at<=clock_timestamp() then raise exception 'Pending, unexpired proposal required' using errcode='40001';end if;
  if p.requested_by<>p_actor then raise exception 'Only the requesting owner/admin can confirm this specialist run' using errcode='42501';end if;
  if p_decision='approve' then
+  select * into s from public.jd_billing_subscriptions where school_id=tenant;
+  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is no longer eligible for specialist execution' using errcode='42501';end if;
   select coalesce(spend_ceiling_seconds,3600) into ceiling_value from public.jd_workspace_autonomy where school_id=tenant;
   if ceiling_value is null then ceiling_value:=3600;end if;
   select coalesce(sum(allocated_seconds),0)::integer into committed from public.jd_specialist_run_proposals where school_id=tenant and id<>p.id and status in ('approved','linked','running') and expires_at>clock_timestamp();
@@ -114,7 +116,7 @@ declare tenant uuid;p public.jd_specialist_run_proposals%rowtype;s public.jd_bil
 begin
  tenant:=public.jd_skills_tenant(p_actor);
  select * into p from public.jd_specialist_run_proposals where run_id=p_run and school_id=tenant for update;
- if not found or p.status not in ('linked','running') or p.expires_at<=clock_timestamp() or p.specialist_role<>p_role or p.requested_by<>p_actor or p_call_id is null or length(p_call_id) not between 1 and 100 then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
+ if not found or p.status not in ('linked','running') or (p.status<>'running' and p.expires_at<=clock_timestamp()) or p.specialist_role<>p_role or p.requested_by<>p_actor or p_call_id is null or length(p_call_id) not between 1 and 100 then raise exception 'A linked, approved specialist proposal for this role is required' using errcode='42501';end if;
  select * into s from public.jd_billing_subscriptions where school_id=tenant;
  if s.id is null or s.status not in ('trialing','active') or (s.status='trialing' and (s.trial_ends_at is null or s.trial_ends_at<=clock_timestamp())) then raise exception 'Subscription is not eligible for specialist execution' using errcode='42501';end if;
  select * into a from public.jd_workspace_autonomy where school_id=tenant;
