@@ -34,6 +34,7 @@ async function initialise(){
  await db.exec(read('supabase/migrations/20261122210000_jd_skills_autonomous.sql'));
  await db.exec(read('supabase/migrations/20261122220000_jd_discovery_autonomy.sql'));
  await db.exec(read('supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql'));
+ await db.exec(read('supabase/migrations/20261124170000_jd_specialist_quote_only_estimates.sql'));
  await db.query('insert into schools values($1),($2)',[tenant,otherTenant]);
  for(const [who,school,role] of [[admin,tenant,'owner'],[second,tenant,'admin'],[staff,tenant,'manager'],[other,otherTenant,'owner']]){
   await db.query('insert into auth.users values($1)',[who]);await db.query('insert into profiles values($1,$2,$3,$4)',[who,school,role,'Synthetic actor']);
@@ -205,11 +206,23 @@ test('specialist quote verifies subscription, approval, run gate, time cap and s
  const summary=await rpc('jd_read_billing_summary',[admin]);assert.equal(summary.specialist_runs,1);assert.equal(summary.actual_seconds,1800);assert.equal(summary.amount_minor_actual,7500);assert.equal(summary.charging_enabled,false);
 });
 
-test('specialist quote rejects missing or expired subscription and ceiling overflow',async()=>{
- await expectFail(rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst','Research the market, competitors, customer demand and pricing evidence for this product.',600,600]),'42501');
+test('quote-only estimates are available without subscription or capacity and never authorise execution',async()=>{
+ const task='Research the market, competitors, customer demand and pricing evidence for this product.';
+ const missing=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,600,600]);
+ assert.equal(missing.status,'quote_only');assert.equal(missing.subscription_status,'missing');
+ assert.equal(missing.authorization_eligible,false);assert.equal(missing.authorization_block_reason,'subscription_required');
+ assert.equal(missing.estimated_amount_minor,Math.round(600*10000/3600));assert.equal(missing.charging_enabled,false);
+ await expectFail(rpc('jd_specialist_proposal_approve',[admin,id(n++),missing.proposal_id,'approve']),'40001');
+ await expectFail(rpc('jd_specialist_proposal_link_run',[admin,id(n++),missing.proposal_id,id(88)]),'42501');
  await db.query("insert into jd_billing_subscriptions(school_id,status,trial_ends_at) values($1,'expired',clock_timestamp()-interval '1 day')",[tenant]);
- await expectFail(rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst','Research the market, competitors, customer demand and pricing evidence for this product.',600,600]),'42501');
+ const expired=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,600,600]);
+ assert.equal(expired.status,'quote_only');assert.equal(expired.subscription_status,'expired');
+ assert.equal(expired.authorization_block_reason,'subscription_expired');
  await db.query("update jd_billing_subscriptions set status='active',trial_ends_at=null where school_id=$1",[tenant]);
  await rpc('jd_set_workspace_autonomy',[admin,id(n++),'assisted',600,15000]);
- await expectFail(rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst','Research the market, competitors, customer demand and pricing evidence for this product.',900,900]),'54000');
+ const overCeiling=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,900,900]);
+ assert.equal(overCeiling.status,'quote_only');assert.equal(overCeiling.authorization_eligible,false);
+ assert.equal(overCeiling.authorization_block_reason,'workspace_time_ceiling_exceeded');
+ const eligible=await rpc('jd_specialist_proposal_create',[admin,id(n++),'research_analyst',task,300,300]);
+ assert.equal(eligible.status,'awaiting_approval');assert.equal(eligible.authorization_eligible,true);
 });
