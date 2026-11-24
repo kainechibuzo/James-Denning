@@ -340,7 +340,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [pendingJobKey]);
 
-  const send = async (override, targetConversationId = null, interaction = null, requestId = null) => {
+  const send = async (override, targetConversationId = null, interaction = null, requestId = null, agentApprovalId = null) => {
     const message = (override ?? draft).trim();
     if (!message || queuePaused) return false;
     const storageKey=pendingKey(message,targetConversationId||conversationIdRef.current);
@@ -367,7 +367,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}) },
+        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}), ...(agentApprovalId?{agentApprovalId}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
