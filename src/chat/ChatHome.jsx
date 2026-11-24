@@ -405,7 +405,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
     try{
       const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:crypto.randomUUID(),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
-      if(error||data?.error||!data?.proposal?.proposal_id)throw new Error(data?.error||"JD could not verify the specialist quote.");
+      if(error||data?.error||!data?.proposal?.proposal_id){let message=data?.error||error?.message||"JD could not verify the specialist quote.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
       setAgentProposals(current=>({...current,[item.id]:data.proposal}));
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
   };
@@ -413,7 +413,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
     try{
       const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:crypto.randomUUID(),proposalId:proposal.proposal_id}});
-      if(error||data?.error)throw new Error(data?.error||"The approval decision was not confirmed.");
+      if(error||data?.error){let message=data?.error||error?.message||"The approval decision was not confirmed.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
       if(decision==="decline"){setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"declined"}}));return;}
       if(data?.receipt?.status!=="approved")throw new Error("Approval was not confirmed by the database.");
       setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"approved"}}));
