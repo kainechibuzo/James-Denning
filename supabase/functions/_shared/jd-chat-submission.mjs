@@ -35,7 +35,7 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  const run=submission.run;
  if(payload.agentApprovalId!==undefined){
   if(typeof payload.agentApprovalId!=="string"||!/^[0-9a-f-]{36}$/i.test(payload.agentApprovalId))return {error:"Invalid specialist approval reference",status:400};
-  const {data:linked,error:linkError}=await admin.rpc("jd_specialist_proposal_link_run",{p_actor:actorId,p_request:crypto.randomUUID(),p_proposal:payload.agentApprovalId,p_run:run.id});
+  const {data:linked,error:linkError}=await admin.rpc("jd_specialist_proposal_link_run",{p_actor:actorId,p_request:/^[0-9a-f-]{36}$/i.test(requestId)?requestId:crypto.randomUUID(),p_proposal:payload.agentApprovalId,p_run:run.id});
   if(linkError||linked?.status!=="linked")return {error:"The approved specialist could not be securely linked to this queued run. No specialist was started.",status:409};
  }
 
