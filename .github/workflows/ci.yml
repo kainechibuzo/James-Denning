@@ -86,6 +86,12 @@ jobs:
       - name: Test run capability pre-authorization, discovery linkage and cost gates
         run: npm run test:run-capabilities
 
+      - name: Test skill import request identity, retry recovery and conflict blocking
+        run: npm run test:skill-import-identity
+
+      - name: Test conversation branching, usage summary routing and model input guard
+        run: npm run test:conversation-branch
+
       - name: Test skills package inspection, secure import and lifecycle authority
         run: npm run test:skills
 

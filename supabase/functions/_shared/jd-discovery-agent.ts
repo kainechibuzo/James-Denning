@@ -156,12 +156,18 @@ export async function runDiscoveryAcquisition({session, plan, admin, actorId, te
   return data;
  };
  const receipt: any = {acquired: [], bound: [], skipped: [], errors: []};
+ const {deriveRequestKey} = await import('./jd-skills-acquire.ts');
  for (const skill of (plan?.skills || []).slice(0, 3)) {
   try {
    const owned = await admin.from('jd_skills').select('id,status,current_version,name')
     .eq('school_id', tenantId).eq('name', skill.id).maybeSingle();
    if (owned.data?.status === 'published') { receipt.skipped.push({id: skill.id, reason: 'already_published'}); continue; }
-   const result = await acquireSkillCore({entryId: skill.id, admin, actorId, requestId: crypto.randomUUID(),
+   // The attempt id is deterministic per (session, capability): JD retrying
+   // the same session's same capability reuses the attempt (replay/recovery),
+   // while a new session starts a fresh attempt. Stage request keys are
+   // derived inside acquireSkillCore.
+   const result = await acquireSkillCore({entryId: skill.id, admin, actorId,
+    requestId: await deriveRequestKey(session.session_id, 'acquire-attempt', skill.id),
     createRpc: (args: any) => call('jd_create_skill_import', args),
     completeRpc: (args: any) => call('jd_complete_skill_import', args),
     publishRpc: (args: any) => call('jd_acquire_publish_skill', args)});

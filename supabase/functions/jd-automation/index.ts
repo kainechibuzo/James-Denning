@@ -19,6 +19,7 @@ import { nextScheduleAt } from "../_shared/jd-scheduler.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { runAgent } from "../_shared/jd-agent-runtime.ts";
 import { getJdSecret } from "../_shared/jd-secrets.ts";
+import { buildConversationBranchMessages } from "../_shared/jd-conversation-branch.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
  if(typeof payload.action==="string"&&payload.action.startsWith("registry."))return handleAgentRegistry({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_AGENT_REGISTRY_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("skills."))return handleSkills({payload,admin,auth,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true",autonomous:Deno.env.get("JD_SKILLS_AUTONOMOUS")==="true"});
  if(typeof payload.action==="string"&&["discovery.","autonomy.","billing.","agent.proposal."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
- if(typeof payload.action==="string"&&payload.action.startsWith("usage."))return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
+ if(typeof payload.action==="string"&&payload.action.startsWith("usage.")&&payload.action!=="usage.summary")return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
  if(payload.action==="software.agents.preview"){
   if(!hasRole(ADMIN_ROLES,profile.role))return json({error:"Workspace administrator required to design agent teams"},403);
@@ -655,11 +656,7 @@ Deno.serve(async (req) => {
     school_id:profile.school_id,created_by:authData.user.id,title:(String(source.title||"Conversation").slice(0,70)+" · Branch").slice(0,100)
   }).select("id").single();
   if(createError||!created)return json({error:"Could not create conversation branch"},500);
-  const copied=(sourceMessages||[]).map((item:any)=> {
-    const meta={...(item.content_json||{})};
-    for(const key of ["job_id","run_id","status","job_status","job","streaming","retrying","error_code"])delete meta[key];
-    return {school_id:profile.school_id,conversation_id:created.id,sender_id:item.role==="user"?authData.user.id:null,role:item.role,content:String(item.content||""),content_json:{...meta,branched_from:sourceId},created_by_agent:item.role==="assistant"};
-  });
+  const copied=buildConversationBranchMessages({schoolId:profile.school_id,branchConversationId:created.id,actorId:authData.user.id,sourceConversationId:sourceId,messages:sourceMessages||[]});
   if(copied.length){const {error:copyError}=await admin.from("jd_messages").insert(copied);if(copyError){await admin.from("jd_conversations").delete().eq("id",created.id).eq("school_id",profile.school_id);return json({error:"Could not copy conversation context into the branch"},500);}}
   await admin.from("jd_audit_events").insert({school_id:profile.school_id,actor_id:authData.user.id,event_type:"conversation.branched",event_json:{source_conversation_id:sourceId,new_conversation_id:created.id,copied_messages:copied.length}});
   return json({conversationId:created.id,copiedMessages:copied.length});

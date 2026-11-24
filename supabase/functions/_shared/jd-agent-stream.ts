@@ -1,5 +1,45 @@
 export type TextDeltaHandler = (delta: string) => void;
 
+// Provider requests reject replayed conversation items whose tool-call
+// arguments are not valid JSON, or whose call id / function name are missing.
+// A malformed function_call can legitimately enter the transcript when the
+// model emits broken arguments and the runtime answers "Invalid tool
+// arguments"; replaying that item verbatim makes every subsequent request
+// fail (chat-completions conversion throws, Responses API 400s), and the
+// broken item survives checkpoints, so a retried run fails instantly. The
+// transport boundary sanitises once: keep correlated items, replace unusable
+// arguments with an empty object, drop items that cannot be correlated.
+export function sanitiseModelConversationInput(items: unknown): unknown[] {
+  if (!Array.isArray(items)) return [];
+  const dropped = new Set<string>();
+  const result: unknown[] = [];
+  for (const item of items) {
+    if (!item || typeof item !== "object") continue;
+    const value = item as any;
+    if (value.type === "function_call") {
+      const callId = String(value.call_id || value.id || "");
+      const name = String(value.name || "");
+      if (!callId || !name) {
+        if (callId) dropped.add(callId);
+        continue;
+      }
+      let parsed: unknown;
+      try { parsed = JSON.parse(String(value.arguments ?? "{}")); } catch { parsed = undefined; }
+      const usable = Boolean(parsed) && typeof parsed === "object" && !Array.isArray(parsed);
+      result.push(usable ? value : { ...value, arguments: "{}" });
+      continue;
+    }
+    if (value.type === "function_call_output") {
+      const callId = String(value.call_id || "");
+      if (!callId || dropped.has(callId)) continue;
+      result.push(value);
+      continue;
+    }
+    result.push(value);
+  }
+  return result;
+}
+
 export class NonRetryableAgentResponseError extends Error {
   constructor(message: string) {
     super(message);

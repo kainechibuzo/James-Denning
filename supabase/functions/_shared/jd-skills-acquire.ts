@@ -96,18 +96,41 @@ export type AcquisitionReceipt = {
  hiring_enabled: false; execution_enabled: false;
 };
 
+// Request identity (import-conflict fix): `requestId` identifies ONE
+// acquisition attempt — a caller retries the same attempt with the same id
+// and starts a new attempt with a fresh id. The create, completion and
+// publishing stages each derive their own deterministic stage-scoped request
+// key from the attempt id, because the database stores idempotency receipts
+// per request id and every stage has a different payload shape: reusing one
+// raw id across stages would collide with itself (40001 Request conflict) on
+// the second stage. Derived keys make a full attempt replay idempotent while
+// keeping the stages independently reconcilable.
+const uuidShape = (hex: string) => `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+
+export async function deriveRequestKey(...parts: string[]): Promise<string> {
+ const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(["jd.skills.request", ...parts].join("|")));
+ return uuidShape([...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""));
+}
+
+const stageKey = (attemptId: string, stage: string) => deriveRequestKey(attemptId, stage);
+
 // Core acquisition without the HTTP shell: returns the receipt object on
 // success or {error} with an HTTP status so both the JSON action and the
-// discovery agent can consume it. The caller supplies UUID request ids.
-export async function acquireSkillCore({entryId, admin, actorId, requestId, completeRpc, createRpc, publishRpc}: {
+// discovery agent can consume it. The caller supplies one UUID attempt id;
+// the stages derive their own request keys from it. `source` overrides the
+// upstream commit/archive fetch for tests; production always uses the pinned
+// allowlisted source.
+export async function acquireSkillCore({entryId, admin, actorId, requestId, completeRpc, createRpc, publishRpc, source}: {
  entryId: string; admin: any; actorId: string; requestId: string;
  completeRpc: (args: any) => Promise<any>; createRpc: (args: any) => Promise<any>; publishRpc: (args: any) => Promise<any>;
+ source?: {resolveCommit?: () => Promise<string>; fetchArchive?: (commit: string) => Promise<Uint8Array>};
 }): Promise<{receipt: AcquisitionReceipt} | {error: {message: string; status: number}}> {
  const entry = getAutonomousSourceEntry(entryId);
  if (!entry) return {error: {message: 'The requested capability is not in the allowlisted source catalogue.', status: 400}};
- const commit = await resolveUpstreamCommit();
- const archiveRes = await fetchGuarded(`https://${AUTONOMOUS_SOURCE.archiveHost}/${AUTONOMOUS_SOURCE.repo}/zip/${commit}`, 'application/zip');
- const raw = new Uint8Array(await archiveRes.arrayBuffer());
+ const commit = source?.resolveCommit ? await source.resolveCommit() : await resolveUpstreamCommit();
+ if (!/^[0-9a-f]{40}$/.test(commit)) return {error: {message: 'Upstream commit could not be pinned', status: 502}};
+ const raw = source?.fetchArchive ? await source.fetchArchive(commit)
+  : new Uint8Array(await (await fetchGuarded(`https://${AUTONOMOUS_SOURCE.archiveHost}/${AUTONOMOUS_SOURCE.repo}/zip/${commit}`, 'application/zip')).arrayBuffer());
  if (raw.length === 0 || raw.length > MAX_ZIPBALL_BYTES) return {error: {message: 'The upstream archive exceeded the acquisition size bound.', status: 502}};
  const root = readZipEntries(raw);
  const first = root.entries[0]?.path || '';
@@ -146,10 +169,10 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  const zipBytes = await buildZip(entries);
  const inspection = await inspectSkillPackage(zipBytes, {originalFilename: `${entry.id}.zip`});
  const filename = `${entry.id}-${commit.slice(0, 8)}.zip`;
- const importReceipt = await createRpc({p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.create'), p_filename: filename});
+ const importReceipt = await createRpc({p_actor: actorId, p_request: await stageKey(requestId, 'create'), p_filename: filename});
  const {error: uploadError} = await admin.storage.from(SKILLS_STORAGE_BUCKET).upload(importReceipt.storage_path, zipBytes, {contentType: 'application/zip', upsert: false});
  if (uploadError && !/exist/i.test(String(uploadError?.message || ''))) {
-  return {error: {message: 'The acquired package could not be quarantined; nothing was recorded. Retry with a fresh request identifier.', status: 502}};
+  return {error: {message: 'The acquired package could not be quarantined; nothing was recorded. Retry the same attempt after checking the catalogue.', status: 502}};
  }
  const report = {
   kind: 'skills_package_report',
@@ -163,7 +186,62 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
   packageHash: inspection.packageHash, manifestHash: inspection.manifestHash, originalFilename: filename,
  };
  const manifest = inspection.manifest ? {...inspection.manifest, content_hash: inspection.manifestHash} : null;
- const completed = await completeRpc({p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.complete'), p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
+ // Completion with recovery: an uncertain earlier submission is recovered from
+ // the existing import record instead of creating a duplicate operation. A
+ // genuinely conflicting payload (same attempt, different contents) stays
+ // blocked by the database request-conflict guard.
+ const readImport = async () => {
+  const {data} = await admin.from('jd_skill_imports').select('id,status,manifest,package_id,report,storage_path')
+   .eq('id', importReceipt.import_id).maybeSingle();
+  return data || null;
+ };
+ const recoverFromRecord = async (imp: any): Promise<AcquisitionReceipt | null> => {
+  if (!imp || !['needs_review', 'validation_failed'].includes(String(imp.status))) return null;
+  const base = {
+   skill_id: null as string | null, version: null as number | null,
+   state: (String(imp.status) === 'needs_review' ? 'needs_review' : 'validation_failed') as AcquisitionReceipt['state'],
+   autonomous: false,
+   source: {repo: AUTONOMOUS_SOURCE.repo, ref: AUTONOMOUS_SOURCE.ref, commit, path: `skills/${entry.id}`},
+   package_hash: inspection.packageHash, estimated_seconds: entry.expectedMinutes * 60, billing: {model: 'per_run_cost_confirmation'},
+   inspection: {status: inspection.status, errors: inspection.errors.length, warnings: inspection.warnings.length, entryCount: inspection.entryCount ?? entries.length},
+   hiring_enabled: false as const, execution_enabled: false as const,
+  };
+  (base as any).status = base.state; // same shape as the completion RPC receipt
+  if (imp.status === 'needs_review' && imp.manifest && typeof imp.manifest === 'object') {
+   const {data: versionRow} = await admin.from('jd_skill_versions').select('skill_id,version')
+    .eq('package_id', imp.package_id).limit(1).maybeSingle();
+   if (versionRow) { base.skill_id = String(versionRow.skill_id); base.version = Number(versionRow.version); }
+  }
+  return base as AcquisitionReceipt;
+ };
+ let completed: any;
+ const completeArgs = async () => ({p_actor: actorId, p_request: await stageKey(requestId, 'complete'), p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
+ try {
+  const existing = await readImport();
+  if (existing && ['needs_review', 'validation_failed'].includes(String(existing.status))) {
+   // The import already completed (uncertain earlier submission): recover from
+   // the record instead of creating a duplicate completion.
+   completed = await recoverFromRecord(existing);
+   if (!completed) throw {dbCode: 'import_state'};
+  } else {
+   completed = await completeRpc(await completeArgs());
+  }
+ } catch (e: any) {
+  const code = String(e?.dbCode || e?.code || '');
+  if (code === '23505') {
+   // The identical package was already recorded by a concurrent attempt:
+   // recover from the existing record; never create a duplicate version.
+   const existing = await readImport();
+   completed = await recoverFromRecord(existing);
+   if (!completed) return {error: {message: 'This exact package was already recorded for the workspace; its import record holds the outcome.', status: 409}};
+  } else if (code === '40001') {
+   const existing = await readImport();
+   completed = await recoverFromRecord(existing);
+   if (!completed) return {error: {message: 'The recorded import conflicts with this submission; inspect the existing import record before retrying.', status: 409}};
+  } else {
+   throw e;
+  }
+ }
  const receipt: AcquisitionReceipt = {
   skill_id: completed.skill_id || null, version: completed.version || null,
   state: completed.status === 'validation_failed' ? 'validation_failed' : 'needs_review', autonomous: false,
@@ -173,11 +251,32 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
   hiring_enabled: false, execution_enabled: false,
  };
  if (completed.status === 'needs_review') {
-  const published = await publishRpc({
-   p_actor: actorId, p_request: await deriveSkillStageRequestId(requestId, 'import.publish'), p_import: importReceipt.import_id,
+  const publishArgs = async () => ({
+   p_actor: actorId, p_request: await stageKey(requestId, 'publish'), p_import: importReceipt.import_id,
    p_source: {repo: AUTONOMOUS_SOURCE.repo, ref: AUTONOMOUS_SOURCE.ref, commit, path: `skills/${entry.id}`, policy: AUTONOMOUS_SOURCE.policy},
    p_note: `Autonomous acquisition from ${AUTONOMOUS_SOURCE.repo}@${commit.slice(0, 8)} under policy ${AUTONOMOUS_SOURCE.policy}; validated clean, never executed; per-run cost confirmation still required.`,
   });
+  let published: any;
+  try {
+   published = await publishRpc(await publishArgs());
+  } catch (e: any) {
+   const code = String(e?.dbCode || e?.code || '');
+   // The acquisition may already exist from an uncertain earlier submission:
+   // recover the published receipt from the existing record, never duplicate.
+   const {data: acquisition} = completed.skill_id
+    ? await admin.from('jd_skill_acquisitions').select('skill_id,version,source_repo,source_ref,source_commit,source_path,package_hash')
+      .eq('skill_id', completed.skill_id).eq('version', completed.version).limit(1).maybeSingle()
+    : {data: null};
+   if (code === '42501' || code === '40001' || code === '23505') {
+    if (acquisition) {
+     published = {skill_id: acquisition.skill_id, version: acquisition.version};
+    } else {
+     return {error: {message: 'The acquisition record conflicts with this submission; inspect the existing import and acquisition records before retrying.', status: 409}};
+    }
+   } else {
+    throw e;
+   }
+  }
   receipt.state = 'published';
   receipt.version = published.version;
   receipt.skill_id = published.skill_id;

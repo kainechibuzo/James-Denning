@@ -25,6 +25,8 @@
     "test:workforce": "node --experimental-strip-types --test scripts/test-agent-workforce-engine.mjs scripts/test-agent-workforce-runtime.mjs scripts/test-agent-workforce-database.mjs scripts/test-agent-workforce-ui.mjs scripts/test-workforce-proposal-review.mjs scripts/test-workforce-assignment-lifecycle.mjs && npm run test:workforce-control-centre",
     "test:workforce-assignments": "node --experimental-strip-types --test scripts/test-workforce-assignments.mjs",
     "test:run-capabilities": "node --experimental-strip-types --test scripts/test-run-capabilities.mjs",
+    "test:skill-import-identity": "node --experimental-strip-types --test scripts/test-skill-import-identity.mjs",
+    "test:conversation-branch": "node --experimental-strip-types --test scripts/test-conversation-branch-endpoint.mjs scripts/test-conversation-branch-database.mjs scripts/test-model-input-guard.mjs",
     "test:skills": "node --experimental-strip-types --test scripts/test-skills-package.mjs scripts/test-skills-database.mjs scripts/test-skills-ui.mjs scripts/test-skills-service.mjs scripts/test-skills-autonomous.mjs scripts/test-starter-skills.mjs",
     "skills:build": "node --experimental-strip-types scripts/build-starter-skills.mjs",
     "test:usage": "node --experimental-strip-types --test scripts/test-usage-ledger-database.mjs scripts/test-usage-service.mjs scripts/test-usage-runtime.mjs",
