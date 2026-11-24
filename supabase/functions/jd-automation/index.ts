@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
    .order("created_at",{ascending:false}).limit(1).maybeSingle();
   assistantMessage=message||null;
   const {data:steps}=await admin.from("jd_automation_steps")
-   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at")
+   .select("id,tool_key,risk_level,status,error_message,started_at,completed_at,output_json")
    .eq("school_id",profile.school_id).eq("run_id",run.id).order("step_index",{ascending:true}).limit(50);
   const {data:specialistUsage}=await admin.rpc("jd_specialist_run_status",{p_actor:authData.user.id,p_run:run.id});
   return json({job,run,assistantMessage,steps:steps||[],specialistUsage:specialistUsage||null});
