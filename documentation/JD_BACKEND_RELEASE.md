@@ -16,7 +16,11 @@ The choice is a reviewed source constant, not an HTTP field, environment guess o
 
 ## 2. What the workflow can and cannot do
 
-`.github/workflows/deploy.yml` is manual-only, master-only, source-SHA pinned and serialized without cancellation. Its default is **prepare an artifact, do not deploy**. It no longer has an `apply_migrations` input, a database password, `db push --include-all`, a generic deploy-all command or a post-deploy worker invocation. The dormant obsolete `deploy.yml.` duplicate was removed to avoid accidental activation.
+`.github/workflows/deploy.yml` is manual-only, master-only, source-SHA pinned and serialized without cancellation. Its default is **prepare an artifact, do not deploy**. It has no `db push --include-all`, no `--no-verify-jwt`, no `JD_SECRETS_JSON`, no generic deploy-all command and no post-deploy worker invocation. The dormant obsolete `deploy.yml.` duplicate was removed to avoid accidental activation.
+
+Migrations are an explicit per-dispatch opt-in: behind all of the reviewed-SHA gates above, `apply_migrations: true` runs a `supabase db push --dry-run` preview and then applies the reviewed `supabase/migrations` manifest with `--skip-vault`, against the same project ref. It requires `SUPABASE_DB_PASSWORD` (and the existing `SUPABASE_ACCESS_TOKEN`) in the release environment; the merge-to-master auto release passes `apply_migrations=true` so a merged master is a current master. A failed push must never be auto-retried: review the partial state in `supabase_migrations.schema_migrations` first.
+
+The database-side dispatch heartbeat (migration `20261125120000_jd_dispatch_tick`) keeps retries dispatching from inside Postgres when GitHub's scheduler cron skips ticks. It reads the worker secret from Supabase Vault (`jd_worker_secret`) and stays a documented no-op until that secret is inserted; the GitHub dispatcher cron remains enabled as defence in depth.
 
 Only these three functions are in the source bundle, because they import the updated agent runtime:
 

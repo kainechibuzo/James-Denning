@@ -56,6 +56,9 @@ jobs:
       - name: Test merge-to-master auto release contract
         run: npm run test:auto-release
 
+      - name: Test database-side dispatch heartbeat and migration apply gates
+        run: node --test scripts/test-dispatch-tick.mjs
+
       - name: Test connector OAuth, token rotation, private access and brand assets
         run: npm run test:connector-oauth
 

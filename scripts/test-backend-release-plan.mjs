@@ -68,7 +68,7 @@ test('CLI with no approvals fails before artifact creation and has no network/de
  const script=readFileSync('scripts/jd-backend-release.mjs','utf8');assert.doesNotMatch(script,/\bfetch\s*\(|SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD/);
  assert.throws(()=>execFileSync(process.execPath,['scripts/jd-backend-release.mjs','--deploy'],{stdio:'pipe'}));
 });
-test('manual workflow defaults to artifact-only; exact SHA, independent approvals and narrow deployment are retained',()=>{
+test('manual workflow defaults to artifact-only with migrations as an explicit opt-in; exact SHA, independent approvals and narrow deployment are retained',()=>{
  const workflow=readFileSync('.github/workflows/deploy.yml','utf8');const events=workflow.slice(workflow.indexOf('\non:'),workflow.indexOf('\nconcurrency:'));
  assert.doesNotMatch(events,/^\s+(push|pull_request|schedule):/m);assert.match(events,/deploy_functions:[\s\S]*?default: false/);
  assert.match(workflow,/cancel-in-progress: false/);assert.match(workflow,/if: github.ref == 'refs\/heads\/master'/);
@@ -78,7 +78,12 @@ test('manual workflow defaults to artifact-only; exact SHA, independent approval
  assert.match(workflow,/JD_BACKEND_STAGING_VERIFIED_SHA: \$\{\{ inputs\.staging_verified_sha \|\| vars\.JD_BACKEND_STAGING_VERIFIED_SHA \}\}/);
  assert.match(workflow,/for function_name in jd-automation jd-execution-worker jd-mcp;/);
  assert.match(workflow,/supabase functions deploy "\$function_name" --project-ref "\$JD_BACKEND_PROJECT_REF" --workdir build\/jd-backend-release/);
- assert.doesNotMatch(workflow,/supabase db|--include-all|--no-verify-jwt|JD_SECRETS_JSON|SUPABASE_DB_PASSWORD/);
+ // Migration application is an explicit per-dispatch opt-in, gated behind the
+ // reviewed SHA and a dry-run preview; the secret bundle is still never used.
+ assert.doesNotMatch(workflow,/--include-all|--no-verify-jwt|JD_SECRETS_JSON/);
+ assert.doesNotMatch(workflow,/supabase db(?! push --remote "\$JD_BACKEND_PROJECT_REF")/);
+ assert.match(workflow,/if: inputs\.apply_migrations\n/);
+ assert.match(workflow,/supabase db push --remote "\$JD_BACKEND_PROJECT_REF" --password "\$SUPABASE_DB_PASSWORD" --dry-run --skip-vault --yes/);
  assert.ok(workflow.indexOf('node scripts/jd-backend-release.mjs --prepare')<workflow.indexOf('SUPABASE_ACCESS_TOKEN:'));
  assert.equal(existsSync('.github/workflows/deploy.yml.'),false);
 });

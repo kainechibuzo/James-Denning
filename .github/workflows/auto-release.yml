@@ -59,6 +59,7 @@ jobs:
             -f release_sha="${{ steps.pr.outputs.sha }}" \
             -f confirmation=deploy-reviewed-jd-backend \
             -f deploy_functions=true \
+            -f apply_migrations=true \
             -f approved_sha="${{ steps.pr.outputs.sha }}" \
             -f approval_reference="https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}" \
             -f staging_verified_sha="${{ steps.pr.outputs.sha }}"
