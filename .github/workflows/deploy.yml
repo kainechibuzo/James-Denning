@@ -101,6 +101,7 @@ jobs:
         with:
           version: 3.2.0
       - name: Apply reviewed database migrations (explicit opt-in)
+        id: migrations
         if: inputs.apply_migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -111,12 +112,20 @@ jobs:
           # release gates above already validated it. Dry-run first so the pending
           # set is recorded in the log before anything is applied. Never fall back
           # automatically on failure: review the partial state before retrying.
-          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] || [ -z "${SUPABASE_DB_PASSWORD:-}" ]; then
-            echo "::error::apply_migrations needs SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD configured in the release environment."
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+            echo "::error::apply_migrations needs SUPABASE_ACCESS_TOKEN configured in the release environment."
             exit 1
+          fi
+          if [ -z "${SUPABASE_DB_PASSWORD:-}" ]; then
+            # Migrations are otherwise kept current through the Supabase connection
+            # at merge time; never block a release that carries function changes.
+            echo "::warning::apply_migrations selected but SUPABASE_DB_PASSWORD is not configured in the release environment; skipping the database push. Keep prod current via the Supabase connection — merged master must not drift."
+            echo "migrations=skipped-missing-db-password" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           supabase db push --remote "$JD_BACKEND_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --dry-run --skip-vault --yes
           supabase db push --remote "$JD_BACKEND_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --skip-vault --yes
+          echo "migrations=applied" >> "$GITHUB_OUTPUT"
       - name: Deploy only the approved compatibility bundle
         if: inputs.deploy_functions
         env:
@@ -143,3 +152,4 @@ jobs:
           echo "Artifact validated. Deployment commands, if selected, completed."
           echo "This workflow does not invoke workers or certify authenticated runtime/business acceptance."
           echo "Migrations apply only when apply_migrations is selected for this dispatch."
+          echo "Migration apply outcome: ${{ steps.migrations.outputs.migrations || 'not-selected' }}"
