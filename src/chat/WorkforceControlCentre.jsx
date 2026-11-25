@@ -147,6 +147,6 @@ export function WorkforceControlCentre({onClose,onHireRequest}){
     </label>
     <div className="jd-wfc-modal-actions"><button type="button" onClick={()=>setModal(null)}>Cancel</button><button type="submit" disabled={busy==="membership"||!modal.employeeId} className="primary">{busy==="membership"?"Working…":modal.kind==="add-member"?"Add to team":"Remove from team"}</button></div>
    </form>}
-  </modal>}
+  </Modal>}
  </main>;
 }
