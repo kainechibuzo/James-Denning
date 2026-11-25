@@ -53,8 +53,11 @@ test('the GitHub dispatcher cron remains enabled as defence in depth',()=>{
 test('migrations apply only through the reviewed release gates',()=>{
   assert.match(deploy,/apply_migrations:\s*\n\s*description:.*needs SUPABASE_DB_PASSWORD/);
   assert.match(deploy,/default: false\s*\n\s*apply_migrations:/s);
-  assert.match(deploy,/supabase db push --remote "\$JD_BACKEND_PROJECT_REF" --password "\$SUPABASE_DB_PASSWORD" --dry-run --skip-vault --yes/);
-  assert.match(deploy,/supabase db push --remote "\$JD_BACKEND_PROJECT_REF" --password "\$SUPABASE_DB_PASSWORD" --skip-vault --yes/);
+  assert.match(deploy,/aws-0-eu-west-1\.pooler\.supabase\.com:5432\/postgres/);
+  assert.match(deploy,/no IPv6 connectivity/);
+  assert.match(deploy,/supabase db push --remote="\$JD_DB_POOLER_URL" --dry-run --skip-vault --yes/);
+  assert.match(deploy,/supabase db push --remote="\$JD_DB_POOLER_URL" --skip-vault --yes/);
+  assert.doesNotMatch(deploy,/db push --remote "\$JD_BACKEND_PROJECT_REF"/,'the direct db host is IPv6-only and unreachable from runners');
   assert.match(deploy,/needs SUPABASE_ACCESS_TOKEN configured in the release environment/);
   assert.doesNotMatch(deploy,/This workflow does not invoke workers, apply migrations/);
   assert.match(autoRelease,/apply_migrations=true/);
@@ -64,7 +67,7 @@ test('a missing db password skips loudly and never blocks a function release',()
   assert.match(deploy,/id: migrations\n/);
   assert.match(deploy,/::warning::apply_migrations selected but SUPABASE_DB_PASSWORD is not configured/);
   assert.match(deploy,/migrations=skipped-missing-db-password/);
-  assert.match(deploy,/exit 0\n          fi\n          supabase db push/);
+  assert.match(deploy,/exit 0\n          fi\n          # GitHub Actions runners have no IPv6 connectivity/);
   const migrationIdx=deploy.indexOf('Apply reviewed database migrations');
   const functionsIdx=deploy.indexOf('Deploy only the approved compatibility bundle');
   assert.ok(migrationIdx>-1 && functionsIdx>migrationIdx,'schema changes run before function code');

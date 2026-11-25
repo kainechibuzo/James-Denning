@@ -81,9 +81,9 @@ test('manual workflow defaults to artifact-only with migrations as an explicit o
  // Migration application is an explicit per-dispatch opt-in, gated behind the
  // reviewed SHA and a dry-run preview; the secret bundle is still never used.
  assert.doesNotMatch(workflow,/--include-all|--no-verify-jwt|JD_SECRETS_JSON/);
- assert.doesNotMatch(workflow,/supabase db(?! push --remote "\$JD_BACKEND_PROJECT_REF")/);
+ assert.doesNotMatch(workflow,/supabase db(?! push --remote="\$JD_DB_POOLER_URL")/);
  assert.match(workflow,/if: inputs\.apply_migrations\n/);
- assert.match(workflow,/supabase db push --remote "\$JD_BACKEND_PROJECT_REF" --password "\$SUPABASE_DB_PASSWORD" --dry-run --skip-vault --yes/);
+ assert.match(workflow,/supabase db push --remote="\$JD_DB_POOLER_URL" --dry-run --skip-vault --yes/);
  assert.ok(workflow.indexOf('node scripts/jd-backend-release.mjs --prepare')<workflow.indexOf('SUPABASE_ACCESS_TOKEN:'));
  assert.equal(existsSync('.github/workflows/deploy.yml.'),false);
 });

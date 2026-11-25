@@ -123,8 +123,12 @@ jobs:
             echo "migrations=skipped-missing-db-password" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          supabase db push --remote "$JD_BACKEND_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --dry-run --skip-vault --yes
-          supabase db push --remote "$JD_BACKEND_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --skip-vault --yes
+          # GitHub Actions runners have no IPv6 connectivity and the project's
+          # direct DB host (db.<ref>.supabase.co) is IPv6-only, so push through
+          # the IPv4 session pooler instead of resolving the direct host.
+          JD_DB_POOLER_URL="postgresql://postgres.${JD_BACKEND_PROJECT_REF}:$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$SUPABASE_DB_PASSWORD")@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+          supabase db push --remote="$JD_DB_POOLER_URL" --dry-run --skip-vault --yes
+          supabase db push --remote="$JD_DB_POOLER_URL" --skip-vault --yes
           echo "migrations=applied" >> "$GITHUB_OUTPUT"
       - name: Deploy only the approved compatibility bundle
         if: inputs.deploy_functions
