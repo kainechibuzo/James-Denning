@@ -37,7 +37,7 @@ function AgentDesigner({client,role}){
  }
  return <section className="jd-agent-studio" aria-label="SaaS Agent Studio">
   <header><p className="jd-agent-eyebrow">SOFTWARE FACTORY · DESIGN STAGE</p><h2>SaaS Agent Studio</h2><p>Design a specialised team for a SaaS product, website or internal tool—not a set of corporate departments.</p></header>
-  <div className="jd-agent-boundary"><strong>Definitions, not running agents.</strong> This studio generates a preview and lets you export it. You can explicitly save team definitions to the version registry after its reviewed backend release. Connector binding and isolated execution are not activated here. Export before leaving this tab; local edits are not retained. Do not paste credentials or customer data.</div>
+  <details className="jd-agent-boundary"><summary><strong>Definitions, not running agents.</strong> Design stage — nothing executes, connects or spends here.</summary><p>This studio generates a preview and lets you export it. You can explicitly save team definitions to the version registry after its reviewed backend release. Connector binding and isolated execution are not activated here. Export before leaving this tab; local edits are not retained. Do not paste credentials or customer data.</p></details>
   <form onSubmit={preview}>
    <fieldset disabled={busy}><legend>Project requirements</legend>
     <div className="jd-agent-form-grid">
@@ -47,7 +47,7 @@ function AgentDesigner({client,role}){
      <label>Preferred development route<select value={project.preferredRoute} onChange={e=>change({preferredRoute:e.target.value})}><option value="native">Native isolated coding</option><option value="repository">Repository-based development</option><option value="scaffolder">External scaffolding integration</option></select></label>
     </div>
     <div className="jd-agent-options">{[['backend','Backend and data storage'],['authentication','User authentication'],['multiTenant','Multiple customer organisations'],['payments','Payments'],['research','Live research requested']].map(([key,label])=><label key={key}><input type="checkbox" checked={project[key]} onChange={e=>change({[key]:e.target.checked})}/>{label}</label>)}</div>
-    <p className="jd-agent-muted">Requirements are explicit—not inferred from a provider name. Change them to match the project. Changes clear the preview and per-agent edits.</p>
+    <p className="jd-agent-muted">Explicit requirements only — changes clear the preview and per-agent edits.</p>
     <button type="submit">{busy?'Generating preview…':'Generate team preview'}</button>
    </fieldset>
   </form>
@@ -59,9 +59,9 @@ function AgentDesigner({client,role}){
     <label>Project-specific brief for {agent.name}<textarea disabled={busy} maxLength={1200} rows={3} value={agent.projectSpecificBrief} onChange={e=>edit(agent.id,e.target.value)} placeholder="Optional project-specific constraints; cannot grant access or override approval rules."/></label>
     <details><summary>Instructions, requested tools and evaluation criteria</summary><h5>Operating instructions</h5><ul>{agent.instructions.map(text=><li key={text}>{text}</li>)}</ul><h5>Requested capabilities—not authorised tools</h5><ul>{agent.toolRequests.map(t=><li key={t.capability}><code>{t.capability}</code> · No binding</li>)}</ul><h5>Deliverables</h5><ul>{agent.deliverables.map(text=><li key={text}>{text}</li>)}</ul><h5>Evaluations · Not run</h5><ul>{agent.evaluations.map(t=><li key={t.expected}>{t.expected}</li>)}</ul><p>Proposed handoff: {agent.handoffTo.map(id=>design.agents.find(a=>a.id===id)?.name).join(', ')||'Human release review'}</p></details>
    </article>)}</div>
-   <section className="jd-agent-requirements"><h3>Integration requirements</h3><p>These are capability needs, not a provider marketplace or an inspection of your connections. No official MCP integration, authorised server or discovered tool is asserted.</p><div className="jd-agent-cards">{design.connectorRequirements.map(c=><article key={c.capability}><h4>{c.capability.replaceAll('-',' ')}</h4><b>{c.importance}</b><p>{c.reason}</p><p><strong>Data:</strong> {c.dataAccess}</p><p><strong>Permissions:</strong> {c.permissions}</p><small>Connection not inspected · Official integration not verified · Tests not run</small></article>)}</div></section>
+   <section className="jd-agent-requirements"><h3>Integration requirements</h3><p>Capability needs only — no provider is connected or verified here.</p><div className="jd-agent-cards">{design.connectorRequirements.map(c=><article key={c.capability}><h4>{c.capability.replaceAll('-',' ')}</h4><b>{c.importance}</b><p>{c.reason}</p><p><strong>Data:</strong> {c.dataAccess}</p><p><strong>Permissions:</strong> {c.permissions}</p><small>Connection not inspected · Official integration not verified · Tests not run</small></article>)}</div></section>
    <section><h3>Human checkpoints</h3><ol>{design.checkpoints.map(c=><li key={c.id}>{c.title} — <strong>{c.status.replaceAll('_',' ')}</strong></li>)}</ol><p>Authorised spend: $0. Authorised execution steps: 0. No code, research or deployment was executed.</p></section>
-   <p className="jd-agent-muted">Save creates a versioned team-definition document and a content-review request, not running agents or permissions. Export remains a local file only. The Business Builder registry can inspect and restore saved versions.</p>
+   <p className="jd-agent-muted">Save = versioned definition + review request. Export = local file only.</p>
   </div>}
  </section>;
 }
