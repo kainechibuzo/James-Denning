@@ -56,14 +56,14 @@ test('account scope replacement ignores a late acknowledgement and resets confir
 });
 function overview(body){if(body.action==='operations.task.list')return{data:{tasks:[]}};if(body.action==='operations.team.list')return{data:{members:[]}};if(body.action==='intelligence.snapshot')return{data:{}};if(body.action==='capabilities.report')return{data:{capabilities:[]}};if(body.action==='organisation.blueprints.list')return{data:{blueprints:[]}};if(body.action==='hiring.pipeline.list')return{data:{requisitions:[],candidates:[]}};return null;}
 for(const role of ['owner','admin','manager'])test(`${role}: real operations page uses explicit role capabilities`,async()=>{
- const f=fixture(body=>overview(body)||{data:data()});const m=await mount(f,{role,page:true});try{assert.ok(button('Operations'));assert.ok(button('JD Runs'));assert.equal(!!button('Hiring'),role!=='manager');assert.equal(f.calls.some(b=>b.action==='hiring.pipeline.list'),role!=='manager');assert.equal(f.calls.some(b=>b.action==='execution.monitor.list'),false);await click('JD Runs');assert.match(text(),/Synthetic dispatch review/);}finally{await m.cleanup();}
+ const f=fixture(body=>overview(body)||{data:data()});const m=await mount(f,{role,page:true});try{assert.ok(button('Run'));await click('Run');assert.ok(button('Operations'));assert.ok(button('JD Runs'));assert.equal(f.calls.some(b=>b.action==='execution.monitor.list'),false);await click('JD Runs');assert.match(text(),/Synthetic dispatch review/);if(role!=='manager'){assert.ok(button('Organisation'));await click('Organisation');}assert.equal(!!button('Hiring'),role!=='manager');assert.equal(f.calls.some(b=>b.action==='hiring.pipeline.list'),role!=='manager');}finally{await m.cleanup();}
 });
 test('forbidden role mounted directly cannot load operations records',async()=>{
  const f=fixture(()=>assert.fail('request'));const m=await mount(f,{role:'staff',page:true});try{assert.match(text(),/cannot open Business operations/);assert.equal(f.calls.length,0);}finally{await m.cleanup();}
 });
 test('operations tab switches and header refresh preserve pending execution lock',async()=>{
  const wait=defer();let status='failed';const f=fixture(body=>overview(body)||(body.action==='execution.monitor.list'?{data:data(status)}:wait.promise));const m=await mount(f,{page:true});try{
- await click('JD Runs');await click('Review retry');await click('Confirm retry');await click('Overview');await click('Refresh data');await click('JD Runs');assert.ok(button('Review retry').disabled);assert.equal(f.calls.filter(b=>b.action==='execution.job.retry').length,1);status='queued';await act(async()=>wait.resolve(ack()));assert.match(text(),/Retry request acknowledged/);
+ await click('Run');await click('JD Runs');await click('Review retry');await click('Confirm retry');await click('Overview');await click('Refresh data');await click('Run');await click('JD Runs');assert.ok(button('Review retry').disabled);assert.equal(f.calls.filter(b=>b.action==='execution.job.retry').length,1);status='queued';await act(async()=>wait.resolve(ack()));assert.match(text(),/Retry request acknowledged/);
  }finally{await m.cleanup();}
 });
 test('failed job paired with awaiting-approval run shows discrepancy without retry controls',async()=>{
