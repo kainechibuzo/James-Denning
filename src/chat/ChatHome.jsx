@@ -692,12 +692,12 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
           </div>
-            <div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} being submitted · {queuePaused ? "New requests paused" : "Multiple requests supported"}</span></div>
-          <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Already submitted jobs continue in the background." : "Submitted jobs continue in the background, even if you close this tab."}</div>
+            {activeSends>0&&<div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} submitting{queuePaused?" · new requests paused":""}</span></div>}
+          <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Running jobs continue in the background — safe to close this tab." : "Runs continue in the background — safe to close this tab."}</div>
         </div>
       </section>)}
       {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
-      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)}/></div>}
+      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)} onHireRequest={(message)=>{setShowWorkforce(false); setDraft(message);}}/></div>}
       {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
       {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
       {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
