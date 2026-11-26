@@ -68,9 +68,9 @@ test('read-back RPC is administrator-only and tenant-scoped',async()=>{
  assert.equal((await rpc('jd_read_workforce_assignments',[owner,20])).length,1);
 });
 test('the read limit is clamped and newest-first',async()=>{
- await record({task_hash:'d4e5f60718091a2b'});
- await record({task_hash:'e5f60718091a2b3c'});
- await record({task_hash:'f60718091a2b3c4d'});
+ await record({task_hash:'d4e5f60718091a2b',created_at:'2026-11-23T12:00:01Z'});
+ await record({task_hash:'e5f60718091a2b3c',created_at:'2026-11-23T12:00:02Z'});
+ await record({task_hash:'f60718091a2b3c4d',created_at:'2026-11-23T12:00:03Z'});
  const two=await rpc('jd_read_workforce_assignments',[owner,2]);
  assert.equal(two.length,2);
  assert.equal((await rpc('jd_read_workforce_assignments',[owner,0])).length,1);
