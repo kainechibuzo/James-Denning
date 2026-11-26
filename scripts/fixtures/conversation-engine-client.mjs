@@ -14,8 +14,14 @@ const legacy={version:1,source:'persisted_workspace_records',blocks:[{type:'depa
 function initial(){return {a:[{id:parent,role:'assistant',content:'Business setup',content_json:{response}}],b:[{id:'ordinary',role:'assistant',content:'Your business currently has eight departments. What a useful starting point?\n\n'+('A long response stays inside the reading surface. '.repeat(100)),content_json:{visual_workspace:legacy}}],c:[{id:'context',role:'assistant',content:'Requested department summary.',content_json:{response:{version:1,blocks:[{id:'approval',type:'approval',actionId:'synthetic-approval',description:'Review a recorded proposal. No execution is claimed.'},{id:'metrics',type:'operational_result',title:'Recorded workforce',source:'persisted_records',status:'completed',data:{Members:8}}]},visual_workspace:{...legacy,contextual:true}}}],d:[{id:'user-spec',role:'user',content:'Implement frontend and backend architecture for our SaaS website'},{id:'assist-spec',role:'assistant',content:'Here is how we can coordinate your software build.',content_json:{job_id:'job-spec',job_status:'completed',run:{id:'run-spec',status:'completed'},toolEvents:[{name:'get_workspace_overview',status:'completed'}]}}],requests:[],receipts:{},jobs:{}};}
 const read=()=>JSON.parse(sessionStorage.getItem('engine-db')||'null')||initial();
 const save=db=>sessionStorage.setItem('engine-db',JSON.stringify(db));
-export const supabase={functions:{invoke:async(_name,{body})=>{
+export const supabase={functions:{invoke:async(name,{body})=>{
  let db=read();db.requests.push(body);save(db);
+ if(name==='jd-connect'){
+  if(body.action==='servers.list')return{data:{servers:[]}};
+  if(body.action==='tools.list')return{data:{tools:[]}};
+  if(body.action==='approvals.list')return{data:{approvals:[]}};
+  if(body.action==='executions.list')return{data:{executions:[]}};
+ }
  if(body.action==='history.list')return{data:{conversations:[{id:'a',title:'Setup conversation'},{id:'b',title:'Ordinary conversation'},{id:'c',title:'Requested operations'},{id:'d',title:'Specialist planning'}]}};
  if(body.action==='history')return{data:{messages:db[body.conversationId]||[]}};
  if(body.action==='approvals.list')return{data:{approvals:[]}};

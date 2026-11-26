@@ -96,6 +96,8 @@
  .reference-landing .reference-features h2{font-size:23px}
  .reference-landing .reference-features p{font-size:15px}
  .reference-landing .landing-use-cases,.reference-landing .landing-faq{gap:24px}
+ .reference-landing .landing-demo-answer{flex-direction:column}
+ .reference-landing .landing-preview-single select{min-width:0;width:100%}
  .reference-landing .landing-footer .landing-brand>span:last-child{font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){.reference-landing *{transition:none!important;scroll-behavior:auto!important}}

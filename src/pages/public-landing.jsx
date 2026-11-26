@@ -121,7 +121,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
                       {id:"full",letter:"A",title:"Full Product Launch Team",recommended:true,sub:"4-agent team",rate:"$4 / hour",items:["Market & competitor research","Product positioning & UX plan","Frontend & backend architecture"],time:"1.5–2.5 hrs",cost:"$6–$10"},
                       {id:"mvp",letter:"B",title:"Lean MVP Builder Team",recommended:false,sub:"3-agent team",rate:"$3 / hour",items:["Product & UX design","Core web app development"],time:"1–2 hrs",cost:"$3–$6"},
                     ].map(team=>(
-                      <button key={team.id} type="button" className={"landing-preview-card"+(selectedDemoTeam===team.id?" is-selected":"")} aria-pressed={selectedDemoTeam===team.id} onClick={()=>setSelectedDemoTeam(team.id)}>
+                      <div key={team.id} role="option" tabIndex={0} aria-selected={selectedDemoTeam===team.id} className={"landing-preview-card"+(selectedDemoTeam===team.id?" is-selected":"")} onClick={()=>setSelectedDemoTeam(team.id)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoTeam(team.id);}}}>
                         <span className="landing-preview-top">
                           <span className="landing-preview-radio"/>
                           <span className="landing-preview-badge">{team.letter}</span>
@@ -133,13 +133,13 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
                         </span>
                         <span className="landing-preview-checks">{team.items.map(it=><span key={it}>✓ {it}</span>)}</span>
                         <span className="landing-preview-foot"><span>Est. time: {team.time}</span><span>Est. cost: {team.cost}</span></span>
-                      </button>
+                      </div>
                     ))}
                     <div className="landing-preview-single">
-                      <button type="button" className={"landing-preview-single-toggle"+(selectedDemoTeam==="single"?" is-selected":"")} aria-pressed={selectedDemoTeam==="single"} onClick={()=>setSelectedDemoTeam("single")}>
+                      <div role="option" tabIndex={0} aria-selected={selectedDemoTeam==="single"} className={"landing-preview-single-toggle"+(selectedDemoTeam==="single"?" is-selected":"")} onClick={()=>setSelectedDemoTeam("single")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoTeam("single");}}}>
                         <span className="landing-preview-radio"/>
                         <span>Or use one agent:</span>
-                      </button>
+                      </div>
                       <select aria-label="Sample single specialist agent" value={selectedDemoAgent} onChange={e=>{setSelectedDemoTeam("single");setSelectedDemoAgent(e.target.value);}}>
                         <option value="frontend">&lt;/&gt; Frontend Developer Agent ($1 / hr)</option>
                         <option value="research">Market Research Analyst ($1 / hr)</option>
@@ -148,9 +148,9 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="landing-choice-preview" role="group" aria-label="Sample interactive choices">
+                  <div className="landing-choice-preview" role="listbox" aria-label="Sample interactive choices">
                     {scenarios[scenario].choices?.map((choice,cIndex)=>(
-                      <button key={choice.letter} type="button" className={"landing-preview-card is-compact"+(selectedDemoChoice===cIndex?" is-selected":"")} aria-pressed={selectedDemoChoice===cIndex} onClick={()=>setSelectedDemoChoice(cIndex)}>
+                      <div key={choice.letter} role="option" tabIndex={0} aria-selected={selectedDemoChoice===cIndex} className={"landing-preview-card is-compact"+(selectedDemoChoice===cIndex?" is-selected":"")} onClick={()=>setSelectedDemoChoice(cIndex)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoChoice(cIndex);}}}>
                         <span className="landing-preview-top">
                           <span className="landing-preview-radio"/>
                           <span className="landing-preview-badge">{choice.letter}</span>
@@ -160,7 +160,7 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
                           </span>
                           {choice.recommended && <span className="landing-preview-rec">★ Suggested</span>}
                         </span>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
