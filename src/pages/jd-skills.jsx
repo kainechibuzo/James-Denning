@@ -104,13 +104,19 @@ export function JdSkillsPage({ctx,client=supabase}){
   });
  }
  const searchSources=()=>run(async()=>api({action:'skills.search',task:searchTask,limit:6}),s=>{setSearchResult(s);setAcquireReceipt(null);});
- const acquireCandidate=id=>run(async()=>api({action:'skills.acquire',confirm:true,requestId:requestId(`acquire:${id}`),name:id}),receipt=>{
-  setAcquireReceipt(receipt);setSearchResult(null);
+ const acquireCandidate=id=>{
+  const key=`acquire:${id}`;
+  return run(async()=>api({action:'skills.acquire',confirm:true,requestId:requestId(key),name:id}),receipt=>{
+   // Keep the id after an uncertain failure so retry replays the same attempt;
+   // clear it only after a confirmed receipt so a later acquisition is new.
+   requests.current.delete(key);
+   setAcquireReceipt(receipt);setSearchResult(null);
   setNotice(receipt.state==='published'
    ?`JD acquired ${receipt.source.path.split('/').pop()} from ${receipt.source.repo} at pinned commit ${receipt.source.commit.slice(0,8)}, inspected it without executing anything and published it under policy jd-autonomous-v1. Every billable run that loads it still needs an explicit recorded cost confirmation.`
    :'JD acquired the package and inspected it without executing anything, but validation was not fully clean, so nothing was published automatically. Review the recorded report.');
   load(selected);
- });
+  });
+ };
  const dapi=body=>discoveryRequest(client,role,body);
  const loadAutonomy=()=>run(async()=>dapi({action:'autonomy.read'}),a=>setAutonomyInfo(a),true);
  useEffect(()=>{loadAutonomy();},[]);
