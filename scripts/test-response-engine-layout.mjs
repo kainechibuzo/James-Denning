@@ -47,6 +47,8 @@ try{for(const width of [320,708,1280]){
  const requests=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('engine-db')).requests.filter(r=>r.action==='submit'));
  assert.deepEqual(requests[0].interaction.values,['flat']);assert.deepEqual(requests[1].interaction.values,['email','phone']);assert.deepEqual(requests[2].interaction.values,['lagos']);assert.equal(requests.at(-1).interaction.values.budget,12.5);assert.equal(requests.at(-1).idempotencyKey,requests.at(-2).idempotencyKey,'uncertain transport retries reuse request id');
  assert.ok(requests.every(r=>r.conversationId==='a'&&typeof r.interaction.messageId==='string'&&r.interaction.messageId.length>0));assert.equal(requests[0].interaction.messageId,'00000000-0000-4000-8000-000000000001');assert.equal(requests.at(-1).interaction.messageId,requests.at(-2).interaction.messageId,'uncertain transport retries retain assistant message provenance');
+ await page.getByRole('button',{name:'Not now',exact:true}).click();
+ await page.getByText(/Skipped GitHub connection for now/).waitFor();
  await open('Ordinary conversation');await page.waitForTimeout(3000);assert.equal(await page.locator('.jd-response-interaction').count(),0,'late polling cannot leak into another conversation');assert.equal(await page.locator('.jd-visual-workspace').count(),0);
  await open('Requested operations');await page.getByText('Department workload',{exact:true}).waitFor();
  await page.getByRole('heading',{name:'Recorded workforce',exact:true}).waitFor();
@@ -68,8 +70,6 @@ try{for(const width of [320,708,1280]){
  await page.evaluate(()=>document.fonts.ready);
  const geometry=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,composer:document.querySelector('.jd-compose').getBoundingClientRect().toJSON(),scroll:document.querySelector('.jd-scroll').getBoundingClientRect().toJSON(),height:innerHeight}));
  assert.ok(geometry.doc<=width,JSON.stringify(geometry));assert.ok(geometry.composer.top>=geometry.scroll.bottom-1);assert.ok(geometry.composer.bottom<=geometry.height);
- await page.getByRole('button',{name:'Not now',exact:true}).click();
- await page.getByText(/Skipped GitHub connection for now/).waitFor();
  if(width===320){
   await page.clock.install();
   await page.evaluate(()=>{window.__pollFailure=true;});
