@@ -203,7 +203,7 @@ test('a confirmed manual import gets a fresh identity when the same file is impo
  const m=await mount({handler:async body=>{
   if(body.action==='skills.import.create'){
    attempt++;
-   return{data:{receipt:{...createReceipt,import_id:uid(30+attempt),storage_path:`\u0024{uid(2)}/imports/\u0024{uid(32+attempt)}.zip`,upload:{...uploaded,path:`\u0024{uid(2)}/imports/\u0024{uid(32+attempt)}.zip`}}}};
+   return{data:{receipt:{...createReceipt,import_id:uid(30+attempt),storage_path:`${uid(2)}/imports/${uid(32+attempt)}.zip`,upload:{...uploaded,path:`${uid(2)}/imports/${uid(32+attempt)}.zip`}}}};
   }
   if(body.action==='skills.import.complete')return{data:{receipt:{...receipt,import_id:body.importId}}};
   return{data:{catalog:catalog(body)}};
