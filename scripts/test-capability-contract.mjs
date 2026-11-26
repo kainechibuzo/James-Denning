@@ -81,7 +81,17 @@ test('current agent prompt receives the interpretation and retains approval gate
   assert.match(captured.instructions,/1–3 short sentences/);
   assert.match(captured.instructions,/raw tool names, UUIDs, event logs/);
   assert.match(captured.instructions,/Never hide a real failure/);
+  assert.match(captured.instructions,/Specialist triage and delegation judgment/);
+  assert.match(captured.instructions,/Current turn specialist triage: DIRECT JD HANDLING/);
   assert.ok(captured.tools.some(t=>t.name==='get_jd_capability_inventory'));
+  await runAgent({message:'Research market size, competitors and customer demand for our new B2B logistics SaaS',history:[],context:context('owner'),apiKey:'synthetic',model:'synthetic-model',baseUrl:'https://example.invalid'});
+  assert.match(captured.instructions,/Current turn specialist triage: (SINGLE-SPECIALIST DEPTH|MULTI-SPECIALIST OBJECTIVE)/);
+  assert.match(captured.instructions,/Research Analyst \(research_analyst\)/);
+  const approvedQuery={select(){return approvedQuery;},eq(){return approvedQuery;},in(){return approvedQuery;},maybeSingle:async()=>({data:{specialist_role:'research_analyst',status:'linked'},error:null})};
+  const memQuery={select(){return memQuery;},eq(){return memQuery;},order(){return memQuery;},limit:async()=>({data:[],error:null})};
+  const approvedAdmin={from(table){if(table==='jd_audit_events')return{insert:async()=>({error:null})};if(table==='jd_business_memory')return memQuery;if(table==='jd_specialist_run_proposals')return approvedQuery;assert.fail('unexpected table '+table);}};
+  await runAgent({message:'Research market size, competitors and customer demand for our new B2B logistics SaaS',history:[],context:{...context('owner'),runId:'run-linked-1',admin:approvedAdmin},apiKey:'synthetic',model:'synthetic-model',baseUrl:'https://example.invalid'});
+  assert.match(captured.instructions,/Current turn specialist triage: APPROVED SPECIALIST RUN \(research_analyst — Research Analyst\)/);
  }finally{globalThis.fetch=oldFetch;if(oldDeno===undefined)delete globalThis.Deno;else globalThis.Deno=oldDeno;}
 });
 

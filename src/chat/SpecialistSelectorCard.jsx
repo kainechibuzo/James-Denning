@@ -21,7 +21,7 @@ export function SpecialistSelectorCard({
 }) {
   const teams = recommendSpecialistTeams(recommendation?.task || "", recommendation?.id);
   const initialTeamId = teams.find((t) => t.recommended)?.id || teams[0]?.id;
-  const [selectedMode, setSelectedMode] = useState("team"); // "team" | "single"
+  const [selectedMode, setSelectedMode] = useState(recommendation?.mode === "single" ? "single" : "team"); // "team" | "single"
   const [selectedTeamId, setSelectedTeamId] = useState(initialTeamId);
   const [selectedAgentId, setSelectedAgentId] = useState(recommendation?.id || "software_engineer");
 

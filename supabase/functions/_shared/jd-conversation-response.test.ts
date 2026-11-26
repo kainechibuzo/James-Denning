@@ -19,9 +19,12 @@ Deno.test('runtime supplies interaction instructions, streams safely and carries
  try{
   let partial='';const result=await run('I want to start a business.',[],delta=>{partial+=delta;equal(streamText(partial),'');});
   equal(decodeResponse(result.text,{allowOperational:false}).response,envelope);
-  const instructions=JSON.stringify(requests[0]);if(!instructions.includes('Response interface protocol v1')||!instructions.includes('Do not convert every question mark')||!instructions.includes('allowCustom:true')||!instructions.includes('recommend a small, relevant specialist team')||!instructions.includes('currently registered and role-available specialist catalogue'))throw Error('Missing intent and protocol instructions');
+  const instructions=JSON.stringify(requests[0]);if(!instructions.includes('Response interface protocol v1')||!instructions.includes('Do not convert every question mark')||!instructions.includes('allowCustom:true')||!instructions.includes('recommend a small, relevant specialist team')||!instructions.includes('currently registered and role-available specialist catalogue')||!instructions.includes('Specialist triage and delegation judgment')||!instructions.includes('Current turn specialist triage:'))throw Error('Missing intent, specialist triage and protocol instructions');
   const followup=await run('Name your business\nBusiness name: Acme',[{role:'assistant',content:'Name your business\n- Business name'}]);
   equal(followup.text,'Your chosen business name is Acme.');
   if(!JSON.stringify(requests[1]).includes('Business name: Acme'))throw Error('Follow-up context was lost');
+  const approvedAdmin={from(table:string){if(table==='jd_specialist_run_proposals')return {select(){return{eq(){return{eq(){return{in(){return{maybeSingle(){return Promise.resolve({data:{specialist_role:'finance_analyst',status:'linked'},error:null});}};}};}};}};}};const q:any={select(){return q;},eq(){return q;},order(){return q;},limit(){return Promise.resolve({data:[],error:null});}};return q;}};
+  await runAgent({message:'Model our 12-month SaaS cash-flow runway and unit economics.',history:[],context:{admin:approvedAdmin,schoolId:'test-school',userId:'test-user',role:'owner',runId:'run-approved-1'},apiKey:'synthetic',model:'gemini-3.1-flash-lite',baseUrl:'https://generativelanguage.googleapis.com/v1beta/openai'});
+  if(!JSON.stringify(requests[2]).includes('APPROVED SPECIALIST RUN (finance_analyst — Finance Analyst)'))throw Error('Approved specialist run directive was not injected');
  }finally{globalThis.fetch=original;}
 });
