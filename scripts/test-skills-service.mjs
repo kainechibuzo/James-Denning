@@ -82,3 +82,19 @@ test('a db receipt that would unlock authority fails the call closed',async()=>{
 test('zipBytes is a bounded synthetic fixture (never a real package execution)',()=>{
  assert.ok(zipBytes.length<SKILL_PACKAGE_LIMITS.maxArchiveBytes);
 });
+
+test('manual import stages are isolated even when a legacy client reuses one request id',async()=>{
+ const sharedRequestId='00000000-0000-4000-8000-000000000095';
+ const calls=[];
+ const spy={...adminDb,rpc:async(name,args)=>{calls.push({name,args});return adminDb.rpc(name,args);}};
+ const created=await call({action:'skills.import.create',confirm:true,requestId:sharedRequestId,filename:'legacy-import.zip'},{admin:spy});
+ assert.equal(created.status,200);
+ const completed=await call({action:'skills.import.complete',confirm:true,requestId:sharedRequestId,importId:'00000000-0000-4000-8000-000000000031'},{admin:spy});
+ assert.equal(completed.status,200);
+ assert.equal(calls.length,2);
+ assert.equal(calls[0].name,'jd_create_skill_import');
+ assert.equal(calls[1].name,'jd_complete_skill_import');
+ assert.notEqual(calls[0].args.p_request,sharedRequestId);
+ assert.notEqual(calls[1].args.p_request,sharedRequestId);
+ assert.notEqual(calls[0].args.p_request,calls[1].args.p_request);
+});
