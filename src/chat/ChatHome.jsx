@@ -406,7 +406,10 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const prepareAgentProposal = async (item,recommendation) => {
     const seconds=Number(agentDurations[item.id]||1800);
     const quoteKey=item.id+":"+recommendation.id+":"+seconds;
-    if(!agentProposalRequests.current.has(quoteKey))agentProposalRequests.current.set(quoteKey,crypto.randomUUID());
+    if(!agentProposalRequests.current.has(quoteKey)){
+      const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : newRequestId();
+      agentProposalRequests.current.set(quoteKey, id);
+    }
     setAgentProposals(current=>({...current,[item.id]:{loading:true}}));
     try{
       const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:agentProposalRequests.current.get(quoteKey),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
@@ -421,7 +424,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
       const task=recommendSpecialist(originalPrompt)?.task||originalPrompt;
       const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
       const launchKey="run:"+proposal.proposal_id;
-      if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,crypto.randomUUID());
+      if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,newRequestId());
       const queued=await send(approvedText,null,null,agentProposalRequests.current.get(launchKey),proposal.proposal_id);
       if(!queued)throw new Error("Approval is saved, but JD could not confirm the specialist run was queued. You can retry this approved assignment.");
       setAgentProposals(current=>({...current,[item.id]:{...proposal,status:"submitted",launching:false,error:null}}));
@@ -430,7 +433,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const decideAgentProposal = async (item,proposal,decision) => {
     setAgentProposals(current=>({...current,[item.id]:{...proposal,decisionLoading:true}}));
     const decisionKey="decision:"+proposal.proposal_id+":"+decision;
-    if(!agentProposalRequests.current.has(decisionKey))agentProposalRequests.current.set(decisionKey,crypto.randomUUID());
+    if(!agentProposalRequests.current.has(decisionKey))agentProposalRequests.current.set(decisionKey,newRequestId());
     try{
       const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:decision==="approve"?"agent.proposal.approve":"agent.proposal.decline",confirm:true,requestId:agentProposalRequests.current.get(decisionKey),proposalId:proposal.proposal_id}});
       if(error||data?.error){let message=data?.error||error?.message||"The approval decision was not confirmed.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}

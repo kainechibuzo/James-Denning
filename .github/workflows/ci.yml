@@ -337,12 +337,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run complete Chromium suite
-        run: |
-          out=$(mktemp)
-          if ! ( ${{ matrix.suite.command }} ) >"$out" 2>&1; then
-            cat "$out"
-            msg=$(tail -n 15 "$out" | tr '\n' ' ' | sed 's/::/ /g')
-            echo "::error title=Chromium failure::$msg"
-            exit 1
-          fi
-          cat "$out"
+        run: ${{ matrix.suite.command }}
