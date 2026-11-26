@@ -5,8 +5,19 @@ const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const text = (x, max = 2000) => typeof x === 'string' && x.trim().length > 0 && x.length <= max;
 const id = x => typeof x === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(x) && !['__proto__','constructor','prototype'].includes(x);
 const unique = xs => new Set(xs).size === xs.length;
+const textList = (xs, maxItems = 8, maxLen = 240) => Array.isArray(xs) && xs.length <= maxItems && xs.every(x => text(x, maxLen));
+function optionMeta(x) {
+  return (x.description === undefined || text(x.description, 600))
+    && (x.subtitle === undefined || text(x.subtitle, 200))
+    && (x.badge === undefined || text(x.badge, 60))
+    && (x.recommended === undefined || typeof x.recommended === 'boolean')
+    && (x.highlights === undefined || textList(x.highlights, 6, 200))
+    && (x.rateLabel === undefined || text(x.rateLabel, 80))
+    && (x.estTime === undefined || text(x.estTime, 80))
+    && (x.estCost === undefined || text(x.estCost, 80));
+}
 function options(xs) {
-  return Array.isArray(xs) && xs.length >= 2 && xs.length <= 30 && unique(xs.map(x => x?.value)) && xs.every(x => object(x) && text(x.label, 200) && text(x.value, 200) && (x.description === undefined || text(x.description, 600)));
+  return Array.isArray(xs) && xs.length >= 2 && xs.length <= 30 && unique(xs.map(x => x?.value)) && xs.every(x => object(x) && text(x.label, 200) && text(x.value, 200) && optionMeta(x));
 }
 export function validateResponse(value, { allowOperational = true } = {}) {
   if (!object(value) || value.version !== 1 || !Array.isArray(value.blocks) || !value.blocks.length || value.blocks.length > 12) return null;
@@ -14,11 +25,12 @@ export function validateResponse(value, { allowOperational = true } = {}) {
   if(value.context!==undefined&&(!object(value.context)||!Array.isArray(value.context.components)||value.context.components.length>3||!unique(value.context.components)||value.context.components.some(v=>!['tasks','departments','execution'].includes(v))))return null;
   for (const b of value.blocks) {
     if (!object(b) || !id(b.id)) return null;
-    if (b.type === 'message') { if (!text(b.content, 60000)) return null; }
-    else if (b.type === 'choice') {
-      if (!text(b.question) || !options(b.options) || typeof b.multiple !== 'boolean' || (b.presentation !== undefined && !['list','dropdown'].includes(b.presentation)) || (b.multiple && b.presentation === 'dropdown') || (b.allowCustom !== undefined && typeof b.allowCustom !== 'boolean') || (b.customLabel !== undefined && !text(b.customLabel, 120))) return null;
+    if (b.type === 'message') {
+      if (!text(b.content, 60000) || (b.variant !== undefined && !['plain','callout'].includes(b.variant))) return null;
+    } else if (b.type === 'choice') {
+      if (!text(b.question) || !options(b.options) || typeof b.multiple !== 'boolean' || (b.subtitle !== undefined && !text(b.subtitle, 400)) || (b.variant !== undefined && !['standard','specialist_teams'].includes(b.variant)) || (b.presentation !== undefined && !['list','dropdown'].includes(b.presentation)) || (b.multiple && b.presentation === 'dropdown') || (b.allowCustom !== undefined && typeof b.allowCustom !== 'boolean') || (b.customLabel !== undefined && !text(b.customLabel, 120)) || (b.submitLabel !== undefined && !text(b.submitLabel, 80))) return null;
     } else if (b.type === 'form') {
-      if (!text(b.title, 300) || !Array.isArray(b.fields) || !b.fields.length || b.fields.length > 16 || !unique(b.fields.map(f => f?.id))) return null;
+      if (!text(b.title, 300) || (b.subtitle !== undefined && !text(b.subtitle, 400)) || !Array.isArray(b.fields) || !b.fields.length || b.fields.length > 16 || !unique(b.fields.map(f => f?.id))) return null;
       for (const f of b.fields) {
         if (!object(f) || !id(f.id) || !text(f.label, 200) || !['text','textarea','number','select','date'].includes(f.type) || typeof f.required !== 'boolean') return null;
         if (f.type === 'select' && !options(f.options)) return null;
@@ -26,6 +38,8 @@ export function validateResponse(value, { allowOperational = true } = {}) {
         if (f.min !== undefined && !Number.isFinite(f.min) || f.max !== undefined && !Number.isFinite(f.max)) return null;
         if (f.min !== undefined && f.max !== undefined && f.min > f.max) return null;
       }
+    } else if (b.type === 'connector_prompt') {
+      if (!id(b.connectorId) || (b.reason !== undefined && !text(b.reason, 600)) || (b.capabilities !== undefined && !textList(b.capabilities, 6, 180))) return null;
     } else if (b.type === 'approval') {
       if (!allowOperational || !text(b.actionId, 100) || !text(b.description)) return null;
     } else if (b.type === 'operational_result') {
@@ -35,7 +49,7 @@ export function validateResponse(value, { allowOperational = true } = {}) {
   return value;
 }
 export function responseText(response) {
-  return response.blocks.map(b => b.type === 'message' ? b.content : b.type === 'choice' ? b.question + '\n' + b.options.map(o => '- ' + o.label + (o.description ? ': ' + o.description : '')).join('\n') : b.type === 'form' ? b.title + '\n' + b.fields.map(f => '- ' + f.label).join('\n') : b.description || b.title).join('\n\n');
+  return response.blocks.map(b => b.type === 'message' ? b.content : b.type === 'choice' ? b.question + '\n' + b.options.map(o => '- ' + o.label + (o.description ? ': ' + o.description : '')).join('\n') : b.type === 'form' ? b.title + '\n' + b.fields.map(f => '- ' + f.label).join('\n') : b.type === 'connector_prompt' ? 'Suggested connector: ' + b.connectorId + (b.reason ? ' — ' + b.reason : '') : b.description || b.title).join('\n\n');
 }
 const candidate = raw => /^\s*(?:```(?:jd-response|json)?\s*)?\{\s*"(?:version|blocks)"/.test(raw);
 export function decodeResponse(raw, opts = {}) {
@@ -96,12 +110,15 @@ Use ordinary Markdown for explanations, facts, rhetorical questions and user-req
 When you need essential missing user input to continue the active workflow, return ONLY a JSON envelope {"version":1,"blocks":[...]} (no surrounding prose). The application renders it; it is not user-visible source code. This protocol is an exception to the no-raw-JSON instruction.
 Every block needs a unique stable id (letters, digits, underscore or hyphen, max 80).
 Supported model blocks:
-{"id":"intro","type":"message","content":"Markdown explanation"}
-{"id":"structure","type":"choice","question":"Which structure would you prefer?","options":[{"label":"Flat","value":"flat","description":"Fewer management layers"},{"label":"Functional","value":"functional"}],"multiple":false,"presentation":"list"}
+{"id":"intro","type":"message","content":"Markdown explanation","variant":"callout"}
+{"id":"structure","type":"choice","question":"Which structure would you prefer?","subtitle":"Select one option to continue.","options":[{"label":"Flat","value":"flat","description":"Fewer management layers","recommended":true,"highlights":["Faster decisions","Direct ownership"]},{"label":"Functional","value":"functional","subtitle":"Grouped specialist teams"}],"multiple":false,"presentation":"list"}
+Optional choice fields: subtitle, variant ("standard" or "specialist_teams"), submitLabel. Optional choice option fields: subtitle, badge, recommended (boolean), highlights (up to 6 short deliverable strings), rateLabel, estTime, estCost.
 For multiple selections set multiple:true; for a single dropdown set presentation:"dropdown".
 To allow a user-written answer on a choice, set allowCustom:true and optionally customLabel:"Something else". The UI adds a free-text field; the submitted answer is validated and returned as a normal answer prefixed internally with "custom:". Do not invent a fixed answer when the user may need to specify their own.
 {"id":"identity","type":"form","title":"Name your business","fields":[{"id":"name","label":"Business name","type":"text","required":true}]}
 Form field types: text, textarea, number (optional numeric min/max), select (options as above), date. Every field needs id, label, type, required boolean. Never request passwords, tokens or payment details.
+{"id":"connect-github","type":"connector_prompt","connectorId":"github","reason":"Connect GitHub so JD can inspect authorised repository code.","capabilities":["Read selected repository files","Search repository source"]}
+Use connector_prompt only when a task genuinely needs an external service from JD's connector directory that is not yet connected; never imply it is already connected or ask the user to paste credentials into chat.
 For a genuinely relevant saved operational view, an envelope may also include top-level "context":{"components":["tasks","departments","execution"]} with only the needed components. This requests a tenant-scoped server read, not permission to execute. Do not request workspace cards for conceptual explanations or ordinary conversation.
 Discovery and agent recommendations:
 For a new, broad, multi-step or outcome-oriented request, do not jump straight into execution or a generic plan. Start by asking one focused objective question using a choice block with 3-6 useful options and allowCustom:true. Ask one question at a time; adapt each next question to the previous answer. If the request is already specific enough, do not add needless questions.

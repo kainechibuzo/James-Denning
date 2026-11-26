@@ -43,6 +43,29 @@
 .reference-landing .landing-demo-outcome{font-size:13px;border-color:var(--jd-hairline);color:var(--jd-ink-soft)}
 .reference-landing .landing-scenario-tabs button{border-color:var(--jd-hairline);color:var(--jd-ink-soft);font-size:14px;font-family:var(--jd-font-display)}
 .reference-landing .landing-scenario-tabs button[aria-pressed=true]{background:var(--jd-rule-navy);border-color:var(--jd-rule-navy);color:#fcfaf5}
+.reference-landing .landing-demo-answer-body{flex:1;min-width:0}
+.reference-landing .landing-choice-preview,.reference-landing .landing-specialist-preview{display:grid;gap:8px;margin:4px 0 18px}
+.reference-landing .landing-preview-label{font-family:var(--jd-font-ui);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--jd-ink-soft);margin-bottom:2px}
+.reference-landing .landing-preview-card{display:grid;gap:7px;width:100%;text-align:left;padding:12px 13px;border:1px solid var(--jd-hairline);border-radius:12px;background:var(--jd-paper);color:var(--jd-ink);font-family:var(--jd-font-display);cursor:pointer;transition:background .14s,border-color .14s}
+.reference-landing .landing-preview-card:hover{background:var(--jd-paper-sunk)}
+.reference-landing .landing-preview-card.is-selected{border-color:var(--jd-rule-navy);background:var(--jd-paper-sunk)}
+.reference-landing .landing-preview-top{display:flex;align-items:flex-start;gap:9px;min-width:0}
+.reference-landing .landing-preview-radio{width:17px;height:17px;border-radius:999px;border:1.5px solid var(--jd-ink-muted);background:var(--jd-paper-raised);display:inline-grid;place-items:center;flex-shrink:0;margin-top:3px}
+.reference-landing .landing-preview-card.is-selected .landing-preview-radio,.reference-landing .landing-preview-single-toggle.is-selected .landing-preview-radio{border-color:var(--jd-rule-navy);background:var(--jd-rule-navy)}
+.reference-landing .landing-preview-card.is-selected .landing-preview-radio:after,.reference-landing .landing-preview-single-toggle.is-selected .landing-preview-radio:after{content:'';width:6px;height:6px;border-radius:999px;background:#fcfaf5}
+.reference-landing .landing-preview-badge{width:23px;height:23px;border-radius:999px;background:var(--jd-ink);color:#fcfaf5;display:inline-grid;place-items:center;font-family:var(--jd-font-ui);font-size:11px;font-weight:700;flex-shrink:0}
+.reference-landing .landing-preview-card.is-selected .landing-preview-badge{background:var(--jd-rule-navy)}
+.reference-landing .landing-preview-title{flex:1;min-width:0;display:grid;gap:2px}
+.reference-landing .landing-preview-title strong{font-size:15.5px;font-weight:700;color:var(--jd-ink-heading);line-height:1.25}
+.reference-landing .landing-preview-title small{font-size:13px;color:var(--jd-ink-soft);line-height:1.4}
+.reference-landing .landing-preview-title small b{color:var(--jd-ink-heading)}
+.reference-landing .landing-preview-rec{font-family:var(--jd-font-ui);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--jd-paper-deep);border:1px solid var(--jd-hairline);color:var(--jd-ink-heading);white-space:nowrap}
+.reference-landing .landing-preview-checks{display:grid;gap:3px;padding-top:6px;border-top:1px solid var(--jd-hairline-soft);font-size:13.5px;color:var(--jd-ink)}
+.reference-landing .landing-preview-foot{display:flex;gap:14px;flex-wrap:wrap;padding-top:5px;border-top:1px solid var(--jd-hairline-soft);font-family:var(--jd-font-ui);font-size:11px;color:var(--jd-ink-soft)}
+.reference-landing .landing-preview-single{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--jd-hairline);border-radius:12px;background:var(--jd-paper)}
+.reference-landing .landing-preview-single-toggle{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--jd-ink-heading);font-family:var(--jd-font-display);font-size:14.5px;font-weight:700;padding:0;cursor:pointer}
+.reference-landing .landing-preview-single-toggle .landing-preview-radio{margin-top:0}
+.reference-landing .landing-preview-single select{flex:1;min-width:180px;max-width:100%;min-height:38px;border:1px solid var(--jd-hairline);border-radius:9px;background:var(--jd-paper-raised);color:var(--jd-ink);font-family:var(--jd-font-display);font-size:14px;padding:6px 10px}
 .reference-landing .landing-steps h3{font-size:25px;font-weight:400;letter-spacing:-.015em}
 .reference-landing .landing-steps article>div{color:var(--jd-rule-navy)}
 .reference-landing .landing-faq summary{font-size:20px;font-weight:400}

@@ -18,7 +18,7 @@ try{for(const width of [320,708,1280]){
   if(u.pathname==='/fixture.js')return route.fulfill({body:js,contentType:'text/javascript'});
   if(u.pathname==='/fixture.css')return route.fulfill({body:css,contentType:'text/css'});
   const file=resolve('public','.'+u.pathname),asset=assets.get(u.pathname);
-  if(asset||u.pathname.startsWith('/fonts/')||u.pathname.startsWith('/design/'))return route.fulfill({body:asset||readFileSync(file),contentType:({'.woff2':'font/woff2','.woff':'font/woff','.ttf':'font/ttf','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml'})[extname(u.pathname)]||'application/octet-stream'});
+  if(asset||u.pathname.startsWith('/fonts/')||u.pathname.startsWith('/design/')||u.pathname.startsWith('/connectors/'))return route.fulfill({body:asset||readFileSync(file),contentType:({'.woff2':'font/woff2','.woff':'font/woff','.ttf':'font/ttf','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml'})[extname(u.pathname)]||'application/octet-stream'});
   return route.fulfill({body:'<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta charset="utf-8"><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script type="module" src="/fixture.js"></script></body></html>',contentType:'text/html'});
  });
  const open=async name=>{await page.getByRole('button',{name:'History',exact:true}).click();await page.locator('.jd-history-page-list button').filter({hasText:name}).click();};
@@ -52,7 +52,20 @@ try{for(const width of [320,708,1280]){
  await page.getByRole('heading',{name:'Recorded workforce',exact:true}).waitFor();
  await page.getByRole('button',{name:'Review recorded approval',exact:true}).click();await page.locator('.jd-review').waitFor();await page.getByRole('button',{name:'Back to JD',exact:true}).click();
  assert.equal((await page.evaluate(()=>JSON.parse(sessionStorage.getItem('engine-db')).requests)).some(r=>r.action==='approvals.decide'),false,'viewing an approval cannot execute or approve it');
- await open('Setup conversation');await page.evaluate(()=>document.fonts.ready);
+ await open('Specialist planning');
+ await page.getByRole('heading',{name:'Recommended Specialist Teams',exact:true}).waitFor();
+ await page.getByText('Full Product Launch Team',{exact:true}).waitFor();
+ await page.getByText('Or use a single agent',{exact:true}).waitFor();
+ await page.locator('.jd-execution-drawer summary').filter({hasText:'Activity details'}).waitFor();
+ await page.locator('.jd-execution-drawer summary').filter({hasText:'Execution records'}).waitFor();
+ await page.getByLabel('Choose single specialist agent').selectOption('research_analyst');
+ await page.getByLabel('Time allocation').selectOption('900');
+ await page.getByRole('button',{name:'Check price and request approval',exact:true}).click();
+ await page.getByText('Verified agent quote',{exact:true}).waitFor();
+ await open('Setup conversation');
+ await page.getByRole('button',{name:'Not now',exact:true}).click();
+ await page.getByText(/Skipped GitHub connection for now/).waitFor();
+ await page.evaluate(()=>document.fonts.ready);
  const geometry=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,composer:document.querySelector('.jd-compose').getBoundingClientRect().toJSON(),scroll:document.querySelector('.jd-scroll').getBoundingClientRect().toJSON(),height:innerHeight}));
  assert.ok(geometry.doc<=width,JSON.stringify(geometry));assert.ok(geometry.composer.top>=geometry.scroll.bottom-1);assert.ok(geometry.composer.bottom<=geometry.height);
  if(width===320){
