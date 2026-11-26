@@ -10,7 +10,7 @@ import {definitionFromTemplate} from '../supabase/functions/_shared/jd-agent-reg
 import {handleAgentRegistry} from '../supabase/functions/_shared/jd-agent-registry-service.ts';
 const db=new PGlite(),id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const author=id(1),tenant=id(2),reviewer=id(3),staff=id(4),outside=id(5),other=id(6),runner='a'.repeat(64);
-const read=p=>readFileSync(p,'utf8'),registry='supabase/migrations/20261117130000_jd_agent_registry.sql',engine='supabase/migrations/20261121180000_jd_agent_execution_engine.sql';
+const read=p=>readFileSync(p,'utf8'),registry='supabase/migrations/20261121194612_jd_agent_registry.sql',engine='supabase/migrations/20261121194615_jd_agent_execution_engine.sql';
 const definition=()=>({...definitionFromTemplate('inventory-analyst'),model:{provider:'synthetic-provider',name:'synthetic-model'}});
 let n;
 async function initialise(target){

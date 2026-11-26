@@ -30,11 +30,11 @@ async function initialise(){
  await db.exec("create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key,school_id uuid,role text,full_name text);create schema extensions;create function extensions.digest(data bytea,algorithm text) returns bytea language sql immutable as $$select sha256(data)$$;create schema storage;create table public.jd_billing_subscriptions(id uuid primary key default gen_random_uuid(),school_id uuid not null unique references public.schools(id),status text not null,currency text not null default 'USD',trial_ends_at timestamptz,current_period_end timestamptz);create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);");
  const source=read('supabase/migrations/20261111085143_jd_autonomous_automation.sql');
  for(const t of ['jd_conversations','jd_automation_runs','jd_automation_steps','jd_approvals','jd_audit_events'])await db.exec(source.match(new RegExp(`create table if not exists public\\.${t} \\([\\s\\S]*?\\n\\);`))[0]);
- await db.exec(read('supabase/migrations/20261122120000_jd_skills_catalog.sql'));
- await db.exec(read('supabase/migrations/20261122210000_jd_skills_autonomous.sql'));
- await db.exec(read('supabase/migrations/20261122220000_jd_discovery_autonomy.sql'));
- await db.exec(read('supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql'));
- await db.exec(read('supabase/migrations/20261124170000_jd_specialist_quote_only_estimates.sql'));
+ await db.exec(read('supabase/migrations/20261122073215_jd_skills_catalog.sql'));
+ await db.exec(read('supabase/migrations/20261122190743_jd_skills_autonomous.sql'));
+ await db.exec(read('supabase/migrations/20261122222208_jd_discovery_autonomy.sql'));
+ await db.exec(read('supabase/migrations/20261124135136_jd_specialist_run_approval_billing.sql'));
+ await db.exec(read('supabase/migrations/20261124175427_jd_specialist_quote_only_estimates.sql'));
  await db.query('insert into schools values($1),($2)',[tenant,otherTenant]);
  for(const [who,school,role] of [[admin,tenant,'owner'],[second,tenant,'admin'],[staff,tenant,'manager'],[other,otherTenant,'owner']]){
   await db.query('insert into auth.users values($1)',[who]);await db.query('insert into profiles values($1,$2,$3,$4)',[who,school,role,'Synthetic actor']);

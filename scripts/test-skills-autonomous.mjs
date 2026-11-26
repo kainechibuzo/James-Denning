@@ -17,8 +17,8 @@ const importer=id(1),tenant=id(2),reviewer=id(3),staff=id(4),other=id(5);
 const db=new PGlite();
 let n;
 const read=p=>readFileSync(p,'utf8');
-const skillsSql='supabase/migrations/20261122120000_jd_skills_catalog.sql';
-const autonomousSql='supabase/migrations/20261122210000_jd_skills_autonomous.sql';
+const skillsSql='supabase/migrations/20261122073215_jd_skills_catalog.sql';
+const autonomousSql='supabase/migrations/20261122190743_jd_skills_autonomous.sql';
 
 const manifest=over=>({schemaVersion:'1',name:'Invoice Reconciler',description:'Reconciles supplier invoices against the ledger with JD-verified evidence.',
  version:'1.0.0',license:'Apache-2.0',category:'finance',tags:['synthetic','review'],specialistRoles:['finance_analyst'],

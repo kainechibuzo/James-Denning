@@ -34,7 +34,7 @@ test("does not mislabel empty or malformed tool results as agent deliverables",(
 test("specialist execution is approval-gated, time-bounded and settled server-side",()=>{
   const runtime=readFileSync(new URL("../supabase/functions/_shared/jd-agent-runtime.ts",import.meta.url),"utf8");
   const submission=readFileSync(new URL("../supabase/functions/_shared/jd-chat-submission.mjs",import.meta.url),"utf8");
-  const migration=readFileSync(new URL("../supabase/migrations/20261124130000_jd_specialist_run_approval_billing.sql",import.meta.url),"utf8");
+  const migration=readFileSync(new URL("../supabase/migrations/20261124135136_jd_specialist_run_approval_billing.sql",import.meta.url),"utf8");
   const chat=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
   assert.match(runtime,/jd_specialist_run_start/);
   assert.match(runtime,/tool.name !== "deploy_specialist_workforce"/);

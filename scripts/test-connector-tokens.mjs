@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {TOKEN_CONNECTORS,tokenConnector,tokenEndpoint,validateConnectorToken} from '../supabase/functions/_shared/jd-connector-token-policy.mjs';
 import {CONNECTOR_CATALOGUE} from '../src/connectors/catalogue.mjs';
 import {readFileSync} from 'node:fs';
-const sql=readFileSync('supabase/migrations/20261118120000_jd_connector_pasted_tokens.sql','utf8');
+const sql=readFileSync('supabase/migrations/20261118113318_jd_connector_pasted_tokens.sql','utf8');
 for(const [id,p] of Object.entries(TOKEN_CONNECTORS))test(`${id}: pinned endpoint and sourced token instructions`,()=>{
  assert.equal(CONNECTOR_CATALOGUE.find(e=>e.id===id).endpoint,p.endpoint);
  assert.ok(sql.includes(`('${id}','${p.endpoint}'`),'DB and UI endpoint map agree');

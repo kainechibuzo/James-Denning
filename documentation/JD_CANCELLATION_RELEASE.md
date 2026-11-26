@@ -4,7 +4,7 @@
 
 ## Contract and boundaries
 
-The candidate migration is `supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql`. Its version sorts after the existing staged repairs; it is not an assertion that a deployment occurred at that timestamp.
+The candidate migration is `supabase/migrations/20261126083917_jd_atomic_execution_cancel.sql`. Its version sorts after the existing staged repairs; it is not an assertion that a deployment occurred at that timestamp.
 
 `jd_cancel_execution_job_checked(actor, job, expected_run, expected_updated_at)`:
 

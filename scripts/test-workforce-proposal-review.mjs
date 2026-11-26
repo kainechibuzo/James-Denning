@@ -6,12 +6,12 @@ const runtime = readFileSync("supabase/functions/_shared/jd-agent-runtime.ts", "
 const contract = readFileSync("supabase/functions/_shared/jd-capability-contract.ts", "utf8");
 const review = readFileSync("src/chat/ReviewCentre.jsx", "utf8");
 const workforceService = readFileSync("supabase/functions/_shared/jd-workforce-control-service.ts", "utf8");
-const workforceMigration = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.sql", "utf8");
-const workforceRollback = readFileSync("supabase/migrations/20261124170000_jd_approved_workforce_activation.rollback.sql", "utf8");
+const workforceMigration = readFileSync("supabase/migrations/20261124175434_jd_approved_workforce_activation.sql", "utf8");
+const workforceRollback = readFileSync("supabase/migration_rollbacks/20261124170000_jd_approved_workforce_activation.rollback.sql", "utf8");
 const workforceUi = readFileSync("src/chat/WorkforceControlCentre.jsx", "utf8");
-const privateChatMigration = readFileSync("supabase/migrations/20261124180000_jd_workforce_private_chat.sql", "utf8");
+const privateChatMigration = readFileSync("supabase/migrations/20261126083717_jd_workforce_private_chat.sql", "utf8");
 const assignmentAttribution = readFileSync("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql", "utf8");
-const registryCatalogueMigration = readFileSync("supabase/migrations/20261124195000_jd_workforce_specialist_catalogue.sql", "utf8");
+const registryCatalogueMigration = readFileSync("supabase/migrations/20261126083710_jd_workforce_specialist_catalogue.sql", "utf8");
 
 test("JD can submit an individual AI employee proposal for owner review", () => {
   assert.match(runtime, /kind: \{ type: "string", enum: \["employee","team"\] \}/);

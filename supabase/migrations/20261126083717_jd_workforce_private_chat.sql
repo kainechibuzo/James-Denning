@@ -33,11 +33,15 @@ create unique index jd_workforce_agent_reply_once
   where sender_kind='agent' and reply_to_message_id is not null;
 
 create or replace function public.jd_forbid_workforce_agent_message_mutation()
-returns trigger language plpgsql as $function$
+returns trigger
+language plpgsql
+set search_path = pg_catalog
+as $function$
 begin
   raise exception 'Private specialist messages are append-only' using errcode='55000';
 end;
 $function$;
+revoke all on function public.jd_forbid_workforce_agent_message_mutation() from public, anon, authenticated, service_role;
 create trigger jd_workforce_agent_messages_immutable
   before update or delete on public.jd_workforce_agent_messages
   for each row execute function public.jd_forbid_workforce_agent_message_mutation();

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {PGlite} from "@electric-sql/pglite";
 const db=new PGlite();
-const migration=readFileSync("supabase/migrations/20261121150000_jd_approved_execution_release.sql","utf8");
+const migration=readFileSync("supabase/migrations/20261123094028_jd_approved_execution_release.sql","utf8");
 const school="00000000-0000-4000-8000-000000000001",owner="00000000-0000-4000-8000-000000000002",staff="00000000-0000-4000-8000-000000000003",run="00000000-0000-4000-8000-000000000004",approval="00000000-0000-4000-8000-000000000005";
 before(async()=>{
  await db.exec(`

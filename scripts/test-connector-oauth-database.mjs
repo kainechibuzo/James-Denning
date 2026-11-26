@@ -12,8 +12,8 @@ before(async()=>{
  for(const [actor,tenant,role] of [[owner,school,'owner'],[manager,school,'manager'],[other,elsewhere,'owner'],[staff,school,'staff']]){await db.query('insert into auth.users values($1)',[actor]);await db.query('insert into profiles values($1,$2,$3)',[actor,tenant,role]);}
  await db.exec(sql('20261114091134_jd_connect_mcp_platform.sql'));
  await db.exec(sql('20261114094036_jd_connector_permission_grants.sql'));
- await db.exec(sql('20261118100000_jd_connector_oauth.sql'));
- await db.exec(sql('20261118120000_jd_connector_pasted_tokens.sql'));
+ await db.exec(sql('20261118105306_jd_connector_oauth.sql'));
+ await db.exec(sql('20261118113318_jd_connector_pasted_tokens.sql'));
  await db.exec(sql('20261119123553_jd_connector_readonly_discovery.sql'));
 });
 beforeEach(async()=>{await db.exec('reset role;truncate jd_connector_servers cascade;');await db.query("update profiles set role='manager',school_id=$2 where id=$1",[manager,school]);});

@@ -6,7 +6,7 @@ import {PGlite} from '@electric-sql/pglite';
 const db=new PGlite();
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const owner=id(1),tenant=id(2),outsider=id(3),other=id(4),staff=id(5),job=id(6),run=id(7),lease=id(8);
-const migration='supabase/migrations/20261117120000_jd_usage_ledger.sql';
+const migration='supabase/migrations/20261126083846_jd_usage_ledger.sql';
 const read=p=>readFileSync(p,'utf8');
 const ddl=(file,table)=>read(file).match(new RegExp(`create table if not exists public\\.${table} \\([\\s\\S]*?\\n\\);`))[0];
 const control='supabase/migrations/20261111085143_jd_autonomous_automation.sql';

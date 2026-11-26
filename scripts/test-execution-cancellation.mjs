@@ -18,7 +18,7 @@ const school=id(1),otherSchool=id(2),run=id(3),job=id(4),outsideRun=id(5);
 const actors={owner:id(10),admin:id(11),manager:id(12),staff:id(13),viewer:id(14),finance:id(15),hr:id(16),contractor:id(17),outsider:id(18)};
 const version='2026-11-16T12:00:00.123456+00:00';
 const read=name=>readFileSync(`supabase/migrations/${name}`,'utf8');
-const migration=read('20261117220000_jd_atomic_execution_cancel.sql');
+const migration=read('20261126083917_jd_atomic_execution_cancel.sql');
 function ddl(file,table){const m=read(file).match(new RegExp(`create table if not exists public\\.${table} \\([\\s\\S]*?\\n\\);`,'i'));assert.ok(m);return m[0];}
 before(async()=>{
  await db.exec('create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key references auth.users,school_id uuid references schools,role text);');

@@ -99,7 +99,7 @@ globalThis.fetch = async (url) => {
 
 const probeEnv = {
   SUPABASE_URL: "https://probe.test",
-  JD_WORKER_SECRET: "secret123",
+  JD_SECRETS_JSON: JSON.stringify({ JD_WORKER_SECRET: "secret123" }),
 };
 
 const probeCase = (name, scen, env, want) => {
@@ -114,13 +114,19 @@ const probeCase = (name, scen, env, want) => {
 };
 
 probeCase("all functions fail closed (healthy)", {}, {}, 0);
+probeCase(
+  "CI with JD_SECRETS_JSON.JD_WORKER_SECRET passes",
+  {},
+  { GITHUB_ACTIONS: "true" },
+  0,
+);
 probeCase("endpoint open to unauthenticated calls", { "jd-automation": "open" }, {}, 1);
 probeCase("endpoint crashes instead of rejecting", { "jd-execution-worker": "crash" }, {}, 1);
 probeCase("function not deployed", { "jd-task-scheduler": "missing" }, {}, 1);
 probeCase(
   "CI without JD_WORKER_SECRET (assertion would be skipped)",
   {},
-  { GITHUB_ACTIONS: "true", JD_WORKER_SECRET: "" },
+  { GITHUB_ACTIONS: "true", JD_SECRETS_JSON: "" },
   2,
 );
 probeCase("no SUPABASE_URL", {}, { SUPABASE_URL: "" }, 2);

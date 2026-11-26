@@ -75,7 +75,7 @@ was introduced.
 
 ## Execution authority lifecycle (registry)
 
-`20261121180000_jd_agent_execution_engine.sql` adds
+`20261121194615_jd_agent_execution_engine.sql` adds
 `jd_agent_definitions.execution_authorized` / `execution_grant_approval` and the
 `jd_agent_execution` RPC (owner/admin, service-role only, replay-safe via
 `jd_agent_registry_requests`):

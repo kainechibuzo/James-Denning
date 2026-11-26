@@ -8,7 +8,7 @@ import {WORKFORCE_GRANTABLE_TOOLS, FORBIDDEN_AGENT_TOOLS, WORKFORCE_RELEASE_FLAG
 
 const runtime = readFileSync('supabase/functions/_shared/jd-agent-runtime.ts', 'utf8');
 const engine = readFileSync('supabase/functions/_shared/jd-agent-workforce.ts', 'utf8');
-const assignmentsSql = readFileSync('supabase/migrations/20261124090000_jd_workforce_assignments.sql', 'utf8');
+const assignmentsSql = readFileSync('supabase/migrations/20261123133630_jd_workforce_assignments.sql', 'utf8');
 const assignmentAttributionSql = readFileSync('supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql', 'utf8');
 
 test('the runtime registers the workforce deployment and agent factory tools', () => {

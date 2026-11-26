@@ -1,5 +1,5 @@
-const approvalSql = await Deno.readTextFile("supabase/migrations/20261119150000_jd_approval_expiration_lifecycle.sql");
-const taskSql = await Deno.readTextFile("supabase/migrations/20261119151000_jd_task_provenance_atomic.sql");
+const approvalSql = await Deno.readTextFile("supabase/migrations/20261119193606_jd_approval_expiration_lifecycle.sql");
+const taskSql = await Deno.readTextFile("supabase/migrations/20261119193608_jd_task_provenance_atomic.sql");
 
 Deno.test("approval expiry migration expires both pending queues and writes audit evidence", () => {
   if (!approvalSql.includes("public.jd_approvals") || !approvalSql.includes("public.jd_connector_approvals")) {

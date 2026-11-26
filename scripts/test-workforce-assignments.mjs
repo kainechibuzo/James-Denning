@@ -9,14 +9,14 @@ import {PGlite} from '@electric-sql/pglite';
 const db=new PGlite(),id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const owner=id(1),admin=id(2),staff=id(3),outside=id(4),tenant=id(10),other=id(11),runA=id(20),runB=id(21);
 const read=p=>readFileSync(p,'utf8');
-const MIG='supabase/migrations/20261124090000_jd_workforce_assignments.sql';
+const MIG='supabase/migrations/20261123133630_jd_workforce_assignments.sql';
 async function initialise(target){
  await target.exec("create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table schools(id uuid primary key);create table profiles(id uuid primary key,school_id uuid,role text,full_name text);create schema extensions;create function extensions.digest(data bytea,algorithm text) returns bytea language sql immutable as $$select sha256(data)$$;");
  const source=read('supabase/migrations/20261111085143_jd_autonomous_automation.sql');
  for(const t of ['jd_conversations','jd_automation_runs','jd_automation_steps','jd_approvals','jd_audit_events'])await target.exec(source.match(new RegExp(`create table if not exists public\\.${t} \\([\\s\\S]*?\\n\\);`))[0]);
  await target.exec(read('supabase/migrations/20261111085145_jd_review_centre_foundation.sql').split('create index')[0]);
  await target.exec(read('supabase/migrations/20261114213713_jd_authorization_role_matrix.sql').match(/CREATE OR REPLACE FUNCTION public\.jd_decide_approval\([\s\S]*?\n\$function\$\n;/)[0]);
- await target.exec(read('supabase/migrations/20261117130000_jd_agent_registry.sql'));
+ await target.exec(read('supabase/migrations/20261121194612_jd_agent_registry.sql'));
  await target.exec(read(MIG));
  await target.query('insert into schools values($1),($2)',[tenant,other]);
  for(const [who,school,role] of [[owner,tenant,'owner'],[admin,tenant,'admin'],[staff,tenant,'staff'],[outside,other,'owner']]){await target.query('insert into auth.users values($1)',[who]);await target.query('insert into profiles values($1,$2,$3,$4)',[who,school,role,'Synthetic actor']);}

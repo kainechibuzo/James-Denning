@@ -12,7 +12,7 @@ The existing catalogue still contains **16 draft definitions, 0 operationally ev
 
 ## Data model
 
-Candidate migration: `supabase/migrations/20261117120000_jd_usage_ledger.sql`.
+Candidate migration: `supabase/migrations/20261126083846_jd_usage_ledger.sql`.
 
 - `jd_usage_accounts`: one shadow budget per tenant, outstanding reservations, accrued estimates and optimistic configuration version.
 - `jd_usage_runs`: exactly one reservation per existing `jd_execution_jobs` entry, explicitly authorised by a tenant owner/admin. Contains worker-private fencing and observation state.

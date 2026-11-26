@@ -14,7 +14,7 @@ before(async()=>{
  await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create table public.schools(id uuid primary key);create table public.profiles(id uuid primary key,school_id uuid,role text);`);
  for(const name of ['jd_conversations','jd_messages','jd_automation_runs','jd_audit_events'])await db.exec(ddl(name));
  await db.exec('alter table public.jd_messages add column created_by_agent boolean default false;alter table public.jd_automation_runs add column created_by_agent boolean default false;');
- await db.exec(readFileSync('supabase/migrations/20261121100000_jd_conversation_interactions.sql','utf8'));
+ await db.exec(readFileSync('supabase/migrations/20261121084947_jd_conversation_interactions.sql','utf8'));
  await db.query('insert into schools values($1),($2)',[org,otherOrg]);
  for(const [id,tenant] of [[actor,org],[other,otherOrg],[colleague,org]]){await db.query('insert into auth.users values($1)',[id]);await db.query("insert into profiles values($1,$2,'staff')",[id,tenant]);}
 });

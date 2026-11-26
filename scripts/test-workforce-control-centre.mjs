@@ -2,17 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const read=path=>readFileSync(path,"utf8");
-const migration=read("supabase/migrations/20261124110000_jd_workforce_control_centre.sql");
+const migration=read("supabase/migrations/20261123164820_jd_workforce_control_centre.sql");
 const service=read("supabase/functions/_shared/jd-workforce-control-service.ts");
 const endpoint=read("supabase/functions/jd-automation/index.ts");
 const ui=read("src/chat/WorkforceControlCentre.jsx");
 const chat=read("src/chat/ChatHome.jsx");
 const nav=read("src/config/assistant-navigation.mjs");
-const privateChat=read("supabase/migrations/20261124180000_jd_workforce_private_chat.sql");
+const privateChat=read("supabase/migrations/20261126083717_jd_workforce_private_chat.sql");
 const assignmentAttribution=read("supabase/migrations/20261124190000_jd_employee_assignment_attribution.sql");
 const shadowUsage=read("supabase/migrations/20261124200000_jd_workforce_shadow_usage.sql");
 const teamBudgetsMigration=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.sql");
-const teamBudgetsRollback=read("supabase/migrations/20261124210000_jd_workforce_team_budgets.rollback.sql");
+const teamBudgetsRollback=read("supabase/migration_rollbacks/20261124210000_jd_workforce_team_budgets.rollback.sql");
 test("workforce identity and control records are tenant-scoped and service-only",()=>{
  for(const table of ["jd_workforce_employees","jd_workforce_teams","jd_workforce_team_members","jd_workforce_agent_threads","jd_workforce_agent_messages","jd_workforce_control_events"])assert.ok(migration.includes("alter table public."+table+" enable row level security"));
  assert.ok(migration.includes("revoke all on public.jd_workforce_employees"));
@@ -41,7 +41,7 @@ test("workforce control centre is reachable from the chat tool surface",()=>{
  assert.ok(chat.includes('setShowWorkforce(view==="workforce")'));
 });
 
-const lifecycle=read("supabase/migrations/20261124130000_jd_workforce_lifecycle_and_employee_budgets.sql");
+const lifecycle=read("supabase/migrations/20261123164824_jd_workforce_lifecycle_and_employee_budgets.sql");
 test("employee activation and team membership are tenant-scoped and idempotent",()=>{
  for(const table of ["jd_workforce_employee_budgets","jd_workforce_employee_usage","jd_workforce_provision_requests"])assert.ok(lifecycle.includes("alter table public."+table+" enable row level security"));
  for(const fn of ["jd_workforce_create_employee","jd_workforce_create_team","jd_workforce_team_membership"])assert.ok(lifecycle.includes("grant execute on function public."+fn));

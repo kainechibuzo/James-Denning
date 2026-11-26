@@ -10,7 +10,7 @@ const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const school=id(1),otherSchool=id(2),run=id(3),job=id(4),outsideRun=id(5);
 const actors={owner:id(10),admin:id(11),manager:id(12),staff:id(13),viewer:id(14),finance:id(15),hr:id(16),contractor:id(17),outsider:id(18)};
 const signature='public.jd_requeue_failed_execution_job(uuid,uuid)';
-const patch='20261116210000_jd_retry_run_integrity.sql';
+const patch='20261126083857_jd_retry_run_integrity.sql';
 const pattern=/create or replace function public\.jd_requeue_failed_execution_job\s*\([\s\S]*?\bas\s+(\$[a-z_]*\$)[\s\S]*?\1\s*;/gi;
 const definition=file=>[...read(file).matchAll(pattern)].at(-1)?.[0];
 function ddl(file,table){const match=read(file).match(new RegExp(`create table if not exists public\\.${table} \\([\\s\\S]*?\\n\\);`,'i'));assert.ok(match);return match[0];}
