@@ -1,12 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {recommendSpecialist,extractAgentDeliverables} from "../src/chat/agent-recommendations.mjs";
+import {recommendSpecialist,recommendSpecialistTeams,formatSingleAgentEstimate,extractAgentDeliverables} from "../src/chat/agent-recommendations.mjs";
 
 test("recommends a research analyst for explicit market research requests",()=>{
   const result=recommendSpecialist("Research market size, competitors and customer demand for a new logistics SaaS");
   assert.equal(result?.id,"research_analyst");
   assert.equal(result?.name,"Research Analyst");
+});
+
+test("builds recommended specialist teams and transparent single-agent quotes from active-hour billing config",()=>{
+  const teams=recommendSpecialistTeams("Implement frontend and backend architecture for our SaaS website");
+  assert.equal(teams.length,4);
+  assert.equal(teams[0].title,"Full Product Launch Team");
+  assert.equal(teams[0].rateLabel,"$4 / hour");
+  assert.equal(teams[0].estCostLabel,"$6–$10");
+  assert.equal(teams[0].recommended,true);
+  const single=formatSingleAgentEstimate(1800);
+  assert.equal(single.rateLabel,"$1 / hour");
+  assert.equal(single.estTimeLabel,"30 mins");
+  assert.equal(single.estCostLabel,"$0.50");
 });
 
 test("does not recommend an agent for short or generic messages",()=>{

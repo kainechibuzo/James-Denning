@@ -10,10 +10,50 @@ function LandingBrand(){return <span className="landing-brand"><HeritageTile siz
 export function PublicLanding({ onSignIn, onGetStarted }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scenario,setScenario] = useState(0);
+  const [selectedDemoChoice, setSelectedDemoChoice] = useState(0);
+  const [selectedDemoTeam, setSelectedDemoTeam] = useState("full");
+  const [selectedDemoAgent, setSelectedDemoAgent] = useState("frontend");
   const scenarios = [
-    {name:"Business owners",question:"What needs my attention this week?",answer:"Bring overdue tasks, recorded activity and decisions waiting for you into one conversation.",outcome:"A clearer next step, without chasing every update."},
-    {name:"Operations teams",question:"Turn our launch plan into accountable work.",answer:"Prepare tasks, propose responsibilities and review the approvals needed before work moves forward.",outcome:"Less scattered follow-up. More visible ownership."},
-    {name:"Founders",question:"Help me plan the business before we build.",answer:"Develop a business brief, review assumptions and shape workflows around the way your organisation works.",outcome:"Start with a plan you can inspect and improve."},
+    {
+      name:"Business owners",
+      question:"What needs my attention this week?",
+      answer:"Bring overdue tasks, recorded activity and decisions waiting for you into one conversation.",
+      outcome:"A clearer next step, without chasing every update.",
+      choices:[
+        {letter:"A",label:"Cash-flow & invoice review",desc:"Inspect overdue receivables and upcoming supplier commitments",recommended:true},
+        {letter:"B",label:"Pending workspace approvals",desc:"Review 3 operational requests waiting for owner sign-off"},
+        {letter:"C",label:"Department progress check",desc:"Summarise completed vs blocked tasks across teams"},
+      ],
+    },
+    {
+      name:"Operations teams",
+      question:"Turn our launch plan into accountable work.",
+      answer:"Prepare tasks, propose responsibilities and review the approvals needed before work moves forward.",
+      outcome:"Less scattered follow-up. More visible ownership.",
+      choices:[
+        {letter:"A",label:"Phased launch checklist",desc:"Sequenced milestones with explicit owner roles and dependencies",recommended:true},
+        {letter:"B",label:"Department handoff workflow",desc:"Group work by Operations, Finance and Customer Support"},
+        {letter:"C",label:"Risk & approval gates",desc:"Highlight steps that require human sign-off before execution"},
+      ],
+    },
+    {
+      name:"Founders",
+      question:"Help me plan the business before we build.",
+      answer:"Develop a business brief, review assumptions and shape workflows around the way your organisation works.",
+      outcome:"Start with a plan you can inspect and improve.",
+      choices:[
+        {letter:"A",label:"Validate customer demand",desc:"Test target segment assumptions before committing build budget",recommended:true},
+        {letter:"B",label:"Lean MVP specification",desc:"Define core user journey, permissions and acceptance criteria"},
+        {letter:"C",label:"Unit economics & pricing brief",desc:"Model cost assumptions and margin boundaries"},
+      ],
+    },
+    {
+      name:"Specialist teams",
+      question:"Build and launch our customer portal MVP.",
+      answer:"Coordinate a tailored specialist team or single AI employee with transparent active-time estimates and explicit approval.",
+      outcome:"Every specialist assignment is scoped, quoted and approved by you before anything runs.",
+      specialistPreview:true,
+    },
   ];
   const menuRef = useRef(null);
   useEffect(() => {
@@ -65,8 +105,69 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
       <section className="landing-use-cases" aria-labelledby="use-cases-title">
         <div className="landing-section-heading"><p className="landing-eyebrow">BUILT AROUND YOUR WORK</p><h2 id="use-cases-title">A clearer day starts<br/>with a better question.</h2><p>You don’t need another dashboard to watch. You need a way to turn what you know into what you do next.</p></div>
         <div className="landing-scenario">
-          <div className="landing-scenario-tabs" aria-label="Explore use cases">{scenarios.map((item,index)=><button key={item.name} type="button" aria-pressed={scenario===index} onClick={()=>setScenario(index)}>{item.name}</button>)}</div>
-          <div className="landing-demo" aria-live="polite"><small>ILLUSTRATIVE CONVERSATION · NOT LIVE DATA</small><p className="landing-demo-question"><MessageSquare size={18} aria-hidden="true"/>{scenarios[scenario].question}</p><div className="landing-demo-answer"><HeritageTile size={36}/><div><strong>James-Denning</strong><p>{scenarios[scenario].answer}</p></div></div><p className="landing-demo-outcome"><Check size={16} aria-hidden="true"/>{scenarios[scenario].outcome}</p></div>
+          <div className="landing-scenario-tabs" aria-label="Explore use cases">{scenarios.map((item,index)=><button key={item.name} type="button" aria-pressed={scenario===index} onClick={()=>{setScenario(index);setSelectedDemoChoice(0);}}>{item.name}</button>)}</div>
+          <div className="landing-demo" aria-live="polite">
+            <small>ILLUSTRATIVE CONVERSATION · NOT LIVE DATA</small>
+            <p className="landing-demo-question"><MessageSquare size={18} aria-hidden="true"/>{scenarios[scenario].question}</p>
+            <div className="landing-demo-answer">
+              <HeritageTile size={36}/>
+              <div className="landing-demo-answer-body">
+                <strong>James-Denning</strong>
+                <p>{scenarios[scenario].answer}</p>
+                {scenarios[scenario].specialistPreview ? (
+                  <div className="landing-specialist-preview" aria-label="Interactive specialist team preview">
+                    <div className="landing-preview-label">Recommended Specialist Teams</div>
+                    {[
+                      {id:"full",letter:"A",title:"Full Product Launch Team",recommended:true,sub:"4-agent team",rate:"$4 / hour",items:["Market & competitor research","Product positioning & UX plan","Frontend & backend architecture"],time:"1.5–2.5 hrs",cost:"$6–$10"},
+                      {id:"mvp",letter:"B",title:"Lean MVP Builder Team",recommended:false,sub:"3-agent team",rate:"$3 / hour",items:["Product & UX design","Core web app development"],time:"1–2 hrs",cost:"$3–$6"},
+                    ].map(team=>(
+                      <div key={team.id} role="option" tabIndex={0} aria-selected={selectedDemoTeam===team.id} className={"landing-preview-card"+(selectedDemoTeam===team.id?" is-selected":"")} onClick={()=>setSelectedDemoTeam(team.id)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoTeam(team.id);}}}>
+                        <span className="landing-preview-top">
+                          <span className="landing-preview-radio"/>
+                          <span className="landing-preview-badge">{team.letter}</span>
+                          <span className="landing-preview-title">
+                            <strong>{team.title}</strong>
+                            <small>{team.sub} · <b>{team.rate}</b></small>
+                          </span>
+                          {team.recommended && <span className="landing-preview-rec">★ Recommended</span>}
+                        </span>
+                        <span className="landing-preview-checks">{team.items.map(it=><span key={it}>✓ {it}</span>)}</span>
+                        <span className="landing-preview-foot"><span>Est. time: {team.time}</span><span>Est. cost: {team.cost}</span></span>
+                      </div>
+                    ))}
+                    <div className="landing-preview-single">
+                      <div role="option" tabIndex={0} aria-selected={selectedDemoTeam==="single"} className={"landing-preview-single-toggle"+(selectedDemoTeam==="single"?" is-selected":"")} onClick={()=>setSelectedDemoTeam("single")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoTeam("single");}}}>
+                        <span className="landing-preview-radio"/>
+                        <span>Or use one agent:</span>
+                      </div>
+                      <select aria-label="Sample single specialist agent" value={selectedDemoAgent} onChange={e=>{setSelectedDemoTeam("single");setSelectedDemoAgent(e.target.value);}}>
+                        <option value="frontend">&lt;/&gt; Frontend Developer Agent ($1 / hr)</option>
+                        <option value="research">Market Research Analyst ($1 / hr)</option>
+                        <option value="designer">Product & UX Designer ($1 / hr)</option>
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="landing-choice-preview" role="listbox" aria-label="Sample interactive choices">
+                    {scenarios[scenario].choices?.map((choice,cIndex)=>(
+                      <div key={choice.letter} role="option" tabIndex={0} aria-selected={selectedDemoChoice===cIndex} className={"landing-preview-card is-compact"+(selectedDemoChoice===cIndex?" is-selected":"")} onClick={()=>setSelectedDemoChoice(cIndex)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelectedDemoChoice(cIndex);}}}>
+                        <span className="landing-preview-top">
+                          <span className="landing-preview-radio"/>
+                          <span className="landing-preview-badge">{choice.letter}</span>
+                          <span className="landing-preview-title">
+                            <strong>{choice.label}</strong>
+                            <small>{choice.desc}</small>
+                          </span>
+                          {choice.recommended && <span className="landing-preview-rec">★ Suggested</span>}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <p className="landing-demo-outcome"><Check size={16} aria-hidden="true"/>{scenarios[scenario].outcome}</p>
+          </div>
         </div>
       </section>
       <section id="how-it-works" className="landing-how" aria-labelledby="how-title">

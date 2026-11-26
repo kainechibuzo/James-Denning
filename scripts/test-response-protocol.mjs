@@ -52,3 +52,38 @@ test('operational cards require a relevant verified persisted result, never a mo
  assert.equal(recordedResponseResults('Show our workforce',[{...step,output_json:{...step.output_json,verification:'unverified'}}]),null);
  const response=recordedResponseResults('Show our workforce',[step]);assert.equal(response.blocks[0].data['total members'],'8');assert.equal(response.blocks[0].data['Members · staff'],6);assert.doesNotMatch(JSON.stringify(response),/private_payload/);
 });
+
+test('rich choice metadata, callout messages and connector prompt cards validate cleanly and reject malformed fields',()=>{
+ const rich=wrap(
+  {id:'intro',type:'message',variant:'callout',content:'JD can coordinate a specialist team or single agent.'},
+  {
+   id:'team-choice',
+   type:'choice',
+   variant:'specialist_teams',
+   question:'Recommended Specialist Teams',
+   subtitle:'Select a pre-assembled team or customise your approach:',
+   multiple:false,
+   submitLabel:'Confirm selection',
+   options:[
+    {label:'Full Product Launch Team',value:'full',recommended:true,subtitle:'4-agent team',rateLabel:'$4 / hour',highlights:['Market research','Frontend & backend architecture'],estTime:'1.5–2.5 hrs',estCost:'$6–$10'},
+    {label:'Lean MVP Builder Team',value:'mvp',subtitle:'3-agent team',rateLabel:'$3 / hour',highlights:['Product & UX design'],estTime:'1–2 hrs',estCost:'$3–$6'},
+   ],
+  },
+  {
+   id:'connect-gh',
+   type:'connector_prompt',
+   connectorId:'github',
+   reason:'Connect GitHub so JD can inspect repository source.',
+   capabilities:['Read repository files','Search repository source'],
+  },
+ );
+ assert.equal(validateResponse(rich,{allowOperational:false}),rich);
+ assert.deepEqual(validateAnswer(rich.blocks[1],['full']),['full']);
+ assert.match(decodeResponse(JSON.stringify(rich),{allowOperational:false}).content,/Suggested connector: github/);
+ for(const invalid of [
+  wrap({id:'m',type:'message',variant:'banner',content:'bad'}),
+  wrap({...choice,variant:'unknown'}),
+  wrap({...choice,options:[{...choice.options[0],highlights:['','','']},choice.options[1]]}),
+  wrap({id:'c',type:'connector_prompt',connectorId:'<bad>'}),
+ ])assert.equal(validateResponse(invalid),null);
+});
