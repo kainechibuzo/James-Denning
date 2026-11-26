@@ -88,7 +88,8 @@ export function JdSkillsPage({ctx,client=supabase}){
    if(stored?.error)throw Error('Quarantine upload failed; nothing was inspected or imported.');
    return await api({action:'skills.import.complete',confirm:true,requestId:requestId(`complete:${create.import_id}`),importId:create.import_id});
   },receipt=>{
-   setReport(receipt);setImporting(false);setFile(null);
+   requests.current.delete(`create:${requestBase}`); // a confirmed import ends this attempt; the next explicit import gets a fresh ID
+  setReport(receipt);setImporting(false);setFile(null);
    setNotice(receipt.status==='needs_review'
    ?'Inspection complete without execution. The package now needs an independent review before publication.'
     :'Inspection failed and nothing was published. The recorded report explains why; the package was never executed.');
