@@ -88,10 +88,10 @@
 .jd-specialist-team-card.is-selected .jd-specialist-radio-dot:after,.jd-specialist-single-card.is-selected .jd-specialist-radio-dot:after{content:'';width:7px;height:7px;border-radius:999px;background:#fcfaf5}
 .jd-specialist-letter-badge{width:25px;height:25px;border-radius:999px;background:var(--jd-ink);color:var(--jd-paper-raised);display:inline-grid;place-items:center;font-family:var(--jd-font-ui);font-size:12px;font-weight:700;flex-shrink:0;margin-top:0}
 .jd-specialist-team-card.is-selected .jd-specialist-letter-badge{background:var(--jd-rule-navy);color:#fcfaf5}
-.jd-specialist-team-heading{flex:1;min-width:0;display:grid;gap:4px}
+.jd-specialist-team-heading{flex:1 1 130px;min-width:0;display:grid;gap:4px}
 .jd-specialist-team-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .jd-specialist-team-title-row strong{font-size:17px;font-weight:700;color:var(--jd-ink-heading);line-height:1.25}
-.jd-specialist-rec-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:var(--jd-paper-deep);border:1px solid var(--jd-hairline-strong);color:var(--jd-ink-heading);font-family:var(--jd-font-ui);font-size:11px;font-weight:600;white-space:nowrap}
+.jd-specialist-rec-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:var(--jd-paper-deep);border:1px solid var(--jd-hairline-strong);color:var(--jd-ink-heading);font-family:var(--jd-font-ui);font-size:11px;font-weight:600}
 .jd-specialist-team-subrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--jd-ink-soft)}
 .jd-specialist-rate{font-weight:700;color:var(--jd-ink-heading);font-size:15px}
 .jd-specialist-deliverables{list-style:none;margin:0;padding:10px 0 2px;border-top:1px solid var(--jd-hairline-soft);display:grid;gap:6px}

@@ -282,13 +282,13 @@ body .jd-command.reference-command.jd-conversation .jd-compose textarea::placeho
 }
 
 /* Collapsible Activity details & Execution records pills in assistant turns. */
-.jd-conversation .jd-message-sender{font-weight:700;color:var(--jd-ink-heading);letter-spacing:-.01em}
+.jd-conversation .jd-message-sender{font-weight:400;color:inherit}
 .jd-conversation .jd-execution-drawers{display:grid;gap:8px;margin:12px 0 4px;min-width:0}
 .jd-conversation .jd-execution-drawer{border:1px solid var(--jd-hairline);border-radius:12px;background:var(--jd-paper-raised);overflow:hidden;box-shadow:0 1px 2px rgba(72,58,40,.04)}
 .jd-conversation .jd-execution-drawer summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;cursor:pointer;font-family:var(--jd-font-display);font-size:15px;font-weight:700;color:var(--jd-ink-heading)}
 .jd-conversation .jd-execution-drawer summary::-webkit-details-marker{display:none}
 .jd-conversation .jd-execution-drawer-meta{display:inline-flex;align-items:center;gap:6px;font-family:var(--jd-font-ui);font-size:11.5px;font-weight:500;color:var(--jd-ink-soft);padding:3px 9px;border-radius:999px;background:var(--jd-paper-sunk);border:1px solid var(--jd-hairline-soft)}
-.jd-conversation .jd-execution-drawer summary:after{content:'▾';font-size:13px;color:var(--jd-ink-muted);margin-left:4px;transition:transform .15s ease}
+.jd-conversation .jd-execution-drawer summary:after{content:'▾';font-size:13px;color:var(--jd-ink-soft);margin-left:4px;transition:transform .15s ease}
 .jd-conversation .jd-execution-drawer[open] summary:after{transform:rotate(180deg)}
 .jd-conversation .jd-execution-drawer-body{border-top:1px solid var(--jd-hairline-soft);padding:10px 14px 12px;display:grid;gap:7px;font-size:14px;color:var(--jd-ink-soft)}
 .jd-conversation .jd-execution-drawer-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}

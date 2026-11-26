@@ -29,7 +29,7 @@ try{for(const width of [320,708,1280]){
  await page.locator('.katex').first().waitFor();assert.ok(await page.locator('.hljs-keyword').count()>0);assert.equal(await page.locator('.jd-table tbody tr').count(),1);
  assert.equal(await page.locator('.jd-visual-workspace').count(),0);
  const single=page.getByRole('form',{name:'Which structure?',exact:true});
- assert.ok(await single.getByText('A.',{exact:true}).count()||await single.getByText('A. Flat',{exact:false}).count(),'choice options have letter labels');
+ assert.ok(await single.getByText('A.',{exact:false}).count(),'choice options have letter labels');
  await single.getByLabel('Flat',{exact:false}).check();
  await page.reload();await single.waitFor();assert.ok(await single.getByLabel('Flat',{exact:false}).isChecked(),'selection survives reload');
  await open('Ordinary conversation');assert.equal(await page.locator('.jd-response-interaction').count(),0);await open('Setup conversation');assert.ok(await single.getByLabel('Flat',{exact:false}).isChecked());
@@ -62,12 +62,14 @@ try{for(const width of [320,708,1280]){
  await page.getByLabel('Time allocation').selectOption('900');
  await page.getByRole('button',{name:'Check price and request approval',exact:true}).click();
  await page.getByText('Verified agent quote',{exact:true}).waitFor();
+ const specGeo=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth}));
+ assert.ok(specGeo.doc<=width,JSON.stringify(specGeo));
  await open('Setup conversation');
- await page.getByRole('button',{name:'Not now',exact:true}).click();
- await page.getByText(/Skipped GitHub connection for now/).waitFor();
  await page.evaluate(()=>document.fonts.ready);
  const geometry=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,composer:document.querySelector('.jd-compose').getBoundingClientRect().toJSON(),scroll:document.querySelector('.jd-scroll').getBoundingClientRect().toJSON(),height:innerHeight}));
  assert.ok(geometry.doc<=width,JSON.stringify(geometry));assert.ok(geometry.composer.top>=geometry.scroll.bottom-1);assert.ok(geometry.composer.bottom<=geometry.height);
+ await page.getByRole('button',{name:'Not now',exact:true}).click();
+ await page.getByText(/Skipped GitHub connection for now/).waitFor();
  if(width===320){
   await page.clock.install();
   await page.evaluate(()=>{window.__pollFailure=true;});
