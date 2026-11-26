@@ -197,3 +197,21 @@ test('acquisition retries reuse an uncertain attempt ID, but a later acquisition
   assert.notEqual(later,first);
  }finally{await m.cleanup();}
 });
+
+test('a confirmed manual import gets a fresh identity when the same file is imported again',async()=>{
+ const m=await mount({handler:async body=>{
+  if(body.action==='skills.import.create')return{data:{receipt:createReceipt}};
+  if(body.action==='skills.import.complete')return{data:{receipt}};
+  return{data:{catalog:catalog(body)}};
+ }});
+ try{
+  const file=zip();
+  await setFile(file);await act(async()=>Simulate.submit(document.querySelector('form')));
+  const first=m.calls.find(c=>c.action==='skills.import.create').requestId;
+  await setFile(file);await act(async()=>Simulate.submit(document.querySelector('form')));
+  const creates=m.calls.filter(c=>c.action==='skills.import.create');
+  assert.equal(creates.length,2);assert.notEqual(creates[1].requestId,first);
+  const completes=m.calls.filter(c=>c.action==='skills.import.complete');
+  assert.equal(completes.length,2);assert.notEqual(completes[1].requestId,completes[0].requestId);
+ }finally{await m.cleanup();}
+});
