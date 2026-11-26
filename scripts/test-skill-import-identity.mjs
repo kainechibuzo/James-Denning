@@ -168,3 +168,10 @@ test('different content under different attempts proceeds as separate versions',
  const skill=(await db.query('select id from jd_skills where school_id=$1',[tenant])).rows;
  assert.equal(skill.length,1);
 });
+
+test('dashboard starts a fresh identity for each explicit import and acquisition attempt',async()=>{
+ const page=read('src/pages/jd-skills.jsx');
+ assert.match(page,/action:'skills\.import\.create',[^\n]*requestId:crypto\.randomUUID\(\)/);
+ assert.match(page,/action:'skills\.acquire',[^\n]*requestId:crypto\.randomUUID\(\)/);
+ assert.doesNotMatch(page,/requestId:\s*requestId\(\x60(?:create|acquire):/);
+});
