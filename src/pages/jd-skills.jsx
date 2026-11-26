@@ -83,7 +83,7 @@ export function JdSkillsPage({ctx,client=supabase}){
  function performImport(importFile,requestBase){
   setImporting(true);
   run(async()=>{
-   const create=await api({action:'skills.import.create',confirm:true,requestId:requestId(`create:${requestBase}`),filename:importFile.name});
+   const create=await api({action:'skills.import.create',confirm:true,requestId:crypto.randomUUID(),filename:importFile.name});
    const stored=await client.storage.from(create.bucket).uploadToSignedUrl(create.upload.path,create.upload.token,importFile);
    if(stored?.error)throw Error('Quarantine upload failed; nothing was inspected or imported.');
    return await api({action:'skills.import.complete',confirm:true,requestId:requestId(`complete:${create.import_id}`),importId:create.import_id});
@@ -104,7 +104,7 @@ export function JdSkillsPage({ctx,client=supabase}){
   });
  }
  const searchSources=()=>run(async()=>api({action:'skills.search',task:searchTask,limit:6}),s=>{setSearchResult(s);setAcquireReceipt(null);});
- const acquireCandidate=id=>run(async()=>api({action:'skills.acquire',confirm:true,requestId:requestId(`acquire:${id}`),name:id}),receipt=>{
+ const acquireCandidate=id=>run(async()=>api({action:'skills.acquire',confirm:true,requestId:crypto.randomUUID(),name:id}),receipt=>{
   setAcquireReceipt(receipt);setSearchResult(null);
   setNotice(receipt.state==='published'
    ?`JD acquired ${receipt.source.path.split('/').pop()} from ${receipt.source.repo} at pinned commit ${receipt.source.commit.slice(0,8)}, inspected it without executing anything and published it under policy jd-autonomous-v1. Every billable run that loads it still needs an explicit recorded cost confirmation.`
