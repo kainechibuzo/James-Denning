@@ -29,7 +29,7 @@ export const REVIEW_GATES=Object.freeze([
  {id:'emergency-disable',expected:'Revoke-only disable, reconcile in-flight transactions, preserve evidence, explicitly reviewed reapply; no unchecked fallback or claim that external effects were undone.'},
 ]);
 export const SOURCE_FILES=Object.freeze([
- 'supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql',
+ 'supabase/migrations/20261126083917_jd_atomic_execution_cancel.sql',
  'supabase/rollback/20261117220000_jd_atomic_execution_cancel.rollback.sql',
  'supabase/functions/jd-automation/index.ts',
  'supabase/functions/_shared/jd-execution-cancellation.mjs',

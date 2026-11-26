@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 
 const db = new PGlite();
-const migration = readFileSync("supabase/migrations/20261119150000_jd_approval_expiration_lifecycle.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261119193606_jd_approval_expiration_lifecycle.sql", "utf8");
 const ids = {
   school: "00000000-0000-4000-8000-000000000001",
   actor: "00000000-0000-4000-8000-000000000002",

@@ -192,7 +192,7 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/_shared/jd-scheduler.test.ts
 
       - name: Test JD approval expiry and task provenance migrations
-        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119150000_jd_approval_expiration_lifecycle.sql,supabase/migrations/20261119151000_jd_task_provenance_atomic.sql supabase/functions/_shared/jd-approval-expiration-migration.test.ts
+        run: deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119193606_jd_approval_expiration_lifecycle.sql,supabase/migrations/20261119193608_jd_task_provenance_atomic.sql supabase/functions/_shared/jd-approval-expiration-migration.test.ts
 
 
       - name: Test JD execution reliability helpers
@@ -208,7 +208,7 @@ jobs:
         run: |
           deno test --node-modules-dir=auto supabase/functions/_shared/jd-tool-evidence.test.ts
           deno test --node-modules-dir=auto --allow-read=supabase/functions/jd-execution-worker/index.ts,supabase/functions/_shared/jd-agent-runtime.ts supabase/functions/_shared/jd-execution-recovery.test.ts
-          deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119120000_jd_connector_outcome_unknown.sql supabase/functions/_shared/jd-connector-outcome-migration.test.ts
+          deno test --node-modules-dir=auto --allow-read=supabase/migrations/20261119055738_jd_connector_outcome_unknown.sql supabase/functions/_shared/jd-connector-outcome-migration.test.ts
 
       - name: Test JD document file generation validation
         run: deno test --allow-env=READABLE_STREAM --node-modules-dir=auto supabase/functions/_shared/jd-agent-file-generator.test.ts

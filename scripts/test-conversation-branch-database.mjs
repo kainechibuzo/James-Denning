@@ -20,8 +20,8 @@ async function initialise(){
  const base=read('supabase/migrations/20261111085143_jd_autonomous_automation.sql');
  for(const table of ['jd_conversations','jd_messages','jd_automation_runs','jd_audit_events'])await db.exec(extract(base,new RegExp(`create table if not exists public\\.${table} \\([\\s\\S]*?\\n\\);`)));
  await db.exec(extract(read('supabase/migrations/20261114223357_jd_agent_provenance_records.sql'),/alter table public\.jd_messages add column if not exists created_by_agent[^;]*;/));
- await db.exec(extract(read('supabase/migrations/20261121100000_jd_conversation_interactions.sql'),/create unique index if not exists jd_messages_client_request[\s\S]*?;/));
- await db.exec(extract(read('supabase/migrations/20261121100000_jd_conversation_interactions.sql'),/create unique index if not exists jd_messages_interaction_answer[\s\S]*?;/));
+ await db.exec(extract(read('supabase/migrations/20261121084947_jd_conversation_interactions.sql'),/create unique index if not exists jd_messages_client_request[\s\S]*?;/));
+ await db.exec(extract(read('supabase/migrations/20261121084947_jd_conversation_interactions.sql'),/create unique index if not exists jd_messages_interaction_answer[\s\S]*?;/));
  // PGlite lacks the Supabase default grants; mirror them for service_role.
  await db.exec('grant usage on schema public to service_role;grant all privileges on all tables in schema public to service_role;');
  await db.query('insert into schools values($1)',[school]);

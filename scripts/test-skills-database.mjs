@@ -7,7 +7,7 @@ import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 const db=new PGlite(),id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const importer=id(1),tenant=id(2),reviewer=id(3),second=id(4),staff=id(5),outside=id(6),other=id(7);
-const read=p=>readFileSync(p,'utf8'),skills='supabase/migrations/20261122120000_jd_skills_catalog.sql';
+const read=p=>readFileSync(p,'utf8'),skills='supabase/migrations/20261122073215_jd_skills_catalog.sql';
 let n;
 const manifest=over=>({schemaVersion:'1',name:'Invoice Reconciler',description:'Reconciles supplier invoices against the ledger with JD-verified evidence.',
  version:'1.0.0',license:'MIT',category:'finance',tags:['synthetic','review'],specialistRoles:['finance_analyst'],

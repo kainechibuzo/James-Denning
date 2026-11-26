@@ -64,7 +64,7 @@ test("team budgets cannot be lowered below accrued usage and usage without a con
 test("rollback removes team budget enforcement without changing employee usage",async()=>{
  await db.exec("begin");
  try{
-  const rollback=readFileSync("supabase/migrations/20261124210000_jd_workforce_team_budgets.rollback.sql","utf8");
+  const rollback=readFileSync("supabase/migration_rollbacks/20261124210000_jd_workforce_team_budgets.rollback.sql","utf8");
   await db.exec(rollback);
   const tables=await db.query("select count(*)::int as n from information_schema.tables where table_schema='public' and table_name in ('jd_workforce_team_budgets','jd_workforce_team_budget_requests')");
   assert.equal(tables.rows[0].n,0);

@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const migration=readFileSync('supabase/migrations/20261125120000_jd_dispatch_tick.sql','utf8');
-const rollback=readFileSync('supabase/migrations/20261125120000_jd_dispatch_tick.rollback.sql','utf8');
+const rollback=readFileSync('supabase/migration_rollbacks/20261125120000_jd_dispatch_tick.rollback.sql','utf8');
 const dispatch=readFileSync('.github/workflows/jd-worker-dispatch.yml','utf8');
 const deploy=readFileSync('.github/workflows/deploy.yml','utf8');
 const autoRelease=readFileSync('.github/workflows/auto-release.yml','utf8');

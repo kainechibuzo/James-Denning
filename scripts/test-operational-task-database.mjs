@@ -29,7 +29,7 @@ before(async () => {
     create table public.jd_automation_runs (id uuid primary key);
   `);
   await db.exec(tableDDL("20261112084532_jd_batch01_organisation_operations_hiring.sql", "jd_operational_tasks"));
-  await db.exec(read("20261119151000_jd_task_provenance_atomic.sql").split("create or replace function")[0]);
+  await db.exec(read("20261119193608_jd_task_provenance_atomic.sql").split("create or replace function")[0]);
   await db.exec(tableDDL("20261111085143_jd_autonomous_automation.sql", "jd_audit_events"));
   // Apply all definitions of the transition and creation RPCs in migration order, not just the original
   // admin/manager-only definition. Discover uppercase/lowercase CREATE equally.
@@ -255,7 +255,7 @@ test('assignment rollback removes executable RPC without deleting existing recor
  const rollback=readFileSync(new URL('../supabase/rollback/20261116203000_jd_atomic_task_assignment.rollback.sql',import.meta.url),'utf8');
  await db.exec(rollback);assert.deepEqual(await assignmentSnapshot(),snapshot);
  await assert.rejects(assignTask(),{code:'42883'});
- await db.exec(read('20261116203000_jd_atomic_task_assignment.sql'));
+ await db.exec(read('20261126083906_jd_atomic_task_assignment.sql'));
  assert.deepEqual(await assignmentSnapshot(),snapshot);
  const {rows}=await db.query("select has_function_privilege('authenticated',$1,'EXECUTE') as allowed",[assignmentSignature]);assert.equal(rows[0].allowed,false);
 });

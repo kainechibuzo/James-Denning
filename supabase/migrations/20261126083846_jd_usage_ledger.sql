@@ -52,6 +52,9 @@ create trigger jd_usage_event_immutable before update or delete on public.jd_usa
 alter table public.jd_usage_accounts enable row level security;
 alter table public.jd_usage_runs enable row level security;
 alter table public.jd_usage_events enable row level security;
+create policy internal_service_only_deny_client_roles on public.jd_usage_accounts as permissive for all to anon, authenticated using (false) with check (false);
+create policy internal_service_only_deny_client_roles on public.jd_usage_runs as permissive for all to anon, authenticated using (false) with check (false);
+create policy internal_service_only_deny_client_roles on public.jd_usage_events as permissive for all to anon, authenticated using (false) with check (false);
 revoke all on public.jd_usage_accounts,public.jd_usage_runs,public.jd_usage_events from public,anon,authenticated,service_role;
 grant select on public.jd_usage_accounts,public.jd_usage_runs,public.jd_usage_events to service_role;
 

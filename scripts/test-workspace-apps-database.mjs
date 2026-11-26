@@ -16,8 +16,8 @@ before(async()=>{
  await db.query('insert into auth.users values($1),($2)',[id(1),id(2)]);await db.query('insert into schools values($1),($2)',[id(3),id(4)]);
  // Historical record predates the new migration: must receive zero enabled apps.
  await db.query("insert into jd_business_oauth_connections(school_id,provider_id,status,connected_by) values($1,'google-workspace','connected',$2)",[id(3),id(1)]);
- await db.exec(read('20261118080000_jd_workspace_read_services.sql'));
- await db.exec(read('20261118100001_jd_workspace_refresh_leases.sql'));
+ await db.exec(read('20261118105244_jd_workspace_read_services.sql'));
+ await db.exec(read('20261118105315_jd_workspace_refresh_leases.sql'));
  await db.query("insert into profiles values($1,$2,'manager')",[id(1),id(3)]);
 });
 after(async()=>db.close());

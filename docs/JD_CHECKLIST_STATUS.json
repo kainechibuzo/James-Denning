@@ -1117,7 +1117,7 @@
       "implementation": "partial",
       "assessment": "Bounded workers exist. A retry NULL/non-null constraint failure is now reproduced and repaired in a staged SQL migration; live rollout and transient/permanent classification remain incomplete.",
       "sources": [
-        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql",
+        "supabase/migrations/20261126083857_jd_retry_run_integrity.sql",
         "scripts/test-execution-retry-database.mjs"
       ],
       "evidence": [
@@ -1139,7 +1139,7 @@
       "sources": [
         "supabase/functions/jd-execution-worker/index.ts",
         "supabase/migrations/20261111085150_jd_durable_execution_jobs.sql",
-        "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
+        "supabase/migrations/20261126083917_jd_atomic_execution_cancel.sql",
         "supabase/functions/_shared/jd-execution-cancellation.mjs",
         "scripts/test-execution-cancellation.mjs",
         "scripts/jd-cancellation-acceptance.mjs",
@@ -1204,7 +1204,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -1225,7 +1225,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -1707,7 +1707,7 @@
       "sources": [
         "src/chat/JDExecutionMonitor.jsx",
         "src/chat/execution-monitor.mjs",
-        "supabase/migrations/20261117220000_jd_atomic_execution_cancel.sql",
+        "supabase/migrations/20261126083917_jd_atomic_execution_cancel.sql",
         "supabase/functions/_shared/jd-execution-cancellation.mjs",
         "scripts/test-execution-cancellation.mjs",
         "scripts/jd-cancellation-acceptance.mjs",
@@ -1980,7 +1980,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2000,7 +2000,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2020,7 +2020,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2040,7 +2040,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2060,7 +2060,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2080,7 +2080,7 @@
       "assessment": "Earlier retry SQL defect remains staged. This slice prevents the known legacy-client/checked-only-backend release mismatch and forbids SQL in the narrowed function artifact. Live migration reconciliation, deployed schema checks and isolated acceptance remain open.",
       "sources": [
         "scripts/test-execution-retry-database.mjs",
-        "supabase/migrations/20261116210000_jd_retry_run_integrity.sql",
+        "supabase/migrations/20261126083857_jd_retry_run_integrity.sql",
         "scripts/jd-backend-release.mjs",
         "documentation/JD_BACKEND_RELEASE.md"
       ],
@@ -2125,7 +2125,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2145,7 +2145,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",
@@ -2165,7 +2165,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql",
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql",
         "scripts/test-backend-assignment-release.mjs"
       ],
       "evidence": [
@@ -2188,7 +2188,7 @@
       "sources": [
         "src/chat/operational-task-writes.mjs",
         "scripts/test-operational-task-database.mjs",
-        "supabase/migrations/20261116203000_jd_atomic_task_assignment.sql"
+        "supabase/migrations/20261126083906_jd_atomic_task_assignment.sql"
       ],
       "evidence": [
         "docs/evidence/2026-11-16-checklist-reconciliation/REPORT.md",

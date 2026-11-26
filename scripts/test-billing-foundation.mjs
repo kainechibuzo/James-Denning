@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const [migration, rollback, endpoint, config, finalisation, finalisationRollback] = await Promise.all([
-  readFile(new URL("../supabase/migrations/20261120084500_jd_commercial_billing.sql", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/migrations/20261124135133_jd_commercial_billing.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/rollback/20261120084500_jd_commercial_billing.rollback.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/functions/jd-billing/index.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/config/billing.mjs", import.meta.url), "utf8"),
-  readFile(new URL("../supabase/migrations/20261120130000_jd_billing_payment_finalization.sql", import.meta.url), "utf8"),
+  readFile(new URL("../supabase/migrations/20261126082931_jd_billing_payment_finalization.sql", import.meta.url), "utf8"),
   readFile(new URL("../supabase/rollback/20261120130000_jd_billing_payment_finalization.rollback.sql", import.meta.url), "utf8"),
 ]);
 

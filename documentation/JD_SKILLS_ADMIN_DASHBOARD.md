@@ -14,7 +14,7 @@ Pure, dependency-free ZIP inspector used by the trusted backend service only —
 - All skill text is untrusted input: credential-like patterns reject (`validation_failed`); prompt-injection patterns record findings and force `needs_review`. Scripts/binaries are flagged `role:"inert_asset", executed:false` and are never executed or installed. No package URL fetching, no dependency installation.
 - Statuses: `validated` → treated as needs review anyway by the pipeline (review is mandatory before publication), `needs_review`, `validation_failed`.
 
-### 2. Storage and database (`supabase/migrations/20261122120000_jd_skills_catalog.sql`, rollback in `supabase/rollback/`)
+### 2. Storage and database (`supabase/migrations/20261122073215_jd_skills_catalog.sql`, rollback in `supabase/rollback/`)
 
 - Private bucket `jd-skill-packages` (ZIP only, 20 MiB cap). The browser uploads once to a short-lived signed URL created by the service; it can never read anything back. All reads happen server-side.
 - Tables `jd_skill_packages`, `jd_skill_imports`, `jd_skills`, `jd_skill_versions`, `jd_skill_reviews`, `jd_skill_run_references`, `jd_skill_requests`. RLS enabled; all grants are service-role only; tenant scoping is enforced inside the RPCs via `jd_skills_tenant` (profile-derived, advisory-locked), never from the browser.

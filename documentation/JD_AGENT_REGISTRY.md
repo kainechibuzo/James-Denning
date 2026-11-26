@@ -81,7 +81,7 @@ Retrieved definitions and observed outputs remain untrusted data. Obvious creden
 
 ## Migration, release and recovery
 
-Candidate migration: `20261117130000_jd_agent_registry.sql`. It depends on the existing auth/profile/school, automation-run, approval/review columns, audit, `extensions.digest` and `jd_decide_approval` schema. It does not replay historical migrations or deploy functions.
+Candidate migration: `20261121194612_jd_agent_registry.sql`. It depends on the existing auth/profile/school, automation-run, approval/review columns, audit, `extensions.digest` and `jd_decide_approval` schema. It does not replay historical migrations or deploy functions.
 
 1. Independently review the candidate and retention constraints. Do not blindly push divergent migration history.
 2. Apply only the reviewed candidate in a genuinely isolated staging project with synthetic data.
