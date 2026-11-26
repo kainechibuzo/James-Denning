@@ -1,12 +1,54 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {recommendSpecialist,recommendSpecialistTeams,formatSingleAgentEstimate,extractAgentDeliverables} from "../src/chat/agent-recommendations.mjs";
+import {
+  recommendSpecialist,
+  recommendSpecialistTeams,
+  formatSingleAgentEstimate,
+  extractAgentDeliverables,
+  assessSpecialistNeed,
+  buildTurnSpecialistGuidance,
+  SPECIALIST_DECISION_POLICY,
+} from "../src/chat/agent-recommendations.mjs";
 
 test("recommends a research analyst for explicit market research requests",()=>{
   const result=recommendSpecialist("Research market size, competitors and customer demand for a new logistics SaaS");
   assert.equal(result?.id,"research_analyst");
   assert.equal(result?.name,"Research Analyst");
+});
+
+test("bakes in deterministic specialist triage across direct handling, single-domain, multi-domain and approved runs",()=>{
+  const directStatus=assessSpecialistNeed("Show my current pending approvals");
+  assert.equal(directStatus.shouldCallSpecialist,false);
+  assert.equal(directStatus.decision,"handle_directly");
+  assert.match(buildTurnSpecialistGuidance("Show my current pending approvals"),/DIRECT JD HANDLING/);
+
+  const singleFinance=assessSpecialistNeed("Build a 12-month cash-flow forecast and unit economics sensitivity model for our subscription tiers");
+  assert.equal(singleFinance.shouldCallSpecialist,true);
+  assert.equal(singleFinance.decision,"recommend_single_specialist");
+  assert.equal(singleFinance.mode,"single");
+  assert.equal(singleFinance.primary?.id,"finance_analyst");
+  assert.match(buildTurnSpecialistGuidance("Build a 12-month cash-flow forecast and unit economics sensitivity model"),/SINGLE-SPECIALIST DEPTH.*Finance Analyst \(finance_analyst\)/);
+
+  const singleSecurity=assessSpecialistNeed("Run a threat model and tenant isolation RLS policy review for our multi-tenant API");
+  assert.equal(singleSecurity.decision,"recommend_single_specialist");
+  assert.equal(singleSecurity.primary?.id,"security_reviewer");
+
+  const multiDomain=assessSpecialistNeed("Build and launch our SaaS website with market research, UX onboarding flow, backend architecture and QA test plan");
+  assert.equal(multiDomain.shouldCallSpecialist,true);
+  assert.equal(multiDomain.decision,"recommend_specialist_team");
+  assert.equal(multiDomain.mode,"team");
+  assert.ok(multiDomain.matchedSpecialists.length>=3);
+  assert.match(buildTurnSpecialistGuidance("Build and launch our SaaS website with market research, UX onboarding flow and QA test plan"),/MULTI-SPECIALIST OBJECTIVE/);
+
+  const approvedRun=assessSpecialistNeed("Analyse market demand and competitor pricing",{approvedSpecialistRole:"research_analyst"});
+  assert.equal(approvedRun.decision,"execute_approved_specialist");
+  assert.equal(approvedRun.primary?.id,"research_analyst");
+  assert.match(buildTurnSpecialistGuidance("Analyse market demand",{approvedSpecialistRole:"research_analyst"}),/APPROVED SPECIALIST RUN \(research_analyst — Research Analyst\)/);
+
+  for(const role of ["business_advisor","research_analyst","finance_analyst","operations_planner","product_designer","software_engineer","security_reviewer","quality_assurance"]){
+    assert.ok(SPECIALIST_DECISION_POLICY.includes(role),`policy includes ${role}`);
+  }
 });
 
 test("builds recommended specialist teams and transparent single-agent quotes from active-hour billing config",()=>{
