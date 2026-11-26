@@ -199,9 +199,13 @@ test('acquisition retries reuse an uncertain attempt ID, but a later acquisition
 });
 
 test('a confirmed manual import gets a fresh identity when the same file is imported again',async()=>{
+ let attempt=0;
  const m=await mount({handler:async body=>{
-  if(body.action==='skills.import.create')return{data:{receipt:createReceipt}};
-  if(body.action==='skills.import.complete')return{data:{receipt}};
+  if(body.action==='skills.import.create'){
+   attempt++;
+   return{data:{receipt:{...createReceipt,import_id:uid(30+attempt),storage_path:`\u0024{uid(2)}/imports/\u0024{uid(32+attempt)}.zip`,upload:{...uploaded,path:`\u0024{uid(2)}/imports/\u0024{uid(32+attempt)}.zip`}}}};
+  }
+  if(body.action==='skills.import.complete')return{data:{receipt:{...receipt,import_id:body.importId}}};
   return{data:{catalog:catalog(body)}};
  }});
  try{
