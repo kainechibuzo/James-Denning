@@ -2226,9 +2226,9 @@ export async function runAgent(input: {
         .eq("run_id", input.context.runId)
         .in("status", ["linked", "running"])
         .maybeSingle();
-      if (proposalRow && typeof proposalRow.specialist_role === "string") {
+      if (proposalRow && proposalRow.status === "linked" && typeof proposalRow.specialist_role === "string") {
         linkedSpecialistProposal = proposalRow as Record<string, unknown>;
-        linkedSpecialistRole = proposalRow.status === "linked" ? proposalRow.specialist_role : null;
+        linkedSpecialistRole = proposalRow.specialist_role;
       }
     } catch {
       linkedSpecialistRole = null;
