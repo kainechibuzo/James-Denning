@@ -1313,6 +1313,15 @@ function AppInner(){
     return false; // deny by default
   };
 
+  // Record an authenticated workspace route opening for aggregate feature-usage analytics.
+  // This is a lightweight event only; it never records page content or user input.
+  useEffect(()=>{
+    if(!selectedSchool?.id||!user||!canAccess(page)) return;
+    supabase.rpc("jd_record_feature_usage",{p_feature_key:page}).then(({error})=>{
+      if(error) console.warn("[JD feature telemetry]",error.message);
+    }).catch(error=>console.warn("[JD feature telemetry]",error?.message||error));
+  },[page,user?.id,selectedSchool?.id]);
+
   // Sign-in and organisation selection happen in the public entry (App.jsx).
   // Without both, return to it rather than rendering a partial workspace.
   if(!selectedSchool||!user) return <SignInRequired/>;
