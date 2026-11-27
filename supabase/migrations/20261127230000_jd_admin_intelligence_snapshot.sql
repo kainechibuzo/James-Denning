@@ -22,6 +22,7 @@ begin
  if v_school is null then raise exception 'Workspace membership required' using errcode='42501'; end if;
  insert into public.jd_feature_usage_events(school_id,actor_id,feature_key) values(v_school,v_actor,p_feature_key);
 end; $;
+revoke all on function public.jd_record_feature_usage(text) from public,anon;
 grant execute on function public.jd_record_feature_usage(text) to authenticated;
 
 -- Request payloads and receipts are intentionally reduced to metadata to avoid exposing secrets or private content.
