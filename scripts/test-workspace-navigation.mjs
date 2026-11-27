@@ -7,7 +7,7 @@ import {JD_ASSISTANT_TOOLS,assistantNavigation} from "../src/config/assistant-na
 const build=opts=>buildWorkspaceNavigation({role:"admin",canAccess:()=>true,...opts});
 
 test("workspace route catalogue retains implemented business destinations and role declarations",()=>{
-  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["jd-chat","jd-operations","jd-skills","billing","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
+  assert.deepEqual(WORKSPACE_NAVIGATION.map(n=>n.id),["admin-dashboard","jd-chat","jd-operations","jd-skills","billing","hiring","mail-logs","notifications","permissions","settings","admin-tools","org-create"]);
   for(const entry of WORKSPACE_NAVIGATION)assert.ok(Array.isArray(entry.roles)&&entry.roles.length>0);
 });
 
