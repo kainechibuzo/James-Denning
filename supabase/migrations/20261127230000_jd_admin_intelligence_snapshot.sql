@@ -126,7 +126,12 @@ begin
     where school_id=v_school and tool_name is not null
     group by tool_name order by uses desc,tool_name asc limit 12
   ),
-  top_features as (\n    select feature_key,count(*)::integer views,count(distinct actor_id)::integer unique_users\n    from public.jd_feature_usage_events where school_id=v_school\n    group by feature_key order by views desc,feature_key asc limit 12\n  ),\n  top_events as (
+  top_features as (
+    select feature_key,count(*)::integer views,count(distinct actor_id)::integer unique_users
+    from public.jd_feature_usage_events where school_id=v_school
+    group by feature_key order by views desc,feature_key asc limit 12
+  ),
+  top_events as (
     select event_type,count(*)::integer uses
     from public.jd_audit_events where school_id=v_school
     group by event_type order by uses desc,event_type asc limit 12
@@ -151,7 +156,8 @@ begin
     'requests',(select data from requests_json),
     'audit_logs',(select data from audit_json),
     'connector_logs',(select data from connector_json),
-    'most_used_tools',(select coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) from top_tools t),\n    'most_used_features',(select coalesce(jsonb_agg(to_jsonb(f)),'[]'::jsonb) from top_features f),
+    'most_used_tools',(select coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) from top_tools t),
+    'most_used_features',(select coalesce(jsonb_agg(to_jsonb(f)),'[]'::jsonb) from top_features f),
     'most_active_event_types',(select coalesce(jsonb_agg(to_jsonb(e)),'[]'::jsonb) from top_events e),
     'telemetry_note','Feature rankings count recorded workspace route openings; tool rankings count recorded connector executions. These are observed navigation events, not time-on-screen or unique sessions.'
   ) into v_result;
