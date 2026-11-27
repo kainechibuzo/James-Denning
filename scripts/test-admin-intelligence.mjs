@@ -9,6 +9,9 @@ test("admin intelligence UI calls the workspace-scoped snapshot RPC",()=>{
  assert.match(dashboard,/All captured requests/);
  assert.match(dashboard,/Workspace logs & execution events/);
  assert.match(dashboard,/Most used connector tools/);
+ assert.match(dashboard,/Most opened workspace features/);
+ const shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
+ assert.match(shell,/jd_record_feature_usage/);
  assert.match(dashboard,/Most frequent event types/);
 });
 test("snapshot is restricted to authenticated workspace administrators",()=>{
