@@ -62,8 +62,8 @@ try{for(const width of [320,708,1280]){
  await page.locator('.jd-execution-drawer summary').filter({hasText:'Execution records'}).waitFor();
  await page.getByLabel('Choose single specialist agent').selectOption('research_analyst');
  await page.getByLabel('Time allocation').selectOption('900');
- await page.getByRole('button',{name:'Check price and request approval',exact:true}).click();
- await page.getByText('Verified agent quote',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Check verified price and request approval',exact:true}).click();
+ await page.getByText('Server-verified specialist quote',{exact:true}).waitFor();
  const specGeo=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth}));
  assert.ok(specGeo.doc<=width,JSON.stringify(specGeo));
  await open('Setup conversation');
