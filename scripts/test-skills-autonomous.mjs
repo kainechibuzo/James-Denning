@@ -9,7 +9,7 @@ import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 import {buildZip,readZipEntries,crc32} from '../supabase/functions/_shared/jd-skills-zip.mjs';
 import {AUTONOMOUS_SOURCE,AUTONOMOUS_SKILL_SOURCES,matchSkillsForTask,getAutonomousSourceEntry} from '../supabase/functions/_shared/jd-skills-source-index.mjs';
-import {repackageSkillFrontmatter,selectUpstreamFiles,resolveUpstreamCommit,deriveSkillStageRequestId} from '../supabase/functions/_shared/jd-skills-acquire.ts';
+import {repackageSkillFrontmatter,selectUpstreamFiles,resolveUpstreamCommit,deriveSkillStageRequestId,deriveAcquisitionAttemptId} from '../supabase/functions/_shared/jd-skills-acquire.ts';
 
 const COMMIT='a'.repeat(40);
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -56,6 +56,22 @@ const expectFail=async (promise,code)=>{
 const createImport=async(who=importer,request=id(n++),filename='xlsx-a1b2c3d4.zip')=>(await rpc('jd_create_skill_import',[who,request,filename])).import_id;
 const completeImport=(imp,who=importer,request=id(n++),rep=report(),man=manifest(),pkg=null)=>rpc('jd_complete_skill_import',[who,request,imp,pkg||rep.packageHash||'b'.repeat(64),rep,man]);
 const createRun=(who=importer,request=id(n++))=>db.query('insert into jd_automation_runs(school_id,requested_by,status,request_text) values($1,$2,$3,$4) returning id',[tenant,who,'queued','Synthetic acquisition run']);
+
+test('acquisition identity is stable for one pinned commit and changes when the upstream ref advances',async()=>{
+ const request=id(908);
+ const first='a'.repeat(40), second='b'.repeat(40);
+ const firstAttempt=await deriveAcquisitionAttemptId(request,first);
+ assert.equal(await deriveAcquisitionAttemptId(request,first),firstAttempt,'retry at the same commit must reuse its acquisition identity');
+ const secondAttempt=await deriveAcquisitionAttemptId(request,second);
+ assert.notEqual(secondAttempt,firstAttempt,'a changed upstream commit must get a new acquisition identity');
+ const firstCreate=await deriveSkillStageRequestId(firstAttempt,'import.create');
+ const secondCreate=await deriveSkillStageRequestId(secondAttempt,'import.create');
+ const firstComplete=await deriveSkillStageRequestId(firstAttempt,'import.complete');
+ const secondComplete=await deriveSkillStageRequestId(secondAttempt,'import.complete');
+ assert.notEqual(firstCreate,secondCreate,'different package commits must not share create receipts');
+ assert.notEqual(firstComplete,secondComplete,'different package commits must not share completion receipts');
+ await assert.rejects(()=>deriveAcquisitionAttemptId(request,'not-a-commit'),/Invalid pinned upstream commit/);
+});
 
 test('acquisition stages use distinct deterministic idempotency keys',async()=>{
  const request=id(909);
