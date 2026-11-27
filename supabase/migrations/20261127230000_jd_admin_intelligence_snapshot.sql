@@ -112,15 +112,15 @@ begin
     from (select * from request_rows order by created_at desc nulls last limit v_limit) q
   ),
   audit_rows as (
-    select 'jd'::text source,id::text id,event_type event,actor_id::text actor_id,run_id::text subject_id,created_at,
+    select 'jd'::text source,id::text id,event_type event,actor_id::text actor_id,run_id::text subject_id,null::text status,null::text error_code,created_at,
       case when jsonb_typeof(coalesce(event_json,'{}'::jsonb))='object' then (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(event_json,'{}'::jsonb)) as keys(key)) else '{}'::text[] end detail_fields
     from public.jd_audit_events where school_id=v_school
     union all
-    select 'admin'::text,id::text,action,performed_by::text,entity_id,performed_at,
+    select 'admin'::text,id::text,action,performed_by::text,entity_id,null::text,null::text,performed_at,
       array['entity_type','entity_name','notes']::text[]
     from public.admin_audit_log where school_id=v_school
     union all
-    select 'execution'::text,id::text,'execution.job.'||status,requested_by::text,run_id::text,created_at,
+    select 'execution'::text,id::text,'execution.job.'||status,requested_by::text,run_id::text,status,last_error_code,created_at,
       array_remove(array['attempt_count','last_error_code','last_error_message'],null)::text[]
     from public.jd_execution_jobs where school_id=v_school
   ),
