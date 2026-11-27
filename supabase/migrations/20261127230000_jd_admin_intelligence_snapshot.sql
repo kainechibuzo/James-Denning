@@ -1,4 +1,30 @@
 -- Admin intelligence read model: workspace-scoped requests, execution logs and observed feature activity.
+create table if not exists public.jd_feature_usage_events (
+ id uuid primary key default gen_random_uuid(),
+ school_id uuid not null references public.schools(id) on delete cascade,
+ actor_id uuid not null references auth.users(id) on delete cascade,
+ feature_key text not null check (feature_key in ('admin-dashboard','jd-chat','jd-operations','jd-skills','billing','hiring','mail-logs','notifications','permissions','settings','admin-tools','org-create')),
+ created_at timestamptz not null default clock_timestamp()
+);
+create index if not exists jd_feature_usage_events_school_feature_created_idx
+ on public.jd_feature_usage_events(school_id,feature_key,created_at desc);
+alter table public.jd_feature_usage_events enable row level security;
+revoke all on public.jd_feature_usage_events from public,anon,authenticated;
+revoke all on function public.jd_record_feature_usage(text) from public,anon,authenticated;
+
+create or replace function public.jd_record_feature_usage(p_feature_key text)
+returns void language plpgsql security definer set search_path='' as $
+declare v_actor uuid:=auth.uid(); v_school uuid;
+begin
+ if v_actor is null or p_feature_key is null or p_feature_key not in ('admin-dashboard','jd-chat','jd-operations','jd-skills','billing','hiring','mail-logs','notifications','permissions','settings','admin-tools','org-create') then
+  raise exception 'Invalid feature usage event' using errcode='22023';
+ end if;
+ select school_id into v_school from public.profiles where id=v_actor;
+ if v_school is null then raise exception 'Workspace membership required' using errcode='42501'; end if;
+ insert into public.jd_feature_usage_events(school_id,actor_id,feature_key) values(v_school,v_actor,p_feature_key);
+end; $;
+grant execute on function public.jd_record_feature_usage(text) to authenticated;
+
 -- Request payloads and receipts are intentionally reduced to metadata to avoid exposing secrets or private content.
 create or replace function public.jd_admin_intelligence_snapshot(p_limit integer default 50)
 returns jsonb
@@ -100,7 +126,7 @@ begin
     where school_id=v_school and tool_name is not null
     group by tool_name order by uses desc,tool_name asc limit 12
   ),
-  top_events as (
+  top_features as (\n    select feature_key,count(*)::integer views,count(distinct actor_id)::integer unique_users\n    from public.jd_feature_usage_events where school_id=v_school\n    group by feature_key order by views desc,feature_key asc limit 12\n  ),\n  top_events as (
     select event_type,count(*)::integer uses
     from public.jd_audit_events where school_id=v_school
     group by event_type order by uses desc,event_type asc limit 12
@@ -125,9 +151,9 @@ begin
     'requests',(select data from requests_json),
     'audit_logs',(select data from audit_json),
     'connector_logs',(select data from connector_json),
-    'most_used_tools',(select coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) from top_tools t),
+    'most_used_tools',(select coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) from top_tools t),\n    'most_used_features',(select coalesce(jsonb_agg(to_jsonb(f)),'[]'::jsonb) from top_features f),
     'most_active_event_types',(select coalesce(jsonb_agg(to_jsonb(e)),'[]'::jsonb) from top_events e),
-    'telemetry_note','Feature rankings are based on recorded connector tool executions and audit event types. Page/screen views are not currently instrumented, so these are not full UI feature-usage rankings.'
+    'telemetry_note','Feature rankings count recorded workspace route openings; tool rankings count recorded connector executions. These are observed navigation events, not time-on-screen or unique sessions.'
   ) into v_result;
 
   return v_result;
