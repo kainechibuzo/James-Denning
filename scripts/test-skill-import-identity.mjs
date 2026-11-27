@@ -139,9 +139,12 @@ test('changed package contents on the same attempt are blocked by the request-co
  const attempt=id(n++);
  const first=await run(attempt,{commit:'b'.repeat(40),flavor:'one'});
  assert(!('error' in first));
- let blocked=false;
- try{await run(attempt,{commit:'c'.repeat(40),flavor:'two'});}catch(e){blocked=String(e?.dbCode)==='40001';}
- assert.ok(blocked,'the conflicting resubmission must stay blocked');
+ // Same pinned commit but different archive contents is an inconsistent
+ // replay of the same attempt. The database conflict guard must reject it.
+ const changed=await run(attempt,{commit:'b'.repeat(40),flavor:'two'});
+ assert('error' in changed,'the conflicting resubmission must stay blocked');
+ assert.equal(changed.error.status,409);
+ assert.match(changed.error.message,/conflicts with this submission/i);
  const c=await counts();
  assert.deepEqual(c,{imports:1,packages:1,versions:1,acquisitions:1,requests:3});
 });
