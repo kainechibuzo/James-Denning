@@ -51,19 +51,19 @@ begin
     from public.jd_agent_registry_requests where school_id=v_school
     union all
     select 'skill_request',request_id,null,receipt->>'status',receipt->>'skill_id',null,null,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) k)
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key))
     from public.jd_skill_requests where school_id=v_school
     union all
     select 'workforce_provision',request_id,operation,receipt->>'status',receipt->>'employee_id',actor_id::text,created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) k)
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key))
     from public.jd_workforce_provision_requests where school_id=v_school
     union all
     select 'team_budget',request_id,'team_budget',receipt->>'status',null,actor_id::text,created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) k)
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key))
     from public.jd_workforce_team_budget_requests where school_id=v_school
     union all
     select 'usage',request_id,kind,receipt->>'status',job_id::text,null,created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) k)
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key))
     from public.jd_usage_events where school_id=v_school
   ),
   requests_json as (
@@ -75,7 +75,7 @@ begin
   ),
   audit_rows as (
     select 'jd'::text source,id::text id,event_type event,actor_id::text actor_id,run_id::text subject_id,created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(event_json,'{}'::jsonb)) as keys(key)) detail_fields
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(event_json,'{}'::jsonb)) as keys(key)) detail_fields
     from public.jd_audit_events where school_id=v_school
     union all
     select 'admin'::text,id::text,action,performed_by::text,entity_id,performed_at,
