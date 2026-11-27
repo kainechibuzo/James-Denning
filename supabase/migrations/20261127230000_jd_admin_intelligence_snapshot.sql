@@ -10,7 +10,6 @@ create index if not exists jd_feature_usage_events_school_feature_created_idx
  on public.jd_feature_usage_events(school_id,feature_key,created_at desc);
 alter table public.jd_feature_usage_events enable row level security;
 revoke all on public.jd_feature_usage_events from public,anon,authenticated;
-revoke all on function public.jd_record_feature_usage(text) from public,anon,authenticated;
 
 create or replace function public.jd_record_feature_usage(p_feature_key text)
 returns void language plpgsql security definer set search_path='' as $
