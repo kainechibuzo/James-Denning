@@ -8,7 +8,7 @@
 import { safeText } from './jd-business-foundation.mjs';
 import { inspectSkillPackage, SKILL_PACKAGE_LIMITS, SKILLS_RELEASE_FLAG, SKILLS_STORAGE_BUCKET } from './jd-skills-package.ts';
 import { matchSkillsForTask, AUTONOMOUS_SOURCE } from './jd-skills-source-index.mjs';
-import { acquireSkillCore } from './jd-skills-acquire.ts';
+import { acquireSkillCore, deriveRequestKey } from './jd-skills-acquire.ts';
 
 const uuid=(v:unknown)=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const plainFile=(v:unknown)=>typeof v==='string'&&v.length>=1&&v.length<=200&&/^[A-Za-z0-9._ -]+$/.test(v)&&!/^[. -]/.test(v);
@@ -96,7 +96,8 @@ export async function handleSkills({payload,admin,auth,actorId,profile,json,enab
   let receipt;
   if(action==='skills.import.create'){
    if(!plainFile(payload.filename))return json({error:'A plain package filename (letters, numbers, dot, dash, space; 1-200 characters) is required'},400);
-   receipt=await call('jd_create_skill_import',{p_actor:actorId,p_request:payload.requestId,p_filename:payload.filename.trim()});
+   const createRequestId=await deriveRequestKey(payload.requestId,'manual-import.create',payload.filename.trim());
+   receipt=await call('jd_create_skill_import',{p_actor:actorId,p_request:createRequestId,p_filename:payload.filename.trim()});
    // The browser uploads only to this short-lived signed target inside the
    // private quarantine bucket; it can never read anything back.
    const signed=await admin.storage.from(receipt.bucket).createSignedUploadUrl(receipt.storage_path);
@@ -133,7 +134,8 @@ export async function handleSkills({payload,admin,auth,actorId,profile,json,enab
     errors:result.errors,warnings:result.warnings,findings:result.findings,license:result.license,
     packageHash:result.packageHash,manifestHash:result.manifestHash,
    };
-   receipt=await call('jd_complete_skill_import',{p_actor:actorId,p_request:payload.requestId,p_import:payload.importId,p_package_hash:result.packageHash,p_report:report,p_manifest:result.manifest?{...result.manifest,content_hash:result.manifestHash}:null});
+   const completionRequestId=await deriveRequestKey(payload.requestId,'manual-import.complete',payload.importId);
+   receipt=await call('jd_complete_skill_import',{p_actor:actorId,p_request:completionRequestId,p_import:payload.importId,p_package_hash:result.packageHash,p_report:report,p_manifest:result.manifest?{...result.manifest,content_hash:result.manifestHash}:null});
   }else{
    if(!uuid(payload.skillId))return json({error:'Invalid skill identifier'},400);
    let note:string;

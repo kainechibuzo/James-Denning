@@ -162,3 +162,60 @@ test('discovery preview shows metadata only and never instruction text',async()=
   assert.match(text(),/Skill metadata only/);
   assert.doesNotMatch(text(),/JD-verified summary and never move money/);
  }finally{await m.cleanup();}});
+
+test('acquisition retries reuse an uncertain attempt ID, but a later acquisition gets a fresh ID',async()=>{
+ let attempts=0;
+ const acquisitionReceipt={state:'published',autonomous:true,skill_id:uid(21),version:1,
+  source:{repo:'anthropics/skills',ref:'main',commit:'a'.repeat(40),path:'skills/xlsx'},
+  package_hash:'b'.repeat(64),estimated_seconds:600,billing:{model:'per_run_cost_confirmation'},
+  inspection:{status:'validated',errors:0,warnings:0,entryCount:1},hiring_enabled:false,execution_enabled:false};
+ const m=await mount({handler:async body=>{
+  if(body.action==='skills.search')return{data:{search:{candidates:[{id:'xlsx',name:'XLSX',category:'documents',
+   description:'Create and inspect spreadsheet workbooks.',score:4,expectedMinutes:10,
+   source:{repo:'anthropics/skills',path:'skills/xlsx'},availability:{acquired:false}}],
+   policy:'jd-autonomous-v1',hiring_enabled:false,execution_enabled:false,notice:'Metadata only.'}}};
+  if(body.action==='skills.acquire'){
+   attempts++;
+   if(attempts===1)throw Error('temporary network failure');
+   return{data:{receipt:acquisitionReceipt}};
+  }
+  return{data:{catalog:catalog(body)}};
+ }});
+ try{
+  await act(async()=>Simulate.change(field('Capability description'),{target:{value:'Create a spreadsheet workbook'}}));
+  await click('Search source catalogue');
+  await click('Acquire');
+  const first=m.calls.find(c=>c.action==='skills.acquire').requestId;
+  assert.match(text(),/Skills outcome uncertain|not confirmed/);
+  await click('Acquire');
+  const acquisitions=m.calls.filter(c=>c.action==='skills.acquire');
+  assert.equal(acquisitions[1].requestId,first);
+  assert.match(text(),/Acquired and published/);
+  await click('Search source catalogue');
+  await click('Acquire');
+  const later=m.calls.filter(c=>c.action==='skills.acquire')[2].requestId;
+  assert.notEqual(later,first);
+ }finally{await m.cleanup();}
+});
+
+test('a confirmed manual import gets a fresh identity when the same file is imported again',async()=>{
+ let attempt=0;
+ const m=await mount({handler:async body=>{
+  if(body.action==='skills.import.create'){
+   attempt++;
+   return{data:{receipt:{...createReceipt,import_id:uid(30+attempt),storage_path:`${uid(2)}/imports/${uid(32+attempt)}.zip`,upload:{...uploaded,path:`${uid(2)}/imports/${uid(32+attempt)}.zip`}}}};
+  }
+  if(body.action==='skills.import.complete')return{data:{receipt:{...receipt,import_id:body.importId}}};
+  return{data:{catalog:catalog(body)}};
+ }});
+ try{
+  const file=zip();
+  await setFile(file);await act(async()=>Simulate.submit(document.querySelector('form')));
+  const first=m.calls.find(c=>c.action==='skills.import.create').requestId;
+  await setFile(file);await act(async()=>Simulate.submit(document.querySelector('form')));
+  const creates=m.calls.filter(c=>c.action==='skills.import.create');
+  assert.equal(creates.length,2);assert.notEqual(creates[1].requestId,first);
+  const completes=m.calls.filter(c=>c.action==='skills.import.complete');
+  assert.equal(completes.length,2);assert.notEqual(completes[1].requestId,completes[0].requestId);
+ }finally{await m.cleanup();}
+});
