@@ -70,7 +70,7 @@ test('acquisition identity is stable for one pinned commit and changes when the 
  const secondComplete=await deriveSkillStageRequestId(secondAttempt,'import.complete');
  assert.notEqual(firstCreate,secondCreate,'different package commits must not share create receipts');
  assert.notEqual(firstComplete,secondComplete,'different package commits must not share completion receipts');
- await assert.rejects(()=>deriveAcquisitionAttemptId(request,'not-a-commit'),/Invalid pinned upstream commit/);
+ assert.throws(()=>deriveAcquisitionAttemptId(request,'not-a-commit'),/Invalid pinned upstream commit/);
 });
 
 test('acquisition stages use distinct deterministic idempotency keys',async()=>{
