@@ -68,7 +68,7 @@ test('specialist deliverables always carry the verification contract', () => {
   assert.match(runtime, /verification: \{ required: true, status: "pending_jd_verification" \}/, 'successful specialists require JD verification');
   assert.match(runtime, /verification: \{ required: true, status: "blocked_no_deliverable" \}/, 'failed specialists stay explicit');
   assert.match(runtime, /independently verify all claims and perform any supported actions yourself through registered tools/, 'JD instructions require verification');
-  assert.match(runtime, /Specialists have no approval, hiring, spending, deployment or agent-creation authority/, 'JD instructions carry the governance boundary');
+  assert.match(runtime, /Specialists are reasoning-only and have no tools or authority/, 'JD instructions carry the governance boundary');
   assert.match(runtime, /specialists_can_approve: false,\s*\n?\s*specialists_can_create_agents: false/, 'deployment result states the authority boundary');
 });
 
