@@ -405,7 +405,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
 
   const prepareAgentProposal = async (item,recommendation) => {
     const seconds=Number(agentDurations[item.id]||1800);
-    const quoteKey=item.id+":"+recommendation.id+":"+seconds;
+    const quoteKey=item.id+":"+recommendation.id+":"+seconds+":"+String(recommendation.task||"").trim();
     if(!agentProposalRequests.current.has(quoteKey)){
       const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : newRequestId();
       agentProposalRequests.current.set(quoteKey, id);
@@ -414,15 +414,15 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     try{
       const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"agent.proposal.create",confirm:true,requestId:agentProposalRequests.current.get(quoteKey),specialist:recommendation.id,task:recommendation.task,seconds,spendCapSeconds:seconds}});
       if(error||data?.error||!data?.proposal?.proposal_id){let message=data?.error||error?.message||"JD could not verify the specialist quote.";try{const detail=await error?.context?.json?.();if(detail?.error)message=detail.error;}catch{}throw new Error(message);}
-      setAgentProposals(current=>({...current,[item.id]:data.proposal}));
+      setAgentProposals(current=>({...current,[item.id]:{...data.proposal,task:String(recommendation.task||"").trim()}}));
     }catch(error){setAgentProposals(current=>({...current,[item.id]:{error:error?.message||"Quote unavailable"}}));}
   };
   const launchApprovedAgent = async (item,proposal) => {
     setAgentProposals(current=>({...current,[item.id]:{...proposal,launching:true,error:null}}));
     try{
-      const originalPrompt=messages.slice(0,messages.indexOf(item)).filter(m=>m.role==="user").slice(-1)[0]?.content||"";
-      const task=recommendSpecialist(originalPrompt)?.task||originalPrompt;
-      const approvedText="Run the approved "+proposal.role.replaceAll("_"," ")+" specialist assignment for this task: "+task+". You must invoke delegate_to_specialist_agent exactly once with specialist \""+proposal.role+"\" for this assignment. Stay within the approved "+Math.round(proposal.allocated_seconds/60)+" minute allocation and spending cap. Return a clearly attributed report.";
+      const task=String(proposal.task||"").trim();
+      if(task.length<20)throw new Error("The exact task attached to this approved quote is unavailable. No run was queued.");
+      const approvedText="[JD APPROVED SPECIALIST RUN] Execute the exact approved task below. Do not reinterpret it, add another approval request, or ask the user to repeat it.\n\nSpecialist: "+proposal.role+"\nApproved allocation: "+Math.round(proposal.allocated_seconds/60)+" minutes\n\nApproved task:\n"+task;
       const launchKey="run:"+proposal.proposal_id;
       if(!agentProposalRequests.current.has(launchKey))agentProposalRequests.current.set(launchKey,newRequestId());
       const queued=await send(approvedText,null,null,agentProposalRequests.current.get(launchKey),proposal.proposal_id);
@@ -663,7 +663,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
                 <div className="jd-agent-deliverable-body">{renderMessageContent(agent.report)}</div>
                 <div className="jd-agent-deliverable-foot">Agent output · {agent.scope==="reasoning_only_no_tools"?"Reasoning only; no external research or actions performed":"Execution scope recorded by JD"}{item.specialistUsage&&<> · {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s · {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency}</>}</div>
               </section>)}
-              {item.role==="assistant" && index===messages.map(m=>m.role).lastIndexOf("assistant") && !extractAgentDeliverables(item.toolEvents).length && !item.agentRecommendationDismissed && !(validateResponse(item.response)?.blocks?.some(b=>b.type==="choice"&&b.variant==="specialist_teams")) && (()=>{const prompt=messages.slice(0,index).filter(m=>m.role==="user").slice(-1)[0]?.content||"";const recommendation=recommendSpecialist(prompt);return recommendation?<SpecialistSelectorCard item={item} recommendation={recommendation} duration={agentDurations[item.id]||1800} onDurationChange={value=>setAgentDurations(current=>({...current,[item.id]:Number(value)}))/* value={900} value={1800} value={3600} value={7200} */} proposal={agentProposals[item.id]} disabled={sending||queuePaused} onRequestQuote={target=>prepareAgentProposal(item,target||recommendation)} onDecideProposal={(proposal,decision)=>decideAgentProposal(item,proposal,decision)} onLaunchApproved={proposal=>launchApprovedAgent(item,proposal)} onCoordinateTeam={team=>send(`Coordinate a structured plan using the ${team.title} (${team.agentCount} specialists: ${team.deliverables.join(", ")}). Outline sequenced tasks, responsibilities and approval checkpoints before any specialist execution begins.`)} onDismiss={()=>setMessages(current=>current.map(m=>m.id===item.id?{...m,agentRecommendationDismissed:true}:m))}/>:null})()}
+              {item.role==="assistant" && index===messages.map(m=>m.role).lastIndexOf("assistant") && !extractAgentDeliverables(item.toolEvents).length && !item.agentRecommendationDismissed && !(validateResponse(item.response)?.blocks?.some(b=>b.type==="choice"&&b.variant==="specialist_teams")) && (()=>{const prompt=messages.slice(0,index).filter(m=>m.role==="user").slice(-1)[0]?.content||"";const recommendation=(prompt.startsWith("[JD APPROVED SPECIALIST RUN]")||prompt.startsWith("[JD TEAM PLANNING PREVIEW]"))?null:recommendSpecialist(prompt);return recommendation?<SpecialistSelectorCard item={item} recommendation={recommendation} duration={agentDurations[item.id]||1800} onDurationChange={value=>setAgentDurations(current=>({...current,[item.id]:Number(value)}))/* value={900} value={1800} value={3600} value={7200} */} proposal={agentProposals[item.id]} disabled={sending||queuePaused} onRequestQuote={target=>prepareAgentProposal(item,target||recommendation)} onDecideProposal={(proposal,decision)=>decideAgentProposal(item,proposal,decision)} onLaunchApproved={proposal=>launchApprovedAgent(item,proposal)} onCoordinateTeam={team=>send(`[JD TEAM PLANNING PREVIEW] Create a planning outline only for the ${team.title} (${team.agentCount} proposed specialists: ${team.deliverables.join(", ")}). Outline sequenced tasks, responsibilities, dependencies and approval checkpoints. Do not claim that a team is approved, deployed or executing.`)} onDismiss={()=>setMessages(current=>current.map(m=>m.id===item.id?{...m,agentRecommendationDismissed:true}:m))}/>:null})()}
               {item.role === "assistant" && !item.streaming && item.toolEvents?.length > 0 && !contextualWorkspace(item.visualWorkspace)?.blocks?.some(b=>b.type==="timeline") && (
                 <div className="jd-execution-drawers">
                   <details className="jd-execution-drawer">

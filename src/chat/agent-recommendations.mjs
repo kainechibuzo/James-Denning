@@ -1,4 +1,4 @@
-import { EMPLOYEE_USAGE_PRICE } from "../config/billing.mjs";
+import { AGENTIC_TIME_PRICE } from "../config/billing.mjs";
 import {
   SPECIALIST_ROLES,
   SPECIALIST_DECISION_POLICY,
@@ -6,7 +6,7 @@ import {
   buildTurnSpecialistGuidance,
 } from "../../supabase/functions/_shared/jd-specialist-policy.mjs";
 
-const HOURLY_USD = Number(EMPLOYEE_USAGE_PRICE?.amountMinorPerHour ?? 100) / 100;
+const DEFAULT_AGENTIC_HOURLY_USD = Number(AGENTIC_TIME_PRICE?.defaultRateMinorPerHour ?? 10_000) / 100;
 const formatUsd = (amount) => {
   const rounded = Math.round(amount * 100) / 100;
   return Number.isInteger(rounded) ? `$${rounded}` : `$${rounded.toFixed(2)}`;
@@ -98,26 +98,23 @@ export const SPECIALIST_TEAM_PRESETS = [
 ];
 
 export function formatTeamEstimate(team) {
-  const hourlyRate = team.agentCount * HOURLY_USD;
-  const minCost = hourlyRate * team.estHoursMin;
-  const maxCost = hourlyRate * team.estHoursMax;
   return {
-    hourlyRate,
-    rateLabel: `${formatUsd(hourlyRate)} / hour`,
+    rateLabel: "Individual quotes required",
     estTimeLabel: team.estTimeLabel,
-    estCostLabel: `${formatUsd(minCost)}–${formatUsd(maxCost)}`,
+    estCostLabel: "Not yet quoted",
+    executionAvailable: false,
   };
 }
 
 export function formatSingleAgentEstimate(seconds = 1800) {
   const hours = Math.max(0.25, Number(seconds || 1800) / 3600);
-  const cost = HOURLY_USD * hours;
+  const cost = DEFAULT_AGENTIC_HOURLY_USD * hours;
   const mins = Math.round(hours * 60);
   return {
-    hourlyRate: HOURLY_USD,
-    rateLabel: `${formatUsd(HOURLY_USD)} / hour`,
+    hourlyRate: DEFAULT_AGENTIC_HOURLY_USD,
+    rateLabel: `${formatUsd(DEFAULT_AGENTIC_HOURLY_USD)} / hour (indicative default)`,
     estTimeLabel: mins >= 60 ? `${hours % 1 === 0 ? hours : hours.toFixed(1)} ${hours === 1 ? "hr" : "hrs"}` : `${mins} mins`,
-    estCostLabel: formatUsd(cost),
+    estCostLabel: `${formatUsd(cost)} (indicative only)`,
   };
 }
 

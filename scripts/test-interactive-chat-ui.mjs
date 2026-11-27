@@ -228,7 +228,7 @@ test("SpecialistSelectorCard switches between Recommended Specialist Teams and S
       Simulate.change(agentSelect, { target: { value: "finance_analyst" } });
     });
 
-    const quoteBtn = [...document.querySelectorAll("button")].find((b) => b.textContent === "Check price and request approval");
+    const quoteBtn = [...document.querySelectorAll("button")].find((b) => b.textContent === "Check verified price and request approval");
     assert.ok(quoteBtn);
     await act(async () => quoteBtn.click());
     assert.equal(quotes.length, 1);

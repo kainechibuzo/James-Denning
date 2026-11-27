@@ -51,17 +51,18 @@ test("bakes in deterministic specialist triage across direct handling, single-do
   }
 });
 
-test("builds recommended specialist teams and transparent single-agent quotes from active-hour billing config",()=>{
+test("uses the agentic quote default and never invents a team-wide price from a single-agent rate",()=>{
   const teams=recommendSpecialistTeams("Implement frontend and backend architecture for our SaaS website");
   assert.equal(teams.length,4);
   assert.equal(teams[0].title,"Full Product Launch Team");
-  assert.equal(teams[0].rateLabel,"$4 / hour");
-  assert.equal(teams[0].estCostLabel,"$6–$10");
+  assert.equal(teams[0].rateLabel,"Individual quotes required");
+  assert.equal(teams[0].estCostLabel,"Not yet quoted");
+  assert.equal(teams[0].executionAvailable,false);
   assert.equal(teams[0].recommended,true);
   const single=formatSingleAgentEstimate(1800);
-  assert.equal(single.rateLabel,"$1 / hour");
+  assert.equal(single.rateLabel,"$100 / hour (indicative default)");
   assert.equal(single.estTimeLabel,"30 mins");
-  assert.equal(single.estCostLabel,"$0.50");
+  assert.equal(single.estCostLabel,"$50 (indicative only)");
 });
 
 test("does not recommend an agent for short or generic messages",()=>{
@@ -94,6 +95,9 @@ test("specialist execution is approval-gated, time-bounded and settled server-si
   assert.match(runtime,/jd_specialist_run_start/);
   assert.match(runtime,/tool.name !== "deploy_specialist_workforce"/);
   assert.match(runtime,/Multi-agent workforce deployment is blocked/);
+  assert.match(runtime,/linkedSpecialistProposal/);
+  assert.match(runtime,/tool_choice: linkedSpecialistRole \? \{ type: "function", name: "delegate_to_specialist_agent" \} : "auto"/);
+  assert.match(runtime,/linkedSpecialistProposal\?\.task \|\| args\.task/);
   assert.match(runtime,/jd_specialist_run_settle/);
   assert.match(runtime,/specialistAbort\.abort/);
   assert.match(runtime,/No valid, approved, priced specialist authorisation/);
@@ -103,6 +107,9 @@ test("specialist execution is approval-gated, time-bounded and settled server-si
   assert.match(migration,/jd_specialist_run_status/);
   assert.match(chat,/agent\.proposal\.create/);
   assert.match(chat,/agent\.proposal\.approve/);
+  assert.match(chat,/\[JD APPROVED SPECIALIST RUN\]/);
+  assert.match(chat,/proposal\.task\|\|""/);
+  assert.match(chat,/prompt\.startsWith\("\[JD APPROVED SPECIALIST RUN\]"\)\|\|prompt\.startsWith\("\[JD TEAM PLANNING PREVIEW\]"\)/);
   assert.match(chat,/value=\{900\}/);
   assert.match(chat,/specialistUsage/);
   assert.doesNotMatch(chat,/!item\.toolEvents\?\.some\(event=>event\.name==="delegate_to_specialist_agent"\)/);

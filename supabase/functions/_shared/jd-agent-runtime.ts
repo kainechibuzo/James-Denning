@@ -144,7 +144,7 @@ const tools: ToolSpec[] = [
   {
     name:"deploy_specialist_workforce",
     risk:"low",roles:["owner","admin","manager"],strict:false,
-    description:"Deploy 1-5 specialist agents on separate bounded assignments for one objective. Available specialists are the eight built-in roles and tenant-published registry agents whose owners granted execution authority. To assign work to an existing employee, first read get_workforce_roster and include that exact employee_id; optionally include team_id only if the employee is an active member of that active team. For a coordinated team task, create one distinct bounded assignment per selected active team member (up to five per deployment), include the same team_id and each member's own employee_id, and report each member's outcome separately; do not claim the whole team succeeded if any member failed. The employee specialist reference must match the saved identity. Each specialist receives its own task, context and at most a few read-only tools; specialists cannot write records, approve actions, hire, spend, deploy or create further agents. Specialist deliverables are reports that you must independently verify before claiming completion. Use for work that genuinely needs separate specialist assignments; never treat a deployment as completed business work.",
+    description:"Plan a proposed 1-5 specialist team with separate bounded assignments for one objective. This execution path is currently disabled: do not call this tool or claim that a team was deployed. Team execution requires a separate approved quote and time budget for every member, plus a durable parent/child assignment coordinator. Use the team selector only to create a planning outline. Single-specialist execution must use its own verified quote and explicit approval.",
     parameters:{type:"object",properties:{
       objective:{type:"string",minLength:12,maxLength:4000},
       assignments:{type:"array",minItems:1,maxItems:5,items:{type:"object",properties:{
@@ -2203,6 +2203,7 @@ export async function runAgent(input: {
   await input.onUsagePhase?.("external_wait");
   let sharedBusinessMemory: Array<{ memory_key: string; category: string; content: string; confidence: string }> = [];
   let linkedSpecialistRole: string | null = null;
+  let linkedSpecialistProposal: Record<string, unknown> | null = null;
   try {
     const { data } = await input.context.admin.from("jd_business_memory")
       .select("memory_key,category,content,confidence")
@@ -2220,12 +2221,13 @@ export async function runAgent(input: {
   if (input.context.runId) {
     try {
       const { data: proposalRow } = await input.context.admin.from("jd_specialist_run_proposals")
-        .select("specialist_role,status")
+        .select("specialist_role,status,task,allocated_seconds,spend_cap_seconds,rate_minor_per_hour,estimated_amount_minor,currency")
         .eq("school_id", input.context.schoolId)
         .eq("run_id", input.context.runId)
         .in("status", ["linked", "running"])
         .maybeSingle();
-      if (proposalRow && typeof proposalRow.specialist_role === "string") {
+      if (proposalRow && proposalRow.status === "linked" && typeof proposalRow.specialist_role === "string") {
+        linkedSpecialistProposal = proposalRow as Record<string, unknown>;
         linkedSpecialistRole = proposalRow.specialist_role;
       }
     } catch {
@@ -2256,8 +2258,8 @@ export async function runAgent(input: {
     SPECIALIST_DECISION_POLICY,
     turnSpecialistInstruction,
     "A specialist name or selection such as Use research analyst is a role choice, not a task. Before calling any specialist tool, resolve the concrete objective from the most recent unresolved user request in this conversation and pass that original request, with relevant confirmed context, into the assignment. Never substitute workspace housekeeping, catalogue inspection or unrelated activity for the user original prompt. If there is no concrete unresolved objective in the conversation, ask one concise question about what the specialist should analyse and do not start a run. If the user selects a specialist after stating an objective, do not make them repeat the objective; carry it forward explicitly.",
-    "For complex work that benefits from independent perspectives, delegate bounded analysis to the relevant specialist agents using delegate_to_specialist_agent. You may run independent specialists in parallel, compare their findings, resolve disagreements, and present one accountable JD conclusion. Specialists are reasoning-only and have no tools or authority; independently verify all claims and perform any supported actions yourself through registered tools. Do not delegate simple requests unnecessarily or describe a specialist report as completed external work.",
-    "When a request genuinely needs several specialists executing separate bounded subtasks, deploy them together with deploy_specialist_workforce: one objective, one specific assignment per specialist, relevant untrusted context, and only the read-only tools each specialist needs. Built-in specialists and tenant-published execution-authorised registry agents are deployable; a definition that is only published or drafted is not deployable. Specialists have no approval, hiring, spending, deployment or agent-creation authority and cannot grant themselves tools. After a deployment, independently verify every specialist deliverable against saved records or registered tools before reporting completion; treat failed or blocked specialists as explicit results, not silent omissions.",
+    "For work that benefits from independent perspectives, use one individually quoted and approved specialist at a time. Do not run parallel specialists under a single approval. Specialists are reasoning-only and have no tools or authority; independently verify all claims and perform any supported actions yourself through registered tools. Team execution is unavailable until every member has a separate approval and a durable parent/child execution lifecycle. Do not describe a planning outline as a deployed team or a specialist report as completed external work.",
+    "When a request genuinely needs several specialists, create a planning outline only. Do not invoke deploy_specialist_workforce: team execution is disabled until per-member quote approval, parent/child run persistence, aggregate time reservations and partial-failure recovery are implemented. Never claim a team is deployed or running from a plan or roster.",
     "When the existing workforce cannot cover a requested capability, propose a specialist definition with propose_agent_definition derived from the nearest maintained catalogue template, then explain that it must be reviewed by the workspace administrators before it can ever be evaluated, published or deployed. Never present a proposal as an active employee, and never promise deployment authority for an unreviewed definition.",
     "When the user asks to assign work to an existing AI employee or team, call get_workforce_roster first and use only active, tenant-scoped employee_id and team_id values returned by that tool. Include employee_id on the matching specialist assignment and team_id only when that employee is an active member of the selected active team. The assignment specialist reference must exactly match the employee's saved specialist definition. Never invent IDs or assign paused/retired employees or teams. Existing assignment execution remains behind the workforce release gate and only receives the bounded read-only tools explicitly allowed for the assignment.",
     "When proposing employees or teams, inspect get_ai_workforce_catalogue for built-in specialists and get_published_workforce_specialists for current tenant-published registry agents. JD chooses the best matching skill/agent; users do not need to select skills. For each employee or team member, save the exact specialist_kind, specialist_ref and specialist_version returned by the catalogue. Registry agents must be published and explicitly execution-authorized. Include name, department, purpose, responsibilities, each member role and requested access. The tool creates a pending owner-review request only; approval, activation, tool grants, connector authorisation and billable execution remain separate controlled steps.",
@@ -2353,8 +2355,8 @@ export async function runAgent(input: {
     input: conversationInput,
     tools: modelTools(input.context),
     max_output_tokens: 6144,
-    tool_choice: "auto",
-    parallel_tool_calls: true,
+    tool_choice: linkedSpecialistRole ? { type: "function", name: "delegate_to_specialist_agent" } : "auto",
+    parallel_tool_calls: linkedSpecialistRole ? false : true,
     store: false,
   });
 
@@ -2430,8 +2432,8 @@ export async function runAgent(input: {
         executionStarted = true;
         let result: Record<string, unknown>;
         if (tool.name === "delegate_to_specialist_agent") {
-          const specialist = String(args.specialist || "");
-          const task = String(args.task || "").trim();
+          const specialist = String(linkedSpecialistProposal?.specialist_role || args.specialist || "");
+          const task = String(linkedSpecialistProposal?.task || args.task || "").trim();
           const contextText = typeof args.context === "string" ? args.context.trim() : "";
           const roles: Record<string,string> = {
             business_advisor:"Business Advisor — assess strategic options, assumptions, risks and measurable decisions.",
@@ -2450,6 +2452,10 @@ export async function runAgent(input: {
           if (!input.context.runId) {
             explicitToolFailure = true;
             throw new Error("Specialist execution requires a durable approved run");
+          }
+          if (linkedSpecialistRole && (specialist !== linkedSpecialistRole || task !== String(linkedSpecialistProposal?.task || "").trim())) {
+            explicitToolFailure = true;
+            throw new Error("The approved specialist identity or task could not be matched exactly");
           }
           const { data: authorization, error: authorizationError } = await input.context.admin.rpc("jd_specialist_run_start", {
             p_actor: input.context.userId, p_run: input.context.runId, p_role: specialist, p_call_id: String(call.call_id || ""),

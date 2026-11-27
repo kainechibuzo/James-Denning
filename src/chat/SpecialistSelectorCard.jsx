@@ -21,7 +21,7 @@ export function SpecialistSelectorCard({
 }) {
   const teams = recommendSpecialistTeams(recommendation?.task || "", recommendation?.id);
   const initialTeamId = teams.find((t) => t.recommended)?.id || teams[0]?.id;
-  const [selectedMode, setSelectedMode] = useState(recommendation?.mode === "single" ? "single" : "team"); // "team" | "single"
+  const [selectedMode, setSelectedMode] = useState("single"); // "team" | "single"
   const [selectedTeamId, setSelectedTeamId] = useState(initialTeamId);
   const [selectedAgentId, setSelectedAgentId] = useState(recommendation?.id || "software_engineer");
 
@@ -32,15 +32,13 @@ export function SpecialistSelectorCard({
   const blockedAttempt = item?.toolEvents?.some((event) => event.name === "delegate_to_specialist_agent");
 
   const handleRequestQuote = () => {
-    const targetId = selectedMode === "team" ? activeTeam.leadSpecialist : activeAgent.id;
+    if (selectedMode === "team") return;
+    const targetId = activeAgent.id;
     const targetSpec = SPECIALISTS.find((s) => s.id === targetId) || activeAgent;
-    const taskPrefix = selectedMode === "team"
-      ? `[${activeTeam.title} — lead specialist ${targetSpec.name}] `
-      : "";
     onRequestQuote?.({
       id: targetSpec.id,
       name: targetSpec.name,
-      task: (taskPrefix + (recommendation?.task || "")).slice(0, 1200),
+      task: String(recommendation?.task || "").slice(0, 1200),
     });
   };
 
@@ -50,7 +48,7 @@ export function SpecialistSelectorCard({
         <p>
           {blockedAttempt
             ? "JD paused the specialist delegation because explicit approval was not recorded yet. Review a specialist team or single agent below to verify its time and cost estimate before anything runs."
-            : "JD can coordinate a specialist team or assign a single AI employee to move this request forward. Review the options, estimated active time and hourly rate below before approving any work."}
+            : "Choose a single specialist for a verified quote. Team cards are planning previews only until each member has a separate approved quote and execution path."}
         </p>
       </div>
 
@@ -117,7 +115,7 @@ export function SpecialistSelectorCard({
                   <Clock3 size={13} aria-hidden="true" /> Est. time: {team.estTimeLabel}
                 </span>
                 <span>
-                  <Box size={13} aria-hidden="true" /> Est. cost: {team.estCostLabel}
+                  <Box size={13} aria-hidden="true" /> Cost: {team.estCostLabel}
                 </span>
               </div>
             </label>
@@ -198,7 +196,7 @@ export function SpecialistSelectorCard({
                 <Clock3 size={13} aria-hidden="true" /> Est. time: {singleEstimate.estTimeLabel}
               </span>
               <span>
-                <Box size={13} aria-hidden="true" /> Est. cost: {singleEstimate.estCostLabel}
+                <Box size={13} aria-hidden="true" /> {singleEstimate.estCostLabel}
               </span>
             </div>
           </div>
@@ -208,9 +206,11 @@ export function SpecialistSelectorCard({
       <div className="jd-specialist-info-banner">
         <Info size={15} aria-hidden="true" />
         <p>
-          Choose a team or single agent, or describe your preferences below. Active specialist time is quoted at $1.00/hour per specialist; nothing runs or incurs usage without explicit approval.
+          The displayed single-agent figure is only an indicative default. The server-generated quote is authoritative and may differ by workspace. Team cards are planning-only; JD will not present one lead-agent quote as approval for an entire team.
         </p>
       </div>
+
+      {selectedMode === "team" && !proposal && <p className="jd-specialist-status" role="status">Planning only: this does not approve or start the team. Choose a single specialist to request an executable quote.</p>}
 
       {!proposal && (
         <div className="jd-agent-recommendation-actions jd-specialist-actions">
@@ -221,16 +221,16 @@ export function SpecialistSelectorCard({
               disabled={disabled}
               onClick={() => onCoordinateTeam(activeTeam)}
             >
-              Plan with {activeTeam.title}
+              Create a planning outline with {activeTeam.title}
             </button>
           )}
           <button
             type="button"
             className="jd-specialist-primary-btn"
-            disabled={disabled}
+            disabled={disabled || selectedMode === "team"}
             onClick={handleRequestQuote}
           >
-            Check price and request approval
+            {selectedMode === "team" ? "Team quotes are not available yet" : "Check verified price and request approval"}
           </button>
           <button
             type="button"
@@ -248,10 +248,10 @@ export function SpecialistSelectorCard({
 
       {proposal?.proposal_id && (
         <div className="jd-agent-quote">
-          <strong>Verified agent quote</strong>
+          <strong>Server-verified specialist quote</strong>
           <div>Rate: {(proposal.rate_minor_per_hour / 100).toFixed(2)} {proposal.currency}/hour</div>
           <div>Allocated time: {Math.round(proposal.allocated_seconds / 60)} minutes</div>
-          <div>Estimated maximum spend cap: {(proposal.estimated_amount_minor / 100).toFixed(2)} {proposal.currency}</div>
+          <div>Estimated amount for this allocation: {(proposal.estimated_amount_minor / 100).toFixed(2)} {proposal.currency}</div>
           <div>Spend cap: {Math.round(proposal.spend_cap_seconds / 60)} minutes</div>
           <div>Subscription: {proposal.subscription_status}</div>
           {proposal.status === "quote_only" && (
@@ -267,7 +267,7 @@ export function SpecialistSelectorCard({
               You can review this estimate, but JD will not reserve time or start the specialist.
             </div>
           )}
-          <div>Payment collection: disabled; this is an estimate, not a charge.</div>
+          <div>This quote applies only to {String(proposal.role || "the selected specialist").replaceAll("_", " ")}. Payment collection is disabled; this is not a charge.</div>
           {proposal.status === "awaiting_approval" && (
             <div className="jd-agent-recommendation-actions">
               <button
