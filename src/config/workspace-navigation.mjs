@@ -6,6 +6,7 @@ export const canOpenOperations = role => ["owner","admin","manager"].includes(ro
 export const canAdministerOperations = role => ["owner","admin"].includes(role);
 
 const entries = [
+  {id:"admin-dashboard",label:"Admin dashboard",     icon:"layout-dashboard",roles:["admin"]},
   {id:"jd-chat",       label:"JD Assistant",          icon:"dashboard",  roles:["owner","admin","manager"]},
   {id:"jd-operations", label:"Tasks & Operations",    icon:"activity",   roles:["owner","admin","manager"]},
   {id:"jd-skills",     label:"Skills Catalog",        icon:"package",    roles:["admin"]},
@@ -50,7 +51,7 @@ export function buildWorkspaceNavigation({role, canAccess = () => false}) {
 
   const organisation = BUSINESS_GROUPS.find((group) => group.id === "g-organisation");
   const accountPages = WORKSPACE_NAVIGATION.filter((entry) =>
-    ["billing", "settings"].includes(entry.id)
+    ["admin-dashboard", "billing", "settings"].includes(entry.id)
     && entry.roles.includes(role)
     && canAccess(entry.id)
     && organisation?.pages.includes(entry.id)
