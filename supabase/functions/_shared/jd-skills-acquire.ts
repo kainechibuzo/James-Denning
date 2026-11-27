@@ -231,8 +231,20 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  try {
   const existing = await readImport();
   if (existing && ['needs_review', 'validation_failed'].includes(String(existing.status))) {
-   // The import already completed (uncertain earlier submission): recover from
-   // the record instead of creating a duplicate completion.
+   // A completed import may only be replayed when the inspected payload matches
+   // the payload recorded by the first attempt. Otherwise recovery would turn a
+   // changed archive on the same pinned commit into an apparent success.
+   const recordedHash = existing.report && typeof existing.report === 'object'
+    ? String(existing.report.packageHash || '') : '';
+   if (recordedHash && recordedHash !== inspection.packageHash) {
+    return {error: {message: 'The recorded import conflicts with this submission; inspect the existing import record before retrying.', status: 409}};
+   }
+   const recordedManifestHash = existing.manifest && typeof existing.manifest === 'object'
+    ? String(existing.manifest.content_hash || '') : '';
+   if (recordedManifestHash && recordedManifestHash !== inspection.manifestHash) {
+    return {error: {message: 'The recorded import manifest conflicts with this submission; inspect the existing import record before retrying.', status: 409}};
+   }
+   // Recover only the same completed package; never create a duplicate completion.
    completed = await recoverFromRecord(existing);
    if (!completed) throw {dbCode: 'import_state'};
   } else {
