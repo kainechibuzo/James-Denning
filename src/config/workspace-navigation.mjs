@@ -27,7 +27,7 @@ export const WORKSPACE_NAVIGATION = Object.freeze(entries.map((entry) => Object.
 export const BUSINESS_GROUPS = Object.freeze([
   {id:"g-people",group:"People & Recruitment",pages:["hiring"]},
   {id:"g-communications",group:"Communications",pages:["mail-logs","notifications"]},
-  {id:"g-organisation",group:"Organisation",pages:["billing","permissions","settings","admin-tools","org-create"]},
+  {id:"g-organisation",group:"Organisation",pages:["admin-dashboard","billing","permissions","settings","admin-tools","org-create"]},
 ].map((group) => Object.freeze({...group,pages:Object.freeze(group.pages)})));
 
 export function businessGroupForPage(page) {
