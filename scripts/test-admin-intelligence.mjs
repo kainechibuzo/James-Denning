@@ -27,7 +27,9 @@ test("request and event payload values are not returned by the snapshot",()=>{
  assert.doesNotMatch(migration,/jsonb_build_object\([^;]*'request',\s*request/s);
  assert.doesNotMatch(migration,/jsonb_build_object\([^;]*'receipt',\s*receipt/s);
 });
-test("usage ranking explicitly discloses missing page-view telemetry",()=>{
- assert.match(migration,/Page\/screen views are not currently instrumented/);
- assert.match(dashboard,/not every feature screen users open/);
+test("usage ranking is based on recorded feature routes and connector executions",()=>{
+ assert.match(migration,/jd_feature_usage_events/);
+ assert.match(migration,/most_used_features/);
+ assert.match(migration,/jd_record_feature_usage/);
+ assert.match(dashboard,/Most opened workspace features/);
 });
