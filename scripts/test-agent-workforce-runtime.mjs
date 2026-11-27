@@ -15,7 +15,8 @@ test('the runtime registers the workforce deployment and agent factory tools', (
   assert.match(runtime, /name:"deploy_specialist_workforce"/);
   assert.match(runtime, /name:"propose_agent_definition"/);
   assert.match(runtime, /deploy_specialist_workforce[\s\S]{0,1600}minItems:1,maxItems:5/, 'deployment is bounded to five specialists');
-  assert.match(runtime, /roles:\["owner","admin","manager"\],\s*(strict:false,\s*)?description:"Deploy 1-5 specialist agents/, 'deployment is role-bounded');
+  assert.match(runtime, /roles:\["owner","admin","manager"\],strict:false,\s*description:"Plan a proposed 1-5 specialist team/, 'deployment is role-bounded');
+  assert.match(runtime, /Plan a proposed 1-5 specialist team[\s\S]{0,700}currently disabled: do not call this tool or claim that a team was deployed[\s\S]{0,500}Single-specialist execution must use its own verified quote and explicit approval/, 'team deployment remains disabled until separately approved member budgets exist');
   assert.match(runtime, /roles:\["owner","admin"\],\s*\n?\s*description:"Agent Factory/, 'proposals are owner/admin only');
   assert.match(runtime, /import \{[\s\S]*?WORKFORCE_RELEASE_FLAG[\s\S]*?\} from "\.\/jd-agent-workforce\.ts";/, 'runtime consumes the engine module');
 });
@@ -66,7 +67,7 @@ test('the isolated executor never grants delegation tools and rechecks grants at
 test('specialist deliverables always carry the verification contract', () => {
   assert.match(runtime, /verification: \{ required: true, status: "pending_jd_verification" \}/, 'successful specialists require JD verification');
   assert.match(runtime, /verification: \{ required: true, status: "blocked_no_deliverable" \}/, 'failed specialists stay explicit');
-  assert.match(runtime, /independently verify every specialist deliverable against saved records or registered tools before reporting completion/, 'JD instructions require verification');
+  assert.match(runtime, /independently verify all claims and perform any supported actions yourself through registered tools/, 'JD instructions require verification');
   assert.match(runtime, /Specialists have no approval, hiring, spending, deployment or agent-creation authority/, 'JD instructions carry the governance boundary');
   assert.match(runtime, /specialists_can_approve: false,\s*\n?\s*specialists_can_create_agents: false/, 'deployment result states the authority boundary');
 });
@@ -140,7 +141,7 @@ test('employee-bound assignments require a live employee and active team members
   assert.match(runtime, /const boundAssignments = plan\.assignments\.filter/);
   assert.match(runtime, /employee\.lifecycle_state !== "active"/);
   assert.match(runtime, /Only workspace owners and administrators can assign work to activated employee or team identities/);
-  assert.match(runtime, /coordinated team task, create one distinct bounded assignment per selected active team member/);
+  assert.match(runtime, /When the user asks to assign work to an existing AI employee or team, call get_workforce_roster first[\s\S]{0,700}active, tenant-scoped employee_id and team_id values/, 'team assignment is grounded in the live active roster');
   assert.match(runtime, /team\.lifecycle_state !== "active"/);
   assert.match(runtime, /membershipRows\.data/);
   assert.match(runtime, /employee_id: assignment\.employeeId \|\| null/);
