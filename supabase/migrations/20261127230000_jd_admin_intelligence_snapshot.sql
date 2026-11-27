@@ -12,7 +12,7 @@ alter table public.jd_feature_usage_events enable row level security;
 revoke all on public.jd_feature_usage_events from public,anon,authenticated;
 
 create or replace function public.jd_record_feature_usage(p_feature_key text)
-returns void language plpgsql security definer set search_path='' as $
+returns void language plpgsql security definer set search_path='' as $fn$
 declare v_actor uuid:=auth.uid(); v_school uuid;
 begin
  if v_actor is null or p_feature_key is null or p_feature_key not in ('admin-dashboard','jd-chat','jd-operations','jd-skills','billing','hiring','mail-logs','notifications','permissions','settings','admin-tools','org-create') then
@@ -21,7 +21,7 @@ begin
  select school_id into v_school from public.profiles where id=v_actor;
  if v_school is null then raise exception 'Workspace membership required' using errcode='42501'; end if;
  insert into public.jd_feature_usage_events(school_id,actor_id,feature_key) values(v_school,v_actor,p_feature_key);
-end; $;
+end; $fn$;
 revoke all on function public.jd_record_feature_usage(text) from public,anon;
 grant execute on function public.jd_record_feature_usage(text) to authenticated;
 
