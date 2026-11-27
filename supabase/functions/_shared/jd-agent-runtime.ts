@@ -2203,6 +2203,7 @@ export async function runAgent(input: {
   await input.onUsagePhase?.("external_wait");
   let sharedBusinessMemory: Array<{ memory_key: string; category: string; content: string; confidence: string }> = [];
   let linkedSpecialistRole: string | null = null;
+  let linkedSpecialistProposal: Record<string, unknown> | null = null;
   try {
     const { data } = await input.context.admin.from("jd_business_memory")
       .select("memory_key,category,content,confidence")
@@ -2220,13 +2221,14 @@ export async function runAgent(input: {
   if (input.context.runId) {
     try {
       const { data: proposalRow } = await input.context.admin.from("jd_specialist_run_proposals")
-        .select("specialist_role,status")
+        .select("specialist_role,status,task,allocated_seconds,spend_cap_seconds,rate_minor_per_hour,estimated_amount_minor,currency")
         .eq("school_id", input.context.schoolId)
         .eq("run_id", input.context.runId)
         .in("status", ["linked", "running"])
         .maybeSingle();
       if (proposalRow && typeof proposalRow.specialist_role === "string") {
-        linkedSpecialistRole = proposalRow.specialist_role;
+        linkedSpecialistProposal = proposalRow as Record<string, unknown>;
+        linkedSpecialistRole = proposalRow.status === "linked" ? proposalRow.specialist_role : null;
       }
     } catch {
       linkedSpecialistRole = null;
@@ -2353,8 +2355,8 @@ export async function runAgent(input: {
     input: conversationInput,
     tools: modelTools(input.context),
     max_output_tokens: 6144,
-    tool_choice: "auto",
-    parallel_tool_calls: true,
+    tool_choice: linkedSpecialistRole ? { type: "function", name: "delegate_to_specialist_agent" } : "auto",
+    parallel_tool_calls: linkedSpecialistRole ? false : true,
     store: false,
   });
 
@@ -2430,8 +2432,8 @@ export async function runAgent(input: {
         executionStarted = true;
         let result: Record<string, unknown>;
         if (tool.name === "delegate_to_specialist_agent") {
-          const specialist = String(args.specialist || "");
-          const task = String(args.task || "").trim();
+          const specialist = String(linkedSpecialistProposal?.specialist_role || args.specialist || "");
+          const task = String(linkedSpecialistProposal?.task || args.task || "").trim();
           const contextText = typeof args.context === "string" ? args.context.trim() : "";
           const roles: Record<string,string> = {
             business_advisor:"Business Advisor — assess strategic options, assumptions, risks and measurable decisions.",
@@ -2450,6 +2452,10 @@ export async function runAgent(input: {
           if (!input.context.runId) {
             explicitToolFailure = true;
             throw new Error("Specialist execution requires a durable approved run");
+          }
+          if (linkedSpecialistRole && (specialist !== linkedSpecialistRole || task !== String(linkedSpecialistProposal?.task || "").trim())) {
+            explicitToolFailure = true;
+            throw new Error("The approved specialist identity or task could not be matched exactly");
           }
           const { data: authorization, error: authorizationError } = await input.context.admin.rpc("jd_specialist_run_start", {
             p_actor: input.context.userId, p_run: input.context.runId, p_role: specialist, p_call_id: String(call.call_id || ""),
