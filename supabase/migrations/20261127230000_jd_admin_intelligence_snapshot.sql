@@ -91,6 +91,18 @@ begin
     select 'usage',request_id,kind,receipt->>'status',job_id::text,null,created_at,
       case when jsonb_typeof(coalesce(request,'{}'::jsonb))='object' then (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key)) when jsonb_typeof(request)='array' then array['array_payload']::text[] else '{}'::text[] end
     from public.jd_usage_events where school_id=v_school
+    union all
+    select 'specialist_proposal',request_id,specialist_role,status,run_id::text,requested_by::text,created_at,
+      array['specialist_role','task','allocated_seconds','spend_cap_seconds']::text[]
+    from public.jd_specialist_run_proposals where school_id=v_school
+    union all
+    select 'approval',id,action_key,status,run_id::text,requested_by::text,created_at,
+      array['title','action_key','risk_level','execution_status']::text[]
+    from public.jd_approvals where school_id=v_school
+    union all
+    select 'discovery',id,'discovery',status,run_id::text,requested_by::text,created_at,
+      array['idea','plan']::text[]
+    from public.jd_discovery_sessions where school_id=v_school
   ),
   requests_json as (
     select coalesce(jsonb_agg(jsonb_build_object(
@@ -107,6 +119,10 @@ begin
     select 'admin'::text,id::text,action,performed_by::text,entity_id,performed_at,
       array['entity_type','entity_name','notes']::text[]
     from public.admin_audit_log where school_id=v_school
+    union all
+    select 'execution'::text,id::text,'execution.job.'||status,requested_by::text,run_id::text,created_at,
+      array_remove(array['attempt_count','last_error_code','last_error_message'],null)::text[]
+    from public.jd_execution_jobs where school_id=v_school
   ),
   audit_json as (
     select coalesce(jsonb_agg(to_jsonb(q) order by created_at desc),'[]'::jsonb) data
