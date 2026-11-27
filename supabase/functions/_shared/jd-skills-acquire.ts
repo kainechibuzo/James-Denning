@@ -114,6 +114,17 @@ export async function deriveRequestKey(...parts: string[]): Promise<string> {
 
 const stageKey = (attemptId: string, stage: string) => deriveRequestKey(attemptId, stage);
 
+// Bind the stage ledger identity to the exact immutable upstream commit.
+// The allowlisted ref is `main`, so it can advance between retries. Reusing
+// the same attempt/stage key after that happens would submit a different
+// filename/package hash/report/manifest under an existing database receipt.
+// A changed commit is therefore a distinct acquisition identity; an unchanged
+// commit replays the exact same deterministic stage keys.
+export const deriveAcquisitionAttemptId = (requestId: string, commit: string): Promise<string> => {
+ if (!/^[0-9a-f]{40}$/.test(commit)) throw Error('Invalid pinned upstream commit');
+ return deriveRequestKey(requestId, 'upstream-commit', commit);
+};
+
 // Core acquisition without the HTTP shell: returns the receipt object on
 // success or {error} with an HTTP status so both the JSON action and the
 // discovery agent can consume it. The caller supplies one UUID attempt id;
@@ -129,6 +140,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  if (!entry) return {error: {message: 'The requested capability is not in the allowlisted source catalogue.', status: 400}};
  const commit = source?.resolveCommit ? await source.resolveCommit() : await resolveUpstreamCommit();
  if (!/^[0-9a-f]{40}$/.test(commit)) return {error: {message: 'Upstream commit could not be pinned', status: 502}};
+ const acquisitionAttemptId = await deriveAcquisitionAttemptId(requestId, commit);
  const raw = source?.fetchArchive ? await source.fetchArchive(commit)
   : new Uint8Array(await (await fetchGuarded(`https://${AUTONOMOUS_SOURCE.archiveHost}/${AUTONOMOUS_SOURCE.repo}/zip/${commit}`, 'application/zip')).arrayBuffer());
  if (raw.length === 0 || raw.length > MAX_ZIPBALL_BYTES) return {error: {message: 'The upstream archive exceeded the acquisition size bound.', status: 502}};
@@ -169,7 +181,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  const zipBytes = await buildZip(entries);
  const inspection = await inspectSkillPackage(zipBytes, {originalFilename: `${entry.id}.zip`});
  const filename = `${entry.id}-${commit.slice(0, 8)}.zip`;
- const importReceipt = await createRpc({p_actor: actorId, p_request: await stageKey(requestId, 'create'), p_filename: filename});
+ const importReceipt = await createRpc({p_actor: actorId, p_request: await stageKey(acquisitionAttemptId, 'create'), p_filename: filename});
  const {error: uploadError} = await admin.storage.from(SKILLS_STORAGE_BUCKET).upload(importReceipt.storage_path, zipBytes, {contentType: 'application/zip', upsert: false});
  if (uploadError && !/exist/i.test(String(uploadError?.message || ''))) {
   return {error: {message: 'The acquired package could not be quarantined; nothing was recorded. Retry the same attempt after checking the catalogue.', status: 502}};
@@ -215,12 +227,24 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
   return base as AcquisitionReceipt;
  };
  let completed: any;
- const completeArgs = async () => ({p_actor: actorId, p_request: await stageKey(requestId, 'complete'), p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
+ const completeArgs = async () => ({p_actor: actorId, p_request: await stageKey(acquisitionAttemptId, 'complete'), p_import: importReceipt.import_id, p_package_hash: inspection.packageHash, p_report: report, p_manifest: manifest});
  try {
   const existing = await readImport();
   if (existing && ['needs_review', 'validation_failed'].includes(String(existing.status))) {
-   // The import already completed (uncertain earlier submission): recover from
-   // the record instead of creating a duplicate completion.
+   // A completed import may only be replayed when the inspected payload matches
+   // the payload recorded by the first attempt. Otherwise recovery would turn a
+   // changed archive on the same pinned commit into an apparent success.
+   const recordedHash = existing.report && typeof existing.report === 'object'
+    ? String(existing.report.packageHash || '') : '';
+   if (recordedHash && recordedHash !== inspection.packageHash) {
+    return {error: {message: 'The recorded import conflicts with this submission; inspect the existing import record before retrying.', status: 409}};
+   }
+   const recordedManifestHash = existing.manifest && typeof existing.manifest === 'object'
+    ? String(existing.manifest.content_hash || '') : '';
+   if (recordedManifestHash && recordedManifestHash !== inspection.manifestHash) {
+    return {error: {message: 'The recorded import manifest conflicts with this submission; inspect the existing import record before retrying.', status: 409}};
+   }
+   // Recover only the same completed package; never create a duplicate completion.
    completed = await recoverFromRecord(existing);
    if (!completed) throw {dbCode: 'import_state'};
   } else {
@@ -252,7 +276,7 @@ export async function acquireSkillCore({entryId, admin, actorId, requestId, comp
  };
  if (completed.status === 'needs_review') {
   const publishArgs = async () => ({
-   p_actor: actorId, p_request: await stageKey(requestId, 'publish'), p_import: importReceipt.import_id,
+   p_actor: actorId, p_request: await stageKey(acquisitionAttemptId, 'publish'), p_import: importReceipt.import_id,
    p_source: {repo: AUTONOMOUS_SOURCE.repo, ref: AUTONOMOUS_SOURCE.ref, commit, path: `skills/${entry.id}`, policy: AUTONOMOUS_SOURCE.policy},
    p_note: `Autonomous acquisition from ${AUTONOMOUS_SOURCE.repo}@${commit.slice(0, 8)} under policy ${AUTONOMOUS_SOURCE.policy}; validated clean, never executed; per-run cost confirmation still required.`,
   });
