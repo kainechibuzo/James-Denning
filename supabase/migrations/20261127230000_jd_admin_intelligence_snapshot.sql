@@ -47,7 +47,7 @@ begin
   request_rows as (
     select 'agent_registry'::text source, request_id, null::text operation, receipt->>'status' status,
       receipt->>'agent_id' subject_id, null::text actor_id, null::timestamptz created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) k) request_fields
+      (select coalesce(array_agg(key),'{}') from jsonb_object_keys(coalesce(request,'{}'::jsonb)) as keys(key)) request_fields
     from public.jd_agent_registry_requests where school_id=v_school
     union all
     select 'skill_request',request_id,null,receipt->>'status',receipt->>'skill_id',null,null,
@@ -75,7 +75,7 @@ begin
   ),
   audit_rows as (
     select 'jd'::text source,id::text id,event_type event,actor_id::text actor_id,run_id::text subject_id,created_at,
-      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(event_json,'{}'::jsonb)) k) detail_fields
+      (select coalesce(array_agg(k),'{}') from jsonb_object_keys(coalesce(event_json,'{}'::jsonb)) as keys(key)) detail_fields
     from public.jd_audit_events where school_id=v_school
     union all
     select 'admin'::text,id::text,action,performed_by::text,entity_id,performed_at,
