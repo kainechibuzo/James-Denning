@@ -109,7 +109,7 @@ test("specialist execution is approval-gated, time-bounded and settled server-si
   assert.match(chat,/agent\.proposal\.approve/);
   assert.match(chat,/\[JD APPROVED SPECIALIST RUN\]/);
   assert.match(chat,/proposal\.task\|\|""/);
-  assert.match(chat,/prompt\.startsWith\("\[JD APPROVED SPECIALIST RUN\]"\)/);
+  assert.match(chat,/prompt\.startsWith\("\[JD APPROVED SPECIALIST RUN\]"\)\|\|prompt\.startsWith\("\[JD TEAM PLANNING PREVIEW\]"\)/);
   assert.match(chat,/value=\{900\}/);
   assert.match(chat,/specialistUsage/);
   assert.doesNotMatch(chat,/!item\.toolEvents\?\.some\(event=>event\.name==="delegate_to_specialist_agent"\)/);
