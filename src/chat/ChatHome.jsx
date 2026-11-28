@@ -15,7 +15,7 @@ import cssLanguage from "highlight.js/lib/languages/css";
 for (const [name,language] of Object.entries({javascript,typescript,python,json:jsonLanguage,sql,bash,html:xml,css:cssLanguage})) hljs.registerLanguage(name,language);
 import {ComposerTools} from "./ComposerTools.jsx";
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, Pause, Play, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
+import { Send, Pause, Play, History, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
 import { EXECUTION_MODES } from "../shell/shell-state.mjs";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
@@ -180,7 +180,7 @@ function friendlyActivityLabel(name) {
   return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
-export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onReturnHome = null, onSubviewChange = null}) {
+export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, recentProjects = [], initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onOpenProject = null, onCreateProject = null, onReturnHome = null, onSubviewChange = null}) {
   const [draft, setDraft] = useState(initialDraft || "");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [executionMode, setExecutionMode] = useState(["ask","plan","execute"].includes(initialExecutionMode) ? initialExecutionMode : "execute");
@@ -656,15 +656,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           <div className="jd-status"><span className="jd-dot"/>{sending?"Working through your request":"Workspace connected"}</div>
         </header>
         <div className="jd-utility">
-          <button className="jd-history-trigger" type="button" aria-label="Open menu and conversation history" title="Menu" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><Menu size={18}/></button>
+          <button className="jd-history-trigger" type="button" aria-label="Open menu and conversation history" title="Conversation history" onClick={()=>{setHistoryOpen(true);void loadHistory();}}><History size={16}/></button>
           <span className={"jd-utility-status" + (isWorking ? " is-working" : "")} role="status">{isWorking ? (activeJobCount > 0 ? `Working · ${activeJobCount} run${activeJobCount===1?"":"s"} active` : "Working on your request") : "Workspace Active"}</span>
         </div><div className="jd-scroll">
           {historyCursor&&<button className="jd-load-earlier" type="button" disabled={earlierLoading||sending} onClick={()=>loadConversation(conversationId,historyCursor)}>{earlierLoading?"Loading earlier messages…":"Load earlier messages"}</button>}
           {messages.length===0 ? <div className="jd-welcome">
-            <div className="jd-welcome-mark" aria-hidden="true">JD</div>
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
-            <p className="jd-subtitle">{project ? project.name : "Your organisation, one conversation."}</p>
-            <p className="jd-welcome-description">{project ? (project.description || "Plan tasks, review deliverables, or build inside this project.") : "Ask James-Denning to inspect records, prepare work and manage workflows."}</p>
+            <p className="jd-subtitle">{project ? project.name : "What would you like to build or run today?"}</p>
+            <p className="jd-welcome-description">{project ? (project.description || "Plan tasks, inspect previews, and ship deliverables inside this project.") : "Start a conversation, launch a business initiative, or build a software project."}</p>
             <div className="jd-starter-chips" aria-label="Quick prompts">
               {(project?.kind === "software"
                 ? [
@@ -686,6 +685,16 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
               ).map((chip) => (
                 <button key={chip.label} type="button" className="jd-starter-chip" onClick={() => { setExecutionMode(chip.mode); setDraft(chip.prompt); }}>
                   {chip.label}
+                </button>
+              ))}
+              {!project && onCreateProject && (
+                <button type="button" className="jd-starter-chip is-project-cta" onClick={() => onCreateProject(draft)}>
+                  New project
+                </button>
+              )}
+              {!project && onOpenProject && recentProjects.slice(0, 2).map((rp) => (
+                <button key={rp.id} type="button" className="jd-starter-chip" onClick={() => onOpenProject(rp, "chat")}>
+                  Open: {rp.name}
                 </button>
               ))}
             </div>
@@ -746,17 +755,22 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
-          <div className="jd-composer-modes-row">
-            <div className="jd-exec-modes" role="group" aria-label="Execution mode">
-              {EXECUTION_MODES.map((m)=><button key={m.id} type="button" title={m.hint} className={executionMode===m.id?"is-active":""} aria-pressed={executionMode===m.id} onClick={()=>setExecutionMode(m.id)}>{m.label} <small>{m.id==="ask"?"Read-only":""}</small></button>)}
-            </div>
-            <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
-          </div>
           <div className="jd-compose">
             <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={[]}
+              toolbarExtra={
+                <div className="jd-exec-modes" role="group" aria-label="Execution mode">
+                  {EXECUTION_MODES.map((m)=><button key={m.id} type="button" title={m.hint} className={executionMode===m.id?"is-active":""} aria-pressed={executionMode===m.id} onClick={()=>setExecutionMode(m.id)}>{m.label}</button>)}
+                </div>
+              }
               onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowWorkforce(view==="workforce");setShowUsage(false);setShowDepartments(false);}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>{isWorking && draft.trim() && <button className="jd-pause" type="button" disabled={queuePaused} onClick={()=>send()}>Send alongside</button>}<button className="jd-send" type="button" disabled={isWorking ? false : (!draft.trim() || queuePaused)} onClick={()=>isWorking ? setQueuePaused(value=>!value) : send()} aria-label={isWorking ? (queuePaused ? "Resume new requests" : "Pause new requests") : "Send message"}>{isWorking ? (queuePaused ? <Play size={15}/> : <Pause size={15}/>) : <Send size={17}/>}</button></div>
             </ComposerTools>
+          </div>
+          <div className="jd-composer-footer-row">
+            <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
+            {!project && onCreateProject && draft.trim().length >= 4 && (
+              <button type="button" className="jd-save-project-link" onClick={()=>onCreateProject(draft)}>Save as project</button>
+            )}
           </div>
             {activeSends>0&&<div className="jd-queue-note"><span><strong>{activeSends}</strong> request{activeSends===1?"":"s"} submitting{queuePaused?" · new requests paused":""}</span></div>}
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Running jobs continue in the background — safe to close this tab." : "Runs continue in the background — safe to close this tab."}</div>

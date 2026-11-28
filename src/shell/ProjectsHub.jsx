@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Archive, Briefcase, Code2, Eye, FolderKanban, MoreHorizontal, Pin, Plus, RefreshCw, Search, Sparkles, X } from "lucide-react";
+import { HeritageRule } from "../components/reference-brand.jsx";
 import { PROJECT_FILTERS, filterProjects } from "./shell-state.mjs";
 
 function formatProjectDate(iso) {
@@ -123,6 +124,7 @@ export function ProjectsHub({
           <div>
             <p className="jd-hub-eyebrow">WORKSPACE PROJECTS</p>
             <h1 className="jd-hub-title" id="jd-projects-title">Projects</h1>
+            <HeritageRule compact />
           </div>
           <div className="jd-hub-actions">
             <button type="button" className="jd-icon-circle" aria-label="Refresh projects" onClick={onRefresh} disabled={loading}>
