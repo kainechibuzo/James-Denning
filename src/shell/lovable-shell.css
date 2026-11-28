@@ -1,0 +1,859 @@
+/* Lovable-inspired structural shell styled strictly in James-Denning's
+   heritage paper / true-black surfaces, ink palette, and JD Inter / Caslon / Script fonts. */
+
+.jd-shell-v2 {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--jd-paper, #f6efe4);
+  color: var(--jd-text, #22252b);
+  font-family: 'JD Inter', Inter, system-ui, -apple-system, sans-serif;
+}
+
+.jd-shell-v2 .jd-topbar {
+  height: 54px;
+  min-height: 54px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: color-mix(in srgb, var(--jd-paper, #fcfaf5) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  position: sticky;
+  top: 0;
+  z-index: 210;
+}
+
+.jd-shell-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.jd-org-pill,
+.jd-project-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(320px, 60vw);
+  padding: 5px 11px 5px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text, #22252b);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.jd-org-pill:hover,
+.jd-project-pill:hover {
+  border-color: var(--jd-muted, #62636b);
+}
+
+.jd-org-pill-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  display: grid;
+  place-items: center;
+  font-family: 'JD Caslon Text', Georgia, serif;
+  font-style: italic;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.jd-org-pill-label,
+.jd-project-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jd-shell-back-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text, #22252b);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jd-shell-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.jd-avatar-pill {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.18));
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  font-size: 11px;
+  font-weight: 750;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.jd-avatar-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--jd-blue, #1e2a52);
+  border: 2px solid var(--jd-card, #fcfaf5);
+}
+
+.jd-shell-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Floating root dock (Home · Projects · Chats) */
+.jd-dock-wrap {
+  position: fixed;
+  left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 190;
+  pointer-events: none;
+}
+
+.jd-dock {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 95%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(17, 18, 20, 0.12);
+}
+
+.jd-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--jd-muted, #62636b);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.jd-dock-btn:hover {
+  color: var(--jd-text, #22252b);
+}
+
+.jd-dock-btn.is-active {
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+}
+
+/* Reserve space above floating dock on Home/Projects/Chats */
+.jd-shell-has-dock .jd-compose-wrap {
+  margin-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Hub screens (Projects & Chats) */
+.jd-hub {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 18px calc(96px + env(safe-area-inset-bottom, 0px));
+  background: var(--jd-paper, #f6efe4) url('/design/workspace-curves.svg') center/cover no-repeat;
+}
+
+.jd-hub-inner {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.jd-hub-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.jd-hub-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 750;
+  color: var(--jd-muted, #62636b);
+  margin: 0 0 4px;
+}
+
+.jd-hub-title {
+  font-family: 'JD Caslon Text', Georgia, serif;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--jd-text, #22252b);
+  margin: 0;
+}
+
+.jd-hub-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jd-hub-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-text, #22252b);
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jd-hub-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.jd-hub-search {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-muted, #62636b);
+}
+
+.jd-hub-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  color: var(--jd-text, #22252b) !important;
+  font-size: 13px;
+}
+
+.jd-filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.jd-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text-soft, #3d434c);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.jd-chip.is-active {
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  border-color: var(--jd-text, #22252b);
+}
+
+.jd-project-list,
+.jd-chat-list {
+  display: grid;
+  gap: 10px;
+}
+
+.jd-project-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 14px;
+  border-radius: 15px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-card, #fcfaf5);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.jd-project-card:hover {
+  border-color: var(--jd-muted, #62636b);
+  box-shadow: 0 6px 20px rgba(17, 18, 20, 0.05);
+}
+
+.jd-project-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-soft, #f1e9dc);
+  color: var(--jd-text, #22252b);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.jd-project-main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+}
+
+.jd-project-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.jd-project-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--jd-text, #22252b);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jd-project-tag {
+  font-size: 10px;
+  font-weight: 650;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-soft, #f1e9dc);
+  color: var(--jd-text-soft, #3d434c);
+}
+
+.jd-project-meta {
+  font-size: 11px;
+  color: var(--jd-muted, #62636b);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jd-icon-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--jd-muted, #62636b);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jd-icon-circle:hover {
+  background: var(--jd-soft, #f1e9dc);
+  color: var(--jd-text, #22252b);
+}
+
+.jd-hub-empty {
+  border: 1px dashed var(--jd-border, rgba(34, 37, 43, 0.2));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 85%, transparent);
+  padding: 36px 20px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.jd-hub-empty h2 {
+  font-family: 'JD Caslon Text', Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--jd-text, #22252b);
+  margin: 4px 0 0;
+}
+
+.jd-hub-empty p {
+  font-size: 12px;
+  color: var(--jd-muted, #62636b);
+  max-width: 380px;
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+
+/* Sheets & Popovers (Workspace Switcher, Account Sheet, Project Inspector, New Project) */
+.jd-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 520;
+  background: rgba(12, 14, 18, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+}
+
+@media (min-width: 720px) {
+  .jd-sheet-backdrop {
+    align-items: center;
+  }
+}
+
+.jd-sheet {
+  width: min(480px, 100%);
+  max-height: min(86dvh, 720px);
+  overflow-y: auto;
+  border-radius: 20px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text, #22252b);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.jd-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.jd-sheet-title {
+  font-family: 'JD Caslon Text', Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.jd-sheet-card {
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  border-radius: 14px;
+  background: var(--jd-soft, #f1e9dc);
+  padding: 12px 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.jd-sheet-meter {
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--jd-text, #22252b) 12%, transparent);
+  overflow: hidden;
+}
+
+.jd-sheet-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--jd-blue, #1e2a52);
+}
+
+.jd-sheet-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.jd-sheet-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text, #22252b);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jd-sheet-action-btn.is-primary {
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  border-color: var(--jd-text, #22252b);
+}
+
+.jd-sheet-group-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 750;
+  color: var(--jd-muted, #62636b);
+  margin: 4px 2px 2px;
+}
+
+.jd-sheet-list {
+  display: grid;
+  gap: 4px;
+}
+
+.jd-sheet-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 11px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--jd-text, #22252b);
+  font-size: 13px;
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jd-sheet-row:hover {
+  background: var(--jd-soft, #f1e9dc);
+  border-color: var(--jd-border, rgba(34, 37, 43, 0.1));
+}
+
+.jd-sheet-row-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+}
+
+/* Execution Mode + Response Style toolbar inside Composer */
+.jd-composer-modes-row {
+  width: min(760px, 100%);
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jd-exec-modes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+}
+
+.jd-exec-modes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--jd-text-soft, #3d434c);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jd-exec-modes button.is-active {
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+}
+
+.jd-exec-modes button small {
+  font-size: 9px;
+  opacity: 0.78;
+  font-weight: 500;
+}
+
+.jd-composer-modes-row .jd-response-style {
+  width: auto;
+  margin: 0;
+}
+
+/* Starter chips on welcome screen */
+.jd-starter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 640px;
+}
+
+.jd-starter-chip {
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 90%, transparent);
+  color: var(--jd-text-soft, #3d434c);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 11px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.jd-starter-chip:hover {
+  border-color: var(--jd-text, #22252b);
+  color: var(--jd-text, #22252b);
+}
+
+/* Project Workspace: Chat <-> Preview + Bottom Switcher */
+.jd-project-workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--jd-paper, #f6efe4);
+}
+
+.jd-project-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.jd-project-bottom-bar {
+  height: 52px;
+  min-height: 52px;
+  padding: 0 14px calc(env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-card, #fcfaf5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.jd-pane-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-soft, #f1e9dc);
+}
+
+.jd-pane-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--jd-text-soft, #3d434c);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jd-pane-switch button.is-active {
+  background: var(--jd-card, #fcfaf5);
+  color: var(--jd-text, #22252b);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.jd-publish-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-text, #22252b);
+  background: var(--jd-text, #22252b);
+  color: var(--jd-card, #fcfaf5);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jd-preview-canvas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--jd-paper, #f6efe4) url('/design/workspace-curves.svg') center/cover no-repeat;
+}
+
+.jd-preview-shell {
+  width: min(960px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.jd-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-card, #fcfaf5);
+}
+
+.jd-preview-surface {
+  border-radius: 18px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  background: var(--jd-card, #fcfaf5);
+  padding: 20px;
+  box-shadow: 0 10px 32px rgba(17, 18, 20, 0.06);
+  display: grid;
+  gap: 16px;
+}
+
+.jd-preview-surface.is-mobile-frame {
+  width: min(393px, 100%);
+  margin: 0 auto;
+}
+
+.jd-subpage-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-card, #fcfaf5);
+}
+
+/* Dark mode alignment with true-black-theme.css */
+[data-theme='dark'] .jd-shell-v2,
+[data-theme='dark'] .jd-project-workspace {
+  background: #000000;
+  color: #f5f5f5;
+}
+
+[data-theme='dark'] .jd-shell-v2 .jd-topbar,
+[data-theme='dark'] .jd-project-bottom-bar,
+[data-theme='dark'] .jd-subpage-bar {
+  background: #090909;
+  border-color: #262626;
+}
+
+[data-theme='dark'] .jd-hub,
+[data-theme='dark'] .jd-preview-canvas {
+  background: #000000;
+  background-image: none;
+}
+
+[data-theme='dark'] .jd-org-pill,
+[data-theme='dark'] .jd-project-pill,
+[data-theme='dark'] .jd-shell-back-btn,
+[data-theme='dark'] .jd-dock,
+[data-theme='dark'] .jd-project-card,
+[data-theme='dark'] .jd-sheet,
+[data-theme='dark'] .jd-sheet-action-btn,
+[data-theme='dark'] .jd-exec-modes,
+[data-theme='dark'] .jd-preview-toolbar,
+[data-theme='dark'] .jd-preview-surface,
+[data-theme='dark'] .jd-hub-search,
+[data-theme='dark'] .jd-chip,
+[data-theme='dark'] .jd-starter-chip {
+  background: #090909;
+  border-color: #262626;
+  color: #f5f5f5;
+}
+
+@media (max-width: 720px) {
+  .jd-shell-topbar-left .jd-topbar-brandtext {
+    display: none;
+  }
+}
+
+[data-theme='dark'] .jd-sheet-card,
+[data-theme='dark'] .jd-project-thumb,
+[data-theme='dark'] .jd-project-tag,
+[data-theme='dark'] .jd-pane-switch,
+[data-theme='dark'] .jd-sheet-row:hover {
+  background: #111111;
+  border-color: #262626;
+  color: #e5e5e5;
+}
+
+[data-theme='dark'] .jd-dock-btn.is-active,
+[data-theme='dark'] .jd-chip.is-active,
+[data-theme='dark'] .jd-exec-modes button.is-active,
+[data-theme='dark'] .jd-sheet-action-btn.is-primary,
+[data-theme='dark'] .jd-hub-primary-btn,
+[data-theme='dark'] .jd-publish-pill,
+[data-theme='dark'] .jd-org-pill-badge,
+[data-theme='dark'] .jd-avatar-pill {
+  background: #f5f5f5;
+  color: #090909;
+  border-color: #f5f5f5;
+}
+
+[data-theme='dark'] .jd-pane-switch button.is-active {
+  background: #1a1a1a;
+  color: #f5f5f5;
+}
+
+@media (max-width: 640px) {
+  .jd-shell-topbar {
+    padding: 0 10px;
+  }
+  .jd-dock-btn {
+    padding: 0 12px;
+    font-size: 11px;
+  }
+  .jd-composer-modes-row {
+    gap: 6px;
+  }
+  .jd-exec-modes button small {
+    display: none;
+  }
+}

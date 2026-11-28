@@ -1,7 +1,7 @@
 import {assistantNavigation} from "./config/assistant-navigation.mjs";
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
 import React, { lazy, useId, useState, useEffect, useMemo, Component, useRef } from "react";
-import { ArrowLeft, ArrowRight, ChevronRight, Landmark, Layers3, PlayCircle, Sparkles, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight, ChevronsUpDown, FolderKanban, Landmark, Layers3, MessageSquare, PlayCircle, Sparkles, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
 import { useInactivityTimeout } from "./useInactivityTimeout.js";
@@ -23,6 +23,14 @@ import { WorkspaceSwitchDialog } from "./components/workspace-switch-dialog.jsx"
 import { signOutForWorkspaceSwitch } from "./utils/switch-workspace.mjs";
 // -- Route-level page chunks. The app shell is ready before feature modules download.
 const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
+const WorkspaceSwitcherSheet = lazyPage(() => import("./shell/WorkspaceSwitcherSheet.jsx"), "WorkspaceSwitcherSheet");
+const AccountProfileSheet = lazyPage(() => import("./shell/AccountProfileSheet.jsx"), "AccountProfileSheet");
+const ProjectsHub = lazyPage(() => import("./shell/ProjectsHub.jsx"), "ProjectsHub");
+const NewProjectModal = lazyPage(() => import("./shell/ProjectsHub.jsx"), "NewProjectModal");
+const ChatsHub = lazyPage(() => import("./shell/ChatsHub.jsx"), "ChatsHub");
+const ProjectInspectorSheet = lazyPage(() => import("./shell/ProjectWorkspace.jsx"), "ProjectInspectorSheet");
+const ProjectPreviewPane = lazyPage(() => import("./shell/ProjectWorkspace.jsx"), "ProjectPreviewPane");
+const ProjectBottomBar = lazyPage(() => import("./shell/ProjectWorkspace.jsx"), "ProjectBottomBar");
 const AdminToolsPage = lazyPage(() => import("./pages/tools.jsx"), "AdminToolsPage");
 const AdminDashboardPage = lazyPage(() => import("./pages/admin-dashboard.jsx"), "AdminDashboardPage");
 const AuditLogPage = lazyPage(() => import("./pages/tools.jsx"), "AuditLogPage");
@@ -1146,7 +1154,32 @@ function AppInner(){
   const [pageParam,setPageParam] = useState(null);
   const [refreshKey,setRefreshKey] = useState(0);
   const bumpRefresh = ()=>setRefreshKey(k=>k+1);
-  const [sideOpen,setSide]     = useState(()=>window.innerWidth>=768);
+  const [sideOpen,setSide]     = useState(false);
+  const [rootTab,setRootTab]   = useState("home");
+  const [activeProject,setActiveProject] = useState(null);
+  const [projectPane,setProjectPane] = useState("chat");
+  const [projectDraft,setProjectDraft] = useState("");
+  const [projectMode,setProjectMode] = useState("execute");
+  const [projectConversationId,setProjectConversationId] = useState(null);
+  const [rootConversationId,setRootConversationId] = useState(null);
+  const [projects,setProjects] = useState([]);
+  const [projectsLoading,setProjectsLoading] = useState(false);
+  const [projectsError,setProjectsError] = useState("");
+  const [projectDetail,setProjectDetail] = useState(null);
+  const [projectDetailLoading,setProjectDetailLoading] = useState(false);
+  const [rootChats,setRootChats] = useState([]);
+  const [rootScheduled,setRootScheduled] = useState([]);
+  const [rootChatsFilter,setRootChatsFilter] = useState("all");
+  const [rootChatsLoading,setRootChatsLoading] = useState(false);
+  const [rootChatsError,setRootChatsError] = useState("");
+  const [showWorkspaceSheet,setShowWorkspaceSheet] = useState(false);
+  const [showAccountSheet,setShowAccountSheet] = useState(false);
+  const [showProjectInspector,setShowProjectInspector] = useState(false);
+  const [showNewProject,setShowNewProject] = useState(false);
+  const [creatingProject,setCreatingProject] = useState(false);
+  const [createProjectError,setCreateProjectError] = useState("");
+  const [usageSummary,setUsageSummary] = useState(null);
+  const {dark,toggle:toggleDark} = useDark();
   const [collapsedGroups,setCollapsedGroups] = useState(new Set());
   const [sidebarSearch,setSidebarSearch] = useState("");
   const sidebarRef = useRef(null);
@@ -1260,11 +1293,11 @@ function AppInner(){
   },[page]);
 
   useEffect(()=>{
-    if(!isMobile || !sideOpen || !user || !selectedSchool || !sidebarRef.current) return;
+    if(!sideOpen || !user || !selectedSchool || !sidebarRef.current) return;
     return bindMobileNavigation(sidebarRef.current,{
       onClose:()=>setSide(false),returnFocus:navigationToggleRef.current
     });
-  },[isMobile,sideOpen,user?.id,user?.role,selectedSchool?.id]);
+  },[sideOpen,user?.id,user?.role,selectedSchool?.id]);
 
   // db school context is set synchronously at module load (see IIFE above loadSelectedSchool).
   // No useEffect needed here — _schoolId is already correct before any component renders.
@@ -1323,6 +1356,164 @@ function AppInner(){
     }).catch(error=>console.warn("[JD feature telemetry]",error?.message||error));
   },[page,user?.id,selectedSchool?.id]);
 
+  const loadProjects = async () => {
+    if (!user || !selectedSchool) return;
+    setProjectsLoading(true);
+    setProjectsError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", { body: { action: "projects.list" } });
+      if (error || data?.error || !Array.isArray(data?.projects)) throw new Error(data?.error || "Projects could not be loaded");
+      setProjects(data.projects);
+    } catch {
+      setProjectsError("Projects could not be loaded right now. Retry when your workspace connection is ready.");
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
+
+  const loadProjectDetail = async (projectId) => {
+    if (!projectId || !user || !selectedSchool) return;
+    setProjectDetailLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", { body: { action: "projects.detail", projectId } });
+      if (!error && !data?.error && data?.project) {
+        setProjectDetail(data);
+        setActiveProject(data.project);
+      }
+    } catch {
+      // Keep current project card state if detail refresh fails.
+    } finally {
+      setProjectDetailLoading(false);
+    }
+  };
+
+  const loadRootChats = async (filter = rootChatsFilter) => {
+    if (!user || !selectedSchool) return;
+    setRootChatsLoading(true);
+    setRootChatsError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list", filter } });
+      if (error || data?.error) throw new Error(data?.error || "Chats unavailable");
+      setRootChats(Array.isArray(data?.conversations) ? data.conversations : []);
+      setRootScheduled(Array.isArray(data?.scheduled) ? data.scheduled : []);
+    } catch {
+      setRootChatsError("Conversations could not be loaded right now.");
+    } finally {
+      setRootChatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user || !selectedSchool) return;
+    if (rootTab === "projects") void loadProjects();
+    if (rootTab === "chats") void loadRootChats(rootChatsFilter);
+  }, [rootTab, rootChatsFilter, user?.id, selectedSchool?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!user || !selectedSchool || !["owner", "admin"].includes(user.role)) return;
+    supabase.functions.invoke("jd-automation", { body: { action: "usage.summary" } })
+      .then(({ data }) => { if (data?.summary) setUsageSummary(data.summary); })
+      .catch(() => {});
+  }, [user?.id, user?.role, selectedSchool?.id]);
+
+  const openProject = (project, pane = "chat") => {
+    setActiveProject(project);
+    setProjectPane(pane);
+    setProjectDraft("");
+    setProjectConversationId(null);
+    setProjectMode(project?.metadata_json?.initial_mode || "plan");
+    setPage("jd-chat");
+    setAssistantRequest(null);
+    void loadProjectDetail(project.id);
+  };
+
+  const createProject = async ({ name, description, kind, initialMode }) => {
+    setCreatingProject(true);
+    setCreateProjectError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", {
+        body: { action: "projects.create", name, description, kind, initialMode },
+      });
+      if (error || data?.error || !data?.project) throw new Error(data?.error || "Could not create project");
+      setProjects((prev) => [data.project, ...prev]);
+      setShowNewProject(false);
+      openProject(data.project, "chat");
+      notify(`Created "${data.project.name}"`, "success");
+    } catch (err) {
+      setCreateProjectError(err?.message || "Project could not be created.");
+    } finally {
+      setCreatingProject(false);
+    }
+  };
+
+  const toggleProjectPin = async (project) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", {
+        body: { action: "projects.update", projectId: project.id, pinned: !project.pinned },
+      });
+      if (error || data?.error || !data?.project) throw new Error("Failed");
+      setProjects((prev) => prev.map((p) => (p.id === project.id ? data.project : p)));
+      if (activeProject?.id === project.id) setActiveProject(data.project);
+    } catch {
+      notify("Could not update project pin state", "error");
+    }
+  };
+
+  const toggleProjectArchive = async (project) => {
+    const nextStatus = project.status === "archived" ? "active" : "archived";
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", {
+        body: { action: "projects.update", projectId: project.id, status: nextStatus },
+      });
+      if (error || data?.error || !data?.project) throw new Error("Failed");
+      setProjects((prev) => prev.map((p) => (p.id === project.id ? data.project : p)));
+      if (activeProject?.id === project.id) setActiveProject(data.project);
+      notify(nextStatus === "archived" ? "Project archived" : "Project restored", "success");
+    } catch {
+      notify("Could not update project status", "error");
+    }
+  };
+
+  const toggleProjectPublish = async (project) => {
+    const nextStatus = project.status === "published" ? "active" : "published";
+    try {
+      const { data, error } = await supabase.functions.invoke("jd-automation", {
+        body: { action: "projects.update", projectId: project.id, status: nextStatus },
+      });
+      if (error || data?.error || !data?.project) throw new Error("Failed");
+      setProjects((prev) => prev.map((p) => (p.id === project.id ? data.project : p)));
+      if (activeProject?.id === project.id) setActiveProject(data.project);
+      notify(nextStatus === "published" ? "Project marked as published" : "Project moved back to draft", "success");
+    } catch {
+      notify("Could not change publish status", "error");
+    }
+  };
+
+  const shareProject = async (project) => {
+    const shareUrl = `${window.location.origin}/?project=${encodeURIComponent(project.id)}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      notify("Project link copied to clipboard", "success");
+    } catch {
+      notify(`Share URL: ${shareUrl}`, "info");
+    }
+  };
+
+  const handleInspectorDestination = (item) => {
+    if (item.id === "preview") {
+      setPage("jd-chat");
+      setProjectPane("preview");
+      return;
+    }
+    if (item.kind === "assistant") {
+      setPage("jd-chat");
+      setProjectPane("chat");
+      setAssistantRequest({ view: item.id });
+      return;
+    }
+    setPage(item.id);
+  };
+
   // Sign-in and organisation selection happen in the public entry (App.jsx).
   // Without both, return to it rather than rendering a partial workspace.
   if(!selectedSchool||!user) return <SignInRequired/>;
@@ -1340,42 +1531,37 @@ function AppInner(){
 
   const ctx={user,role,notify,setPage,canAccess,refreshKey,bumpRefresh,selectedSchool,pageParam,setPageParam,workspaceType,terms};
 
-  // On mobile the sidebar is always a full overlay; on desktop it collapses to icon rail
-  const closeSideOnMobile = () => {
-    if(isMobile){setSide(false);navigationToggleRef.current?.focus();}
+  const closeSide = () => {
+    setSide(false);
+    navigationToggleRef.current?.focus();
   };
-
-  // Mobile in-app PDF viewer — covers everything
-
+  const closeSideOnMobile = closeSide;
+  const showRootDock = page === "jd-chat" && !activeProject && !(assistantRequest?.view && assistantRequest.view !== "chat");
 
   return(
-    <div className="jd-workspace-shell" inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",minHeight:"100vh",background:"var(--jd-paper)",
+    <div className={`jd-workspace-shell jd-shell-v2${showRootDock ? " jd-shell-has-dock" : ""}`} inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",flexDirection:"column",minHeight:"100vh",background:"var(--jd-paper)",
       fontFamily:"'JD Inter',system-ui,sans-serif",transition:"background .2s"}}>
 
-
-      {/* Mobile backdrop */}
-      {isMobile&&sideOpen&&(
-        <div onClick={closeSideOnMobile}
+      {/* On-demand navigation drawer (accessible via menu button or Ctrl+K) */}
+      {sideOpen&&(
+        <div onClick={closeSide}
           style={{position:"fixed",inset:0,background:"rgba(6,6,6,.55)",
             zIndex:498,backdropFilter:"blur(2px)"}}/>
       )}
 
-      {/* NAVIGATION DRAWER — reference layout: engraved plate, identity,
-          organisation + search fields, JD assistant block, department groups
-          and an account card seated on the skyline. */}
       <aside id="workspace-navigation" ref={sidebarRef} tabIndex={-1} aria-label="Workspace navigation"
-        className={`jd-drawer ${isMobile ? "is-mobile" : (sideOpen ? "is-open" : "is-rail")}`}
-        role={isMobile?"dialog":undefined} aria-modal={isMobile&&sideOpen?true:undefined}
-        aria-hidden={isMobile&&!sideOpen ? true : undefined} inert={isMobile&&!sideOpen ? "" : undefined}
+        className={`jd-drawer is-mobile`}
+        role="dialog" aria-modal={sideOpen?true:undefined}
+        aria-hidden={!sideOpen ? true : undefined} inert={!sideOpen ? "" : undefined}
         style={{
-        width: isMobile ? "min(304px, 90vw)" : (sideOpen?272:0),
-        transition:"width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1)",
+        width: "min(304px, 90vw)",
+        transition:"transform .25s cubic-bezier(.4,0,.2,1)",
         flexShrink:0,display:"flex",flexDirection:"column",
-        position: isMobile ? "fixed" : "sticky",
+        position: "fixed",
         top:0, left:0,
-        height:"100dvh",zIndex: isMobile ? 499 : "auto",
+        height:"100dvh",zIndex: 499,
         overflow:"hidden",
-        transform: isMobile ? (sideOpen?"translateX(0)":"translateX(-100%)") : "none",
+        transform: sideOpen?"translateX(0)":"translateX(-100%)",
       }}>
 
         <div className="jd-drawer-plate">
@@ -1509,28 +1695,42 @@ function AppInner(){
       </aside>
 
       {/* MAIN */}
-      <div className="jd-workspace-main" style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,
-        marginLeft: isMobile ? 0 : undefined}}>
-        <header className="reference-workspace-header jd-topbar" style={{background:"var(--jd-paper)",borderBottom:"1px solid var(--jd-hairline)",
-          padding:`0 ${isMobile?10:18}px`,height:54,display:"flex",alignItems:"center",
-          justifyContent:"space-between",position:"sticky",top:0,zIndex:200,
-          boxShadow:"0 1px 0 rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)"}}>
+      <div className="jd-workspace-main" style={{flex:1,display:"flex",flexDirection:"column",minWidth:0}}>
+        <header className="reference-workspace-header jd-topbar">
           <span className="jd-topbar-art" aria-hidden="true"/>
-          <div className="reference-header-left" style={{display:"flex",alignItems:"center",gap:10,minWidth:0,flex:1}}>
+          <div className="reference-header-left jd-shell-topbar-left">
             <button className="jd-topbar-menu" data-tour="workspace-menu" ref={navigationToggleRef} aria-label={sideOpen?"Close or collapse navigation":"Open navigation"} aria-expanded={sideOpen} aria-controls="workspace-navigation" onClick={()=>setSide(p=>!p)}>
-              <AppIcon name="menu" size={22}/>
+              <AppIcon name="menu" size={20}/>
             </button>
             <div className="jd-topbar-brand">
               <button className="jd-topbar-tile" type="button" aria-label="JD Assistant" title="JD Assistant"
-                onClick={()=>{setAssistantRequest({view:"chat"});setPage("jd-chat");}}>JD</button>
+                onClick={()=>{setActiveProject(null);setRootTab("home");setAssistantRequest({view:"chat"});setPage("jd-chat");}}>JD</button>
               <div className="jd-topbar-brandtext">
-                <HeritageWordmark className="jd-topbar-wordmark" as="div"/>
-                <HeritageRule compact/>
+                <HeritageWordmark className="jd-topbar-wordmark" as="span"/>
               </div>
             </div>
+            {activeProject && page==="jd-chat" ? (
+              <>
+                <button type="button" className="jd-shell-back-btn" aria-label="Back to projects" title="Back to projects"
+                  onClick={()=>{setActiveProject(null);setRootTab("projects");setAssistantRequest(null);}}>
+                  <ArrowLeft size={16}/>
+                </button>
+                <button type="button" className="jd-project-pill" aria-haspopup="dialog" aria-label={`Inspect ${activeProject.name}`}
+                  onClick={()=>setShowProjectInspector(true)}>
+                  <span className="jd-project-pill-label">{activeProject.name}</span>
+                  <ChevronDown size={14} style={{flexShrink:0}}/>
+                </button>
+              </>
+            ) : (
+              <button type="button" className="jd-org-pill" aria-haspopup="dialog" aria-label="Open workspace switcher"
+                onClick={()=>setShowWorkspaceSheet(true)}>
+                <span className="jd-org-pill-badge" aria-hidden="true">{(_sidebarSchoolName||selectedSchool?.name||"J").trim().charAt(0).toUpperCase()}</span>
+                <span className="jd-org-pill-label">{_sidebarSchoolName||selectedSchool?.name||"James-Denning"}</span>
+                <ChevronsUpDown size={14} style={{flexShrink:0,color:"var(--jd-muted)"}}/>
+              </button>
+            )}
           </div>
-          <div className="reference-header-controls" style={{display:"flex",gap:4,alignItems:"center",flexShrink:0}}>
-
+          <div className="reference-header-controls jd-shell-topbar-right" style={{display:"flex",gap:4,alignItems:"center",flexShrink:0}}>
             <DarkToggle compact/>
             <button data-tour="tour-trigger"
               onClick={()=>setShowTour(true)}
@@ -1540,18 +1740,128 @@ function AppInner(){
             <GlobalApprovalLauncher user={user}/>
             <NotificationBell ctx={ctx}/>
             <button className="reference-settings" data-account-settings type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
-              onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={19}/></button>
-            <button className="reference-profile" aria-label="My profile" onClick={()=>setShowProfile(true)} title="My Profile">
+              onClick={()=>{if(user.role==="admin")setPage("settings");else setShowAccountSheet(true);}}><Settings size={19}/></button>
+            <button className="reference-profile jd-avatar-pill" aria-label="My profile" onClick={()=>setShowAccountSheet(true)} title="Account &amp; Profile">
               {(user.name||"?").trim().split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase()}
             </button>
-
           </div>
         </header>
 
+        {page!=="jd-chat" && (
+          <div className="jd-subpage-bar">
+            <button type="button" className="jd-chip" onClick={()=>setPage("jd-chat")} style={{display:"inline-flex",alignItems:"center",gap:6}}>
+              <ArrowLeft size={14}/> {activeProject ? `Back to ${activeProject.name}` : "Back to Workspace"}
+            </button>
+            <span style={{fontSize:11,color:"var(--jd-muted)",textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700}}>
+              {ALL_NAV.find(n=>n.id===page)?.label || page}
+            </span>
+          </div>
+        )}
 
-        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-paper)":"var(--jd-paper)",transition:"background .2s"}}>
+        <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:"var(--jd-paper)",transition:"background .2s",display:"flex",flexDirection:"column"}}>
           {page==="admin-dashboard" && (role==="admin" ? <AdminDashboardPage ctx={ctx}/> : <AccessDenied/>)}
-          {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
+          {page==="jd-chat" && (role!=="owner"||canAccess("jd-chat") ? (
+            activeProject && !(assistantRequest?.view && assistantRequest.view !== "chat") ? (
+              <div className="jd-project-workspace">
+                <div className="jd-project-pane">
+                  {projectPane==="preview" ? (
+                    <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading preview...</div></div>}>
+                      <ProjectPreviewPane
+                        project={activeProject}
+                        detail={projectDetail}
+                        loading={projectDetailLoading}
+                        role={role}
+                        organizationName={_sidebarSchoolName||selectedSchool?.name||"Your organisation"}
+                        onRefresh={()=>loadProjectDetail(activeProject.id)}
+                        onAskInChat={(prompt, mode)=>{setProjectDraft(prompt);setProjectMode(mode||"plan");setProjectPane("chat");}}
+                        onShare={shareProject}
+                        onPublish={toggleProjectPublish}
+                        onOpenOperations={canOpenOperations(role)&&canAccess("jd-operations") ? ()=>setPage("jd-operations") : null}
+                      />
+                    </Suspense>
+                  ) : (
+                    <ChatHome
+                      key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role,activeProject.id,projectConversationId||"project-chat"])}
+                      user={user}
+                      organizationId={selectedSchool?.id}
+                      organizationName={selectedSchool?.name||"Your organisation"}
+                      navigationRequest={assistantRequest}
+                      project={activeProject}
+                      initialExecutionMode={projectMode}
+                      initialDraft={projectDraft}
+                      initialConversationId={projectConversationId}
+                      onOpenPreview={()=>setProjectPane("preview")}
+                    />
+                  )}
+                </div>
+                <Suspense fallback={null}>
+                  <ProjectBottomBar
+                    activePane={projectPane}
+                    project={activeProject}
+                    onChangePane={(pane)=>{setProjectPane(pane);if(pane==="preview")void loadProjectDetail(activeProject.id);}}
+                    onPublish={toggleProjectPublish}
+                  />
+                </Suspense>
+              </div>
+            ) : (assistantRequest?.view && assistantRequest.view !== "chat") ? (
+              <ChatHome
+                key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role,"assistant-tool"])}
+                user={user}
+                organizationId={selectedSchool?.id}
+                organizationName={selectedSchool?.name||"Your organisation"}
+                navigationRequest={assistantRequest}
+              />
+            ) : rootTab==="projects" ? (
+              <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading projects...</div></div>}>
+                <ProjectsHub
+                  projects={projects}
+                  loading={projectsLoading}
+                  error={projectsError}
+                  canCreate={["owner","admin","manager"].includes(role)}
+                  onRefresh={loadProjects}
+                  onOpenProject={openProject}
+                  onNewProject={()=>{setCreateProjectError("");setShowNewProject(true);}}
+                  onTogglePin={toggleProjectPin}
+                  onArchiveProject={toggleProjectArchive}
+                />
+              </Suspense>
+            ) : rootTab==="chats" ? (
+              <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading chats...</div></div>}>
+                <ChatsHub
+                  conversations={rootChats}
+                  scheduled={rootScheduled}
+                  projects={projects}
+                  loading={rootChatsLoading}
+                  error={rootChatsError}
+                  filter={rootChatsFilter}
+                  onFilterChange={(nextFilter)=>setRootChatsFilter(nextFilter)}
+                  onRefresh={()=>loadRootChats(rootChatsFilter)}
+                  onOpenChat={(chat)=>{
+                    const linked = chat.project_id ? projects.find(p=>p.id===chat.project_id) : null;
+                    if(linked){
+                      setActiveProject(linked);
+                      setProjectPane("chat");
+                      setProjectConversationId(chat.id);
+                      void loadProjectDetail(linked.id);
+                    }else{
+                      setRootConversationId(chat.id);
+                      setRootTab("home");
+                    }
+                  }}
+                  onNewChat={()=>{setRootConversationId(null);setAssistantRequest({view:"new"});setRootTab("home");}}
+                />
+              </Suspense>
+            ) : (
+              <ChatHome
+                key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role,rootConversationId||"home"])}
+                user={user}
+                organizationId={selectedSchool?.id}
+                organizationName={selectedSchool?.name||"Your organisation"}
+                navigationRequest={assistantRequest}
+                initialConversationId={rootConversationId}
+              />
+            )
+          ) : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="jd-skills"    && (role==="admin"             ? <JdSkillsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="billing" && (canAccess("billing") ? <BillingPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
@@ -1566,6 +1876,86 @@ function AppInner(){
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
         </main>
       </div>
+
+      {showRootDock && (
+        <nav className="jd-dock-wrap" aria-label="Primary workspace tabs">
+          <div className="jd-dock">
+            <button type="button" className={`jd-dock-btn${rootTab==="home"?" is-active":""}`} aria-current={rootTab==="home"?"page":undefined}
+              onClick={()=>{setRootTab("home");setAssistantRequest(null);}}>
+              <Home size={16}/> Home
+            </button>
+            <button type="button" className={`jd-dock-btn${rootTab==="projects"?" is-active":""}`} aria-current={rootTab==="projects"?"page":undefined}
+              onClick={()=>{setRootTab("projects");setAssistantRequest(null);}}>
+              <FolderKanban size={16}/> Projects
+            </button>
+            <button type="button" className={`jd-dock-btn${rootTab==="chats"?" is-active":""}`} aria-current={rootTab==="chats"?"page":undefined}
+              onClick={()=>{setRootTab("chats");setAssistantRequest(null);}}>
+              <MessageSquare size={16}/> Chats
+            </button>
+          </div>
+        </nav>
+      )}
+
+      <Suspense fallback={null}>
+        {showWorkspaceSheet && (
+          <WorkspaceSwitcherSheet
+            open={showWorkspaceSheet}
+            organisation={_sidebarSchoolName||selectedSchool?.name}
+            role={role}
+            usageSummary={usageSummary}
+            canCreateOrg={role==="admin"}
+            onClose={()=>setShowWorkspaceSheet(false)}
+            onSwitchOrganisation={()=>setShowWorkspaceSwitch(true)}
+            onCreateOrganisation={()=>setPage("org-create")}
+            onOpenBilling={canAccess("billing") ? ()=>setPage("billing") : null}
+          />
+        )}
+
+        {showAccountSheet && (
+          <AccountProfileSheet
+            open={showAccountSheet}
+            user={user}
+            role={role}
+            dark={dark}
+            canOpenSettings={role==="admin"&&canAccess("settings")}
+            canOpenBilling={["owner","admin"].includes(role)&&canAccess("billing")}
+            canOpenConnectors={role!=="owner"||canAccess("jd-chat")}
+            onToggleDark={toggleDark}
+            onOpenApprovals={()=>{setActiveProject(null);setPage("jd-chat");setAssistantRequest({view:"review"});}}
+            onOpenConnectors={()=>{setActiveProject(null);setPage("jd-chat");setAssistantRequest({view:"connectors"});}}
+            onOpenBilling={()=>setPage("billing")}
+            onOpenSettings={()=>setPage("settings")}
+            onOpenProfile={()=>setShowProfile(true)}
+            onOpenTour={()=>setShowTour(true)}
+            onLogout={()=>setShowLogout(true)}
+            onClose={()=>setShowAccountSheet(false)}
+          />
+        )}
+
+        {showProjectInspector && (
+          <ProjectInspectorSheet
+            open={showProjectInspector}
+            project={activeProject}
+            role={role}
+            canAccess={canAccess}
+            usageSummary={usageSummary}
+            onClose={()=>setShowProjectInspector(false)}
+            onShare={shareProject}
+            onPublish={toggleProjectPublish}
+            onSelectDestination={handleInspectorDestination}
+          />
+        )}
+
+        {showNewProject && (
+          <NewProjectModal
+            open={showNewProject}
+            busy={creatingProject}
+            error={createProjectError}
+            onClose={()=>setShowNewProject(false)}
+            onCreate={createProject}
+          />
+        )}
+      </Suspense>
 
 
       {showWorkspaceSwitch&&<WorkspaceSwitchDialog organisation={_sidebarSchoolName||selectedSchool?.name}
