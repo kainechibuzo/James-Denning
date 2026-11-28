@@ -343,4 +343,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run complete Chromium suite
-        run: ${{ matrix.suite.command }}
+        run: |
+          set +e
+          bash -c '${{ matrix.suite.command }}' > /tmp/suite.log 2>&1
+          STATUS=$?
+          cat /tmp/suite.log
+          if [ $STATUS -ne 0 ]; then
+            node -e 'const fs=require("fs");const s=fs.readFileSync("/tmp/suite.log","utf8").split("\n").slice(-50).join("\n").slice(-3500);console.log("::error::"+s.replace(/%/g,"%25").replace(/\r/g,"%0D").replace(/\n/g,"%0A"));'
+            exit $STATUS
+          fi
