@@ -26,7 +26,7 @@ test('manager keeps the chat-first navigation and does not inherit account contr
  assert.deepEqual(buildWorkspaceNavigation({role:'manager',canAccess:()=>true}).map(n=>n.id),['jd-chat']);
 });
 test('admin sees the account destinations in the Organisation group',()=>{
- assert.deepEqual(buildWorkspaceNavigation({role:'admin',canAccess:()=>true}).map(n=>n.id),['jd-chat','g-organisation','billing','settings']);
+ assert.deepEqual(buildWorkspaceNavigation({role:'admin',canAccess:()=>true}).map(n=>n.id),['jd-chat','g-organisation','admin-dashboard','billing','settings']);
 });
 test('owner access is additive and scoped, not blanket legacy admin access',()=>{
  for(const role of ['owner','admin','manager'])assert.equal(canOpenOperations(role),true);
