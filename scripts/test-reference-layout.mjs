@@ -71,7 +71,7 @@ try{
    });
    await page.goto('http://reference.test/'+screen);
    await page.addStyleTag({content:css});await page.addScriptTag({content:script,type:'module'});
-   await page.locator(screen==='landing'?'.reference-features':'.jd-welcome').waitFor();
+   try{await page.locator(screen==='landing'?'.reference-features':'.jd-welcome').waitFor({timeout:10000});}catch(error){const state=await page.locator('body').innerText().catch(()=>'<body unavailable>');throw new Error(`Reference ${screen} fixture failed to mount at ${width}x${height}. Browser errors: ${errors.join(' | ')||'none'}. Visible page: ${state.slice(0,1200)}. Original: ${error.message}`);}
    await page.evaluate(async()=>{await Promise.all([document.fonts.load('16px "JD Inter"'),document.fonts.load('32px "JD Script"')]);await document.fonts.ready;await Promise.all([...document.images].map(img=>img.decode()));});
    const measure=await page.evaluate(()=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,brokenImages:[...document.images].filter(i=>!i.naturalWidth).length,font:document.fonts.check('16px "JD Inter"'),scriptFont:document.fonts.check('32px "JD Script"')}));
    assert.ok(measure.documentWidth<=width,`${screen}: horizontal overflow ${JSON.stringify(measure)}`);assert.equal(measure.brokenImages,0);assert.ok(measure.font&&measure.scriptFont);
