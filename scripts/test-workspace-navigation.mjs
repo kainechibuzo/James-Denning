@@ -33,7 +33,9 @@ test("assistant menu contains the operational destinations and is gated by autho
 test("shell wires role resolver, account access and reauthentication",()=>{
   const shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
   assert.match(shell,/buildWorkspaceNavigation\(\{role,canAccess\}\)/);
-  assert.match(shell,/window\.location\.pathname===\"\/admin\"\?\"admin-dashboard\"/);
+  // Initial page comes from the URL resolver (payment returns, ?page= links, /admin).
+  assert.match(shell,/useState\(\(\)=>pageFromLocation\(window\.location\)\)/);
+  assert.match(shell,/from "\.\/config\/workspace-routes\.mjs"/);
   assert.match(shell,/page===\"admin-dashboard\" && \(role===\"admin\" \? <AdminDashboardPage ctx=\{ctx\}\/> : <AccessDenied\/>\)/);
   assert.match(shell,/aria-label="Switch organisation" aria-haspopup="dialog"/);
   assert.match(shell,/aria-label="My profile"/);assert.match(shell,/aria-label="Sign out"/);

@@ -18,6 +18,7 @@ import { ChatHome } from "./chat/ChatHome.jsx";
 import { ReviewCentre } from "./chat/ReviewCentre.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
 import { canOpenOperations, WORKSPACE_NAVIGATION, buildWorkspaceNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
+import { pageFromLocation, pathForPage, shouldSyncUrl, clearPaymentReturn } from "./config/workspace-routes.mjs";
 import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
 import { WorkspaceSwitchDialog } from "./components/workspace-switch-dialog.jsx";
 import { signOutForWorkspaceSwitch } from "./utils/switch-workspace.mjs";
@@ -1111,6 +1112,17 @@ function TourSystem({userId, role, canAccess, setPage, isMobile, show, onClose})
 }
 
 // Shown when a route exists but the current role cannot open it.
+// A payment return that lands on a page the visitor cannot open cannot be verified
+// here; clear it so the stale reference does not persist in the URL.
+function clearStrandedPaymentReturn(){
+  try{ if(clearPaymentReturn(window.location,window.history)) console.warn("[JD] a payment return could not be verified: billing access is not granted to this account."); }catch{}
+}
+
+function ClearStrandedReturn(){
+  useEffect(()=>{clearStrandedPaymentReturn();},[]);
+  return null;
+}
+
 function AccessDenied(){
   return (
     <div role="alert" style={{maxWidth:420,margin:"48px auto",padding:24,textAlign:"center",background:"var(--jd-card)",border:`1px solid ${C.border}`,borderRadius:12}}>
@@ -1136,9 +1148,15 @@ function SignInRequired(){
 
 function AppInner(){
   const [user,setUser]         = useState(()=>loadSession());
-  const [page,setPage]         = useState(()=>window.location.pathname==="/admin"?"admin-dashboard":"jd-chat");
-  useEffect(()=>{const syncRoute=()=>setPage(window.location.pathname==="/admin"?"admin-dashboard":"jd-chat");window.addEventListener("popstate",syncRoute);return()=>window.removeEventListener("popstate",syncRoute);},[]);
-  useEffect(()=>{const path=page==="admin-dashboard"?"/admin":"/";if(window.location.pathname!==path)window.history.replaceState({},"",path);},[page]);
+  // Links from outside the shell (payment returns, notification link_page, bookmarks)
+  // must resolve to the page they name; see config/workspace-routes.mjs.
+  const [page,setPage]         = useState(()=>pageFromLocation(window.location));
+  useEffect(()=>{const syncRoute=()=>setPage(pageFromLocation(window.location));window.addEventListener("popstate",syncRoute);return()=>window.removeEventListener("popstate",syncRoute);},[]);
+  useEffect(()=>{
+    if(!shouldSyncUrl(page,window.location))return;
+    const path=pathForPage(page);
+    if(window.location.pathname!==path||window.location.search)window.history.replaceState({},"",path);
+  },[page]);
   const [assistantRequest,setAssistantRequest] = useState(null);
   useEffect(()=>{if(page!=="jd-chat")setAssistantRequest(null);},[page]);
   // Optional payload set alongside a page navigation (e.g. dashboard "Fix →" links) so the
@@ -1215,13 +1233,22 @@ function AppInner(){
       return()=>{current=false;};
     }
     if(user.role==="admin") return;
+    let current=true;
     Promise.all([
       db.getRolePermissions(user.role),
       db.getUserPermissions(user._authUserId||user.id),
     ]).then(([rp,up])=>{
+      if(!current)return;
       setRolePerms(rp.data||[]);
       setUserPerms(up.data||[]);
+    }).catch(error=>{
+      if(!current)return;
+      // Deny by default: route access then falls back to each page's role gate
+      // instead of silently widening access when the permission read fails.
+      console.warn("[JD] workspace permissions unavailable; using role defaults.",error?.message||error);
+      setRolePerms([]);setUserPerms([]);
     });
+    return()=>{current=false;};
   },[user]);
 
   // Auto-start tour on first login for this user
@@ -1233,16 +1260,17 @@ function AppInner(){
     catch(e){}
   },[user?._authUserId||user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load inactivity timeout setting from school_settings on login
+  // Load inactivity timeout setting from school_settings on login.
+  // A failed read keeps the default timeout; it must not surface as an unhandled rejection.
   useEffect(()=>{
     if(!user) return;
-    db.getSettings().then(({data})=>{
+    Promise.resolve().then(()=>db.getSettings()).then(({data}={})=>{
       const m={};
       (data||[]).forEach(r=>{m[r.key]=r.value;});
       const mins=parseInt(m.inactivity_timeout_minutes||"5",10);
       if(isNaN(mins)||mins<=0) setInactivityMs(99999*60*1000); // "Never"
       else setInactivityMs(mins*60*1000);
-    });
+    }).catch(error=>console.warn("[JD] inactivity setting unavailable; keeping the default timeout.",error?.message||error));
   },[user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // (inactivity timeout handled by useInactivityTimeout hook above)
@@ -1340,11 +1368,19 @@ function AppInner(){
 
   // Record an authenticated workspace route opening for aggregate feature-usage analytics.
   // This is a lightweight event only; it never records page content or user input.
+  // Telemetry is strictly best-effort: the call itself can throw synchronously (a
+  // misconfigured client has no rpc helper) and that must never reach the boundary.
   useEffect(()=>{
-    if(!selectedSchool?.id||!user||!canAccess(page)) return;
-    supabase.rpc("jd_record_feature_usage",{p_feature_key:page}).then(({error})=>{
-      if(error) console.warn("[JD feature telemetry]",error.message);
-    }).catch(error=>console.warn("[JD feature telemetry]",error?.message||error));
+    try {
+      if(!selectedSchool?.id||!user||!canAccess(page)) return;
+      const request=supabase.rpc?.("jd_record_feature_usage",{p_feature_key:page});
+      if(!request||typeof request.then!=="function") return;
+      request.then(({error}={})=>{
+        if(error) console.warn("[JD feature telemetry]",error.message);
+      }).catch(error=>console.warn("[JD feature telemetry]",error?.message||error));
+    } catch(error) {
+      console.warn("[JD feature telemetry]",error?.message||error);
+    }
   },[page,user?.id,selectedSchool?.id]);
 
   // Sign-in and organisation selection happen in the public entry (App.jsx).
@@ -1578,7 +1614,7 @@ function AppInner(){
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="jd-skills"    && (role==="admin"             ? <JdSkillsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
-          {page==="billing" && (canAccess("billing") ? <BillingPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
+          {page==="billing" && (canAccess("billing") ? <BillingPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <><ClearStrandedReturn/><AccessDenied/></>)}
           {page==="hiring"        && (canAccess("hiring")       ?<HiringPage ctx={ctx}/>             :<AccessDenied/>)}
           {page==="mail-logs"     && (canAccess("mail-logs")    ?<MailLogsPage ctx={ctx}/>           :<AccessDenied/>)}
           {page==="notifications" && (canAccess("notifications")?<NotificationsPage ctx={ctx}/>      :<AccessDenied/>)}
@@ -1758,14 +1794,23 @@ function NotificationBell({ctx}){
   const[open,setOpen]=useState(false);
   const[notifs,setNotifs]=useState([]);
   const[unread,setUnread]=useState(0);
+  const[notifsUnavailable,setNotifsUnavailable]=useState(false);
   const ref=useRef(null);
   const recipientId=user?.role==="admin"?"admin":(user?._authUserId||user?.id);
 
+  // The bell polls in the background; a failed poll keeps the last known list and
+  // waits for the next tick instead of surfacing as an unhandled rejection.
   const load=async()=>{
     if(!recipientId)return;
-    const{data}=user?.role==="admin"?await db.getAdminNotifications(25):await db.getNotifications(String(recipientId),25);
-    setNotifs(data||[]);
-    setUnread((data||[]).filter(n=>!n.read_at).length);
+    try{
+      const{data}=user?.role==="admin"?await db.getAdminNotifications(25):await db.getNotifications(String(recipientId),25);
+      setNotifs(data||[]);
+      setUnread((data||[]).filter(n=>!n.read_at).length);
+      setNotifsUnavailable(false);
+    }catch(error){
+      setNotifsUnavailable(true);
+      console.warn("[JD] notifications unavailable.",error?.message||error);
+    }
   };
   useEffect(()=>{load();const t=setInterval(load,60000);return()=>clearInterval(t);},[recipientId]);
   useEffect(()=>{
@@ -1774,10 +1819,16 @@ function NotificationBell({ctx}){
   },[]);
 
   const markRead=async(n)=>{
-    if(!n.read_at){await db.markNotificationRead(n.id);setUnread(p=>Math.max(0,p-1));setNotifs(p=>p.map(x=>x.id===n.id?{...x,read_at:new Date().toISOString()}:x));}
+    if(!n.read_at){
+      try{await db.markNotificationRead(n.id);setUnread(p=>Math.max(0,p-1));setNotifs(p=>p.map(x=>x.id===n.id?{...x,read_at:new Date().toISOString()}:x));}
+      catch(error){console.warn("[JD] could not mark the notification as read.",error?.message||error);}
+    }
     if(n.link_page){setOpen(false);setPage(n.link_page);}
   };
-  const markAll=async()=>{await db.markAllNotificationsRead(String(recipientId));setNotifs(p=>p.map(x=>({...x,read_at:x.read_at||new Date().toISOString()})));setUnread(0);};
+  const markAll=async()=>{
+    try{await db.markAllNotificationsRead(String(recipientId));setNotifs(p=>p.map(x=>({...x,read_at:x.read_at||new Date().toISOString()})));setUnread(0);}
+    catch(error){console.warn("[JD] could not mark all notifications as read.",error?.message||error);}
+  };
 
   const typeColors={info:C.blue,success:C.green,warning:C.orange,alert:C.red};
   const typeIcons={info:Info,success:CheckCircle2,warning:AlertTriangle,alert:AlertCircle};
@@ -1809,7 +1860,7 @@ function NotificationBell({ctx}){
             {notifs.length===0?(
               <div style={{padding:32,textAlign:"center",color:C.light,fontSize:12}}>
                 <Bell size={28} color={C.border} style={{marginBottom:8}}/>
-                <div>No notifications yet</div>
+                <div>{notifsUnavailable?"Notifications are unavailable right now":"No notifications yet"}</div>
               </div>
             ):notifs.map((n,i)=>{
               const Ico=typeIcons[n.type]||Info;

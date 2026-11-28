@@ -23,7 +23,7 @@ const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
  throw Error('Unexpected API action: '+body.action);
 }}};`;
 const entry=`import '${resolve('src/styles/app.css')}';import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
-import {Menu,HelpCircle,Bell,Moon,Sun,Settings} from 'lucide-react';
+import {Menu,HelpCircle,Bell,Moon,Sun,Settings,Shield} from 'lucide-react';
 import {PublicLanding} from '${resolve('src/pages/public-landing.jsx')}';
 import {ReferenceBrand,HeritageRule} from '${resolve('src/components/reference-brand.jsx')}';
 import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';
@@ -37,6 +37,10 @@ const LiveClock=()=>null;
 const HeritageWordmark=({className})=><div className={className} style={{color:'var(--jd-ink)'}}><span className="jd-wordmark" style={{color:'var(--jd-ink)'}}><b>James-Denning</b></span><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>;
 function WorkspaceFixture(){const page='jd-chat',isMobile=innerWidth<768,user={id:'synthetic',school_id:'synthetic',role:'owner',name:'Kaine Denning'},ctx={},NAV=[],setPage=()=>window.__actions.push('settings');
 const navigationToggleRef=useRef(null);const [sideOpen,setSide]=useState(false);const setShowTour=()=>window.__actions.push('help'),setShowProfile=()=>window.__actions.push('profile'),setShowLogout=()=>{};
+// The shell header renders the Review Centre launcher with its pending count; the
+// fixture supplies the same values the real shell would, rather than letting an
+// out-of-scope identifier crash the preview.
+const pendingApprovalCount=0,setShowGlobalReview=()=>window.__actions.push('review'),setWorkspaceSwitchRef=()=>{};
 return <div style={{height:"100dvh",display:"flex",flexDirection:"column"}}>${header}<ChatHome user={user}/></div>;}
 const root=createRoot(document.getElementById('root'));window.__render=()=>root.render(location.pathname==='/workspace'?<WorkspaceFixture/>:<PublicLanding onGetStarted={()=>window.__actions.push('signup')} onSignIn={()=>window.__actions.push('signin')}/>);window.__render();`;
 const bundle=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'reference-fixture',enforce:'pre',resolveId(id){if(id.endsWith('virtual:reference-fixture'))return '\0reference-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0reference-service';},load(id){if(id==='\0reference-fixture.jsx')return entry;if(id==='\0reference-service')return stub;}}],build:{write:false,minify:false,lib:{entry:'virtual:reference-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});

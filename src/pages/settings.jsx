@@ -310,13 +310,19 @@ export function NotificationsPage({ctx}){
   const DEFAULT_DIGEST={enabled:false,recipient:"",utc_hour:6,frequency:"daily",day_of_week:1,events:null,last_sent_at:null};
 
   useEffect(()=>{
-    Promise.all([db.getSettings(),db.getNotifConfig(),db.getDigestConfig()]).then(([st,nc,dc])=>{
-      const m={};(st.data||[]).forEach(r=>{m[r.key]=r.value;});
+    // The page is useless until this settles: a failed read must fall back to
+    // defaults rather than leaving the whole settings page on its spinner.
+    Promise.resolve().then(()=>Promise.all([db.getSettings(),db.getNotifConfig(),db.getDigestConfig()])).then(([st,nc,dc])=>{
+      const m={};(st?.data||[]).forEach(r=>{m[r.key]=r.value;});
       setOrgName(m.school_name||"Business Portal");
-      setNotifConfig(nc.data||{admin_email:"",events:{},failed_login_threshold:5});
-      setDigestConfig(dc.data||DEFAULT_DIGEST);
-      setLoading(false);
-    });
+      setNotifConfig(nc?.data||{admin_email:"",events:{},failed_login_threshold:5});
+      setDigestConfig(dc?.data||DEFAULT_DIGEST);
+    }).catch(error=>{
+      setNotifConfig({admin_email:"",events:{},failed_login_threshold:5});
+      setDigestConfig(DEFAULT_DIGEST);
+      notify("Some settings could not be loaded. Defaults are shown.","error");
+      console.warn("[JD] settings unavailable.",error?.message||error);
+    }).finally(()=>setLoading(false));
   },[]);
 
   if(loading)return <Spinner/>;

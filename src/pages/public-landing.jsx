@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowUpRight, Activity, Layers3, Menu, X, Play, ShieldCheck, ArrowRight, Check, MessageSquare, ClipboardCheck } from "lucide-react";
 import { HeritageTile, HeritageWordmark, HeritageRule } from "../components/reference-brand.jsx";
 import "../styles/reference-design.css";
@@ -6,6 +6,18 @@ import "../styles/landing-growth.css";
 import "../styles/landing-heritage.css";
 
 function LandingBrand(){return <span className="landing-brand"><HeritageTile size={38}/><span><HeritageWordmark/><HeritageRule compact/></span></span>;}
+
+// The hero screenshot is the largest contentful paint element on the marketing page.
+// Give the browser an explicit priority hint without depending on a React-version
+// specific prop (React 18 drops unknown camelCase attributes onto the DOM but never
+// sets fetchpriority, so the hint must be applied to the node itself).
+function LcpImage(props){
+  const ref=useRef(null);
+  useLayoutEffect(()=>{
+    try{ref.current?.setAttribute("fetchpriority","high");}catch{}
+  },[]);
+  return <img ref={ref} decoding="async" {...props}/>;
+}
 
 export function PublicLanding({ onSignIn, onGetStarted }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -95,7 +107,9 @@ export function PublicLanding({ onSignIn, onGetStarted }) {
         </div>
         <picture className="reference-laptop">
           <source media="(max-width: 760px)" srcSet="/design/dashboard-laptop-front.webp"/>
-          <img src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard on a laptop, showing revenue, expenses and business performance. These are sample figures, not live workspace records." fetchPriority="high"/>
+          {/* React 18 does not map fetchPriority onto the DOM node (React 19 only), so the
+              hero image silently lost its priority hint. LcpImage sets it on the node. */}
+          <LcpImage src="/design/dashboard-laptop.webp" width="1672" height="941" alt="Illustrative James-Denning dashboard on a laptop, showing revenue, expenses and business performance. These are sample figures, not live workspace records."/>
         </picture>
       </section>
       <section className="reference-features" id="product" aria-label="Explore the platform">

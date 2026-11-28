@@ -29,7 +29,10 @@ export function AuditLogPage({ctx}){
     const filters={limit:5000};
     if(fromDate)filters.from=new Date(fromDate).toISOString();
     if(toDate){const d=new Date(toDate);d.setHours(23,59,59,999);filters.to=d.toISOString();}
-    db.getAdminAuditLog(filters).then(({data})=>{setLogs(data||[]);setLoading(false);if(reset)setPage(0);});
+    Promise.resolve().then(()=>db.getAdminAuditLog(filters))
+      .then(({data}={})=>{setLogs(data||[]);if(reset)setPage(0);})
+      .catch(()=>setLogs([]))
+      .finally(()=>setLoading(false));
   };
   useEffect(()=>{loadLogs(true);},[fromDate,toDate]);
 

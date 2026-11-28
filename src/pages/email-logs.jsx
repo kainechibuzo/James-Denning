@@ -28,14 +28,18 @@ export function MailLogsPage({ctx}){
   const [purgeAge,setPurgeAge]=useState("90");
   const [purging,setPurging]=useState(false);
 
+  const [loadError,setLoadError]=useState("");
   const load=()=>{
     if(!canView){setLoading(false);return;}
-    setLoading(true);
-    Promise.all([db.getEmailLogs(5000), db.getEmailBatches()]).then(([logsRes,batchRes])=>{
-      setLogs(logsRes.data||[]);
-      setBatches(batchRes.data||[]);
-      setLoading(false);clearSel();setPage(0);
-    });
+    setLoading(true);setLoadError("");
+    Promise.resolve().then(()=>Promise.all([db.getEmailLogs(5000), db.getEmailBatches()])).then(([logsRes,batchRes])=>{
+      setLogs(logsRes?.data||[]);
+      setBatches(batchRes?.data||[]);
+      clearSel();setPage(0);
+    })
+      // A failed read must end the spinner with a retryable message, not hang.
+      .catch(e=>setLoadError(e?.message||"Could not load email logs right now."))
+      .finally(()=>setLoading(false));
   };
   useEffect(load,[]);
 
@@ -51,7 +55,7 @@ export function MailLogsPage({ctx}){
     }catch(e){}
     setRetriggeringId(null);
     notify("Batch re-triggered. Refresh in a moment to see updated counts.");
-    setTimeout(()=>db.getEmailBatches().then(({data})=>setBatches(data||[])),5000);
+    setTimeout(()=>Promise.resolve().then(()=>db.getEmailBatches()).then(({data}={})=>setBatches(data||[])).catch(()=>{}),5000);
   };
 
   if(!canView)return(
@@ -78,22 +82,32 @@ export function MailLogsPage({ctx}){
   const somePageSelected=!allPageSelected&&paged.some(l=>selIds.has(l.id));
   const togglePage=()=>allPageSelected?paged.forEach(l=>setSelIds(p=>{const s=new Set(p);s.delete(l.id);return s;})):paged.forEach(l=>setSelIds(p=>{const s=new Set(p);s.add(l.id);return s;}));
 
+  // A delete only leaves the list (and only reports success) once the backend
+  // confirms it; otherwise stale rows reappear on refresh and the operator has
+  // been told data was removed that is still there.
   const deleteOne=async(id,e)=>{
-    e.stopPropagation();
+    e?.stopPropagation?.();
     if(!window.confirm("Delete this log entry?"))return;
-    await db.deleteEmailLog(id);
-    setLogs(p=>p.filter(l=>l.id!==id));
-    clearSel();
-    notify("Log deleted");
+    try{
+      const {error}=await db.deleteEmailLog(id);
+      if(error)throw error;
+      setLogs(p=>p.filter(l=>l.id!==id));
+      clearSel();
+      notify("Log deleted");
+    }catch(err){notify("Delete failed: "+(err?.message||"the log was not removed"),"error");}
   };
 
   const deleteSelected=async()=>{
     if(!selIds.size)return;
-    if(!window.confirm(`Delete ${selIds.size} log entry${selIds.size!==1?"ies":"y"}?`))return;
-    await db.deleteEmailLogs([...selIds]);
-    setLogs(p=>p.filter(l=>!selIds.has(l.id)));
-    clearSel();
-    notify(`${selIds.size} log${selIds.size!==1?"s":""} deleted`);
+    const count=selIds.size;
+    if(!window.confirm(`Delete ${count} log entry${count!==1?"ies":"y"}?`))return;
+    try{
+      const {error}=await db.deleteEmailLogs([...selIds]);
+      if(error)throw error;
+      setLogs(p=>p.filter(l=>!selIds.has(l.id)));
+      clearSel();
+      notify(`${count} log${count!==1?"s":""} deleted`);
+    }catch(err){notify("Delete failed: "+(err?.message||"the logs were not removed"),"error");}
   };
 
   const purge=async()=>{
@@ -213,7 +227,13 @@ export function MailLogsPage({ctx}){
         </div>
       )}
 
-      {loading?<Spinner/>:filtered.length===0?(
+      {loading?<Spinner/>:loadError?(
+        <Card style={{textAlign:"center",padding:52}}>
+          <div style={{fontWeight:800,color:C.red,fontSize:16}}>Could not load email logs</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:6}}>{loadError}</div>
+          <div style={{marginTop:12}}><Btn onClick={load}>Try again</Btn></div>
+        </Card>
+      ):filtered.length===0?(
         <Card style={{textAlign:"center",padding:52}}>
           <div style={{fontSize:40,marginBottom:10}}>{logs.length===0?"\u2014":"?"}</div>
           <div style={{fontWeight:800,color:C.blue,fontSize:16}}>{logs.length===0?"No Emails Sent Yet":"No Results"}</div>
