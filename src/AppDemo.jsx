@@ -1162,7 +1162,6 @@ function AppInner(){
   const [pendingApprovalCount,setPendingApprovalCount]=useState(0);
   const [pendingApprovalIds,setPendingApprovalIds]=useState([]);
   const dismissedApprovalIds=useRef(new Set());
-  const reviewPromptReady=useRef(false);
   useEffect(()=>{
     if(!user||!["owner","admin"].includes(user.role))return;
     let alive=true;
@@ -1174,7 +1173,6 @@ function AppInner(){
         if(!alive)return;
         setPendingApprovalCount(pending.length);
         setPendingApprovalIds(pending.map(item=>item.id));
-        if(!reviewPromptReady.current){reviewPromptReady.current=true;return;}
         const unseen=pending.find(item=>!dismissedApprovalIds.current.has(item.id));
         if(unseen)setShowGlobalReview(true);
       }catch{}
@@ -1182,7 +1180,7 @@ function AppInner(){
     void check();
     const timer=window.setInterval(check,60000);
     return()=>{alive=false;window.clearInterval(timer);};
-  },[user?._authUserId||user?.id,user?.role,selectedSchool?.id]);
+  },[user?._authUserId||user?.id,user?.role]);
 
   // showInactivityWarning replaced by useInactivityTimeout hook below
   const [rolePerms,setRolePerms]       = useState([]);
