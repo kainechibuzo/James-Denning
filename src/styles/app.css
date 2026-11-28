@@ -4,6 +4,7 @@
 @import './site-design.css';
 @import './site-glyphs.css';
 @import './conversation-design.css';
+@import '../shell/lovable-shell.css';
 @import './minimal-surfaces.css';
 @import './heritage.css';
 @import './workspace-chrome.css';

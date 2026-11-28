@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import './styles/app.css'
-import './shell/lovable-shell.css'
 import './styles/true-black-theme.css'
 import App from './App.jsx'
 

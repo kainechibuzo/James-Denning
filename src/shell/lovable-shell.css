@@ -11,19 +11,7 @@
 }
 
 .jd-shell-v2 .jd-topbar {
-  height: 54px;
-  min-height: 54px;
-  padding: 0 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: color-mix(in srgb, var(--jd-paper, #fcfaf5) 92%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  position: sticky;
-  top: 0;
-  z-index: 210;
+  min-width: 0;
 }
 
 .jd-shell-topbar-left {
@@ -122,7 +110,7 @@
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: var(--jd-blue, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a52);
   border: 2px solid var(--jd-card, #fcfaf5);
 }
 
@@ -494,7 +482,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--jd-blue, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a52);
 }
 
 .jd-sheet-action-grid {
@@ -611,7 +599,7 @@
 
 .jd-exec-modes button small {
   font-size: 9px;
-  opacity: 0.78;
+  color: inherit;
   font-weight: 500;
 }
 
@@ -770,7 +758,7 @@
   background: var(--jd-card, #fcfaf5);
 }
 
-/* Dark mode alignment with true-black-theme.css */
+/* Dark mode alignment with true-black-theme.css & minimal-surfaces.css (tonal surfaces, zero decorative borders) */
 [data-theme='dark'] .jd-shell-v2,
 [data-theme='dark'] .jd-project-workspace {
   background: #000000;
@@ -781,7 +769,7 @@
 [data-theme='dark'] .jd-project-bottom-bar,
 [data-theme='dark'] .jd-subpage-bar {
   background: #090909;
-  border-color: #262626;
+  border-color: transparent;
 }
 
 [data-theme='dark'] .jd-hub,
@@ -803,15 +791,9 @@
 [data-theme='dark'] .jd-hub-search,
 [data-theme='dark'] .jd-chip,
 [data-theme='dark'] .jd-starter-chip {
-  background: #090909;
-  border-color: #262626;
+  background: #141414;
+  border-color: transparent;
   color: #f5f5f5;
-}
-
-@media (max-width: 720px) {
-  .jd-shell-topbar-left .jd-topbar-brandtext {
-    display: none;
-  }
 }
 
 [data-theme='dark'] .jd-sheet-card,
@@ -819,9 +801,17 @@
 [data-theme='dark'] .jd-project-tag,
 [data-theme='dark'] .jd-pane-switch,
 [data-theme='dark'] .jd-sheet-row:hover {
-  background: #111111;
-  border-color: #262626;
+  background: #1a1a1a;
+  border-color: transparent;
   color: #e5e5e5;
+}
+
+[data-theme='dark'] .jd-dock-btn,
+[data-theme='dark'] .jd-exec-modes button,
+[data-theme='dark'] .jd-pane-switch button,
+[data-theme='dark'] .jd-sheet-row {
+  color: #d4d4d4;
+  border-color: transparent;
 }
 
 [data-theme='dark'] .jd-dock-btn.is-active,
@@ -834,18 +824,22 @@
 [data-theme='dark'] .jd-avatar-pill {
   background: #f5f5f5;
   color: #090909;
-  border-color: #f5f5f5;
+  border-color: transparent;
 }
 
 [data-theme='dark'] .jd-pane-switch button.is-active {
-  background: #1a1a1a;
+  background: #242424;
   color: #f5f5f5;
+  border-color: transparent;
+}
+
+@media (max-width: 720px) {
+  .jd-shell-topbar-left .jd-topbar-brandtext {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
-  .jd-shell-topbar {
-    padding: 0 10px;
-  }
   .jd-dock-btn {
     padding: 0 12px;
     font-size: 11px;
@@ -855,5 +849,56 @@
   }
   .jd-exec-modes button small {
     display: none;
+  }
+}
+
+@media (max-width: 540px) {
+  .jd-shell-topbar-left .jd-topbar-brand {
+    display: none;
+  }
+  .jd-org-pill,
+  .jd-project-pill {
+    max-width: 100%;
+    padding: 4px 8px 4px 5px;
+    gap: 5px;
+    font-size: 11.5px;
+  }
+  .jd-org-pill-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .reference-workspace-header.jd-topbar {
+    padding: 0 6px !important;
+    gap: 4px !important;
+  }
+  .reference-workspace-header.jd-topbar .reference-header-left {
+    gap: 4px !important;
+  }
+  .reference-workspace-header.jd-topbar .reference-header-controls {
+    gap: 3px !important;
+  }
+  .reference-workspace-header.jd-topbar button[data-tour='workspace-menu'],
+  .reference-workspace-header.jd-topbar .reference-header-controls > button,
+  .reference-workspace-header.jd-topbar .reference-header-controls > div > button {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+  }
+}
+
+@media (max-height: 540px) {
+  .jd-starter-chips {
+    display: none;
+  }
+  .jd-dock-wrap {
+    bottom: 6px;
+  }
+  .jd-shell-has-dock .jd-compose-wrap {
+    margin-bottom: 58px;
   }
 }
