@@ -5,6 +5,8 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: clip;
   background: var(--jd-paper, #f6efe4);
   color: var(--jd-text, #22252b);
   font-family: 'JD Inter', Inter, system-ui, -apple-system, sans-serif;
@@ -110,7 +112,7 @@
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: var(--jd-rule-navy, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a42);
   border: 2px solid var(--jd-card, #fcfaf5);
 }
 
@@ -170,7 +172,8 @@
   color: var(--jd-card, #fcfaf5);
 }
 
-/* Reserve space above floating dock on Home/Projects/Chats */
+/* Reserve space above floating dock on Home/Projects/Chats (overrides conversation-heritage.css) */
+.jd-shell-v2.jd-shell-has-dock .jd-conversation .jd-compose-wrap,
 .jd-shell-has-dock .jd-compose-wrap {
   margin-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
 }
@@ -482,7 +485,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--jd-rule-navy, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a42);
 }
 
 .jd-sheet-action-grid {
@@ -758,6 +761,33 @@
   background: var(--jd-card, #fcfaf5);
 }
 
+.jd-sheet-divider {
+  border-top: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  margin: 6px 0;
+}
+
+.jd-sheet-field {
+  padding: 11px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  font-size: 13px;
+}
+
+.jd-project-file-row {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: var(--jd-card, #fcfaf5);
+}
+
+.jd-preview-iframe {
+  width: 100%;
+  min-height: 420px;
+  border-radius: 12px;
+  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  background: #ffffff;
+}
+
 /* Dark mode alignment with true-black-theme.css & minimal-surfaces.css (tonal surfaces, zero decorative borders) */
 [data-theme='dark'] .jd-shell-v2,
 [data-theme='dark'] .jd-project-workspace {
@@ -769,7 +799,7 @@
 [data-theme='dark'] .jd-project-bottom-bar,
 [data-theme='dark'] .jd-subpage-bar {
   background: #090909;
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 [data-theme='dark'] .jd-hub,
@@ -790,9 +820,12 @@
 [data-theme='dark'] .jd-preview-surface,
 [data-theme='dark'] .jd-hub-search,
 [data-theme='dark'] .jd-chip,
-[data-theme='dark'] .jd-starter-chip {
+[data-theme='dark'] .jd-starter-chip,
+[data-theme='dark'] .jd-project-file-row,
+[data-theme='dark'] .jd-sheet-field,
+[data-theme='dark'] .jd-preview-iframe {
   background: #141414;
-  border-color: transparent;
+  border-color: transparent !important;
   color: #f5f5f5;
 }
 
@@ -802,16 +835,18 @@
 [data-theme='dark'] .jd-pane-switch,
 [data-theme='dark'] .jd-sheet-row:hover {
   background: #1a1a1a;
-  border-color: transparent;
+  border-color: transparent !important;
   color: #e5e5e5;
 }
 
 [data-theme='dark'] .jd-dock-btn,
 [data-theme='dark'] .jd-exec-modes button,
 [data-theme='dark'] .jd-pane-switch button,
-[data-theme='dark'] .jd-sheet-row {
+[data-theme='dark'] .jd-sheet-row,
+[data-theme='dark'] .jd-sheet-divider,
+[data-theme='dark'] .jd-hub-empty {
   color: #d4d4d4;
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 [data-theme='dark'] .jd-dock-btn.is-active,
@@ -824,13 +859,13 @@
 [data-theme='dark'] .jd-avatar-pill {
   background: #f5f5f5;
   color: #090909;
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 [data-theme='dark'] .jd-pane-switch button.is-active {
   background: #242424;
   color: #f5f5f5;
-  border-color: transparent;
+  border-color: transparent !important;
 }
 
 @media (max-width: 720px) {
@@ -877,9 +912,13 @@
   }
   .reference-workspace-header.jd-topbar .reference-header-left {
     gap: 4px !important;
+    min-width: 0;
   }
   .reference-workspace-header.jd-topbar .reference-header-controls {
     gap: 3px !important;
+  }
+  .reference-workspace-header.jd-topbar .reference-profile {
+    margin-left: 2px !important;
   }
   .reference-workspace-header.jd-topbar button[data-tour='workspace-menu'],
   .reference-workspace-header.jd-topbar .reference-header-controls > button,
@@ -898,7 +937,12 @@
   .jd-dock-wrap {
     bottom: 6px;
   }
+  .jd-dock-btn {
+    height: 32px;
+    padding: 0 11px;
+  }
+  .jd-shell-v2.jd-shell-has-dock .jd-conversation .jd-compose-wrap,
   .jd-shell-has-dock .jd-compose-wrap {
-    margin-bottom: 58px;
+    margin-bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }

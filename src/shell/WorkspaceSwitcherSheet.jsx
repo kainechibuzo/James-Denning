@@ -58,7 +58,7 @@ export function WorkspaceSwitcherSheet({
         <div>
           <div className="jd-sheet-group-label">Current organisation</div>
           <div className="jd-sheet-list">
-            <div className="jd-sheet-row" style={{ background: "var(--jd-soft)", borderColor: "var(--jd-border)" }}>
+            <div className="jd-sheet-row" style={{ background: "var(--jd-soft)" }}>
               <span className="jd-org-pill-badge">{(organisation || "J").trim().charAt(0).toUpperCase()}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <strong style={{ display: "block", fontSize: 13 }}>{organisation || "Your organisation"}</strong>

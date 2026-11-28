@@ -65,14 +65,14 @@ export function NewProjectModal({ open, busy, error, initialPrompt = "", onClose
           Project name
           <input required minLength={2} maxLength={140} value={name} onChange={(e) => setName(e.target.value)}
             placeholder={kind === "software" ? "e.g. UniConnect Campus Portal" : "e.g. Q4 Product Launch"}
-            style={{ padding: "11px 12px", borderRadius: 11, border: "1px solid var(--jd-border)", fontSize: 13 }} />
+            className="jd-sheet-field" />
         </label>
 
         <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
           Brief or goal
           <textarea rows={3} maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what you want to achieve, who it serves, and what success looks like..."
-            style={{ padding: "11px 12px", borderRadius: 11, border: "1px solid var(--jd-border)", fontSize: 13, resize: "vertical" }} />
+            className="jd-sheet-field" style={{ resize: "vertical" }} />
         </label>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
@@ -204,9 +204,8 @@ export function ProjectsHub({
                   </button>
 
                   {menuOpen && (
-                    <div style={{
+                    <div className="jd-sheet-card" style={{
                       position: "absolute", right: 12, top: 54, zIndex: 25, minWidth: 185,
-                      borderRadius: 13, border: "1px solid var(--jd-border)", background: "var(--jd-card)",
                       boxShadow: "0 14px 36px rgba(0,0,0,.14)", padding: 6, display: "grid", gap: 2,
                     }}>
                       <button type="button" className="jd-sheet-row" onClick={() => { setMenuId(null); onOpenProject?.(project, "chat"); }}>

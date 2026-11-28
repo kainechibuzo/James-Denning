@@ -233,7 +233,7 @@ export function ProjectPreviewPane({
                   title={`${project.name} preview`}
                   sandbox=""
                   srcDoc={String(previewConfig.html_preview)}
-                  style={{ width: "100%", minHeight: 420, borderRadius: 12, border: "1px solid var(--jd-border)", background: "#fff" }}
+                  className="jd-preview-iframe"
                 />
               ) : (
                 <div className="jd-sheet-card" style={{ gap: 12 }}>
@@ -276,9 +276,8 @@ export function ProjectPreviewPane({
                   ) : (
                     <div style={{ display: "grid", gap: 6 }}>
                       {tasks.slice(0, 8).map((task) => (
-                        <div key={task.id} style={{
+                        <div key={task.id} className="jd-project-file-row" style={{
                           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-                          padding: "8px 10px", borderRadius: 10, border: "1px solid var(--jd-border)", background: "var(--jd-card)",
                         }}>
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 12, fontWeight: 650 }}>{task.title}</div>

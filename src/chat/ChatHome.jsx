@@ -180,7 +180,7 @@ function friendlyActivityLabel(name) {
   return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
-export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null}) {
+export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onReturnHome = null}) {
   const [draft, setDraft] = useState(initialDraft || "");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [executionMode, setExecutionMode] = useState(["ask","plan","execute"].includes(initialExecutionMode) ? initialExecutionMode : "execute");
@@ -276,6 +276,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     setMessages(current=>before?[...loadedMessages.filter(m=>!current.some(existing=>existing.id===m.id)),...current]:loadedMessages);
     setHistoryOpen(false);
     setShowReview(false);
+    onReturnHome?.();
   };
 
   useEffect(()=>{if(initialConversationId){void loadConversation(initialConversationId);return;}let id;try{id=sessionStorage.getItem("jd:active:"+resumeKey);}catch{}if(id)void loadConversation(id);},[resumeKey,initialConversationId]);
@@ -484,7 +485,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     if (sending) return;
     conversationSequence.current++;setOpeningId(null);setHistoryError("");
     rememberConversation(null);setHistoryCursor(null);setEarlierLoading(false);
-    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);setSelectedConnectorId(null);
+    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);setSelectedConnectorId(null);onReturnHome?.();
   };
   const handledNavigation = useRef(null);
   useEffect(() => {
@@ -639,8 +640,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-heading{font-size:24px}
         }
       `}</style>
-      {showConnectors ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading connectors...</div></div>}><ConnectorDirectory key={selectedConnectorId||"all"} initialConnectorId={selectedConnectorId} organizationName={organizationName} role={user?.role} onBack={()=>{setShowConnectors(false);setSelectedConnectorId(null);}}/></Suspense> : historyOpen ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading conversations...</div></div>}><ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
-        onOpen={loadConversation} onRefresh={loadHistory} onNew={newConversation} onBack={()=>{conversationSequence.current++;setOpeningId(null);setHistoryOpen(false);}}/></Suspense> : (
+      {showConnectors ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading connectors...</div></div>}><ConnectorDirectory key={selectedConnectorId||"all"} initialConnectorId={selectedConnectorId} organizationName={organizationName} role={user?.role} onBack={()=>{setShowConnectors(false);setSelectedConnectorId(null);onReturnHome?.();}}/></Suspense> : historyOpen ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading conversations...</div></div>}><ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
+        onOpen={loadConversation} onRefresh={loadHistory} onNew={newConversation} onBack={()=>{conversationSequence.current++;setOpeningId(null);setHistoryOpen(false);onReturnHome?.();}}/></Suspense> : (
       <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
@@ -757,11 +758,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
       </section>)}
       <Suspense fallback={null}>
-        {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
-        {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)} onHireRequest={(message)=>{setShowWorkforce(false); setDraft(message);}}/></div>}
-        {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
-        {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
-        {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
+        {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>{setShowRuns(false);onReturnHome?.();}}/></div>}
+        {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>{setShowWorkforce(false);onReturnHome?.();}} onHireRequest={(message)=>{setShowWorkforce(false);onReturnHome?.(); setDraft(message);}}/></div>}
+        {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>{setShowUsage(false);onReturnHome?.();}}/></div>}
+        {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>{setShowDepartments(false);onReturnHome?.();}}/></div>}
+        {showReview && <ReviewCentre onClose={()=>{setShowReview(false);onReturnHome?.();}} onDecision={(decision,item,data,note)=>{
           if(item.action_key==="settings.apply"&&decision==="approve")return; // Keep the reviewed diff and explicit Apply action visible.
           setShowReview(false);
           const targetConversationId=data?.conversationId||conversationId;

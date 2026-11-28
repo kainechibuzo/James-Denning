@@ -1608,14 +1608,14 @@ function AppInner(){
             <h2 className="jd-drawer-heading">JD Assistant</h2>
             {chatEntry&&<button className={"jd-drawer-item"+(page==="jd-chat"&&!(assistantRequest?.view&&assistantRequest.view!=="chat")?" is-selected":"")}
               type="button" aria-label="JD Assistant" aria-current={page==="jd-chat"?"page":undefined} data-tour="nav-jd-chat"
-              onClick={()=>{setAssistantRequest({view:"chat"});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+              onClick={()=>{setActiveProject(null);setRootTab("home");setAssistantRequest({view:"chat"});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
               <Sparkles size={20} aria-hidden="true" style={{flexShrink:0}}/>
               <span>JD Assistant</span>
             </button>}
             {assistantTools.filter(tool=>!SECONDARY_ASSISTANT.has(tool.id)).map(tool=>(
               <button className={"jd-drawer-item"+(page==="jd-chat"&&assistantRequest?.view===tool.id?" is-selected":"")} key={tool.id} type="button"
                 aria-label={tool.label} aria-current={page==="jd-chat"&&assistantRequest?.view===tool.id?"page":undefined} title={tool.label}
-                onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+                onClick={()=>{setActiveProject(null);setRootTab("home");setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
                 <AssistantIcon name={tool.id} size={19}/>
                 <span>{tool.label}</span>
               </button>
@@ -1624,7 +1624,7 @@ function AppInner(){
             {assistantTools.filter(tool=>SECONDARY_ASSISTANT.has(tool.id)).map(tool=>(
               <button className={"jd-drawer-item"+(page==="jd-chat"&&assistantRequest?.view===tool.id?" is-selected":"")} key={tool.id} type="button"
                 aria-label={tool.label} aria-current={page==="jd-chat"&&assistantRequest?.view===tool.id?"page":undefined} title={tool.label}
-                onClick={()=>{setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
+                onClick={()=>{setActiveProject(null);setRootTab("home");setAssistantRequest({view:tool.id});setPage("jd-chat");setSidebarSearch("");closeSideOnMobile();}}>
                 <AssistantIcon name={tool.id} size={19}/>
                 <span>{tool.label}</span>
               </button>
@@ -1803,15 +1803,7 @@ function AppInner(){
                   />
                 </Suspense>
               </div>
-            ) : (assistantRequest?.view && assistantRequest.view !== "chat") ? (
-              <ChatHome
-                key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role,"assistant-tool"])}
-                user={user}
-                organizationId={selectedSchool?.id}
-                organizationName={selectedSchool?.name||"Your organisation"}
-                navigationRequest={assistantRequest}
-              />
-            ) : rootTab==="projects" ? (
+            ) : (rootTab==="projects" && !(assistantRequest?.view && assistantRequest.view !== "chat")) ? (
               <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading projects...</div></div>}>
                 <ProjectsHub
                   projects={projects}
@@ -1825,7 +1817,7 @@ function AppInner(){
                   onArchiveProject={toggleProjectArchive}
                 />
               </Suspense>
-            ) : rootTab==="chats" ? (
+            ) : (rootTab==="chats" && !(assistantRequest?.view && assistantRequest.view !== "chat")) ? (
               <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading chats...</div></div>}>
                 <ChatsHub
                   conversations={rootChats}
@@ -1859,6 +1851,7 @@ function AppInner(){
                 organizationName={selectedSchool?.name||"Your organisation"}
                 navigationRequest={assistantRequest}
                 initialConversationId={rootConversationId}
+                onReturnHome={()=>setAssistantRequest(null)}
               />
             )
           ) : <AccessDenied/>)}

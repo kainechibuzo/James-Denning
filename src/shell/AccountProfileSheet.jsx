@@ -98,7 +98,7 @@ export function AccountProfileSheet({
             <ChevronRight size={15} style={{ marginLeft: "auto", color: "var(--jd-muted)" }} />
           </button>
 
-          <div style={{ borderTop: "1px solid var(--jd-border)", margin: "6px 0" }} />
+          <div className="jd-sheet-divider" />
 
           <button type="button" className="jd-sheet-row" onClick={() => { onClose?.(); onLogout?.(); }}>
             <LogOut size={17} />
