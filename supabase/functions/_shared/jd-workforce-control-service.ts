@@ -16,25 +16,28 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
  };
  if(payload?.action==="workforce.specialist.catalogue"){
   const builtin=[
-   {specialist_kind:"builtin",specialist_ref:"business_advisor",name:"Business Advisor"},
-   {specialist_kind:"builtin",specialist_ref:"research_analyst",name:"Research Analyst"},
-   {specialist_kind:"builtin",specialist_ref:"finance_analyst",name:"Finance Analyst"},
-   {specialist_kind:"builtin",specialist_ref:"operations_planner",name:"Operations Planner"},
-   {specialist_kind:"builtin",specialist_ref:"product_designer",name:"Product Designer"},
-   {specialist_kind:"builtin",specialist_ref:"software_engineer",name:"Software Engineer"},
-   {specialist_kind:"builtin",specialist_ref:"security_reviewer",name:"Security Reviewer"},
-   {specialist_kind:"builtin",specialist_ref:"quality_assurance",name:"Quality Assurance"}
-  ].map(item=>({...item,hireable:true,version:null,pricing:null,pricing_status:"not_configured",permissions_status:"configured_at_proposal"}));
+   {specialist_ref:"business_advisor",name:"Business Advisor",department:"Strategy & Business",purpose:"Evaluate business models, operating plans and strategic choices.",responsibilities:["Assess business opportunities and risks","Develop practical operating recommendations","Define measurable business objectives"],capabilities:["Business analysis","Strategy","Operating-model design"],deliverables:["Business assessments","Strategic recommendations"],limitations:["No external actions or commitments without approval"]},
+   {specialist_ref:"research_analyst",name:"Research Analyst",department:"Research & Intelligence",purpose:"Collect and assess evidence to answer business and product questions.",responsibilities:["Research markets and competitors","Evaluate source quality and evidence","Produce concise findings with citations"],capabilities:["Market research","Source evaluation","Synthesis"],deliverables:["Research briefs","Evidence summaries"],limitations:["No fabricated sources or unsupported claims"]},
+   {specialist_ref:"finance_analyst",name:"Finance Analyst",department:"Finance",purpose:"Analyse budgets, costs and financial performance.",responsibilities:["Prepare financial analysis","Track budget assumptions and variances","Identify financial risks"],capabilities:["Financial analysis","Budget modelling","Variance analysis"],deliverables:["Financial summaries","Budget scenarios"],limitations:["No payments, transfers or binding financial decisions"]},
+   {specialist_ref:"operations_planner",name:"Operations Planner",department:"Operations",purpose:"Translate goals into practical workflows, schedules and operating plans.",responsibilities:["Map operational processes","Plan schedules and dependencies","Track delivery risks and milestones"],capabilities:["Process design","Scheduling","Operational planning"],deliverables:["Operating plans","Milestone trackers"],limitations:["No external execution without approval"]},
+   {specialist_ref:"product_designer",name:"Product Designer",department:"Product & Design",purpose:"Turn user needs into product flows, requirements and design specifications.",responsibilities:["Map user journeys","Define interface requirements","Prepare product and design specifications"],capabilities:["UX research","Interaction design","Product specification"],deliverables:["User flows","Design briefs"],limitations:["No production changes without approval"]},
+   {specialist_ref:"software_engineer",name:"Software Engineer",department:"Engineering",purpose:"Plan and implement scoped software changes with tests and review.",responsibilities:["Analyse technical requirements","Implement scoped code changes","Add tests and document trade-offs"],capabilities:["Software development","Debugging","Testing"],deliverables:["Code changes","Test reports"],limitations:["No production deployment without authorization"]},
+   {specialist_ref:"security_reviewer",name:"Security Reviewer",department:"Security",purpose:"Review application and operational designs for security risks.",responsibilities:["Review trust boundaries and permissions","Identify vulnerabilities and unsafe assumptions","Recommend mitigations"],capabilities:["Threat modelling","Access-control review","Security analysis"],deliverables:["Security findings","Mitigation plans"],limitations:["Review only unless explicitly authorized"]},
+   {specialist_ref:"quality_assurance",name:"Quality Assurance",department:"Quality & Testing",purpose:"Validate product behaviour against requirements and acceptance criteria.",responsibilities:["Create test plans","Run functional and regression checks","Record reproducible defects"],capabilities:["Test design","Regression testing","Defect reporting"],deliverables:["Test reports","Defect records"],limitations:["No release approval unless separately authorized"]}
+  ].map(item=>({...item,specialist_kind:"builtin",specialist_version:null,hireable:true,pricing:null,pricing_status:"not_configured",permissions_status:"configured_at_proposal",available_tools:[]}));
   const {data,error}=await admin.rpc("jd_list_workforce_specialists",{p_actor:actorId});
-  if(error||!data||data.hiring_enabled!==false||data.billing_enabled!==false)
+  if(error||!data||data.read_only!==true||data.hiring_enabled!==false||data.billing_enabled!==false||!Array.isArray(data.specialists))
    return json({error:"Published specialist eligibility could not be verified. No hiring action was created."},503);
-  const registry=(Array.isArray(data.specialists)?data.specialists:[]).map((item:any)=>({
-   specialist_kind:"registry",specialist_ref:item.specialist_ref||item.agent_id||item.id,
-   specialist_version:item.specialist_version||item.version,
-   name:item.name||item.display_name||"Published specialist",
+  const registry=data.specialists.map((item:any)=>({
+   specialist_kind:"registry",specialist_ref:item.specialist_ref,
+   specialist_version:item.specialist_version,
+   name:item.name||"Published specialist",
    department:item.department||null,purpose:item.purpose||null,
-   responsibilities:Array.isArray(item.responsibilities)?item.responsibilities:[],
-   requested_access:Array.isArray(item.requested_access)?item.requested_access:[],
+   responsibilities:Array.isArray(item.responsibilities)?item.responsibilities:(typeof item.responsibility==="string"&&item.responsibility?[item.responsibility]:[]),
+   capabilities:Array.isArray(item.capabilities)?item.capabilities:[],
+   deliverables:Array.isArray(item.deliverables)?item.deliverables:[],
+   limitations:Array.isArray(item.limitations)?item.limitations:[],
+   available_tools:[],
    hireable:true,pricing:null,pricing_status:"not_configured",
    permissions_status:"proposal_scoped"
   })).filter((item:any)=>uuid(item.specialist_ref)&&Number.isInteger(item.specialist_version)&&item.specialist_version>0);
