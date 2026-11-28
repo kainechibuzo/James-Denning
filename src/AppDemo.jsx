@@ -1,6 +1,6 @@
 import {assistantNavigation} from "./config/assistant-navigation.mjs";
 import {ownerNavigationScope,readOwnerNavigationPermissions} from "./auth/owner-navigation-permissions.mjs";
-import React, { lazy, useId, useState, useEffect, useMemo, Component, useRef } from "react";
+import React, { lazy, Suspense, useId, useState, useEffect, useMemo, Component, useRef } from "react";
 import { ArrowLeft, ArrowRight, ChevronRight, ChevronsUpDown, FolderKanban, Landmark, Layers3, MessageSquare, PlayCircle, Sparkles, ChevronDown, Moon, Sun, LayoutDashboard, Users, TrendingUp, Inbox, History, CheckCircle2, Wallet, Settings, ReceiptText, Bell, Plus, Pencil, Trash2, Eye, EyeOff, Download, Send, Search, Filter, RefreshCw, X, Check, AlertTriangle, Info, LogOut, User, Calendar, Clock, Star, Home, Menu, Lock, Unlock, Shield, Key, Globe, Phone, MapPin, Building2, Image, File, Folder, Archive, Database, Activity, PieChart, BarChart2, Link, Copy, Share2, Printer, Save, HelpCircle, BookMarked, Award, ClipboardList, UserCircle, UserCheck, UserX, Banknote, TrendingDown, Calculator, Flag, Target, Navigation, Package, Type, Sidebar, AlertCircle, WifiOff, Wifi } from "lucide-react";
 import ReactDOM from "react-dom";
 import { db, supabase } from "./supabaseClient.js";
