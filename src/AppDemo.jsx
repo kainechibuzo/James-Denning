@@ -1160,6 +1160,7 @@ function AppInner(){
   const [showTour,setShowTour]         = useState(false);
   const [showGlobalReview,setShowGlobalReview]=useState(false);
   const [pendingApprovalCount,setPendingApprovalCount]=useState(0);
+  const [pendingApprovalIds,setPendingApprovalIds]=useState([]);
   const dismissedApprovalIds=useRef(new Set());
   const reviewPromptReady=useRef(false);
   useEffect(()=>{
@@ -1172,6 +1173,7 @@ function AppInner(){
         const pending=data.approvals.filter(item=>item.status==="pending");
         if(!alive)return;
         setPendingApprovalCount(pending.length);
+        setPendingApprovalIds(pending.map(item=>item.id));
         if(!reviewPromptReady.current){reviewPromptReady.current=true;return;}
         const unseen=pending.find(item=>!dismissedApprovalIds.current.has(item.id));
         if(unseen)setShowGlobalReview(true);
@@ -1609,7 +1611,7 @@ function AppInner(){
           onLogout={doLogout}/>
       )}
 
-      {showGlobalReview&&<ReviewCentre onClose={()=>{setShowGlobalReview(false);}} onDecision={()=>{dismissedApprovalIds.current=new Set();void supabase.functions.invoke("jd-automation",{body:{action:"approvals.list"}}).then(({data})=>setPendingApprovalCount((data?.approvals||[]).filter(item=>item.status==="pending").length)).catch(()=>{});}}/>}
+      {showGlobalReview&&<ReviewCentre onClose={()=>{pendingApprovalIds.forEach(id=>dismissedApprovalIds.current.add(id));setShowGlobalReview(false);}} onDecision={()=>{dismissedApprovalIds.current=new Set();void supabase.functions.invoke("jd-automation",{body:{action:"approvals.list"}}).then(({data})=>setPendingApprovalCount((data?.approvals||[]).filter(item=>item.status==="pending").length)).catch(()=>{});}}/>}
 
       {/* Logout dialog */}
       {showLogout&&<LogoutDialog onConfirm={doLogout} onCancel={()=>setShowLogout(false)}/>}
