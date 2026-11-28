@@ -1,4 +1,5 @@
 import { recordChatSubmission } from "../_shared/jd-chat-submission.mjs";
+import { handleProjects } from "../_shared/jd-projects-service.ts";
 import { handleAgentRegistry } from "../_shared/jd-agent-registry-service.ts";
 import { handleSkills } from "../_shared/jd-skills-service.ts";
 import { handleDiscovery } from "../_shared/jd-discovery-agent.ts";
@@ -56,6 +57,7 @@ Deno.serve(async (req) => {
  if(typeof payload.action==="string"&&["discovery.","autonomy.","billing.","agent.proposal."].some(p=>payload.action.startsWith(p)))return handleDiscovery({payload,admin,actorId:authData.user.id,profile,json,enabled:Deno.env.get("JD_SKILLS_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("usage.")&&payload.action!=="usage.summary")return handleUsage({payload,admin,profile,actorId:authData.user.id,json,enabled:Deno.env.get("JD_USAGE_SHADOW_ENABLED")==="true"});
  if(typeof payload.action==="string"&&payload.action.startsWith("foundation."))return handleFoundation({payload,admin,profile,actorId:authData.user.id,json,researchEnabled:Deno.env.get("JD_RESEARCH_RELEASE_ENABLED")==="true",encryptionKey:getJdSecret("JD_OAUTH_ENCRYPTION_KEY")||""});
+ if(typeof payload.action==="string"&&payload.action.startsWith("projects."))return handleProjects({payload,admin,profile,actorId:authData.user.id,json});
  if(payload.action==="software.agents.preview"){
   if(!hasRole(ADMIN_ROLES,profile.role))return json({error:"Workspace administrator required to design agent teams"},403);
   try{return json({design:buildSaasAgentTeam(payload.project)});}catch{return json({error:"Invalid agent project. Check the explicit requirements and remove credentials; no agents were created."},400);}
@@ -743,12 +745,24 @@ Deno.serve(async (req) => {
   return json({summary,byDay:Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),byModel:Object.entries(byModel).sort((a,b)=>b[1].tokens-a[1].tokens),note:"Token totals include only provider-reported usage. Costs are not estimated."});
  }
  if(payload.action==="history.list"){
-  const {data,error}=await admin.from("jd_conversations")
-   .select("id,title,updated_at,created_at").eq("school_id",profile.school_id)
-   .eq("created_by",authData.user.id).eq("status","active")
-   .order("updated_at",{ascending:false}).limit(60);
+  const filter=typeof payload.filter==="string"?payload.filter:"all";
+  const projectId=typeof payload.projectId==="string"&&/^[0-9a-f-]{36}$/i.test(payload.projectId)?payload.projectId:null;
+  let convQuery=admin.from("jd_conversations")
+   .select("id,title,status,project_id,updated_at,created_at").eq("school_id",profile.school_id)
+   .eq("created_by",authData.user.id);
+  if(filter==="archived")convQuery=convQuery.eq("status","archived");
+  else if(filter!=="scheduled")convQuery=convQuery.eq("status","active");
+  if(projectId)convQuery=convQuery.eq("project_id",projectId);
+  const {data,error}=await convQuery.order("updated_at",{ascending:false}).limit(60);
   if(error) return json({error:"Could not load chat history"},500);
-  return json({conversations:data||[]});
+  let scheduled:any[]=[];
+  if(filter==="scheduled"){
+   const {data:schedData}=await admin.from("jd_recurring_tasks")
+    .select("id,title,cron_expression,next_run_at,active,updated_at")
+    .eq("school_id",profile.school_id).eq("active",true).order("next_run_at",{ascending:true}).limit(30);
+   scheduled=schedData||[];
+  }
+  return json({conversations:data||[],scheduled});
  }
  if(payload.action==="history"){
   const id=String(payload.conversationId||"");
@@ -807,7 +821,7 @@ Deno.serve(async (req) => {
  if(payload.action!=="submit") return json({error:"Unsupported action"},400);
  const recorded=await recordChatSubmission({payload,profile,actorId:authData.user.id,admin,needsApproval});
  if(recorded.error)return json({error:recorded.error},recorded.status);
- const {conversationId,run,receipt,submission,risk,responseStyle}=recorded;
+ const {conversationId,run,receipt,submission,risk,responseStyle,executionMode,projectId}=recorded;
  if(submission.replayed){
   const {data:existingJob,error:jobReadError}=await admin.from("jd_execution_jobs").select("id,status").eq("school_id",profile.school_id).eq("run_id",run.id).maybeSingle();
   if(jobReadError)return json({error:"The saved execution status could not be confirmed. Retry safely with the same request identifier."},503);
@@ -834,7 +848,7 @@ Deno.serve(async (req) => {
   const response={version:1,blocks:[{id:"approval",type:"approval",actionId:approval.id,description:reply}]};
   const {error:approvalMessageError}=await admin.from("jd_messages").insert({school_id:profile.school_id,conversation_id:conversationId,role:"assistant",content:reply,content_json:{approvalId:approval.id,response},created_by_agent:true});
   if(approvalMessageError)return json({error:"The approval exists but its response could not be saved. Open Review Centre to inspect it."},500);
-  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{...(run.result_json||{}),response_style:responseStyle||"balanced",approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
+  await admin.from("jd_automation_runs").update({status:"awaiting_approval",result_json:{...(run.result_json||{}),response_style:responseStyle||"balanced",execution_mode:executionMode||"execute",...(projectId?{project_id:projectId}:{}),approval_id:approval.id,execution_enabled:false},completed_at:new Date().toISOString()}).eq("id",run.id).eq("school_id",profile.school_id);
   return json({conversationId,run:{...run,status:"awaiting_approval"},reply,response,blocked:true,approval,...receipt});
  }
  // Routine requests enter the durable queue. The worker owns model execution,

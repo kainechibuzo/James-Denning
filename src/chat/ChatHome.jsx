@@ -14,20 +14,23 @@ import xml from "highlight.js/lib/languages/xml";
 import cssLanguage from "highlight.js/lib/languages/css";
 for (const [name,language] of Object.entries({javascript,typescript,python,json:jsonLanguage,sql,bash,html:xml,css:cssLanguage})) hljs.registerLanguage(name,language);
 import {ComposerTools} from "./ComposerTools.jsx";
-import {ConnectorDirectory} from "../connectors/ConnectorDirectory.jsx";
-import {ConversationHistory} from "./ConversationHistory.jsx";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Send, Pause, Play, Menu, PanelLeftClose, Copy, RotateCcw, GitBranch, Square } from "lucide-react";
+import { EXECUTION_MODES } from "../shell/shell-state.mjs";
 import "../styles/reference-design.css";
 import { supabase } from "../supabaseClient.js";
-import { ReviewCentre } from "./ReviewCentre.jsx";
-import { AgentUsage } from "./AgentUsage.jsx";
-import { RunMonitor } from "./RunMonitor.jsx";
-import { WorkforceControlCentre } from "./WorkforceControlCentre.jsx";
 import { JDVisualWorkspace } from "./JDVisualWorkspace.jsx";
-import { JDDepartments } from "./JDDepartments.jsx";
 import {savedTaskKey} from "./operational-task-records.mjs";
 import {useOperationalTaskRecords} from "./use-operational-task-records.jsx";
+
+const lazyChatModule = (loader, name) => lazy(() => loader().then((m) => ({ default: m[name] })));
+const ConnectorDirectory = lazyChatModule(() => import("../connectors/ConnectorDirectory.jsx"), "ConnectorDirectory");
+const ConversationHistory = lazyChatModule(() => import("./ConversationHistory.jsx"), "ConversationHistory");
+const ReviewCentre = lazyChatModule(() => import("./ReviewCentre.jsx"), "ReviewCentre");
+const AgentUsage = lazyChatModule(() => import("./AgentUsage.jsx"), "AgentUsage");
+const RunMonitor = lazyChatModule(() => import("./RunMonitor.jsx"), "RunMonitor");
+const WorkforceControlCentre = lazyChatModule(() => import("./WorkforceControlCentre.jsx"), "WorkforceControlCentre");
+const JDDepartments = lazyChatModule(() => import("./JDDepartments.jsx"), "JDDepartments");
 
 function renderInlineMarkdown(value, keyPrefix = "inline") {
   const tokenPattern = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|~~[^~]+~~|\x60[^\x60]+\x60|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"')]+)/g;
@@ -177,9 +180,10 @@ function friendlyActivityLabel(name) {
   return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
-export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id }) {
-  const [draft, setDraft] = useState("");
+export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onReturnHome = null, onSubviewChange = null}) {
+  const [draft, setDraft] = useState(initialDraft || "");
   const [responseStyle, setResponseStyle] = useState("balanced");
+  const [executionMode, setExecutionMode] = useState(["ask","plan","execute"].includes(initialExecutionMode) ? initialExecutionMode : "execute");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
@@ -206,7 +210,7 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
   const sending = activeSends > 0;
   const submissions=useRef(new Set());
   const agentProposalRequests=useRef(new Map());
-  const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id]);
+  const resumeKey=JSON.stringify([organizationId,user?._authUserId||user?.id,project?.id||"root"]);
   const pendingKey=(message,id)=>"jd:request:"+resumeKey+":"+(id||"new")+":"+message;
   const rememberConversation=id=>{try{if(id)sessionStorage.setItem("jd:active:"+resumeKey,id);else sessionStorage.removeItem("jd:active:"+resumeKey);}catch{}};
   const [error, setError] = useState("");
@@ -228,13 +232,13 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     const version=++historySequence.current;
     setHistoryLoading(true);setHistoryError("");
     try {
-      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"history.list"}});
+      const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"history.list",...(project?.id?{projectId:project.id}:{})}});
       if(error||data?.error||!Array.isArray(data?.conversations))throw Error("history unavailable");
       if(historyAlive.current&&historySequence.current===version)setConversations(data.conversations.filter(chat=>chat&&typeof chat.id==="string"));
     } catch {
       if(historyAlive.current&&historySequence.current===version){setConversations([]);setHistoryError("Conversation history could not be loaded. Please refresh to try again.");}
     } finally {if(historyAlive.current&&historySequence.current===version)setHistoryLoading(false);}
-  },[]);
+  },[project?.id]);
   useEffect(()=>{historyAlive.current=true;void loadHistory();return()=>{historyAlive.current=false;historySequence.current++;conversationSequence.current++;};},[loadHistory]);
 
   const loadConversation = async (id, before = null) => {
@@ -272,9 +276,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     setMessages(current=>before?[...loadedMessages.filter(m=>!current.some(existing=>existing.id===m.id)),...current]:loadedMessages);
     setHistoryOpen(false);
     setShowReview(false);
+    onReturnHome?.();
   };
 
-  useEffect(()=>{let id;try{id=sessionStorage.getItem("jd:active:"+resumeKey);}catch{}if(id)void loadConversation(id);},[resumeKey]);
+  useEffect(()=>{if(initialConversationId){void loadConversation(initialConversationId);return;}let id;try{id=sessionStorage.getItem("jd:active:"+resumeKey);}catch{}if(id)void loadConversation(id);},[resumeKey,initialConversationId]);
+  useEffect(()=>{if(initialDraft)setDraft(initialDraft);},[initialDraft]);
 
   // Poll durable jobs with bounded backoff. Job execution is server-side and
   // continues independently of this view; this loop only refreshes the UI.
@@ -373,14 +379,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         conversationCreationRef.current.unlock = unlock;
       }
       const { data, error: invokeError } = await supabase.functions.invoke("jd-automation", {
-        body: { action: "submit", message, responseStyle, conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}), ...(agentApprovalId?{agentApprovalId}:{}) },
+        body: { action: "submit", message, responseStyle, executionMode, ...(project?.id ? { projectId: project.id } : {}), conversationId: requestConversationId || conversationIdRef.current || conversationId, idempotencyKey, ...(interaction?{interaction}:{}), ...(agentApprovalId?{agentApprovalId}:{}) },
       });
       if (invokeError) throw invokeError;
       if (!data || data.error) throw new Error(data?.error||"JD returned an empty response.");
       if(!visible())return true;
       if (data.conversationId) { conversationIdRef.current = data.conversationId; setConversationId(data.conversationId);rememberConversation(data.conversationId); }
       if (conversationCreationRef.current?.unlock) { conversationCreationRef.current.unlock(); conversationCreationRef.current = null; }
-      const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list" } });
+      const { data: historyData } = await supabase.functions.invoke("jd-automation", { body: { action: "history.list", ...(project?.id ? { projectId: project.id } : {}) } });
       if (historyData?.conversations) setConversations(historyData.conversations);
       const queued = data.queued === true && Boolean(data.job?.id);
       if(!visible())return true;
@@ -479,9 +485,14 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     if (sending) return;
     conversationSequence.current++;setOpeningId(null);setHistoryError("");
     rememberConversation(null);setHistoryCursor(null);setEarlierLoading(false);
-    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);setSelectedConnectorId(null);
+    setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);setSelectedConnectorId(null);onReturnHome?.();
   };
   const handledNavigation = useRef(null);
+  const subviewOpen = Boolean(showConnectors || historyOpen || showRuns || showWorkforce || showUsage || showDepartments || showReview);
+  useEffect(() => {
+    onSubviewChange?.(subviewOpen);
+  }, [subviewOpen, onSubviewChange]);
+  useEffect(() => () => { onSubviewChange?.(false); }, [onSubviewChange]);
   useEffect(() => {
     if (!navigationRequest || handledNavigation.current === navigationRequest) return;
     handledNavigation.current = navigationRequest;
@@ -634,8 +645,8 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           .jd-heading{font-size:24px}
         }
       `}</style>
-      {showConnectors ? <ConnectorDirectory key={selectedConnectorId||"all"} initialConnectorId={selectedConnectorId} organizationName={organizationName} role={user?.role} onBack={()=>{setShowConnectors(false);setSelectedConnectorId(null);}}/> : historyOpen ? <ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
-        onOpen={loadConversation} onRefresh={loadHistory} onNew={newConversation} onBack={()=>{conversationSequence.current++;setOpeningId(null);setHistoryOpen(false);}}/> : (
+      {showConnectors ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading connectors...</div></div>}><ConnectorDirectory key={selectedConnectorId||"all"} initialConnectorId={selectedConnectorId} organizationName={organizationName} role={user?.role} onBack={()=>{setShowConnectors(false);setSelectedConnectorId(null);onReturnHome?.();}}/></Suspense> : historyOpen ? <Suspense fallback={<div className="jd-hub"><div className="jd-muted">Loading conversations...</div></div>}><ConversationHistory conversations={conversations} loading={historyLoading} error={historyError} openingId={openingId} currentId={conversationId}
+        onOpen={loadConversation} onRefresh={loadHistory} onNew={newConversation} onBack={()=>{conversationSequence.current++;setOpeningId(null);setHistoryOpen(false);onReturnHome?.();}}/></Suspense> : (
       <section className="jd-main">
         <header className="jd-top">
           <div className="jd-top-left">
@@ -652,14 +663,38 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           {messages.length===0 ? <div className="jd-welcome">
             <div className="jd-welcome-mark" aria-hidden="true">JD</div>
             <h1 className="jd-heading"><span className="jd-script">{greeting}{firstName ? "," : ""}</span>{firstName ? ` ${firstName}` : ""}.</h1>
-            <p className="jd-subtitle">Your organisation, one conversation.</p>
-            <p className="jd-welcome-description">Ask James-Denning to inspect records, prepare work and manage workflows.</p>
+            <p className="jd-subtitle">{project ? project.name : "Your organisation, one conversation."}</p>
+            <p className="jd-welcome-description">{project ? (project.description || "Plan tasks, review deliverables, or build inside this project.") : "Ask James-Denning to inspect records, prepare work and manage workflows."}</p>
+            <div className="jd-starter-chips" aria-label="Quick prompts">
+              {(project?.kind === "software"
+                ? [
+                    { label: "Plan architecture & screens", mode: "plan", prompt: `Design the architecture, data model, and user screens for ${project.name}.` },
+                    { label: "Review auth & security", mode: "ask", prompt: `Audit the authentication and tenant isolation requirements for ${project.name}.` },
+                    { label: "Generate feature checklist", mode: "plan", prompt: `Create a step-by-step build checklist for ${project.name}.` },
+                  ]
+                : project
+                ? [
+                    { label: "Draft launch checklist", mode: "plan", prompt: `Create an operational launch checklist with owners for ${project.name}.` },
+                    { label: "Summarise risks & blockers", mode: "ask", prompt: `Review current records and list risks or missing approvals for ${project.name}.` },
+                    { label: "Assign specialist review", mode: "execute", prompt: `Recommend the right specialist analysis for ${project.name}.` },
+                  ]
+                : [
+                    { label: "Plan a new initiative", mode: "plan", prompt: "Help me plan a new business initiative with departments, milestones, and tasks." },
+                    { label: "Review operations & tasks", mode: "ask", prompt: "Check our current operational tasks, pending approvals, and priorities." },
+                    { label: "Design a software build", mode: "plan", prompt: "Design a software application team and architecture blueprint for our organisation." },
+                  ]
+              ).map((chip) => (
+                <button key={chip.label} type="button" className="jd-starter-chip" onClick={() => { setExecutionMode(chip.mode); setDraft(chip.prompt); }}>
+                  {chip.label}
+                </button>
+              ))}
+            </div>
           </div> : <div className="jd-thread">
             {messages.map((item,index)=><div className={`jd-message ${item.role}`} key={item.id||item.jobId||index}>
               {item.role==="assistant"&&<div className="jd-message-head"><span className="jd-mini-mark">JD</span> <span className="jd-message-sender">James-Denning</span> {item.pollUnavailable?<span className="jd-job-state is-unavailable">Status unavailable</span>:waitingForAnswer(item)?<span className="jd-job-state is-awaiting">Waiting for your answer</span>:item.jobId&&<span className={"jd-job-state "+String(item.jobStatus||item.run?.status||"queued")}>{({queued:"Queued",planning:"Preparing",running:"Running",retry_wait:"Retrying",completed:"Run complete",partially_completed:"Run complete with notes",failed:"Failed",cancelled:"Cancelled"})[item.jobStatus||item.run?.status]||"Queued"}</span>}</div>}
               {item.role==="assistant" && item.streaming ? <div className="jd-stream-text">{streamText(item.content)}</div> : item.role==="assistant"&&validateResponse(item.response) ? <StructuredResponse response={item.response} messageId={item.id} scope={taskScope} role={user?.role} answers={messages.filter(m=>m.role==="user"&&m.interaction).map(m=>m.interaction)} disabled={sending||queuePaused} renderMarkdown={renderMessageContent} onReview={()=>setShowReview(true)} onConnectService={entry=>{setSelectedConnectorId(entry?.id||null);setShowConnectors(true);}} onAnswer={(interaction,requestId)=>{const block=item.response.blocks.find(b=>b.id===interaction.blockId);return send(answerText(block,interaction.values),conversationId,interaction,requestId);}}/> : item.content ? renderMessageContent(item.role==="assistant"?decodeResponse(item.content).content:item.content) : null}
               {item.role==="assistant" && extractAgentDeliverables(item.toolEvents).map((agent,agentIndex)=><section className="jd-agent-deliverable" key={agent.id+"-"+agentIndex} aria-label={"Result from "+agent.role}>
-                <div className="jd-agent-deliverable-head"><span className="jd-agent-avatar">AI</span><span><strong>{agent.role.replace(/\b\w/g,letter=>letter.toUpperCase())}</strong><small>Specialist agent · {agent.status.replaceAll("_"," ")}</small></span></div>
+                <div className="jd-agent-deliverable-head"><span className="jd-agent-avatar">AI</span><span><strong>{agent.role.replace(/\b\w/g,letter=>letter.toUpperCase())}</strong><small>Specialist agent · {agent.status.replaceAll("_"," ")}</small></span>{onOpenPreview&&<button type="button" className="jd-chip" style={{marginLeft:"auto"}} onClick={()=>onOpenPreview()}>Preview</button>}</div>
                 <div className="jd-agent-deliverable-body">{renderMessageContent(agent.report)}</div>
                 <div className="jd-agent-deliverable-foot">Agent output · {agent.scope==="reasoning_only_no_tools"?"Reasoning only; no external research or actions performed":"Execution scope recorded by JD"}{item.specialistUsage&&<> · {Math.floor(item.specialistUsage.elapsed_seconds/60)}m {item.specialistUsage.elapsed_seconds%60}s · {(item.specialistUsage.actual_amount_minor/100).toFixed(2)} {item.specialistUsage.currency}</>}</div>
               </section>)}
@@ -711,7 +746,12 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
         </div>
         <div className="jd-compose-wrap">
           {error&&<div className="jd-error">{error}</div>}
-          <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
+          <div className="jd-composer-modes-row">
+            <div className="jd-exec-modes" role="group" aria-label="Execution mode">
+              {EXECUTION_MODES.map((m)=><button key={m.id} type="button" title={m.hint} className={executionMode===m.id?"is-active":""} aria-pressed={executionMode===m.id} onClick={()=>setExecutionMode(m.id)}>{m.label} <small>{m.id==="ask"?"Read-only":""}</small></button>)}
+            </div>
+            <div className="jd-response-style" role="group" aria-label="Preferred response style"><span>Response style</span>{[{value:"concise",label:"A · Concise"},{value:"balanced",label:"B · Balanced"},{value:"detailed",label:"C · Detailed"}].map(option=><button key={option.value} type="button" className={responseStyle===option.value?"active":""} aria-pressed={responseStyle===option.value} onClick={()=>setResponseStyle(option.value)}>{option.label}</button>)}</div>
+          </div>
           <div className="jd-compose">
             <ComposerTools draft={draft} setDraft={setDraft} onSend={()=>send()} isWorking={isWorking} role={user?.role} actions={[]}
               onNavigate={view=>{setShowConnectors(view==="connectors");setShowReview(view==="review");setShowRuns(view==="runs");setShowWorkforce(view==="workforce");setShowUsage(false);setShowDepartments(false);}}>
@@ -722,25 +762,27 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
           <div className="jd-disclaimer">{queuePaused ? "New requests are paused. Running jobs continue in the background — safe to close this tab." : "Runs continue in the background — safe to close this tab."}</div>
         </div>
       </section>)}
-      {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>setShowRuns(false)}/></div>}
-      {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>setShowWorkforce(false)} onHireRequest={(message)=>{setShowWorkforce(false); setDraft(message);}}/></div>}
-      {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>setShowUsage(false)}/></div>}
-      {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>setShowDepartments(false)}/></div>}
-      {showReview && <ReviewCentre onClose={()=>setShowReview(false)} onDecision={(decision,item,data,note)=>{
-        if(item.action_key==="settings.apply"&&decision==="approve")return; // Keep the reviewed diff and explicit Apply action visible.
-        setShowReview(false);
-        const targetConversationId=data?.conversationId||conversationId;
-        if(targetConversationId){
-          setConversationId(targetConversationId);
-          const feedback=note?.trim()? " My feedback: "+note.trim() : "";
-          const followup=decision==="approve"
-            ? data?.execution?.status==="completed"
-              ? "I accepted the proposed business departments and JD completed the approved setup. Please check what now exists and explain the result in plain English."
-              : "I accepted this request, but the system has not confirmed that the change was completed. Check what is available and tell me honestly what happened. Do not claim anything changed without confirmation."
-            : "I rejected the proposed change."+feedback+" Please respond to my feedback, revise the proposal if appropriate, and send the revised version for review.";
-          void send(followup,targetConversationId);
-        }
-      }}/>}
+      <Suspense fallback={null}>
+        {showRuns && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Automation runs"><RunMonitor onClose={()=>{setShowRuns(false);onReturnHome?.();}}/></div>}
+        {showWorkforce && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Workforce control centre"><WorkforceControlCentre onClose={()=>{setShowWorkforce(false);onReturnHome?.();}} onHireRequest={(message)=>{setShowWorkforce(false);onReturnHome?.(); setDraft(message);}}/></div>}
+        {showUsage && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="AI usage"><AgentUsage onClose={()=>{setShowUsage(false);onReturnHome?.();}}/></div>}
+        {showDepartments && <div className="jd-tool-overlay" role="dialog" aria-modal="true" aria-label="Departments"><JDDepartments onClose={()=>{setShowDepartments(false);onReturnHome?.();}}/></div>}
+        {showReview && <ReviewCentre onClose={()=>{setShowReview(false);onReturnHome?.();}} onDecision={(decision,item,data,note)=>{
+          if(item.action_key==="settings.apply"&&decision==="approve")return; // Keep the reviewed diff and explicit Apply action visible.
+          setShowReview(false);
+          const targetConversationId=data?.conversationId||conversationId;
+          if(targetConversationId){
+            setConversationId(targetConversationId);
+            const feedback=note?.trim()? " My feedback: "+note.trim() : "";
+            const followup=decision==="approve"
+              ? data?.execution?.status==="completed"
+                ? "I accepted the proposed business departments and JD completed the approved setup. Please check what now exists and explain the result in plain English."
+                : "I accepted this request, but the system has not confirmed that the change was completed. Check what is available and tell me honestly what happened. Do not claim anything changed without confirmation."
+              : "I rejected the proposed change."+feedback+" Please respond to my feedback, revise the proposal if appropriate, and send the revised version for review.";
+            void send(followup,targetConversationId);
+          }
+        }}/>}
+      </Suspense>
     </div>
   );
 }

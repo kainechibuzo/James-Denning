@@ -34,7 +34,7 @@ const reads={
 for(const name of emptyReads)reads[name]=()=>({data:[]});
 export const db=new Proxy({setSchool:()=>{}},{get(target,name){if(name in target)return target[name];return async(...args)=>{record('db',name,args);return name in reads?reads[name](...args):fail('db.'+name);};}});
 const automation={
- 'history.list':{conversations:[]},'approvals.list':{approvals:[]},'operations.task.list':{tasks:[]},'operations.team.list':{members:[]},
+ 'history.list':{conversations:[]},'projects.list':{projects:[]},'approvals.list':{approvals:[]},'operations.task.list':{tasks:[]},'operations.team.list':{members:[]},
  'intelligence.snapshot':{},'capabilities.report':{capabilities:[]},'organisation.blueprints.list':{blueprints:[]},'hiring.pipeline.list':{requisitions:[],candidates:[]},
  'workflow.draft.list':{workflows:[]},'workflows.list':{workflows:[]},'workflow.list':{workflows:[]},'operations.schedule.list':{schedules:[]},'operations.assignment.member.list':{members:[]},
  'execution.monitor.list':{runs:[],jobs:[],steps:[]},'runs.list':{runs:[]},'usage.summary':{summary:null},'organisation.departments.list':{departments:[]},

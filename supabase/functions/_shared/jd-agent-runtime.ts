@@ -2191,6 +2191,7 @@ export async function runAgent(input: {
   apiKey: string;
   model: string;
   responseStyle?: "concise" | "balanced" | "detailed";
+  executionMode?: "ask" | "plan" | "execute";
   baseUrl?: string;
   resumeState?: AgentRuntimeCheckpoint | null;
   onCheckpoint?: (state: AgentRuntimeCheckpoint) => Promise<void>;
@@ -2199,7 +2200,13 @@ export async function runAgent(input: {
   onUsagePhase?: (phase: "active" | "external_wait") => Promise<void>;
 }) {
   const baseUrl = input.baseUrl || "https://openrouter.ai/api/v1";
-  const available = tools.filter((tool) => tool.name !== "deploy_specialist_workforce" && (tool.risk === "low" || tool.name === "create_business_document_draft") && roleAllowed(input.context, tool.roles));
+  const executionMode = input.executionMode || "execute";
+  const available = tools.filter((tool) => {
+    if (tool.name === "deploy_specialist_workforce" || !roleAllowed(input.context, tool.roles)) return false;
+    if (executionMode === "ask") return tool.risk === "low" && !/(create|submit|propose|remember|draft|call_connected)/i.test(tool.name);
+    if (executionMode === "plan") return tool.risk === "low" && !/(create_operational|submit_|call_connected)/i.test(tool.name);
+    return tool.risk === "low" || tool.name === "create_business_document_draft";
+  });
   await input.onUsagePhase?.("external_wait");
   let sharedBusinessMemory: Array<{ memory_key: string; category: string; content: string; confidence: string }> = [];
   let linkedSpecialistRole: string | null = null;
@@ -2247,8 +2254,14 @@ export async function runAgent(input: {
     balanced: "Preferred response style: balanced. Answer directly, explain important context, and give practical next steps where useful.",
     detailed: "Preferred response style: detailed. Explain reasoning, assumptions, trade-offs and actionable next steps without unnecessary repetition.",
   } as const)[input.responseStyle || "balanced"];
+  const executionModeInstruction = ({
+    ask: "Execution mode: ASK (read-only exploration). Answer questions, inspect read-only records if needed, and explain options clearly. Do not create tasks, drafts, approvals, or trigger mutations.",
+    plan: "Execution mode: PLAN (blueprint & proposal only). Design structured plans, checklists, blueprints, or proposed next steps for human review before any operational change or execution occurs.",
+    execute: "Execution mode: EXECUTE (bounded action). Carry out supported steps using authorised tools, and route high-impact or external actions through the appropriate approval boundary.",
+  } as const)[executionMode];
   const instructions = [
     responseStyleInstruction,
+    executionModeInstruction,
     "You are JD, the autonomous organisation operations agent.",
     "Treat the registered tools supplied to you in this request as the definitive list of actions you can currently call. When asked what you can do, what features are available, or whether you can perform a task, call get_jd_capability_inventory first and explain the relevant capabilities in plain language. Do not infer capabilities from old conversation memory, documentation, UI labels or assumptions.",
     "The capability inventory reports source-level runtime registration and role availability only. It does not prove deployment, integration configuration, database migration state or successful live operation. State these limits clearly and never describe a registered tool as production-ready without trusted deployment and authenticated verification evidence.",

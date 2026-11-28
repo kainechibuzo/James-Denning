@@ -7,6 +7,10 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  let expectedResponse = null;
  const requestedStyle=payload.responseStyle==null?null:payload.responseStyle;
  if(requestedStyle!==null&&!["concise","balanced","detailed"].includes(requestedStyle))return {error:"Invalid response style",status:400};
+ const requestedMode=payload.executionMode==null?null:payload.executionMode;
+ if(requestedMode!==null&&!["ask","plan","execute"].includes(requestedMode))return {error:"Invalid execution mode",status:400};
+ const requestedProjectId=payload.projectId==null?null:payload.projectId;
+ if(requestedProjectId!==null&&(typeof requestedProjectId!=="string"||!/^[0-9a-f-]{36}$/i.test(requestedProjectId)))return {error:"Invalid project identifier",status:400};
  const requestedConversation = typeof payload.conversationId === "string" ? payload.conversationId : null;
  if (payload.interaction !== undefined) {
   const value=payload.interaction;
@@ -25,7 +29,7 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
  if(!message||message.length>12000) return {error:"Message is required and must be under 12,000 characters",status:400};
  const requestId=typeof payload.idempotencyKey==="string"?payload.idempotencyKey:crypto.randomUUID();
  if(!/^[a-zA-Z0-9_-]{1,100}$/.test(requestId)) return {error:"Invalid request identifier",status:400};
- const risk=needsApproval(message)?"approval_required":"routine";
+ const risk=requestedMode==="ask"?"routine":(needsApproval(message)?"approval_required":"routine");
  const {data:submission,error:submissionError}=await admin.rpc("jd_submit_chat_request",{
   p_school_id:profile.school_id,p_actor_id:actorId,p_conversation_id:requestedConversation,
   p_request_id:requestId,p_message:message,p_risk:risk,p_trigger_type:payload.triggerType==="upload"?"upload":"chat",p_interaction:interaction,p_expected_response:expectedResponse
@@ -45,7 +49,20 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
   });
   if(styleError||styleReceipt?.response_style!==requestedStyle)return {error:"The request was recorded, but JD could not confirm its response preference. Retry safely with the same request identifier.",status:503};
  }
+ if(requestedMode!==null){
+  const {data:modeReceipt,error:modeError}=await admin.rpc("jd_set_chat_execution_mode",{
+   p_run_id:run.id,p_actor_id:actorId,p_mode:requestedMode
+  });
+  if(modeError||modeReceipt?.execution_mode!==requestedMode)return {error:"The request was recorded, but JD could not confirm its execution mode. Retry safely with the same request identifier.",status:503};
+ }
+ if(requestedProjectId!==null){
+  const {error:linkProjectError}=await admin.rpc("jd_link_conversation_project",{
+   p_conversation_id:conversationId,p_project_id:requestedProjectId,p_actor_id:actorId
+  });
+  if(linkProjectError)return {error:"The request was recorded, but it could not be linked to the selected project.",status:409};
+ }
  const responseStyle=requestedStyle||"balanced";
+ const executionMode=requestedMode||"execute";
  const receipt={userMessageId:submission.messageId,clientRequestId:requestId};
  // Roadmap sequence 1–2: when the skills product is release-gated on, a chat
  // objective is also a discovery request. The session is linked to this run so
@@ -84,5 +101,5 @@ export async function recordChatSubmission({payload,profile,actorId,admin,needsA
    }catch{/* audit is best effort; the run proceeds */}
   }
  }
- return {conversationId,run:{...run,response_style:responseStyle},receipt,submission,risk,responseStyle};
+ return {conversationId,run:{...run,response_style:responseStyle,execution_mode:executionMode},receipt,submission,risk,responseStyle,executionMode,projectId:requestedProjectId};
 }

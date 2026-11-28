@@ -123,7 +123,7 @@ test("chat wiring keys local state by account/workspace/conversation and offers 
   const source=readFileSync(new URL("../src/chat/ChatHome.jsx",import.meta.url),"utf8");
   assert.match(source,/savedTaskKey\(messages\)/);assert.match(source,/JSON.stringify\(\[organizationId,user\?\._authUserId\|\|user\?\.id,user\?\.role,conversationId\]\)/);
   const shell=readFileSync(new URL("../src/AppDemo.jsx",import.meta.url),"utf8");
-  assert.match(shell,/<ChatHome key=\{JSON.stringify\(\[selectedSchool\?\.id,user\?\._authUserId\|\|user\?\.id,user\?\.role\]\)\}/);
+  assert.match(shell,/<ChatHome\s+key=\{JSON\.stringify\(\[selectedSchool\?\.id,user\?\._authUserId\|\|user\?\.id,user\?\.role/);
   assert.match(shell,/organizationId=\{selectedSchool\?\.id\}/);
   assert.match(source,/key=\{taskScope\+":"\+index\}/);assert.match(source,/onRefreshTasks=\{taskRecords.refresh\}/);
   assert.match(source,/onTaskToggle=\{taskRecords.transition\} taskRecords=\{taskRecords.state\} taskRole=\{user\?\.role\}/);

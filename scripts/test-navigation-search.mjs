@@ -79,12 +79,12 @@ test("navigation retains accessible search, active page and expansion hooks", ()
   assert.match(shell, /aria-expanded=\{!collapsed\}/);
   assert.match(shell, /aria-controls="workspace-navigation"/);
 });
-test("mobile closed drawer is inert, scroll is bounded, binding has lifecycle cleanup", () => {
-  assert.match(shell, /inert=\{isMobile&&!sideOpen \? "" : undefined\}/);
+test("closed overlay drawer is inert on mobile and desktop, scroll is bounded, binding has lifecycle cleanup", () => {
+  assert.match(shell, /inert=\{!sideOpen \? "" : undefined\}/);
   // The drawer's page list is the only scrolling region inside a fixed-height drawer.
   assert.match(shell, /flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain"/);
   assert.match(shell, /return bindMobileNavigation\(sidebarRef\.current/);
-  assert.match(shell, /\[isMobile,sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id\]/);
+  assert.match(shell, /\[sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id\]/);
   assert.match(shell, /useState\(\(\)=>window\.location\.pathname==="\/admin"\?"admin-dashboard":"jd-chat"\)/);
 });
 test("shell has no legacy demo tenant, sandbox banner or shared credentials", () => {

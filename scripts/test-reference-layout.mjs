@@ -54,6 +54,8 @@ export const supabase={
   if(body?.action==='history.list')return{data:{conversations:[{id:'fixture',title:'Saved conversation',updated_at:'2026-11-16T12:00:00Z'}]}};
   if(body?.action==='history')return{data:{messages:[{role:'assistant',content:'Saved fixture message. No real records were read.'}]}};
   if(body?.action==='approvals.list')return{data:{approvals:[]}};
+  if(body?.action==='usage.summary')return{data:{summary:{total_runs:0,total_amount_minor:0,currency:'USD'}}};
+  if(body?.action==='projects.list')return{data:{projects:[]}};
   if(body?.action==='submit')return{data:{conversationId:'fixture',reply:'Synthetic submission received.'}};
   throw Error('Unexpected API action: '+body?.action);
  }},
@@ -138,28 +140,25 @@ try{
     const input=page.getByRole('textbox',{name:'Message JD'});
     // The drawer is an overlay on small screens and starts open on tablets, so
     // close it explicitly before reaching for header controls behind it.
+    // The navigation drawer is an on-demand overlay across both mobile and desktop;
+    // the floating Home · Projects · Chats dock serves as primary navigation.
     const navToggle=page.locator('[data-tour="workspace-menu"]');
-    if(width<768){
-      if(await navToggle.getAttribute('aria-expanded')==='true')await page.keyboard.press('Escape');
-      assert.equal(await navToggle.getAttribute('aria-expanded'),'false','drawer is closed before header work');
-      await navToggle.click();
-      assert.equal(await navToggle.getAttribute('aria-expanded'),'true','drawer opens');
-      await page.keyboard.press('Escape');
-      assert.equal(await navToggle.getAttribute('aria-expanded'),'false','Escape closes the drawer');
-      assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-tour')==='workspace-menu'),true,'focus returns to the toggle');
-    }else{
-      assert.equal(await navToggle.getAttribute('aria-expanded'),'true','the desktop sidebar is persistent, not an overlay');
-    }
+    if(await navToggle.getAttribute('aria-expanded')==='true')await page.keyboard.press('Escape');
+    assert.equal(await navToggle.getAttribute('aria-expanded'),'false','drawer is closed by default');
+    await navToggle.click();
+    assert.equal(await navToggle.getAttribute('aria-expanded'),'true','drawer opens');
+    await page.keyboard.press('Escape');
+    assert.equal(await navToggle.getAttribute('aria-expanded'),'false','Escape closes the drawer');
+    assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-tour')==='workspace-menu'),true,'focus returns to the toggle');
     await page.getByRole('button',{name:'Switch to dark mode'}).click();
     assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'dark');
     await page.getByRole('button',{name:'Switch to light mode'}).click();
     assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'light');
     // Each header control runs its real handler; the surface it opens is then
     // asserted and dismissed, so header wiring cannot silently break.
-    // Header controls are scoped to the top bar: the drawer exposes its own
-    // account button with the same accessible name.
     const header=page.locator('.reference-workspace-header');
     await header.getByRole('button',{name:'My profile',exact:true}).click();
+    await page.getByRole('button',{name:'My Profile',exact:true}).click();
     await page.getByRole('dialog',{name:'My Profile',exact:true}).waitFor();
     await page.getByRole('dialog',{name:'My Profile',exact:true}).getByRole('button',{name:'Close dialog'}).click();
     await page.getByRole('dialog',{name:'My Profile',exact:true}).waitFor({state:'hidden'});
