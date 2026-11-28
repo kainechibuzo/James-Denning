@@ -15,6 +15,7 @@ import { PERM_ROLE_DEFAULTS } from './config/permissions.mjs';
 import { HeritageRule, HeritageWordmark } from "./components/reference-brand.jsx";
 import "./styles/reference-design.css";
 import { ChatHome } from "./chat/ChatHome.jsx";
+import { GlobalApprovalLauncher } from "./components/global-approval-launcher.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
 import { canOpenOperations, WORKSPACE_NAVIGATION, buildWorkspaceNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
 import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
@@ -1536,6 +1537,7 @@ function AppInner(){
               title="Help / Product Tour" aria-label="Help / Product Tour">
               <HelpCircle size={19}/>
             </button>
+            <GlobalApprovalLauncher user={user}/>
             <NotificationBell ctx={ctx}/>
             <button className="reference-settings" data-account-settings type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
               onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={19}/></button>

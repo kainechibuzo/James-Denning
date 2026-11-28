@@ -25,9 +25,21 @@ export function WorkforceControlCentre({onClose,onHireRequest}){
  const [snapshot,setSnapshot]=useState(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(""),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const [activeChat,setActiveChat]=useState(null),[chatMessages,setChatMessages]=useState([]),[chatDraft,setChatDraft]=useState(""),[chatBusy,setChatBusy]=useState(false),[chatRequestId,setChatRequestId]=useState("");
  const [modal,setModal]=useState(null);
+ const [specialistCatalogue,setSpecialistCatalogue]=useState([]),[catalogueLoading,setCatalogueLoading]=useState(true),[catalogueError,setCatalogueError]=useState("");
  const call=useCallback(async(body)=>{const {data,error}=await supabase.functions.invoke("jd-automation",{body});if(error||data?.error)throw new Error(data?.error||error?.message||"Workforce request was not confirmed.");return data;},[]);
  const refresh=useCallback(async()=>{setLoading(true);setError("");try{setSnapshot(await call({action:"workforce.control.snapshot"}));}catch(e){setError(e.message);setSnapshot(null);}finally{setLoading(false);}},[call]);
  useEffect(()=>{void refresh();},[refresh]);
+ const loadSpecialists=useCallback(async()=>{
+  setCatalogueLoading(true);setCatalogueError("");
+  try{
+   const result=await call({action:"workforce.specialist.catalogue"});
+   if(result?.read_only!==true||result?.hiring_enabled!==false||result?.billing_enabled!==false||!Array.isArray(result.specialists))throw new Error("Specialist catalogue eligibility could not be verified.");
+   setSpecialistCatalogue(result.specialists);
+  }catch(error){setSpecialistCatalogue([]);setCatalogueError(error.message||"Specialist catalogue unavailable.");}
+  finally{setCatalogueLoading(false);}
+ },[call]);
+ useEffect(()=>{void loadSpecialists();},[loadSpecialists]);
+
  const cancelAssignment=async item=>{
   if(!window.confirm("Request cancellation? A running worker must acknowledge before JD reports it stopped."))return;
   setBusy(item.id);setError("");setNotice("");
@@ -102,15 +114,22 @@ export function WorkforceControlCentre({onClose,onHireRequest}){
   {error&&<div className="jd-wfc-alert" role="alert">{error}</div>}{notice&&<div className="jd-wfc-notice" role="status">{notice}</div>}
   <section className="jd-wfc-stats"><article><span>Employee instances</span><strong>{loading?"—":employees.length}</strong></article><article><span>Available</span><strong>{loading?"—":active}</strong></article><article><span>Teams</span><strong>{loading?"—":teams.length}</strong></article><article><span>Recorded assignments</span><strong>{loading?"—":assignments.length}</strong></article></section>
   <details className="jd-wfc-boundary"><summary><ShieldAlert size={13}/><span className="jd-wfc-badge">Activation only — employees appear here after an approved proposal is activated in Review Centre.</span></summary><p>Pausing or retiring an employee does not cancel a running assignment. Tool access, connector permissions, assignment execution, private agent conversations and payable billing remain separate controls; usage is not presented as an amount due.</p></details>
-  {!loading&&employees.length===0&&<section className="jd-wfc-hire" aria-label="Hire your first agent">
-   <div className="jd-wfc-hire-head"><Sparkles size={16}/><div><h2>Your AI workforce starts here</h2><p>Pick a role and JD drafts a real proposal for your approval. Approval is yours — nothing is hired automatically.</p></div></div>
-   <div className="jd-wfc-hire-grid">{HIRE_PRESETS.map(preset=><article key={preset.id}>
-    <h3>{preset.title}</h3><span>{preset.department}</span>
-    <p>{preset.purpose}</p>
-    <ul>{preset.responsibilities.map(item=><li key={item}>{item}</li>)}</ul>
-    <button type="button" onClick={()=>hire(preset)}><Sparkles size={13}/> Ask JD to draft this hire</button>
-   </article>)}</div>
-  </section>}
+  <section className="jd-wfc-hire" aria-label="Specialist catalogue">
+   <div className="jd-wfc-hire-head"><Sparkles size={16}/><div><h2>Specialist catalogue</h2><p>Choose from built-in specialists and published, execution-authorized registry agents. Selecting a specialist drafts a proposal for owner review; it does not hire, grant access or start billable work.</p></div><button type="button" onClick={loadSpecialists} disabled={catalogueLoading}><RefreshCw size={14}/> Refresh catalogue</button></div>
+   {catalogueError&&<div className="jd-wfc-alert" role="alert">{catalogueError}</div>}
+   {catalogueLoading?<p className="jd-wfc-empty">Verifying available specialists…</p>:specialistCatalogue.length===0?<p className="jd-wfc-empty">No eligible specialists could be verified. Draft registry agents are not hireable; publish and authorize a version first.</p>:<div className="jd-wfc-hire-grid">{specialistCatalogue.map(item=><article key={item.specialist_kind+":"+item.specialist_ref+":"+(item.specialist_version||"builtin")}>
+    <div className="jd-wfc-card-top"><span className="jd-wfc-state active">{item.specialist_kind==="builtin"?"Built-in":"Published registry"}</span><small>{item.specialist_version? "Version "+item.specialist_version:"Built-in definition"}</small></div>
+    <h3>{item.name}</h3>
+    <span>{item.specialist_ref}</span>
+    {item.department&&<div className="jd-wfc-meta"><strong>Department:</strong> {item.department}</div>}{item.purpose&&<p>{item.purpose}</p>}{Array.isArray(item.responsibilities)&&item.responsibilities.length>0&&<div className="jd-wfc-meta"><strong>Responsibilities:</strong> {item.responsibilities.join(" · ")}</div>}
+    {Array.isArray(item.capabilities)&&item.capabilities.length>0&&<div className="jd-wfc-meta"><strong>Capabilities:</strong> {item.capabilities.join(" · ")}</div>}
+    {Array.isArray(item.deliverables)&&item.deliverables.length>0&&<div className="jd-wfc-meta"><strong>Deliverables:</strong> {item.deliverables.join(" · ")}</div>}
+    {Array.isArray(item.limitations)&&item.limitations.length>0&&<div className="jd-wfc-meta"><strong>Limitations:</strong> {item.limitations.join(" · ")}</div>}<div className="jd-wfc-meta"><strong>Available tools:</strong> {Array.isArray(item.available_tools)&&item.available_tools.length?item.available_tools.join(" · "):"None assigned; access must be separately approved"}</div>
+    <div className="jd-wfc-meta"><strong>Pricing:</strong> Not configured — no price will be invented or charged</div>
+    <div className="jd-wfc-meta"><strong>Permissions:</strong> Must be specified in the proposal; nothing is granted by selection</div>
+    <button type="button" onClick={()=>{const version=item.specialist_version?"; exact specialist_version "+item.specialist_version:"";const prompt="Prepare an individual workforce employee proposal using exactly specialist_kind "+item.specialist_kind+" and specialist_ref "+item.specialist_ref+version+". Use the selected published specialist version only; do not substitute another agent. Propose a sensible name, department, purpose and concrete responsibilities based on the definition. List requested permissions separately and default to least privilege. Include pricing only if an authoritative configured price exists; otherwise state not configured. Submit the proposal to Review Centre for explicit owner approval. Do not activate, grant tools, authorize connectors, start assignments or enable billing.";hire({message:prompt,title:item.name});}}><Sparkles size={13}/> Propose this specialist</button>
+   </article>)}</div>}
+  </section>
   <section className="jd-wfc-section"><div className="jd-wfc-section-title"><div><UserRound size={17}/><h2>Employees</h2></div><span>{employees.length} records</span></div>
    {loading?<p className="jd-wfc-empty">Loading workforce records…</p>:employees.length===0?<p className="jd-wfc-empty">No employee instances have been activated in this workspace yet. Use the guided hire flow above — specialist definitions are not automatically counted as hired employees.</p>:<div className="jd-wfc-grid">{employees.map(a=><article className="jd-wfc-card" key={a.id}><div className="jd-wfc-card-top"><span className={"jd-wfc-state "+a.lifecycle_state}>{stateLabel[a.lifecycle_state]}</span><small>{a.agent_kind==="builtin"?"Built-in specialist":"Published registry agent"}{a.agent_version? ` · v${a.agent_version}`:""}</small></div><h3>{a.display_name}</h3><p>{a.role_title||a.agent_ref?.replaceAll("_"," ")||"Specialist"} · {a.department||"No department assigned"}</p>{a.purpose&&<p>{a.purpose}</p>}{(()=>{const latest=assignments.find(item=>item.employee_id===a.id);return latest?<div className="jd-wfc-meta"><strong>Latest assignment:</strong> {latest.task} · {stateLabel[latest.status]||latest.status}</div>:<div className="jd-wfc-meta">No assignments recorded for this employee yet.</div>;})()}{Array.isArray(a.responsibilities)&&a.responsibilities.length>0&&<div className="jd-wfc-meta"><strong>Responsibilities:</strong> {a.responsibilities.join(" · ")}</div>}{Array.isArray(a.requested_access)&&a.requested_access.length>0&&<div className="jd-wfc-meta"><strong>Access requested (not granted):</strong> {a.requested_access.join(" · ")}</div>}<div className="jd-wfc-meta">{(()=>{const b=budgets.find(x=>x.employee_id===a.id);return b?`Budget ${usd(b.budget_micros)} · Rate ${usd(b.rate_micros_per_hour)}/hr · Shadow only`:"No employee budget configured";})()}</div><div className="jd-wfc-meta">Added {stamp(a.created_at)}</div><div className="jd-wfc-card-actions">{snapshot?.agentChatEnabled&&a.lifecycle_state==="active"&&<button disabled={!!busy||chatBusy} onClick={()=>openPrivateChat(a)}><MessageCircle size={13}/> Private chat</button>}<button disabled={!!busy} onClick={()=>configureBudget(a)}><Wallet size={13}/> Set budget</button>{a.lifecycle_state==="active"?<button disabled={!!busy} onClick={()=>control("employee",a.id,"pause",a.display_name)}><Pause size={13}/> Pause</button>:a.lifecycle_state==="paused"?<button disabled={!!busy} onClick={()=>control("employee",a.id,"resume",a.display_name)}><Play size={13}/> Resume</button>:null}{a.lifecycle_state!=="retired"&&<button className="danger" disabled={!!busy} onClick={()=>control("employee",a.id,"retire",a.display_name)}><Archive size={13}/> End employee</button>}</div></article>)}</div>}
   </section>

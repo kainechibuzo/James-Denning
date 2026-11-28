@@ -11,34 +11,57 @@ assert.ok(executablePath,'Set CHROMIUM_EXECUTABLE_PATH; no browser is downloaded
 const evidence=process.env.JD_LAYOUT_EVIDENCE_DIR;
 if(evidence)mkdirSync(evidence,{recursive:true});
 const shell=readFileSync('src/AppDemo.jsx','utf8');
-const header=shell.slice(shell.indexOf('<header className="reference-workspace-header jd-topbar"'),shell.indexOf('</header>',shell.indexOf('<header className="reference-workspace-header jd-topbar"'))+9);
-assert.ok(header.includes('<HeritageWordmark'),'Exercise the real workspace header markup');
-const darkToggle=shell.slice(shell.indexOf('function DarkToggle('),shell.indexOf('\n}',shell.indexOf('function DarkToggle('))+2);
-const stub=`export const supabase={functions:{invoke:async(_name,{body})=>{
- window.__requests.push(body);
- if(body.action==='history.list')return{data:{conversations:[{id:'fixture',title:'Saved conversation',updated_at:'2026-11-16T12:00:00Z'}]}};
- if(body.action==='history')return{data:{messages:[{role:'assistant',content:'Saved fixture message. No real records were read.'}]}};
- if(body.action==='approvals.list')return{data:{approvals:[]}};
- if(body.action==='submit')return{data:{conversationId:'fixture',reply:'Synthetic submission received.'}};
- throw Error('Unexpected API action: '+body.action);
-}}};`;
-const entry=`import '${resolve('src/styles/app.css')}';import React,{useRef,useState} from 'react';import {createRoot} from 'react-dom/client';
-import {Menu,HelpCircle,Bell,Moon,Sun,Settings} from 'lucide-react';
+// Render the real workspace shell. This suite used to slice the <header> markup
+// out of AppDemo.jsx and paste it into a hand-built fixture; when the header
+// gained a new control whose state lived in AppInner, the copy broke with
+// "pendingApprovalCount is not defined" and took the whole page down. Rendering
+// AppDemo itself cannot drift, and a broken shell now fails here by throwing.
+assert.ok(shell.includes('<header className="reference-workspace-header jd-topbar"'),'The workspace shell owns its header markup');
+assert.ok(shell.includes('function DarkToggle('),'The shell renders its own dark-mode toggle');
+const entry=`import '${resolve('src/styles/app.css')}';import React,{Component} from 'react';import {createRoot} from 'react-dom/client';
 import {PublicLanding} from '${resolve('src/pages/public-landing.jsx')}';
-import {ReferenceBrand,HeritageRule} from '${resolve('src/components/reference-brand.jsx')}';
-import {ChatHome} from '${resolve('src/chat/ChatHome.jsx')}';
-import {LIGHT,DARK} from '${resolve('src/config/theme.js')}';
-window.__requests=[];window.__actions=[];
-let C=LIGHT;const useDark=()=>({dark:document.documentElement.dataset.theme==='dark',toggle:()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';C=dark?DARK:LIGHT;window.__render();}});
-${darkToggle}
-const AppIcon=({size,color})=><Menu size={size} color={color}/>;
-const NotificationBell=()=> <div><button aria-label="Notifications" onClick={()=>window.__actions.push('notifications')}><Bell/></button></div>;
-const LiveClock=()=>null;
-const HeritageWordmark=({className})=><div className={className} style={{color:'var(--jd-ink)'}}><span className="jd-wordmark" style={{color:'var(--jd-ink)'}}><b>James-Denning</b></span><span className="jd-rule" aria-hidden="true"><i/><i/><i/></span></div>;
-function WorkspaceFixture(){const page='jd-chat',isMobile=innerWidth<768,user={id:'synthetic',school_id:'synthetic',role:'owner',name:'Kaine Denning'},ctx={},NAV=[],setPage=()=>window.__actions.push('settings');
-const navigationToggleRef=useRef(null);const [sideOpen,setSide]=useState(false);const setShowTour=()=>window.__actions.push('help'),setShowProfile=()=>window.__actions.push('profile'),setShowLogout=()=>{};
-return <div style={{height:"100dvh",display:"flex",flexDirection:"column"}}>${header}<ChatHome user={user}/></div>;}
-const root=createRoot(document.getElementById('root'));window.__render=()=>root.render(location.pathname==='/workspace'?<WorkspaceFixture/>:<PublicLanding onGetStarted={()=>window.__actions.push('signup')} onSignIn={()=>window.__actions.push('signin')}/>);window.__render();`;
+import AppDemo from '${resolve('src/AppDemo.jsx')}';
+// Every click stays inside this page: the service client is the synthetic one
+// below. Header actions are captured from the DOM so the real handlers run.
+window.__actions=[];
+const RECORDED=new Set(['My profile','Help / Product Tour','Notifications','Account settings']);
+document.addEventListener('click',event=>{
+ const button=event.target.closest?.('button');if(!button)return;
+ const label=button.getAttribute('aria-label')||button.getAttribute('title')||'';
+ if(RECORDED.has(label)&&!window.__actions.includes(label))window.__actions.push(label);
+},true);
+// A signed-in tab, exactly what the app's own session bootstrap expects.
+localStorage.setItem('jd_session_user',JSON.stringify({id:'synthetic',_authUserId:'synthetic',role:'admin',name:'Kaine Denning',email:'owner@example.test',school_id:'synthetic'}));
+sessionStorage.setItem('jd_session_active','1');
+localStorage.setItem('jd_tour_done_ui-admin','1');
+localStorage.setItem('jd_selected_org',JSON.stringify({id:'synthetic',name:'Reference workspace',plan:'free'}));
+class Boundary extends Component{constructor(props){super(props);this.state={error:null};}
+ static getDerivedStateFromError(error){return {error};}
+ render(){if(this.state.error)return <pre data-shell-crash style={{padding:16,fontSize:12,whiteSpace:'pre-wrap'}}>{String(this.state.error&&this.state.error.stack||this.state.error)}</pre>;return this.props.children;}}
+const root=createRoot(document.getElementById('root'));
+window.__render=()=>root.render(location.pathname==='/workspace'?<Boundary><AppDemo/></Boundary>:<PublicLanding onGetStarted={()=>window.__actions.push('signup')} onSignIn={()=>window.__actions.push('signin')}/>);
+window.__render();`;
+const stub=`// Synthetic client for the real AppDemo. Unknown calls fail closed.
+const state=()=>{window.__requests=window.__requests||[];return window.__requests;};
+export const user={id:'synthetic',_authUserId:'synthetic',role:'owner',name:'Kaine Denning',email:'owner@example.test',school_id:'synthetic'};
+export const school={id:'synthetic',name:'Reference workspace',plan:'free'};
+const handled=new Set(['getSettings','getSchool','getNotifConfig','getDigestConfig','getRolePermissions','getUserPermissions','getAdminNotifications','getNotifications','setSchool']);
+export const db=new Proxy({},{get(_target,name){return async(...args)=>{state();if(!handled.has(name))console.warn('[reference fixture] db.'+String(name));return {data:name==='getSchool'?school:[]};};}});
+export const supabase={
+ auth:{getSession:async()=>({data:{session:{user}}}),signInWithPassword:async()=>({error:{message:'Synthetic sign-in failure'}}),signOut:async()=>({data:{}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+ functions:{invoke:async(_name,{body}={})=>{
+  state().push({...body});
+  if(body?.action==='history.list')return{data:{conversations:[{id:'fixture',title:'Saved conversation',updated_at:'2026-11-16T12:00:00Z'}]}};
+  if(body?.action==='history')return{data:{messages:[{role:'assistant',content:'Saved fixture message. No real records were read.'}]}};
+  if(body?.action==='approvals.list')return{data:{approvals:[]}};
+  if(body?.action==='submit')return{data:{conversationId:'fixture',reply:'Synthetic submission received.'}};
+  throw Error('Unexpected API action: '+body?.action);
+ }},
+ from:()=>({select:()=>({eq:()=>({single:async()=>({data:user})})})}),
+ rpc:async(name)=>{state();return {data:null,error:{message:'Not implemented by the reference fixture: '+name}};},
+ storage:{from:()=>({})},
+ supabaseUrl:'https://synthetic.supabase.test',
+};`;
 const bundle=await build({configFile:false,logLevel:'error',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'reference-fixture',enforce:'pre',resolveId(id){if(id.endsWith('virtual:reference-fixture'))return '\0reference-fixture.jsx';if(id.endsWith('supabaseClient.js'))return '\0reference-service';},load(id){if(id==='\0reference-fixture.jsx')return entry;if(id==='\0reference-service')return stub;}}],build:{write:false,minify:false,lib:{entry:'virtual:reference-fixture',formats:['es']},rollupOptions:{output:{codeSplitting:false}}}});
 const output=(Array.isArray(bundle)?bundle[0]:bundle).output;
 const script=output.find(o=>o.type==='chunk').code;
@@ -71,7 +94,7 @@ try{
    });
    await page.goto('http://reference.test/'+screen);
    await page.addStyleTag({content:css});await page.addScriptTag({content:script,type:'module'});
-   await page.locator(screen==='landing'?'.reference-features':'.jd-welcome').waitFor();
+   try{await page.locator(screen==='landing'?'.reference-features':'.jd-welcome').waitFor({timeout:10000});}catch(error){const state=await page.locator('body').innerText().catch(()=>'<body unavailable>');throw new Error(`Reference ${screen} fixture failed to mount at ${width}x${height}. Browser errors: ${errors.join(' | ')||'none'}. Visible page: ${state.slice(0,1200)}. Original: ${error.message}`);}
    await page.evaluate(async()=>{await Promise.all([document.fonts.load('16px "JD Inter"'),document.fonts.load('32px "JD Script"')]);await document.fonts.ready;await Promise.all([...document.images].map(img=>img.decode()));});
    const measure=await page.evaluate(()=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,brokenImages:[...document.images].filter(i=>!i.naturalWidth).length,font:document.fonts.check('16px "JD Inter"'),scriptFont:document.fonts.check('32px "JD Script"')}));
    assert.ok(measure.documentWidth<=width,`${screen}: horizontal overflow ${JSON.stringify(measure)}`);assert.equal(measure.brokenImages,0);assert.ok(measure.font&&measure.scriptFont);
@@ -105,7 +128,7 @@ try{
     await page.getByRole('link',{name:'Explore the platform',exact:true}).click();
     assert.equal(new URL(page.url()).hash,'#product');
    }else{
-    await page.getByRole('heading',{name:'Good evening, Kaine.'}).waitFor();
+    await page.getByRole('heading',{name:/^(Good morning|Good afternoon|Good evening), Kaine\.$/}).waitFor();
     assert.equal(await page.locator('.jd-welcome .jd-action').count(),0);
     const geometry=await page.evaluate(()=>{const r=s=>{const x=document.querySelector(s).getBoundingClientRect();return{top:x.top,bottom:x.bottom,left:x.left,right:x.right}};return{header:r('.reference-workspace-header'),composer:r('.jd-compose'),scroll:r('.jd-scroll'),welcome:r('.jd-welcome')}});
     assert.ok(geometry.composer.bottom<=height, 'composer must be in viewport');
@@ -113,18 +136,46 @@ try{
     const barHeight=await page.evaluate(()=>getComputedStyle(document.querySelector('.reference-workspace-header')).height);
     assert.equal(Math.round(geometry.header.bottom),Math.round(parseFloat(barHeight)),'top bar height matches its stylesheet');
     const input=page.getByRole('textbox',{name:'Message JD'});
+    // The drawer is an overlay on small screens and starts open on tablets, so
+    // close it explicitly before reaching for header controls behind it.
+    const navToggle=page.locator('[data-tour="workspace-menu"]');
+    if(width<768){
+      if(await navToggle.getAttribute('aria-expanded')==='true')await page.keyboard.press('Escape');
+      assert.equal(await navToggle.getAttribute('aria-expanded'),'false','drawer is closed before header work');
+      await navToggle.click();
+      assert.equal(await navToggle.getAttribute('aria-expanded'),'true','drawer opens');
+      await page.keyboard.press('Escape');
+      assert.equal(await navToggle.getAttribute('aria-expanded'),'false','Escape closes the drawer');
+      assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-tour')==='workspace-menu'),true,'focus returns to the toggle');
+    }else{
+      assert.equal(await navToggle.getAttribute('aria-expanded'),'true','the desktop sidebar is persistent, not an overlay');
+    }
     await page.getByRole('button',{name:'Switch to dark mode'}).click();
     assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'dark');
     await page.getByRole('button',{name:'Switch to light mode'}).click();
-    await page.getByRole('button',{name:'Open navigation',exact:true}).click();
-    assert.equal(await page.getByRole('button',{name:'Close or collapse navigation'}).getAttribute('aria-expanded'),'true');
-    await page.getByRole('button',{name:'Close or collapse navigation'}).click();
-    const actions=[];
-    for(const [name,action] of [['My profile','profile'],['Help / Product Tour','help'],['Notifications','notifications'],['Account settings','profile']]){
-      const control=page.getByRole('button',{name,exact:true});
-      if(await control.isVisible()){await control.click();actions.push(action);}
-    }
-    assert.deepEqual(await page.evaluate(()=>window.__actions),actions);
+    assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'light');
+    // Each header control runs its real handler; the surface it opens is then
+    // asserted and dismissed, so header wiring cannot silently break.
+    // Header controls are scoped to the top bar: the drawer exposes its own
+    // account button with the same accessible name.
+    const header=page.locator('.reference-workspace-header');
+    await header.getByRole('button',{name:'My profile',exact:true}).click();
+    await page.getByRole('dialog',{name:'My Profile',exact:true}).waitFor();
+    await page.getByRole('dialog',{name:'My Profile',exact:true}).getByRole('button',{name:'Close dialog'}).click();
+    await page.getByRole('dialog',{name:'My Profile',exact:true}).waitFor({state:'hidden'});
+    await header.getByRole('button',{name:'Help / Product Tour',exact:true}).click();
+    await page.locator('.jd-tour-card').waitFor();
+    await page.getByRole('button',{name:'Close product tour'}).click();
+    await page.locator('.jd-tour-card').waitFor({state:'hidden'});
+    await header.getByRole('button',{name:'Notifications',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>window.__actions),['My profile','Help / Product Tour','Notifications'],'header controls reach their real handlers');
+    // The global Review Centre is part of the shell, not a per-page affordance.
+    assert.equal(await header.getByRole('button',{name:'Open Review Centre',exact:true}).count(),1);
+    assert.ok((await page.evaluate(()=>window.__requests.filter(r=>r.action==='approvals.list').length))>=1,'the shell checks pending approvals through the synthetic client');
+    // On phones the history trigger sits inside the workspace drawer, matching
+    // the real responsive shell rather than a bespoke fixture.
+    if(await page.getByRole('button',{name:'Open menu and conversation history'}).count()===0)
+      await page.evaluate(()=>window.__appNavigate('Conversation history'));
     await page.getByRole('button',{name:'Open menu and conversation history'}).click();
     await page.getByRole('button',{name:/Saved conversation/}).click();
     await page.getByText('Saved fixture message. No real records were read.').waitFor();
