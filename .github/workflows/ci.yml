@@ -50,6 +50,12 @@ jobs:
       - name: Test navigation search and mobile drawer behaviour
         run: npm run test:navigation
 
+      # The header's Review Centre launcher already took the whole workspace
+      # down once ("pendingApprovalCount is not defined"). It must render with
+      # no props, like the real header mounts it.
+      - name: Test workspace shell launcher renders standalone
+        run: npm run test:shell-ui
+
       - name: Test backend assignment compatibility and release safety
         run: npm run test:backend-release
 

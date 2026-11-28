@@ -99,7 +99,7 @@ export function ReviewCentre({ onClose, onDecision, client=supabase }) {
       <div className="jd-review-summary"><strong>{pending.length}</strong><span>pending review</span><span className="jd-review-counts">{statusCounts.approved} approved · {statusCounts.rejected} rejected · {statusCounts.expired} expired</span><span className="jd-review-total">{items.length} total requests</span></div>
       {loading?<div className="jd-review-empty">Loading review requests…</div>:items.length===0?<div className="jd-review-empty"><ShieldCheck size={25}/><strong>Nothing to review</strong><span>New high-impact requests from JD will appear here.</span></div>:<div className="jd-review-list">
         {items.map((item)=>(
-          <article className="jd-review-card" key={item.id}>
+          <article className="jd-review-card" key={(item.source==="connector"?"connector:":"workspace:")+item.id}>
             <div className="jd-review-card-top"><span className={"jd-review-status "+item.status} role="status" aria-label={"Approval status: "+item.status}>{item.status.replaceAll("_"," ")}</span><span className="jd-review-date"><Clock3 size={12}/>{new Date(item.created_at).toLocaleString()}</span></div>
             <h3>{item.title||"JD action request"}</h3>
             {item.action_key==="organisation.provision_departments"&&<div className="jd-review-jd-tag">✦ Prepared by JD · {item.proposal_json?.blueprint?.departments?.length||0} proposed departments</div> }

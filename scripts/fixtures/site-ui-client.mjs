@@ -10,6 +10,18 @@ export const school={id:'ui-workspace',name:'Reference workspace',plan:'free',st
 const settings={school_name:school.name,workspace_type:'business',inactivity_timeout_minutes:'0',name_order:'FML',name_case:'title'};
 const record=(kind,name,args)=>{window.__siteCalls??=[];window.__siteCalls.push({kind,name,args});};
 const fail=name=>{window.__siteUnexpected??=[];window.__siteUnexpected.push(name);return{error:{message:'UI fixture does not implement '+name}};};
+// RPC is deliberately stubbed, never faked as success: the workspace shell
+// records route telemetry with supabase.rpc(...), and the admin dashboard reads
+// its intelligence snapshot. A fixture without it crashes the whole shell with
+// "supabase.rpc is not a function", which is what CI hit. Reads that render a
+// page therefore answer with an explicit "not implemented" error the UI must
+// surface; the fire-and-forget telemetry call is recorded and ignored like the
+// real client does when the call fails.
+const rpcResponses={
+ jd_admin_intelligence_snapshot:()=>({error:{message:'UI fixture does not implement rpc.jd_admin_intelligence_snapshot'}}),
+};
+export const rpcCalls=[];
+const rpc=(name,args={})=>{rpcCalls.push({name,args});window.__siteRpcCalls=rpcCalls;return Promise.resolve(rpcResponses[name]?rpcResponses[name](args):{data:null,error:null});};
 const emptyReads=['getAdminNotifications','getNotifications','getRolePermissions','getUserPermissions','getPermissionAuditLog','getEmailBatches','getHiringRolesWithCounts','getHiringApplications','getHires','getOrgTools','getAdminAuditLog'];
 const reads={
  getSettings:()=>({data:Object.entries(settings).map(([key,value])=>({key,value}))}),
@@ -78,4 +90,8 @@ export const supabase={
   return Object.hasOwn(map,body.action)?{data:structuredClone(map[body.action])}:fail(name+':'+body.action);
  }},
  from:()=>({select:()=>({eq:()=>({single:async()=>({data:user})})})}),
+ rpc,
+ // Anything that would leave the browser is a fixture gap, not a silent pass.
+ storage:{from:()=>fail('storage.from')},
+ supabaseUrl:'https://synthetic.supabase.test',
 };
