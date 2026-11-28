@@ -180,7 +180,7 @@ function friendlyActivityLabel(name) {
   return key.replace(/[_\\.]+/g, " ").replace(/\\b\\w/g, character => character.toUpperCase());
 }
 
-export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onReturnHome = null}) {
+export function ChatHome({navigationRequest, user, organizationName = "Your organisation", organizationId = user?.school_id, project = null, initialExecutionMode = "execute", initialDraft = "", initialConversationId = null, onOpenPreview = null, onReturnHome = null, onSubviewChange = null}) {
   const [draft, setDraft] = useState(initialDraft || "");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [executionMode, setExecutionMode] = useState(["ask","plan","execute"].includes(initialExecutionMode) ? initialExecutionMode : "execute");
@@ -488,6 +488,11 @@ export function ChatHome({navigationRequest, user, organizationName = "Your orga
     setConversationId(null); conversationIdRef.current = null; conversationCreationRef.current = null; setMessages([]); setDraft(""); setError(""); setHistoryOpen(false);setShowConnectors(false);setSelectedConnectorId(null);onReturnHome?.();
   };
   const handledNavigation = useRef(null);
+  const subviewOpen = Boolean(showConnectors || historyOpen || showRuns || showWorkforce || showUsage || showDepartments || showReview);
+  useEffect(() => {
+    onSubviewChange?.(subviewOpen);
+  }, [subviewOpen, onSubviewChange]);
+  useEffect(() => () => { onSubviewChange?.(false); }, [onSubviewChange]);
   useEffect(() => {
     if (!navigationRequest || handledNavigation.current === navigationRequest) return;
     handledNavigation.current = navigationRequest;

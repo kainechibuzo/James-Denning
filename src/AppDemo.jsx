@@ -1179,6 +1179,7 @@ function AppInner(){
   const [creatingProject,setCreatingProject] = useState(false);
   const [createProjectError,setCreateProjectError] = useState("");
   const [usageSummary,setUsageSummary] = useState(null);
+  const [chatSubviewOpen,setChatSubviewOpen] = useState(false);
   const {dark,toggle:toggleDark} = useDark();
   const [collapsedGroups,setCollapsedGroups] = useState(new Set());
   const [sidebarSearch,setSidebarSearch] = useState("");
@@ -1536,7 +1537,7 @@ function AppInner(){
     navigationToggleRef.current?.focus();
   };
   const closeSideOnMobile = closeSide;
-  const showRootDock = page === "jd-chat" && !activeProject && !(assistantRequest?.view && assistantRequest.view !== "chat");
+  const showRootDock = page === "jd-chat" && !activeProject && !chatSubviewOpen && !(assistantRequest?.view && assistantRequest.view !== "chat");
 
   return(
     <div className={`jd-workspace-shell jd-shell-v2${showRootDock ? " jd-shell-has-dock" : ""}`} inert={showWorkspaceSwitch ? "" : undefined} style={{display:"flex",flexDirection:"column",minHeight:"100vh",background:"var(--jd-paper)",
@@ -1852,6 +1853,7 @@ function AppInner(){
                 navigationRequest={assistantRequest}
                 initialConversationId={rootConversationId}
                 onReturnHome={()=>setAssistantRequest(null)}
+                onSubviewChange={setChatSubviewOpen}
               />
             )
           ) : <AccessDenied/>)}

@@ -44,7 +44,7 @@ export function AccountProfileSheet({
               </div>
             </div>
           </div>
-          <button type="button" className="jd-icon-circle" aria-label="Close account menu" onClick={onClose}>
+          <button type="button" className="jd-icon-circle" aria-label="Close dialog" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
