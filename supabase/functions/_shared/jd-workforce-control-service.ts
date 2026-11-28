@@ -14,6 +14,34 @@ export async function handleWorkforceControl({payload,admin,profile,actorId,json
   });
   return !error;
  };
+ if(payload?.action==="workforce.specialist.catalogue"){
+  const builtin=[
+   {specialist_kind:"builtin",specialist_ref:"business_advisor",name:"Business Advisor"},
+   {specialist_kind:"builtin",specialist_ref:"research_analyst",name:"Research Analyst"},
+   {specialist_kind:"builtin",specialist_ref:"finance_analyst",name:"Finance Analyst"},
+   {specialist_kind:"builtin",specialist_ref:"operations_planner",name:"Operations Planner"},
+   {specialist_kind:"builtin",specialist_ref:"product_designer",name:"Product Designer"},
+   {specialist_kind:"builtin",specialist_ref:"software_engineer",name:"Software Engineer"},
+   {specialist_kind:"builtin",specialist_ref:"security_reviewer",name:"Security Reviewer"},
+   {specialist_kind:"builtin",specialist_ref:"quality_assurance",name:"Quality Assurance"}
+  ].map(item=>({...item,hireable:true,version:null,pricing:null,pricing_status:"not_configured",permissions_status:"configured_at_proposal"}));
+  const {data,error}=await admin.rpc("jd_list_workforce_specialists",{p_actor:actorId});
+  if(error||!data||data.hiring_enabled!==false||data.billing_enabled!==false)
+   return json({error:"Published specialist eligibility could not be verified. No hiring action was created."},503);
+  const registry=(Array.isArray(data.specialists)?data.specialists:[]).map((item:any)=>({
+   specialist_kind:"registry",specialist_ref:item.specialist_ref||item.agent_id||item.id,
+   specialist_version:item.specialist_version||item.version,
+   name:item.name||item.display_name||"Published specialist",
+   department:item.department||null,purpose:item.purpose||null,
+   responsibilities:Array.isArray(item.responsibilities)?item.responsibilities:[],
+   requested_access:Array.isArray(item.requested_access)?item.requested_access:[],
+   hireable:true,pricing:null,pricing_status:"not_configured",
+   permissions_status:"proposal_scoped"
+  })).filter((item:any)=>uuid(item.specialist_ref)&&Number.isInteger(item.specialist_version)&&item.specialist_version>0);
+  if(!await auditEvent("workforce.specialist.catalogue.viewed",{builtin_count:builtin.length,registry_count:registry.length}))
+   return json({error:"Catalogue read succeeded but its audit receipt could not be confirmed."},503);
+  return json({specialists:[...builtin,...registry],read_only:true,hiring_enabled:false,billing_enabled:false,pricing_configured:false});
+ }
  if(payload?.action==="workforce.control.snapshot"){
   const [employees,teams,members,assignments,budgets,employeeUsage,teamBudgets,lifecycle]=await Promise.all([
    admin.from("jd_workforce_employees").select("id,agent_kind,agent_ref,agent_version,display_name,department,role_title,purpose,responsibilities,requested_access,lifecycle_state,created_at,updated_at,retired_at").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100),
