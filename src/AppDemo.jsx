@@ -15,6 +15,7 @@ import { PERM_ROLE_DEFAULTS } from './config/permissions.mjs';
 import { HeritageRule, HeritageWordmark } from "./components/reference-brand.jsx";
 import "./styles/reference-design.css";
 import { ChatHome } from "./chat/ChatHome.jsx";
+import { ReviewCentre } from "./chat/ReviewCentre.jsx";
 import { searchNavigation, isNavGroupCollapsed } from "./config/navigation-search.mjs";
 import { canOpenOperations, WORKSPACE_NAVIGATION, buildWorkspaceNavigation, defaultCollapsedGroups, businessGroupForPage } from "./config/workspace-navigation.mjs";
 import { bindMobileNavigation } from "./components/mobile-navigation.mjs";
@@ -1157,6 +1158,30 @@ function AppInner(){
   const [showProfile,setShowProfile]   = useState(false);
   const [showLogout,setShowLogout]     = useState(false);
   const [showTour,setShowTour]         = useState(false);
+  const [showGlobalReview,setShowGlobalReview]=useState(false);
+  const [pendingApprovalCount,setPendingApprovalCount]=useState(0);
+  const dismissedApprovalIds=useRef(new Set());
+  const reviewPromptReady=useRef(false);
+  useEffect(()=>{
+    if(!user||!["owner","admin"].includes(user.role))return;
+    let alive=true;
+    const check=async()=>{
+      try{
+        const {data,error}=await supabase.functions.invoke("jd-automation",{body:{action:"approvals.list"}});
+        if(error||data?.error||!Array.isArray(data?.approvals))return;
+        const pending=data.approvals.filter(item=>item.status==="pending");
+        if(!alive)return;
+        setPendingApprovalCount(pending.length);
+        if(!reviewPromptReady.current){reviewPromptReady.current=true;return;}
+        const unseen=pending.find(item=>!dismissedApprovalIds.current.has(item.id));
+        if(unseen)setShowGlobalReview(true);
+      }catch{}
+    };
+    void check();
+    const timer=window.setInterval(check,60000);
+    return()=>{alive=false;window.clearInterval(timer);};
+  },[user?._authUserId||user?.id,user?.role,selectedSchool?.id]);
+
   // showInactivityWarning replaced by useInactivityTimeout hook below
   const [rolePerms,setRolePerms]       = useState([]);
   const [userPerms,setUserPerms]       = useState([]);
@@ -1536,6 +1561,7 @@ function AppInner(){
               title="Help / Product Tour" aria-label="Help / Product Tour">
               <HelpCircle size={19}/>
             </button>
+            <button type="button" onClick={()=>setShowGlobalReview(true)} aria-label={pendingApprovalCount?pendingApprovalCount+" pending approvals":"Open Review Centre"} title="Review Centre" style={{position:"relative",border:0,background:"transparent",color:"var(--jd-ink)",padding:8,cursor:"pointer"}}><Shield size={19}/>{pendingApprovalCount>0&&<span style={{position:"absolute",top:1,right:0,minWidth:16,height:16,borderRadius:10,background:"var(--jd-ink)",color:"var(--jd-paper)",fontSize:10,lineHeight:"16px",textAlign:"center",padding:"0 3px"}}>{pendingApprovalCount>99?"99+":pendingApprovalCount}</span>}</button>
             <NotificationBell ctx={ctx}/>
             <button className="reference-settings" data-account-settings type="button" aria-label={user.role==="admin"?"Open settings":"Account settings"} title="Settings"
               onClick={()=>{if(user.role==="admin")setPage("settings");else setShowProfile(true);}}><Settings size={19}/></button>
@@ -1582,6 +1608,8 @@ function AppInner(){
           onStay={inactivity.stayLoggedIn}
           onLogout={doLogout}/>
       )}
+
+      {showGlobalReview&&<ReviewCentre onClose={()=>{setShowGlobalReview(false);}} onDecision={()=>{dismissedApprovalIds.current=new Set();void supabase.functions.invoke("jd-automation",{body:{action:"approvals.list"}}).then(({data})=>setPendingApprovalCount((data?.approvals||[]).filter(item=>item.status==="pending").length)).catch(()=>{});}}/>}
 
       {/* Logout dialog */}
       {showLogout&&<LogoutDialog onConfirm={doLogout} onCancel={()=>setShowLogout(false)}/>}
