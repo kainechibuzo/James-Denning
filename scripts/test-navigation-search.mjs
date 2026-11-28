@@ -85,7 +85,10 @@ test("mobile closed drawer is inert, scroll is bounded, binding has lifecycle cl
   assert.match(shell, /flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain"/);
   assert.match(shell, /return bindMobileNavigation\(sidebarRef\.current/);
   assert.match(shell, /\[isMobile,sideOpen,user\?\.id,user\?\.role,selectedSchool\?\.id\]/);
-  assert.match(shell, /useState\(\(\)=>window\.location\.pathname==="\/admin"\?"admin-dashboard":"jd-chat"\)/);
+  // The initial page is resolved from the URL (payment returns, ?page= links,
+  // bookmarks); the default destination is still the assistant.
+  assert.match(shell, /useState\(\(\)=>pageFromLocation\(window\.location\)\)/);
+  assert.match(shell, /from "\.\/config\/workspace-routes\.mjs"/);
 });
 test("shell has no legacy demo tenant, sandbox banner or shared credentials", () => {
   assert.doesNotMatch(shell, /STAGING SANDBOX|safe to break|admin password: "sandbox"|DEMO WORKSPACE|SCHOOL_SLUGS|\?school=/);

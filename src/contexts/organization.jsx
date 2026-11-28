@@ -35,15 +35,28 @@ export function OrganizationProvider({ children }) {
     if (m.workspace_type) { setWorkspaceType(m.workspace_type); storeWorkspaceType(m.workspace_type); }
   }, []);
 
-  useEffect(() => {
-    db.getSettings().then(({ data }) => applySettings(data));
+  // Settings are a decoration: a name, a logo and a workspace label. A failed read
+  // (offline, expired token, 5xx) must leave the defaults above in place rather than
+  // escaping as an unhandled rejection that tears down the workspace around it.
+  const loadSettings = useCallback(() => {
+    const unavailable = (error) => console.warn("[JD] organisation settings unavailable; keeping local defaults.", error?.message || error);
+    try {
+      const request = db.getSettings();
+      if (!request || typeof request.then !== "function") return;
+      request.then(({ data } = {}) => applySettings(data)).catch(unavailable);
+    } catch (error) {
+      // The client can also throw synchronously (helper missing or misconfigured).
+      unavailable(error);
+    }
   }, [applySettings]);
+
+  useEffect(() => { loadSettings(); }, [loadSettings]);
 
   const refreshOrganization = useCallback((org) => {
     if (org?.name) setOrgName(org.name);
     if (org?.logo) { setOrgLogo(org.logo); applyFavicon(org.logo); }
   }, []);
-  const refreshLogo = useCallback(() => { db.getSettings().then(({ data }) => applySettings(data)); }, [applySettings]);
+  const refreshLogo = useCallback(() => { loadSettings(); }, [loadSettings]);
   const refreshWorkspace = useCallback((nextType) => {
     const value = nextType || PRODUCT.defaultIndustry;
     setWorkspaceType(value); storeWorkspaceType(value);

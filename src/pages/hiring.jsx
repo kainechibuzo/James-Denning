@@ -180,14 +180,20 @@ export function OrgPresetSelectPage({ ctx }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const loadPresets = useCallback(() => {
     setLoading(true); setError(null);
-    db.getOrgPresets().then(({ data, error }) => {
-      if (error) { setError(error.message); }
-      else setPresets(data || []);
-      setLoading(false);
-    });
+    Promise.resolve()
+      .then(() => db.getOrgPresets())
+      .then(({ data, error } = {}) => {
+        if (error) { setError(error.message); }
+        else setPresets(data || []);
+      })
+      // A dropped connection must land on the retryable error state, not a spinner.
+      .catch(e => setError(e?.message || "Could not load presets right now."))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { loadPresets(); }, [loadPresets]);
 
   const choose = (p) => {
     setPageParam({ presetKey: p.key });
@@ -203,8 +209,7 @@ export function OrgPresetSelectPage({ ctx }) {
         ? <div style={{ padding: 48, textAlign: "center" }}><Spinner text="Loading…"/></div>
         : error
           ? <EmptyState icon={<AlertTriangle size={28} color={C.red}/>} title="Could not load presets"
-              message={error} action={<Btn onClick={() => { setLoading(true); setError(null);
-                db.getOrgPresets().then(({ data, error }) => { if (error) setError(error.message); else setPresets(data || []); setLoading(false); }); }}>Retry</Btn>}/>
+              message={error} action={<Btn onClick={loadPresets}>Retry</Btn>}/>
           : <>
               <div style={{ fontSize: 13, color: "var(--jd-muted)", marginBottom: 12 }}>
                 <Sparkles size={13} style={{ verticalAlign: "-2px", marginRight: 4 }}/>
@@ -229,10 +234,9 @@ export function OrgCreatePage({ ctx }) {
   useEffect(() => {
     const presetKey = pageParam?.presetKey;
     if (!presetKey) { setLoading(false); return; }
-    db.getOrgPresets().then(({ data }) => {
+    Promise.resolve().then(() => db.getOrgPresets()).then(({ data } = {}) => {
       setPreset((data || []).find(p => p.key === presetKey) || null);
-      setLoading(false);
-    });
+    }).catch(() => setPreset(null)).finally(() => setLoading(false));
     setPageParam(null); // one-shot channel — cleared after reading
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -282,10 +286,9 @@ export function OrgSignupModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    db.getOrgPresets().then(({ data }) => {
+    Promise.resolve().then(() => db.getOrgPresets()).then(({ data } = {}) => {
       setPresets(data || []);
-      setLoading(false);
-    });
+    }).catch(() => setPresets([])).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -436,24 +439,27 @@ export function PublicHireLanding() {
 
   const loadRole = useCallback(() => {
     if (!slug) { setError("This application link is not valid."); setLoading(false); return; }
-    db.publicGetRoleBySlug(slug).then(({ data, error }) => {
+    Promise.resolve().then(() => db.publicGetRoleBySlug(slug)).then(({ data, error } = {}) => {
       if (error) setError("Could not load this role right now. Please try again.");
       else if (!data) setError("This role is no longer accepting applications.");
       else setRole(data);
-      setLoading(false);
-    });
+    })
+      .catch(() => setError("Could not load this role right now. Please try again."))
+      .finally(() => setLoading(false));
   }, [slug]);
 
   const loadThread = useCallback(() => {
     if (!token) return;
-    db.publicGetThread(token).then(({ data, error }) => {
+    // Polled every 15s: a single failed poll keeps the last known thread.
+    Promise.resolve().then(() => db.publicGetThread(token)).then(({ data, error } = {}) => {
       if (error || !data || data.ok === false) {
         setError("This application link is not valid. If you believe this is a mistake, contact the school.");
-        setLoading(false); return;
+        return;
       }
       setThread(data);
-      setLoading(false);
-    });
+    })
+      .catch(() => setError("Could not refresh this application right now. Please try again."))
+      .finally(() => setLoading(false));
   }, [token]);
 
   useEffect(() => { if (token) loadThread(); else loadRole(); }, [token, loadThread, loadRole]);
@@ -713,32 +719,52 @@ export function HiringPage({ ctx }) {
   const [quotaNote, setQuotaNote] = useState("");
   const [quotaSaving, setQuotaSaving] = useState(false);
 
-  const loadRoles = () => { setRolesLoading(true); db.getHiringRolesWithCounts().then(({ data }) => { setRoles(data || []); setRolesLoading(false); }); };
-  const loadApps = () => { setAppsLoading(true); db.getHiringApplications().then(({ data }) => { setApps(data || []); setAppsLoading(false); }); };
+  // Each loader owns a spinner. A rejected read must always clear it, otherwise the
+  // tab spins forever with no way to retry.
+  const loadRoles = () => {
+    setRolesLoading(true);
+    Promise.resolve().then(() => db.getHiringRolesWithCounts())
+      .then(({ data } = {}) => setRoles(data || []))
+      .catch(() => setRoles([]))
+      .finally(() => setRolesLoading(false));
+  };
+  const loadApps = () => {
+    setAppsLoading(true);
+    Promise.resolve().then(() => db.getHiringApplications())
+      .then(({ data } = {}) => setApps(data || []))
+      .catch(() => setApps([]))
+      .finally(() => setAppsLoading(false));
+  };
   const loadHires = () => {
     setHiresLoading(true);
-    db.getHires().then(async ({ data }) => {
-      const rows = data || [];
-      const withProgress = await Promise.all(rows.map(async (h) => {
-        const { data: entries } = await db.getHireQuotaEntries(h.id);
-        const total = (entries || []).reduce((a, e) => a + (parseFloat(e.value) || 0), 0);
-        const target = parseFloat(h.quota_target) || 0;
-        return { ...h, _logged: total, _pct: target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0 };
-      }));
-      setHires(withProgress);
-      setHiresLoading(false);
-    });
+    Promise.resolve().then(() => db.getHires())
+      .then(async ({ data } = {}) => {
+        const rows = data || [];
+        const withProgress = await Promise.all(rows.map(async (h) => {
+          // One unreadable quota must not blank the whole list of hires.
+          const { data: entries } = await Promise.resolve()
+            .then(() => db.getHireQuotaEntries(h.id))
+            .catch(() => ({ data: [] }));
+          const total = (entries || []).reduce((a, e) => a + (parseFloat(e.value) || 0), 0);
+          const target = parseFloat(h.quota_target) || 0;
+          return { ...h, _logged: total, _pct: target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0 };
+        }));
+        setHires(withProgress);
+      })
+      .catch(() => setHires([]))
+      .finally(() => setHiresLoading(false));
   };
 
   useEffect(() => {
-    db.getOrgTools().then(({ data }) => setTools(data || []));
+    Promise.resolve().then(() => db.getOrgTools()).then(({ data } = {}) => setTools(data || [])).catch(() => setTools([]));
     loadRoles(); loadApps(); loadHires();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshAppDetail = useCallback((id) => {
     if (!id) return;
-    db.getHiringApplication(id).then(({ data }) => { if (data) setAppDetail(data); });
-    db.getHiringMessages(id).then(({ data }) => setAppMsgs(data || []));
+    // Polled every 30s: a single failed poll keeps the detail already on screen.
+    Promise.resolve().then(() => db.getHiringApplication(id)).then(({ data } = {}) => { if (data) setAppDetail(data); }).catch(() => {});
+    Promise.resolve().then(() => db.getHiringMessages(id)).then(({ data } = {}) => setAppMsgs(data || [])).catch(() => {});
   }, []);
 
   const hireMsgFor = (hireId) => {
@@ -748,9 +774,9 @@ export function HiringPage({ ctx }) {
 
   const refreshHire = useCallback((id) => {
     if (!id) return;
-    db.getHire(id).then(({ data }) => { if (data) setHireDetail(data); });
-    db.getHireQuotaEntries(id).then(({ data }) => setHireEntries(data || []));
-    db.getHiringMessages(hireMsgFor(id)).then(({ data }) => setHireMsgs(data || []));
+    Promise.resolve().then(() => db.getHire(id)).then(({ data } = {}) => { if (data) setHireDetail(data); }).catch(() => {});
+    Promise.resolve().then(() => db.getHireQuotaEntries(id)).then(({ data } = {}) => setHireEntries(data || [])).catch(() => {});
+    Promise.resolve().then(() => db.getHiringMessages(hireMsgFor(id))).then(({ data } = {}) => setHireMsgs(data || [])).catch(() => {});
   }, [hireMsgFor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Email alert for brand-new applications — reuses the existing sendAdminAlert
@@ -758,7 +784,7 @@ export function HiringPage({ ctx }) {
   // batch; high-water mark persisted in school_settings.
   useEffect(() => {
     if (!apps.length) return;
-    db.getSettings().then(({ data }) => {
+    Promise.resolve().then(() => db.getSettings()).then(({ data } = {}) => {
       const m = {}; (data || []).forEach(r => { m[r.key] = r.value; });
       const last = parseInt(m.hiring_alerted_upto || "0", 10);
       const fresh = apps.filter(a => a.id > last);
@@ -770,12 +796,12 @@ export function HiringPage({ ctx }) {
         rows.push(`Applicant: ${a.applicant_name}`);
         rows.push(`Asking price: ${a.asking_price != null ? fmtNum(a.asking_price) : (a.asking_price_note || "—")}`);
       });
-      db.sendAdminAlert({
+      Promise.resolve().then(() => db.sendAdminAlert({
         subject: `[Alert] ${fresh.length} New Application${fresh.length > 1 ? "s" : ""} — ${selectedSchool?.name || "Portal"}`,
         html: buildAlertEmail(`New Hiring Application${fresh.length > 1 ? "s" : ""}`, rows, "info", selectedSchool?.name || "Business Portal"),
         eventKey: "hiring_application",
-      });
-      db.setSetting("hiring_alerted_upto", String(newest)).catch(() => {});
+      })).catch(() => {});
+      Promise.resolve().then(() => db.setSetting("hiring_alerted_upto", String(newest))).catch(() => {});
     }).catch(() => {});
   }, [apps]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -933,7 +959,7 @@ export function HiringPage({ ctx }) {
           <span>The hiring tool is currently disabled for this school (set by its school preset).</span>
           <Btn sm color="var(--jd-text)" onClick={async () => {
             const { error } = await db.setOrgTool("hiring", true);
-            if (error) notify(error.message, "error"); else { notify("Hiring tool enabled ✓"); db.getOrgTools().then(({ data }) => setTools(data || [])); }
+            if (error) notify(error.message, "error"); else { notify("Hiring tool enabled ✓"); Promise.resolve().then(() => db.getOrgTools()).then(({ data } = {}) => setTools(data || [])).catch(() => {}); }
           }}>Enable hiring</Btn>
         </div>
       )}

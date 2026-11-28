@@ -1,7 +1,7 @@
 {
   "name": "james-denning",
   "version": "1.0.0",
-  "description": "JAMES-DENNING — Organization Operations Workspace",
+  "description": "JAMES-DENNING \u2014 Organization Operations Workspace",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -38,6 +38,8 @@
     "test:history": "node --test scripts/test-run-history.mjs scripts/test-run-monitor-ui.mjs",
     "test:admin-intelligence": "node --test scripts/test-admin-intelligence.mjs",
     "test:navigation": "node --test scripts/test-navigation-search.mjs scripts/test-mobile-navigation.mjs scripts/test-workspace-navigation.mjs scripts/test-workspace-switch.mjs scripts/test-workspace-identity.mjs scripts/test-workspace-activation-ui.mjs scripts/test-assistant-navigation.mjs",
+    "test:robustness": "node --test scripts/test-workspace-robustness.mjs",
+    "test:routes": "node --test scripts/test-workspace-routes.mjs",
     "test:site-layout": "node scripts/test-site-design-layout.mjs",
     "test:dependency-security": "node --test scripts/test-picomatch-security.mjs",
     "test:conversation-layout": "node scripts/test-conversation-layout.mjs",

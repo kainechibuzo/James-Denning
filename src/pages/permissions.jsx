@@ -20,12 +20,28 @@ export function PermissionsPage({ctx}){
   const [auditLoading,setAuditLoading]=useState(false);
   const actor=(user&&(user._authUserId||user.id))||"admin";
 
-  const reload=async()=>{const {data}=await db.getRolePermissions(null);setRolePerms(data||[]);};
-  useEffect(()=>{reload().finally(()=>setLoading(false));},[]);
+  const reload=async()=>{
+    // Keep the matrix usable when the read fails; the caller still decides what to
+    // report. Throwing synchronously (client misconfigured) must be caught too.
+    try{
+      const {data}=await db.getRolePermissions(null);
+      setRolePerms(data||[]);
+    }catch(error){
+      console.warn("[JD] role permissions unavailable.",error?.message||error);
+    }
+  };
+  useEffect(()=>{
+    Promise.resolve().then(reload)
+      .catch(error=>console.warn("[JD] role permissions unavailable.",error?.message||error))
+      .finally(()=>setLoading(false));
+  },[]);
   useEffect(()=>{
     if(tab!=="audit")return;
     setAuditLoading(true);
-    db.getPermissionAuditLog(200).then(({data})=>{setAudit(data||[]);setAuditLoading(false);});
+    Promise.resolve().then(()=>db.getPermissionAuditLog(200))
+      .then(({data}={})=>setAudit(data||[]))
+      .catch(()=>setAudit([]))
+      .finally(()=>setAuditLoading(false));
   },[tab]);
 
   const isOn=(r,permId)=>{
@@ -33,22 +49,39 @@ export function PermissionsPage({ctx}){
     if(row!==undefined)return row.allowed;
     return (PERM_ROLE_DEFAULTS[r]||[]).includes(permId);
   };
+  // A permission change is only reported once the write is confirmed; otherwise the
+  // matrix would claim a grant the backend never accepted.
   const toggle=async(permId)=>{
     const current=isOn(role,permId);
     setSaving(true);
-    const {error}=await db.setRolePermission(role,permId,!current);
-    if(!error){try{await db.logPermissionChange(actor,"role_perm",role,null,permId,current,!current);}catch{}}
-    await reload();setSaving(false);
-    if(error)notify(error.message||"Permission could not be saved","error");
-    else notify(`${permId} ${!current?"enabled":"disabled"} for ${role}`);
+    try{
+      const {error}=await db.setRolePermission(role,permId,!current);
+      if(error)throw error;
+      try{await db.logPermissionChange(actor,"role_perm",role,null,permId,current,!current);}catch{}
+      await reload();
+      notify(`${permId} ${!current?"enabled":"disabled"} for ${role}`);
+    }catch(error){
+      notify(error?.message||"Permission could not be saved","error");
+    }finally{
+      setSaving(false);
+    }
   };
   const resetDefaults=async()=>{
     setSaving(true);
     const defaults=PERM_ROLE_DEFAULTS[role]||[];
     const all=PERM_GROUPS.flatMap(g=>g.perms);
-    await Promise.all(all.map(p=>db.setRolePermission(role,p.id,defaults.includes(p.id))));
-    try{await db.logPermissionChange(actor,"role_reset",role,null,"ALL",null,"defaults");}catch{}
-    await reload();setSaving(false);notify(`${role} reset to defaults`);
+    try{
+      const results=await Promise.all(all.map(p=>db.setRolePermission(role,p.id,defaults.includes(p.id))));
+      const failed=results.filter(r=>r?.error);
+      if(failed.length)throw new Error(failed[0].error.message||`${failed.length} permissions could not be reset`);
+      try{await db.logPermissionChange(actor,"role_reset",role,null,"ALL",null,"defaults");}catch{}
+      await reload();
+      notify(`${role} reset to defaults`);
+    }catch(error){
+      notify(error?.message||"Permissions could not be reset","error");
+    }finally{
+      setSaving(false);
+    }
   };
 
   const tabBtn=(id,label,Icon)=>(
