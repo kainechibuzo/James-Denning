@@ -1,5 +1,5 @@
 /* Lovable-inspired structural shell styled strictly in James-Denning's
-   heritage paper / true-black surfaces, ink palette, and JD Inter / Caslon / Script fonts. */
+   Heritage Paper / Navy / True-Black design language. */
 
 .jd-shell-v2 {
   display: flex;
@@ -8,8 +8,8 @@
   max-width: 100%;
   overflow-x: clip;
   background: var(--jd-paper, #f6efe4);
-  color: var(--jd-text, #22252b);
-  font-family: 'JD Inter', Inter, system-ui, -apple-system, sans-serif;
+  color: var(--jd-ink, #22252b);
+  font-family: var(--jd-font-ui, 'JD Inter', Inter, system-ui, -apple-system, sans-serif);
 }
 
 .jd-shell-v2 .jd-topbar {
@@ -24,38 +24,48 @@
   flex: 1;
 }
 
+.jd-topbar-divider {
+  color: var(--jd-ink-muted, #62636b);
+  opacity: 0.45;
+  font-size: 14px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
 .jd-org-pill,
 .jd-project-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  max-width: min(320px, 60vw);
-  padding: 5px 11px 5px 7px;
+  max-width: min(260px, 46vw);
+  padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text, #22252b);
-  font-size: 13px;
-  font-weight: 650;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
+  font-family: var(--jd-font-ui, 'JD Inter', sans-serif);
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 
 .jd-org-pill:hover,
 .jd-project-pill:hover {
-  border-color: var(--jd-muted, #62636b);
+  border-color: var(--jd-hairline-strong, rgba(34, 37, 43, 0.28));
+  background: var(--jd-paper-sunk, #f1e9dc);
 }
 
 .jd-org-pill-badge {
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
   display: grid;
   place-items: center;
-  font-family: 'JD Caslon Text', Georgia, serif;
+  font-family: var(--jd-font-display, Georgia, serif);
   font-style: italic;
   font-size: 11px;
   font-weight: 700;
@@ -70,12 +80,12 @@
 }
 
 .jd-shell-back-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text, #22252b);
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -85,35 +95,24 @@
 .jd-shell-topbar-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
 .jd-avatar-pill {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.18));
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.18));
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 700;
   display: grid;
   place-items: center;
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
-}
-
-.jd-avatar-dot {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--jd-rule-navy, #1e2a42);
-  border: 2px solid var(--jd-card, #fcfaf5);
 }
 
 .jd-shell-body {
@@ -124,71 +123,255 @@
   position: relative;
 }
 
-/* Floating root dock (Home · Projects · Chats) */
+/* Flex-docked root navigation bar (Home · Projects · Chats) — sits cleanly below main without overlapping */
 .jd-dock-wrap {
-  position: fixed;
-  left: 50%;
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: 190;
-  pointer-events: none;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--jd-paper, #f6efe4);
 }
 
 .jd-dock {
-  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 5px;
+  padding: 4px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 95%, transparent);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 10px 30px rgba(17, 18, 20, 0.12);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  box-shadow: 0 4px 16px rgba(72, 58, 40, 0.08);
 }
 
 .jd-dock-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 38px;
+  height: 36px;
   padding: 0 16px;
   border-radius: 999px;
   border: 0;
   background: transparent;
-  color: var(--jd-muted, #62636b);
-  font-size: 12px;
+  color: var(--jd-ink-soft, #3d434c);
+  font-family: var(--jd-font-ui, 'JD Inter', sans-serif);
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 
 .jd-dock-btn:hover {
-  color: var(--jd-text, #22252b);
+  color: var(--jd-ink, #22252b);
+  background: var(--jd-paper-sunk, #f1e9dc);
 }
 
 .jd-dock-btn.is-active {
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
 }
 
-/* Reserve space above floating dock on Home/Projects/Chats (overrides conversation-heritage.css) */
-.jd-shell-v2.jd-shell-has-dock .jd-conversation .jd-compose-wrap,
-.jd-shell-has-dock .jd-compose-wrap {
-  margin-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+/* Home welcome + Unified Lovable Composer */
+.jd-shell-v2 .jd-conversation .jd-welcome {
+  align-items: center !important;
+  text-align: center !important;
+  padding: 12px 0 16px !important;
 }
 
-/* Hub screens (Projects & Chats) */
+.jd-shell-v2 .jd-conversation .jd-heading,
+.jd-shell-v2 .jd-conversation .jd-subtitle,
+.jd-shell-v2 .jd-conversation .jd-welcome-description {
+  text-align: center !important;
+}
+
+.jd-shell-v2 .jd-conversation .jd-compose-wrap {
+  width: min(760px, calc(100% - 32px)) !important;
+  margin: 0 auto 8px !important;
+}
+
+.jd-shell-v2 .jd-conversation .jd-compose {
+  border-radius: 18px !important;
+  padding: 14px 16px 11px !important;
+  background: var(--jd-paper-raised, #fcfaf5) !important;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16)) !important;
+  box-shadow: 0 2px 6px rgba(72, 58, 40, 0.05), 0 14px 32px rgba(72, 58, 40, 0.06) !important;
+}
+
+body .jd-shell-v2 .jd-command.reference-command.jd-conversation .jd-compose textarea {
+  min-height: 48px !important;
+  height: auto !important;
+  max-height: 160px !important;
+  font-size: 17px !important;
+  line-height: 1.45 !important;
+  padding: 0 2px !important;
+}
+
+.jd-shell-v2 .jd-conversation .jd-compose-bottom {
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.jd-shell-v2 .jd-conversation .jd-composer-tools-controls {
+  gap: 8px !important;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.jd-shell-v2 .jd-conversation .jd-add-tool {
+  width: 34px !important;
+  height: 34px !important;
+  background: var(--jd-paper-sunk, #f1e9dc) !important;
+}
+
+.jd-shell-v2 .jd-conversation .jd-send {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  border-radius: 10px !important;
+  background: var(--jd-rule-navy, #1e2a52) !important;
+  color: #f8f5ef !important;
+}
+
+.jd-shell-v2 .jd-conversation .jd-send:disabled {
+  opacity: 0.4 !important;
+}
+
+/* Execution mode segmented control inside composer bottom toolbar */
+.jd-exec-modes {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.15));
+  background: var(--jd-paper-sunk, #f1e9dc);
+}
+
+.jd-exec-modes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--jd-ink-soft, #3d434c);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--jd-font-ui, 'JD Inter', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.jd-exec-modes button.is-active {
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
+}
+
+/* Quiet footer row below composer (Response style + optional Save as project) */
+.jd-composer-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.jd-composer-footer-row .jd-response-style {
+  width: auto;
+  margin: 0;
+  gap: 4px;
+}
+
+.jd-composer-footer-row .jd-response-style > span {
+  font-size: 10.5px;
+  color: var(--jd-ink-muted, #62636b);
+}
+
+.jd-composer-footer-row .jd-response-style button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--jd-ink-muted, #62636b);
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 550;
+}
+
+.jd-composer-footer-row .jd-response-style button.active {
+  background: var(--jd-paper-sunk, #f1e9dc);
+  color: var(--jd-ink, #22252b);
+  border-color: var(--jd-hairline, rgba(34, 37, 43, 0.16));
+}
+
+.jd-save-project-link {
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.jd-save-project-link:hover {
+  border-color: var(--jd-rule-navy, #1e2a52);
+}
+
+/* Starter chips on welcome screen (strictly text-only, zero SVGs) */
+.jd-starter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 16px;
+  max-width: 660px;
+}
+
+.jd-starter-chip {
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink-soft, #3d434c);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: var(--jd-font-ui, 'JD Inter', sans-serif);
+  font-size: 11.5px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.jd-starter-chip:hover {
+  border-color: var(--jd-rule-navy, #1e2a52);
+  color: var(--jd-ink, #22252b);
+  background: var(--jd-paper-sunk, #f1e9dc);
+}
+
+.jd-starter-chip.is-project-cta {
+  background: var(--jd-rule-navy, #1e2a52);
+  border-color: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
+}
+
+.jd-starter-chip.is-project-cta:hover {
+  background: #2b3447;
+  color: #f8f5ef;
+}
+
+/* Hub screens (Projects & Chats) in Heritage Paper */
 .jd-hub {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 20px 18px calc(96px + env(safe-area-inset-bottom, 0px));
-  background: var(--jd-paper, #f6efe4) url('/design/workspace-curves.svg') center/cover no-repeat;
+  padding: 24px 20px 28px;
+  background: var(--jd-paper, #f6efe4);
 }
 
 .jd-hub-inner {
-  width: min(880px, 100%);
+  width: min(920px, 100%);
   margin: 0 auto;
   display: grid;
   gap: 16px;
@@ -200,24 +383,27 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
 }
 
 .jd-hub-eyebrow {
+  font-family: var(--jd-font-ui, 'JD Inter', sans-serif);
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: 750;
-  color: var(--jd-muted, #62636b);
+  font-weight: 700;
+  color: var(--jd-ink-muted, #62636b);
   margin: 0 0 4px;
 }
 
 .jd-hub-title {
-  font-family: 'JD Caslon Text', Georgia, serif;
-  font-size: clamp(26px, 4vw, 34px);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  color: var(--jd-text, #22252b);
-  margin: 0;
+  font-family: var(--jd-font-display, Georgia, serif);
+  font-size: clamp(26px, 3.6vw, 34px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--jd-ink-heading, #1b1e24);
+  margin: 0 0 8px;
 }
 
 .jd-hub-actions {
@@ -230,13 +416,13 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 10px 16px;
+  padding: 9px 16px;
   border-radius: 999px;
-  border: 1px solid var(--jd-text, #22252b);
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
+  border: 1px solid var(--jd-rule-navy, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -255,9 +441,9 @@
   padding: 0 12px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-muted, #62636b);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink-muted, #62636b);
 }
 
 .jd-hub-search input {
@@ -266,7 +452,7 @@
   border: 0 !important;
   outline: 0;
   background: transparent !important;
-  color: var(--jd-text, #22252b) !important;
+  color: var(--jd-ink, #22252b) !important;
   font-size: 13px;
 }
 
@@ -278,20 +464,20 @@
 }
 
 .jd-chip {
-  padding: 7px 12px;
+  padding: 7px 13px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text-soft, #3d434c);
-  font-size: 11px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink-soft, #3d434c);
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .jd-chip.is-active {
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
-  border-color: var(--jd-text, #22252b);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
+  border-color: var(--jd-rule-navy, #1e2a52);
 }
 
 .jd-project-list,
@@ -304,25 +490,26 @@
   display: flex;
   align-items: center;
   gap: 13px;
-  padding: 13px 14px;
-  border-radius: 15px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-card, #fcfaf5);
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.15));
+  background: var(--jd-paper-raised, #fcfaf5);
+  box-shadow: var(--jd-shadow-paper, 0 1px 2px rgba(72, 58, 40, 0.05));
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .jd-project-card:hover {
-  border-color: var(--jd-muted, #62636b);
-  box-shadow: 0 6px 20px rgba(17, 18, 20, 0.05);
+  border-color: var(--jd-hairline-strong, rgba(34, 37, 43, 0.28));
+  box-shadow: 0 6px 20px rgba(72, 58, 40, 0.08);
 }
 
 .jd-project-thumb {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-soft, #f1e9dc);
-  color: var(--jd-text, #22252b);
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  border: 1px solid var(--jd-hairline-soft, rgba(34, 37, 43, 0.12));
+  background: var(--jd-paper-sunk, #f1e9dc);
+  color: var(--jd-ink, #22252b);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -347,26 +534,27 @@
 }
 
 .jd-project-name {
-  font-size: 14px;
+  font-family: var(--jd-font-display, Georgia, serif);
+  font-size: 16px;
   font-weight: 700;
-  color: var(--jd-text, #22252b);
+  color: var(--jd-ink-heading, #1b1e24);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .jd-project-tag {
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-soft, #f1e9dc);
-  color: var(--jd-text-soft, #3d434c);
+  border: 1px solid var(--jd-hairline-soft, rgba(34, 37, 43, 0.12));
+  background: var(--jd-paper-sunk, #f1e9dc);
+  color: var(--jd-ink-soft, #3d434c);
 }
 
 .jd-project-meta {
-  font-size: 11px;
-  color: var(--jd-muted, #62636b);
+  font-size: 11.5px;
+  color: var(--jd-ink-muted, #62636b);
   margin-top: 3px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -379,7 +567,7 @@
   border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--jd-muted, #62636b);
+  color: var(--jd-ink-muted, #62636b);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -387,14 +575,14 @@
 }
 
 .jd-icon-circle:hover {
-  background: var(--jd-soft, #f1e9dc);
-  color: var(--jd-text, #22252b);
+  background: var(--jd-paper-sunk, #f1e9dc);
+  color: var(--jd-ink, #22252b);
 }
 
 .jd-hub-empty {
-  border: 1px dashed var(--jd-border, rgba(34, 37, 43, 0.2));
+  border: 1px dashed var(--jd-hairline, rgba(34, 37, 43, 0.22));
   border-radius: 16px;
-  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 85%, transparent);
+  background: var(--jd-paper-raised, #fcfaf5);
   padding: 36px 20px;
   text-align: center;
   display: grid;
@@ -403,27 +591,27 @@
 }
 
 .jd-hub-empty h2 {
-  font-family: 'JD Caslon Text', Georgia, serif;
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--jd-text, #22252b);
+  font-family: var(--jd-font-display, Georgia, serif);
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--jd-ink-heading, #1b1e24);
   margin: 4px 0 0;
 }
 
 .jd-hub-empty p {
-  font-size: 12px;
-  color: var(--jd-muted, #62636b);
-  max-width: 380px;
+  font-size: 12.5px;
+  color: var(--jd-ink-muted, #62636b);
+  max-width: 390px;
   line-height: 1.6;
   margin: 0 0 8px;
 }
 
-/* Sheets & Popovers (Workspace Switcher, Account Sheet, Project Inspector, New Project) */
+/* Sheets & Popovers */
 .jd-sheet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 520;
-  background: rgba(12, 14, 18, 0.45);
+  background: rgba(18, 22, 28, 0.45);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
@@ -441,12 +629,12 @@
   width: min(480px, 100%);
   max-height: min(86dvh, 720px);
   overflow-y: auto;
-  border-radius: 20px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text, #22252b);
+  border-radius: 18px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24);
-  padding: 18px;
+  padding: 20px;
   display: grid;
   gap: 14px;
 }
@@ -459,25 +647,25 @@
 }
 
 .jd-sheet-title {
-  font-family: 'JD Caslon Text', Georgia, serif;
-  font-size: 20px;
-  font-weight: 500;
+  font-family: var(--jd-font-display, Georgia, serif);
+  font-size: 21px;
+  font-weight: 400;
   margin: 0;
 }
 
 .jd-sheet-card {
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  border-radius: 14px;
-  background: var(--jd-soft, #f1e9dc);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+  border-radius: 13px;
+  background: var(--jd-paper-sunk, #f1e9dc);
   padding: 12px 14px;
   display: grid;
   gap: 8px;
 }
 
 .jd-sheet-meter {
-  height: 7px;
+  height: 6px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--jd-text, #22252b) 12%, transparent);
+  background: color-mix(in srgb, var(--jd-ink, #22252b) 12%, transparent);
   overflow: hidden;
 }
 
@@ -485,7 +673,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--jd-rule-navy, #1e2a42);
+  background: var(--jd-rule-navy, #1e2a52);
 }
 
 .jd-sheet-action-grid {
@@ -500,27 +688,27 @@
   justify-content: center;
   gap: 7px;
   padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text, #22252b);
+  border-radius: 11px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .jd-sheet-action-btn.is-primary {
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
-  border-color: var(--jd-text, #22252b);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
+  border-color: var(--jd-rule-navy, #1e2a52);
 }
 
 .jd-sheet-group-label {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 750;
-  color: var(--jd-muted, #62636b);
+  font-weight: 700;
+  color: var(--jd-ink-muted, #62636b);
   margin: 4px 2px 2px;
 }
 
@@ -538,7 +726,7 @@
   border-radius: 11px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--jd-text, #22252b);
+  color: var(--jd-ink, #22252b);
   font-size: 13px;
   font-weight: 550;
   text-align: left;
@@ -546,8 +734,8 @@
 }
 
 .jd-sheet-row:hover {
-  background: var(--jd-soft, #f1e9dc);
-  border-color: var(--jd-border, rgba(34, 37, 43, 0.1));
+  background: var(--jd-paper-sunk, #f1e9dc);
+  border-color: var(--jd-hairline-soft, rgba(34, 37, 43, 0.1));
 }
 
 .jd-sheet-row-badge {
@@ -556,88 +744,11 @@
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
 }
 
-/* Execution Mode + Response Style toolbar inside Composer */
-.jd-composer-modes-row {
-  width: min(760px, 100%);
-  margin: 0 auto 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.jd-exec-modes {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px;
-  border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
-}
-
-.jd-exec-modes button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border: 0;
-  background: transparent;
-  color: var(--jd-text-soft, #3d434c);
-  border-radius: 999px;
-  padding: 5px 10px;
-  font-size: 10px;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.jd-exec-modes button.is-active {
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
-}
-
-.jd-exec-modes button small {
-  font-size: 9px;
-  color: inherit;
-  font-weight: 500;
-}
-
-.jd-composer-modes-row .jd-response-style {
-  width: auto;
-  margin: 0;
-}
-
-/* Starter chips on welcome screen */
-.jd-starter-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 18px;
-  max-width: 640px;
-}
-
-.jd-starter-chip {
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: color-mix(in srgb, var(--jd-card, #fcfaf5) 90%, transparent);
-  color: var(--jd-text-soft, #3d434c);
-  border-radius: 999px;
-  padding: 7px 13px;
-  font-size: 11px;
-  font-weight: 550;
-  cursor: pointer;
-}
-
-.jd-starter-chip:hover {
-  border-color: var(--jd-text, #22252b);
-  color: var(--jd-text, #22252b);
-}
-
-/* Project Workspace: Chat <-> Preview + Bottom Switcher */
+/* Project Workspace: Desktop Split (Chat | Preview) & Mobile Switcher */
 .jd-project-workspace {
   flex: 1;
   min-height: 0;
@@ -653,12 +764,39 @@
   flex-direction: column;
 }
 
+.jd-project-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(360px, 44%) minmax(0, 1fr);
+}
+
+.jd-project-split-chat {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+}
+
+.jd-project-split-chat > .jd-command {
+  height: 100% !important;
+  flex: 1 1 auto;
+}
+
+.jd-project-split-preview {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .jd-project-bottom-bar {
-  height: 52px;
-  min-height: 52px;
-  padding: 0 14px calc(env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-card, #fcfaf5);
+  height: 50px;
+  min-height: 50px;
+  padding: 0 16px calc(env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+  background: var(--jd-paper-raised, #fcfaf5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -668,30 +806,30 @@
 .jd-pane-switch {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 3px;
   border-radius: 999px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-soft, #f1e9dc);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-sunk, #f1e9dc);
 }
 
 .jd-pane-switch button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 13px;
+  padding: 5px 12px;
   border-radius: 999px;
   border: 0;
   background: transparent;
-  color: var(--jd-text-soft, #3d434c);
-  font-size: 11px;
-  font-weight: 650;
+  color: var(--jd-ink-soft, #3d434c);
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .jd-pane-switch button.is-active {
-  background: var(--jd-card, #fcfaf5);
-  color: var(--jd-text, #22252b);
+  background: var(--jd-paper-raised, #fcfaf5);
+  color: var(--jd-ink, #22252b);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -701,11 +839,11 @@
   gap: 6px;
   padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid var(--jd-text, #22252b);
-  background: var(--jd-text, #22252b);
-  color: var(--jd-card, #fcfaf5);
-  font-size: 11px;
-  font-weight: 650;
+  border: 1px solid var(--jd-rule-navy, #1e2a52);
+  background: var(--jd-rule-navy, #1e2a52);
+  color: #f8f5ef;
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -714,7 +852,7 @@
   min-height: 0;
   overflow-y: auto;
   padding: 18px;
-  background: var(--jd-paper, #f6efe4) url('/design/workspace-curves.svg') center/cover no-repeat;
+  background: var(--jd-paper, #f6efe4);
 }
 
 .jd-preview-shell {
@@ -730,18 +868,18 @@
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 10px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-card, #fcfaf5);
+  padding: 9px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+  background: var(--jd-paper-raised, #fcfaf5);
 }
 
 .jd-preview-surface {
-  border-radius: 18px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
-  background: var(--jd-card, #fcfaf5);
+  border-radius: 16px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
+  background: var(--jd-paper-raised, #fcfaf5);
   padding: 20px;
-  box-shadow: 0 10px 32px rgba(17, 18, 20, 0.06);
+  box-shadow: var(--jd-shadow-paper, 0 4px 16px rgba(72, 58, 40, 0.06));
   display: grid;
   gap: 16px;
 }
@@ -751,55 +889,112 @@
   margin: 0 auto;
 }
 
+.jd-preview-blueprint {
+  border-radius: 12px;
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.15));
+  background: var(--jd-paper, #f6efe4);
+  overflow: hidden;
+}
+
+.jd-preview-browser-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.12));
+  background: var(--jd-paper-sunk, #f1e9dc);
+}
+
+.jd-preview-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.jd-preview-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--jd-ink-muted, #62636b);
+  opacity: 0.45;
+}
+
+.jd-preview-route {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--jd-ink-soft, #3d434c);
+}
+
+.jd-preview-blueprint-body {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
 .jd-subpage-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-card, #fcfaf5);
+  border-bottom: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+  background: var(--jd-paper-raised, #fcfaf5);
 }
 
 .jd-sheet-divider {
-  border-top: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  border-top: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
   margin: 6px 0;
 }
 
 .jd-sheet-field {
   padding: 11px 12px;
   border-radius: 11px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.16));
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.16));
   font-size: 13px;
 }
 
 .jd-project-file-row {
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
-  background: var(--jd-card, #fcfaf5);
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
+  background: var(--jd-paper-raised, #fcfaf5);
 }
 
 .jd-preview-iframe {
   width: 100%;
   min-height: 420px;
   border-radius: 12px;
-  border: 1px solid var(--jd-border, rgba(34, 37, 43, 0.14));
+  border: 1px solid var(--jd-hairline, rgba(34, 37, 43, 0.14));
   background: #ffffff;
 }
 
-/* Dark mode alignment with true-black-theme.css & minimal-surfaces.css (tonal surfaces, zero decorative borders) */
+/* Dark mode alignment with true-black-theme.css & minimal-surfaces.css */
 [data-theme='dark'] .jd-shell-v2,
-[data-theme='dark'] .jd-project-workspace {
+[data-theme='dark'] .jd-project-workspace,
+[data-theme='dark'] .jd-dock-wrap {
   background: #000000;
   color: #f5f5f5;
 }
 
 [data-theme='dark'] .jd-shell-v2 .jd-topbar,
 [data-theme='dark'] .jd-project-bottom-bar,
-[data-theme='dark'] .jd-subpage-bar {
+[data-theme='dark'] .jd-subpage-bar,
+[data-theme='dark'] .jd-hub-header {
   background: #090909;
   border-color: transparent !important;
+}
+
+[data-theme='dark'] .jd-shell-v2 .jd-conversation .jd-compose {
+  background: #141414 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-theme='dark'] .jd-shell-v2 .jd-conversation .jd-add-tool {
+  background: #1a1a1a !important;
+  border-color: transparent !important;
+  color: #f5f5f5 !important;
 }
 
 [data-theme='dark'] .jd-hub,
@@ -815,15 +1010,16 @@
 [data-theme='dark'] .jd-project-card,
 [data-theme='dark'] .jd-sheet,
 [data-theme='dark'] .jd-sheet-action-btn,
-[data-theme='dark'] .jd-exec-modes,
 [data-theme='dark'] .jd-preview-toolbar,
 [data-theme='dark'] .jd-preview-surface,
+[data-theme='dark'] .jd-preview-blueprint,
 [data-theme='dark'] .jd-hub-search,
 [data-theme='dark'] .jd-chip,
 [data-theme='dark'] .jd-icon-circle,
 [data-theme='dark'] .jd-starter-chip,
 [data-theme='dark'] .jd-project-file-row,
 [data-theme='dark'] .jd-sheet-field,
+[data-theme='dark'] .jd-save-project-link,
 [data-theme='dark'] .jd-preview-iframe {
   background: #141414;
   border-color: transparent !important;
@@ -833,8 +1029,11 @@
 [data-theme='dark'] .jd-sheet-card,
 [data-theme='dark'] .jd-project-thumb,
 [data-theme='dark'] .jd-project-tag,
+[data-theme='dark'] .jd-exec-modes,
 [data-theme='dark'] .jd-pane-switch,
-[data-theme='dark'] .jd-sheet-row:hover {
+[data-theme='dark'] .jd-preview-browser-bar,
+[data-theme='dark'] .jd-sheet-row:hover,
+[data-theme='dark'] .jd-composer-footer-row .jd-response-style button.active {
   background: #1a1a1a;
   border-color: transparent !important;
   color: #e5e5e5;
@@ -845,7 +1044,8 @@
 [data-theme='dark'] .jd-pane-switch button,
 [data-theme='dark'] .jd-sheet-row,
 [data-theme='dark'] .jd-sheet-divider,
-[data-theme='dark'] .jd-hub-empty {
+[data-theme='dark'] .jd-hub-empty,
+[data-theme='dark'] .jd-composer-footer-row .jd-response-style button {
   color: #d4d4d4;
   border-color: transparent !important;
 }
@@ -857,8 +1057,10 @@
 [data-theme='dark'] .jd-hub-primary-btn,
 [data-theme='dark'] .jd-publish-pill,
 [data-theme='dark'] .jd-org-pill-badge,
+[data-theme='dark'] .jd-starter-chip.is-project-cta,
 [data-theme='dark'] .jd-avatar-pill,
-[data-theme='dark'] .reference-workspace-header.jd-topbar .jd-avatar-pill {
+[data-theme='dark'] .reference-workspace-header.jd-topbar .jd-avatar-pill,
+[data-theme='dark'] .jd-shell-v2 .jd-conversation .jd-send {
   background: #f5f5f5 !important;
   color: #090909 !important;
   border-color: transparent !important;
@@ -870,8 +1072,13 @@
   border-color: transparent !important;
 }
 
+[data-theme='dark'] .jd-project-split-chat {
+  border-color: transparent !important;
+}
+
 @media (max-width: 720px) {
-  .jd-shell-topbar-left .jd-topbar-brandtext {
+  .jd-shell-topbar-left .jd-topbar-brandtext,
+  .jd-topbar-divider {
     display: none;
   }
 }
@@ -879,31 +1086,24 @@
 @media (max-width: 640px) {
   .jd-dock-btn {
     padding: 0 12px;
-    font-size: 11px;
+    font-size: 11.5px;
+    height: 34px;
   }
-  .jd-composer-modes-row {
-    gap: 6px;
+  .jd-exec-modes button {
+    padding: 4px 8px;
+    font-size: 10.5px;
   }
-  .jd-exec-modes button small {
-    display: none;
+  .jd-shell-v2 .jd-conversation .jd-compose-wrap {
+    width: calc(100% - 20px) !important;
   }
 }
 
 @media (max-width: 540px) {
-  .jd-shell-topbar-left .jd-topbar-brand {
-    display: none;
-  }
   .jd-org-pill,
   .jd-project-pill {
-    max-width: 100%;
-    padding: 4px 8px 4px 5px;
-    gap: 5px;
+    max-width: 145px;
+    padding: 4px 8px;
     font-size: 11.5px;
-  }
-  .jd-org-pill-badge {
-    width: 20px;
-    height: 20px;
-    font-size: 10px;
   }
 }
 
@@ -930,6 +1130,10 @@
     min-width: 28px !important;
     min-height: 28px !important;
   }
+  .jd-org-pill,
+  .jd-project-pill {
+    max-width: 105px;
+  }
 }
 
 @media (max-height: 540px) {
@@ -937,14 +1141,10 @@
     display: none;
   }
   .jd-dock-wrap {
-    bottom: 6px;
+    padding: 4px 12px 6px;
   }
   .jd-dock-btn {
-    height: 32px;
+    height: 30px;
     padding: 0 11px;
-  }
-  .jd-shell-v2.jd-shell-has-dock .jd-conversation .jd-compose-wrap,
-  .jd-shell-has-dock .jd-compose-wrap {
-    margin-bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }

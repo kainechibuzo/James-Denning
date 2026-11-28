@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowRight, CalendarClock, MessageSquare, Plus, RefreshCw, Search } from "lucide-react";
+import { HeritageRule } from "../components/reference-brand.jsx";
 import { CHAT_FILTERS, filterConversations } from "./shell-state.mjs";
 
 export function ChatsHub({
@@ -25,6 +26,7 @@ export function ChatsHub({
           <div>
             <p className="jd-hub-eyebrow">CONVERSATIONS</p>
             <h1 className="jd-hub-title" id="jd-chats-hub-title">Chats</h1>
+            <HeritageRule compact />
           </div>
           <div className="jd-hub-actions">
             <button type="button" className="jd-icon-circle" aria-label="Refresh chats" onClick={onRefresh} disabled={loading}>

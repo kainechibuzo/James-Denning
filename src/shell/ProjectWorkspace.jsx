@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   Activity, Briefcase, Building2, Check, CheckCircle2, ChevronRight, Code2,
-  Database, Eye, Globe, History, LayoutDashboard, Link2, Lock, Mail, MessageSquare,
+  Columns2, Database, Eye, Globe, History, LayoutDashboard, Link2, Lock, Mail, MessageSquare,
   Monitor, Package, Play, RefreshCw, Settings, Share2, Shield, Smartphone, Sparkles,
   TrendingUp, UserCheck, Users, Wallet, X,
 } from "lucide-react";
@@ -236,21 +236,46 @@ export function ProjectPreviewPane({
                   className="jd-preview-iframe"
                 />
               ) : (
-                <div className="jd-sheet-card" style={{ gap: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>Build Preview Ready for Iteration</div>
-                  <p style={{ fontSize: 12, color: "var(--jd-muted)", margin: 0, lineHeight: 1.6 }}>
-                    Switch to <strong>Chat</strong> in <strong>Plan</strong> or <strong>Execute</strong> mode to generate requirements, database schemas, or an agent team in <strong>Agent Studio</strong>.
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    <button type="button" className="jd-chip" onClick={() => onAskInChat?.(`Design the architecture, data tables, and UI screens for ${project.name}.`, "plan")}>
-                      Plan app architecture
-                    </button>
-                    <button type="button" className="jd-chip" onClick={() => onAskInChat?.(`Draft the core user flows and authentication checks for ${project.name}.`, "plan")}>
-                      Review auth &amp; backend
-                    </button>
-                    <button type="button" className="jd-chip" onClick={() => setSoftwareTab("studio")}>
-                      Open Agent Studio
-                    </button>
+                <div className="jd-preview-blueprint">
+                  <div className="jd-preview-browser-bar">
+                    <span className="jd-preview-dots" aria-hidden="true"><i/><i/><i/></span>
+                    <span className="jd-preview-route">{previewConfig.route || "/"}</span>
+                    <span className="jd-project-tag">{isPublished ? "Live" : "Sandbox"}</span>
+                  </div>
+                  <div className="jd-preview-blueprint-body">
+                    <div className="jd-sheet-card" style={{ gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>Interactive App Canvas</div>
+                        <span style={{ fontSize: 11, color: "var(--jd-muted)" }}>
+                          {conversations.length} thread{conversations.length === 1 ? "" : "s"} · {tasks.length} task{tasks.length === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 12, color: "var(--jd-muted)", margin: 0, lineHeight: 1.6 }}>
+                        Use <strong>Chat</strong> in <strong>Plan</strong> or <strong>Execute</strong> mode to scaffold screens, tables, and workflows, or configure your specialist team in <strong>Agent Studio</strong>.
+                      </p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        <button type="button" className="jd-chip" onClick={() => onAskInChat?.(`Design the architecture, data tables, and UI screens for ${project.name}.`, "plan")}>
+                          Plan app architecture
+                        </button>
+                        <button type="button" className="jd-chip" onClick={() => onAskInChat?.(`Draft the core user flows and authentication checks for ${project.name}.`, "plan")}>
+                          Review auth &amp; backend
+                        </button>
+                        <button type="button" className="jd-chip" onClick={() => setSoftwareTab("studio")}>
+                          Open Agent Studio
+                        </button>
+                      </div>
+                    </div>
+                    {tasks.length > 0 && (
+                      <div className="jd-sheet-card" style={{ gap: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700 }}>Build Checklist ({completedTasks}/{tasks.length})</div>
+                        {tasks.slice(0, 5).map((task) => (
+                          <div key={task.id} className="jd-project-file-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600 }}>{task.title}</span>
+                            <span className="jd-project-tag" style={{ textTransform: "capitalize" }}>{String(task.status || "queued").replaceAll("_", " ")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -320,11 +345,17 @@ export function ProjectPreviewPane({
   );
 }
 
-export function ProjectBottomBar({ activePane, project, onChangePane, onPublish }) {
+export function ProjectBottomBar({ activePane, project, canSplit = false, onChangePane, onPublish }) {
   const isPublished = project?.status === "published";
   return (
     <div className="jd-project-bottom-bar">
       <div className="jd-pane-switch" role="tablist" aria-label="Project workspace view">
+        {canSplit && (
+          <button type="button" role="tab" aria-selected={activePane === "split"}
+            className={activePane === "split" ? "is-active" : ""} onClick={() => onChangePane?.("split")}>
+            <Columns2 size={13} /> Split
+          </button>
+        )}
         <button type="button" role="tab" aria-selected={activePane === "chat"}
           className={activePane === "chat" ? "is-active" : ""} onClick={() => onChangePane?.("chat")}>
           <MessageSquare size={13} /> Chat

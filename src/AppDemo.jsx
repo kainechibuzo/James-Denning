@@ -1200,6 +1200,7 @@ function AppInner(){
   const {orgName:_sidebarSchoolName,workspaceType,terms} = useOrganization();
   // ← Must be declared here — before any conditional returns — to satisfy Rules of Hooks
   const isMobile = useIsMobile();
+  const isDesktopSplit = !useIsMobile(960);
 
   // ── Inactivity timeout — value loaded from school_settings on login ──────────
   const _inactivityWarning = inactivityMs >= 99999*60*1000 ? 60000 : Math.min(60000, Math.max(30000, inactivityMs*0.2));
@@ -1406,6 +1407,7 @@ function AppInner(){
 
   useEffect(() => {
     if (!user || !selectedSchool) return;
+    if (rootTab === "home" && !projects.length && !projectsLoading) void loadProjects();
     if (rootTab === "projects") void loadProjects();
     if (rootTab === "chats") void loadRootChats(rootChatsFilter);
   }, [rootTab, rootChatsFilter, user?.id, selectedSchool?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1419,7 +1421,7 @@ function AppInner(){
 
   const openProject = (project, pane = "chat") => {
     setActiveProject(project);
-    setProjectPane(pane);
+    setProjectPane(pane === "chat" && isDesktopSplit ? "split" : pane);
     setProjectDraft("");
     setProjectConversationId(null);
     setProjectMode(project?.metadata_json?.initial_mode || "plan");
@@ -1723,12 +1725,14 @@ function AppInner(){
                 </button>
               </>
             ) : (
-              <button type="button" className="jd-org-pill" aria-haspopup="dialog" aria-label="Open workspace switcher"
-                onClick={()=>setShowWorkspaceSheet(true)}>
-                <span className="jd-org-pill-badge" aria-hidden="true">{(_sidebarSchoolName||selectedSchool?.name||"J").trim().charAt(0).toUpperCase()}</span>
-                <span className="jd-org-pill-label">{_sidebarSchoolName||selectedSchool?.name||"James-Denning"}</span>
-                <ChevronsUpDown size={14} style={{flexShrink:0,color:"var(--jd-muted)"}}/>
-              </button>
+              <>
+                <span className="jd-topbar-divider" aria-hidden="true">/</span>
+                <button type="button" className="jd-org-pill" aria-haspopup="dialog" aria-label="Open workspace switcher"
+                  onClick={()=>setShowWorkspaceSheet(true)}>
+                  <span className="jd-org-pill-label">{_sidebarSchoolName||selectedSchool?.name||"Workspace"}</span>
+                  <ChevronsUpDown size={13} style={{flexShrink:0,color:"var(--jd-muted)"}}/>
+                </button>
+              </>
             )}
           </div>
           <div className="reference-header-controls jd-shell-topbar-right" style={{display:"flex",gap:4,alignItems:"center",flexShrink:0}}>
@@ -1762,10 +1766,45 @@ function AppInner(){
         <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:"var(--jd-paper)",transition:"background .2s",display:"flex",flexDirection:"column"}}>
           {page==="admin-dashboard" && (role==="admin" ? <AdminDashboardPage ctx={ctx}/> : <AccessDenied/>)}
           {page==="jd-chat" && (role!=="owner"||canAccess("jd-chat") ? (
-            activeProject && !(assistantRequest?.view && assistantRequest.view !== "chat") ? (
+            activeProject && !(assistantRequest?.view && assistantRequest.view !== "chat") ? (() => {
+              const effectiveProjectPane = isDesktopSplit ? projectPane : (projectPane === "split" ? "chat" : projectPane);
+              return (
               <div className="jd-project-workspace">
                 <div className="jd-project-pane">
-                  {projectPane==="preview" ? (
+                  {effectiveProjectPane === "split" ? (
+                    <div className="jd-project-split">
+                      <div className="jd-project-split-chat">
+                        <ChatHome
+                          key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role,activeProject.id,projectConversationId||"project-chat"])}
+                          user={user}
+                          organizationId={selectedSchool?.id}
+                          organizationName={selectedSchool?.name||"Your organisation"}
+                          navigationRequest={assistantRequest}
+                          project={activeProject}
+                          initialExecutionMode={projectMode}
+                          initialDraft={projectDraft}
+                          initialConversationId={projectConversationId}
+                          onOpenPreview={()=>setProjectPane("preview")}
+                        />
+                      </div>
+                      <div className="jd-project-split-preview">
+                        <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading preview...</div></div>}>
+                          <ProjectPreviewPane
+                            project={activeProject}
+                            detail={projectDetail}
+                            loading={projectDetailLoading}
+                            role={role}
+                            organizationName={_sidebarSchoolName||selectedSchool?.name||"Your organisation"}
+                            onRefresh={()=>loadProjectDetail(activeProject.id)}
+                            onAskInChat={(prompt, mode)=>{setProjectDraft(prompt);setProjectMode(mode||"plan");}}
+                            onShare={shareProject}
+                            onPublish={toggleProjectPublish}
+                            onOpenOperations={canOpenOperations(role)&&canAccess("jd-operations") ? ()=>setPage("jd-operations") : null}
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  ) : effectiveProjectPane==="preview" ? (
                     <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading preview...</div></div>}>
                       <ProjectPreviewPane
                         project={activeProject}
@@ -1797,14 +1836,16 @@ function AppInner(){
                 </div>
                 <Suspense fallback={null}>
                   <ProjectBottomBar
-                    activePane={projectPane}
+                    activePane={effectiveProjectPane}
                     project={activeProject}
-                    onChangePane={(pane)=>{setProjectPane(pane);if(pane==="preview")void loadProjectDetail(activeProject.id);}}
+                    canSplit={isDesktopSplit}
+                    onChangePane={(pane)=>{setProjectPane(pane);if(pane==="preview"||pane==="split")void loadProjectDetail(activeProject.id);}}
                     onPublish={toggleProjectPublish}
                   />
                 </Suspense>
               </div>
-            ) : (rootTab==="projects" && !(assistantRequest?.view && assistantRequest.view !== "chat")) ? (
+              );
+            })() : (rootTab==="projects" && !(assistantRequest?.view && assistantRequest.view !== "chat")) ? (
               <Suspense fallback={<div className="jd-hub"><div className="jd-muted" style={{fontSize:13}}>Loading projects...</div></div>}>
                 <ProjectsHub
                   projects={projects}
@@ -1851,7 +1892,10 @@ function AppInner(){
                 organizationId={selectedSchool?.id}
                 organizationName={selectedSchool?.name||"Your organisation"}
                 navigationRequest={assistantRequest}
+                recentProjects={projects}
                 initialConversationId={rootConversationId}
+                onOpenProject={openProject}
+                onCreateProject={["owner","admin","manager"].includes(role) ? (promptText)=>{setCreateProjectError("");setProjectDraft(promptText||"");setShowNewProject(true);} : null}
                 onReturnHome={()=>setAssistantRequest(null)}
                 onSubviewChange={setChatSubviewOpen}
               />
@@ -1870,26 +1914,26 @@ function AppInner(){
           {page==="org-create"         && <OrgPresetSelectPage ctx={ctx}/>}
           {page==="org-create-details" && <OrgCreatePage ctx={ctx}/>}
         </main>
-      </div>
 
-      {showRootDock && (
-        <nav className="jd-dock-wrap" aria-label="Primary workspace tabs">
-          <div className="jd-dock">
-            <button type="button" className={`jd-dock-btn${rootTab==="home"?" is-active":""}`} aria-current={rootTab==="home"?"page":undefined}
-              onClick={()=>{setRootTab("home");setAssistantRequest(null);}}>
-              <Home size={16}/> Home
-            </button>
-            <button type="button" className={`jd-dock-btn${rootTab==="projects"?" is-active":""}`} aria-current={rootTab==="projects"?"page":undefined}
-              onClick={()=>{setRootTab("projects");setAssistantRequest(null);}}>
-              <FolderKanban size={16}/> Projects
-            </button>
-            <button type="button" className={`jd-dock-btn${rootTab==="chats"?" is-active":""}`} aria-current={rootTab==="chats"?"page":undefined}
-              onClick={()=>{setRootTab("chats");setAssistantRequest(null);}}>
-              <MessageSquare size={16}/> Chats
-            </button>
-          </div>
-        </nav>
-      )}
+        {showRootDock && (
+          <nav className="jd-dock-wrap" aria-label="Primary workspace tabs">
+            <div className="jd-dock">
+              <button type="button" className={`jd-dock-btn${rootTab==="home"?" is-active":""}`} aria-current={rootTab==="home"?"page":undefined}
+                onClick={()=>{setRootTab("home");setAssistantRequest(null);}}>
+                <Home size={15}/> Home
+              </button>
+              <button type="button" className={`jd-dock-btn${rootTab==="projects"?" is-active":""}`} aria-current={rootTab==="projects"?"page":undefined}
+                onClick={()=>{setRootTab("projects");setAssistantRequest(null);}}>
+                <FolderKanban size={15}/> Projects
+              </button>
+              <button type="button" className={`jd-dock-btn${rootTab==="chats"?" is-active":""}`} aria-current={rootTab==="chats"?"page":undefined}
+                onClick={()=>{setRootTab("chats");setAssistantRequest(null);}}>
+                <MessageSquare size={15}/> Chats
+              </button>
+            </div>
+          </nav>
+        )}
+      </div>
 
       <Suspense fallback={null}>
         {showWorkspaceSheet && (
@@ -1946,6 +1990,7 @@ function AppInner(){
             open={showNewProject}
             busy={creatingProject}
             error={createProjectError}
+            initialPrompt={projectDraft}
             onClose={()=>setShowNewProject(false)}
             onCreate={createProject}
           />

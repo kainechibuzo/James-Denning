@@ -5,7 +5,7 @@ import {canManageConnectors} from '../connectors/catalogue.mjs';
 import {mentionAt,insertComposerText,connectedChoices} from './composer-tools.mjs';
 import './composer-tools.css';
 
-export function ComposerTools({draft,setDraft,onSend,isWorking,role,actions,onNavigate,children}){
+export function ComposerTools({draft,setDraft,onSend,isWorking,role,actions,onNavigate,toolbarExtra=null,children}){
  const [mode,setMode]=useState(null),[query,setQuery]=useState(''),[mention,setMention]=useState(null),[active,setActive]=useState(0),[remote,setRemote]=useState([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(0);
  const input=useRef(null),root=useRef(null),search=useRef(null),restoreInput=useRef(null),id=useId();
  // Restore focus/selection with the React commit, before the next input event.
@@ -50,6 +50,6 @@ export function ComposerTools({draft,setDraft,onSend,isWorking,role,actions,onNa
    <div className="jd-tool-picker-links"><button type="button" onClick={()=>navigate('connectors')}><Link2 size={15}/> Connectors <span>Explore apps</span></button>{mode==='menu'&&<><button type="button" onClick={()=>navigate('review')}>Review Centre</button><button type="button" onClick={()=>navigate('runs')}>Automation runs</button></>}</div>
   </div>}
   <textarea ref={input} role={mode==='mention'?'combobox':undefined} aria-label="Message JD" value={draft} onChange={update} onKeyDown={keydown} onClick={e=>{if(mode==='mention'){const m=mentionAt(draft,e.currentTarget.selectionStart);setMention(m);setMode(m?'mention':null);setQuery(m?.query||'');}}} aria-expanded={mode==='mention'} aria-controls={mode==='mention'?`${id}-list`:undefined} aria-activedescendant={mode==='mention'&&choices.length?`${id}-option-${active}`:undefined} aria-autocomplete="list" placeholder={isWorking?'Send another request while JD works…':'Ask JD anything, or type @ for tools…'} rows={2}/>
-  <div className="jd-compose-bottom"><div className="jd-composer-tools-controls"><button className="jd-add-tool" type="button" aria-label="Add tools and connectors" aria-haspopup="dialog" aria-expanded={mode==='menu'} onClick={()=>{if(mode==='menu'){close(true);}else{setQuery('');setMode('menu');setMention(null);}}}><Plus size={19}/></button><span className="jd-compose-hint">Use @ for tools</span></div>{children}</div>
+  <div className="jd-compose-bottom"><div className="jd-composer-tools-controls"><button className="jd-add-tool" type="button" aria-label="Add tools and connectors" aria-haspopup="dialog" aria-expanded={mode==='menu'} onClick={()=>{if(mode==='menu'){close(true);}else{setQuery('');setMode('menu');setMention(null);}}}><Plus size={19}/></button>{toolbarExtra||<span className="jd-compose-hint">Use @ for tools</span>}</div>{children}</div>
  </div>;
 }

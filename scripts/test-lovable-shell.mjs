@@ -459,8 +459,9 @@ test("ProjectWorkspace renders dual Preview modes, Inspector Sheet, and Chat/Pre
             onSelectDestination: () => {},
           }),
           React.createElement(ProjectBottomBar, {
-            activePane: "chat",
+            activePane: "split",
             project: initiativeProject,
+            canSplit: true,
             onChangePane: (pane) => { switchedPane = pane; },
             onPublish: () => {},
           })
@@ -473,6 +474,8 @@ test("ProjectWorkspace renders dual Preview modes, Inspector Sheet, and Chat/Pre
     assert.match(env.container.textContent, /Operational Tasks \(1\/2 complete\)/);
     assert.match(env.container.textContent, /Live Preview &amp; Brief|Live Preview & Brief/);
 
+    const splitBtn = [...env.container.querySelectorAll(".jd-pane-switch button")].find((el) => el.textContent.includes("Split"));
+    assert.ok(splitBtn, "Desktop split tab renders when canSplit is true");
     const previewBtn = [...env.container.querySelectorAll(".jd-pane-switch button")].find((el) => el.textContent.includes("Preview"));
     await act(async () => { Simulate.click(previewBtn); });
     assert.equal(switchedPane, "preview");
