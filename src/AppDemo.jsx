@@ -23,6 +23,7 @@ import { signOutForWorkspaceSwitch } from "./utils/switch-workspace.mjs";
 // -- Route-level page chunks. The app shell is ready before feature modules download.
 const lazyPage = (loader, exportName) => lazy(() => loader().then(module => ({ default: module[exportName] })));
 const AdminToolsPage = lazyPage(() => import("./pages/tools.jsx"), "AdminToolsPage");
+const AdminDashboardPage = lazyPage(() => import("./pages/admin-dashboard.jsx"), "AdminDashboardPage");
 const AuditLogPage = lazyPage(() => import("./pages/tools.jsx"), "AuditLogPage");
 const MailLogsPage = lazyPage(() => import("./pages/email-logs.jsx"), "MailLogsPage");
 const PermissionsPage = lazyPage(() => import("./pages/permissions.jsx"), "PermissionsPage");
@@ -1134,7 +1135,9 @@ function SignInRequired(){
 
 function AppInner(){
   const [user,setUser]         = useState(()=>loadSession());
-  const [page,setPage]         = useState("jd-chat");
+  const [page,setPage]         = useState(()=>window.location.pathname==="/admin"?"admin-dashboard":"jd-chat");
+  useEffect(()=>{const syncRoute=()=>setPage(window.location.pathname==="/admin"?"admin-dashboard":"jd-chat");window.addEventListener("popstate",syncRoute);return()=>window.removeEventListener("popstate",syncRoute);},[]);
+  useEffect(()=>{const path=page==="admin-dashboard"?"/admin":"/";if(window.location.pathname!==path)window.history.replaceState({},"",path);},[page]);
   const [assistantRequest,setAssistantRequest] = useState(null);
   useEffect(()=>{if(page!=="jd-chat")setAssistantRequest(null);},[page]);
   // Optional payload set alongside a page navigation (e.g. dashboard "Fix →" links) so the
@@ -1309,6 +1312,15 @@ function AppInner(){
     if(navEntry&&navEntry.roles&&navEntry.roles.includes(user.role)) return true;
     return false; // deny by default
   };
+
+  // Record an authenticated workspace route opening for aggregate feature-usage analytics.
+  // This is a lightweight event only; it never records page content or user input.
+  useEffect(()=>{
+    if(!selectedSchool?.id||!user||!canAccess(page)) return;
+    supabase.rpc("jd_record_feature_usage",{p_feature_key:page}).then(({error})=>{
+      if(error) console.warn("[JD feature telemetry]",error.message);
+    }).catch(error=>console.warn("[JD feature telemetry]",error?.message||error));
+  },[page,user?.id,selectedSchool?.id]);
 
   // Sign-in and organisation selection happen in the public entry (App.jsx).
   // Without both, return to it rather than rendering a partial workspace.
@@ -1536,6 +1548,7 @@ function AppInner(){
 
 
         <main className={page==="jd-chat"?"jd-workspace-chat":"jd-workspace-page"} style={{flex:1,padding:page==="jd-chat"?0:(isMobile?12:20),overflowY:"auto",background:page==="jd-chat"?"var(--jd-paper)":"var(--jd-paper)",transition:"background .2s"}}>
+          {page==="admin-dashboard" && (role==="admin" ? <AdminDashboardPage ctx={ctx}/> : <AccessDenied/>)}
           {page==="jd-chat"       && (role!=="owner"||canAccess("jd-chat") ? <ChatHome key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} user={user} organizationId={selectedSchool?.id} organizationName={selectedSchool?.name||"Your organisation"} navigationRequest={assistantRequest}/> : <AccessDenied/>)}
           {page==="jd-operations" && (canOpenOperations(role)&&canAccess("jd-operations") ? <JDOperationsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id,user?.role])} ctx={ctx}/> : <AccessDenied/>)}
           {page==="jd-skills"    && (role==="admin"             ? <JdSkillsPage key={JSON.stringify([selectedSchool?.id,user?._authUserId||user?.id])} ctx={ctx}/> : <AccessDenied/>)}
